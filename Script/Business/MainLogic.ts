@@ -1,6 +1,6 @@
 import Table = JsStorage.Model.Table;
 import DataBase = JsStorage.Model.DataBase;
-
+import IDataBase = JsStorage.Model.IDataBase;
 module JsStorage {
     export class Main {
 
@@ -8,14 +8,34 @@ module JsStorage {
             this.setDbType();
         }
 
-        createDb(dataBase: DataBase) {
+        createDb(dataBase: IDataBase, callBack: Function) {
             if (DbType == DBType.IndexedDb) {
-                IndexDbObj = new Business.IndexDbLogic();
-                var DbVersion = Number(localStorage.getItem('JsStorage_Db_Version'));
-                IndexDbObj.openDataBase(DbVersion, dataBase);
+                var Db = new DataBase(dataBase)
+                IndexDbObj = new Business.IndexDbLogic(Db);
+                var DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
+                IndexDbObj.openDataBase(DbVersion, callBack, this);
             }
             else {
                 WebSqlObj = new Business.WebSqlLogic();
+            }
+            //return this;
+        }
+
+        get(query: IQuery, callBack: Function) {
+            if (DbType == DBType.IndexedDb) {
+                IndexDbObj.get(query, callBack);
+            }
+            else {
+
+            }
+        }
+
+        add(table: string, value, onSuccess: Function, onError: Function) {
+            if (DbType == DBType.IndexedDb) {
+                IndexDbObj.add(table, value, onSuccess, onError);
+            }
+            else {
+
             }
         }
         /**

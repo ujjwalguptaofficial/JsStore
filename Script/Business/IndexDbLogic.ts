@@ -2,22 +2,30 @@ import Column = JsStorage.Model.Column;
 module JsStorage {
     export module Business {
         export class IndexDbLogic {
-            DbConnection;
-            openDataBase = function (dbVersion: number, dataBase: DataBase) {
-                var That: IndexDbLogic = this;
-                var DbRequest = window.indexedDB.open(dataBase.Name, dbVersion);
+
+            ActiveDataBase: DataBase;
+            constructor(dataBase: DataBase) {
+                this.ActiveDataBase = dataBase
+            }
+            public openDataBase = function (dbVersion: number, callBack: Function, objMain) {
+                var That = this;
+                var DbRequest = window.indexedDB.open(this.ActiveDataBase.Name, dbVersion);
 
                 DbRequest.onerror = function (event) {
-                    throw "Error in opening DataBase"
+                    throw "Error in opening DataBase";
                 };
 
                 DbRequest.onsuccess = function (event) {
-                    That.DbConnection = DbRequest.result;
+                    IndexDbConnection = DbRequest.result;
+                    if (callBack != null) {
+                        callBack(objMain);
+                    }
+                    return objMain;
                 };
 
                 DbRequest.onupgradeneeded = function (event) {
                     var db = (<any>event).target.result;
-                    dataBase.Tables.forEach(function (item) {
+                    That.ActiveDataBase.Tables.forEach(function (item) {
                         if (item.RequireDelete) {
                             // Delete the old datastore.    
                             if (db.objectStoreNames.contains(item.Name)) {
@@ -33,12 +41,105 @@ module JsStorage {
                 }
             }
 
-            get(query: IQuery) {
-                
+            public get(query: IQuery, callBack: Function) {
+                var That = this,
+                    Transaction: IDBTransaction = IndexDbConnection.transaction([query.Table.toLowerCase()], "readonly"),
+                    ObjectStore: IDBObjectStore = Transaction.objectStore(query.Table);
+                if (query.Case == undefined) {
+                    var CursorOpenRequest = ObjectStore.openCursor(),
+                        Result = [];
+                    CursorOpenRequest.onsuccess = function (e) {
+                        var TempResult = (<any>e).target.result;
+                        console.log(TempResult);
+                        if (TempResult) {
+
+                        }
+
+                    }
+                    CursorOpenRequest.onerror = onErrorGetRequest;
+                }
+                else {
+                    if (query.Case.Column == undefined) {
+                        throw "Column is undefined in Case for tableName:" + query.Table;
+                    }
+                    else if (query.Case.Value == undefined) {
+                        throw "Column value is undefined in Case for Column Name:" + query.Case.Column + "for tableName:" + query.Table;
+                    }
+                    else {
+                        if (this.isPrimaryKey(query)) {
+                            var GetRequest = ObjectStore.get(query.Case.Value);
+                            GetRequest.onsuccess = onSuceessGetRequest;
+                            GetRequest.onerror = onErrorGetRequest;
+                        }
+                        else {
+                            var GetRequest = ObjectStore.index(query.Case.Column).get(query.Case.Value);
+                            GetRequest.onsuccess = onSuceessGetRequest;
+                            GetRequest.onerror = onErrorGetRequest;
+                        }
+                    }
+                }
+
+                var onSuceessGetRequest = function (event) {
+                    var Result = (<any>event).target.result;
+                    if (callBack != null) {
+                        callBack(Result);
+                    }
+                }
+
+                var onErrorGetRequest = function (event) {
+                    console.warn("Error occured in retrieving data");
+                    callBack([]);
+                }
+
             }
 
-            and() {
+
+            public and() {
                 return this;
+            }
+
+            public add(tableName: string, values, onSuccess: Function, onError: Function) {
+                try {
+                    tableName = tableName.toLowerCase();
+                    var TotalRowsAffected = 0,
+                        Store: IDBObjectStore = IndexDbConnection.transaction([tableName], "readwrite").objectStore(tableName);
+                    if (!Array.isArray(values)) {
+                        throw "Value should be array :- supplied value is not array";
+                    }
+                    else if (values.length > 0) {
+                        values.forEach(function (value) {
+                            var AddResult = Store.add(value);
+                            AddResult.onerror = function (e) {
+                                if (onError != null) {
+                                    onError(TotalRowsAffected);
+                                }
+                            }
+                            AddResult.onsuccess = function (e) {
+                                ++TotalRowsAffected
+                                if (values.length == TotalRowsAffected) {
+                                    if (onSuccess != null) {
+                                        onSuccess(TotalRowsAffected);
+                                    }
+                                }
+                            }
+                        })
+
+                    }
+                    else {
+                        throw "no value supplied";
+                    }
+
+
+                }
+                catch (ex) {
+                    console.error(ex);
+                }
+            }
+
+
+            private isPrimaryKey(query: IQuery) {
+                return localStorage.getItem("JsStorage_" + query.Table + "_" + query.Case.Column).toLowerCase() == "true" ? true : false
+
             }
 
             private createObjectStore(dbConnection, item: Table) {
@@ -64,7 +165,7 @@ module JsStorage {
                     localStorage.setItem("JsStorage_" + item.Name, item.Version.toString());
                 }
                 catch (e) {
-                    console.warn(e);
+                    console.error(e);
                 }
             }
 

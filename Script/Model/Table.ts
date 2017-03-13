@@ -1,24 +1,30 @@
 module JsStorage {
     export module Model {
-
+        export interface ITable {
+            Name: string;
+            Columns: Array<IColumn>;
+            Version: number;
+        }
         export class Table {
             Name: string = "";
             Columns: Array<Column> = [];
             Version: number;
+
+            //internal Members
             RequireDelete: boolean = false;
             RequireCreation: boolean = false;
             PrimaryKey: string = "";
 
-            //public methods
-            constructor(name: string, columns: Array<IColumn>, version: number) {
-                this.Name = name;
+            constructor(table: ITable, dbName: string) {
+                this.Name = table.Name.toLowerCase();
+                this.Version = table.Version == undefined ? 1 : table.Version;
                 var That = this;
-                columns.forEach(function (item) {
+                this.Columns.forEach(function (item) {
                     That.Columns.push(new Column(item));
                 })
 
                 this.setRequireDelete();
-                this.setDbVersion(version);
+                this.setDbVersion(dbName);
                 this.setPrimaryKey();
             }
 
@@ -30,8 +36,10 @@ module JsStorage {
                 this.Columns.forEach(function (item) {
                     if (item.Primarykey && That.PrimaryKey.length == 0) {
                         That.PrimaryKey = item.Name;
+                        localStorage.setItem("JsStorage_" + That.Name + "_" + item.Name, "true");
                     }
                     else if (item.Primarykey && That.PrimaryKey.length > 0) {
+                        localStorage.setItem("JsStorage_" + That.Name + "_" + item.Name, "");
                         throw "Multiple primary key are not allowed";
                     }
                 })
@@ -50,12 +58,12 @@ module JsStorage {
 
             }
 
-            private setDbVersion(dbVersion: number) {
-                if (dbVersion == null) {
-                    localStorage.setItem('JsStorage_Db_Version', '1');
+            private setDbVersion(dbName: string) {
+                if (this.Version == null) {
+                    localStorage.setItem(dbName + 'Db_Version', '1');
                 }
-                else if (dbVersion > Number(localStorage.getItem('JsStorage_Db_Version'))) {
-                    localStorage.setItem('JsStorage_Db_Version', dbVersion.toString());
+                else if (this.Version > Number(localStorage.getItem(dbName + 'Db_Version'))) {
+                    localStorage.setItem(dbName + 'Db_Version', this.Version.toString());
                 }
             }
 

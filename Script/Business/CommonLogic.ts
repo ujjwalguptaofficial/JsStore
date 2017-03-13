@@ -5,24 +5,20 @@ module JsStorage {
         WebSql
     };
 
-    export interface TableSchema {
-        Name: string,
-        Version: number
+    export interface IQuery {
+        Table: string,
+        Case: Condition
     }
 
-    export interface ColumnSchema {
-        Name: string,
-        AutoIncrement: boolean,
-        Primarykey: boolean
-    }
-    export interface IQuery {
-        ColumnName: string,
+    export interface Condition {
+        Column: string,
         Value: string
     }
 
     export var DbType: DBType,
         IndexDbObj: Business.IndexDbLogic,
-        WebSqlObj: Business.WebSqlLogic;
+        WebSqlObj: Business.WebSqlLogic,
+        IndexDbConnection;
 
 
 
