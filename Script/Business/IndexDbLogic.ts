@@ -7,20 +7,28 @@ module JsStorage {
             constructor(dataBase: DataBase) {
                 this.ActiveDataBase = dataBase
             }
-            public openDataBase = function (dbVersion: number, callBack: Function, objMain) {
+            public openDataBase = function (dbVersion: number, objMain: Main, onSuccess: Function, onError: Function) {
                 var That = this;
                 var DbRequest = window.indexedDB.open(this.ActiveDataBase.Name, dbVersion);
 
                 DbRequest.onerror = function (event) {
-                    throw "Error in opening DataBase";
+                    if (onError != null) {
+                        onError((event as any).target.error);
+                    }
                 };
 
                 DbRequest.onsuccess = function (event) {
+                    objMain.Status.ConStatus = ConnectionStatus.Connected;
                     IndexDbConnection = DbRequest.result;
-                    if (callBack != null) {
-                        callBack(objMain);
+
+                    IndexDbConnection.onclose = function () {
+                        objMain.Status.ConStatus = ConnectionStatus.Closed;
+                        objMain.Status.LastError = "Connection Closed, trying to reconnect";
                     }
-                    return objMain;
+
+                    if (onSuccess != null) {
+                        onSuccess(objMain);
+                    }
                 };
 
                 DbRequest.onupgradeneeded = function (event) {
@@ -41,18 +49,24 @@ module JsStorage {
                 }
             }
 
-            public get(query: IQuery, callBack: Function) {
+            public get(query: IQuery, onSuccess: Function, onError: Function) {
                 var That = this,
                     Transaction: IDBTransaction = IndexDbConnection.transaction([query.Table.toLowerCase()], "readonly"),
                     ObjectStore: IDBObjectStore = Transaction.objectStore(query.Table);
                 if (query.Case == undefined) {
                     var CursorOpenRequest = ObjectStore.openCursor(),
-                        Result = [];
+                        Results = [];
                     CursorOpenRequest.onsuccess = function (e) {
                         var TempResult = (<any>e).target.result;
                         console.log(TempResult);
                         if (TempResult) {
-
+                            Results.push(TempResult.value);
+                            (TempResult as any).continue();
+                        }
+                        else {
+                            if (onSuccess != null) {
+                                onSuccess(Results);
+                            }
                         }
 
                     }
@@ -81,14 +95,15 @@ module JsStorage {
 
                 var onSuceessGetRequest = function (event) {
                     var Result = (<any>event).target.result;
-                    if (callBack != null) {
-                        callBack(Result);
+                    if (onSuccess != null) {
+                        onSuccess(Result);
                     }
                 }
 
-                var onErrorGetRequest = function (event) {
-                    console.warn("Error occured in retrieving data");
-                    callBack([]);
+                var onErrorGetRequest = function (e) {
+                    if (onError != null) {
+                        onError((e as any).target.error);
+                    }
                 }
 
             }
@@ -111,7 +126,7 @@ module JsStorage {
                             var AddResult = Store.add(value);
                             AddResult.onerror = function (e) {
                                 if (onError != null) {
-                                    onError(TotalRowsAffected);
+                                    onError((e as any).target.error, TotalRowsAffected);
                                 }
                             }
                             AddResult.onsuccess = function (e) {

@@ -32,8 +32,7 @@ var Cities = [{ Id: 1, Name: 'Singrauli', StateId: 1 },
 var StudentId = 5;
 $(document).ready(function () {
     $('[data-toggle="tooltip"]').tooltip();
-    ShowTableData();
-    BindCountryList();
+
     $('input:text').blur(function () {
         CheckInputField('text', this.id);
     })
@@ -50,11 +49,13 @@ $(document).ready(function () {
         FormReset();
     })
     AddDataInDb();
+    ShowTableData();
+    BindCountryList();
 })
 
 var DbConnection;
 function AddDataInDb() {
-    console.log('fuck');
+
     var Table1 = {
         Name: "Student",
         Columns: [
@@ -71,6 +72,7 @@ function AddDataInDb() {
         Name: "Students",
         Tables: [Table1]
     }
+
     DbConnection = new JsStorage.Main().createDb(DataBase, function (dbConnection) {
         dbConnection.add(Table1.Name, Students, function (rowsAffected) {
             alert('Add completed' + 'rows affected:' + rowsAffected);
@@ -79,16 +81,22 @@ function AddDataInDb() {
         })
     });
 
+
+
 }
 
 //This function refreshes the table
 function ShowTableData() {
-    var HtmlString = "";
-    Students.forEach(function (item) {
-        HtmlString += "<tr ItemId=" + item.Id + "><td>" + item.FirstName + "</td><td>" + item.LastName + "</td><td>"
-        + item.Gender + "</td><td>" + item.Country + "</td><td>" + item.state + "</td><td>" + item.city + "</td><td>" + "<a href='#'  onclick='EditRow(this)'>Edit</a></td>" + "<td><a href='#' onclick='DeleteRow(this)'>Delete</a></td>";
-    })
-    $('#tblContainer').html(HtmlString);
+    DbConnection.get({ Table: "student" }, function (students) {
+        var HtmlString = "";
+        students.forEach(function (item) {
+            HtmlString += "<tr ItemId=" + item.Id + "><td>" + item.FirstName + "</td><td>" + item.LastName + "</td><td>"
+            + item.Gender + "</td><td>" + item.Country + "</td><td>" + item.state + "</td><td>" + item.city + "</td><td>" + "<a href='#'  onclick='EditRow(this)'>Edit</a></td>" + "<td><a href='#' onclick='DeleteRow(this)'>Delete</a></td>";
+        }, function (error) {
+            console.log(error);
+        })
+        $('#tblContainer').html(HtmlString);
+    });
 }
 
 //This function will delete the row

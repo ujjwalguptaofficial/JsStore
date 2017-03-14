@@ -128,18 +128,24 @@ var JsStorage;
     (function (Business) {
         var IndexDbLogic = (function () {
             function IndexDbLogic(dataBase) {
-                this.openDataBase = function (dbVersion, callBack, objMain) {
+                this.openDataBase = function (dbVersion, objMain, onSuccess, onError) {
                     var That = this;
                     var DbRequest = window.indexedDB.open(this.ActiveDataBase.Name, dbVersion);
                     DbRequest.onerror = function (event) {
-                        throw "Error in opening DataBase";
+                        if (onError != null) {
+                            onError(event.target.error);
+                        }
                     };
                     DbRequest.onsuccess = function (event) {
+                        objMain.Status.ConStatus = JsStorage.ConnectionStatus.Connected;
                         JsStorage.IndexDbConnection = DbRequest.result;
-                        if (callBack != null) {
-                            callBack(objMain);
+                        JsStorage.IndexDbConnection.onclose = function () {
+                            objMain.Status.ConStatus = JsStorage.ConnectionStatus.Closed;
+                            objMain.Status.LastError = "Connection Closed, trying to reconnect";
+                        };
+                        if (onSuccess != null) {
+                            onSuccess(objMain);
                         }
-                        return objMain;
                     };
                     DbRequest.onupgradeneeded = function (event) {
                         var db = event.target.result;
@@ -159,14 +165,21 @@ var JsStorage;
                 };
                 this.ActiveDataBase = dataBase;
             }
-            IndexDbLogic.prototype.get = function (query, callBack) {
+            IndexDbLogic.prototype.get = function (query, onSuccess, onError) {
                 var That = this, Transaction = JsStorage.IndexDbConnection.transaction([query.Table.toLowerCase()], "readonly"), ObjectStore = Transaction.objectStore(query.Table);
                 if (query.Case == undefined) {
-                    var CursorOpenRequest = ObjectStore.openCursor(), Result = [];
+                    var CursorOpenRequest = ObjectStore.openCursor(), Results = [];
                     CursorOpenRequest.onsuccess = function (e) {
                         var TempResult = e.target.result;
                         console.log(TempResult);
                         if (TempResult) {
+                            Results.push(TempResult.value);
+                            TempResult.continue();
+                        }
+                        else {
+                            if (onSuccess != null) {
+                                onSuccess(Results);
+                            }
                         }
                     };
                     CursorOpenRequest.onerror = onErrorGetRequest;
@@ -193,13 +206,14 @@ var JsStorage;
                 }
                 var onSuceessGetRequest = function (event) {
                     var Result = event.target.result;
-                    if (callBack != null) {
-                        callBack(Result);
+                    if (onSuccess != null) {
+                        onSuccess(Result);
                     }
                 };
-                var onErrorGetRequest = function (event) {
-                    console.warn("Error occured in retrieving data");
-                    callBack([]);
+                var onErrorGetRequest = function (e) {
+                    if (onError != null) {
+                        onError(e.target.error);
+                    }
                 };
             };
             IndexDbLogic.prototype.and = function () {
@@ -217,7 +231,7 @@ var JsStorage;
                             var AddResult = Store.add(value);
                             AddResult.onerror = function (e) {
                                 if (onError != null) {
-                                    onError(TotalRowsAffected);
+                                    onError(e.target.error, TotalRowsAffected);
                                 }
                             };
                             AddResult.onsuccess = function (e) {
@@ -276,8 +290,18 @@ var Table = JsStorage.Model.Table;
 var DataBase = JsStorage.Model.DataBase;
 var JsStorage;
 (function (JsStorage) {
+    var ConnectionStatus;
+    (function (ConnectionStatus) {
+        ConnectionStatus[ConnectionStatus["Connected"] = 1] = "Connected";
+        ConnectionStatus[ConnectionStatus["Closed"] = 2] = "Closed";
+        ConnectionStatus[ConnectionStatus["NotStarted"] = 3] = "NotStarted";
+    })(ConnectionStatus = JsStorage.ConnectionStatus || (JsStorage.ConnectionStatus = {}));
     var Main = (function () {
         function Main() {
+            this.Status = {
+                ConStatus: ConnectionStatus.NotStarted,
+                LastError: ""
+            };
             /**
                 * determine and set the DataBase Type
                 *
@@ -300,23 +324,37 @@ var JsStorage;
             };
             this.setDbType();
         }
-        Main.prototype.createDb = function (dataBase, callBack) {
+        Main.prototype.createDb = function (dataBase, onSuccess, onError) {
             if (JsStorage.DbType == JsStorage.DBType.IndexedDb) {
                 var Db = new DataBase(dataBase);
                 JsStorage.IndexDbObj = new JsStorage.Business.IndexDbLogic(Db);
                 var DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
-                JsStorage.IndexDbObj.openDataBase(DbVersion, callBack, this);
+                JsStorage.IndexDbObj.openDataBase(DbVersion, this, onSuccess, onError);
             }
             else {
                 JsStorage.WebSqlObj = new JsStorage.Business.WebSqlLogic();
             }
-            //return this;
+            return this;
         };
-        Main.prototype.get = function (query, callBack) {
-            if (JsStorage.DbType == JsStorage.DBType.IndexedDb) {
-                JsStorage.IndexDbObj.get(query, callBack);
+        Main.prototype.openDataBase = function (onSuccess, onError) {
+        };
+        Main.prototype.closeDataBase = function (onSuccess, onError) {
+        };
+        Main.prototype.get = function (query, onSuccess, onError) {
+            if (this.Status.ConStatus == ConnectionStatus.Connected) {
+                if (JsStorage.DbType == JsStorage.DBType.IndexedDb) {
+                    JsStorage.IndexDbObj.get(query, onSuccess, onError);
+                }
+                else {
+                }
             }
-            else {
+            else if (this.Status.ConStatus == ConnectionStatus.NotStarted) {
+                var That = this;
+                setTimeout(function () {
+                    That.get(query, onSuccess, onError);
+                }, 200);
+            }
+            else if (this.Status.ConStatus == ConnectionStatus.Closed) {
             }
         };
         Main.prototype.add = function (table, value, onSuccess, onError) {

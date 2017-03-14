@@ -2,30 +2,61 @@ import Table = JsStorage.Model.Table;
 import DataBase = JsStorage.Model.DataBase;
 import IDataBase = JsStorage.Model.IDataBase;
 module JsStorage {
+    export enum ConnectionStatus {
+        Connected = 1,
+        Closed = 2,
+        NotStarted = 3
+    }
+    export interface JsStorageStatus {
+        ConStatus: ConnectionStatus,
+        LastError: string
+    }
     export class Main {
-
+        Status: JsStorageStatus = <JsStorageStatus>{
+            ConStatus: ConnectionStatus.NotStarted,
+            LastError: ""
+        }
         constructor() {
             this.setDbType();
         }
 
-        createDb(dataBase: IDataBase, callBack: Function) {
+        createDb(dataBase: IDataBase, onSuccess: Function, onError: Function) {
             if (DbType == DBType.IndexedDb) {
                 var Db = new DataBase(dataBase)
                 IndexDbObj = new Business.IndexDbLogic(Db);
                 var DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
-                IndexDbObj.openDataBase(DbVersion, callBack, this);
+                IndexDbObj.openDataBase(DbVersion, this, onSuccess, onError);
             }
             else {
                 WebSqlObj = new Business.WebSqlLogic();
             }
-            //return this;
+            return this;
         }
 
-        get(query: IQuery, callBack: Function) {
-            if (DbType == DBType.IndexedDb) {
-                IndexDbObj.get(query, callBack);
+        openDataBase(onSuccess: Function, onError: Function) {
+
+        }
+
+        closeDataBase(onSuccess: Function, onError: Function) {
+
+        }
+
+        get(query: IQuery, onSuccess: Function, onError: Function) {
+            if (this.Status.ConStatus == ConnectionStatus.Connected) {
+                if (DbType == DBType.IndexedDb) {
+                    IndexDbObj.get(query, onSuccess, onError);
+                }
+                else {
+
+                }
             }
-            else {
+            else if (this.Status.ConStatus == ConnectionStatus.NotStarted) {
+                var That = this;
+                setTimeout(function () {
+                    That.get(query, onSuccess, onError);
+                }, 200);
+            }
+            else if (this.Status.ConStatus == ConnectionStatus.Closed) {
 
             }
         }
