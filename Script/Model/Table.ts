@@ -19,11 +19,11 @@ module JsStorage {
                 this.Name = table.Name.toLowerCase();
                 this.Version = table.Version == undefined ? 1 : table.Version;
                 var That = this;
-                this.Columns.forEach(function (item) {
+                table.Columns.forEach(function (item) {
                     That.Columns.push(new Column(item));
                 })
 
-                this.setRequireDelete();
+                this.setRequireDelete(dbName);
                 this.setDbVersion(dbName);
                 this.setPrimaryKey();
             }
@@ -46,8 +46,8 @@ module JsStorage {
 
             }
 
-            private setRequireDelete() {
-                var TableVersion = localStorage.getItem("JsStorage_" + this.Name);
+            private setRequireDelete(dbName: string) {
+                var TableVersion = localStorage.getItem("JsStorage_" + dbName + "_" + this.Name);
                 if (TableVersion == null || localStorage.getItem('JsStorage_Db_Version') == null) {
                     this.RequireCreation = true;
                 }

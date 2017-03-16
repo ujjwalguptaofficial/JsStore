@@ -5,21 +5,41 @@ module JsStorage {
         WebSql
     };
 
-    export interface IQuery {
+    export interface ISelect {
         Table: string,
-        Case: Condition
+        Where: Array<ICondition>
     }
 
-    export interface Condition {
+    export interface IDelete {
+        Table: string,
+        Where: Array<ICondition>
+    }
+
+    export interface IUpdate {
+        Table: string,
+        Set: Array<IValue>,
+        Where: Array<ICondition>
+    }
+
+    export interface IInsert {
+        Into: string,
+        Values: Array<IValue>
+    }
+
+    export interface IValue {
         Column: string,
         Value: string
     }
 
-    export var DbType: DBType,
-        IndexDbObj: Business.IndexDbLogic,
-        WebSqlObj: Business.WebSqlLogic,
-        IndexDbConnection;
+    export interface ICondition {
+        Column: string,
+        Value: string,
+        Op: string
+    }
 
-
+    export interface IError {
+        Name: string,
+        Value: string
+    }
 
 }

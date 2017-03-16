@@ -54,50 +54,7 @@ $(document).ready(function () {
 })
 
 var DbConnection;
-function AddDataInDb() {
 
-    var Table1 = {
-        Name: "Student",
-        Columns: [
-            { Name: "Id", PrimaryKey: true },
-            { Name: "FirstName" },
-            { Name: "LastName" },
-            { Name: "Gender" },
-            { Name: "Country" },
-            { Name: "State" },
-            { Name: "City" }
-        ]
-    }
-    var DataBase = {
-        Name: "Students",
-        Tables: [Table1]
-    }
-
-    DbConnection = new JsStorage.Main().createDb(DataBase, function (dbConnection) {
-        dbConnection.add(Table1.Name, Students, function (rowsAffected) {
-            alert('Add completed' + 'rows affected:' + rowsAffected);
-        }, function () {
-            alert('Error Occured while adding data')
-        })
-    });
-
-
-
-}
-
-//This function refreshes the table
-function ShowTableData() {
-    DbConnection.get({ Table: "student" }, function (students) {
-        var HtmlString = "";
-        students.forEach(function (item) {
-            HtmlString += "<tr ItemId=" + item.Id + "><td>" + item.FirstName + "</td><td>" + item.LastName + "</td><td>"
-            + item.Gender + "</td><td>" + item.Country + "</td><td>" + item.state + "</td><td>" + item.city + "</td><td>" + "<a href='#'  onclick='EditRow(this)'>Edit</a></td>" + "<td><a href='#' onclick='DeleteRow(this)'>Delete</a></td>";
-        }, function (error) {
-            console.log(error);
-        })
-        $('#tblContainer').html(HtmlString);
-    });
-}
 
 //This function will delete the row
 function DeleteRow(element) {
@@ -353,17 +310,73 @@ function AddDetails() {
         var State = $('#ddlState option:selected').text();
         var City = $('#ddlCity option:selected').text();
         if ($('#btnSubmit span').text() == 'Submit') {
-            Students.push({ Id: ++StudentId, FirstName: FName, LastName: LName, Gender: Gender, Country: Country, state: State, city: City })
+            DbConnection.add("student", [{ Id: ++StudentId, FirstName: FName, LastName: LName, Gender: Gender, Country: Country, state: State, city: City }], function (rowsCount) {
+                alert(rowsCount + "rows affected");
+                FormReset();
+                ShowTableData();
+            }, function (error) {
+                console.log(error);
+            })
+            //Students.push({ Id: ++StudentId, FirstName: FName, LastName: LName, Gender: Gender, Country: Country, state: State, city: City })
         }
         else {
             UpdateDetails(FName, LName, Gender, Country, State, City);
         }
-        FormReset();
-        ShowTableData();
+
     }
     else {
         var ErrorInfo = ErrorCount + " error occured : place the mouse over the respective icon for description";
         $('#divError').show(500);
         $('#spanErrorText').text(ErrorInfo);
     }
+}
+
+function AddDataInDb() {
+
+
+    var Table1 = {
+        Name: "Student",
+        Columns: [
+            { Name: "Id", PrimaryKey: true },
+            { Name: "FirstName" },
+            { Name: "LastName" },
+            { Name: "Gender" },
+            { Name: "Country" },
+            { Name: "State" },
+            { Name: "City" }
+        ],
+        Version: 2
+    }
+    var DataBase = {
+        Name: "Students",
+        Tables: [Table1]
+    }
+
+    DbConnection = new JsStorage.Main().createDb(DataBase, function (dbConnection) {
+        if (localStorage.getItem('page_started') != '1') {
+            dbConnection.insert({ Into: Table1.Name, Values: Students }, function (rowsAffected) {
+                localStorage.setItem('page_started', '1');
+                alert('Add completed' + 'rows affected:' + rowsAffected);
+            }
+            , function () {
+                alert('Error Occured while adding data')
+            })
+        }
+
+    });
+
+}
+
+//This function refreshes the table
+function ShowTableData() {
+    DbConnection.get({ Table: "student" }, function (students) {
+        var HtmlString = "";
+        students.forEach(function (item) {
+            HtmlString += "<tr ItemId=" + item.Id + "><td>" + item.FirstName + "</td><td>" + item.LastName + "</td><td>"
+            + item.Gender + "</td><td>" + item.Country + "</td><td>" + item.state + "</td><td>" + item.city + "</td><td>" + "<a href='#'  onclick='EditRow(this)'>Edit</a></td>" + "<td><a href='#' onclick='DeleteRow(this)'>Delete</a></td>";
+        }, function (error) {
+            console.log(error);
+        })
+        $('#tblContainer').html(HtmlString);
+    });
 }

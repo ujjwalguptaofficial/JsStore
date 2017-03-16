@@ -1,4 +1,3 @@
-import Table = JsStorage.Model.Table;
 import DataBase = JsStorage.Model.DataBase;
 import IDataBase = JsStorage.Model.IDataBase;
 module JsStorage {
@@ -12,39 +11,87 @@ module JsStorage {
         LastError: string
     }
     export class Main {
+        DbType: DBType;
+        IndexDbObj: Business.IndexDbLogic;
+        WebSqlObj: Business.WebSqlLogic;
         Status: JsStorageStatus = <JsStorageStatus>{
             ConStatus: ConnectionStatus.NotStarted,
             LastError: ""
-        }
+        };
         constructor() {
             this.setDbType();
         }
 
+        /**
+         * 
+         * 
+         * @param {IDataBase} dataBase 
+         * @param {Function} onSuccess 
+         * @param {Function} onError 
+         * @returns 
+         * 
+         * @memberOf Main
+         */
         createDb(dataBase: IDataBase, onSuccess: Function, onError: Function) {
-            if (DbType == DBType.IndexedDb) {
+            if (this.DbType == DBType.IndexedDb) {
                 var Db = new DataBase(dataBase)
-                IndexDbObj = new Business.IndexDbLogic(Db);
+                this.IndexDbObj = new Business.IndexDbLogic(Db);
                 var DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
-                IndexDbObj.openDataBase(DbVersion, this, onSuccess, onError);
+                this.IndexDbObj.createDb(this, onSuccess, onError);
             }
             else {
-                WebSqlObj = new Business.WebSqlLogic();
+                this.WebSqlObj = new Business.WebSqlLogic();
             }
             return this;
         }
 
-        openDataBase(onSuccess: Function, onError: Function) {
+        /**
+         * 
+         * 
+         * @param {Function} onSuccess 
+         * @param {Function} onError 
+         * 
+         * @memberOf Main
+         */
+        openDb(onSuccess: Function, onError: Function) {
+            if (this.DbType == DBType.IndexedDb) {
+                this.IndexDbObj.openDb(this, onSuccess, onError);
+            }
+            else {
 
+            }
         }
 
-        closeDataBase(onSuccess: Function, onError: Function) {
+        /**
+         * 
+         * 
+         * @param {Function} onSuccess 
+         * @param {Function} onError 
+         * 
+         * @memberOf Main
+         */
+        closeDb(onSuccess: Function, onError: Function) {
+            if (this.DbType == DBType.IndexedDb) {
+                this.IndexDbObj.closeDb(this);
+            }
+            else {
 
+            }
         }
 
-        get(query: IQuery, onSuccess: Function, onError: Function) {
+        /**
+         * 
+         * 
+         * @param {IQuery} query 
+         * @param {Function} onSuccess 
+         * @param {Function} onError 
+         * 
+         * @memberOf Main
+         */
+        select(query: ISelect, onSuccess: Function, onError: Function) {
             if (this.Status.ConStatus == ConnectionStatus.Connected) {
-                if (DbType == DBType.IndexedDb) {
-                    IndexDbObj.get(query, onSuccess, onError);
+                if (this.DbType == DBType.IndexedDb) {
+                    this.IndexDbObj.select(query, onSuccess, onError);
                 }
                 else {
 
@@ -53,7 +100,7 @@ module JsStorage {
             else if (this.Status.ConStatus == ConnectionStatus.NotStarted) {
                 var That = this;
                 setTimeout(function () {
-                    That.get(query, onSuccess, onError);
+                    That.select(query, onSuccess, onError);
                 }, 200);
             }
             else if (this.Status.ConStatus == ConnectionStatus.Closed) {
@@ -61,14 +108,33 @@ module JsStorage {
             }
         }
 
-        add(table: string, value, onSuccess: Function, onError: Function) {
-            if (DbType == DBType.IndexedDb) {
-                IndexDbObj.add(table, value, onSuccess, onError);
+        /**
+         * 
+         * 
+         * @param {string} table 
+         * @param {any} value 
+         * @param {Function} onSuccess 
+         * @param {Function} onError 
+         * 
+         * @memberOf Main
+         */
+        insert(query: IInsert, onSuccess: Function, onError: Function) {
+            if (this.DbType == DBType.IndexedDb) {
+                this.IndexDbObj.insert(query.Into, query.Values, onSuccess, onError);
             }
             else {
 
             }
         }
+
+        update(query: ISelect, onSuccess: Function, onError: Function) {
+
+        }
+
+        delete() {
+            
+        }
+
         /**
             * determine and set the DataBase Type
             * 
@@ -78,12 +144,12 @@ module JsStorage {
         private setDbType = function () {
             (window as any).indexedDB = window.indexedDB || (window as any).mozIndexedDB || (window as any).webkitIndexedDB || (window as any).msIndexedDB;
             if (indexedDB) {
-                DbType = DBType.IndexedDb;
+                this.DbType = DBType.IndexedDb;
                 (window as any).IDBTransaction = (window as any).IDBTransaction || (window as any).webkitIDBTransaction || (window as any).msIDBTransaction;
                 (window as any).IDBKeyRange = (window as any).IDBKeyRange || (window as any).webkitIDBKeyRange || (window as any).msIDBKeyRange
             }
             else if ((window as any).openDatabase) {
-                DbType = DBType.WebSql;
+                this.DbType = DBType.WebSql;
             }
             else {
                 throw 'Browser does not support Db Implementation';

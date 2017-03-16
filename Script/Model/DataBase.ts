@@ -7,15 +7,12 @@ module JsStorage {
         export class DataBase {
             Name: string;
             Tables: Array<Table> = [];
-            // constructor(name: string, tables: Array<Table>) {
-            //     this.Name = name;
-            //     this.Tables = tables;
-            // }
+           
             constructor(dataBase: IDataBase) {
                 this.Name = dataBase.Name.toLowerCase();
                 var That = this;
                 dataBase.Tables.forEach(function (item) {
-                    That.Tables.push(new Table(item, dataBase.Name));
+                    That.Tables.push(new Table(item, That.Name));
                 })
             }
         }
