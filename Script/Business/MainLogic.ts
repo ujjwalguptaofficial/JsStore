@@ -10,6 +10,7 @@ module JsStorage {
         ConStatus: ConnectionStatus,
         LastError: string
     }
+
     export class Main {
         DbType: DBType;
         IndexDbObj: Business.IndexDbLogic;
@@ -79,6 +80,15 @@ module JsStorage {
             }
         }
 
+        dropDb(name: string, onSuccess: Function, onError: Function) {
+            if (this.DbType == DBType.IndexedDb) {
+                this.IndexDbObj.dropDb(name.toLowerCase(), onSuccess, onError);
+            }
+            else {
+
+            }
+        }
+
         /**
          * 
          * 
@@ -89,7 +99,9 @@ module JsStorage {
          * @memberOf Main
          */
         select(query: ISelect, onSuccess: Function, onError: Function) {
+            query.From = query.From.toLowerCase();
             if (this.Status.ConStatus == ConnectionStatus.Connected) {
+                query.From = query.From.toLowerCase();
                 if (this.DbType == DBType.IndexedDb) {
                     this.IndexDbObj.select(query, onSuccess, onError);
                 }
@@ -119,20 +131,42 @@ module JsStorage {
          * @memberOf Main
          */
         insert(query: IInsert, onSuccess: Function, onError: Function) {
+            if (!Array.isArray(query.Values)) {
+                throw "Value should be array :- supplied value is not array";
+            }
+            else if (query.Values.length > 0) {
+                query.Into = query.Into.toLowerCase();
+                if (this.DbType == DBType.IndexedDb) {
+                    this.IndexDbObj.insert(query.Into, query.Values, onSuccess, onError);
+                }
+                else {
+
+                }
+            }
+            else {
+                if (onError != null) {
+                    onError(Business.UtilityLogic.getError(ErrorType.NoValueSupplied, null));
+                }
+            }
+        }
+
+        update(query: IUpdate, onSuccess: Function, onError: Function) {
+            
             if (this.DbType == DBType.IndexedDb) {
-                this.IndexDbObj.insert(query.Into, query.Values, onSuccess, onError);
+                this.IndexDbObj.update(query, onSuccess, onError);
             }
             else {
 
             }
         }
 
-        update(query: ISelect, onSuccess: Function, onError: Function) {
+        delete(query: IDelete, onSuccess: Function, onError: Function) {
+            if (this.DbType == DBType.IndexedDb) {
+                this.IndexDbObj.delete(query, onSuccess, onError);
+            }
+            else {
 
-        }
-
-        delete() {
-            
+            }
         }
 
         /**
@@ -156,5 +190,6 @@ module JsStorage {
             }
         }
 
+        
     }
 }

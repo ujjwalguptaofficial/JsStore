@@ -5,8 +5,18 @@ module JsStorage {
         WebSql
     };
 
+    export enum ErrorType {
+        UndefinedColumn,
+        UndefinedValue,
+        UndefinedColumnName,
+        UndefinedColumnValue,
+        NotArray,
+        NoValueSupplied,
+        ColumnNotExist
+    }
+
     export interface ISelect {
-        Table: string,
+        From: string,
         Where: Array<ICondition>
     }
 
@@ -17,8 +27,15 @@ module JsStorage {
 
     export interface IUpdate {
         Table: string,
-        Set: Array<IValue>,
-        Where: Array<ICondition>
+
+        /**
+         * A Json Object containing the update values
+         * 
+         * @type {*}
+         * @memberOf IUpdate
+         */
+        Set: any,
+        Where: any
     }
 
     export interface IInsert {
@@ -35,11 +52,6 @@ module JsStorage {
         Column: string,
         Value: string,
         Op: string
-    }
-
-    export interface IError {
-        Name: string,
-        Value: string
     }
 
 }

@@ -3,22 +3,22 @@ module JsStorage {
         export interface IColumn {
             Name: string;
             AutoIncrement: boolean;
-            Primarykey: boolean;
+            PrimaryKey: boolean;
         }
         export class Column implements IColumn {
             Name: string;
             AutoIncrement: boolean;
-            Primarykey: boolean;
+            PrimaryKey: boolean;
 
-            constructor(key: IColumn) {
+            constructor(key: IColumn, tableName: string) {
                 if (key.Name != null) {
-                    this.Name = key.Name
+                    this.Name = key.Name;
                 }
                 else {
-                    throw "Column Name is not defined";
+                    throw "Column Name is not defined for table:" + tableName;
                 }
-                this.AutoIncrement = this.AutoIncrement == null ? false : this.AutoIncrement;
-                this.Primarykey = this.Primarykey == null ? false : this.Primarykey;
+                this.AutoIncrement = key.AutoIncrement != null ? key.AutoIncrement : false;
+                this.PrimaryKey = key.PrimaryKey != null ? key.PrimaryKey : false;
 
             }
 

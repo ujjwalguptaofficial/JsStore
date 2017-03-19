@@ -14,8 +14,13 @@ var JsStorage;
         ErrorType[ErrorType["UndefinedColumnValue"] = 3] = "UndefinedColumnValue";
         ErrorType[ErrorType["NotArray"] = 4] = "NotArray";
         ErrorType[ErrorType["NoValueSupplied"] = 5] = "NoValueSupplied";
-        ErrorType[ErrorType["ColumnNotExist"] = 6] = "ColumnNotExist";
     })(ErrorType = JsStorage.ErrorType || (JsStorage.ErrorType = {}));
+    function convertintoLowerCase(obj) {
+        for (var key in obj) {
+            obj[key] = obj[key].toLowerCase();
+        }
+    }
+    JsStorage.convertintoLowerCase = convertintoLowerCase;
 })(JsStorage || (JsStorage = {}));
 var JsStorage;
 (function (JsStorage) {
@@ -48,30 +53,8 @@ var JsStorage;
                     case JsStorage.ErrorType.NoValueSupplied:
                         Error.Value = "no value supplied";
                         break;
-                    case JsStorage.ErrorType.ColumnNotExist:
-                        Error.Value = "column :" + errorDetail['columnName'] + " does not exist";
-                        break;
-                    default: console.warn('the error type is not defined');
                 }
                 return Error;
-            };
-            UtilityLogic.convertObjectintoLowerCase = function (obj) {
-                // var newobj = {},
-                //     LowerCase: string;
-                // for (var key in obj) {
-                //     LowerCase = key.toLowerCase();
-                //     if (key != LowerCase) {
-                //         obj[LowerCase] = obj[key];
-                //         delete obj[key];
-                //     }
-                // }
-                var keys = Object.keys(obj);
-                var n = keys.length;
-                while (n--) {
-                    var key = keys[n];
-                    obj[key.toLowerCase()] = obj[key];
-                    delete obj[key];
-                }
             };
             return UtilityLogic;
         }());
@@ -85,7 +68,7 @@ var JsStorage;
         var Column = (function () {
             function Column(key, tableName) {
                 if (key.Name != null) {
-                    this.Name = key.Name;
+                    this.Name = key.Name.toLowerCase();
                 }
                 else {
                     throw "Column Name is not defined for table:" + tableName;
@@ -224,6 +207,7 @@ var JsStorage;
                     DbRequest.onupgradeneeded = function (event) {
                         var db = event.target.result;
                         That.ActiveDataBase.Tables.forEach(function (item) {
+                            item.RequireDelete = true;
                             if (item.RequireDelete) {
                                 // Delete the old datastore.    
                                 if (db.objectStoreNames.contains(item.Name)) {
@@ -256,7 +240,6 @@ var JsStorage;
                                     Store.createIndex(column.Name, column.Name, { unique: false });
                                 });
                             }
-                            //setting the table version
                             localStorage.setItem("JsStorage_" + That.ActiveDataBase.Name + "_" + item.Name, item.Version.toString());
                         }
                         catch (e) {
@@ -327,18 +310,7 @@ var JsStorage;
                 };
             };
             IndexDbLogic.prototype.select = function (query, onSuccess, onError) {
-                var That = this, ErrorOccured = false, ErrorCount = 0, Transaction = That.DbConnection.transaction([query.From], "readonly"), ObjectStore = Transaction.objectStore(query.From), onSuceessGetRequest = function (event) {
-                    var Result = event.target.result;
-                    if (onSuccess != null) {
-                        onSuccess(Result);
-                    }
-                }, onErrorGetRequest = function (e) {
-                    if (ErrorCount == 1) {
-                        if (onError != null) {
-                            onError(e.target.error);
-                        }
-                    }
-                };
+                var That = this, ErrorOccured = false, ErrorCount = 0, Transaction = That.DbConnection.transaction([query.From], "readonly"), ObjectStore = Transaction.objectStore(query.From);
                 if (query.Where == undefined) {
                     var CursorOpenRequest = ObjectStore.openCursor(), Results = [];
                     CursorOpenRequest.onsuccess = function (e) {
@@ -357,29 +329,17 @@ var JsStorage;
                     CursorOpenRequest.onerror = onErrorGetRequest;
                 }
                 else {
-                    var PrimaryKey = this.getPrimaryKey(query.From);
-                    query.Where.every(function (condition, index) {
+                    query.Where.every(function (item, index) {
                         if (!ErrorOccured) {
-                            var Error = That.isWhereValid(condition);
-                            if (JsStorage.ErrorType != null) {
-                                var ErrorObj = {
-                                    target: {
-                                        error: null
-                                    }
-                                };
-                                if (Error == JsStorage.ErrorType.UndefinedColumn) {
-                                    ErrorObj.target.error = Business.UtilityLogic.getError(Error, null);
-                                }
-                                else if (Error == JsStorage.ErrorType.UndefinedValue) {
-                                    ErrorObj.target.error = Business.UtilityLogic.getError(Error, null);
-                                }
-                                ErrorOccured = true;
-                                ++ErrorCount;
-                                onErrorGetRequest(ErrorObj);
+                            if (item.Column == undefined) {
+                                throw "Column is undefined in Case for tableName:" + query.From;
+                            }
+                            else if (item.Value == undefined) {
+                                throw "Column value is undefined in Case for Column Name:" + item.Column + "for tableName:" + query.From;
                             }
                             else {
-                                if (PrimaryKey == condition.Column) {
-                                    var GetRequest = ObjectStore.get(condition.Value);
+                                if (That.isPrimaryKey(query.From, item)) {
+                                    var GetRequest = ObjectStore.get(item.Value);
                                     GetRequest.onsuccess = onSuceessGetRequest;
                                     GetRequest.onerror = function (e) {
                                         ErrorOccured = true;
@@ -388,7 +348,7 @@ var JsStorage;
                                     };
                                 }
                                 else {
-                                    var GetRequest = ObjectStore.index(condition.Column).get(condition.Value);
+                                    var GetRequest = ObjectStore.index(item.Column).get(item.Value);
                                     GetRequest.onsuccess = onSuceessGetRequest;
                                     GetRequest.onerror = onErrorGetRequest;
                                 }
@@ -397,17 +357,22 @@ var JsStorage;
                         return !ErrorOccured;
                     });
                 }
-            };
-            IndexDbLogic.prototype.delete = function (query, onSuccess, onError) {
-                var That = this, Transaction = That.DbConnection.transaction([query.Table.toLowerCase()], "readwrite"), ObjectStore = Transaction.objectStore(query.Table), ErrorOccured = false, ErrorCount = 0, RowAffected = 0, onSuceessRequest = function (rowsAffected) {
+                var onSuceessGetRequest = function (event) {
+                    var Result = event.target.result;
                     if (onSuccess != null) {
-                        onSuccess(rowsAffected);
-                    }
-                }, onErrorGetRequest = function (e) {
-                    if (onError != null) {
-                        onError(e.target.error);
+                        onSuccess(Result);
                     }
                 };
+                var onErrorGetRequest = function (e) {
+                    if (ErrorCount == 1) {
+                        if (onError != null) {
+                            onError(e.target.error);
+                        }
+                    }
+                };
+            };
+            IndexDbLogic.prototype.delete = function (query, onSuccess, onError) {
+                var That = this, Transaction = That.DbConnection.transaction([query.Table.toLowerCase()], "readwrite"), ObjectStore = Transaction.objectStore(query.Table), ErrorOccured = false, ErrorCount = 0, RowAffected = 0;
                 if (query.Where == undefined) {
                     var CursorOpenRequest = ObjectStore.openCursor(), Results = [];
                     CursorOpenRequest.onsuccess = function (e) {
@@ -426,26 +391,14 @@ var JsStorage;
                 else {
                     query.Where.every(function (condition, index) {
                         if (!ErrorOccured) {
-                            var Error = That.isWhereValid(condition);
-                            if (JsStorage.ErrorType != null) {
-                                var ErrorObj = {
-                                    target: {
-                                        error: null
-                                    }
-                                };
-                                if (Error == JsStorage.ErrorType.UndefinedColumn) {
-                                    ErrorObj.target.error = Business.UtilityLogic.getError(Error, null);
-                                }
-                                else if (Error == JsStorage.ErrorType.UndefinedValue) {
-                                    ErrorObj.target.error = Business.UtilityLogic.getError(Error, null);
-                                }
-                                ErrorOccured = true;
-                                ++ErrorCount;
-                                onErrorGetRequest(ErrorObj);
+                            if (condition.Column == undefined) {
+                                throw "Column is undefined in Case for tableName:" + query.Table;
+                            }
+                            else if (condition.Value == undefined) {
+                                throw "Column value is undefined in Case for Column Name:" + condition.Column + "for tableName:" + query.Table;
                             }
                             else {
-                                var PrimaryKey = this.getPrimaryKey(query.Table);
-                                if (PrimaryKey == condition.Column) {
+                                if (That.isPrimaryKey(query.Table, condition)) {
                                     var GetRequest = ObjectStore.get(condition.Value);
                                     GetRequest.onsuccess = function (event) {
                                         var Result = event.target.result;
@@ -496,23 +449,19 @@ var JsStorage;
                         return !ErrorOccured;
                     });
                 }
-            };
-            IndexDbLogic.prototype.update = function (query, onSuccess, onError) {
-                var That = this, ErrorOccured = false, ErrorCount = 0, RowAffected = 0, ErrorObj = {
-                    target: {
-                        error: null
-                    }
-                }, Transaction = That.DbConnection.transaction([query.Table.toLowerCase()], "readwrite"), ObjectStore = Transaction.objectStore(query.Table), onSuceessRequest = function (rowsAffected) {
+                var onSuceessRequest = function (rowsAffected) {
                     if (onSuccess != null) {
                         onSuccess(rowsAffected);
                     }
-                }, onErrorGetRequest = function (e) {
-                    if (ErrorCount == 1) {
-                        if (onError != null) {
-                            onError(e.target.error);
-                        }
+                };
+                var onErrorGetRequest = function (e) {
+                    if (onError != null) {
+                        onError(e.target.error);
                     }
                 };
+            };
+            IndexDbLogic.prototype.update = function (query, onSuccess, onError) {
+                var That = this, ErrorOccured = false, ErrorCount = 0, RowAffected = 0, Transaction = That.DbConnection.transaction([query.Table.toLowerCase()], "readwrite"), ObjectStore = Transaction.objectStore(query.Table);
                 if (query.Where == undefined) {
                     var CursorOpenRequest = ObjectStore.openCursor();
                     CursorOpenRequest.onsuccess = function (e) {
@@ -532,23 +481,35 @@ var JsStorage;
                     CursorOpenRequest.onerror = onErrorGetRequest;
                 }
                 else {
-                    var column, ConditionLength = Object.keys(query.Where).length;
-                    for (column in query.Where) {
+                    query.Where.every(function (condition, index) {
                         if (!ErrorOccured) {
-                            //var PrimaryKey = That.getPrimaryKey(query.Table);
-                            if (ObjectStore.keyPath != null && ObjectStore.keyPath == column) {
-                                var GetRequest = ObjectStore.get(query.Where[column]);
-                                GetRequest.onsuccess = function (event) {
-                                    var Result = event.target.result;
-                                    ++ExecutionNo;
-                                    if (Result != undefined) {
-                                        for (var key in query.Set) {
-                                            Result[key] = query.Set[key];
-                                        }
+                            var Error = That.convertWhereIntoLowerCase(condition);
+                            if (JsStorage.ErrorType != null) {
+                                var ErrorObj = {
+                                    target: {
+                                        error: null
+                                    }
+                                };
+                                if (Error == JsStorage.ErrorType.UndefinedColumn) {
+                                    ErrorObj.target.error = Business.UtilityLogic.getError(Error, null);
+                                }
+                                else if (Error == JsStorage.ErrorType.UndefinedValue) {
+                                    ErrorObj.target.error = Business.UtilityLogic.getError(Error, null);
+                                }
+                                ErrorOccured = true;
+                                ++ErrorCount;
+                                onErrorGetRequest(ErrorObj);
+                            }
+                            else {
+                                if (That.isPrimaryKey(query.Table, condition)) {
+                                    var GetRequest = ObjectStore.get(condition.Value);
+                                    GetRequest.onsuccess = function (event) {
+                                        var Result = event.target.result;
                                         var UpdateRequest = ObjectStore.put(Result);
                                         UpdateRequest.onsuccess = function () {
+                                            ++ExecutionNo;
                                             ++RowAffected;
-                                            if (ExecutionNo == ConditionLength) {
+                                            if (ExecutionNo == query.Where.length) {
                                                 onSuceessRequest(RowAffected);
                                             }
                                         };
@@ -557,18 +518,16 @@ var JsStorage;
                                             ++ErrorCount;
                                             onErrorGetRequest(e);
                                         };
-                                    }
-                                };
-                                GetRequest.onerror = function (e) {
-                                    ErrorOccured = true;
-                                    ++ErrorCount;
-                                    onErrorGetRequest(e);
-                                };
-                            }
-                            else {
-                                // var GetRequest = ObjectStore.index(item.Column);
-                                if (ObjectStore.indexNames.contains(column)) {
-                                    var CursorOpenRequest = ObjectStore.index(column).openCursor(IDBKeyRange.only(query.Where[column])), ExecutionNo = 0;
+                                    };
+                                    GetRequest.onerror = function (e) {
+                                        ErrorOccured = true;
+                                        ++ErrorCount;
+                                        onErrorGetRequest(e);
+                                    };
+                                }
+                                else {
+                                    // var GetRequest = ObjectStore.index(item.Column);
+                                    var CursorOpenRequest = ObjectStore.index(condition.Column).openCursor(IDBKeyRange.only(condition.Value)), ExecutionNo = 0;
                                     CursorOpenRequest.onsuccess = function (e) {
                                         var Cursor = e.target.result;
                                         if (Cursor) {
@@ -586,19 +545,29 @@ var JsStorage;
                                             }
                                         }
                                     };
-                                    CursorOpenRequest.onerror = function (e) {
-                                        ErrorOccured = true;
-                                        ++ErrorCount;
-                                        onErrorGetRequest(e);
-                                    };
                                 }
-                                else {
-                                    ErrorObj.target.error = Business.UtilityLogic.getError(JsStorage.ErrorType.ColumnNotExist, { columnName: column });
-                                }
+                                CursorOpenRequest.onerror = function (e) {
+                                    ErrorOccured = true;
+                                    ++ErrorCount;
+                                    onErrorGetRequest(e);
+                                };
                             }
                         }
-                    }
+                        return !ErrorOccured;
+                    });
                 }
+                var onSuceessRequest = function (rowsAffected) {
+                    if (onSuccess != null) {
+                        onSuccess(rowsAffected);
+                    }
+                };
+                var onErrorGetRequest = function (e) {
+                    if (ErrorCount == 1) {
+                        if (onError != null) {
+                            onError(e.target.error);
+                        }
+                    }
+                };
             };
             IndexDbLogic.prototype.insert = function (tableName, values, onSuccess, onError) {
                 try {
@@ -625,30 +594,13 @@ var JsStorage;
                     console.error(ex);
                 }
             };
-            // private isPrimaryKey(tablename: string, condition: ICondition) {
-            //     var IsPrimaryKey = false;
-            //     this.ActiveDataBase.Tables.every(function (table) {
-            //         if (table.Name == tablename) {
-            //             table.Columns.every(function (column) {
-            //                 if (column.PrimaryKey) {
-            //                     IsPrimaryKey = true;
-            //                     return true;
-            //                 }
-            //                 return false;
-            //             })
-            //         }
-            //         return false;
-            //     })
-            //     return IsPrimaryKey;
-            //     //return localStorage.getItem("JsStorage_" + tablename + "_" + condition.Column).toLowerCase() == "true" ? true : false
-            // }
-            IndexDbLogic.prototype.getPrimaryKey = function (tablename) {
-                var PrimaryKeyColumn = "";
+            IndexDbLogic.prototype.isPrimaryKey = function (tablename, condition) {
+                var IsPrimaryKey = false;
                 this.ActiveDataBase.Tables.every(function (table) {
                     if (table.Name == tablename) {
                         table.Columns.every(function (column) {
                             if (column.PrimaryKey) {
-                                PrimaryKeyColumn = column.Name;
+                                IsPrimaryKey = true;
                                 return true;
                             }
                             return false;
@@ -656,23 +608,19 @@ var JsStorage;
                     }
                     return false;
                 });
-                return PrimaryKeyColumn;
+                return IsPrimaryKey;
+                //return localStorage.getItem("JsStorage_" + tablename + "_" + condition.Column).toLowerCase() == "true" ? true : false
             };
-            IndexDbLogic.prototype.isWhereValid = function (condition) {
+            IndexDbLogic.prototype.convertWhereIntoLowerCase = function (condition) {
                 if (condition.Column == undefined) {
                     return JsStorage.ErrorType.UndefinedColumn;
                 }
                 else if (condition.Value == undefined) {
                     return JsStorage.ErrorType.UndefinedValue;
                 }
-                return null;
-            };
-            IndexDbLogic.prototype.IsWhereValid = function (tablename, isprimaryKey, condition) {
-                if (condition.Column == undefined) {
-                    return JsStorage.ErrorType.UndefinedColumn;
-                }
-                else if (condition.Value == undefined) {
-                    return JsStorage.ErrorType.UndefinedValue;
+                else {
+                    condition.Column = condition.Column.toLowerCase();
+                    condition.Op = condition.Op.toLowerCase();
                 }
                 return null;
             };
@@ -821,6 +769,7 @@ var JsStorage;
             }
             else if (query.Values.length > 0) {
                 query.Into = query.Into.toLowerCase();
+                this.convertValueIntoLowerCase(query.Values);
                 if (this.DbType == JsStorage.DBType.IndexedDb) {
                     this.IndexDbObj.insert(query.Into, query.Values, onSuccess, onError);
                 }
@@ -834,18 +783,20 @@ var JsStorage;
             }
         };
         Main.prototype.update = function (query, onSuccess, onError) {
+            JsStorage.convertintoLowerCase(query.Set);
+            this.convertValueIntoLowerCase(query.Where);
             if (this.DbType == JsStorage.DBType.IndexedDb) {
                 this.IndexDbObj.update(query, onSuccess, onError);
             }
             else {
             }
         };
-        Main.prototype.delete = function (query, onSuccess, onError) {
-            if (this.DbType == JsStorage.DBType.IndexedDb) {
-                this.IndexDbObj.delete(query, onSuccess, onError);
-            }
-            else {
-            }
+        Main.prototype.delete = function () {
+        };
+        Main.prototype.convertValueIntoLowerCase = function (values) {
+            values.forEach(function (value) {
+                value.Column = value.Column.toLowerCase();
+            });
         };
         return Main;
     }());

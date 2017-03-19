@@ -1,32 +1,120 @@
 //Student Array
-var Students = [
-           { Id: 1, FirstName: 'Ujjwal', LastName: 'gupta', Gender: 'male', Country: 'India', state: 'Madhyapradesh', city: 'Singrauli' },
-           { Id: 2, FirstName: 'george', LastName: 'adeil', Gender: 'male', Country: 'America', state: 'Boston', city: 'xyx' },
-           { Id: 3, FirstName: 'abc', LastName: 'gupt1a', Gender: 'female', Country: 'India', state: 'Madhyapradesh', city: 'zz' },
-           { Id: 4, FirstName: 'xyz', LastName: 'gupta', Gender: 'male', Country: 'Canada', state: 'huie', city: 'qwe' },
-           { Id: 5, FirstName: 'pqr', LastName: 'gupta', Gender: 'female', Country: 'England', state: 'hey', city: 'assd' },
+var Students = [{
+        Id: 1,
+        FirstName: 'Ujjwal',
+        LastName: 'gupta',
+        Gender: 'male',
+        Country: 'India',
+        state: 'Madhyapradesh',
+        city: 'Singrauli'
+    },
+    {
+        Id: 2,
+        FirstName: 'george',
+        LastName: 'adeil',
+        Gender: 'male',
+        Country: 'America',
+        state: 'Boston',
+        city: 'xyx'
+    },
+    {
+        Id: 3,
+        FirstName: 'abc',
+        LastName: 'gupt1a',
+        Gender: 'female',
+        Country: 'India',
+        state: 'Madhyapradesh',
+        city: 'zz'
+    },
+    {
+        Id: 4,
+        FirstName: 'xyz',
+        LastName: 'gupta',
+        Gender: 'male',
+        Country: 'Canada',
+        state: 'huie',
+        city: 'qwe'
+    },
+    {
+        Id: 5,
+        FirstName: 'pqr',
+        LastName: 'gupta',
+        Gender: 'female',
+        Country: 'England',
+        state: 'hey',
+        city: 'assd'
+    },
 ]
 //Country Array
-var Countries = [
-    { Id: 1, Name: 'India' },
-    { Id: 2, Name: 'America' },
-    { Id: 3, Name: 'England' },
-    { Id: 4, Name: 'Canada' },
-    { Id: 5, Name: 'Japan' },
+var Countries = [{
+        Id: 1,
+        Name: 'India'
+    },
+    {
+        Id: 2,
+        Name: 'America'
+    },
+    {
+        Id: 3,
+        Name: 'England'
+    },
+    {
+        Id: 4,
+        Name: 'Canada'
+    },
+    {
+        Id: 5,
+        Name: 'Japan'
+    },
 ]
 //State Array
-var States = [
-    { Id: 1, Name: 'Madhyapradesh', CountryId: 1 },
-    { Id: 2, Name: 'Boston', CountryId: 2 },
-    { Id: 3, Name: 'huie', CountryId: 4 },
-    { Id: 4, Name: 'hey', CountryId: 3 },
+var States = [{
+        Id: 1,
+        Name: 'Madhyapradesh',
+        CountryId: 1
+    },
+    {
+        Id: 2,
+        Name: 'Boston',
+        CountryId: 2
+    },
+    {
+        Id: 3,
+        Name: 'huie',
+        CountryId: 4
+    },
+    {
+        Id: 4,
+        Name: 'hey',
+        CountryId: 3
+    },
 ]
 //City Array
-var Cities = [{ Id: 1, Name: 'Singrauli', StateId: 1 },
-    { Id: 2, Name: 'xyx', StateId: 2 },
-    { Id: 3, Name: 'zz', StateId: 1 },
-    { Id: 4, Name: 'qwe', StateId: 3 },
-    { Id: 5, Name: 'assd', StateId: 4 },
+var Cities = [{
+        Id: 1,
+        Name: 'Singrauli',
+        StateId: 1
+    },
+    {
+        Id: 2,
+        Name: 'xyx',
+        StateId: 2
+    },
+    {
+        Id: 3,
+        Name: 'zz',
+        StateId: 1
+    },
+    {
+        Id: 4,
+        Name: 'qwe',
+        StateId: 3
+    },
+    {
+        Id: 5,
+        Name: 'assd',
+        StateId: 4
+    },
 ]
 //Default Studentid
 var StudentId = 5;
@@ -168,7 +256,8 @@ function BindCityList() {
 function CheckInputField(controlType, controlId) {
     var ErrorFlag = false;
     switch (controlType) {
-        case 'radio': var Element = $("input[name=" + controlId + "]");
+        case 'radio':
+            var Element = $("input[name=" + controlId + "]");
             if (Element.parent().parent().next().length > 0) {
                 Element.parent().parent().next().remove();
             }
@@ -177,13 +266,13 @@ function CheckInputField(controlType, controlId) {
                 Element.parent().parent().parent().append(Icon);
                 ErrorFlag = true;
                 console.log('radio');
-            }
-            else {
+            } else {
                 var Icon = CreateIcon("ok", "Ok");
                 Element.parent().parent().parent().append(Icon);
             }
             break;
-        case 'text': var Element = $('#' + controlId);
+        case 'text':
+            var Element = $('#' + controlId);
             if (Element.parent().next().length > 0) {
                 Element.parent().next().remove()
             }
@@ -191,13 +280,14 @@ function CheckInputField(controlType, controlId) {
                 var Icon = CreateIcon("error", "Required Field");
                 Element.parent().parent().append(Icon);
                 ErrorFlag = true;
-            }
-            else {
+            } else {
                 var Icon = CreateIcon("ok", "Ok");
                 Element.parent().parent().append(Icon);
 
-            }; break;
-        case 'select': var Element = $('#' + controlId);
+            };
+            break;
+        case 'select':
+            var Element = $('#' + controlId);
             if (Element.parent().next().length > 0) {
                 Element.parent().next().remove()
             }
@@ -205,12 +295,11 @@ function CheckInputField(controlType, controlId) {
                 var Icon = CreateIcon("error", "Required Field");
                 Element.parent().parent().append(Icon);
                 ErrorFlag = true;
-            }
-            else {
+            } else {
                 var Icon = CreateIcon("ok", "Ok");
                 Element.parent().parent().append(Icon);
-            }
-            ; break;
+            };
+            break;
     }
     return ErrorFlag;
 }
@@ -220,8 +309,7 @@ function CreateIcon(icontype, message) {
     var HtmlString = "";
     if (icontype == 'error') {
         HtmlString = '<i class="col-sm-2 fa fa-times" style="color:red;font-size:25px;" aria-hidden="true" data-toggle="tooltip" title="' + message + '"></i>';
-    }
-    else if (icontype == 'ok') {
+    } else if (icontype == 'ok') {
         HtmlString = '<i class="col-sm-2 fa fa-check" style="color:#a8e628;font-size:25px;" aria-hidden="true" data-toggle="tooltip" data-placement="right" title=' + message + '></i>';
     }
     return HtmlString;
@@ -309,8 +397,20 @@ function AddDetails() {
         var Country = $('#ddlCountry option:selected').text();
         var State = $('#ddlState option:selected').text();
         var City = $('#ddlCity option:selected').text();
+        var Value = {
+            Id: ++StudentId,
+            FirstName: FName,
+            LastName: LName,
+            Gender: Gender,
+            Country: Country,
+            State: State,
+            City: City
+        };
         if ($('#btnSubmit span').text() == 'Submit') {
-            DbConnection.add("student", [{ Id: ++StudentId, FirstName: FName, LastName: LName, Gender: Gender, Country: Country, state: State, city: City }], function (rowsCount) {
+            DbConnection.insert({
+                Into: "student",
+                Values: [Value]
+            }, function (rowsCount) {
                 alert(rowsCount + "rows affected");
                 FormReset();
                 ShowTableData();
@@ -318,13 +418,34 @@ function AddDetails() {
                 console.log(error);
             })
             //Students.push({ Id: ++StudentId, FirstName: FName, LastName: LName, Gender: Gender, Country: Country, state: State, city: City })
-        }
-        else {
-            UpdateDetails(FName, LName, Gender, Country, State, City);
+        } else {
+            var Id = $('form').attr('data-student-id');
+            DbConnection.update({
+                Table: 'student',
+                Set: {
+                    FirstName: FName,
+                    LastName: LName,
+                    Gender: Gender,
+                    Country: Country,
+                    State: State,
+                    City: City
+                },
+                Where: {
+                    Id: Number(Id)
+                }
+            }, function (rowsAffected) {
+                console.log(rowsAffected);
+                if (rowsAffected > 0) {
+                    FormReset();
+                    ShowTableData();
+                }
+            }, function (error) {
+                console.log(error)
+            })
+            //UpdateDetails(FName, LName, Gender, Country, State, City);
         }
 
-    }
-    else {
+    } else {
         var ErrorInfo = ErrorCount + " error occured : place the mouse over the respective icon for description";
         $('#divError').show(500);
         $('#spanErrorText').text(ErrorInfo);
@@ -336,16 +457,30 @@ function AddDataInDb() {
 
     var Table1 = {
         Name: "Student",
-        Columns: [
-            { Name: "Id", PrimaryKey: true },
-            { Name: "FirstName" },
-            { Name: "LastName" },
-            { Name: "Gender" },
-            { Name: "Country" },
-            { Name: "State" },
-            { Name: "City" }
+        Columns: [{
+                Name: "Id",
+                PrimaryKey: true
+            },
+            {
+                Name: "FirstName"
+            },
+            {
+                Name: "LastName"
+            },
+            {
+                Name: "Gender"
+            },
+            {
+                Name: "Country"
+            },
+            {
+                Name: "State"
+            },
+            {
+                Name: "City"
+            }
         ],
-        Version: 2
+        Version: 5
     }
     var DataBase = {
         Name: "Students",
@@ -354,11 +489,13 @@ function AddDataInDb() {
 
     DbConnection = new JsStorage.Main().createDb(DataBase, function (dbConnection) {
         if (localStorage.getItem('page_started') != '1') {
-            dbConnection.insert({ Into: Table1.Name, Values: Students }, function (rowsAffected) {
+            dbConnection.insert({
+                Into: Table1.Name,
+                Values: Students
+            }, function (rowsAffected) {
                 localStorage.setItem('page_started', '1');
                 alert('Add completed' + 'rows affected:' + rowsAffected);
-            }
-            , function () {
+            }, function () {
                 alert('Error Occured while adding data')
             })
         }
@@ -369,11 +506,13 @@ function AddDataInDb() {
 
 //This function refreshes the table
 function ShowTableData() {
-    DbConnection.get({ Table: "student" }, function (students) {
+    DbConnection.select({
+        From: "student"
+    }, function (students) {
         var HtmlString = "";
         students.forEach(function (item) {
-            HtmlString += "<tr ItemId=" + item.Id + "><td>" + item.FirstName + "</td><td>" + item.LastName + "</td><td>"
-            + item.Gender + "</td><td>" + item.Country + "</td><td>" + item.state + "</td><td>" + item.city + "</td><td>" + "<a href='#'  onclick='EditRow(this)'>Edit</a></td>" + "<td><a href='#' onclick='DeleteRow(this)'>Delete</a></td>";
+            HtmlString += "<tr ItemId=" + item.Id + "><td>" + item.FirstName + "</td><td>" + item.LastName + "</td><td>" +
+                item.Gender + "</td><td>" + item.Country + "</td><td>" + item.State + "</td><td>" + item.City + "</td><td>" + "<a href='#'  onclick='EditRow(this)'>Edit</a></td>" + "<td><a href='#' onclick='DeleteRow(this)'>Delete</a></td>";
         }, function (error) {
             console.log(error);
         })

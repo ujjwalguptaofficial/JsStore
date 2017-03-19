@@ -7,7 +7,7 @@ module JsStorage {
         export class DataBase {
             Name: string;
             Tables: Array<Table> = [];
-           
+
             constructor(dataBase: IDataBase) {
                 this.Name = dataBase.Name.toLowerCase();
                 var That = this;

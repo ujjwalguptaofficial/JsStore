@@ -7,6 +7,8 @@ module JsStorage {
             or() {
                 return this;
             }
+
+           
         }
     }
 }

@@ -20,7 +20,7 @@ module JsStorage {
                 this.Version = table.Version == undefined ? 1 : table.Version;
                 var That = this;
                 table.Columns.forEach(function (item) {
-                    That.Columns.push(new Column(item));
+                    That.Columns.push(new Column(item, table.Name));
                 })
 
                 this.setRequireDelete(dbName);
@@ -34,11 +34,11 @@ module JsStorage {
                 //this.Key = new Column();//
                 var That = this;
                 this.Columns.forEach(function (item) {
-                    if (item.Primarykey && That.PrimaryKey.length == 0) {
+                    if (item.PrimaryKey && That.PrimaryKey.length == 0) {
                         That.PrimaryKey = item.Name;
                         localStorage.setItem("JsStorage_" + That.Name + "_" + item.Name, "true");
                     }
-                    else if (item.Primarykey && That.PrimaryKey.length > 0) {
+                    else if (item.PrimaryKey && That.PrimaryKey.length > 0) {
                         localStorage.setItem("JsStorage_" + That.Name + "_" + item.Name, "");
                         throw "Multiple primary key are not allowed";
                     }

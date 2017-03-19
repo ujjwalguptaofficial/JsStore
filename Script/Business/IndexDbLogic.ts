@@ -65,6 +65,21 @@ module JsStorage {
                 }
             }
 
+            public dropDb(name: string, onSuccess: Function, onError: Function) {
+                var DbDeleteRequest = window.indexedDB.deleteDatabase(name);
+                DbDeleteRequest.onsuccess = function () {
+                    if (onSuccess != null) {
+                        onSuccess();
+                    }
+                }
+                DbDeleteRequest.onerror = function (e) {
+                    if (onError != null) {
+                        onError((event as any).target.error);
+                    }
+                }
+
+            }
+
             public createDb = function (objMain: Main, onSuccess: Function, onError: Function) {
                 var That = this,
                     DbVersion = Number(localStorage.getItem(this.ActiveDataBase.Name + 'Db_Version')),
@@ -107,10 +122,10 @@ module JsStorage {
                             if (db.objectStoreNames.contains(item.Name)) {
                                 db.deleteObjectStore(item.Name);
                             }
-                            That.createObjectStore(db, item);
+                            createObjectStore(db, item);
                         }
                         else if (item.RequireCreation) {
-                            That.createObjectStore(db, item);
+                            createObjectStore(db, item);
                         }
                     })
 
@@ -123,19 +138,20 @@ module JsStorage {
                                 keyPath: item.PrimaryKey
                             });
                             item.Columns.forEach(function (column: Column) {
-                                if (!column.Primarykey) {
-                                    Store.createIndex(item.Name, item.Name, { unique: false });
+                                if (!column.PrimaryKey) {
+                                    Store.createIndex(column.Name, column.Name, { unique: false });
                                 }
                             })
                         }
                         else {
-                            var store = dbConnection.createObjectStore(item.Name, {
+                            var Store = dbConnection.createObjectStore(item.Name, {
                                 autoIncrement: true
                             });
                             item.Columns.forEach(function (column: Column) {
-                                Store.createIndex(item.Name, item.Name, { unique: false });
+                                Store.createIndex(column.Name, column.Name, { unique: false });
                             })
                         }
+                        //setting the table version
                         localStorage.setItem("JsStorage_" + That.ActiveDataBase.Name + "_" + item.Name, item.Version.toString());
                     }
                     catch (e) {
@@ -148,8 +164,22 @@ module JsStorage {
                 var That = this,
                     ErrorOccured: boolean = false,
                     ErrorCount = 0,
-                    Transaction: IDBTransaction = That.DbConnection.transaction([query.Table.toLowerCase()], "readonly"),
-                    ObjectStore: IDBObjectStore = Transaction.objectStore(query.Table);
+                    Transaction: IDBTransaction = That.DbConnection.transaction([query.From], "readonly"),
+                    ObjectStore: IDBObjectStore = Transaction.objectStore(query.From),
+                    onSuceessGetRequest = function (event) {
+                        var Result = (<any>event).target.result;
+                        if (onSuccess != null) {
+                            onSuccess(Result);
+                        }
+                    },
+
+                    onErrorGetRequest = function (e) {
+                        if (ErrorCount == 1) {
+                            if (onError != null) {
+                                onError((e as any).target.error);
+                            }
+                        }
+                    };
                 if (query.Where == undefined) {
                     var CursorOpenRequest = ObjectStore.openCursor(),
                         Results = [];
@@ -170,17 +200,29 @@ module JsStorage {
                     CursorOpenRequest.onerror = onErrorGetRequest;
                 }
                 else {
-                    query.Where.every(function (item, index) {
+                    var PrimaryKey = this.getPrimaryKey(query.From);
+                    query.Where.every(function (condition, index) {
                         if (!ErrorOccured) {
-                            if (item.Column == undefined) {
-                                throw "Column is undefined in Case for tableName:" + query.Table;
-                            }
-                            else if (item.Value == undefined) {
-                                throw "Column value is undefined in Case for Column Name:" + item.Column + "for tableName:" + query.Table;
+                            var Error = That.isWhereValid(condition)
+                            if (ErrorType != null) {
+                                var ErrorObj = {
+                                    target: {
+                                        error: null
+                                    }
+                                }
+                                if (Error == ErrorType.UndefinedColumn) {
+                                    ErrorObj.target.error = UtilityLogic.getError(Error, null);
+                                }
+                                else if (Error == ErrorType.UndefinedValue) {
+                                    ErrorObj.target.error = UtilityLogic.getError(Error, null);
+                                }
+                                ErrorOccured = true;
+                                ++ErrorCount;
+                                onErrorGetRequest(ErrorObj);
                             }
                             else {
-                                if (this.isPrimaryKey(query.Table, item)) {
-                                    var GetRequest = ObjectStore.get(item.Value);
+                                if (PrimaryKey == condition.Column) {//(That.isPrimaryKey(query.From, condition)) {
+                                    var GetRequest = ObjectStore.get(condition.Value);
                                     GetRequest.onsuccess = onSuceessGetRequest;
                                     GetRequest.onerror = function (e) {
                                         ErrorOccured = true; ++ErrorCount;
@@ -188,7 +230,7 @@ module JsStorage {
                                     }
                                 }
                                 else {
-                                    var GetRequest = ObjectStore.index(item.Column).get(item.Value);
+                                    var GetRequest = ObjectStore.index(condition.Column).get(condition.Value);
                                     GetRequest.onsuccess = onSuceessGetRequest;
                                     GetRequest.onerror = onErrorGetRequest;
                                 }
@@ -200,98 +242,35 @@ module JsStorage {
 
                 }
 
-                var onSuceessGetRequest = function (event) {
-                    var Result = (<any>event).target.result;
-                    if (onSuccess != null) {
-                        onSuccess(Result);
-                    }
-                }
-
-                var onErrorGetRequest = function (e) {
-                    if (ErrorCount == 1) {
-                        if (onError != null) {
-                            onError((e as any).target.error);
-                        }
-                    }
-                }
-
             }
 
             public delete(query: IDelete, onSuccess: Function, onError: Function) {
                 var That = this,
-                    Transaction: IDBTransaction = That.DbConnection.transaction([query.Table.toLowerCase()], "readonly"),
-                    ObjectStore: IDBObjectStore = Transaction.objectStore(query.Table);
+                    Transaction: IDBTransaction = That.DbConnection.transaction([query.Table.toLowerCase()], "readwrite"),
+                    ObjectStore: IDBObjectStore = Transaction.objectStore(query.Table),
+                    ErrorOccured: boolean = false,
+                    ErrorCount = 0,
+                    RowAffected = 0,
+                    onSuceessRequest = function (rowsAffected) {
+                        if (onSuccess != null) {
+                            onSuccess(rowsAffected);
+                        }
+                    },
+
+                    onErrorGetRequest = function (e) {
+                        if (onError != null) {
+                            onError((e as any).target.error);
+                        }
+                    };
+
                 if (query.Where == undefined) {
                     var CursorOpenRequest = ObjectStore.openCursor(),
                         Results = [];
                     CursorOpenRequest.onsuccess = function (e) {
-                        var TempResult = (<any>e).target.result;
-                        console.log(TempResult);
-                        if (TempResult) {
-                            Results.push(TempResult.value);
-                            (TempResult as any).continue();
-                        }
-                        else {
-                            if (onSuccess != null) {
-                                onSuccess(Results);
-                            }
-                        }
-
-                    }
-                    CursorOpenRequest.onerror = onErrorGetRequest;
-                }
-                else {
-                    // if (query.Case.Column == undefined) {
-                    //     throw "Column is undefined in Case for tableName:" + query.Table;
-                    // }
-                    // else if (query.Case.Value == undefined) {
-                    //     throw "Column value is undefined in Case for Column Name:" + query.Case.Column + "for tableName:" + query.Table;
-                    // }
-                    // else {
-                    //     if (this.isPrimaryKey(query)) {
-                    //         var GetRequest = ObjectStore.delete(query.Case.Value);
-                    //         GetRequest.onsuccess = onSuceessGetRequest;
-                    //         GetRequest.onerror = onErrorGetRequest;
-                    //     }
-                    //     else {
-                    //         var GetRequest = ObjectStore.index(query.Case.Column).get(query.Case.Value);
-
-                    //         GetRequest.onsuccess = onSuceessGetRequest;
-                    //         GetRequest.onerror = onErrorGetRequest;
-                    //     }
-                    // }
-                }
-
-                var onSuceessGetRequest = function (event) {
-                    var Result = (<any>event).target.result;
-                    if (onSuccess != null) {
-                        onSuccess(Result);
-                    }
-                }
-
-                var onErrorGetRequest = function (e) {
-                    if (onError != null) {
-                        onError((e as any).target.error);
-                    }
-                }
-
-            }
-
-            public update(query: IUpdate, onSuccess: Function, onError: Function) {
-                var That = this,
-                    ErrorOccured: boolean = false,
-                    ErrorCount = 0,
-                    RowAffected = 0,
-                    Transaction: IDBTransaction = That.DbConnection.transaction([query.Table.toLowerCase()], "readonly"),
-                    ObjectStore: IDBObjectStore = Transaction.objectStore(query.Table);
-                if (query.Where == undefined) {
-                    var CursorOpenRequest = ObjectStore.openCursor();
-                    CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor = (<any>e).target.result;
+                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
                         if (Cursor) {
-                            query.Set.forEach(function (item) {
-                                Cursor.value[item.Column] = item.Value;
-                            });
+                            Cursor.delete();
+                            ++RowAffected;
                             (Cursor as any).continue();
                         }
                         else {
@@ -302,19 +281,42 @@ module JsStorage {
                     CursorOpenRequest.onerror = onErrorGetRequest;
                 }
                 else {
-                    query.Where.every(function (item, index) {
+                    query.Where.every(function (condition, index) {
                         if (!ErrorOccured) {
-                            if (item.Column == undefined) {
-                                throw "Column is undefined in Case for tableName:" + query.Table;
-                            }
-                            else if (item.Value == undefined) {
-                                throw "Column value is undefined in Case for Column Name:" + item.Column + "for tableName:" + query.Table;
+                            var Error = That.isWhereValid(condition)
+                            if (ErrorType != null) {
+                                var ErrorObj = {
+                                    target: {
+                                        error: null
+                                    }
+                                }
+                                if (Error == ErrorType.UndefinedColumn) {
+                                    ErrorObj.target.error = UtilityLogic.getError(Error, null);
+                                }
+                                else if (Error == ErrorType.UndefinedValue) {
+                                    ErrorObj.target.error = UtilityLogic.getError(Error, null);
+                                }
+                                ErrorOccured = true;
+                                ++ErrorCount;
+                                onErrorGetRequest(ErrorObj);
                             }
                             else {
-                                if (this.isPrimaryKey(query.Table, item)) {
-                                    var GetRequest = ObjectStore.put(item.Value);
-                                    GetRequest.onsuccess = function () {
-                                        onSuceessRequest(1);
+                                var PrimaryKey = this.getPrimaryKey(query.Table);
+                                if (PrimaryKey == condition.Column) {
+                                    var GetRequest = ObjectStore.get(condition.Value);
+                                    GetRequest.onsuccess = function (event) {
+                                        var Result = (<any>event).target.result;
+                                        var DelteRequest = ObjectStore.delete(Result);
+                                        DelteRequest.onsuccess = function () {
+                                            ++ExecutionNo; ++RowAffected;
+                                            if (ExecutionNo == query.Where.length) {
+                                                onSuceessRequest(RowAffected);
+                                            }
+                                        }
+                                        DelteRequest.onerror = function (e) {
+                                            ErrorOccured = true; ++ErrorCount;
+                                            onErrorGetRequest(e);
+                                        }
                                     }
                                     GetRequest.onerror = function (e) {
                                         ErrorOccured = true; ++ErrorCount;
@@ -322,27 +324,16 @@ module JsStorage {
                                     }
                                 }
                                 else {
-                                    // var GetRequest = ObjectStore.index(item.Column);
-                                    var CursorOpenRequest = ObjectStore.index(item.Column).openCursor(IDBKeyRange.only(item.Value)),
+                                    var CursorOpenRequest = ObjectStore.index(condition.Column).openCursor(IDBKeyRange.only(condition.Value)),
                                         ExecutionNo = 0;
 
                                     CursorOpenRequest.onsuccess = function (e) {
-                                        var Cursor = (<any>e).target.result;
+                                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
 
                                         if (Cursor) {
-                                            // if (Cursor.value.hasOwnProperty(item.Column)) {
-
-                                            // }
-                                            // else
-                                            // {
-                                            //     onErrorGetRequest(<Error>{
-                                            //         Name:"ColumnNotExist",
-                                            //          Value:"The column"+ + "does not exist"
-                                            //     })
-                                            // }
-                                            Cursor.value[item.Column] = item.Value;
+                                            Cursor.delete();
                                             ++RowAffected;
-                                            Cursor.Continue();
+                                            Cursor.continue();
                                         }
                                         else {
                                             ++ExecutionNo;
@@ -359,32 +350,133 @@ module JsStorage {
                                 }
                             }
                         }
-
-
                         return !ErrorOccured;
                     });
-
                 }
 
-                var onSuceessRequest = function (rowsAffected) {
-                    if (onSuccess != null) {
-                        onSuccess(rowsAffected);
-                    }
-                }
-
-                var onErrorGetRequest = function (e) {
-                    if (ErrorCount == 1) {
-                        if (onError != null) {
-                            onError((e as any).target.error);
-                        }
-                    }
-                }
 
             }
 
+            public update(query: IUpdate, onSuccess: Function, onError: Function) {
+                var That = this,
+                    ErrorOccured: boolean = false,
+                    ErrorCount = 0,
+                    RowAffected = 0,
+                    ErrorObj = {
+                        target: {
+                            error: null
+                        }
+                    },
+                    Transaction: IDBTransaction = That.DbConnection.transaction([query.Table.toLowerCase()], "readwrite"),
+                    ObjectStore: IDBObjectStore = Transaction.objectStore(query.Table),
+                    onSuceessRequest = function (rowsAffected) {
+                        if (onSuccess != null) {
+                            onSuccess(rowsAffected);
+                        }
+                    },
 
-            public and() {
-                return this;
+                    onErrorGetRequest = function (e) {
+                        if (ErrorCount == 1) {
+                            if (onError != null) {
+                                onError((e as any).target.error);
+                            }
+                        }
+                    };
+                if (query.Where == undefined) {
+                    var CursorOpenRequest = ObjectStore.openCursor();
+                    CursorOpenRequest.onsuccess = function (e) {
+                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                        if (Cursor) {
+                            for (var key in query.Set) {
+                                Cursor.value[key] = query.Set[key];
+                            }
+                            Cursor.update(Cursor.value);
+                            ++RowAffected;
+                            (Cursor as any).continue();
+                        }
+                        else {
+                            onSuceessRequest(RowAffected);
+                        }
+
+                    }
+                    CursorOpenRequest.onerror = onErrorGetRequest;
+                }
+                else {
+                    var column,
+                        ConditionLength = Object.keys(query.Where).length;
+                    for (column in query.Where) {
+                        if (!ErrorOccured) {
+                            //var PrimaryKey = That.getPrimaryKey(query.Table);
+                            if (ObjectStore.keyPath != null && ObjectStore.keyPath == column) {
+                                var GetRequest = ObjectStore.get(query.Where[column]);
+
+                                GetRequest.onsuccess = function (event) {
+                                    var Result = (<any>event).target.result;
+                                    ++ExecutionNo;
+                                    if (Result != undefined) {
+                                        for (var key in query.Set) {
+                                            Result[key] = query.Set[key];
+                                        }
+                                        var UpdateRequest = ObjectStore.put(Result);
+                                        UpdateRequest.onsuccess = function () {
+                                            ++RowAffected;
+                                            if (ExecutionNo == ConditionLength) {
+                                                onSuceessRequest(RowAffected);
+                                            }
+                                        }
+                                        UpdateRequest.onerror = function (e) {
+                                            ErrorOccured = true; ++ErrorCount;
+                                            onErrorGetRequest(e);
+                                        }
+                                    }
+
+                                }
+                                GetRequest.onerror = function (e) {
+                                    ErrorOccured = true; ++ErrorCount;
+                                    onErrorGetRequest(e);
+                                }
+                            }
+                            else {
+                                // var GetRequest = ObjectStore.index(item.Column);
+                                if (ObjectStore.indexNames.contains(column)) {
+                                    var CursorOpenRequest = ObjectStore.index(column).openCursor(IDBKeyRange.only(query.Where[column])),
+                                        ExecutionNo = 0;
+
+                                    CursorOpenRequest.onsuccess = function (e) {
+                                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                        if (Cursor) {
+                                            for (var key in query.Set) {
+                                                Cursor.value[key] = query.Set[key];
+                                            }
+                                            Cursor.update(Cursor.value);
+                                            ++RowAffected;
+                                            Cursor.continue();
+                                        }
+                                        else {
+                                            ++ExecutionNo;
+                                            if (ExecutionNo == query.Where.length) {
+                                                onSuceessRequest(RowAffected);
+                                            }
+                                        }
+                                    }
+
+
+                                    CursorOpenRequest.onerror = function (e) {
+                                        ErrorOccured = true; ++ErrorCount;
+                                        onErrorGetRequest(e);
+                                    }
+                                }
+                                else {
+                                    ErrorObj.target.error = UtilityLogic.getError(ErrorType.ColumnNotExist, { columnName: column });
+                                }
+                            }
+                        }
+                    }
+
+
+
+                }
+
             }
 
             public insert(tableName: string, values, onSuccess: Function, onError: Function) {
@@ -392,33 +484,22 @@ module JsStorage {
                     tableName = tableName.toLowerCase();
                     var TotalRowsAffected = 0,
                         Store: IDBObjectStore = this.DbConnection.transaction([tableName], "readwrite").objectStore(tableName);
-                    if (!Array.isArray(values)) {
-                        throw "Value should be array :- supplied value is not array";
-                    }
-                    else if (values.length > 0) {
-                        values.forEach(function (value) {
-                            var AddResult = Store.add(value);
-                            AddResult.onerror = function (e) {
-                                if (onError != null) {
-                                    onError((e as any).target.error, TotalRowsAffected);
+                    values.forEach(function (value) {
+                        var AddResult = Store.add(value);
+                        AddResult.onerror = function (e) {
+                            if (onError != null) {
+                                onError((e as any).target.error, TotalRowsAffected);
+                            }
+                        }
+                        AddResult.onsuccess = function (e) {
+                            ++TotalRowsAffected
+                            if (values.length == TotalRowsAffected) {
+                                if (onSuccess != null) {
+                                    onSuccess(TotalRowsAffected);
                                 }
                             }
-                            AddResult.onsuccess = function (e) {
-                                ++TotalRowsAffected
-                                if (values.length == TotalRowsAffected) {
-                                    if (onSuccess != null) {
-                                        onSuccess(TotalRowsAffected);
-                                    }
-                                }
-                            }
-                        })
-
-                    }
-                    else {
-                        throw "no value supplied";
-                    }
-
-
+                        }
+                    })
                 }
                 catch (ex) {
                     console.error(ex);
@@ -426,8 +507,63 @@ module JsStorage {
             }
 
 
-            private isPrimaryKey(tablename: string, condition: ICondition) {
-                return localStorage.getItem("JsStorage_" + tablename + "_" + condition.Column).toLowerCase() == "true" ? true : false
+            // private isPrimaryKey(tablename: string, condition: ICondition) {
+            //     var IsPrimaryKey = false;
+            //     this.ActiveDataBase.Tables.every(function (table) {
+            //         if (table.Name == tablename) {
+            //             table.Columns.every(function (column) {
+            //                 if (column.PrimaryKey) {
+            //                     IsPrimaryKey = true;
+            //                     return true;
+            //                 }
+            //                 return false;
+            //             })
+            //         }
+            //         return false;
+            //     })
+            //     return IsPrimaryKey;
+
+            //     //return localStorage.getItem("JsStorage_" + tablename + "_" + condition.Column).toLowerCase() == "true" ? true : false
+
+            // }
+
+            private getPrimaryKey(tablename: string) {
+                var PrimaryKeyColumn = "";
+                this.ActiveDataBase.Tables.every(function (table) {
+                    if (table.Name == tablename) {
+                        table.Columns.every(function (column) {
+                            if (column.PrimaryKey) {
+                                PrimaryKeyColumn = column.Name;
+                                return true;
+                            }
+                            return false;
+                        })
+                    }
+                    return false;
+                })
+                return PrimaryKeyColumn;
+            }
+
+            private isWhereValid(condition: ICondition) {
+                if (condition.Column == undefined) {
+                    return ErrorType.UndefinedColumn;
+                }
+                else if (condition.Value == undefined) {
+                    return ErrorType.UndefinedValue;
+                }
+                return null;
+
+            }
+
+            private IsWhereValid(tablename: string, isprimaryKey: boolean, condition: any) {
+
+                if (condition.Column == undefined) {
+                    return ErrorType.UndefinedColumn;
+                }
+                else if (condition.Value == undefined) {
+                    return ErrorType.UndefinedValue;
+                }
+                return null;
 
             }
 
