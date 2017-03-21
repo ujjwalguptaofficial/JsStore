@@ -284,7 +284,7 @@ module JsStorage {
                     query.Where.every(function (condition, index) {
                         if (!ErrorOccured) {
                             var Error = That.isWhereValid(condition)
-                            if (ErrorType != null) {
+                            if (Error != null) {
                                 var ErrorObj = {
                                     target: {
                                         error: null
@@ -301,7 +301,7 @@ module JsStorage {
                                 onErrorGetRequest(ErrorObj);
                             }
                             else {
-                                var PrimaryKey = this.getPrimaryKey(query.Table);
+                                var PrimaryKey = That.getPrimaryKey(query.Table);
                                 if (PrimaryKey == condition.Column) {
                                     var GetRequest = ObjectStore.get(condition.Value);
                                     GetRequest.onsuccess = function (event) {
@@ -343,11 +343,13 @@ module JsStorage {
                                         }
                                     }
 
+                                    CursorOpenRequest.onerror = function (e) {
+                                        ErrorOccured = true; ++ErrorCount;
+                                        onErrorGetRequest(e);
+                                    }
+
                                 }
-                                CursorOpenRequest.onerror = function (e) {
-                                    ErrorOccured = true; ++ErrorCount;
-                                    onErrorGetRequest(e);
-                                }
+
                             }
                         }
                         return !ErrorOccured;
@@ -403,12 +405,17 @@ module JsStorage {
                 }
                 else {
                     var column,
+                        ExecutionNo = 0,
                         ConditionLength = Object.keys(query.Where).length;
                     for (column in query.Where) {
                         if (!ErrorOccured) {
-                            //var PrimaryKey = That.getPrimaryKey(query.Table);
                             if (ObjectStore.keyPath != null && ObjectStore.keyPath == column) {
                                 var GetRequest = ObjectStore.get(query.Where[column]);
+
+                                GetRequest.onerror = function (event) {
+                                    ErrorOccured = true; ++ErrorCount;
+                                    onErrorGetRequest(event);
+                                };
 
                                 GetRequest.onsuccess = function (event) {
                                     var Result = (<any>event).target.result;
@@ -418,7 +425,7 @@ module JsStorage {
                                             Result[key] = query.Set[key];
                                         }
                                         var UpdateRequest = ObjectStore.put(Result);
-                                        UpdateRequest.onsuccess = function () {
+                                        UpdateRequest.onsuccess = function (e) {
                                             ++RowAffected;
                                             if (ExecutionNo == ConditionLength) {
                                                 onSuceessRequest(RowAffected);
@@ -430,18 +437,12 @@ module JsStorage {
                                         }
                                     }
 
-                                }
-                                GetRequest.onerror = function (e) {
-                                    ErrorOccured = true; ++ErrorCount;
-                                    onErrorGetRequest(e);
-                                }
+                                };
+
                             }
                             else {
-                                // var GetRequest = ObjectStore.index(item.Column);
                                 if (ObjectStore.indexNames.contains(column)) {
-                                    var CursorOpenRequest = ObjectStore.index(column).openCursor(IDBKeyRange.only(query.Where[column])),
-                                        ExecutionNo = 0;
-
+                                    var CursorOpenRequest = ObjectStore.index(column).openCursor(IDBKeyRange.only(query.Where[column]));
                                     CursorOpenRequest.onsuccess = function (e) {
                                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
                                         if (Cursor) {
@@ -467,7 +468,7 @@ module JsStorage {
                                     }
                                 }
                                 else {
-                                    ErrorObj.target.error = UtilityLogic.getError(ErrorType.ColumnNotExist, { columnName: column });
+                                    console.error(UtilityLogic.getError(ErrorType.ColumnNotExist, { columnName: column }));
                                 }
                             }
                         }

@@ -144,16 +144,7 @@ $(document).ready(function () {
 var DbConnection;
 
 
-//This function will delete the row
-function DeleteRow(element) {
-    var StudentId = element.parentElement.parentElement.getAttribute('ItemId');
-    for (i = 0; i < Students.length; i++) {
-        if (Students[i].Id == StudentId) {
-            Students.splice(i, 1);
-        }
-    }
-    ShowTableData();
-}
+
 
 //This function will edit the particular row
 function EditRow(element) {
@@ -518,4 +509,26 @@ function ShowTableData() {
         })
         $('#tblContainer').html(HtmlString);
     });
+}
+
+//This function will delete the row
+function DeleteRow(element) {
+    var StudentId = element.parentElement.parentElement.getAttribute('ItemId');
+    // for (i = 0; i < Students.length; i++) {
+    //     if (Students[i].Id == StudentId) {
+    //         Students.splice(i, 1);
+    //     }
+    // }
+    DbConnection.delete({
+        Table: 'student',
+        Where: [{
+            Column: 'Id',
+            Value: Number(StudentId)
+        }]
+    }, function (result) {
+        console.log(result);
+    }, function (error) {
+        console.log(error);
+    })
+    ShowTableData();
 }
