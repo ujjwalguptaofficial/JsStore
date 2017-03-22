@@ -17,15 +17,13 @@ module JsStorage {
                     case ErrorType.UndefinedColumnName: Error.Value = "column name is undefined"; break;
                     case ErrorType.UndefinedColumnValue: Error.Value = "column value is undefined"; break;
                     case ErrorType.NoValueSupplied: Error.Value = "no value supplied"; break;
+                    case ErrorType.InvalidOp: Error.Value = "Invalid Op Value : " + errorDetail['Op']; break;
                     case ErrorType.ColumnNotExist: Error.Value = "column :" + errorDetail['ColumnName'] + " does not exist";
                         break;
                     default: console.warn('the error type is not defined');
                 }
                 if (logError) {
-                    var ErrorDesc = {
-                        Detail: Error
-                    }
-                    console.warn("Error occured : - " + ErrorDesc);
+                    console.warn("JsStorage Error : - " + Error.Value);
                 }
                 return Error;
             }

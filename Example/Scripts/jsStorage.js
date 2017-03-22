@@ -15,6 +15,7 @@ var JsStorage;
         ErrorType[ErrorType["NotArray"] = 4] = "NotArray";
         ErrorType[ErrorType["NoValueSupplied"] = 5] = "NoValueSupplied";
         ErrorType[ErrorType["ColumnNotExist"] = 6] = "ColumnNotExist";
+        ErrorType[ErrorType["InvalidOp"] = 7] = "InvalidOp";
     })(ErrorType = JsStorage.ErrorType || (JsStorage.ErrorType = {}));
 })(JsStorage || (JsStorage = {}));
 var JsStorage;
@@ -49,16 +50,16 @@ var JsStorage;
                     case JsStorage.ErrorType.NoValueSupplied:
                         Error.Value = "no value supplied";
                         break;
+                    case JsStorage.ErrorType.InvalidOp:
+                        Error.Value = "Invalid Op Value : " + errorDetail['Op'];
+                        break;
                     case JsStorage.ErrorType.ColumnNotExist:
                         Error.Value = "column :" + errorDetail['ColumnName'] + " does not exist";
                         break;
                     default: console.warn('the error type is not defined');
                 }
                 if (logError) {
-                    var ErrorDesc = {
-                        Detail: Error
-                    };
-                    console.warn("Error occured : - " + ErrorDesc);
+                    console.warn("JsStorage Error : - " + Error.Value);
                 }
                 return Error;
             };
@@ -90,6 +91,7 @@ var JsStorage;
                 }
                 this.AutoIncrement = key.AutoIncrement != null ? key.AutoIncrement : false;
                 this.PrimaryKey = key.PrimaryKey != null ? key.PrimaryKey : false;
+                this.Unique = key.Unique != null ? key.Unique : false;
             }
             return Column;
         }());
@@ -239,7 +241,10 @@ var JsStorage;
                                     keyPath: item.PrimaryKey
                                 });
                                 item.Columns.forEach(function (column) {
-                                    if (!column.PrimaryKey) {
+                                    if (column.PrimaryKey) {
+                                        Store.createIndex(column.Name, column.Name, { unique: true });
+                                    }
+                                    else {
                                         Store.createIndex(column.Name, column.Name, { unique: false });
                                     }
                                 });
@@ -480,67 +485,169 @@ var JsStorage;
         (function (IndexDb) {
             var SelectLogic = (function () {
                 function SelectLogic(query, onSuccess, onError) {
-                    var That = this, ErrorOccured = false, ErrorCount = 0, Results = [], Transaction = IndexDb.DbConnection.transaction([query.From], "readonly"), ObjectStore = Transaction.objectStore(query.From), onSuceessRequest = function () {
-                        if (onSuccess != null) {
-                            onSuccess(Results);
+                    this.ErrorOccured = false;
+                    this.ErrorCount = 0;
+                    this.Results = [];
+                    this.SendResultFlag = true;
+                    this.onSuccessRequest = function () {
+                        if (this.SendResultFlag && this.OnSuccess != null) {
+                            this.OnSuccess(this.Results);
                         }
-                    }, onErrorRequest = function (e) {
-                        if (ErrorCount == 1) {
-                            if (onError != null) {
-                                onError(e.target.error);
+                    };
+                    this.onErrorRequest = function (e) {
+                        if (this.ErrorCount == 1) {
+                            if (this.OnError != null) {
+                                this.OnError(e.target.error);
                             }
                         }
                     };
-                    if (query.Where == undefined) {
-                        var CursorOpenRequest = ObjectStore.openCursor();
-                        CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = e.target.result;
-                            if (Cursor) {
-                                Results.push(Cursor.value);
-                                Cursor.continue();
-                            }
-                            else {
-                                if (onSuccess != null) {
-                                    onSuceessRequest();
-                                }
-                            }
-                        };
-                        CursorOpenRequest.onerror = onErrorRequest;
-                    }
-                    else {
-                        var Column, ExecutionNo = 0, ConditionLength = Object.keys(query.Where).length, Results = [], OnSuccessGetRequest = function () {
+                    this.getKeyRange = function (whereIn) {
+                        var KeyRange;
+                        switch (this.Query.WhereIn.Op) {
+                            case '-':
+                                KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End);
+                                break;
+                            case '>':
+                                KeyRange = IDBKeyRange.lowerBound(whereIn.Value, true);
+                                break;
+                            case '>=':
+                                KeyRange = IDBKeyRange.lowerBound(whereIn.Value);
+                                break;
+                            case '<':
+                                KeyRange = IDBKeyRange.upperBound(whereIn.Value, true);
+                                break;
+                            case '<=':
+                                KeyRange = IDBKeyRange.upperBound(whereIn.Value);
+                                break;
+                            default:
+                                this.ErrorOccured = true;
+                                Business.UtilityLogic.getError(JsStorage.ErrorType.InvalidOp, true, { Op: whereIn.Op });
+                        }
+                        return KeyRange;
+                    };
+                    this.executeMultipleWhereInLogic = function (whereInArray) {
+                        var That = this, WhereIn, ExecutionNo = 0, ConditionLength = Object.keys(this.Query.WhereIn).length, KeyRange, OnSuccessGetRequest = function () {
                             ++ExecutionNo;
                             if (ExecutionNo == ConditionLength) {
-                                onSuceessRequest();
+                                this.OnSuceessRequest();
                             }
                         };
-                        for (Column in query.Where) {
-                            if (!ErrorOccured) {
-                                if (ObjectStore.keyPath != null && ObjectStore.keyPath == Column) {
-                                    var GetRequest = ObjectStore.get(query.Where[Column]);
-                                    GetRequest.onerror = function (e) {
-                                        ErrorOccured = true;
-                                        ++ErrorCount;
-                                        onErrorRequest(e);
-                                    };
-                                    GetRequest.onsuccess = OnSuccessGetRequest;
+                        for (WhereIn in whereInArray) {
+                            KeyRange = this.getKeyRange();
+                            if (!this.ErrorOccured) {
+                                var CursorOpenRequest, OnCursorSuccess = function (e) {
+                                    var Cursor = e.target.result;
+                                    if (Cursor) {
+                                        That.Results.push(Cursor.value);
+                                        Cursor.continue();
+                                    }
+                                    else {
+                                        OnSuccessGetRequest();
+                                    }
+                                }, OnCursorError = function (e) {
+                                    That.ErrorOccured = true;
+                                    ++That.ErrorCount;
+                                    That.OnErrorRequest(e);
+                                };
+                                if (this.Query.WhereIn.Op == '-') {
+                                    CursorOpenRequest = this.ObjectStore.openCursor(KeyRange);
+                                    CursorOpenRequest.onsuccess = OnCursorSuccess;
+                                    CursorOpenRequest.onerror = OnCursorError;
                                 }
-                                else if (ObjectStore.indexNames.contains(Column)) {
-                                    var CursorOpenRequest = ObjectStore.index(Column).openCursor(IDBKeyRange.only(query.Where[Column]));
+                                else if (this.ObjectStore.indexNames.contains(WhereIn.Column)) {
+                                    CursorOpenRequest = this.ObjectStore.index(WhereIn.Column).openCursor(KeyRange);
+                                    CursorOpenRequest.onsuccess = OnCursorSuccess;
+                                    CursorOpenRequest.onerror = OnCursorError;
+                                }
+                                else {
+                                    Business.UtilityLogic.getError(JsStorage.ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                                }
+                            }
+                            else {
+                                return;
+                            }
+                        }
+                    };
+                    this.executeSingleWhereInLogic = function (whereIn) {
+                        var That = this, KeyRange = this.getKeyRange(whereIn);
+                        if (!this.ErrorOccured) {
+                            var CursorOpenRequest, OnCursorSuccess = function (e) {
+                                var Cursor = e.target.result;
+                                if (Cursor) {
+                                    That.Results.push(Cursor.value);
+                                    Cursor.continue();
+                                }
+                                else {
+                                    That.onSuccessRequest();
+                                }
+                            }, OnCursorError = function (e) {
+                                this.ErrorOccured = true;
+                                ++this.ErrorCount;
+                                this.OnErrorRequest(e);
+                            };
+                            if (whereIn.Op == '-') {
+                                CursorOpenRequest = this.ObjectStore.openCursor(KeyRange);
+                                CursorOpenRequest.onsuccess = OnCursorSuccess;
+                                CursorOpenRequest.onerror = OnCursorError;
+                            }
+                            else if (this.ObjectStore.indexNames.contains(whereIn.Column)) {
+                                CursorOpenRequest = this.ObjectStore.index(whereIn.Column).openCursor(KeyRange);
+                                CursorOpenRequest.onsuccess = OnCursorSuccess;
+                                CursorOpenRequest.onerror = OnCursorError;
+                            }
+                            else {
+                                Business.UtilityLogic.getError(JsStorage.ErrorType.ColumnNotExist, true, { ColumnName: whereIn.Column });
+                            }
+                        }
+                    };
+                    this.executeWhereInLogic = function () {
+                        if (Array.isArray(this.Query.WhereIn)) {
+                            this.executeMultipleWhereInLogic(this.Query.WhereIn);
+                        }
+                        else {
+                            this.executeSingleWhereInLogic(this.Query.WhereIn);
+                        }
+                    };
+                    this.executeWhereLogic = function () {
+                        var Column, That = this, ExecutionNo = 0, ConditionLength = Object.keys(this.Query.Where).length, OnSuccessGetRequest = function () {
+                            ++ExecutionNo;
+                            if (ExecutionNo == ConditionLength) {
+                                That.onSuccessRequest();
+                            }
+                        };
+                        for (Column in this.Query.Where) {
+                            if (!this.ErrorOccured) {
+                                if (this.ObjectStore.keyPath != null && this.ObjectStore.keyPath == Column) {
+                                    var GetRequest = this.ObjectStore.get(this.Query.Where[Column]);
+                                    GetRequest.onerror = function (e) {
+                                        That.ErrorOccured = true;
+                                        ++That.ErrorCount;
+                                        That.onErrorRequest(e);
+                                    };
+                                    GetRequest.onsuccess = function (e) {
+                                        var Result = e.target.result;
+                                        if (Result) {
+                                            That.Results.push();
+                                        }
+                                        OnSuccessGetRequest();
+                                    };
+                                }
+                                else if (this.ObjectStore.indexNames.contains(Column)) {
+                                    var CursorOpenRequest = this.ObjectStore.index(Column).openCursor(IDBKeyRange.only(this.Query.Where[Column]));
+                                    CursorOpenRequest.onerror = function (e) {
+                                        That.ErrorOccured = true;
+                                        ++this.ErrorCount;
+                                        That.onErrorRequest(e);
+                                    };
                                     CursorOpenRequest.onsuccess = function (e) {
                                         var Cursor = e.target.result;
                                         if (Cursor) {
-                                            Results.push(Cursor);
+                                            That.Results.push(Cursor);
                                             Cursor.continue();
                                         }
                                         else {
                                             OnSuccessGetRequest();
                                         }
-                                    };
-                                    CursorOpenRequest.onerror = function (e) {
-                                        ErrorOccured = true;
-                                        ++ErrorCount;
-                                        onErrorRequest(e);
                                     };
                                 }
                                 else {
@@ -548,42 +655,41 @@ var JsStorage;
                                 }
                             }
                         }
+                    };
+                    this.executeWhereUndefinedLogic = function () {
+                        var That = this, CursorOpenRequest = this.ObjectStore.openCursor();
+                        CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                That.Results.push(Cursor.value);
+                                Cursor.continue();
+                            }
+                            else {
+                                That.onSuccessRequest();
+                            }
+                        };
+                        CursorOpenRequest.onerror = That.onErrorRequest;
+                    };
+                    this.Query = query;
+                    this.OnSuccess = onSuccess;
+                    this.OnError = onError;
+                    this.Transaction = IndexDb.DbConnection.transaction([query.From], "readonly");
+                    this.ObjectStore = this.Transaction.objectStore(query.From);
+                    if (query.WhereIn != undefined) {
+                        if (query.Where != undefined) {
+                            this.SendResultFlag = false;
+                            this.executeWhereLogic();
+                        }
+                        this.SendResultFlag = true;
+                        this.executeWhereInLogic();
+                    }
+                    else if (query.Where != undefined) {
+                        this.executeWhereLogic();
+                    }
+                    else {
+                        this.executeWhereUndefinedLogic();
                     }
                 }
-                SelectLogic.prototype.getPrimaryKey = function (tablename) {
-                    var PrimaryKeyColumn = "";
-                    IndexDb.ActiveDataBase.Tables.every(function (table) {
-                        if (table.Name == tablename) {
-                            table.Columns.every(function (column) {
-                                if (column.PrimaryKey) {
-                                    PrimaryKeyColumn = column.Name;
-                                    return true;
-                                }
-                                return false;
-                            });
-                        }
-                        return false;
-                    });
-                    return PrimaryKeyColumn;
-                };
-                SelectLogic.prototype.isWhereValid = function (condition) {
-                    if (condition.Column == undefined) {
-                        return JsStorage.ErrorType.UndefinedColumn;
-                    }
-                    else if (condition.Value == undefined) {
-                        return JsStorage.ErrorType.UndefinedValue;
-                    }
-                    return null;
-                };
-                SelectLogic.prototype.IsWhereValid = function (tablename, isprimaryKey, condition) {
-                    if (condition.Column == undefined) {
-                        return JsStorage.ErrorType.UndefinedColumn;
-                    }
-                    else if (condition.Value == undefined) {
-                        return JsStorage.ErrorType.UndefinedValue;
-                    }
-                    return null;
-                };
                 return SelectLogic;
             }());
             IndexDb.SelectLogic = SelectLogic;

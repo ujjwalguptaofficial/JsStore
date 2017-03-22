@@ -28,6 +28,8 @@ module JsStorage {
                         console.error(ex);
                     }
                 }
+
+                
             }
         }
     }

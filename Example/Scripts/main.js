@@ -471,7 +471,7 @@ function AddDataInDb() {
                 Name: "City"
             }
         ],
-        Version: 5
+        Version: 9
     }
     var DataBase = {
         Name: "Students",
@@ -532,4 +532,28 @@ function DeleteRow(element) {
             console.log(error);
         });
     ShowTableData();
+}
+
+function select(id) {
+    DbConnection.select({
+        From: "student",
+        Where: {
+            Id: id
+        },
+    }, function (students) {
+        console.log(students);
+    });
+}
+
+function selectIn(id, op) {
+    DbConnection.select({
+        From: "student",
+        WhereIn: {
+            Column: 'Id',
+            Value: id,
+            Op: op
+        },
+    }, function (students) {
+        console.log(students);
+    });
 }

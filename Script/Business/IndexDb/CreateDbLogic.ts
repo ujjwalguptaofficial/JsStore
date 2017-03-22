@@ -59,7 +59,10 @@ module JsStorage {
                                     keyPath: item.PrimaryKey
                                 });
                                 item.Columns.forEach(function (column: Column) {
-                                    if (!column.PrimaryKey) {
+                                    if (column.PrimaryKey) {
+                                        Store.createIndex(column.Name, column.Name, { unique: true });
+                                    }
+                                    else {
                                         Store.createIndex(column.Name, column.Name, { unique: false });
                                     }
                                 })

@@ -12,19 +12,28 @@ module JsStorage {
         UndefinedColumnValue,
         NotArray,
         NoValueSupplied,
-        ColumnNotExist
+        ColumnNotExist,
+        InvalidOp
     }
 
     export interface ISelect {
         From: string,
         Where: any,
-        WhereIn: any,
+        WhereIn: Array<IWhereIn>,
         FromMany
     }
 
     export interface IDelete {
         From: string,
         Where: any
+    }
+
+    export interface IWhereIn {
+        Column: string,
+        Value,
+        Start,
+        Op,
+        End
     }
 
     export interface IUpdate {
