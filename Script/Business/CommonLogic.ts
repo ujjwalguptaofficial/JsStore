@@ -17,16 +17,18 @@ module JsStorage {
 
     export interface ISelect {
         From: string,
-        Where: Array<ICondition>
+        Where: any,
+        WhereIn: any,
+        FromMany
     }
 
     export interface IDelete {
-        Table: string,
-        Where: Array<ICondition>
+        From: string,
+        Where: any
     }
 
     export interface IUpdate {
-        Table: string,
+        In: string,
 
         /**
          * A Json Object containing the update values

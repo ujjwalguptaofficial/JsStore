@@ -13,7 +13,7 @@ module JsStorage {
 
     export class Main {
         DbType: DBType;
-        IndexDbObj: Business.IndexDbLogic;
+        IndexDbObj: Business.IndexDb.MainLogic;
         WebSqlObj: Business.WebSqlLogic;
         Status: JsStorageStatus = <JsStorageStatus>{
             ConStatus: ConnectionStatus.NotStarted,
@@ -36,7 +36,7 @@ module JsStorage {
         createDb(dataBase: IDataBase, onSuccess: Function, onError: Function) {
             if (this.DbType == DBType.IndexedDb) {
                 var Db = new DataBase(dataBase)
-                this.IndexDbObj = new Business.IndexDbLogic(Db);
+                this.IndexDbObj = new Business.IndexDb.MainLogic(Db);
                 var DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
                 this.IndexDbObj.createDb(this, onSuccess, onError);
             }
@@ -145,13 +145,13 @@ module JsStorage {
             }
             else {
                 if (onError != null) {
-                    onError(Business.UtilityLogic.getError(ErrorType.NoValueSupplied, null));
+                    onError(Business.UtilityLogic.getError(ErrorType.NoValueSupplied, true, null));
                 }
             }
         }
 
         update(query: IUpdate, onSuccess: Function, onError: Function) {
-            
+
             if (this.DbType == DBType.IndexedDb) {
                 this.IndexDbObj.update(query, onSuccess, onError);
             }
@@ -190,6 +190,6 @@ module JsStorage {
             }
         }
 
-        
+
     }
 }

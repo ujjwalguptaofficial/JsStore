@@ -412,7 +412,7 @@ function AddDetails() {
         } else {
             var Id = $('form').attr('data-student-id');
             DbConnection.update({
-                Table: 'student',
+                In: 'student',
                 Set: {
                     FirstName: FName,
                     LastName: LName,
@@ -520,15 +520,16 @@ function DeleteRow(element) {
     //     }
     // }
     DbConnection.delete({
-        Table: 'student',
-        Where: [{
-            Column: 'Id',
-            Value: Number(StudentId)
-        }]
-    }, function (result) {
-        console.log(result);
-    }, function (error) {
-        console.log(error);
-    })
+            From: 'student',
+            Where: {
+                Ids: Number(StudentId)
+            }
+        },
+        function (result) {
+            console.log(result);
+        },
+        function (error) {
+            console.log(error);
+        });
     ShowTableData();
 }

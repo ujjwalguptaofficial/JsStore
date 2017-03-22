@@ -5,7 +5,7 @@ module JsStorage {
             Value: string
         }
         export class UtilityLogic {
-            static getError(errorType: ErrorType, errorDetail: any) {
+            static getError(errorType: ErrorType, logError: boolean = false, errorDetail: any) {
                 var Error: IError = {
                     Name: ErrorType[errorType],
                     Value: ''
@@ -17,23 +17,21 @@ module JsStorage {
                     case ErrorType.UndefinedColumnName: Error.Value = "column name is undefined"; break;
                     case ErrorType.UndefinedColumnValue: Error.Value = "column value is undefined"; break;
                     case ErrorType.NoValueSupplied: Error.Value = "no value supplied"; break;
-                    case ErrorType.ColumnNotExist: Error.Value = "column :" + errorDetail['columnName'] + " does not exist";
+                    case ErrorType.ColumnNotExist: Error.Value = "column :" + errorDetail['ColumnName'] + " does not exist";
                         break;
                     default: console.warn('the error type is not defined');
+                }
+                if (logError) {
+                    var ErrorDesc = {
+                        Detail: Error
+                    }
+                    console.warn("Error occured : - " + ErrorDesc);
                 }
                 return Error;
             }
 
             static convertObjectintoLowerCase(obj: any) {
-                // var newobj = {},
-                //     LowerCase: string;
-                // for (var key in obj) {
-                //     LowerCase = key.toLowerCase();
-                //     if (key != LowerCase) {
-                //         obj[LowerCase] = obj[key];
-                //         delete obj[key];
-                //     }
-                // }
+
                 var keys = Object.keys(obj);
                 var n = keys.length;
                 while (n--) {
@@ -42,6 +40,8 @@ module JsStorage {
                     delete obj[key]
                 }
             }
+
+
         }
     }
 }
