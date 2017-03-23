@@ -37,7 +37,15 @@ module JsStorage {
                 }
 
                 public select = function (query: ISelect, onSuccess: Function, onError: Function) {
-                    new SelectLogic(query, onSuccess, onError);
+                    if (Array.isArray(query.From)) {
+                        new SelectJoinLogic(query, true, onSuccess, onError);
+                    }
+                    else if (typeof query.From === 'object') {
+                        new SelectJoinLogic(query, false, onSuccess, onError);
+                    }
+                    else {
+                        new SelectLogic(query, onSuccess, onError);
+                    }
                 }
 
                 public createDb = function (objMain: Main, onSuccess: Function, onError: Function) {

@@ -43,22 +43,7 @@ module JsStorage {
                             ConditionLength = Object.keys(query.Where).length;
                         for (Column in query.Where) {
                             if (!ErrorOccured) {
-                                if (ObjectStore.keyPath != null && ObjectStore.keyPath == Column) {
-                                    var DeleteRequest = ObjectStore.delete(query.Where[Column]);
-                                    DeleteRequest.onerror = function (e) {
-                                        ErrorOccured = true; ++ErrorCount;
-                                        onErrorGetRequest(e);
-                                    };
-                                    DeleteRequest.onsuccess = function (event) {
-                                        var Result = (<any>event).target.result;
-                                        ++ExecutionNo; ++RowAffected;
-                                        if (ExecutionNo == query.Where.length) {
-                                            onSuceessRequest(RowAffected);
-                                        }
-                                    }
-
-                                }
-                                else if (ObjectStore.indexNames.contains(Column)) {
+                                if (ObjectStore.indexNames.contains(Column)) {
                                     var CursorOpenRequest = ObjectStore.index(Column).openCursor(IDBKeyRange.only(query.Where[Column])),
                                         ExecutionNo = 0;
 
@@ -87,6 +72,9 @@ module JsStorage {
                                     UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
                                 }
 
+                            }
+                            else {
+                                return;
                             }
                         }
                     }

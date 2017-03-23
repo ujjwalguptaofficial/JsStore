@@ -1,8 +1,8 @@
 module JsStorage {
     export module Business {
         export module IndexDb {
-            export class SelectLogic extends BaseSelectLogic {
-
+            export class SelectJoinLogic extends BaseSelectLogic {
+                ObjectStoreForJoin: IDBObjectStore;
                 private executeWhereInLogic = function () {
                     if (Array.isArray(this.Query.WhereIn)) {
                         this.executeMultipleWhereInLogic(this.Query.WhereIn);
@@ -140,7 +140,7 @@ module JsStorage {
                     CursorOpenRequest.onerror = That.onErrorRequest;
                 }
 
-                constructor(query: ISelect, onSuccess: Function, onError: Function) {
+                constructor(query: ISelect, isArray: boolean, onSuccess: Function, onError: Function) {
                     super();
                     this.Query = query;
                     this.OnSuccess = onSuccess;
@@ -165,9 +165,7 @@ module JsStorage {
                         this.executeWhereUndefinedLogic();
                     }
                 }
-
             }
         }
-
     }
 }

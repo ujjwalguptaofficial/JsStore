@@ -17,10 +17,12 @@ module JsStorage {
     }
 
     export interface ISelect {
-        From: string,
+        From: any,
         Where: any,
         WhereIn: Array<IWhereIn>,
-        FromMany
+        FromMany,
+        Skip: number,
+        Limit: number
     }
 
     export interface IDelete {
@@ -63,6 +65,18 @@ module JsStorage {
         Column: string,
         Value: string,
         Op: string
+    }
+
+    export interface ITableJoin {
+        Column: string,
+        Table: string
+    }
+
+    export interface IJoin {
+        Table1: ITableJoin,
+        Join: string, //inner,left,right,outer
+        Table2: ITableJoin,
+        Relation: string
     }
 
 }
