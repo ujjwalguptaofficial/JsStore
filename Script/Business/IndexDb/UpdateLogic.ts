@@ -22,6 +22,9 @@ module JsStorage {
                                 }
                             }
                         };
+                    (<any>Transaction).ontimeout = function () {
+                        console.log('transaction timed out');
+                    }
                     if (query.Where == undefined) {
                         var CursorOpenRequest = ObjectStore.openCursor();
                         CursorOpenRequest.onsuccess = function (e) {

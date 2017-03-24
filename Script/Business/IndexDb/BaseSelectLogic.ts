@@ -1,13 +1,12 @@
 module JsStorage {
     export module Business {
         export module IndexDb {
-            export class BaseSelectLogic {
+            export class BaseSelectLogic extends GateLogic {
                 Query: ISelect;
                 OnSuccess: Function;
                 OnError: Function;
                 ErrorOccured: boolean = false;
                 ErrorCount = 0;
-                Results = [];
                 Transaction: IDBTransaction;
                 ObjectStore: IDBObjectStore;
                 SendResultFlag: Boolean = true;

@@ -51,6 +51,10 @@ module JsStorage {
                 public createDb = function (objMain: Main, onSuccess: Function, onError: Function) {
                     new CreateDbLogic(objMain, onSuccess, onError);
                 }
+
+                public clear = function (tableName: string, onSuccess: Function, onError: Function) {
+                    new ClearLogic(tableName, onSuccess, onError);
+                }
             }
         }
 

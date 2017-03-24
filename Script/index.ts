@@ -6,6 +6,7 @@
 /// <reference path="Model/DataBase.ts" />
 /// <reference path="Business/WebSqlLogic.ts" />
 
+/// <reference path="Business/GateLogic.ts" />
 /// <reference path="Business/IndexDb/CreateDbLogic.ts" />
 /// <reference path="Business/IndexDb/DeleteLogic.ts" />
 /// <reference path="Business/IndexDb/DropDbLogic.ts" />
