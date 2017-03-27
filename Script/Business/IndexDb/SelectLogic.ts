@@ -17,110 +17,140 @@ module JsStorage {
                         SkipRecord = this.Query.Skip,
                         LimitRecord = this.Query.Limit,
                         That: SelectLogic = this,
-                        ExecutionNo = 0,
-                        ConditionLength = Object.keys(this.Query.Where).length,
+                        ConditionLength = 0,
                         OnSuccessGetRequest = function () {
-                            ++ExecutionNo;
-                            if (ExecutionNo == ConditionLength) {
+                            --ConditionLength;
+                            if (ConditionLength == 0)
                                 That.onSuccessRequest();
-                            }
                         };
-                    for (Column in this.Query.Where) {
-                        if (!this.ErrorOccured) {
-                            if (this.ObjectStore.keyPath != null && this.ObjectStore.keyPath == Column) {
-                                var GetRequest = this.ObjectStore.get(this.Query.Where[Column]);
-                                GetRequest.onerror = function (e) {
-                                    That.ErrorOccured = true; ++That.ErrorCount;
-                                    That.onErrorRequest(e);
-                                }
-                                GetRequest.onsuccess = function (e) {
-                                    var Result = (<any>e).target.result
-                                    if (Result) {
-                                        That.Results.push();
-                                    }
-                                    OnSuccessGetRequest();
-                                }
 
+                    var executeInnerWhereLogic = function (column, value) {
+
+                        if (That.ObjectStore.indexNames.contains(column)) {
+                            var CursorOpenRequest = That.ObjectStore.index(column).openCursor(value);
+                            CursorOpenRequest.onerror = function (e) {
+                                That.ErrorOccured = true; ++That.ErrorCount;
+                                That.onErrorRequest(e);
                             }
-                            else if (this.ObjectStore.indexNames.contains(Column)) {
-                                var CursorOpenRequest = this.ObjectStore.index(Column).openCursor(IDBKeyRange.only(this.Query.Where[Column]));
-                                CursorOpenRequest.onerror = function (e) {
-                                    That.ErrorOccured = true; ++this.ErrorCount;
-                                    That.onErrorRequest(e);
-                                }
-                                if (SkipRecord && LimitRecord) {
-                                    var RecordSkipped = 0;
-                                    CursorOpenRequest.onsuccess = function (e) {
-                                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                                        if (Cursor) {
-                                            if (RecordSkipped == SkipRecord) {
-                                                if (That.Results.length != LimitRecord) {
-                                                    That.Results.push(Cursor);
-                                                    Cursor.continue();
-                                                }
-                                                else {
-                                                    OnSuccessGetRequest();
-                                                }
-                                            }
-                                            else {
-                                                ++RecordSkipped;
-                                            }
-                                        }
-                                        else {
-                                            OnSuccessGetRequest();
-                                        }
-                                    }
-                                }
-                                else if (SkipRecord) { //skip exist
-                                    var RecordSkipped = 0;
-                                    CursorOpenRequest.onsuccess = function (e) {
-                                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                                        if (Cursor) {
-                                            if (RecordSkipped == SkipRecord) {
+                            if (SkipRecord && LimitRecord) {
+                                var RecordSkipped = 0;
+                                CursorOpenRequest.onsuccess = function (e) {
+                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    if (Cursor) {
+                                        if (RecordSkipped == SkipRecord) {
+                                            if (That.Results.length != LimitRecord) {
                                                 That.Results.push(Cursor);
+                                                Cursor.continue();
                                             }
                                             else {
-                                                ++RecordSkipped;
+                                                OnSuccessGetRequest();
                                             }
-                                            Cursor.continue();
                                         }
                                         else {
-                                            OnSuccessGetRequest();
+                                            ++RecordSkipped;
                                         }
                                     }
+                                    else {
+                                        OnSuccessGetRequest();
+                                    }
                                 }
-                                else if (LimitRecord) {
-                                    CursorOpenRequest.onsuccess = function (e) {
-                                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                                        if (Cursor && That.Results.length != LimitRecord) {
+                            }
+                            else if (SkipRecord) { //skip exist
+                                var RecordSkipped = 0;
+                                CursorOpenRequest.onsuccess = function (e) {
+                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    if (Cursor) {
+                                        if (RecordSkipped == SkipRecord) {
                                             That.Results.push(Cursor);
-                                            Cursor.continue();
                                         }
                                         else {
-                                            OnSuccessGetRequest();
+                                            ++RecordSkipped;
                                         }
+                                        Cursor.continue();
+                                    }
+                                    else {
+                                        OnSuccessGetRequest();
                                     }
                                 }
-                                else {
-                                    CursorOpenRequest.onsuccess = function (e) {
-                                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                                        if (Cursor) {
-                                            That.Results.push(Cursor);
-                                            Cursor.continue();
-                                        }
-                                        else {
-                                            OnSuccessGetRequest();
-                                        }
+                            }
+                            else if (LimitRecord) {
+                                CursorOpenRequest.onsuccess = function (e) {
+                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    if (Cursor && That.Results.length != LimitRecord) {
+                                        That.Results.push(Cursor.value);
+                                        Cursor.continue();
+                                    }
+                                    else {
+                                        OnSuccessGetRequest();
                                     }
                                 }
-
                             }
                             else {
-                                UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                                CursorOpenRequest.onsuccess = function (e) {
+                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    if (Cursor) {
+                                        if (That.checkForWhereConditionMatch(That.Query.Where, Cursor.value)) {
+                                            That.Results.push(Cursor.value);
+                                        }
+                                        Cursor.continue();
+                                    }
+                                    else {
+                                        OnSuccessGetRequest();
+                                    }
+                                }
                             }
+                        }
+                        else {
+                            UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                            return false;
                         }
 
                     }
+
+                    for (Column in this.Query.Where) {
+                        if (Array.isArray(this.Query.Where[Column])) {
+                            ConditionLength = this.Query.Where[Column].length;
+                            for (var i = 0; i < this.Query.Where[Column].length; i++) {
+                                var ExecutionStatus = executeInnerWhereLogic(Column, this.Query.Where[Column][i])
+                                if (ExecutionStatus == false) {
+                                    break;
+                                }
+                            }
+
+                        }
+                        else {
+                            executeInnerWhereLogic(Column, this.Query.Where[Column]);
+                        }
+                        break;
+                    }
+
+                }
+
+                private checkForWhereConditionMatch(where, value) {
+                    var TempColumn;
+                    for (TempColumn in where) {
+                        if (Array.isArray(where[TempColumn])) {
+                            var i, Status = true;
+                            for (i = 0; i < TempColumn.length; i++) {
+                                if (where[TempColumn][i] == value[TempColumn]) {
+                                    Status = true;
+                                    break;
+                                }
+                                else {
+                                    Status = false;
+                                }
+                            };
+                            if (!Status) {
+                                return Status;
+                            }
+                        }
+                        else {
+                            if (where[TempColumn] != value[TempColumn]) {
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
                 }
 
                 private executeWhereUndefinedLogic = function () {
