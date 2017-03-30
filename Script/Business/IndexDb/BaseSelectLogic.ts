@@ -1,8 +1,8 @@
 module JsStorage {
     export module Business {
         export module IndexDb {
-            export class BaseSelectLogic extends GateLogic {
-                Query: ISelect;
+            export class BaseSelectLogic extends DbHelperLogic {
+               
                 OnSuccess: Function;
                 OnError: Function;
                 ErrorOccured: boolean = false;

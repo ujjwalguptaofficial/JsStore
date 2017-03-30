@@ -2,7 +2,10 @@ module JsStorage {
     export module Business {
         export module IndexDb {
             export class SelectJoinLogic extends BaseSelectLogic {
+                Query: ITableJoin;
                 ObjectStoreForJoin: IDBObjectStore;
+                QueryStack: Array<ITableJoin> = [];
+                IndexRequest: Array<IDBIndex> = []
                 private executeWhereInLogic = function () {
                     if (Array.isArray(this.Query.WhereIn)) {
                         this.executeMultipleWhereInLogic(this.Query.WhereIn);
@@ -12,23 +15,21 @@ module JsStorage {
                     }
                 }
 
-                private executeWhereLogic = function () {
+                private executeWhereLogic = function (query: ITableJoin, queryJoin: ITableJoin, joinType = "inner") {
                     var Column,
-                        SkipRecord = this.Query.Skip,
-                        LimitRecord = this.Query.Limit,
-                        That: SelectLogic = this,
+                        That: SelectJoinLogic = this,
                         ExecutionNo = 0,
-                        ConditionLength = Object.keys(this.Query.Where).length,
+                        ConditionLength = Object.keys(query.Where).length,
                         OnSuccessGetRequest = function () {
                             ++ExecutionNo;
                             if (ExecutionNo == ConditionLength) {
                                 That.onSuccessRequest();
                             }
                         };
-                    for (Column in this.Query.Where) {
+                    for (Column in query.Where) {
                         if (!this.ErrorOccured) {
                             if (this.ObjectStore.keyPath != null && this.ObjectStore.keyPath == Column) {
-                                var GetRequest = this.ObjectStore.get(this.Query.Where[Column]);
+                                var GetRequest = this.ObjectStore.get(query.Where[Column]);
                                 GetRequest.onerror = function (e) {
                                     That.ErrorOccured = true; ++That.ErrorCount;
                                     That.onErrorRequest(e);
@@ -36,6 +37,7 @@ module JsStorage {
                                 GetRequest.onsuccess = function (e) {
                                     var Result = (<any>e).target.result
                                     if (Result) {
+                                        //That.doInner(query,Result[query.Column],queryJoin.Column,Result[query.Column])
                                         That.Results.push();
                                     }
                                     OnSuccessGetRequest();
@@ -43,18 +45,18 @@ module JsStorage {
 
                             }
                             else if (this.ObjectStore.indexNames.contains(Column)) {
-                                var CursorOpenRequest = this.ObjectStore.index(Column).openCursor(IDBKeyRange.only(this.Query.Where[Column]));
+                                var CursorOpenRequest = this.ObjectStore.index(Column).openCursor(IDBKeyRange.only(query.Where[Column]));
                                 CursorOpenRequest.onerror = function (e) {
                                     That.ErrorOccured = true; ++this.ErrorCount;
                                     That.onErrorRequest(e);
                                 }
-                                if (SkipRecord && LimitRecord) {
+                                if (query.Skip && query.Limit) {
                                     var RecordSkipped = 0;
                                     CursorOpenRequest.onsuccess = function (e) {
                                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
                                         if (Cursor) {
-                                            if (RecordSkipped == SkipRecord) {
-                                                if (That.Results.length != LimitRecord) {
+                                            if (RecordSkipped == query.Skip) {
+                                                if (That.Results.length != query.Limit) {
                                                     That.Results.push(Cursor);
                                                     Cursor.continue();
                                                 }
@@ -71,12 +73,12 @@ module JsStorage {
                                         }
                                     }
                                 }
-                                else if (SkipRecord) { //skip exist
+                                else if (query.Skip) { //skip exist
                                     var RecordSkipped = 0;
                                     CursorOpenRequest.onsuccess = function (e) {
                                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
                                         if (Cursor) {
-                                            if (RecordSkipped == SkipRecord) {
+                                            if (RecordSkipped == query.Limit) {
                                                 That.Results.push(Cursor);
                                             }
                                             else {
@@ -89,10 +91,10 @@ module JsStorage {
                                         }
                                     }
                                 }
-                                else if (LimitRecord) {
+                                else if (query.Limit) {
                                     CursorOpenRequest.onsuccess = function (e) {
                                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                                        if (Cursor && That.Results.length != LimitRecord) {
+                                        if (Cursor && That.Results.length != query.Limit) {
                                             That.Results.push(Cursor);
                                             Cursor.continue();
                                         }
@@ -105,7 +107,15 @@ module JsStorage {
                                     CursorOpenRequest.onsuccess = function (e) {
                                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
                                         if (Cursor) {
-                                            That.Results.push(Cursor);
+                                            var JoinStatus = true;
+                                            That.IndexRequest.forEach(function (item, index) {
+                                                switch (That.QueryStack[index + 1].JoinType) {
+                                                    case 'inner' : 
+                                                }
+                                            })
+                                            if (JoinStatus) {
+                                                That.Results.push(Cursor);
+                                            }
                                             Cursor.continue();
                                         }
                                         else {
@@ -140,30 +150,67 @@ module JsStorage {
                     CursorOpenRequest.onerror = That.onErrorRequest;
                 }
 
-                constructor(query: ISelect, isArray: boolean, onSuccess: Function, onError: Function) {
+                constructor(query: ISelectJoin, onSuccess: Function, onError: Function) {
                     super();
-                    this.Query = query;
                     this.OnSuccess = onSuccess;
                     this.OnError = onError;
-                    this.Transaction = DbConnection.transaction([query.From], "readonly");
-                    this.ObjectStore = this.Transaction.objectStore(query.From);
+                    var That = this,
+                        TableList = []; // used to open the multiple object store
+                    //this.Transaction = DbConnection.transaction([query.From], "readonly");
+                    //this.ObjectStore = this.Transaction.objectStore(query.From);
 
-                    if (query.WhereIn != undefined) {
-                        if (query.Where != undefined) {
-                            this.SendResultFlag = false;
-                            this.executeWhereLogic();
+                    var convertQueryIntoStack = function (query) {
+                        if (query.hasOwnProperty('Table1')) {
+                            query.Table2['JoinType'] = (<IJoin>query).Join == undefined ? 'inner' : (<IJoin>query).Join.toLowerCase();
+                            That.QueryStack.push(query.Table2); TableList.push(query.Table2.Table);
+                            return convertQueryIntoStack(query.Table1);
                         }
-                        this.SendResultFlag = true;
-                        this.executeWhereInLogic();
+                        else {
+                            That.QueryStack.push(query);
+                            TableList.push(query.Table);
+                            return;
+                        }
+                    };
+                    convertQueryIntoStack(query.From);
+                    this.QueryStack.reverse();
+                    console.log(TableList);
+                    //var i = QueryStack.length - 1;
+                    // while (i >= 0) {
+                    //     this.doJoinLogic(QueryStack.pop(), QueryStack.pop());
+                    //     i -= 2;
+                    // }
+
+
+                    this.Transaction = DbConnection.transaction(TableList, "readonly");
+                    for (var i = 1; i < this.QueryStack.length; i++) {
+                        this.IndexRequest[i - 1] = this.Transaction.objectStore(this.QueryStack[i].Table).index(this.QueryStack[i].Column);
 
                     }
-                    else if (query.Where != undefined) {
-                        this.executeWhereLogic();
-                    }
-                    else {
+                    this.Query = this.QueryStack[this.QueryStack.length - 1];
+                    this.ObjectStore = this.Transaction.objectStore(this.QueryStack[this.QueryStack.length - 1].Table);
+                    //var CursorOpenRequest = Transaction.
+                    console.log(this.QueryStack);
 
-                        this.executeWhereUndefinedLogic();
+                }
+
+                private doJoinLogic(join1: ITableJoin, join2: ITableJoin) {
+                    var That = this,
+                        Transaction = DbConnection.transaction([join1.Table, join2.Table], "readonly"),
+                        CursorOpenRequest1 = Transaction.objectStore(join1.Table).index(join1.Column).openCursor(),
+                        CursorOpenRequest2 = Transaction.objectStore(join2.Table).index(join2.Column).openCursor(),
+                        onErrorCursorRequest = function (e) {
+                            ++That.ErrorCount;
+                            That.onErrorRequest(e);
+                        }
+                    CursorOpenRequest1.onerror = onErrorCursorRequest;
+                    CursorOpenRequest2.onerror = onErrorCursorRequest;
+                    CursorOpenRequest1.onsuccess = function (e) {
+
                     }
+                    CursorOpenRequest2.onsuccess = function (e) {
+
+                    }
+
                 }
             }
         }

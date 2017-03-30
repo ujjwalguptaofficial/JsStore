@@ -37,11 +37,9 @@ module JsStorage {
                 }
 
                 public select = function (query: ISelect, onSuccess: Function, onError: Function) {
-                    if (Array.isArray(query.From)) {
-                        new SelectJoinLogic(query, true, onSuccess, onError);
-                    }
-                    else if (typeof query.From === 'object') {
-                        new SelectJoinLogic(query, false, onSuccess, onError);
+
+                    if (typeof query.From === 'object') {
+                        new SelectJoinLogic(<ISelectJoin>query, onSuccess, onError);
                     }
                     else {
                         new SelectLogic(query, onSuccess, onError);

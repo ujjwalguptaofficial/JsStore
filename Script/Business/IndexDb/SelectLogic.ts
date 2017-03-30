@@ -2,7 +2,7 @@ module JsStorage {
     export module Business {
         export module IndexDb {
             export class SelectLogic extends BaseSelectLogic {
-
+                Query: ISelect;
                 private executeWhereInLogic = function () {
                     if (Array.isArray(this.Query.WhereIn)) {
                         this.executeMultipleWhereInLogic(this.Query.WhereIn);
@@ -126,6 +126,17 @@ module JsStorage {
 
                 }
 
+
+                /**
+                 * For matching the different column value existance
+                 * 
+                 * @private
+                 * @param {any} where 
+                 * @param {any} value 
+                 * @returns 
+                 * 
+                 * @memberOf SelectLogic
+                 */
                 private checkForWhereConditionMatch(where, value) {
                     var TempColumn;
                     for (TempColumn in where) {

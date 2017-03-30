@@ -99,9 +99,8 @@ module JsStorage {
          * @memberOf Main
          */
         select(query: ISelect, onSuccess: Function, onError: Function) {
-            query.From = query.From.toLowerCase();
+
             if (this.Status.ConStatus == ConnectionStatus.Connected) {
-                query.From = query.From.toLowerCase();
                 if (this.DbType == DBType.IndexedDb) {
                     this.IndexDbObj.select(query, onSuccess, onError);
                 }

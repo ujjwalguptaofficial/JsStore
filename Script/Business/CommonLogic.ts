@@ -20,7 +20,6 @@ module JsStorage {
         From: any,
         Where: any,
         WhereIn: Array<IWhereIn>,
-        FromMany,
         Skip: number,
         Limit: number
     }
@@ -69,14 +68,22 @@ module JsStorage {
 
     export interface ITableJoin {
         Column: string,
-        Table: string
+        Table: string,
+        Where: any,
+        WhereIn: Array<IWhereIn>,
+        Skip: number,
+        Limit: number,
+        JoinType: string
+    }
+
+    export interface ISelectJoin {
+        From: IJoin, //IJoin
     }
 
     export interface IJoin {
         Table1: ITableJoin,
         Join: string, //inner,left,right,outer
-        Table2: ITableJoin,
-        Relation: string
+        Table2: ITableJoin
     }
 
 }
