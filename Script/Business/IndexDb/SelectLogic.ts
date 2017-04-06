@@ -27,17 +27,17 @@ module JsStorage {
                     var executeInnerWhereLogic = function (column, value) {
 
                         if (That.ObjectStore.indexNames.contains(column)) {
-                            var CursorOpenRequest = That.ObjectStore.index(column).openCursor(value);
+                            var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
                             CursorOpenRequest.onerror = function (e) {
                                 That.ErrorOccured = true; ++That.ErrorCount;
                                 That.onErrorRequest(e);
                             }
                             if (SkipRecord && LimitRecord) {
-                                var RecordSkipped = 0;
+                                var RecordSkipped = false;
                                 CursorOpenRequest.onsuccess = function (e) {
                                     var Cursor: IDBCursorWithValue = (<any>e).target.result;
                                     if (Cursor) {
-                                        if (RecordSkipped == SkipRecord) {
+                                        if (RecordSkipped) {
                                             if (That.Results.length != LimitRecord) {
                                                 That.Results.push(Cursor);
                                                 Cursor.continue();
@@ -47,7 +47,8 @@ module JsStorage {
                                             }
                                         }
                                         else {
-                                            ++RecordSkipped;
+                                            RecordSkipped = true;
+                                            Cursor.advance(SkipRecord - 1);
                                         }
                                     }
                                     else {
@@ -56,17 +57,20 @@ module JsStorage {
                                 }
                             }
                             else if (SkipRecord) { //skip exist
-                                var RecordSkipped = 0;
+                                var RecordSkipped = false;
                                 CursorOpenRequest.onsuccess = function (e) {
                                     var Cursor: IDBCursorWithValue = (<any>e).target.result;
                                     if (Cursor) {
-                                        if (RecordSkipped == SkipRecord) {
+                                        if (RecordSkipped) {
                                             That.Results.push(Cursor);
+                                            Cursor.continue();
                                         }
                                         else {
-                                            ++RecordSkipped;
+                                            RecordSkipped = true;
+                                            Cursor.advance(SkipRecord - 1);
                                         }
-                                        Cursor.continue();
+
+
                                     }
                                     else {
                                         OnSuccessGetRequest();

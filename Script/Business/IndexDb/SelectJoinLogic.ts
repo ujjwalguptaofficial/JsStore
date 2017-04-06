@@ -107,15 +107,7 @@ module JsStorage {
                                     CursorOpenRequest.onsuccess = function (e) {
                                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
                                         if (Cursor) {
-                                            var JoinStatus = true;
-                                            That.IndexRequest.forEach(function (item, index) {
-                                                switch (That.QueryStack[index + 1].JoinType) {
-                                                    case 'inner' : 
-                                                }
-                                            })
-                                            if (JoinStatus) {
-                                                That.Results.push(Cursor);
-                                            }
+                                            That.Results[That.Results.length - 1][query.Table] = Cursor.value;
                                             Cursor.continue();
                                         }
                                         else {
@@ -132,6 +124,223 @@ module JsStorage {
 
                     }
                 }
+
+                // private executeJoinLogic = function (value, onSuccess: Function, onError: Function, results: any = {}, index = 1) {
+                //     var JoinStatus = true,
+                //         Results = [],
+                //         That: SelectJoinLogic = this,
+                //         CursorJoinRequest = this.IndexRequest[index - 1].openCursor(IDBKeyRange.only(value[this.QueryStack[index].Column]));
+                //     CursorJoinRequest.onsuccess = function (e) {
+                //         var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                //         if (Cursor) {
+                //             switch (That.QueryStack[index].JoinType) {
+                //                 case 'inner': Results.push(Cursor.value); break;
+                //                 case 'left':
+                //             }
+
+                //         }
+                //         else {
+                //             ++index;
+                //             results[this.QueryStack[index].Column] = Results;
+                //             if (index <= this.IndexRequest.length) {
+                //                 That.executeJoinLogic(Results, onSuccess, onError, results);
+                //             }
+                //             else {
+                //                 That.Results.push(results);
+                //                 onSuccess();
+                //             }
+                //         }
+                //     }
+                //     CursorJoinRequest.onerror = function (e) {
+                //         onError(e);
+                //     }
+                // }
+
+                private executeJoinLogic = function (joinData: Array<any>, joinTable: string, joinColumn: string, query: ITableJoin) {
+                    var Column,
+                        SkipRecord = this.Query.Skip,
+                        LimitRecord = this.Query.Limit,
+                        That: SelectJoinLogic = this,
+                        ConditionLength = 0,
+                        OnSuccessGetRequest = function () {
+                            --ConditionLength;
+                            if (ConditionLength == 0)
+                                That.onSuccessRequest();
+                        };
+
+                    var executeInnerWhereLogic = function (column, value) {
+
+                        if (That.ObjectStore.indexNames.contains(column)) {
+                            var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
+                            CursorOpenRequest.onerror = function (e) {
+                                That.ErrorOccured = true; ++That.ErrorCount;
+                                That.onErrorRequest(e);
+                            }
+                            if (SkipRecord && LimitRecord) {
+                                var RecordSkipped = false;
+                                CursorOpenRequest.onsuccess = function (e) {
+                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    if (Cursor) {
+                                        if (RecordSkipped) {
+                                            if (That.Results.length != LimitRecord) {
+                                                That.Results.push(Cursor);
+                                                Cursor.continue();
+                                            }
+                                            else {
+                                                OnSuccessGetRequest();
+                                            }
+                                        }
+                                        else {
+                                            RecordSkipped = true;
+                                            Cursor.advance(SkipRecord - 1);
+                                        }
+                                    }
+                                    else {
+                                        OnSuccessGetRequest();
+                                    }
+                                }
+                            }
+                            else if (SkipRecord) { //skip exist
+                                var RecordSkipped = false;
+                                CursorOpenRequest.onsuccess = function (e) {
+                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    if (Cursor) {
+                                        if (RecordSkipped) {
+                                            That.Results.push(Cursor);
+                                            Cursor.continue();
+                                        }
+                                        else {
+                                            RecordSkipped = true;
+                                            Cursor.advance(SkipRecord - 1);
+                                        }
+
+
+                                    }
+                                    else {
+                                        OnSuccessGetRequest();
+                                    }
+                                }
+                            }
+                            else if (LimitRecord) {
+                                CursorOpenRequest.onsuccess = function (e) {
+                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    if (Cursor && That.Results.length != LimitRecord) {
+                                        That.Results.push(Cursor.value);
+                                        Cursor.continue();
+                                    }
+                                    else {
+                                        OnSuccessGetRequest();
+                                    }
+                                }
+                            }
+                            else {
+                                var Index = 0;
+                                CursorOpenRequest.onsuccess = function (e) {
+                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    if (Cursor) {
+                                        if (That.checkForWhereConditionMatch(That.Query.Where, Cursor.value)) {
+                                            doJoin(Index, Cursor.value);
+                                        }
+                                        Cursor.continue(joinData[joinColumn][Index]);
+                                    }
+                                    else {
+                                        OnSuccessGetRequest();
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                        }
+                        return false;
+                    }
+
+                    var doJoin = function (index, value) {
+                        switch (query.JoinType) {
+                            //inner join
+                            case 'inner': if (value[query.Column][index] == joinData[joinColumn][index]) {
+                                That.Results[index++][query.Table] = value;
+                            }
+                            else { //remove current element
+                                That.Results.splice(index, 1);
+                            }; break;
+                            //left join
+                            case 'left': if (index[query.Column][index] == joinData[joinColumn][index]) {
+                                That.Results[index++][query.Table] = value;
+                            }
+                            else { //add null element
+                                That.Results[index++][query.Table] = null;
+                            };
+                                break;
+                            //right join
+                            case 'right': if (value[query.Column][index] == joinData[joinColumn][index]) {
+                                That.Results[index++][query.Table] = value;
+                            }
+                            else { //shift array to 1 position with null as first value and value as second value
+                                That.Results.splice(index, 0, null);
+                                That.Results[index++][joinTable] = null;
+                                That.Results[index++][query.Table] = value;
+                            }
+                                break;
+                        };
+                    }
+
+                    for (Column in this.Query.Where) {
+                        if (Array.isArray(this.Query.Where[Column])) {
+                            ConditionLength = this.Query.Where[Column].length;
+                            for (var i = 0; i < this.Query.Where[Column].length; i++) {
+                                var ExecutionStatus = executeInnerWhereLogic(Column, this.Query.Where[Column][i])
+                                if (ExecutionStatus == false) {
+                                    break;
+                                }
+                            }
+
+                        }
+                        else {
+                            executeInnerWhereLogic(Column, this.Query.Where[Column]);
+                        }
+                        break;
+                    }
+
+                }
+
+                /**
+                 * For matching the different column value existance
+                 * 
+                 * @private
+                 * @param {any} where 
+                 * @param {any} value 
+                 * @returns 
+                 * 
+                 * @memberOf SelectLogic
+                 */
+                private checkForWhereConditionMatch(where, value) {
+                    var TempColumn;
+                    for (TempColumn in where) {
+                        if (Array.isArray(where[TempColumn])) {
+                            var i, Status = true;
+                            for (i = 0; i < TempColumn.length; i++) {
+                                if (where[TempColumn][i] == value[TempColumn]) {
+                                    Status = true;
+                                    break;
+                                }
+                                else {
+                                    Status = false;
+                                }
+                            };
+                            if (!Status) {
+                                return Status;
+                            }
+                        }
+                        else {
+                            if (where[TempColumn] != value[TempColumn]) {
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                }
+
 
                 private executeWhereUndefinedLogic = function () {
                     var That: SelectLogic = this,

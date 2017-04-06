@@ -1,0 +1,23 @@
+
+//join logic
+ 
+DbConnection.select({
+                From:{ 
+Table1:
+{
+Table1:{Table:'student',Column:'id'},
+Table2:{Table:'sdtudent',Column:'idsd'}
+}
+,
+Table2:
+{
+	Table:'sss',Column:'name'}
+
+ }
+                
+     }, function (rowsAffected) {
+                console.log(rowsAffected);
+                
+            }, function (error) {
+                console.log(error)
+           })
