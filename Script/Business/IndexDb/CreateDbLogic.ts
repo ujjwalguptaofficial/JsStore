@@ -1,6 +1,7 @@
 module JsStorage {
     export module Business {
         export module IndexDb {
+            export var Db: DataBase;
             export class CreateDbLogic {
                 constructor(objMain: Main, onSuccess: Function, onError: Function) {
                     var That = this,
@@ -72,7 +73,11 @@ module JsStorage {
                                     autoIncrement: true
                                 });
                                 item.Columns.forEach(function (column: Column) {
-                                    Store.createIndex(column.Name, column.Name, { unique: false });
+                                    if (column.Unique) {
+                                        Store.createIndex(column.Name, column.Name, { unique: true });
+                                    } else {
+                                        Store.createIndex(column.Name, column.Name, { unique: false });
+                                    }
                                 })
                             }
                             //setting the table version

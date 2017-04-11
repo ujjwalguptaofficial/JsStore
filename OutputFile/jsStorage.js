@@ -26,6 +26,7 @@ var JsStorage;
         ErrorType[ErrorType["NoValueSupplied"] = 5] = "NoValueSupplied";
         ErrorType[ErrorType["ColumnNotExist"] = 6] = "ColumnNotExist";
         ErrorType[ErrorType["InvalidOp"] = 7] = "InvalidOp";
+        ErrorType[ErrorType["NullValue"] = 8] = "NullValue";
     })(ErrorType = JsStorage.ErrorType || (JsStorage.ErrorType = {}));
 })(JsStorage || (JsStorage = {}));
 var JsStorage;
@@ -66,6 +67,9 @@ var JsStorage;
                     case JsStorage.ErrorType.ColumnNotExist:
                         Error.Value = "column :" + errorDetail['ColumnName'] + " does not exist";
                         break;
+                    case JsStorage.ErrorType.NullValue:
+                        Error.Value = "Null value is not allowed for column: " + errorDetail['ColumnName'];
+                        break;
                     default: console.warn('the error type is not defined');
                 }
                 if (logError) {
@@ -102,6 +106,8 @@ var JsStorage;
                 this.AutoIncrement = key.AutoIncrement != null ? key.AutoIncrement : false;
                 this.PrimaryKey = key.PrimaryKey != null ? key.PrimaryKey : false;
                 this.Unique = key.Unique != null ? key.Unique : false;
+                this.CurrentDate = key.CurrentDate != null ? key.CurrentDate : false;
+                this.NotNull = key.NotNull != null ? key.NotNull : false;
             }
             return Column;
         }());
@@ -133,8 +139,8 @@ var JsStorage;
             //private methods
             Table.prototype.setPrimaryKey = function () {
                 //this.Key = new Column();//
-                var That = this;
-                this.Columns.forEach(function (item) {
+                var That = this, Length = this.Columns.length;
+                this.Columns.forEach(function (item, index) {
                     if (item.PrimaryKey && That.PrimaryKey.length == 0) {
                         That.PrimaryKey = item.Name;
                         localStorage.setItem("JsStorage_" + That.Name + "_" + item.Name, "true");
@@ -143,6 +149,8 @@ var JsStorage;
                         localStorage.setItem("JsStorage_" + That.Name + "_" + item.Name, "");
                         throw "Multiple primary key are not allowed";
                     }
+                    // else if (index == Length && That.PrimaryKey.length == 0) {
+                    // }
                 });
             };
             Table.prototype.setRequireDelete = function (dbName) {
@@ -175,7 +183,7 @@ var JsStorage;
         var DataBase = (function () {
             function DataBase(dataBase) {
                 this.Tables = [];
-                this.Name = dataBase.Name.toLowerCase();
+                this.Name = dataBase.Name;
                 var That = this;
                 dataBase.Tables.forEach(function (item) {
                     That.Tables.push(new Model.Table(item, That.Name));
@@ -293,7 +301,12 @@ var JsStorage;
                                     autoIncrement: true
                                 });
                                 item.Columns.forEach(function (column) {
-                                    Store.createIndex(column.Name, column.Name, { unique: false });
+                                    if (column.Unique) {
+                                        Store.createIndex(column.Name, column.Name, { unique: true });
+                                    }
+                                    else {
+                                        Store.createIndex(column.Name, column.Name, { unique: false });
+                                    }
                                 });
                             }
                             //setting the table version
@@ -418,30 +431,84 @@ var JsStorage;
         (function (IndexDb) {
             var InsertLogic = (function () {
                 function InsertLogic(tableName, values, onSuccess, onError) {
+                    this.TotalRowsAffected = 0;
+                    this.ErrorOccured = false;
+                    this.ErrorCount = 0;
+                    this.onSuccessRequest = function (e) {
+                        ++this.TotalRowsAffected;
+                        if (this.ValuesLength == this.TotalRowsAffected) {
+                            if (this.OnSuccess != null) {
+                                this.OnSuccess(this.TotalRowsAffected);
+                            }
+                        }
+                    };
+                    this.onErrorRequest = function (e, customError) {
+                        if (customError === void 0) { customError = false; }
+                        if (this.ErrorCount == 1) {
+                            if (this.OnError != null) {
+                                if (!customError) {
+                                    this.OnError(e.target.error, this.TotalRowsAffected);
+                                }
+                                else {
+                                    this.OnError(e, this.TotalRowsAffected);
+                                }
+                            }
+                        }
+                    };
                     try {
-                        tableName = tableName.toLowerCase();
-                        var TotalRowsAffected = 0, Store = IndexDb.DbConnection.transaction([tableName], "readwrite").objectStore(tableName);
+                        var That = this;
+                        this.OnSuccess = onSuccess;
+                        this.OnError = onError;
+                        this.Store = IndexDb.DbConnection.transaction([tableName], "readwrite").objectStore(tableName);
+                        this.ValuesLength = values.length;
                         values.forEach(function (value) {
-                            var AddResult = Store.add(value);
-                            AddResult.onerror = function (e) {
-                                if (onError != null) {
-                                    onError(e.target.error, TotalRowsAffected);
-                                }
-                            };
-                            AddResult.onsuccess = function (e) {
-                                ++TotalRowsAffected;
-                                if (values.length == TotalRowsAffected) {
-                                    if (onSuccess != null) {
-                                        onSuccess(TotalRowsAffected);
-                                    }
-                                }
-                            };
+                            That.checkSchemaAndModifyValue(value, tableName);
+                            if (!That.ErrorOccured) {
+                                var AddResult = That.Store.add(value);
+                                AddResult.onerror = function (e) {
+                                    That.onErrorRequest(e);
+                                };
+                                AddResult.onsuccess = function (e) {
+                                    That.onSuccessRequest(e);
+                                };
+                            }
+                            else {
+                                That.onErrorRequest(That.Error, true);
+                            }
                         });
                     }
                     catch (ex) {
                         console.error(ex);
                     }
                 }
+                InsertLogic.prototype.checkSchemaAndModifyValue = function (value, tableName) {
+                    var CurrentTable, That = this;
+                    Business.IndexDb.Db.Tables.every(function (table) {
+                        if (table.Name == tableName) {
+                            CurrentTable = table;
+                            return true;
+                        }
+                        return false;
+                    });
+                    CurrentTable.Columns.forEach(function (column) {
+                        if (!That.ErrorOccured) {
+                            //check auto increment scheme
+                            if (column.AutoIncrement) {
+                                var ColumnValue = Number(localStorage.getItem(tableName + "_" + column.Name + "value:"));
+                                value[column.Name] = ++ColumnValue;
+                                localStorage.setItem(tableName + "_" + column.Name + "value:", ColumnValue.toString());
+                            }
+                            else if (column.CurrentDate) {
+                                value[column.Name] = new Date();
+                            }
+                            //check not null schema
+                            if (column.NotNull && value[column.Name] == null) {
+                                That.ErrorOccured = true;
+                                That.Error = Business.UtilityLogic.getError(JsStorage.ErrorType.NullValue, false, { ColumnName: column.Name });
+                            }
+                        }
+                    });
+                };
                 return InsertLogic;
             }());
             IndexDb.InsertLogic = InsertLogic;
@@ -1427,6 +1494,7 @@ var JsStorage;
                 this.IndexDbObj = new JsStorage.Business.IndexDb.MainLogic(Db);
                 var DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
                 this.IndexDbObj.createDb(this, onSuccess, onError);
+                JsStorage.Business.IndexDb.Db = Db;
             }
             else {
                 this.WebSqlObj = new JsStorage.Business.WebSqlLogic();

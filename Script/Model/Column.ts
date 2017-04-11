@@ -5,13 +5,17 @@ module JsStorage {
             AutoIncrement: boolean;
             PrimaryKey: boolean;
             Unique: boolean;
+            CurrentDate: boolean;
+            NotNull: boolean;
         }
-        
+
         export class Column implements IColumn {
             Name: string;
             AutoIncrement: boolean;
             PrimaryKey: boolean;
             Unique: boolean;
+            CurrentDate: boolean;
+            NotNull: boolean;
             constructor(key: IColumn, tableName: string) {
                 if (key.Name != null) {
                     this.Name = key.Name;
@@ -22,6 +26,8 @@ module JsStorage {
                 this.AutoIncrement = key.AutoIncrement != null ? key.AutoIncrement : false;
                 this.PrimaryKey = key.PrimaryKey != null ? key.PrimaryKey : false;
                 this.Unique = key.Unique != null ? key.Unique : false;
+                this.CurrentDate = key.CurrentDate != null ? key.CurrentDate : false;
+                this.NotNull = key.NotNull != null ? key.NotNull : false;
             }
 
         }

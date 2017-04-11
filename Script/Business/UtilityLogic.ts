@@ -20,6 +20,8 @@ module JsStorage {
                     case ErrorType.InvalidOp: Error.Value = "Invalid Op Value : " + errorDetail['Op']; break;
                     case ErrorType.ColumnNotExist: Error.Value = "column :" + errorDetail['ColumnName'] + " does not exist";
                         break;
+                    case ErrorType.NullValue: Error.Value = "Null value is not allowed for column: " + errorDetail['ColumnName'];
+                        break;
                     default: console.warn('the error type is not defined');
                 }
                 if (logError) {

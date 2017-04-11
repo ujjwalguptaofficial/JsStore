@@ -13,7 +13,8 @@ module JsStorage {
         NotArray,
         NoValueSupplied,
         ColumnNotExist,
-        InvalidOp
+        InvalidOp,
+        NullValue
     }
 
     export interface ISelect {

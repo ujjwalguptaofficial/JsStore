@@ -39,6 +39,7 @@ module JsStorage {
                 this.IndexDbObj = new Business.IndexDb.MainLogic(Db);
                 var DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
                 this.IndexDbObj.createDb(this, onSuccess, onError);
+                Business.IndexDb.Db = Db;
             }
             else {
                 this.WebSqlObj = new Business.WebSqlLogic();

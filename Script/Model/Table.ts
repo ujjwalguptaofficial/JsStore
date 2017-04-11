@@ -32,8 +32,9 @@ module JsStorage {
 
             private setPrimaryKey() {
                 //this.Key = new Column();//
-                var That = this;
-                this.Columns.forEach(function (item) {
+                var That = this,
+                    Length = this.Columns.length;
+                this.Columns.forEach(function (item, index) {
                     if (item.PrimaryKey && That.PrimaryKey.length == 0) {
                         That.PrimaryKey = item.Name;
                         localStorage.setItem("JsStorage_" + That.Name + "_" + item.Name, "true");
@@ -42,6 +43,9 @@ module JsStorage {
                         localStorage.setItem("JsStorage_" + That.Name + "_" + item.Name, "");
                         throw "Multiple primary key are not allowed";
                     }
+                    // else if (index == Length && That.PrimaryKey.length == 0) {
+
+                    // }
                 })
 
             }
