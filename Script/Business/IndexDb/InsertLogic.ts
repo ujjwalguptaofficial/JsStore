@@ -66,9 +66,9 @@ module JsStorage {
                     Business.IndexDb.Db.Tables.every(function (table) {
                         if (table.Name == tableName) {
                             CurrentTable = table;
-                            return true;
+                            return false;
                         }
-                        return false;
+                        return true;
                     });
                     CurrentTable.Columns.forEach(function (column) {
                         if (!That.ErrorOccured) {

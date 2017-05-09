@@ -20,8 +20,8 @@ module JsStorage {
                         ConditionLength = 0,
                         OnSuccessGetRequest = function () {
                             --ConditionLength;
-                            if (ConditionLength == 0)
-                                That.onSuccessRequest();
+                            // if (ConditionLength == 0)
+                            //     That.onSuccessRequest();
                         };
 
                     var executeInnerWhereLogic = function (column, value) {
@@ -178,19 +178,26 @@ module JsStorage {
                             That.Results.push(Cursor.value);
                             (Cursor as any).continue();
                         }
-                        else {
-                            That.onSuccessRequest();
-                        }
+                        
                     }
                     CursorOpenRequest.onerror = That.onErrorRequest;
                 }
 
                 constructor(query: ISelect, onSuccess: Function, onError: Function) {
                     super();
+                    var That = this;
                     this.Query = query;
                     this.OnSuccess = onSuccess;
                     this.OnError = onError;
                     this.Transaction = DbConnection.transaction([query.From], "readonly");
+                    this.Transaction.oncomplete = function (e) {
+                        if (That.SendResultFlag && onSuccess != null) {
+                            onSuccess(That.Results);
+                        }
+                    }
+                        // (<any>(this.Transaction)).ontimeout = function () {
+                        //     console.log('transaction timed out');
+                        // }
                     this.ObjectStore = this.Transaction.objectStore(query.From);
 
                     if (query.WhereIn != undefined) {

@@ -2,7 +2,7 @@ module JsStorage {
     export module Business {
         export module IndexDb {
             export class BaseSelectLogic extends DbHelperLogic {
-               
+
                 OnSuccess: Function;
                 OnError: Function;
                 ErrorOccured: boolean = false;
@@ -10,12 +10,6 @@ module JsStorage {
                 Transaction: IDBTransaction;
                 ObjectStore: IDBObjectStore;
                 SendResultFlag: Boolean = true;
-
-                public onSuccessRequest = function () {
-                    if (this.SendResultFlag && this.OnSuccess != null) {
-                        this.OnSuccess(this.Results);
-                    }
-                }
 
                 public onErrorRequest = function (e) {
                     if (this.ErrorCount == 1) {
@@ -102,9 +96,7 @@ module JsStorage {
                                     That.Results.push(Cursor.value);
                                     Cursor.continue();
                                 }
-                                else {
-                                    That.onSuccessRequest();
-                                }
+                                
                             },
                             OnCursorError = function (e) {
                                 this.ErrorOccured = true; ++this.ErrorCount;

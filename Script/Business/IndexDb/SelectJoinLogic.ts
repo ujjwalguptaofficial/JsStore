@@ -18,14 +18,8 @@ module JsStorage {
                 private executeWhereLogic = function (query: ITableJoin, queryJoin: ITableJoin, joinType = "inner") {
                     var Column,
                         That: SelectJoinLogic = this,
-                        ExecutionNo = 0,
-                        ConditionLength = Object.keys(query.Where).length,
-                        OnSuccessGetRequest = function () {
-                            ++ExecutionNo;
-                            if (ExecutionNo == ConditionLength) {
-                                That.onSuccessRequest();
-                            }
-                        };
+                        ConditionLength = Object.keys(query.Where).length
+
                     for (Column in query.Where) {
                         if (!this.ErrorOccured) {
                             if (this.ObjectStore.keyPath != null && this.ObjectStore.keyPath == Column) {
@@ -40,7 +34,7 @@ module JsStorage {
                                         //That.doInner(query,Result[query.Column],queryJoin.Column,Result[query.Column])
                                         That.Results.push();
                                     }
-                                    OnSuccessGetRequest();
+
                                 }
 
                             }
@@ -60,17 +54,13 @@ module JsStorage {
                                                     That.Results.push(Cursor);
                                                     Cursor.continue();
                                                 }
-                                                else {
-                                                    OnSuccessGetRequest();
-                                                }
+
                                             }
                                             else {
                                                 ++RecordSkipped;
                                             }
                                         }
-                                        else {
-                                            OnSuccessGetRequest();
-                                        }
+
                                     }
                                 }
                                 else if (query.Skip) { //skip exist
@@ -86,9 +76,7 @@ module JsStorage {
                                             }
                                             Cursor.continue();
                                         }
-                                        else {
-                                            OnSuccessGetRequest();
-                                        }
+
                                     }
                                 }
                                 else if (query.Limit) {
@@ -98,9 +86,7 @@ module JsStorage {
                                             That.Results.push(Cursor);
                                             Cursor.continue();
                                         }
-                                        else {
-                                            OnSuccessGetRequest();
-                                        }
+
                                     }
                                 }
                                 else {
@@ -110,9 +96,7 @@ module JsStorage {
                                             That.Results[That.Results.length - 1][query.Table] = Cursor.value;
                                             Cursor.continue();
                                         }
-                                        else {
-                                            OnSuccessGetRequest();
-                                        }
+
                                     }
                                 }
 
@@ -164,8 +148,8 @@ module JsStorage {
                         ConditionLength = 0,
                         OnSuccessGetRequest = function () {
                             --ConditionLength;
-                            if (ConditionLength == 0)
-                                That.onSuccessRequest();
+                            //if (ConditionLength == 0)
+                               // That.onSuccessRequest();
                         };
 
                     var executeInnerWhereLogic = function (column, value) {
@@ -352,9 +336,7 @@ module JsStorage {
                             That.Results.push(Cursor.value);
                             (Cursor as any).continue();
                         }
-                        else {
-                            That.onSuccessRequest();
-                        }
+
                     }
                     CursorOpenRequest.onerror = That.onErrorRequest;
                 }

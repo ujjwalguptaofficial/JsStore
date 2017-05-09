@@ -331,15 +331,17 @@ var JsStorage;
         (function (IndexDb) {
             var DeleteLogic = (function () {
                 function DeleteLogic(query, onSuccess, onError) {
-                    var That = this, Transaction = IndexDb.DbConnection.transaction([query.From], "readwrite"), ObjectStore = Transaction.objectStore(query.From), ErrorOccured = false, ErrorCount = 0, RowAffected = 0, onSuceessRequest = function (rowsAffected) {
-                        if (onSuccess != null) {
-                            onSuccess(rowsAffected);
-                        }
-                    }, onErrorGetRequest = function (e) {
+                    var That = this, Transaction = IndexDb.DbConnection.transaction([query.From], "readwrite"), ObjectStore = Transaction.objectStore(query.From), ErrorOccured = false, ErrorCount = 0, RowAffected = 0, onErrorGetRequest = function (e) {
                         if (onError != null) {
                             onError(e.target.error);
                         }
                     };
+                    Transaction.oncomplete = function () {
+                        if (onSuccess != null) {
+                            onSuccess(RowAffected);
+                        }
+                    };
+                    Transaction.onerror = onErrorGetRequest;
                     if (query.Where == undefined) {
                         var CursorOpenRequest = ObjectStore.openCursor();
                         CursorOpenRequest.onsuccess = function (e) {
@@ -348,9 +350,6 @@ var JsStorage;
                                 Cursor.delete();
                                 ++RowAffected;
                                 Cursor.continue();
-                            }
-                            else {
-                                onSuceessRequest(RowAffected);
                             }
                         };
                         CursorOpenRequest.onerror = onErrorGetRequest;
@@ -372,12 +371,6 @@ var JsStorage;
                                             Cursor.delete();
                                             ++RowAffected;
                                             Cursor.continue();
-                                        }
-                                        else {
-                                            ++ExecutionNo;
-                                            if (ExecutionNo == query.Where.length) {
-                                                onSuceessRequest(RowAffected);
-                                            }
                                         }
                                     };
                                 }
@@ -486,9 +479,9 @@ var JsStorage;
                     Business.IndexDb.Db.Tables.every(function (table) {
                         if (table.Name == tableName) {
                             CurrentTable = table;
-                            return true;
+                            return false;
                         }
-                        return false;
+                        return true;
                     });
                     CurrentTable.Columns.forEach(function (column) {
                         if (!That.ErrorOccured) {
@@ -583,11 +576,6 @@ var JsStorage;
                     _this.ErrorOccured = false;
                     _this.ErrorCount = 0;
                     _this.SendResultFlag = true;
-                    _this.onSuccessRequest = function () {
-                        if (this.SendResultFlag && this.OnSuccess != null) {
-                            this.OnSuccess(this.Results);
-                        }
-                    };
                     _this.onErrorRequest = function (e) {
                         if (this.ErrorCount == 1) {
                             if (this.OnError != null) {
@@ -671,9 +659,6 @@ var JsStorage;
                                     That.Results.push(Cursor.value);
                                     Cursor.continue();
                                 }
-                                else {
-                                    That.onSuccessRequest();
-                                }
                             }, OnCursorError = function (e) {
                                 this.ErrorOccured = true;
                                 ++this.ErrorCount;
@@ -724,12 +709,7 @@ var JsStorage;
                     };
                     _this.executeWhereLogic = function (query, queryJoin, joinType) {
                         if (joinType === void 0) { joinType = "inner"; }
-                        var Column, That = this, ExecutionNo = 0, ConditionLength = Object.keys(query.Where).length, OnSuccessGetRequest = function () {
-                            ++ExecutionNo;
-                            if (ExecutionNo == ConditionLength) {
-                                That.onSuccessRequest();
-                            }
-                        };
+                        var Column, That = this, ConditionLength = Object.keys(query.Where).length;
                         for (Column in query.Where) {
                             if (!this.ErrorOccured) {
                                 if (this.ObjectStore.keyPath != null && this.ObjectStore.keyPath == Column) {
@@ -745,7 +725,6 @@ var JsStorage;
                                             //That.doInner(query,Result[query.Column],queryJoin.Column,Result[query.Column])
                                             That.Results.push();
                                         }
-                                        OnSuccessGetRequest();
                                     };
                                 }
                                 else if (this.ObjectStore.indexNames.contains(Column)) {
@@ -765,16 +744,10 @@ var JsStorage;
                                                         That.Results.push(Cursor);
                                                         Cursor.continue();
                                                     }
-                                                    else {
-                                                        OnSuccessGetRequest();
-                                                    }
                                                 }
                                                 else {
                                                     ++RecordSkipped;
                                                 }
-                                            }
-                                            else {
-                                                OnSuccessGetRequest();
                                             }
                                         };
                                     }
@@ -791,9 +764,6 @@ var JsStorage;
                                                 }
                                                 Cursor.continue();
                                             }
-                                            else {
-                                                OnSuccessGetRequest();
-                                            }
                                         };
                                     }
                                     else if (query.Limit) {
@@ -803,9 +773,6 @@ var JsStorage;
                                                 That.Results.push(Cursor);
                                                 Cursor.continue();
                                             }
-                                            else {
-                                                OnSuccessGetRequest();
-                                            }
                                         };
                                     }
                                     else {
@@ -814,9 +781,6 @@ var JsStorage;
                                             if (Cursor) {
                                                 That.Results[That.Results.length - 1][query.Table] = Cursor.value;
                                                 Cursor.continue();
-                                            }
-                                            else {
-                                                OnSuccessGetRequest();
                                             }
                                         };
                                     }
@@ -859,8 +823,8 @@ var JsStorage;
                     _this.executeJoinLogic = function (joinData, joinTable, joinColumn, query) {
                         var Column, SkipRecord = this.Query.Skip, LimitRecord = this.Query.Limit, That = this, ConditionLength = 0, OnSuccessGetRequest = function () {
                             --ConditionLength;
-                            if (ConditionLength == 0)
-                                That.onSuccessRequest();
+                            //if (ConditionLength == 0)
+                            // That.onSuccessRequest();
                         };
                         var executeInnerWhereLogic = function (column, value) {
                             if (That.ObjectStore.indexNames.contains(column)) {
@@ -1006,9 +970,6 @@ var JsStorage;
                                 That.Results.push(Cursor.value);
                                 Cursor.continue();
                             }
-                            else {
-                                That.onSuccessRequest();
-                            }
                         };
                         CursorOpenRequest.onerror = That.onErrorRequest;
                     };
@@ -1124,8 +1085,8 @@ var JsStorage;
                     _this.executeWhereLogic = function () {
                         var Column, SkipRecord = this.Query.Skip, LimitRecord = this.Query.Limit, That = this, ConditionLength = 0, OnSuccessGetRequest = function () {
                             --ConditionLength;
-                            if (ConditionLength == 0)
-                                That.onSuccessRequest();
+                            // if (ConditionLength == 0)
+                            //     That.onSuccessRequest();
                         };
                         var executeInnerWhereLogic = function (column, value) {
                             if (That.ObjectStore.indexNames.contains(column)) {
@@ -1234,16 +1195,22 @@ var JsStorage;
                                 That.Results.push(Cursor.value);
                                 Cursor.continue();
                             }
-                            else {
-                                That.onSuccessRequest();
-                            }
                         };
                         CursorOpenRequest.onerror = That.onErrorRequest;
                     };
+                    var That = _this;
                     _this.Query = query;
                     _this.OnSuccess = onSuccess;
                     _this.OnError = onError;
                     _this.Transaction = IndexDb.DbConnection.transaction([query.From], "readonly");
+                    _this.Transaction.oncomplete = function (e) {
+                        if (That.SendResultFlag && onSuccess != null) {
+                            onSuccess(That.Results);
+                        }
+                    };
+                    // (<any>(this.Transaction)).ontimeout = function () {
+                    //     console.log('transaction timed out');
+                    // }
                     _this.ObjectStore = _this.Transaction.objectStore(query.From);
                     if (query.WhereIn != undefined) {
                         if (query.Where != undefined) {
@@ -1312,74 +1279,75 @@ var JsStorage;
         (function (IndexDb) {
             var UpdateLogic = (function () {
                 function UpdateLogic(query, onSuccess, onError) {
-                    var That = this, ErrorOccured = false, ErrorCount = 0, RowAffected = 0, Transaction = IndexDb.DbConnection.transaction([query.In], "readwrite"), ObjectStore = Transaction.objectStore(query.In), onSuceessRequest = function (rowsAffected) {
-                        if (onSuccess != null) {
-                            onSuccess(rowsAffected);
-                        }
-                    }, onErrorGetRequest = function (e) {
-                        if (ErrorCount == 1) {
-                            if (onError != null) {
-                                onError(e.target.error);
-                            }
-                        }
-                    };
-                    Transaction.ontimeout = function () {
-                        console.log('transaction timed out');
-                    };
-                    if (query.Where == undefined) {
-                        var CursorOpenRequest = ObjectStore.openCursor();
-                        CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = e.target.result;
-                            if (Cursor) {
-                                for (var key in query.Set) {
-                                    Cursor.value[key] = query.Set[key];
+                    try {
+                        var That = this, ErrorOccured = false, ErrorCount = 0, RowAffected = 0, Transaction = IndexDb.DbConnection.transaction([query.In], "readwrite"), ObjectStore = Transaction.objectStore(query.In), onErrorGetRequest = function (e) {
+                            if (ErrorCount == 1) {
+                                if (onError != null) {
+                                    onError(e.target.error);
                                 }
-                                Cursor.update(Cursor.value);
-                                ++RowAffected;
-                                Cursor.continue();
-                            }
-                            else {
-                                onSuceessRequest(RowAffected);
                             }
                         };
-                        CursorOpenRequest.onerror = onErrorGetRequest;
-                    }
-                    else {
-                        var Column, ExecutionNo = 0, ConditionLength = Object.keys(query.Where).length;
-                        for (Column in query.Where) {
-                            if (!ErrorOccured) {
-                                if (ObjectStore.indexNames.contains(Column)) {
-                                    var CursorOpenRequest = ObjectStore.index(Column).openCursor(IDBKeyRange.only(query.Where[Column]));
-                                    CursorOpenRequest.onsuccess = function (e) {
-                                        var Cursor = e.target.result;
-                                        if (Cursor) {
-                                            for (var key in query.Set) {
-                                                Cursor.value[key] = query.Set[key];
+                        Transaction.oncomplete = function (e) {
+                            if (onSuccess != null) {
+                                onSuccess(RowAffected);
+                            }
+                        },
+                            Transaction.ontimeout = function () {
+                                console.log('transaction timed out');
+                            };
+                        if (query.Where == undefined) {
+                            var CursorOpenRequest = ObjectStore.openCursor();
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor = e.target.result;
+                                if (Cursor) {
+                                    for (var key in query.Set) {
+                                        Cursor.value[key] = query.Set[key];
+                                    }
+                                    Cursor.update(Cursor.value);
+                                    ++RowAffected;
+                                    Cursor.continue();
+                                }
+                            };
+                            CursorOpenRequest.onerror = onErrorGetRequest;
+                        }
+                        else {
+                            for (var TmpColumn in query.Where) {
+                                if (!ErrorOccured) {
+                                    if (ObjectStore.indexNames.contains(TmpColumn)) {
+                                        var CursorOpenRequest = ObjectStore.index(TmpColumn).openCursor(IDBKeyRange.only(query.Where[TmpColumn]));
+                                        CursorOpenRequest.onsuccess = function (e) {
+                                            var Cursor = e.target.result;
+                                            if (Cursor) {
+                                                for (var key in query.Set) {
+                                                    Cursor.value[key] = query.Set[key];
+                                                }
+                                                Cursor.update(Cursor.value);
+                                                ++RowAffected;
+                                                Cursor.continue();
                                             }
-                                            Cursor.update(Cursor.value);
-                                            ++RowAffected;
-                                            Cursor.continue();
-                                        }
-                                        else {
-                                            ++ExecutionNo;
-                                            if (ExecutionNo == query.Where.length) {
-                                                onSuceessRequest(RowAffected);
-                                            }
-                                        }
-                                    };
-                                    CursorOpenRequest.onerror = function (e) {
-                                        ErrorOccured = true;
-                                        ++ErrorCount;
-                                        onErrorGetRequest(e);
-                                    };
+                                        };
+                                        CursorOpenRequest.onerror = function (e) {
+                                            ErrorOccured = true;
+                                            ++ErrorCount;
+                                            onErrorGetRequest(e);
+                                        };
+                                    }
+                                    else {
+                                        Business.UtilityLogic.getError(JsStorage.ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                                    }
                                 }
                                 else {
-                                    Business.UtilityLogic.getError(JsStorage.ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                                    return;
                                 }
                             }
-                            else {
-                                return;
-                            }
+                        }
+                    }
+                    catch (ex) {
+                        if (ex.name == "NotFoundError") {
+                            console.error('The tablename does not exist');
+                        }
+                        else {
+                            console.warn(ex);
                         }
                     }
                 }

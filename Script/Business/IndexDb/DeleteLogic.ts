@@ -9,17 +9,19 @@ module JsStorage {
                         ErrorOccured: boolean = false,
                         ErrorCount = 0,
                         RowAffected = 0,
-                        onSuceessRequest = function (rowsAffected) {
-                            if (onSuccess != null) {
-                                onSuccess(rowsAffected);
-                            }
-                        },
-
                         onErrorGetRequest = function (e) {
                             if (onError != null) {
                                 onError((e as any).target.error);
                             }
                         };
+
+                    Transaction.oncomplete = function () {
+                        if (onSuccess != null) {
+                            onSuccess(RowAffected);
+                        }
+                    }
+
+                    Transaction.onerror = onErrorGetRequest;
 
                     if (query.Where == undefined) {
                         var CursorOpenRequest = ObjectStore.openCursor();
@@ -30,10 +32,6 @@ module JsStorage {
                                 ++RowAffected;
                                 (Cursor as any).continue();
                             }
-                            else {
-                                onSuceessRequest(RowAffected);
-                            }
-
                         }
                         CursorOpenRequest.onerror = onErrorGetRequest;
                     }
@@ -59,14 +57,8 @@ module JsStorage {
                                             ++RowAffected;
                                             Cursor.continue();
                                         }
-                                        else {
-                                            ++ExecutionNo;
-                                            if (ExecutionNo == query.Where.length) {
-                                                onSuceessRequest(RowAffected);
-                                            }
-                                        }
-                                    }
 
+                                    }
                                 }
                                 else {
                                     UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
