@@ -17,6 +17,8 @@
 /// <reference path="Business/IndexDb/SelectJoinLogic.ts" />
 /// <reference path="Business/IndexDb/SelectLogic.ts" />
 /// <reference path="Business/IndexDb/UpdateLogic.ts" />
+/// <reference path="Business/IndexDb/ClearLogic.ts" />
+
 /// <reference path="Business/IndexDb/MainLogic.ts" />
 
 /// <reference path="Business/MainLogic.ts" />

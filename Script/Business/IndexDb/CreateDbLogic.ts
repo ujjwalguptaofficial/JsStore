@@ -3,7 +3,7 @@ module JsStorage {
         export module IndexDb {
             export var Db: DataBase;
             export class CreateDbLogic {
-                constructor(objMain: Main, onSuccess: Function, onError: Function) {
+                constructor(objMain: Instance, onSuccess: Function, onError: Function) {
                     var That = this,
                         DbVersion = Number(localStorage.getItem(ActiveDataBase.Name + 'Db_Version')),
                         DbRequest = window.indexedDB.open(ActiveDataBase.Name, DbVersion);
@@ -15,20 +15,26 @@ module JsStorage {
                     };
 
                     DbRequest.onsuccess = function (event) {
-                        objMain.Status.ConStatus = ConnectionStatus.Connected;
+                        Status.ConStatus = ConnectionStatus.Connected;
                         DbConnection = DbRequest.result;
                         DbConnection.onclose = function () {
-                            objMain.Status.ConStatus = ConnectionStatus.Closed;
-                            objMain.Status.LastError = "Connection Closed, trying to reconnect";
+                            Status.ConStatus = ConnectionStatus.Closed;
+                            Status.LastError = "Connection Closed";
                         }
 
-                        DbConnection.onerror = function (e) {
+                        DbConnection.onversionchange = function (e) {
+                            if (e.newVersion === null) { // An attempt is made to delete the db
+                                e.target.close(); // Manually close our connection to the db
+                            }
+                        };
 
+                        DbConnection.onerror = function (e) {
+                            Status.LastError = "Error occured in connection :" + e.target.result;
                         }
 
                         DbConnection.onabort = function (e) {
-                            objMain.Status.ConStatus = ConnectionStatus.Closed;
-                            objMain.Status.LastError = "Connection Closed, trying to reconnect";
+                            Status.ConStatus = ConnectionStatus.Closed;
+                            Status.LastError = "Connection aborted";
                         }
 
                         if (onSuccess != null) {

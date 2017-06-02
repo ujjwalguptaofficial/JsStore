@@ -10,12 +10,12 @@ module JsStorage {
                     ActiveDataBase = dataBase
                 }
 
-                openDb = function (objMain: Main, onSuccess: Function, onError: Function) {
+                openDb = function (objMain: Instance, onSuccess: Function, onError: Function) {
                     var ObjOpenDb = new OpenDbLogic(objMain, onSuccess, onError);
                 }
 
-                public closeDb = function (objMain: Main) {
-                    if (objMain.Status.ConStatus == ConnectionStatus.Connected) {
+                public closeDb = function () {
+                    if (Status.ConStatus == ConnectionStatus.Connected) {
                         DbConnection.close();
                     }
                 }
@@ -28,8 +28,18 @@ module JsStorage {
                     var ObjUpdate = new UpdateLogic(query, onSuccess, onError);
                 }
 
-                public insert = function (tableName: string, values, onSuccess: Function, onError: Function) {
-                    var ObjInsert = new InsertLogic(tableName, values, onSuccess, onError);
+                public insert = function (tableName: string, values, isReturn, onSuccess: Function, onError: Function) {
+                    if (!Array.isArray(values)) {
+                        throw "Value should be array :- supplied value is not array";
+                    }
+                    else if (values.length > 0) {
+                        var ObjInsert = new InsertLogic(tableName, values, isReturn, onSuccess, onError);
+                    }
+                    else {
+                        if (onError != null) {
+                            onError(Business.UtilityLogic.getError(ErrorType.NoValueSupplied, true, null));
+                        }
+                    }
                 }
 
                 public delete = function (query: IDelete, onSuccess: Function, onError: Function) {
@@ -46,7 +56,7 @@ module JsStorage {
                     }
                 }
 
-                public createDb = function (objMain: Main, onSuccess: Function, onError: Function) {
+                public createDb = function (objMain: Instance, onSuccess: Function, onError: Function) {
                     new CreateDbLogic(objMain, onSuccess, onError);
                 }
 

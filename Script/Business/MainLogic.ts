@@ -1,24 +1,12 @@
 import DataBase = JsStorage.Model.DataBase;
 import IDataBase = JsStorage.Model.IDataBase;
 module JsStorage {
-    export enum ConnectionStatus {
-        Connected = 1,
-        Closed = 2,
-        NotStarted = 3
-    }
-    export interface JsStorageStatus {
-        ConStatus: ConnectionStatus,
-        LastError: string
-    }
 
-    export class Main {
+    export class Instance {
         DbType: DBType;
         IndexDbObj: Business.IndexDb.MainLogic;
         WebSqlObj: Business.WebSqlLogic;
-        Status: JsStorageStatus = <JsStorageStatus>{
-            ConStatus: ConnectionStatus.NotStarted,
-            LastError: ""
-        };
+
         constructor() {
             this.setDbType();
         }
@@ -55,7 +43,7 @@ module JsStorage {
          * 
          * @memberOf Main
          */
-        openDb(onSuccess: Function, onError: Function) {
+        openDb(onSuccess: Function = null, onError: Function = null) {
             if (this.DbType == DBType.IndexedDb) {
                 this.IndexDbObj.openDb(this, onSuccess, onError);
             }
@@ -74,7 +62,7 @@ module JsStorage {
          */
         closeDb(onSuccess: Function, onError: Function) {
             if (this.DbType == DBType.IndexedDb) {
-                this.IndexDbObj.closeDb(this);
+                this.IndexDbObj.closeDb();
             }
             else {
 
@@ -83,7 +71,7 @@ module JsStorage {
 
         dropDb(name: string, onSuccess: Function, onError: Function) {
             if (this.DbType == DBType.IndexedDb) {
-                this.IndexDbObj.dropDb(name.toLowerCase(), onSuccess, onError);
+                this.IndexDbObj.dropDb(name, onSuccess, onError);
             }
             else {
 
@@ -100,8 +88,7 @@ module JsStorage {
          * @memberOf Main
          */
         select(query: ISelect, onSuccess: Function, onError: Function) {
-
-            if (this.Status.ConStatus == ConnectionStatus.Connected) {
+            if (Status.ConStatus == ConnectionStatus.Connected) {
                 if (this.DbType == DBType.IndexedDb) {
                     this.IndexDbObj.select(query, onSuccess, onError);
                 }
@@ -109,13 +96,17 @@ module JsStorage {
 
                 }
             }
-            else if (this.Status.ConStatus == ConnectionStatus.NotStarted) {
+            else if (Status.ConStatus == ConnectionStatus.NotStarted) {
                 var That = this;
                 setTimeout(function () {
                     That.select(query, onSuccess, onError);
-                }, 200);
+                }, 50);
             }
-            else if (this.Status.ConStatus == ConnectionStatus.Closed) {
+            else if (Status.ConStatus == ConnectionStatus.Closed) {
+                var That = this;
+                this.openDb(function () {
+                    That.select(query, onSuccess, onError);
+                })
 
             }
         }
@@ -131,40 +122,77 @@ module JsStorage {
          * @memberOf Main
          */
         insert(query: IInsert, onSuccess: Function, onError: Function) {
-            if (!Array.isArray(query.Values)) {
-                throw "Value should be array :- supplied value is not array";
-            }
-            else if (query.Values.length > 0) {
-                query.Into = query.Into.toLowerCase();
+
+            if (Status.ConStatus == ConnectionStatus.Connected) {
                 if (this.DbType == DBType.IndexedDb) {
-                    this.IndexDbObj.insert(query.Into, query.Values, onSuccess, onError);
+                    var IsReturn = query.Return ? query.Return : false;
+                    this.IndexDbObj.insert(query.Into, query.Values, IsReturn, onSuccess, onError);
                 }
                 else {
 
                 }
             }
-            else {
-                if (onError != null) {
-                    onError(Business.UtilityLogic.getError(ErrorType.NoValueSupplied, true, null));
-                }
+            else if (Status.ConStatus == ConnectionStatus.NotStarted) {
+                var That = this;
+                setTimeout(function () {
+                    That.insert(query, onSuccess, onError);
+                }, 50);
+            }
+            else if (Status.ConStatus == ConnectionStatus.Closed) {
+                var That = this;
+                this.openDb(function () {
+                    That.insert(query, onSuccess, onError);
+                })
+
             }
         }
 
         update(query: IUpdate, onSuccess: Function, onError: Function) {
+            if (Status.ConStatus == ConnectionStatus.Connected) {
+                if (this.DbType == DBType.IndexedDb) {
+                    this.IndexDbObj.update(query, onSuccess, onError);
+                }
+                else {
 
-            if (this.DbType == DBType.IndexedDb) {
-                this.IndexDbObj.update(query, onSuccess, onError);
+                }
             }
-            else {
+            else if (Status.ConStatus == ConnectionStatus.NotStarted) {
+                var That = this;
+                setTimeout(function () {
+                    That.update(query, onSuccess, onError);
+                }, 50);
+            }
+            else if (Status.ConStatus == ConnectionStatus.Closed) {
+                var That = this;
+                this.openDb(function () {
+                    That.update(query, onSuccess, onError);
+                })
 
             }
+
         }
 
         delete(query: IDelete, onSuccess: Function, onError: Function) {
-            if (this.DbType == DBType.IndexedDb) {
-                this.IndexDbObj.delete(query, onSuccess, onError);
+            if (Status.ConStatus == ConnectionStatus.Connected) {
+                if (this.DbType == DBType.IndexedDb) {
+                    this.IndexDbObj.delete(query, onSuccess, onError);
+                }
+                else {
+
+                }
+
             }
-            else {
+            else if (Status.ConStatus == ConnectionStatus.NotStarted) {
+                var That = this;
+                setTimeout(function () {
+                    That.delete(query, onSuccess, onError);
+                }, 50);
+            }
+            else if (Status.ConStatus == ConnectionStatus.Closed) {
+                var That = this;
+                this.openDb(function () {
+                    That.delete(query, onSuccess, onError);
+                })
 
             }
         }

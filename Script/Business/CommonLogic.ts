@@ -53,7 +53,8 @@ module JsStorage {
 
     export interface IInsert {
         Into: string,
-        Values: Array<IValue>
+        Values: Array<IValue>,
+        Return: boolean
     }
 
     export interface IValue {
@@ -87,4 +88,18 @@ module JsStorage {
         Table2: ITableJoin
     }
 
+    export enum ConnectionStatus {
+        Connected = 1,
+        Closed = 2,
+        NotStarted = 3
+    }
+    export interface JsStorageStatus {
+        ConStatus: ConnectionStatus,
+        LastError: string
+    }
+
+    export var Status: JsStorageStatus = <JsStorageStatus>{
+        ConStatus: ConnectionStatus.NotStarted,
+        LastError: ""
+    };
 }

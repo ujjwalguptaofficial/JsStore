@@ -2,23 +2,14 @@ module JsStorage {
     export module Business {
         export module IndexDb {
             export class InsertLogic {
-                TotalRowsAffected = 0;
+                RowsAffected = 0;
+                ValuesAffected: Array<any>;
                 Store: IDBObjectStore;
                 OnSuccess: Function;
                 OnError: Function;
                 ErrorOccured: boolean = false;
                 ErrorCount = 0;
                 Error: IError;
-                ValuesLength: number;
-
-                public onSuccessRequest = function (e) {
-                    ++this.TotalRowsAffected;
-                    if (this.ValuesLength == this.TotalRowsAffected) {
-                        if (this.OnSuccess != null) {
-                            this.OnSuccess(this.TotalRowsAffected);
-                        }
-                    }
-                }
 
                 public onErrorRequest = function (e, customError = false) {
                     if (this.ErrorCount == 1) {
@@ -32,13 +23,22 @@ module JsStorage {
                         }
                     }
                 }
-                constructor(tableName: string, values, onSuccess: Function, onError: Function) {
+
+                constructor(tableName: string, values, isReturn, onSuccess: Function, onError: Function) {
                     try {
-                        var That = this;
                         this.OnSuccess = onSuccess;
                         this.OnError = onError;
-                        this.Store = DbConnection.transaction([tableName], "readwrite").objectStore(tableName);
-                        this.ValuesLength = values.length;
+                        var That = this,
+                            Transaction = DbConnection.transaction([tableName], "readwrite");
+                        Transaction.oncomplete = function (e) {
+                            if (onSuccess != null) {
+                                onSuccess(isReturn ? That.ValuesAffected : That.RowsAffected);
+                            }
+                        },
+                            (<any>Transaction).ontimeout = function () {
+                                console.log('transaction timed out');
+                            }
+                        this.Store = Transaction.objectStore(tableName);
                         values.forEach(function (value) {
                             That.checkSchemaAndModifyValue(value, tableName);
                             if (!That.ErrorOccured) {
@@ -47,7 +47,12 @@ module JsStorage {
                                     That.onErrorRequest(e);
                                 }
                                 AddResult.onsuccess = function (e) {
-                                    That.onSuccessRequest(e);
+                                    if (isReturn) {
+                                        That.ValuesAffected.push(value);
+                                    }
+                                    else {
+                                        ++That.RowsAffected;
+                                    }
                                 }
                             }
                             else {
@@ -60,6 +65,16 @@ module JsStorage {
                     }
                 }
 
+
+                /**
+                 * check the defined schema and based upon that modify or create the value
+                 * 
+                 * @private
+                 * @param {any} value 
+                 * @param {string} tableName 
+                 * 
+                 * @memberof InsertLogic
+                 */
                 private checkSchemaAndModifyValue(value, tableName: string) {
                     var CurrentTable: Table,
                         That = this;
