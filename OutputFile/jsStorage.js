@@ -33,7 +33,6 @@ var JsStorage;
         ConnectionStatus[ConnectionStatus["Connected"] = 1] = "Connected";
         ConnectionStatus[ConnectionStatus["Closed"] = 2] = "Closed";
         ConnectionStatus[ConnectionStatus["NotStarted"] = 3] = "NotStarted";
-        ConnectionStatus[ConnectionStatus["Aborted"] = 4] = "Aborted";
     })(ConnectionStatus = JsStorage.ConnectionStatus || (JsStorage.ConnectionStatus = {}));
     JsStorage.Status = {
         ConStatus: ConnectionStatus.NotStarted,
@@ -449,6 +448,7 @@ var JsStorage;
             var InsertLogic = (function () {
                 function InsertLogic(tableName, values, isReturn, onSuccess, onError) {
                     this.RowsAffected = 0;
+                    this.ValuesAffected = [];
                     this.ErrorOccured = false;
                     this.ErrorCount = 0;
                     this.onErrorRequest = function (e, customError) {

@@ -3,7 +3,7 @@ module JsStorage {
         export module IndexDb {
             export class InsertLogic {
                 RowsAffected = 0;
-                ValuesAffected: Array<any>;
+                ValuesAffected: Array<any> = [];
                 Store: IDBObjectStore;
                 OnSuccess: Function;
                 OnError: Function;
