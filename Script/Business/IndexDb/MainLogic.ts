@@ -20,15 +20,17 @@ module JsStorage {
                     }
                 }
 
-                public dropDb = function (name: string, onSuccess: Function, onError: Function) {
-                    var ObjDropDb = new DropDbLogic(name, onSuccess, onError);
+                public dropDb = function (onSuccess: Function, onError: Function) {
+                    var ObjDropDb = new DropDbLogic(ActiveDataBase.Name, onSuccess, onError);
                 }
 
                 public update = function (query: IUpdate, onSuccess: Function, onError: Function) {
+                    query.In = query.In.toLowerCase();
                     var ObjUpdate = new UpdateLogic(query, onSuccess, onError);
                 }
 
                 public insert = function (tableName: string, values, isReturn, onSuccess: Function, onError: Function) {
+                    tableName = tableName.toLowerCase();
                     if (!Array.isArray(values)) {
                         throw "Value should be array :- supplied value is not array";
                     }
@@ -43,11 +45,12 @@ module JsStorage {
                 }
 
                 public delete = function (query: IDelete, onSuccess: Function, onError: Function) {
+                    query.From = query.From.toLowerCase();
                     var ObjDelete = new DeleteLogic(query, onSuccess, onError);
                 }
 
                 public select = function (query: ISelect, onSuccess: Function, onError: Function) {
-
+                    query.From = query.From.toLowerCase();
                     if (typeof query.From === 'object') {
                         new SelectJoinLogic(<ISelectJoin>query, onSuccess, onError);
                     }

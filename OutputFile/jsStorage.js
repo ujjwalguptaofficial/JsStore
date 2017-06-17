@@ -193,7 +193,7 @@ var JsStorage;
         var DataBase = (function () {
             function DataBase(dataBase) {
                 this.Tables = [];
-                this.Name = dataBase.Name;
+                this.Name = dataBase.Name.toLowerCase();
                 var That = this;
                 dataBase.Tables.forEach(function (item) {
                     That.Tables.push(new Model.Table(item, That.Name));
@@ -1444,13 +1444,15 @@ var JsStorage;
                             IndexDb.DbConnection.close();
                         }
                     };
-                    this.dropDb = function (name, onSuccess, onError) {
-                        var ObjDropDb = new IndexDb.DropDbLogic(name, onSuccess, onError);
+                    this.dropDb = function (onSuccess, onError) {
+                        var ObjDropDb = new IndexDb.DropDbLogic(IndexDb.ActiveDataBase.Name, onSuccess, onError);
                     };
                     this.update = function (query, onSuccess, onError) {
+                        query.In = query.In.toLowerCase();
                         var ObjUpdate = new IndexDb.UpdateLogic(query, onSuccess, onError);
                     };
                     this.insert = function (tableName, values, isReturn, onSuccess, onError) {
+                        tableName = tableName.toLowerCase();
                         if (!Array.isArray(values)) {
                             throw "Value should be array :- supplied value is not array";
                         }
@@ -1464,9 +1466,11 @@ var JsStorage;
                         }
                     };
                     this.delete = function (query, onSuccess, onError) {
+                        query.From = query.From.toLowerCase();
                         var ObjDelete = new IndexDb.DeleteLogic(query, onSuccess, onError);
                     };
                     this.select = function (query, onSuccess, onError) {
+                        query.From = query.From.toLowerCase();
                         if (typeof query.From === 'object') {
                             new IndexDb.SelectJoinLogic(query, onSuccess, onError);
                         }
@@ -1570,9 +1574,9 @@ var JsStorage;
             else {
             }
         };
-        Instance.prototype.dropDb = function (name, onSuccess, onError) {
+        Instance.prototype.dropDb = function (onSuccess, onError) {
             if (this.DbType == JsStorage.DBType.IndexedDb) {
-                this.IndexDbObj.dropDb(name, onSuccess, onError);
+                this.IndexDbObj.dropDb(onSuccess, onError);
             }
             else {
             }

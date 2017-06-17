@@ -69,9 +69,9 @@ module JsStorage {
             }
         }
 
-        dropDb(name: string, onSuccess: Function, onError: Function) {
+        dropDb(onSuccess: Function, onError: Function) {
             if (this.DbType == DBType.IndexedDb) {
-                this.IndexDbObj.dropDb(name, onSuccess, onError);
+                this.IndexDbObj.dropDb(onSuccess, onError);
             }
             else {
 
