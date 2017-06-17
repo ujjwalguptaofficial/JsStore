@@ -100,6 +100,7 @@ module JsStorage {
                             //check not null schema
                             if (column.NotNull && value[column.Name] == null) {
                                 That.ErrorOccured = true;
+                                ++That.ErrorCount;
                                 That.Error = UtilityLogic.getError(ErrorType.NullValue, false, { ColumnName: column.Name });
                             }
                         }

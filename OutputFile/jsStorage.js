@@ -534,6 +534,7 @@ var JsStorage;
                             //check not null schema
                             if (column.NotNull && value[column.Name] == null) {
                                 That.ErrorOccured = true;
+                                ++That.ErrorCount;
                                 That.Error = Business.UtilityLogic.getError(JsStorage.ErrorType.NullValue, false, { ColumnName: column.Name });
                             }
                         }
