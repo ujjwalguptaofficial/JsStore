@@ -22,6 +22,8 @@ module JsStorage {
                         break;
                     case ErrorType.NullValue: Error.Value = "Null value is not allowed for column: " + errorDetail['ColumnName'];
                         break;
+                    case ErrorType.BadDataType: Error.Value = "Supplied value for column: " + errorDetail['ColumnName'] + " is not valid";
+                        break;
                     default: console.warn('the error type is not defined');
                 }
                 if (logError) {

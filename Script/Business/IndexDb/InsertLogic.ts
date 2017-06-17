@@ -103,6 +103,13 @@ module JsStorage {
                                 ++That.ErrorCount;
                                 That.Error = UtilityLogic.getError(ErrorType.NullValue, false, { ColumnName: column.Name });
                             }
+
+                            //check datatype
+                            if (column.DataType && typeof value[column.Name] != column.DataType) {
+                                That.ErrorOccured = true;
+                                ++That.ErrorCount;
+                                That.Error = UtilityLogic.getError(ErrorType.BadDataType, false, { ColumnName: column.Name });
+                            }
                         }
                     });
                 }

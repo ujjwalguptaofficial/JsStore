@@ -27,6 +27,7 @@ var JsStorage;
         ErrorType[ErrorType["ColumnNotExist"] = 6] = "ColumnNotExist";
         ErrorType[ErrorType["InvalidOp"] = 7] = "InvalidOp";
         ErrorType[ErrorType["NullValue"] = 8] = "NullValue";
+        ErrorType[ErrorType["BadDataType"] = 9] = "BadDataType";
     })(ErrorType = JsStorage.ErrorType || (JsStorage.ErrorType = {}));
     var ConnectionStatus;
     (function (ConnectionStatus) {
@@ -80,6 +81,9 @@ var JsStorage;
                     case JsStorage.ErrorType.NullValue:
                         Error.Value = "Null value is not allowed for column: " + errorDetail['ColumnName'];
                         break;
+                    case JsStorage.ErrorType.BadDataType:
+                        Error.Value = "Supplied value for column: " + errorDetail['ColumnName'] + " is not valid";
+                        break;
                     default: console.warn('the error type is not defined');
                 }
                 if (logError) {
@@ -118,6 +122,7 @@ var JsStorage;
                 this.Unique = key.Unique != null ? key.Unique : false;
                 this.CurrentDate = key.CurrentDate != null ? key.CurrentDate : false;
                 this.NotNull = key.NotNull != null ? key.NotNull : false;
+                this.DataType = key.DataType != null ? key.DataType : '';
             }
             return Column;
         }());
@@ -536,6 +541,12 @@ var JsStorage;
                                 That.ErrorOccured = true;
                                 ++That.ErrorCount;
                                 That.Error = Business.UtilityLogic.getError(JsStorage.ErrorType.NullValue, false, { ColumnName: column.Name });
+                            }
+                            //check datatype
+                            if (column.DataType && typeof value[column.Name] != column.DataType) {
+                                That.ErrorOccured = true;
+                                ++That.ErrorCount;
+                                That.Error = Business.UtilityLogic.getError(JsStorage.ErrorType.BadDataType, false, { ColumnName: column.Name });
                             }
                         }
                     });

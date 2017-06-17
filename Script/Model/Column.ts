@@ -7,6 +7,7 @@ module JsStorage {
             Unique: boolean;
             CurrentDate: boolean;
             NotNull: boolean;
+            DataType: string
         }
 
         export class Column implements IColumn {
@@ -16,6 +17,7 @@ module JsStorage {
             Unique: boolean;
             CurrentDate: boolean;
             NotNull: boolean;
+            DataType: string;
             constructor(key: IColumn, tableName: string) {
                 if (key.Name != null) {
                     this.Name = key.Name;
@@ -28,6 +30,7 @@ module JsStorage {
                 this.Unique = key.Unique != null ? key.Unique : false;
                 this.CurrentDate = key.CurrentDate != null ? key.CurrentDate : false;
                 this.NotNull = key.NotNull != null ? key.NotNull : false;
+                this.DataType = key.DataType != null ? key.DataType : '';
             }
 
         }

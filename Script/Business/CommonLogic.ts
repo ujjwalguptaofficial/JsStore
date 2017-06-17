@@ -14,7 +14,8 @@ module JsStorage {
         NoValueSupplied,
         ColumnNotExist,
         InvalidOp,
-        NullValue
+        NullValue,
+        BadDataType
     }
 
     export interface ISelect {
