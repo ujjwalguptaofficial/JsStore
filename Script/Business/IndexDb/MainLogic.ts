@@ -50,11 +50,12 @@ module JsStorage {
                 }
 
                 public select = function (query: ISelect, onSuccess: Function, onError: Function) {
-                    query.From = query.From.toLowerCase();
+
                     if (typeof query.From === 'object') {
                         new SelectJoinLogic(<ISelectJoin>query, onSuccess, onError);
                     }
                     else {
+                        query.From = query.From.toLowerCase();
                         new SelectLogic(query, onSuccess, onError);
                     }
                 }

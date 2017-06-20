@@ -12,6 +12,7 @@ module JsStorage {
                 SendResultFlag: Boolean = true;
 
                 public onErrorRequest = function (e) {
+                    ++this.ErrorCount;
                     if (this.ErrorCount == 1) {
                         if (this.OnError != null) {
                             this.OnError((e as any).target.error);
@@ -61,7 +62,7 @@ module JsStorage {
                                     }
                                 },
                                 OnCursorError = function (e) {
-                                    That.ErrorOccured = true; ++That.ErrorCount;
+                                    That.ErrorOccured = true;
                                     That.OnErrorRequest(e);
                                 };
                             if (this.Query.WhereIn.Op == '-') {
@@ -96,10 +97,10 @@ module JsStorage {
                                     That.Results.push(Cursor.value);
                                     Cursor.continue();
                                 }
-                                
+
                             },
                             OnCursorError = function (e) {
-                                this.ErrorOccured = true; ++this.ErrorCount;
+                                this.ErrorOccured = true;
                                 this.OnErrorRequest(e);
                             };
                         if (whereIn.Op == '-') {

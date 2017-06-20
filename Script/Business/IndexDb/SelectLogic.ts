@@ -29,7 +29,7 @@ module JsStorage {
                         if (That.ObjectStore.indexNames.contains(column)) {
                             var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
                             CursorOpenRequest.onerror = function (e) {
-                                That.ErrorOccured = true; ++That.ErrorCount;
+                                That.ErrorOccured = true;
                                 That.onErrorRequest(e);
                             }
                             if (SkipRecord && LimitRecord) {
