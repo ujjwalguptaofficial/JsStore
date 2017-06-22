@@ -24,6 +24,8 @@ module JsStorage {
                         break;
                     case ErrorType.BadDataType: Error.Value = "Supplied value for column: " + errorDetail['ColumnName'] + " does not have valid type";
                         break;
+                    case ErrorType.NextJoinNotExist: Error.Value = "Next join details not supplied";
+                        break;
                     default: console.warn('the error type is not defined');
                 }
                 if (logError) {

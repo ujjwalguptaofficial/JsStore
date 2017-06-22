@@ -3,23 +3,13 @@ module JsStorage {
         export module IndexDb {
             export class SelectJoinLogic extends BaseSelectLogic {
                 Query: ITableJoin;
-                // ObjectStoreForJoin: IDBObjectStore;
                 QueryStack: Array<ITableJoin> = [];
                 CurrentQueryStackIndex = 0;
-                // IndexRequest: Array<IDBIndex> = [];
                 Results: Array<any> = [];
 
                 private onTransactionCompleted = function (e) {
                     if (this.OnSuccess != null && (this.QueryStack.length == this.CurrentQueryStackIndex + 1)) {
                         this.OnSuccess(this.Results);
-                    }
-                }
-
-                private isExist = function (nameKey, myArray) {
-                    for (var i = 0; i < myArray.length; i++) {
-                        if (myArray[i].name === nameKey) {
-                            return myArray[i];
-                        }
                     }
                 }
 
@@ -71,8 +61,8 @@ module JsStorage {
                             //inner join
                             case 'inner':
                                 Results[JoinIndex][query.Table] = value;
+                                //copy other relative data into current result
                                 for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                    // Results[JoinIndex][joinQuery.Table] = item;
                                     Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
                                 }
                                 break;
@@ -127,6 +117,7 @@ module JsStorage {
                                 ++JoinIndex;
                             }
                             else {
+                                //copy other relative data into current result
                                 if (That.CurrentQueryStackIndex == 1) {
                                     That.Results = Results;
                                 }
@@ -203,6 +194,9 @@ module JsStorage {
                             query.Table2.Table = query.Table2.Table.toLowerCase();
                             query.Table2['JoinType'] = (<IJoin>query).Join == undefined ? 'inner' : (<IJoin>query).Join.toLowerCase();
                             That.QueryStack.push(query.Table2);
+                            if (That.QueryStack.length % 2 == 0) {
+                                That.QueryStack[That.QueryStack.length - 1].NextJoin = query.NextJoin;
+                            }
                             TableList.push(query.Table2.Table);
                             return convertQueryIntoStack(query.Table1);
                         }
@@ -215,26 +209,57 @@ module JsStorage {
                     };
                     convertQueryIntoStack(query.From);
                     this.QueryStack.reverse();
+                    // if (this.QueryStack.length > 2) {
+                    //     for (var i = 0, length = this.QueryStack.length; i < length; i++) {
+                    //         if (i % 2 == 1 && this.QueryStack[i].NextJoin != null) {
+
+                    //         }
+                    //         else {
+                    //             this.ErrorOccured = true;
+                    //             UtilityLogic.getError(ErrorType.NextJoinNotExist, true, {});
+                    //             break;
+                    //         }
+                    //     }
+                    // }
                     //get the data for first table
-                    new SelectLogic(<ISelect>{
-                        From: this.QueryStack[0].Table,
-                        Where: this.QueryStack[0].Where,
-                        WhereIn: this.QueryStack[0].WhereIn
-                    }, function (results) {
-                        var TableName = That.QueryStack[0].Table;
-                        results.forEach(function (item, index) {
-                            That.Results[index] = {};
-                            That.Results[index][TableName] = item;
+                    if (!this.ErrorOccured) {
+
+                        new SelectLogic(<ISelect>{
+                            From: this.QueryStack[0].Table,
+                            Where: this.QueryStack[0].Where,
+                            WhereIn: this.QueryStack[0].WhereIn
+                        }, function (results) {
+                            var TableName = That.QueryStack[0].Table;
+                            results.forEach(function (item, index) {
+                                That.Results[index] = {};
+                                That.Results[index][TableName] = item;
+                            });
+                            That.startExecutionJoinLogic();
+                        }, function (error) {
+                            That.onErrorRequest(error);
                         });
-                        That.startExecutionJoinLogic();
-                    }, function (error) {
-                        this.onErrorRequest(error);
-                    });
+                    }
                 }
 
                 private startExecutionJoinLogic() {
+                    var JoinQuery;
+                    if (this.CurrentQueryStackIndex >= 1 && this.CurrentQueryStackIndex % 2 == 1) {
+                        // if (this.QueryStack[this.CurrentQueryStackIndex].Table == this.QueryStack[this.CurrentQueryStackIndex].NextJoin.Table) {
+                        //     this.QueryStack[this.CurrentQueryStackIndex].Column = this.QueryStack[this.CurrentQueryStackIndex].Column;
+                        // }
+                        // else {
+                        //     this.QueryStack[this.CurrentQueryStackIndex].Column = this.QueryStack[this.CurrentQueryStackIndex].Column;
+                        // }
+                        JoinQuery = <ITableJoin>{
+                            Table: this.QueryStack[this.CurrentQueryStackIndex].NextJoin.Table,
+                            Column: this.QueryStack[this.CurrentQueryStackIndex].NextJoin.Column
+                        }
+                        this.CurrentQueryStackIndex++;
+                    }
+                    else {
+                        JoinQuery = this.QueryStack[this.CurrentQueryStackIndex++];
+                    }
 
-                    var JoinQuery = this.QueryStack[this.CurrentQueryStackIndex++];
                     var Query = this.QueryStack[this.CurrentQueryStackIndex];
                     if (Query.WhereIn || Query.Where) {
                         this.executeWhereJoinLogic(JoinQuery, Query);

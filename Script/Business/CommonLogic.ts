@@ -15,7 +15,8 @@ module JsStorage {
         ColumnNotExist,
         InvalidOp,
         NullValue,
-        BadDataType
+        BadDataType,
+        NextJoinNotExist
     }
 
     export interface ISelect {
@@ -74,9 +75,8 @@ module JsStorage {
         Table: string,
         Where: any,
         WhereIn: Array<IWhereIn>,
-        Skip: number,
-        Limit: number,
-        JoinType: string
+        JoinType: string,
+        NextJoin: INextJoin
     }
 
     export interface ISelectJoin {
@@ -86,7 +86,13 @@ module JsStorage {
     export interface IJoin {
         Table1: ITableJoin,
         Join: string, //inner,left,right,outer
-        Table2: ITableJoin
+        Table2: ITableJoin,
+        NextJoin: INextJoin
+    }
+
+    export interface INextJoin {
+        Table: string,
+        Column: string
     }
 
     export enum ConnectionStatus {
