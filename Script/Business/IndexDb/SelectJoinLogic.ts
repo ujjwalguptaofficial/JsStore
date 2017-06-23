@@ -103,6 +103,9 @@ module JsStorage {
                         Transaction = DbConnection.transaction([query.Table], "readonly");
                     Transaction.oncomplete = function (e) {
                         That.onTransactionCompleted(e);
+                        if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
+                            That.startExecutionJoinLogic();
+                        }
                     };
                     var ExecuteLogic = function (item, index) {
                         JoinIndex = 0;
@@ -139,9 +142,9 @@ module JsStorage {
                                     }
                                     That.Results = Results;
                                 }
-                                if (index == ResultLength - 1 && (That.QueryStack.length > That.CurrentQueryStackIndex + 1)) {
-                                    That.startExecutionJoinLogic();
-                                }
+                                // if (index == ResultLength - 1 && (That.QueryStack.length > That.CurrentQueryStackIndex + 1)) {
+                                //     That.startExecutionJoinLogic();
+                                // }
                             }
                         }
                         CursorOpenRequest.onerror = That.onErrorRequest;

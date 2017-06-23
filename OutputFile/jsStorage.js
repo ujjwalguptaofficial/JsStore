@@ -802,8 +802,8 @@ var JsStorage;
                                 //inner join
                                 case 'inner':
                                     Results[JoinIndex][query.Table] = value;
+                                    //copy other relative data into current result
                                     for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                        // Results[JoinIndex][joinQuery.Table] = item;
                                         Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
                                     }
                                     break;
@@ -835,6 +835,9 @@ var JsStorage;
                         var That = this, Results = [], JoinIndex, TmpResults = That.Results, CursorOpenRequest, ResultLength = this.Results.length, Transaction = IndexDb.DbConnection.transaction([query.Table], "readonly");
                         Transaction.oncomplete = function (e) {
                             That.onTransactionCompleted(e);
+                            if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
+                                That.startExecutionJoinLogic();
+                            }
                         };
                         var ExecuteLogic = function (item, index) {
                             JoinIndex = 0;
@@ -848,6 +851,7 @@ var JsStorage;
                                     ++JoinIndex;
                                 }
                                 else {
+                                    //copy other relative data into current result
                                     if (That.CurrentQueryStackIndex == 1) {
                                         That.Results = Results;
                                     }
@@ -867,9 +871,9 @@ var JsStorage;
                                         }
                                         That.Results = Results;
                                     }
-                                    if (index == ResultLength - 1 && (That.QueryStack.length > That.CurrentQueryStackIndex + 1)) {
-                                        That.startExecutionJoinLogic();
-                                    }
+                                    // if (index == ResultLength - 1 && (That.QueryStack.length > That.CurrentQueryStackIndex + 1)) {
+                                    //     That.startExecutionJoinLogic();
+                                    // }
                                 }
                             };
                             CursorOpenRequest.onerror = That.onErrorRequest;
