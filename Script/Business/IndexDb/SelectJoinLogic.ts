@@ -194,7 +194,6 @@ module JsStorage {
 
                     var convertQueryIntoStack = function (query) {
                         if (query.hasOwnProperty('Table1')) {
-                            query.Table2.Table = query.Table2.Table.toLowerCase();
                             query.Table2['JoinType'] = (<IJoin>query).Join == undefined ? 'inner' : (<IJoin>query).Join.toLowerCase();
                             That.QueryStack.push(query.Table2);
                             if (That.QueryStack.length % 2 == 0) {
@@ -204,7 +203,6 @@ module JsStorage {
                             return convertQueryIntoStack(query.Table1);
                         }
                         else {
-                            query.Table = query.Table.toLowerCase();
                             That.QueryStack.push(query);
                             TableList.push(query.Table);
                             return;

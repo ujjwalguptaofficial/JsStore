@@ -43,7 +43,7 @@ module JsStorage {
                             CursorOpenRequest.onerror = onErrorGetRequest;
                         }
                         else {
-                           
+
                             for (var TmpColumn in query.Where) {
                                 if (!ErrorOccured) {
                                     if (ObjectStore.indexNames.contains(TmpColumn)) {
@@ -80,7 +80,7 @@ module JsStorage {
                     }
                     catch (ex) {
                         if (ex.name == "NotFoundError") {
-                            console.error('The tablename does not exist');
+                            UtilityLogic.getError(ErrorType.TableNotExist, true, { TableName: query.In });
                         }
                         else {
                             console.warn(ex);

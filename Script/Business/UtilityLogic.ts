@@ -14,11 +14,11 @@ module JsStorage {
                     case ErrorType.NotArray: Error.Value = "Supplied value is not an array"; break;
                     case ErrorType.UndefinedColumn: Error.Value = "Column is undefined in Where"; break;
                     case ErrorType.UndefinedValue: Error.Value = "Value is undefined in Where"; break;
-                    case ErrorType.UndefinedColumnName: Error.Value = "column name is undefined"; break;
-                    case ErrorType.UndefinedColumnValue: Error.Value = "column value is undefined"; break;
-                    case ErrorType.NoValueSupplied: Error.Value = "no value supplied"; break;
+                    case ErrorType.UndefinedColumnName: Error.Value = "Column name is undefined"; break;
+                    case ErrorType.UndefinedColumnValue: Error.Value = "Column value is undefined"; break;
+                    case ErrorType.NoValueSupplied: Error.Value = "No value supplied"; break;
                     case ErrorType.InvalidOp: Error.Value = "Invalid Op Value : " + errorDetail['Op']; break;
-                    case ErrorType.ColumnNotExist: Error.Value = "column :" + errorDetail['ColumnName'] + " does not exist";
+                    case ErrorType.ColumnNotExist: Error.Value = "Column :" + errorDetail['ColumnName'] + " does not exist";
                         break;
                     case ErrorType.NullValue: Error.Value = "Null value is not allowed for column: " + errorDetail['ColumnName'];
                         break;
@@ -26,10 +26,12 @@ module JsStorage {
                         break;
                     case ErrorType.NextJoinNotExist: Error.Value = "Next join details not supplied";
                         break;
+                    case ErrorType.TableNotExist: Error.Value = "Table :" + errorDetail['TableName'] + " does not exist";;
+                        break;
                     default: console.warn('the error type is not defined');
                 }
                 if (logError) {
-                    console.warn("JsStorage Error : - " + Error.Value);
+                    console.warn("JsStorage Error :- " + Error.Value);
                 }
                 return Error;
             }

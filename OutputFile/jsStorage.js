@@ -29,6 +29,7 @@ var JsStorage;
         ErrorType[ErrorType["NullValue"] = 8] = "NullValue";
         ErrorType[ErrorType["BadDataType"] = 9] = "BadDataType";
         ErrorType[ErrorType["NextJoinNotExist"] = 10] = "NextJoinNotExist";
+        ErrorType[ErrorType["TableNotExist"] = 11] = "TableNotExist";
     })(ErrorType = JsStorage.ErrorType || (JsStorage.ErrorType = {}));
     var ConnectionStatus;
     (function (ConnectionStatus) {
@@ -65,19 +66,19 @@ var JsStorage;
                         Error.Value = "Value is undefined in Where";
                         break;
                     case JsStorage.ErrorType.UndefinedColumnName:
-                        Error.Value = "column name is undefined";
+                        Error.Value = "Column name is undefined";
                         break;
                     case JsStorage.ErrorType.UndefinedColumnValue:
-                        Error.Value = "column value is undefined";
+                        Error.Value = "Column value is undefined";
                         break;
                     case JsStorage.ErrorType.NoValueSupplied:
-                        Error.Value = "no value supplied";
+                        Error.Value = "No value supplied";
                         break;
                     case JsStorage.ErrorType.InvalidOp:
                         Error.Value = "Invalid Op Value : " + errorDetail['Op'];
                         break;
                     case JsStorage.ErrorType.ColumnNotExist:
-                        Error.Value = "column :" + errorDetail['ColumnName'] + " does not exist";
+                        Error.Value = "Column :" + errorDetail['ColumnName'] + " does not exist";
                         break;
                     case JsStorage.ErrorType.NullValue:
                         Error.Value = "Null value is not allowed for column: " + errorDetail['ColumnName'];
@@ -88,10 +89,14 @@ var JsStorage;
                     case JsStorage.ErrorType.NextJoinNotExist:
                         Error.Value = "Next join details not supplied";
                         break;
+                    case JsStorage.ErrorType.TableNotExist:
+                        Error.Value = "Table :" + errorDetail['TableName'] + " does not exist";
+                        ;
+                        break;
                     default: console.warn('the error type is not defined');
                 }
                 if (logError) {
-                    console.warn("JsStorage Error : - " + Error.Value);
+                    console.warn("JsStorage Error :- " + Error.Value);
                 }
                 return Error;
             };
@@ -145,7 +150,7 @@ var JsStorage;
                 this.RequireDelete = false;
                 this.RequireCreation = false;
                 this.PrimaryKey = "";
-                this.Name = table.Name.toLowerCase();
+                this.Name = table.Name;
                 this.Version = table.Version == undefined ? 1 : table.Version;
                 var That = this;
                 table.Columns.forEach(function (item) {
@@ -202,8 +207,8 @@ var JsStorage;
         var DataBase = (function () {
             function DataBase(dataBase) {
                 this.Tables = [];
-                this.Name = dataBase.Name.toLowerCase();
                 var That = this;
+                this.Name = dataBase.Name;
                 dataBase.Tables.forEach(function (item) {
                     That.Tables.push(new Model.Table(item, That.Name));
                 });
@@ -356,56 +361,66 @@ var JsStorage;
         (function (IndexDb) {
             var DeleteLogic = (function () {
                 function DeleteLogic(query, onSuccess, onError) {
-                    var That = this, Transaction = IndexDb.DbConnection.transaction([query.From], "readwrite"), ObjectStore = Transaction.objectStore(query.From), ErrorOccured = false, ErrorCount = 0, RowAffected = 0, onErrorGetRequest = function (e) {
-                        if (onError != null) {
-                            onError(e.target.error);
-                        }
-                    };
-                    Transaction.oncomplete = function () {
-                        if (onSuccess != null) {
-                            onSuccess(RowAffected);
-                        }
-                    };
-                    Transaction.onerror = onErrorGetRequest;
-                    if (query.Where == undefined) {
-                        var CursorOpenRequest = ObjectStore.openCursor();
-                        CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = e.target.result;
-                            if (Cursor) {
-                                Cursor.delete();
-                                ++RowAffected;
-                                Cursor.continue();
+                    try {
+                        var That = this, Transaction = IndexDb.DbConnection.transaction([query.From], "readwrite"), ObjectStore = Transaction.objectStore(query.From), ErrorOccured = false, ErrorCount = 0, RowAffected = 0, onErrorGetRequest = function (e) {
+                            if (onError != null) {
+                                onError(e.target.error);
                             }
                         };
-                        CursorOpenRequest.onerror = onErrorGetRequest;
-                    }
-                    else {
-                        var Column, ExecutionNo = 0, ConditionLength = Object.keys(query.Where).length;
-                        for (Column in query.Where) {
-                            if (!ErrorOccured) {
-                                if (ObjectStore.indexNames.contains(Column)) {
-                                    var CursorOpenRequest = ObjectStore.index(Column).openCursor(IDBKeyRange.only(query.Where[Column])), ExecutionNo = 0;
-                                    CursorOpenRequest.onerror = function (e) {
-                                        ErrorOccured = true;
-                                        ++ErrorCount;
-                                        onErrorGetRequest(e);
-                                    };
-                                    CursorOpenRequest.onsuccess = function (e) {
-                                        var Cursor = e.target.result;
-                                        if (Cursor) {
-                                            Cursor.delete();
-                                            ++RowAffected;
-                                            Cursor.continue();
-                                        }
-                                    };
+                        Transaction.oncomplete = function () {
+                            if (onSuccess != null) {
+                                onSuccess(RowAffected);
+                            }
+                        };
+                        Transaction.onerror = onErrorGetRequest;
+                        if (query.Where == undefined) {
+                            var CursorOpenRequest = ObjectStore.openCursor();
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor = e.target.result;
+                                if (Cursor) {
+                                    Cursor.delete();
+                                    ++RowAffected;
+                                    Cursor.continue();
+                                }
+                            };
+                            CursorOpenRequest.onerror = onErrorGetRequest;
+                        }
+                        else {
+                            var Column, ExecutionNo = 0, ConditionLength = Object.keys(query.Where).length;
+                            for (Column in query.Where) {
+                                if (!ErrorOccured) {
+                                    if (ObjectStore.indexNames.contains(Column)) {
+                                        var CursorOpenRequest = ObjectStore.index(Column).openCursor(IDBKeyRange.only(query.Where[Column])), ExecutionNo = 0;
+                                        CursorOpenRequest.onerror = function (e) {
+                                            ErrorOccured = true;
+                                            ++ErrorCount;
+                                            onErrorGetRequest(e);
+                                        };
+                                        CursorOpenRequest.onsuccess = function (e) {
+                                            var Cursor = e.target.result;
+                                            if (Cursor) {
+                                                Cursor.delete();
+                                                ++RowAffected;
+                                                Cursor.continue();
+                                            }
+                                        };
+                                    }
+                                    else {
+                                        Business.UtilityLogic.getError(JsStorage.ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                                    }
                                 }
                                 else {
-                                    Business.UtilityLogic.getError(JsStorage.ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                                    return;
                                 }
                             }
-                            else {
-                                return;
-                            }
+                        }
+                    }
+                    catch (ex) {
+                        if (ex.name == "NotFoundError") {
+                            Business.UtilityLogic.getError(JsStorage.ErrorType.TableNotExist, true, { TableName: query.From });
+                        }
+                        else {
+                            console.warn(ex);
                         }
                     }
                 }
@@ -918,7 +933,6 @@ var JsStorage;
                     var That = _this, TableList = []; // used to open the multiple object store
                     var convertQueryIntoStack = function (query) {
                         if (query.hasOwnProperty('Table1')) {
-                            query.Table2.Table = query.Table2.Table.toLowerCase();
                             query.Table2['JoinType'] = query.Join == undefined ? 'inner' : query.Join.toLowerCase();
                             That.QueryStack.push(query.Table2);
                             if (That.QueryStack.length % 2 == 0) {
@@ -928,7 +942,6 @@ var JsStorage;
                             return convertQueryIntoStack(query.Table1);
                         }
                         else {
-                            query.Table = query.Table.toLowerCase();
                             That.QueryStack.push(query);
                             TableList.push(query.Table);
                             return;
@@ -1277,7 +1290,7 @@ var JsStorage;
                     }
                     catch (ex) {
                         if (ex.name == "NotFoundError") {
-                            console.error('The tablename does not exist');
+                            Business.UtilityLogic.getError(JsStorage.ErrorType.TableNotExist, true, { TableName: query.In });
                         }
                         else {
                             console.warn(ex);
@@ -1338,11 +1351,9 @@ var JsStorage;
                         var ObjDropDb = new IndexDb.DropDbLogic(IndexDb.ActiveDataBase.Name, onSuccess, onError);
                     };
                     this.update = function (query, onSuccess, onError) {
-                        query.In = query.In.toLowerCase();
                         var ObjUpdate = new IndexDb.UpdateLogic(query, onSuccess, onError);
                     };
                     this.insert = function (tableName, values, isReturn, onSuccess, onError) {
-                        tableName = tableName.toLowerCase();
                         if (!Array.isArray(values)) {
                             throw "Value should be array :- supplied value is not array";
                         }
@@ -1356,7 +1367,6 @@ var JsStorage;
                         }
                     };
                     this.delete = function (query, onSuccess, onError) {
-                        query.From = query.From.toLowerCase();
                         var ObjDelete = new IndexDb.DeleteLogic(query, onSuccess, onError);
                     };
                     this.select = function (query, onSuccess, onError) {
@@ -1364,7 +1374,6 @@ var JsStorage;
                             new IndexDb.SelectJoinLogic(query, onSuccess, onError);
                         }
                         else {
-                            query.From = query.From.toLowerCase();
                             new IndexDb.SelectLogic(query, onSuccess, onError);
                         }
                     };

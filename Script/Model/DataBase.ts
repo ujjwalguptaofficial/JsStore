@@ -9,11 +9,12 @@ module JsStorage {
             Tables: Array<Table> = [];
 
             constructor(dataBase: IDataBase) {
-                this.Name = dataBase.Name.toLowerCase();
                 var That = this;
+                this.Name = dataBase.Name;
                 dataBase.Tables.forEach(function (item) {
                     That.Tables.push(new Table(item, That.Name));
                 })
+
             }
         }
     }

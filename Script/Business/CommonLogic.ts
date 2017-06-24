@@ -16,7 +16,8 @@ module JsStorage {
         InvalidOp,
         NullValue,
         BadDataType,
-        NextJoinNotExist
+        NextJoinNotExist,
+        TableNotExist
     }
 
     export interface ISelect {

@@ -25,12 +25,10 @@ module JsStorage {
                 }
 
                 public update = function (query: IUpdate, onSuccess: Function, onError: Function) {
-                    query.In = query.In.toLowerCase();
                     var ObjUpdate = new UpdateLogic(query, onSuccess, onError);
                 }
 
                 public insert = function (tableName: string, values, isReturn, onSuccess: Function, onError: Function) {
-                    tableName = tableName.toLowerCase();
                     if (!Array.isArray(values)) {
                         throw "Value should be array :- supplied value is not array";
                     }
@@ -45,7 +43,6 @@ module JsStorage {
                 }
 
                 public delete = function (query: IDelete, onSuccess: Function, onError: Function) {
-                    query.From = query.From.toLowerCase();
                     var ObjDelete = new DeleteLogic(query, onSuccess, onError);
                 }
 
@@ -55,7 +52,6 @@ module JsStorage {
                         new SelectJoinLogic(<ISelectJoin>query, onSuccess, onError);
                     }
                     else {
-                        query.From = query.From.toLowerCase();
                         new SelectLogic(query, onSuccess, onError);
                     }
                 }

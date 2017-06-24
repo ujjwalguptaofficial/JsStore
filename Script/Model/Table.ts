@@ -16,7 +16,7 @@ module JsStorage {
             PrimaryKey: string = "";
 
             constructor(table: ITable, dbName: string) {
-                this.Name = table.Name.toLowerCase();
+                this.Name = table.Name;
                 this.Version = table.Version == undefined ? 1 : table.Version;
                 var That = this;
                 table.Columns.forEach(function (item) {

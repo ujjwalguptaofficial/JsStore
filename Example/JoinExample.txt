@@ -1,23 +1,77 @@
 
 //join logic
- 
-DbConnection.select({
-                From:{ 
-Table1:
-{
-Table1:{Table:'student',Column:'id'},
-Table2:{Table:'sdtudent',Column:'idsd'}
-}
-,
-Table2:
-{
-	Table:'sss',Column:'name'}
 
- }
-                
-     }, function (rowsAffected) {
-                console.log(rowsAffected);
-                
+#two table join
+
+ FromLogic = {
+                    Table1: {
+                        Table: 'Receipt',
+                        Column: 'ReceiptId',
+                        Where: {
+                            ReceiptId: [18, 17]
+                        }
+                    },
+                    Join: 'inner',
+                    Table2: {
+                        Table: 'Bill',
+                        Column: 'ReceiptId',
+                    }
+                };
+
+Db.DbConnection.select({
+                From: FromLogic,
+            }, function (values) {
+                if (values.length > 0) {
+                    DialogBox.alert('Successfully added');
+                    console.log(values);
+                } else {
+                    DialogBox.alert('Error Occured');
+                }
             }, function (error) {
-                console.log(error)
-           })
+                console.log(error);
+                DialogBox.alert('Error Occured');
+            })
+
+#more than two table
+ 
+Logic1 = {
+                    Table1: {
+                        Table: 'Receipt',
+                        Column: 'CustomerId',
+                        Where: {
+                            ReceiptId: [18]
+                        }
+                    },
+                    Join: 'inner',
+                    Table2: {
+                        Table: 'Customer',
+                        Column: 'CustomerId',
+                    },
+                    NextJoin: {
+                        Table: 'receipt',
+                        Column: 'ReceiptId'
+                    }
+                };
+            FromLogic = {
+                Table1: Logic1,
+                Join: 'inner',
+
+                Table2: {
+                    Table: 'Bill',
+                    Column: 'ReceiptId',
+                }
+            };
+            Db.DbConnection.select({
+                From: FromLogic,
+            }, function (values) {
+                if (values.length > 0) {
+                    DialogBox.alert('Successfully added');
+                    console.log(values);
+                } else {
+                    DialogBox.alert('Error Occured');
+                }
+            }, function (error) {
+                console.log(error);
+                DialogBox.alert('Error Occured');
+            })
+        }
