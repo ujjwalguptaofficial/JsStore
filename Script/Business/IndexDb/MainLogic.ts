@@ -4,7 +4,11 @@ module JsStorage {
     export module Business {
         export module IndexDb {
             export var DbConnection,
-                ActiveDataBase: DataBase;
+                ActiveDataBase: DataBase,
+                Status: JsStoreStatus = <JsStoreStatus>{
+                    ConStatus: ConnectionStatus.NotStarted,
+                    LastError: ""
+                };
             export class MainLogic {
                 constructor(dataBase: DataBase) {
                     ActiveDataBase = dataBase

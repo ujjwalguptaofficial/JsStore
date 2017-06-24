@@ -10,12 +10,6 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var JsStorage;
 (function (JsStorage) {
-    var DBType;
-    (function (DBType) {
-        DBType[DBType["IndexedDb"] = 0] = "IndexedDb";
-        DBType[DBType["WebSql"] = 1] = "WebSql";
-    })(DBType = JsStorage.DBType || (JsStorage.DBType = {}));
-    ;
     var ErrorType;
     (function (ErrorType) {
         ErrorType[ErrorType["UndefinedColumn"] = 0] = "UndefinedColumn";
@@ -37,10 +31,6 @@ var JsStorage;
         ConnectionStatus[ConnectionStatus["Closed"] = 2] = "Closed";
         ConnectionStatus[ConnectionStatus["NotStarted"] = 3] = "NotStarted";
     })(ConnectionStatus = JsStorage.ConnectionStatus || (JsStorage.ConnectionStatus = {}));
-    JsStorage.Status = {
-        ConStatus: ConnectionStatus.NotStarted,
-        LastError: ""
-    };
 })(JsStorage || (JsStorage = {}));
 var JsStorage;
 (function (JsStorage) {
@@ -75,22 +65,22 @@ var JsStorage;
                         Error.Value = "No value supplied";
                         break;
                     case JsStorage.ErrorType.InvalidOp:
-                        Error.Value = "Invalid Op Value : " + errorDetail['Op'];
+                        Error.Value = "Invalid Op Value '" + errorDetail['Op'] + "'";
                         break;
                     case JsStorage.ErrorType.ColumnNotExist:
-                        Error.Value = "Column :" + errorDetail['ColumnName'] + " does not exist";
+                        Error.Value = "Column '" + errorDetail['ColumnName'] + "' does not exist";
                         break;
                     case JsStorage.ErrorType.NullValue:
-                        Error.Value = "Null value is not allowed for column: " + errorDetail['ColumnName'];
+                        Error.Value = "Null value is not allowed for column '" + errorDetail['ColumnName'] + "'";
                         break;
                     case JsStorage.ErrorType.BadDataType:
-                        Error.Value = "Supplied value for column: " + errorDetail['ColumnName'] + " does not have valid type";
+                        Error.Value = "Supplied value for column '" + errorDetail['ColumnName'] + "' does not have valid type";
                         break;
                     case JsStorage.ErrorType.NextJoinNotExist:
                         Error.Value = "Next join details not supplied";
                         break;
                     case JsStorage.ErrorType.TableNotExist:
-                        Error.Value = "Table :" + errorDetail['TableName'] + " does not exist";
+                        Error.Value = "Table '" + errorDetail['TableName'] + "' does not exist";
                         ;
                         break;
                     default: console.warn('the error type is not defined');
@@ -111,6 +101,19 @@ var JsStorage;
             };
             return UtilityLogic;
         }());
+        /**
+         * determine and set the DataBase Type
+         *
+         *
+         * @memberOf MainLogic
+         */
+        UtilityLogic.setDbType = function () {
+            window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+            if (indexedDB) {
+                window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction;
+                window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
+            }
+        };
         Business.UtilityLogic = UtilityLogic;
     })(Business = JsStorage.Business || (JsStorage.Business = {}));
 })(JsStorage || (JsStorage = {}));
@@ -222,18 +225,6 @@ var JsStorage;
 (function (JsStorage) {
     var Business;
     (function (Business) {
-        var WebSqlLogic = (function () {
-            function WebSqlLogic() {
-            }
-            return WebSqlLogic;
-        }());
-        Business.WebSqlLogic = WebSqlLogic;
-    })(Business = JsStorage.Business || (JsStorage.Business = {}));
-})(JsStorage || (JsStorage = {}));
-var JsStorage;
-(function (JsStorage) {
-    var Business;
-    (function (Business) {
         var DbHelperLogic = (function () {
             function DbHelperLogic() {
                 this.Results = [];
@@ -274,11 +265,11 @@ var JsStorage;
                         }
                     };
                     DbRequest.onsuccess = function (event) {
-                        JsStorage.Status.ConStatus = JsStorage.ConnectionStatus.Connected;
+                        IndexDb.Status.ConStatus = JsStorage.ConnectionStatus.Connected;
                         IndexDb.DbConnection = DbRequest.result;
                         IndexDb.DbConnection.onclose = function () {
-                            JsStorage.Status.ConStatus = JsStorage.ConnectionStatus.Closed;
-                            JsStorage.Status.LastError = "Connection Closed";
+                            IndexDb.Status.ConStatus = JsStorage.ConnectionStatus.Closed;
+                            IndexDb.Status.LastError = "Connection Closed";
                         };
                         IndexDb.DbConnection.onversionchange = function (e) {
                             if (e.newVersion === null) {
@@ -286,11 +277,11 @@ var JsStorage;
                             }
                         };
                         IndexDb.DbConnection.onerror = function (e) {
-                            JsStorage.Status.LastError = "Error occured in connection :" + e.target.result;
+                            IndexDb.Status.LastError = "Error occured in connection :" + e.target.result;
                         };
                         IndexDb.DbConnection.onabort = function (e) {
-                            JsStorage.Status.ConStatus = JsStorage.ConnectionStatus.Closed;
-                            JsStorage.Status.LastError = "Connection aborted";
+                            IndexDb.Status.ConStatus = JsStorage.ConnectionStatus.Closed;
+                            IndexDb.Status.LastError = "Connection aborted";
                         };
                         if (onSuccess != null) {
                             onSuccess(objMain);
@@ -451,7 +442,7 @@ var JsStorage;
                         }
                     };
                     DbDropRequest.onsuccess = function () {
-                        JsStorage.Status.ConStatus = JsStorage.ConnectionStatus.Closed;
+                        IndexDb.Status.ConStatus = JsStorage.ConnectionStatus.Closed;
                         if (onSuccess != null) {
                             onSuccess();
                         }
@@ -584,7 +575,7 @@ var JsStorage;
         (function (IndexDb) {
             var OpenDbLogic = (function () {
                 function OpenDbLogic(objMain, onSuccess, onError) {
-                    if (JsStorage.Status.ConStatus != JsStorage.ConnectionStatus.Connected) {
+                    if (IndexDb.Status.ConStatus != JsStorage.ConnectionStatus.Connected) {
                         if (IndexDb.ActiveDataBase.Name.length > 0) {
                             var DbVersion = Number(localStorage.getItem(IndexDb.ActiveDataBase.Name + 'Db_Version')), DbRequest = window.indexedDB.open(IndexDb.ActiveDataBase.Name, DbVersion), That = this;
                             DbRequest.onerror = function (event) {
@@ -593,11 +584,11 @@ var JsStorage;
                                 }
                             };
                             DbRequest.onsuccess = function (event) {
-                                JsStorage.Status.ConStatus = JsStorage.ConnectionStatus.Connected;
+                                IndexDb.Status.ConStatus = JsStorage.ConnectionStatus.Connected;
                                 IndexDb.DbConnection = DbRequest.result;
                                 IndexDb.DbConnection.onclose = function () {
-                                    JsStorage.Status.ConStatus = JsStorage.ConnectionStatus.Closed;
-                                    JsStorage.Status.LastError = "Connection Closed, trying to reconnect";
+                                    IndexDb.Status.ConStatus = JsStorage.ConnectionStatus.Closed;
+                                    IndexDb.Status.LastError = "Connection Closed, trying to reconnect";
                                 };
                                 IndexDb.DbConnection.onversionchange = function (e) {
                                     if (e.newVersion === null) {
@@ -605,11 +596,11 @@ var JsStorage;
                                     }
                                 };
                                 IndexDb.DbConnection.onerror = function (e) {
-                                    JsStorage.Status.LastError = "Error occured in connection :" + e.target.result;
+                                    IndexDb.Status.LastError = "Error occured in connection :" + e.target.result;
                                 };
                                 IndexDb.DbConnection.onabort = function (e) {
-                                    JsStorage.Status.ConStatus = JsStorage.ConnectionStatus.Closed;
-                                    JsStorage.Status.LastError = "Connection Aborted";
+                                    IndexDb.Status.ConStatus = JsStorage.ConnectionStatus.Closed;
+                                    IndexDb.Status.LastError = "Connection Aborted";
                                 };
                                 if (onSuccess != null) {
                                     onSuccess(objMain);
@@ -754,6 +745,43 @@ var JsStorage;
                     };
                     return _this;
                 }
+                /**
+                 * For matching the different column value existance
+                 *
+                 * @private
+                 * @param {any} where
+                 * @param {any} value
+                 * @returns
+                 *
+                 * @memberOf SelectLogic
+                 */
+                BaseSelectLogic.prototype.checkForWhereConditionMatch = function (where, value) {
+                    var TempColumn;
+                    for (TempColumn in where) {
+                        if (Array.isArray(where[TempColumn])) {
+                            var i, Status = true;
+                            for (i = 0; i < TempColumn.length; i++) {
+                                if (where[TempColumn][i] == value[TempColumn]) {
+                                    Status = true;
+                                    break;
+                                }
+                                else {
+                                    Status = false;
+                                }
+                            }
+                            ;
+                            if (!Status) {
+                                return Status;
+                            }
+                        }
+                        else {
+                            if (where[TempColumn] != value[TempColumn]) {
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                };
                 return BaseSelectLogic;
             }(Business.DbHelperLogic));
             IndexDb.BaseSelectLogic = BaseSelectLogic;
@@ -847,85 +875,95 @@ var JsStorage;
                         };
                     };
                     _this.executeWhereUndefinedLogicForJoin = function (joinQuery, query) {
-                        var That = this, Results = [], JoinIndex, TmpResults = That.Results, CursorOpenRequest, ResultLength = this.Results.length, Transaction = IndexDb.DbConnection.transaction([query.Table], "readonly");
-                        Transaction.oncomplete = function (e) {
-                            That.onTransactionCompleted(e);
-                            if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
-                                That.startExecutionJoinLogic();
-                            }
-                        };
-                        var ExecuteLogic = function (item, index) {
-                            JoinIndex = 0;
-                            this.ObjectStore = Transaction.objectStore(query.Table);
-                            CursorOpenRequest = this.ObjectStore.index(query.Column).openCursor(IDBKeyRange.only(item[joinQuery.Column]));
-                            CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = e.target.result;
-                                if (Cursor) {
-                                    doJoin(Cursor.value);
-                                    Cursor.continue();
-                                    ++JoinIndex;
+                        try {
+                            var That = this, Results = [], JoinIndex, TmpResults = That.Results, CursorOpenRequest, ResultLength = this.Results.length, Transaction = IndexDb.DbConnection.transaction([query.Table], "readonly");
+                            Transaction.oncomplete = function (e) {
+                                That.onTransactionCompleted(e);
+                                if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
+                                    That.startExecutionJoinLogic();
                                 }
-                                else {
-                                    //copy other relative data into current result
-                                    if (That.CurrentQueryStackIndex == 1) {
-                                        That.Results = Results;
+                            };
+                            var ExecuteLogic = function (item, index) {
+                                JoinIndex = 0;
+                                this.ObjectStore = Transaction.objectStore(query.Table);
+                                CursorOpenRequest = this.ObjectStore.index(query.Column).openCursor(IDBKeyRange.only(item[joinQuery.Column]));
+                                CursorOpenRequest.onsuccess = function (e) {
+                                    var Cursor = e.target.result;
+                                    if (Cursor) {
+                                        doJoin(Cursor.value);
+                                        Cursor.continue();
+                                        ++JoinIndex;
                                     }
                                     else {
-                                        for (var i = 0; i < Results.length; i++) {
-                                            var ColumnValue = Results[i][joinQuery.Table][joinQuery.Column], TableName;
-                                            for (var j = 0; j < TmpResults.length; j++) {
-                                                if (ColumnValue == TmpResults[j][joinQuery.Table][joinQuery.Column]) {
-                                                    for (var k = 0; k < That.CurrentQueryStackIndex; k++) {
-                                                        // Results[JoinIndex][joinQuery.Table] = item;
-                                                        TableName = That.QueryStack[k].Table;
-                                                        Results[i][TableName] = TmpResults[j][TableName];
+                                        //copy other relative data into current result
+                                        if (That.CurrentQueryStackIndex == 1) {
+                                            That.Results = Results;
+                                        }
+                                        else {
+                                            for (var i = 0; i < Results.length; i++) {
+                                                var ColumnValue = Results[i][joinQuery.Table][joinQuery.Column], TableName;
+                                                for (var j = 0; j < TmpResults.length; j++) {
+                                                    if (ColumnValue == TmpResults[j][joinQuery.Table][joinQuery.Column]) {
+                                                        for (var k = 0; k < That.CurrentQueryStackIndex; k++) {
+                                                            // Results[JoinIndex][joinQuery.Table] = item;
+                                                            TableName = That.QueryStack[k].Table;
+                                                            Results[i][TableName] = TmpResults[j][TableName];
+                                                        }
+                                                        break;
                                                     }
-                                                    break;
                                                 }
                                             }
+                                            That.Results = Results;
                                         }
-                                        That.Results = Results;
+                                        // if (index == ResultLength - 1 && (That.QueryStack.length > That.CurrentQueryStackIndex + 1)) {
+                                        //     That.startExecutionJoinLogic();
+                                        // }
                                     }
-                                    // if (index == ResultLength - 1 && (That.QueryStack.length > That.CurrentQueryStackIndex + 1)) {
-                                    //     That.startExecutionJoinLogic();
-                                    // }
-                                }
+                                };
+                                CursorOpenRequest.onerror = That.onErrorRequest;
+                                var doJoin = function (value) {
+                                    Results[JoinIndex] = {};
+                                    switch (query.JoinType) {
+                                        //inner join
+                                        case 'inner':
+                                            Results[JoinIndex][query.Table] = value;
+                                            Results[JoinIndex][joinQuery.Table] = item;
+                                            break;
+                                        //left join
+                                        case 'left':
+                                            if (value != null) {
+                                                That.Results[index][query.Table] = value;
+                                            }
+                                            else {
+                                                That.Results[index][query.Table] = null;
+                                            }
+                                            ;
+                                            break;
+                                        //right join
+                                        case 'right':
+                                            if (value[query.Column] == That.Results[index][joinQuery.Table][joinQuery.Column]) {
+                                                That.Results[index][query.Table] = value;
+                                            }
+                                            else {
+                                                That.Results.splice(index, 0, null);
+                                                That.Results[index][joinQuery.Table] = null;
+                                                That.Results[index][query.Table] = value;
+                                            }
+                                            break;
+                                    }
+                                };
                             };
-                            CursorOpenRequest.onerror = That.onErrorRequest;
-                            var doJoin = function (value) {
-                                Results[JoinIndex] = {};
-                                switch (query.JoinType) {
-                                    //inner join
-                                    case 'inner':
-                                        Results[JoinIndex][query.Table] = value;
-                                        Results[JoinIndex][joinQuery.Table] = item;
-                                        break;
-                                    //left join
-                                    case 'left':
-                                        if (value != null) {
-                                            That.Results[index][query.Table] = value;
-                                        }
-                                        else {
-                                            That.Results[index][query.Table] = null;
-                                        }
-                                        ;
-                                        break;
-                                    //right join
-                                    case 'right':
-                                        if (value[query.Column] == That.Results[index][joinQuery.Table][joinQuery.Column]) {
-                                            That.Results[index][query.Table] = value;
-                                        }
-                                        else {
-                                            That.Results.splice(index, 0, null);
-                                            That.Results[index][joinQuery.Table] = null;
-                                            That.Results[index][query.Table] = value;
-                                        }
-                                        break;
-                                }
-                            };
-                        };
-                        for (var i = 0; i < ResultLength; i++) {
-                            ExecuteLogic(TmpResults[i][joinQuery.Table], i);
+                            for (var i = 0; i < ResultLength; i++) {
+                                ExecuteLogic(TmpResults[i][joinQuery.Table], i);
+                            }
+                        }
+                        catch (ex) {
+                            if (ex.name == "NotFoundError") {
+                                Business.UtilityLogic.getError(JsStorage.ErrorType.TableNotExist, true, { TableName: query.Table });
+                            }
+                            else {
+                                console.warn(ex);
+                            }
                         }
                     };
                     _this.OnSuccess = onSuccess;
@@ -1148,69 +1186,42 @@ var JsStorage;
                     _this.Query = query;
                     _this.OnSuccess = onSuccess;
                     _this.OnError = onError;
-                    _this.Transaction = IndexDb.DbConnection.transaction([query.From], "readonly");
-                    _this.Transaction.oncomplete = function (e) {
-                        if (That.SendResultFlag && onSuccess != null) {
-                            onSuccess(That.Results);
+                    try {
+                        _this.Transaction = IndexDb.DbConnection.transaction([query.From], "readonly");
+                        _this.Transaction.oncomplete = function (e) {
+                            if (That.SendResultFlag && onSuccess != null) {
+                                onSuccess(That.Results);
+                            }
+                        };
+                        // (<any>(this.Transaction)).ontimeout = function () {
+                        //     console.log('transaction timed out');
+                        // }
+                        _this.ObjectStore = _this.Transaction.objectStore(query.From);
+                        if (query.WhereIn != undefined) {
+                            if (query.Where != undefined) {
+                                _this.SendResultFlag = false;
+                                _this.executeWhereLogic();
+                            }
+                            _this.SendResultFlag = true;
+                            _this.executeWhereInLogic();
                         }
-                    };
-                    // (<any>(this.Transaction)).ontimeout = function () {
-                    //     console.log('transaction timed out');
-                    // }
-                    _this.ObjectStore = _this.Transaction.objectStore(query.From);
-                    if (query.WhereIn != undefined) {
-                        if (query.Where != undefined) {
-                            _this.SendResultFlag = false;
+                        else if (query.Where != undefined) {
                             _this.executeWhereLogic();
                         }
-                        _this.SendResultFlag = true;
-                        _this.executeWhereInLogic();
+                        else {
+                            _this.executeWhereUndefinedLogic();
+                        }
                     }
-                    else if (query.Where != undefined) {
-                        _this.executeWhereLogic();
-                    }
-                    else {
-                        _this.executeWhereUndefinedLogic();
+                    catch (ex) {
+                        if (ex.name == "NotFoundError") {
+                            Business.UtilityLogic.getError(JsStorage.ErrorType.TableNotExist, true, { TableName: query.From });
+                        }
+                        else {
+                            console.warn(ex);
+                        }
                     }
                     return _this;
                 }
-                /**
-                 * For matching the different column value existance
-                 *
-                 * @private
-                 * @param {any} where
-                 * @param {any} value
-                 * @returns
-                 *
-                 * @memberOf SelectLogic
-                 */
-                SelectLogic.prototype.checkForWhereConditionMatch = function (where, value) {
-                    var TempColumn;
-                    for (TempColumn in where) {
-                        if (Array.isArray(where[TempColumn])) {
-                            var i, Status = true;
-                            for (i = 0; i < TempColumn.length; i++) {
-                                if (where[TempColumn][i] == value[TempColumn]) {
-                                    Status = true;
-                                    break;
-                                }
-                                else {
-                                    Status = false;
-                                }
-                            }
-                            ;
-                            if (!Status) {
-                                return Status;
-                            }
-                        }
-                        else {
-                            if (where[TempColumn] != value[TempColumn]) {
-                                return false;
-                            }
-                        }
-                    }
-                    return true;
-                };
                 return SelectLogic;
             }(IndexDb.BaseSelectLogic));
             IndexDb.SelectLogic = SelectLogic;
@@ -1337,13 +1348,17 @@ var JsStorage;
     (function (Business) {
         var IndexDb;
         (function (IndexDb) {
+            IndexDb.Status = {
+                ConStatus: JsStorage.ConnectionStatus.NotStarted,
+                LastError: ""
+            };
             var MainLogic = (function () {
                 function MainLogic(dataBase) {
                     this.openDb = function (objMain, onSuccess, onError) {
                         var ObjOpenDb = new IndexDb.OpenDbLogic(objMain, onSuccess, onError);
                     };
                     this.closeDb = function () {
-                        if (JsStorage.Status.ConStatus == JsStorage.ConnectionStatus.Connected) {
+                        if (IndexDb.Status.ConStatus == JsStorage.ConnectionStatus.Connected) {
                             IndexDb.DbConnection.close();
                         }
                     };
@@ -1392,31 +1407,12 @@ var JsStorage;
     })(Business = JsStorage.Business || (JsStorage.Business = {}));
 })(JsStorage || (JsStorage = {}));
 var DataBase = JsStorage.Model.DataBase;
+var IndexDb = JsStorage.Business.IndexDb;
 var JsStorage;
 (function (JsStorage) {
     var Instance = (function () {
         function Instance() {
-            /**
-                * determine and set the DataBase Type
-                *
-                *
-                * @memberOf MainLogic
-                */
-            this.setDbType = function () {
-                window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
-                if (indexedDB) {
-                    this.DbType = JsStorage.DBType.IndexedDb;
-                    window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction;
-                    window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
-                }
-                else if (window.openDatabase) {
-                    this.DbType = JsStorage.DBType.WebSql;
-                }
-                else {
-                    throw 'Browser does not support Db Implementation';
-                }
-            };
-            this.setDbType();
+            JsStorage.Business.UtilityLogic.setDbType();
         }
         /**
          *
@@ -1429,16 +1425,11 @@ var JsStorage;
          * @memberOf Main
          */
         Instance.prototype.createDb = function (dataBase, onSuccess, onError) {
-            if (this.DbType == JsStorage.DBType.IndexedDb) {
-                var Db = new DataBase(dataBase);
-                this.IndexDbObj = new JsStorage.Business.IndexDb.MainLogic(Db);
-                var DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
-                this.IndexDbObj.createDb(this, onSuccess, onError);
-                JsStorage.Business.IndexDb.Db = Db;
-            }
-            else {
-                this.WebSqlObj = new JsStorage.Business.WebSqlLogic();
-            }
+            var Db = new DataBase(dataBase);
+            this.IndexDbObj = new JsStorage.Business.IndexDb.MainLogic(Db);
+            var DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
+            this.IndexDbObj.createDb(this, onSuccess, onError);
+            JsStorage.Business.IndexDb.Db = Db;
             return this;
         };
         /**
@@ -1452,11 +1443,7 @@ var JsStorage;
         Instance.prototype.openDb = function (onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
-            if (this.DbType == JsStorage.DBType.IndexedDb) {
-                this.IndexDbObj.openDb(this, onSuccess, onError);
-            }
-            else {
-            }
+            this.IndexDbObj.openDb(this, onSuccess, onError);
         };
         /**
          *
@@ -1467,18 +1454,10 @@ var JsStorage;
          * @memberOf Main
          */
         Instance.prototype.closeDb = function (onSuccess, onError) {
-            if (this.DbType == JsStorage.DBType.IndexedDb) {
-                this.IndexDbObj.closeDb();
-            }
-            else {
-            }
+            this.IndexDbObj.closeDb();
         };
         Instance.prototype.dropDb = function (onSuccess, onError) {
-            if (this.DbType == JsStorage.DBType.IndexedDb) {
-                this.IndexDbObj.dropDb(onSuccess, onError);
-            }
-            else {
-            }
+            this.IndexDbObj.dropDb(onSuccess, onError);
         };
         /**
          *
@@ -1490,20 +1469,16 @@ var JsStorage;
          * @memberOf Main
          */
         Instance.prototype.select = function (query, onSuccess, onError) {
-            if (JsStorage.Status.ConStatus == JsStorage.ConnectionStatus.Connected) {
-                if (this.DbType == JsStorage.DBType.IndexedDb) {
-                    this.IndexDbObj.select(query, onSuccess, onError);
-                }
-                else {
-                }
+            if (IndexDb.Status.ConStatus == JsStorage.ConnectionStatus.Connected) {
+                this.IndexDbObj.select(query, onSuccess, onError);
             }
-            else if (JsStorage.Status.ConStatus == JsStorage.ConnectionStatus.NotStarted) {
+            else if (IndexDb.Status.ConStatus == JsStorage.ConnectionStatus.NotStarted) {
                 var That = this;
                 setTimeout(function () {
                     That.select(query, onSuccess, onError);
                 }, 50);
             }
-            else if (JsStorage.Status.ConStatus == JsStorage.ConnectionStatus.Closed) {
+            else if (IndexDb.Status.ConStatus == JsStorage.ConnectionStatus.Closed) {
                 var That = this;
                 this.openDb(function () {
                     That.select(query, onSuccess, onError);
@@ -1521,21 +1496,17 @@ var JsStorage;
          * @memberOf Main
          */
         Instance.prototype.insert = function (query, onSuccess, onError) {
-            if (JsStorage.Status.ConStatus == JsStorage.ConnectionStatus.Connected) {
-                if (this.DbType == JsStorage.DBType.IndexedDb) {
-                    var IsReturn = query.Return ? query.Return : false;
-                    this.IndexDbObj.insert(query.Into, query.Values, IsReturn, onSuccess, onError);
-                }
-                else {
-                }
+            if (IndexDb.Status.ConStatus == JsStorage.ConnectionStatus.Connected) {
+                var IsReturn = query.Return ? query.Return : false;
+                this.IndexDbObj.insert(query.Into, query.Values, IsReturn, onSuccess, onError);
             }
-            else if (JsStorage.Status.ConStatus == JsStorage.ConnectionStatus.NotStarted) {
+            else if (IndexDb.Status.ConStatus == JsStorage.ConnectionStatus.NotStarted) {
                 var That = this;
                 setTimeout(function () {
                     That.insert(query, onSuccess, onError);
                 }, 50);
             }
-            else if (JsStorage.Status.ConStatus == JsStorage.ConnectionStatus.Closed) {
+            else if (IndexDb.Status.ConStatus == JsStorage.ConnectionStatus.Closed) {
                 var That = this;
                 this.openDb(function () {
                     That.insert(query, onSuccess, onError);
@@ -1543,20 +1514,16 @@ var JsStorage;
             }
         };
         Instance.prototype.update = function (query, onSuccess, onError) {
-            if (JsStorage.Status.ConStatus == JsStorage.ConnectionStatus.Connected) {
-                if (this.DbType == JsStorage.DBType.IndexedDb) {
-                    this.IndexDbObj.update(query, onSuccess, onError);
-                }
-                else {
-                }
+            if (IndexDb.Status.ConStatus == JsStorage.ConnectionStatus.Connected) {
+                this.IndexDbObj.update(query, onSuccess, onError);
             }
-            else if (JsStorage.Status.ConStatus == JsStorage.ConnectionStatus.NotStarted) {
+            else if (IndexDb.Status.ConStatus == JsStorage.ConnectionStatus.NotStarted) {
                 var That = this;
                 setTimeout(function () {
                     That.update(query, onSuccess, onError);
                 }, 50);
             }
-            else if (JsStorage.Status.ConStatus == JsStorage.ConnectionStatus.Closed) {
+            else if (IndexDb.Status.ConStatus == JsStorage.ConnectionStatus.Closed) {
                 var That = this;
                 this.openDb(function () {
                     That.update(query, onSuccess, onError);
@@ -1564,20 +1531,16 @@ var JsStorage;
             }
         };
         Instance.prototype.delete = function (query, onSuccess, onError) {
-            if (JsStorage.Status.ConStatus == JsStorage.ConnectionStatus.Connected) {
-                if (this.DbType == JsStorage.DBType.IndexedDb) {
-                    this.IndexDbObj.delete(query, onSuccess, onError);
-                }
-                else {
-                }
+            if (IndexDb.Status.ConStatus == JsStorage.ConnectionStatus.Connected) {
+                this.IndexDbObj.delete(query, onSuccess, onError);
             }
-            else if (JsStorage.Status.ConStatus == JsStorage.ConnectionStatus.NotStarted) {
+            else if (IndexDb.Status.ConStatus == JsStorage.ConnectionStatus.NotStarted) {
                 var That = this;
                 setTimeout(function () {
                     That.delete(query, onSuccess, onError);
                 }, 50);
             }
-            else if (JsStorage.Status.ConStatus == JsStorage.ConnectionStatus.Closed) {
+            else if (IndexDb.Status.ConStatus == JsStorage.ConnectionStatus.Closed) {
                 var That = this;
                 this.openDb(function () {
                     That.delete(query, onSuccess, onError);
@@ -1593,7 +1556,6 @@ var JsStorage;
 /// <reference path="Model/Column.ts" />
 /// <reference path="Model/Table.ts" />
 /// <reference path="Model/DataBase.ts" />
-/// <reference path="Business/WebSqlLogic.ts" />
 /// <reference path="Business/DbHelperLogic.ts" />
 /// <reference path="Business/IndexDb/CreateDbLogic.ts" />
 /// <reference path="Business/IndexDb/DeleteLogic.ts" />
@@ -1606,7 +1568,146 @@ var JsStorage;
 /// <reference path="Business/IndexDb/UpdateLogic.ts" />
 /// <reference path="Business/IndexDb/ClearLogic.ts" />
 /// <reference path="Business/IndexDb/MainLogic.ts" />
-/// <reference path="Business/MainLogic.ts" />
+/// <reference path="Business/JsStoreInstance.ts" />
+// module JsStorage {
+//     export class KeyStore {
+//         IndexDbObj: IndexDb.MainLogic;
+//         constructor() {
+//             JsStorage.Business.UtilityLogic.setDbType();
+//         }
+//         /**
+//          * 
+//          * 
+//          * @param {IDataBase} dataBase 
+//          * @param {Function} onSuccess 
+//          * @param {Function} onError 
+//          * @returns 
+//          * 
+//          * @memberOf Main
+//          */
+//         private createDb(dataBase: IDataBase, onSuccess: Function, onError: Function) {
+//             var Db = new DataBase(dataBase)
+//             this.IndexDbObj = new Business.IndexDb.MainLogic(Db);
+//             var DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
+//             this.IndexDbObj.createDb(this, onSuccess, onError);
+//             Business.IndexDb.Db = Db;
+//             return this;
+//         }
+//         /**
+//          * 
+//          * 
+//          * @param {Function} onSuccess 
+//          * @param {Function} onError 
+//          * 
+//          * @memberOf Main
+//          */
+//         openDb(onSuccess: Function = null, onError: Function = null) {
+//             this.IndexDbObj.openDb(this, onSuccess, onError);
+//         }
+//         /**
+//          * 
+//          * 
+//          * @param {Function} onSuccess 
+//          * @param {Function} onError 
+//          * 
+//          * @memberOf Main
+//          */
+//         closeDb(onSuccess: Function, onError: Function) {
+//             this.IndexDbObj.closeDb();
+//         }
+//         dropDb(onSuccess: Function, onError: Function) {
+//             this.IndexDbObj.dropDb(onSuccess, onError);
+//         }
+//         /**
+//          * 
+//          * 
+//          * @param {IQuery} query 
+//          * @param {Function} onSuccess 
+//          * @param {Function} onError 
+//          * 
+//          * @memberOf Main
+//          */
+//         select(query: ISelect, onSuccess: Function, onError: Function) {
+//             if (IndexDb.Status.ConStatus == ConnectionStatus.Connected) {
+//                 this.IndexDbObj.select(query, onSuccess, onError);
+//             }
+//             else if (IndexDb.Status.ConStatus == ConnectionStatus.NotStarted) {
+//                 var That = this;
+//                 setTimeout(function () {
+//                     That.select(query, onSuccess, onError);
+//                 }, 50);
+//             }
+//             else if (IndexDb.Status.ConStatus == ConnectionStatus.Closed) {
+//                 var That = this;
+//                 this.openDb(function () {
+//                     That.select(query, onSuccess, onError);
+//                 })
+//             }
+//         }
+//         /**
+//          * 
+//          * 
+//          * @param {string} table 
+//          * @param {any} value 
+//          * @param {Function} onSuccess 
+//          * @param {Function} onError 
+//          * 
+//          * @memberOf Main
+//          */
+//         insert(query: IInsert, onSuccess: Function, onError: Function) {
+//             if (IndexDb.Status.ConStatus == ConnectionStatus.Connected) {
+//                 var IsReturn = query.Return ? query.Return : false;
+//                 this.IndexDbObj.insert(query.Into, query.Values, IsReturn, onSuccess, onError);
+//             }
+//             else if (IndexDb.Status.ConStatus == ConnectionStatus.NotStarted) {
+//                 var That = this;
+//                 setTimeout(function () {
+//                     That.insert(query, onSuccess, onError);
+//                 }, 50);
+//             }
+//             else if (IndexDb.Status.ConStatus == ConnectionStatus.Closed) {
+//                 var That = this;
+//                 this.openDb(function () {
+//                     That.insert(query, onSuccess, onError);
+//                 })
+//             }
+//         }
+//         update(query: IUpdate, onSuccess: Function, onError: Function) {
+//             if (IndexDb.Status.ConStatus == ConnectionStatus.Connected) {
+//                 this.IndexDbObj.update(query, onSuccess, onError);
+//             }
+//             else if (IndexDb.Status.ConStatus == ConnectionStatus.NotStarted) {
+//                 var That = this;
+//                 setTimeout(function () {
+//                     That.update(query, onSuccess, onError);
+//                 }, 50);
+//             }
+//             else if (IndexDb.Status.ConStatus == ConnectionStatus.Closed) {
+//                 var That = this;
+//                 this.openDb(function () {
+//                     That.update(query, onSuccess, onError);
+//                 })
+//             }
+//         }
+//         delete(query: IDelete, onSuccess: Function, onError: Function) {
+//             if (IndexDb.Status.ConStatus == ConnectionStatus.Connected) {
+//                 this.IndexDbObj.delete(query, onSuccess, onError);
+//             }
+//             else if (IndexDb.Status.ConStatus == ConnectionStatus.NotStarted) {
+//                 var That = this;
+//                 setTimeout(function () {
+//                     That.delete(query, onSuccess, onError);
+//                 }, 50);
+//             }
+//             else if (IndexDb.Status.ConStatus == ConnectionStatus.Closed) {
+//                 var That = this;
+//                 this.openDb(function () {
+//                     That.delete(query, onSuccess, onError);
+//                 })
+//             }
+//         }
+//     }
+// }
 // module JsStorage {
 //     export module Business {
 //         export module IndexDb {

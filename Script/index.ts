@@ -4,7 +4,6 @@
 /// <reference path="Model/Column.ts" />
 /// <reference path="Model/Table.ts" />
 /// <reference path="Model/DataBase.ts" />
-/// <reference path="Business/WebSqlLogic.ts" />
 
 /// <reference path="Business/DbHelperLogic.ts" />
 
@@ -21,5 +20,5 @@
 
 /// <reference path="Business/IndexDb/MainLogic.ts" />
 
-/// <reference path="Business/MainLogic.ts" />
+/// <reference path="Business/JsStoreInstance.ts" />
 

@@ -1,10 +1,5 @@
 module JsStorage {
 
-    export enum DBType {
-        IndexedDb,
-        WebSql
-    };
-
     export enum ErrorType {
         UndefinedColumn,
         UndefinedValue,
@@ -101,13 +96,11 @@ module JsStorage {
         Closed = 2,
         NotStarted = 3
     }
-    export interface JsStorageStatus {
+
+    export interface JsStoreStatus {
         ConStatus: ConnectionStatus,
         LastError: string
     }
 
-    export var Status: JsStorageStatus = <JsStorageStatus>{
-        ConStatus: ConnectionStatus.NotStarted,
-        LastError: ""
-    };
+   
 }

@@ -130,44 +130,6 @@ module JsStorage {
 
                 }
 
-
-                /**
-                 * For matching the different column value existance
-                 * 
-                 * @private
-                 * @param {any} where 
-                 * @param {any} value 
-                 * @returns 
-                 * 
-                 * @memberOf SelectLogic
-                 */
-                private checkForWhereConditionMatch(where, value) {
-                    var TempColumn;
-                    for (TempColumn in where) {
-                        if (Array.isArray(where[TempColumn])) {
-                            var i, Status = true;
-                            for (i = 0; i < TempColumn.length; i++) {
-                                if (where[TempColumn][i] == value[TempColumn]) {
-                                    Status = true;
-                                    break;
-                                }
-                                else {
-                                    Status = false;
-                                }
-                            };
-                            if (!Status) {
-                                return Status;
-                            }
-                        }
-                        else {
-                            if (where[TempColumn] != value[TempColumn]) {
-                                return false;
-                            }
-                        }
-                    }
-                    return true;
-                }
-
                 private executeWhereUndefinedLogic = function () {
                     var That: SelectLogic = this,
                         CursorOpenRequest = this.ObjectStore.openCursor();
@@ -178,7 +140,7 @@ module JsStorage {
                             That.Results.push(Cursor.value);
                             (Cursor as any).continue();
                         }
-                        
+
                     }
                     CursorOpenRequest.onerror = That.onErrorRequest;
                 }
@@ -189,32 +151,42 @@ module JsStorage {
                     this.Query = query;
                     this.OnSuccess = onSuccess;
                     this.OnError = onError;
-                    this.Transaction = DbConnection.transaction([query.From], "readonly");
-                    this.Transaction.oncomplete = function (e) {
-                        if (That.SendResultFlag && onSuccess != null) {
-                            onSuccess(That.Results);
+                    try {
+                        this.Transaction = DbConnection.transaction([query.From], "readonly");
+                        this.Transaction.oncomplete = function (e) {
+                            if (That.SendResultFlag && onSuccess != null) {
+                                onSuccess(That.Results);
+                            }
                         }
-                    }
                         // (<any>(this.Transaction)).ontimeout = function () {
                         //     console.log('transaction timed out');
                         // }
-                    this.ObjectStore = this.Transaction.objectStore(query.From);
+                        this.ObjectStore = this.Transaction.objectStore(query.From);
 
-                    if (query.WhereIn != undefined) {
-                        if (query.Where != undefined) {
-                            this.SendResultFlag = false;
+                        if (query.WhereIn != undefined) {
+                            if (query.Where != undefined) {
+                                this.SendResultFlag = false;
+                                this.executeWhereLogic();
+                            }
+                            this.SendResultFlag = true;
+                            this.executeWhereInLogic();
+
+                        }
+                        else if (query.Where != undefined) {
                             this.executeWhereLogic();
                         }
-                        this.SendResultFlag = true;
-                        this.executeWhereInLogic();
+                        else {
 
+                            this.executeWhereUndefinedLogic();
+                        }
                     }
-                    else if (query.Where != undefined) {
-                        this.executeWhereLogic();
-                    }
-                    else {
-
-                        this.executeWhereUndefinedLogic();
+                    catch (ex) {
+                        if (ex.name == "NotFoundError") {
+                            UtilityLogic.getError(ErrorType.TableNotExist, true, { TableName: query.From });
+                        }
+                        else {
+                            console.warn(ex);
+                        }
                     }
                 }
 

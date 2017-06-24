@@ -17,16 +17,16 @@ module JsStorage {
                     case ErrorType.UndefinedColumnName: Error.Value = "Column name is undefined"; break;
                     case ErrorType.UndefinedColumnValue: Error.Value = "Column value is undefined"; break;
                     case ErrorType.NoValueSupplied: Error.Value = "No value supplied"; break;
-                    case ErrorType.InvalidOp: Error.Value = "Invalid Op Value : " + errorDetail['Op']; break;
-                    case ErrorType.ColumnNotExist: Error.Value = "Column :" + errorDetail['ColumnName'] + " does not exist";
+                    case ErrorType.InvalidOp: Error.Value = "Invalid Op Value '" + errorDetail['Op'] + "'"; break;
+                    case ErrorType.ColumnNotExist: Error.Value = "Column '" + errorDetail['ColumnName'] + "' does not exist";
                         break;
-                    case ErrorType.NullValue: Error.Value = "Null value is not allowed for column: " + errorDetail['ColumnName'];
+                    case ErrorType.NullValue: Error.Value = "Null value is not allowed for column '" + errorDetail['ColumnName'] + "'";
                         break;
-                    case ErrorType.BadDataType: Error.Value = "Supplied value for column: " + errorDetail['ColumnName'] + " does not have valid type";
+                    case ErrorType.BadDataType: Error.Value = "Supplied value for column '" + errorDetail['ColumnName'] + "' does not have valid type";
                         break;
                     case ErrorType.NextJoinNotExist: Error.Value = "Next join details not supplied";
                         break;
-                    case ErrorType.TableNotExist: Error.Value = "Table :" + errorDetail['TableName'] + " does not exist";;
+                    case ErrorType.TableNotExist: Error.Value = "Table '" + errorDetail['TableName'] + "' does not exist";;
                         break;
                     default: console.warn('the error type is not defined');
                 }
@@ -47,6 +47,19 @@ module JsStorage {
                 }
             }
 
+            /**
+             * determine and set the DataBase Type
+             * 
+             * 
+             * @memberOf MainLogic
+             */
+            static setDbType = function () {
+                (window as any).indexedDB = window.indexedDB || (window as any).mozIndexedDB || (window as any).webkitIndexedDB || (window as any).msIndexedDB;
+                if (indexedDB) {
+                    (window as any).IDBTransaction = (window as any).IDBTransaction || (window as any).webkitIDBTransaction || (window as any).msIDBTransaction;
+                    (window as any).IDBKeyRange = (window as any).IDBKeyRange || (window as any).webkitIDBKeyRange || (window as any).msIDBKeyRange
+                }
+            }
 
         }
     }
