@@ -7,7 +7,7 @@ module JsStorage {
             Unique: boolean;
             CurrentDate: boolean;
             NotNull: boolean;
-            DataType: string
+            DataType: string;
         }
 
         export class Column implements IColumn {
@@ -18,6 +18,8 @@ module JsStorage {
             CurrentDate: boolean;
             NotNull: boolean;
             DataType: string;
+            Searchable: boolean;
+
             constructor(key: IColumn, tableName: string) {
                 if (key.Name != null) {
                     this.Name = key.Name;

@@ -69,6 +69,5 @@ module JsStorage {
                 }
             }
         }
-
     }
 }

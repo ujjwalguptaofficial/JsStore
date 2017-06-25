@@ -20,5 +20,14 @@
 
 /// <reference path="Business/IndexDb/MainLogic.ts" />
 
-/// <reference path="Business/JsStoreInstance.ts" />
+/// <reference path="JsStoreInstance.ts" />
+
+/// <reference path="Business/KeyStores/CreateDbLogic.ts" />
+/// <reference path="Business/KeyStores/OpenDbLogic.ts" />
+/// <reference path="Business/KeyStores/BaseGetLogic.ts" />
+/// <reference path="Business/KeyStores/GetLogic.ts" />
+/// <reference path="Business/KeyStores/SetLogic.ts" />
+/// <reference path="Business/KeyStores/RemoveLogic.ts" />
+/// <reference path="KeyStoreInstance.ts" />
+
 

@@ -2,7 +2,7 @@ module JsStorage {
     export module Business {
         export module IndexDb {
             export class BaseSelectLogic extends DbHelperLogic {
-
+                Results = [];
                 OnSuccess: Function;
                 OnError: Function;
                 ErrorOccured: boolean = false;

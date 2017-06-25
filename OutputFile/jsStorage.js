@@ -227,7 +227,6 @@ var JsStorage;
     (function (Business) {
         var DbHelperLogic = (function () {
             function DbHelperLogic() {
-                this.Results = [];
                 this.doJoin = function (type, column1, data1, column2, data2) {
                     switch (type) {
                         case 'inner': return data1[column1] == data2[column2];
@@ -354,7 +353,8 @@ var JsStorage;
                 function DeleteLogic(query, onSuccess, onError) {
                     try {
                         var That = this, Transaction = IndexDb.DbConnection.transaction([query.From], "readwrite"), ObjectStore = Transaction.objectStore(query.From), ErrorOccured = false, ErrorCount = 0, RowAffected = 0, onErrorGetRequest = function (e) {
-                            if (onError != null) {
+                            ++ErrorCount;
+                            if (onError != null && this.ErrorCount == 1) {
                                 onError(e.target.error);
                             }
                         };
@@ -384,7 +384,6 @@ var JsStorage;
                                         var CursorOpenRequest = ObjectStore.index(Column).openCursor(IDBKeyRange.only(query.Where[Column])), ExecutionNo = 0;
                                         CursorOpenRequest.onerror = function (e) {
                                             ErrorOccured = true;
-                                            ++ErrorCount;
                                             onErrorGetRequest(e);
                                         };
                                         CursorOpenRequest.onsuccess = function (e) {
@@ -638,6 +637,7 @@ var JsStorage;
                 __extends(BaseSelectLogic, _super);
                 function BaseSelectLogic() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.Results = [];
                     _this.ErrorOccured = false;
                     _this.ErrorCount = 0;
                     _this.SendResultFlag = true;
@@ -800,7 +800,6 @@ var JsStorage;
                     var _this = _super.call(this) || this;
                     _this.QueryStack = [];
                     _this.CurrentQueryStackIndex = 0;
-                    _this.Results = [];
                     _this.onTransactionCompleted = function (e) {
                         if (this.OnSuccess != null && (this.QueryStack.length == this.CurrentQueryStackIndex + 1)) {
                             this.OnSuccess(this.Results);
@@ -1551,6 +1550,492 @@ var JsStorage;
     }());
     JsStorage.Instance = Instance;
 })(JsStorage || (JsStorage = {}));
+var JsStorage;
+(function (JsStorage) {
+    var Business;
+    (function (Business) {
+        var KeyStores;
+        (function (KeyStores) {
+            var CreateDbLogic = (function () {
+                function CreateDbLogic() {
+                    var That = this, DbVersion = Number(localStorage.getItem(KeyStores.ActiveDataBase.Name + 'Db_Version')), DbRequest = window.indexedDB.open(KeyStores.ActiveDataBase.Name, DbVersion);
+                    DbRequest.onerror = function (event) {
+                        console.error(event.target.error);
+                    };
+                    DbRequest.onsuccess = function (event) {
+                        KeyStores.Status.ConStatus = JsStorage.ConnectionStatus.Connected;
+                        KeyStores.DbConnection = DbRequest.result;
+                        KeyStores.DbConnection.onclose = function () {
+                            KeyStores.Status.ConStatus = JsStorage.ConnectionStatus.Closed;
+                            KeyStores.Status.LastError = "Connection Closed";
+                        };
+                        KeyStores.DbConnection.onversionchange = function (e) {
+                            if (e.newVersion === null) {
+                                e.target.close(); // Manually close our connection to the db
+                            }
+                        };
+                        KeyStores.DbConnection.onerror = function (e) {
+                            KeyStores.Status.LastError = "Error occured in connection :" + e.target.result;
+                        };
+                        KeyStores.DbConnection.onabort = function (e) {
+                            KeyStores.Status.ConStatus = JsStorage.ConnectionStatus.Closed;
+                            KeyStores.Status.LastError = "Connection aborted";
+                        };
+                    };
+                    DbRequest.onupgradeneeded = function (event) {
+                        var db = event.target.result;
+                        KeyStores.ActiveDataBase.Tables.forEach(function (item) {
+                            if (item.RequireDelete) {
+                                // Delete the old datastore.    
+                                if (db.objectStoreNames.contains(item.Name)) {
+                                    db.deleteObjectStore(item.Name);
+                                }
+                                createObjectStore(db, item);
+                            }
+                            else if (item.RequireCreation) {
+                                createObjectStore(db, item);
+                            }
+                        });
+                    };
+                    var createObjectStore = function (dbConnection, item) {
+                        try {
+                            if (item.PrimaryKey.length > 0) {
+                                var Store = dbConnection.createObjectStore(item.Name, {
+                                    keyPath: item.PrimaryKey
+                                });
+                                item.Columns.forEach(function (column) {
+                                    if (column.PrimaryKey) {
+                                        Store.createIndex(column.Name, column.Name, { unique: true });
+                                    }
+                                    else {
+                                        Store.createIndex(column.Name, column.Name, { unique: false });
+                                    }
+                                });
+                            }
+                            else {
+                                var Store = dbConnection.createObjectStore(item.Name, {
+                                    autoIncrement: true
+                                });
+                                item.Columns.forEach(function (column) {
+                                    if (column.Unique) {
+                                        Store.createIndex(column.Name, column.Name, { unique: true });
+                                    }
+                                    else {
+                                        Store.createIndex(column.Name, column.Name, { unique: false });
+                                    }
+                                });
+                            }
+                            //setting the table version
+                            localStorage.setItem("JsStorage_" + KeyStores.ActiveDataBase.Name + "_" + item.Name, item.Version.toString());
+                        }
+                        catch (e) {
+                            console.error(e);
+                        }
+                    };
+                }
+                return CreateDbLogic;
+            }());
+            KeyStores.CreateDbLogic = CreateDbLogic;
+        })(KeyStores = Business.KeyStores || (Business.KeyStores = {}));
+    })(Business = JsStorage.Business || (JsStorage.Business = {}));
+})(JsStorage || (JsStorage = {}));
+var JsStorage;
+(function (JsStorage) {
+    var Business;
+    (function (Business) {
+        var KeyStores;
+        (function (KeyStores) {
+            var OpenDbLogic = (function () {
+                function OpenDbLogic(objMain, onSuccess, onError) {
+                    if (KeyStores.Status.ConStatus != JsStorage.ConnectionStatus.Connected) {
+                        if (KeyStores.ActiveDataBase.Name.length > 0) {
+                            var DbVersion = Number(localStorage.getItem(KeyStores.ActiveDataBase.Name + 'Db_Version')), DbRequest = window.indexedDB.open(KeyStores.ActiveDataBase.Name, DbVersion), That = this;
+                            DbRequest.onerror = function (event) {
+                                if (onError != null) {
+                                    onError(event.target.error);
+                                }
+                            };
+                            DbRequest.onsuccess = function (event) {
+                                KeyStores.Status.ConStatus = JsStorage.ConnectionStatus.Connected;
+                                KeyStores.DbConnection = DbRequest.result;
+                                KeyStores.DbConnection.onclose = function () {
+                                    KeyStores.Status.ConStatus = JsStorage.ConnectionStatus.Closed;
+                                    KeyStores.Status.LastError = "Connection Closed, trying to reconnect";
+                                };
+                                KeyStores.DbConnection.onversionchange = function (e) {
+                                    if (e.newVersion === null) {
+                                        e.target.close(); // Manually close our connection to the db
+                                    }
+                                };
+                                KeyStores.DbConnection.onerror = function (e) {
+                                    KeyStores.Status.LastError = "Error occured in connection :" + e.target.result;
+                                };
+                                KeyStores.DbConnection.onabort = function (e) {
+                                    KeyStores.Status.ConStatus = JsStorage.ConnectionStatus.Closed;
+                                    KeyStores.Status.LastError = "Connection Aborted";
+                                };
+                                if (onSuccess != null) {
+                                    onSuccess(objMain);
+                                }
+                            };
+                        }
+                        else {
+                            if (onError != null) {
+                                onError({
+                                    Name: "DbNotFound",
+                                    Value: "DataBase name is not found, please first initiate the db using createDb"
+                                });
+                            }
+                        }
+                    }
+                    else {
+                        if (onSuccess != null) {
+                            onSuccess();
+                        }
+                    }
+                }
+                return OpenDbLogic;
+            }());
+            KeyStores.OpenDbLogic = OpenDbLogic;
+        })(KeyStores = Business.KeyStores || (Business.KeyStores = {}));
+    })(Business = JsStorage.Business || (JsStorage.Business = {}));
+})(JsStorage || (JsStorage = {}));
+var JsStorage;
+(function (JsStorage) {
+    var Business;
+    (function (Business) {
+        var KeyStores;
+        (function (KeyStores) {
+            var BaseGetLogic = (function () {
+                function BaseGetLogic() {
+                    this.ErrorOccured = false;
+                    this.ErrorCount = 0;
+                    this.onErrorRequest = function (e) {
+                        ++this.ErrorCount;
+                        if (this.ErrorCount == 1) {
+                            if (this.OnError != null) {
+                                this.OnError(e.target.error);
+                            }
+                        }
+                        console.error(e);
+                    };
+                }
+                return BaseGetLogic;
+            }());
+            KeyStores.BaseGetLogic = BaseGetLogic;
+        })(KeyStores = Business.KeyStores || (Business.KeyStores = {}));
+    })(Business = JsStorage.Business || (JsStorage.Business = {}));
+})(JsStorage || (JsStorage = {}));
+var JsStorage;
+(function (JsStorage) {
+    var Business;
+    (function (Business) {
+        var KeyStores;
+        (function (KeyStores) {
+            var GetLogic = (function (_super) {
+                __extends(GetLogic, _super);
+                function GetLogic(query, onSuccess, onError) {
+                    var _this = _super.call(this) || this;
+                    _this.executeWhereLogic = function () {
+                        var Column, That = this;
+                        var executeInnerWhereLogic = function (column, value) {
+                            var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
+                            CursorOpenRequest.onerror = function (e) {
+                                That.ErrorOccured = true;
+                                That.onErrorRequest(e);
+                            };
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor = e.target.result;
+                                if (Cursor) {
+                                    That.Results = Cursor.value['Value'];
+                                }
+                            };
+                        };
+                        for (Column in this.Query.Where) {
+                            executeInnerWhereLogic(Column, this.Query.Where[Column]);
+                            break;
+                        }
+                    };
+                    var That = _this;
+                    _this.Query = query;
+                    _this.OnSuccess = onSuccess;
+                    _this.OnError = onError;
+                    _this.Transaction = KeyStores.DbConnection.transaction([query.From], "readonly");
+                    _this.Transaction.oncomplete = function (e) {
+                        if (onSuccess != null) {
+                            onSuccess(That.Results);
+                        }
+                    };
+                    _this.ObjectStore = _this.Transaction.objectStore(query.From);
+                    _this.executeWhereLogic();
+                    return _this;
+                }
+                return GetLogic;
+            }(KeyStores.BaseGetLogic));
+            KeyStores.GetLogic = GetLogic;
+        })(KeyStores = Business.KeyStores || (Business.KeyStores = {}));
+    })(Business = JsStorage.Business || (JsStorage.Business = {}));
+})(JsStorage || (JsStorage = {}));
+var JsStorage;
+(function (JsStorage) {
+    var Business;
+    (function (Business) {
+        var KeyStores;
+        (function (KeyStores) {
+            var SetLogic = (function () {
+                function SetLogic(tableName, value, isReturn, onSuccess, onError) {
+                    this.ErrorOccured = false;
+                    this.ErrorCount = 0;
+                    this.onErrorRequest = function (e, customError) {
+                        if (customError === void 0) { customError = false; }
+                        ++this.ErrorCount;
+                        if (this.ErrorCount == 1) {
+                            if (this.OnError != null) {
+                                if (!customError) {
+                                    this.OnError(e.target.error, this.TotalRowsAffected);
+                                }
+                                else {
+                                    this.OnError(e, this.TotalRowsAffected);
+                                }
+                            }
+                        }
+                        console.error(e);
+                    };
+                    try {
+                        this.OnSuccess = onSuccess;
+                        this.OnError = onError;
+                        var That = this, Updated = false;
+                        var UpdateIfExist = function () {
+                            var Transaction = KeyStores.DbConnection.transaction([tableName], "readwrite");
+                            That.Store = Transaction.objectStore(tableName);
+                            Transaction.oncomplete = function (e) {
+                                if (Updated) {
+                                    if (onSuccess != null) {
+                                        onSuccess();
+                                    }
+                                }
+                                else {
+                                    SetData();
+                                }
+                            };
+                            var CursorOpenRequest = That.Store.index('Key').openCursor(IDBKeyRange.only(value['Key']));
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor = e.target.result;
+                                if (Cursor) {
+                                    Updated = true;
+                                    Cursor.value['Value'] = value['Value'];
+                                    Cursor.update(Cursor.value);
+                                }
+                            };
+                            CursorOpenRequest.onerror = function (e) {
+                                That.ErrorOccured = true;
+                                That.onErrorRequest(e);
+                            };
+                        };
+                        var SetData = function () {
+                            var Transaction = KeyStores.DbConnection.transaction([tableName], "readwrite");
+                            That.Store = Transaction.objectStore(tableName);
+                            Transaction.oncomplete = function (e) {
+                                if (onSuccess != null) {
+                                    onSuccess();
+                                }
+                            };
+                            var AddResult = That.Store.add(value);
+                            AddResult.onerror = function (e) {
+                                That.onErrorRequest(e);
+                            };
+                        };
+                        UpdateIfExist();
+                    }
+                    catch (ex) {
+                        console.error(ex);
+                    }
+                }
+                return SetLogic;
+            }());
+            KeyStores.SetLogic = SetLogic;
+        })(KeyStores = Business.KeyStores || (Business.KeyStores = {}));
+    })(Business = JsStorage.Business || (JsStorage.Business = {}));
+})(JsStorage || (JsStorage = {}));
+var JsStorage;
+(function (JsStorage) {
+    var Business;
+    (function (Business) {
+        var KeyStores;
+        (function (KeyStores) {
+            var RemoveLogic = (function () {
+                function RemoveLogic(query, onSuccess, onError) {
+                    var That = this, Transaction = KeyStores.DbConnection.transaction([query.From], "readwrite"), ObjectStore = Transaction.objectStore(query.From), ErrorOccured = false, ErrorCount = 0, RowAffected = 0, onErrorGetRequest = function (e) {
+                        ++ErrorCount;
+                        if (onError != null && this.ErrorCount == 1) {
+                            onError(e.target.error);
+                        }
+                        console.error(e);
+                    };
+                    Transaction.oncomplete = function () {
+                        if (onSuccess != null) {
+                            onSuccess(RowAffected);
+                        }
+                    };
+                    Transaction.onerror = onErrorGetRequest;
+                    var Column, ExecutionNo = 0, ConditionLength = Object.keys(query.Where).length;
+                    for (Column in query.Where) {
+                        if (!ErrorOccured) {
+                            var CursorOpenRequest = ObjectStore.index(Column).openCursor(IDBKeyRange.only(query.Where[Column])), ExecutionNo = 0;
+                            CursorOpenRequest.onerror = function (e) {
+                                ErrorOccured = true;
+                                onErrorGetRequest(e);
+                            };
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor = e.target.result;
+                                if (Cursor) {
+                                    Cursor.delete();
+                                    ++RowAffected;
+                                    Cursor.continue();
+                                }
+                            };
+                        }
+                        else {
+                            return;
+                        }
+                    }
+                }
+                return RemoveLogic;
+            }());
+            KeyStores.RemoveLogic = RemoveLogic;
+        })(KeyStores = Business.KeyStores || (Business.KeyStores = {}));
+    })(Business = JsStorage.Business || (JsStorage.Business = {}));
+})(JsStorage || (JsStorage = {}));
+var KeyStores = JsStorage.Business.KeyStores;
+var JsStorage;
+(function (JsStorage) {
+    var KeyStore = (function () {
+        function KeyStore() {
+            this.TableName = "Local_Storage";
+            JsStorage.Business.UtilityLogic.setDbType();
+            var Table = {
+                Name: this.TableName,
+                Columns: [{
+                        Name: "Key",
+                        PrimaryKey: true
+                    }],
+                Version: 1
+            };
+            var keyStore_DataBase = {
+                Name: "JsStore_KeyStore",
+                Tables: [Table]
+            };
+            var Db = new DataBase(keyStore_DataBase);
+            this.KeyStoreObj = new JsStorage.Business.KeyStores.MainLogic(Db);
+            var DbVersion = Number(localStorage.getItem(keyStore_DataBase.Name + 'Db_Version'));
+            this.KeyStoreObj.createDb();
+        }
+        /**
+         *
+         *
+         * @param {Function} onSuccess
+         * @param {Function} onError
+         *
+         * @memberOf Main
+         */
+        KeyStore.prototype.openDb = function (onSuccess, onError) {
+            if (onSuccess === void 0) { onSuccess = null; }
+            if (onError === void 0) { onError = null; }
+            this.KeyStoreObj.openDb(this, onSuccess, onError);
+        };
+        /**
+         *
+         *
+         * @param {Function} onSuccess
+         * @param {Function} onError
+         *
+         * @memberOf Main
+         */
+        KeyStore.prototype.closeDb = function (onSuccess, onError) {
+            this.KeyStoreObj.closeDb();
+        };
+        KeyStore.prototype.get = function (key, onSuccess, onError) {
+            if (KeyStores.Status.ConStatus == JsStorage.ConnectionStatus.Connected) {
+                var Query = {
+                    From: this.TableName,
+                    Where: {
+                        Key: key
+                    }
+                };
+                this.KeyStoreObj.get(Query, onSuccess, onError);
+            }
+            else if (KeyStores.Status.ConStatus == JsStorage.ConnectionStatus.NotStarted) {
+                var That = this;
+                setTimeout(function () {
+                    That.get(key, onSuccess, onError);
+                }, 50);
+            }
+            else if (KeyStores.Status.ConStatus == JsStorage.ConnectionStatus.Closed) {
+                var That = this;
+                this.openDb(function () {
+                    That.get(key, onSuccess, onError);
+                });
+            }
+        };
+        /**
+         *
+         *
+         * @param {string} table
+         * @param {any} value
+         * @param {Function} onSuccess
+         * @param {Function} onError
+         *
+         * @memberOf Main
+         */
+        KeyStore.prototype.set = function (key, value, onSuccess, onError) {
+            if (KeyStores.Status.ConStatus == JsStorage.ConnectionStatus.Connected) {
+                var IsReturn = false;
+                var Value = {
+                    Key: key,
+                    Value: value
+                };
+                this.KeyStoreObj.set(this.TableName, Value, IsReturn, onSuccess, onError);
+            }
+            else if (KeyStores.Status.ConStatus == JsStorage.ConnectionStatus.NotStarted) {
+                var That = this;
+                setTimeout(function () {
+                    That.set(key, value, onSuccess, onError);
+                }, 50);
+            }
+            else if (KeyStores.Status.ConStatus == JsStorage.ConnectionStatus.Closed) {
+                var That = this;
+                this.openDb(function () {
+                    That.set(key, value, onSuccess, onError);
+                });
+            }
+        };
+        KeyStore.prototype.remove = function (key, onSuccess, onError) {
+            if (KeyStores.Status.ConStatus == JsStorage.ConnectionStatus.Connected) {
+                var Query = {
+                    From: this.TableName,
+                    Where: {
+                        Key: key
+                    }
+                };
+                this.KeyStoreObj.remove(Query, onSuccess, onError);
+            }
+            else if (KeyStores.Status.ConStatus == JsStorage.ConnectionStatus.NotStarted) {
+                var That = this;
+                setTimeout(function () {
+                    That.remove(key, onSuccess, onError);
+                }, 50);
+            }
+            else if (KeyStores.Status.ConStatus == JsStorage.ConnectionStatus.Closed) {
+                var That = this;
+                this.openDb(function () {
+                    That.remove(key, onSuccess, onError);
+                });
+            }
+        };
+        return KeyStore;
+    }());
+    JsStorage.KeyStore = KeyStore;
+})(JsStorage || (JsStorage = {}));
 /// <reference path="Business/CommonLogic.ts" />
 /// <reference path="Business/UtilityLogic.ts" />
 /// <reference path="Model/Column.ts" />
@@ -1568,544 +2053,52 @@ var JsStorage;
 /// <reference path="Business/IndexDb/UpdateLogic.ts" />
 /// <reference path="Business/IndexDb/ClearLogic.ts" />
 /// <reference path="Business/IndexDb/MainLogic.ts" />
-/// <reference path="Business/JsStoreInstance.ts" />
-// module JsStorage {
-//     export class KeyStore {
-//         IndexDbObj: IndexDb.MainLogic;
-//         constructor() {
-//             JsStorage.Business.UtilityLogic.setDbType();
-//         }
-//         /**
-//          * 
-//          * 
-//          * @param {IDataBase} dataBase 
-//          * @param {Function} onSuccess 
-//          * @param {Function} onError 
-//          * @returns 
-//          * 
-//          * @memberOf Main
-//          */
-//         private createDb(dataBase: IDataBase, onSuccess: Function, onError: Function) {
-//             var Db = new DataBase(dataBase)
-//             this.IndexDbObj = new Business.IndexDb.MainLogic(Db);
-//             var DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
-//             this.IndexDbObj.createDb(this, onSuccess, onError);
-//             Business.IndexDb.Db = Db;
-//             return this;
-//         }
-//         /**
-//          * 
-//          * 
-//          * @param {Function} onSuccess 
-//          * @param {Function} onError 
-//          * 
-//          * @memberOf Main
-//          */
-//         openDb(onSuccess: Function = null, onError: Function = null) {
-//             this.IndexDbObj.openDb(this, onSuccess, onError);
-//         }
-//         /**
-//          * 
-//          * 
-//          * @param {Function} onSuccess 
-//          * @param {Function} onError 
-//          * 
-//          * @memberOf Main
-//          */
-//         closeDb(onSuccess: Function, onError: Function) {
-//             this.IndexDbObj.closeDb();
-//         }
-//         dropDb(onSuccess: Function, onError: Function) {
-//             this.IndexDbObj.dropDb(onSuccess, onError);
-//         }
-//         /**
-//          * 
-//          * 
-//          * @param {IQuery} query 
-//          * @param {Function} onSuccess 
-//          * @param {Function} onError 
-//          * 
-//          * @memberOf Main
-//          */
-//         select(query: ISelect, onSuccess: Function, onError: Function) {
-//             if (IndexDb.Status.ConStatus == ConnectionStatus.Connected) {
-//                 this.IndexDbObj.select(query, onSuccess, onError);
-//             }
-//             else if (IndexDb.Status.ConStatus == ConnectionStatus.NotStarted) {
-//                 var That = this;
-//                 setTimeout(function () {
-//                     That.select(query, onSuccess, onError);
-//                 }, 50);
-//             }
-//             else if (IndexDb.Status.ConStatus == ConnectionStatus.Closed) {
-//                 var That = this;
-//                 this.openDb(function () {
-//                     That.select(query, onSuccess, onError);
-//                 })
-//             }
-//         }
-//         /**
-//          * 
-//          * 
-//          * @param {string} table 
-//          * @param {any} value 
-//          * @param {Function} onSuccess 
-//          * @param {Function} onError 
-//          * 
-//          * @memberOf Main
-//          */
-//         insert(query: IInsert, onSuccess: Function, onError: Function) {
-//             if (IndexDb.Status.ConStatus == ConnectionStatus.Connected) {
-//                 var IsReturn = query.Return ? query.Return : false;
-//                 this.IndexDbObj.insert(query.Into, query.Values, IsReturn, onSuccess, onError);
-//             }
-//             else if (IndexDb.Status.ConStatus == ConnectionStatus.NotStarted) {
-//                 var That = this;
-//                 setTimeout(function () {
-//                     That.insert(query, onSuccess, onError);
-//                 }, 50);
-//             }
-//             else if (IndexDb.Status.ConStatus == ConnectionStatus.Closed) {
-//                 var That = this;
-//                 this.openDb(function () {
-//                     That.insert(query, onSuccess, onError);
-//                 })
-//             }
-//         }
-//         update(query: IUpdate, onSuccess: Function, onError: Function) {
-//             if (IndexDb.Status.ConStatus == ConnectionStatus.Connected) {
-//                 this.IndexDbObj.update(query, onSuccess, onError);
-//             }
-//             else if (IndexDb.Status.ConStatus == ConnectionStatus.NotStarted) {
-//                 var That = this;
-//                 setTimeout(function () {
-//                     That.update(query, onSuccess, onError);
-//                 }, 50);
-//             }
-//             else if (IndexDb.Status.ConStatus == ConnectionStatus.Closed) {
-//                 var That = this;
-//                 this.openDb(function () {
-//                     That.update(query, onSuccess, onError);
-//                 })
-//             }
-//         }
-//         delete(query: IDelete, onSuccess: Function, onError: Function) {
-//             if (IndexDb.Status.ConStatus == ConnectionStatus.Connected) {
-//                 this.IndexDbObj.delete(query, onSuccess, onError);
-//             }
-//             else if (IndexDb.Status.ConStatus == ConnectionStatus.NotStarted) {
-//                 var That = this;
-//                 setTimeout(function () {
-//                     That.delete(query, onSuccess, onError);
-//                 }, 50);
-//             }
-//             else if (IndexDb.Status.ConStatus == ConnectionStatus.Closed) {
-//                 var That = this;
-//                 this.openDb(function () {
-//                     That.delete(query, onSuccess, onError);
-//                 })
-//             }
-//         }
-//     }
-// }
-// module JsStorage {
-//     export module Business {
-//         export module IndexDb {
-//             export class SelectJoinLogic extends BaseSelectLogic {
-//                 Query: ITableJoin;
-//                 ObjectStoreForJoin: IDBObjectStore;
-//                 QueryStack: Array<ITableJoin> = [];
-//                 IndexRequest: Array<IDBIndex> = []
-//                 private executeWhereInLogic = function () {
-//                     if (Array.isArray(this.Query.WhereIn)) {
-//                         this.executeMultipleWhereInLogic(this.Query.WhereIn);
-//                     }
-//                     else {
-//                         this.executeSingleWhereInLogic(this.Query.WhereIn);
-//                     }
-//                 }
-//                 private executeWhereLogic = function (query: ITableJoin, queryJoin: ITableJoin, joinType = "inner") {
-//                     var Column,
-//                         That: SelectJoinLogic = this,
-//                         ConditionLength = Object.keys(query.Where).length
-//                     for (Column in query.Where) {
-//                         if (!this.ErrorOccured) {
-//                             if (this.ObjectStore.keyPath != null && this.ObjectStore.keyPath == Column) {
-//                                 var GetRequest = this.ObjectStore.get(query.Where[Column]);
-//                                 GetRequest.onerror = function (e) {
-//                                     That.ErrorOccured = true; ++That.ErrorCount;
-//                                     That.onErrorRequest(e);
-//                                 }
-//                                 GetRequest.onsuccess = function (e) {
-//                                     var Result = (<any>e).target.result
-//                                     if (Result) {
-//                                         //That.doInner(query,Result[query.Column],queryJoin.Column,Result[query.Column])
-//                                         That.Results.push();
-//                                     }
-//                                 }
-//                             }
-//                             else if (this.ObjectStore.indexNames.contains(Column)) {
-//                                 var CursorOpenRequest = this.ObjectStore.index(Column).openCursor(IDBKeyRange.only(query.Where[Column]));
-//                                 CursorOpenRequest.onerror = function (e) {
-//                                     That.ErrorOccured = true; ++this.ErrorCount;
-//                                     That.onErrorRequest(e);
-//                                 }
-//                                 if (query.Skip && query.Limit) {
-//                                     var RecordSkipped = 0;
-//                                     CursorOpenRequest.onsuccess = function (e) {
-//                                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
-//                                         if (Cursor) {
-//                                             if (RecordSkipped == query.Skip) {
-//                                                 if (That.Results.length != query.Limit) {
-//                                                     That.Results.push(Cursor);
-//                                                     Cursor.continue();
-//                                                 }
-//                                             }
-//                                             else {
-//                                                 ++RecordSkipped;
-//                                             }
-//                                         }
-//                                     }
-//                                 }
-//                                 else if (query.Skip) { //skip exist
-//                                     var RecordSkipped = 0;
-//                                     CursorOpenRequest.onsuccess = function (e) {
-//                                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
-//                                         if (Cursor) {
-//                                             if (RecordSkipped == query.Limit) {
-//                                                 That.Results.push(Cursor);
-//                                             }
-//                                             else {
-//                                                 ++RecordSkipped;
-//                                             }
-//                                             Cursor.continue();
-//                                         }
-//                                     }
-//                                 }
-//                                 else if (query.Limit) {
-//                                     CursorOpenRequest.onsuccess = function (e) {
-//                                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
-//                                         if (Cursor && That.Results.length != query.Limit) {
-//                                             That.Results.push(Cursor);
-//                                             Cursor.continue();
-//                                         }
-//                                     }
-//                                 }
-//                                 else {
-//                                     CursorOpenRequest.onsuccess = function (e) {
-//                                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
-//                                         if (Cursor) {
-//                                             That.Results[That.Results.length - 1][query.Table] = Cursor.value;
-//                                             Cursor.continue();
-//                                         }
-//                                     }
-//                                 }
-//                             }
-//                             else {
-//                                 UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
-//                             }
-//                         }
-//                     }
-//                 }
-//                 // private executeJoinLogic = function (value, onSuccess: Function, onError: Function, results: any = {}, index = 1) {
-//                 //     var JoinStatus = true,
-//                 //         Results = [],
-//                 //         That: SelectJoinLogic = this,
-//                 //         CursorJoinRequest = this.IndexRequest[index - 1].openCursor(IDBKeyRange.only(value[this.QueryStack[index].Column]));
-//                 //     CursorJoinRequest.onsuccess = function (e) {
-//                 //         var Cursor: IDBCursorWithValue = (<any>e).target.result;
-//                 //         if (Cursor) {
-//                 //             switch (That.QueryStack[index].JoinType) {
-//                 //                 case 'inner': Results.push(Cursor.value); break;
-//                 //                 case 'left':
-//                 //             }
-//                 //         }
-//                 //         else {
-//                 //             ++index;
-//                 //             results[this.QueryStack[index].Column] = Results;
-//                 //             if (index <= this.IndexRequest.length) {
-//                 //                 That.executeJoinLogic(Results, onSuccess, onError, results);
-//                 //             }
-//                 //             else {
-//                 //                 That.Results.push(results);
-//                 //                 onSuccess();
-//                 //             }
-//                 //         }
-//                 //     }
-//                 //     CursorJoinRequest.onerror = function (e) {
-//                 //         onError(e);
-//                 //     }
-//                 // }
-//                 private executeJoinLogic = function (joinData: Array<any>, joinTable: string, joinColumn: string, query: ITableJoin) {
-//                     var Column,
-//                         SkipRecord = this.Query.Skip,
-//                         LimitRecord = this.Query.Limit,
-//                         That: SelectJoinLogic = this,
-//                         ConditionLength = 0,
-//                         OnSuccessGetRequest = function () {
-//                             --ConditionLength;
-//                             //if (ConditionLength == 0)
-//                             // That.onSuccessRequest();
-//                         };
-//                     var executeInnerWhereLogic = function (column, value) {
-//                         if (That.ObjectStore.indexNames.contains(column)) {
-//                             var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
-//                             CursorOpenRequest.onerror = function (e) {
-//                                 That.ErrorOccured = true; ++That.ErrorCount;
-//                                 That.onErrorRequest(e);
-//                             }
-//                             if (SkipRecord && LimitRecord) {
-//                                 var RecordSkipped = false;
-//                                 CursorOpenRequest.onsuccess = function (e) {
-//                                     var Cursor: IDBCursorWithValue = (<any>e).target.result;
-//                                     if (Cursor) {
-//                                         if (RecordSkipped) {
-//                                             if (That.Results.length != LimitRecord) {
-//                                                 That.Results.push(Cursor);
-//                                                 Cursor.continue();
-//                                             }
-//                                             else {
-//                                                 OnSuccessGetRequest();
-//                                             }
-//                                         }
-//                                         else {
-//                                             RecordSkipped = true;
-//                                             Cursor.advance(SkipRecord - 1);
-//                                         }
-//                                     }
-//                                     else {
-//                                         OnSuccessGetRequest();
-//                                     }
-//                                 }
-//                             }
-//                             else if (SkipRecord) { //skip exist
-//                                 var RecordSkipped = false;
-//                                 CursorOpenRequest.onsuccess = function (e) {
-//                                     var Cursor: IDBCursorWithValue = (<any>e).target.result;
-//                                     if (Cursor) {
-//                                         if (RecordSkipped) {
-//                                             That.Results.push(Cursor);
-//                                             Cursor.continue();
-//                                         }
-//                                         else {
-//                                             RecordSkipped = true;
-//                                             Cursor.advance(SkipRecord - 1);
-//                                         }
-//                                     }
-//                                     else {
-//                                         OnSuccessGetRequest();
-//                                     }
-//                                 }
-//                             }
-//                             else if (LimitRecord) {
-//                                 CursorOpenRequest.onsuccess = function (e) {
-//                                     var Cursor: IDBCursorWithValue = (<any>e).target.result;
-//                                     if (Cursor && That.Results.length != LimitRecord) {
-//                                         That.Results.push(Cursor.value);
-//                                         Cursor.continue();
-//                                     }
-//                                     else {
-//                                         OnSuccessGetRequest();
-//                                     }
-//                                 }
-//                             }
-//                             else {
-//                                 var Index = 0;
-//                                 CursorOpenRequest.onsuccess = function (e) {
-//                                     var Cursor: IDBCursorWithValue = (<any>e).target.result;
-//                                     if (Cursor) {
-//                                         if (That.checkForWhereConditionMatch(That.Query.Where, Cursor.value)) {
-//                                             doJoin(Index, Cursor.value);
-//                                         }
-//                                         Cursor.continue(joinData[joinColumn][Index]);
-//                                     }
-//                                     else {
-//                                         OnSuccessGetRequest();
-//                                     }
-//                                 }
-//                             }
-//                         }
-//                         else {
-//                             UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
-//                         }
-//                         return false;
-//                     }
-//                     var doJoin = function (index, value) {
-//                         switch (query.JoinType) {
-//                             //inner join
-//                             case 'inner': if (value[query.Column][index] == joinData[joinColumn][index]) {
-//                                 That.Results[index++][query.Table] = value;
-//                             }
-//                             else { //remove current element
-//                                 That.Results.splice(index, 1);
-//                             }; break;
-//                             //left join
-//                             case 'left': if (index[query.Column][index] == joinData[joinColumn][index]) {
-//                                 That.Results[index++][query.Table] = value;
-//                             }
-//                             else { //add null element
-//                                 That.Results[index++][query.Table] = null;
-//                             };
-//                                 break;
-//                             //right join
-//                             case 'right': if (value[query.Column][index] == joinData[joinColumn][index]) {
-//                                 That.Results[index++][query.Table] = value;
-//                             }
-//                             else { //shift array to 1 position with null as first value and value as second value
-//                                 That.Results.splice(index, 0, null);
-//                                 That.Results[index++][joinTable] = null;
-//                                 That.Results[index++][query.Table] = value;
-//                             }
-//                                 break;
-//                         };
-//                     }
-//                     for (Column in this.Query.Where) {
-//                         if (Array.isArray(this.Query.Where[Column])) {
-//                             ConditionLength = this.Query.Where[Column].length;
-//                             for (var i = 0; i < this.Query.Where[Column].length; i++) {
-//                                 var ExecutionStatus = executeInnerWhereLogic(Column, this.Query.Where[Column][i])
-//                                 if (ExecutionStatus == false) {
-//                                     break;
-//                                 }
-//                             }
-//                         }
-//                         else {
-//                             executeInnerWhereLogic(Column, this.Query.Where[Column]);
-//                         }
-//                         break;
-//                     }
-//                 }
-//                 /**
-//                  * For matching the different column value existance
-//                  * 
-//                  * @private
-//                  * @param {any} where 
-//                  * @param {any} value 
-//                  * @returns 
-//                  * 
-//                  * @memberOf SelectLogic
-//                  */
-//                 private checkForWhereConditionMatch(where, value) {
-//                     var TempColumn;
-//                     for (TempColumn in where) {
-//                         if (Array.isArray(where[TempColumn])) {
-//                             var i, Status = true;
-//                             for (i = 0; i < TempColumn.length; i++) {
-//                                 if (where[TempColumn][i] == value[TempColumn]) {
-//                                     Status = true;
-//                                     break;
-//                                 }
-//                                 else {
-//                                     Status = false;
-//                                 }
-//                             };
-//                             if (!Status) {
-//                                 return Status;
-//                             }
-//                         }
-//                         else {
-//                             if (where[TempColumn] != value[TempColumn]) {
-//                                 return false;
-//                             }
-//                         }
-//                     }
-//                     return true;
-//                 }
-//                 private executeWhereUndefinedLogic = function () {
-//                     var That: SelectLogic = this,
-//                         CursorOpenRequest = this.ObjectStore.openCursor();
-//                     CursorOpenRequest.onsuccess = function (e) {
-//                         var Cursor = (<any>e).target.result;
-//                         if (Cursor) {
-//                             That.Results.push(Cursor.value);
-//                             (Cursor as any).continue();
-//                         }
-//                     }
-//                     CursorOpenRequest.onerror = That.onErrorRequest;
-//                 }
-//                 constructor(query: ISelectJoin, onSuccess: Function, onError: Function) {
-//                     super();
-//                     this.OnSuccess = onSuccess;
-//                     this.OnError = onError;
-//                     var That = this,
-//                         TableList = []; // used to open the multiple object store
-//                     //this.Transaction = DbConnection.transaction([query.From], "readonly");
-//                     //this.ObjectStore = this.Transaction.objectStore(query.From);
-//                     var convertQueryIntoStack = function (query) {
-//                         if (query.hasOwnProperty('Table1')) {
-//                             query.Table2.Table = query.Table2.Table.toLowerCase();
-//                             query.Table2['JoinType'] = (<IJoin>query).Join == undefined ? 'inner' : (<IJoin>query).Join.toLowerCase();
-//                             That.QueryStack.push(query.Table2);
-//                             TableList.push(query.Table2.Table);
-//                             return convertQueryIntoStack(query.Table1);
-//                         }
-//                         else {
-//                             query.Table = query.Table.toLowerCase();
-//                             That.QueryStack.push(query);
-//                             TableList.push(query.Table);
-//                             return;
-//                         }
-//                     };
-//                     convertQueryIntoStack(query.From);
-//                     this.QueryStack.reverse();
-//                     console.log(TableList);
-//                     //var i = QueryStack.length - 1;
-//                     // while (i >= 0) {
-//                     //     this.doJoinLogic(QueryStack.pop(), QueryStack.pop());
-//                     //     i -= 2;
-//                     // }
-//                     //this.Transaction = DbConnection.transaction(TableList, "readonly");
-//                     // for (var i = 1; i < this.QueryStack.length; i++) {
-//                     //     this.IndexRequest[i - 1] = this.Transaction.objectStore(this.QueryStack[i].Table).index(this.QueryStack[i].Column);
-//                     // }
-//                     console.log(this.QueryStack);
-//                     //get the data for first table
-//                     new SelectLogic(<ISelect>{
-//                         From: this.QueryStack[0].Table,
-//                         Where: this.QueryStack[0].Where,
-//                         WhereIn: this.QueryStack[0].WhereIn,
-//                         Limit: this.QueryStack[0].Limit,
-//                         Skip: this.QueryStack[0].Skip
-//                     }, function (results) {
-//                         this.QueryStack.shift();
-//                         That.startExecutionJoinLogic(<ISelect>{
-//                             From: this.QueryStack[0].Table,
-//                             Where: this.QueryStack[0].Where,
-//                             WhereIn: this.QueryStack[0].WhereIn,
-//                             Limit: this.QueryStack[0].Limit,
-//                             Skip: this.QueryStack[0].Skip
-//                         }, function () {
-//                             this.QueryStack.shift();
-//                         })
-//                     }, function (error) {
-//                         if (onError) {
-//                             onError(error)
-//                         }
-//                     });
-//                     // this.Query = this.QueryStack[this.QueryStack.length - 1];
-//                     // this.ObjectStore = this.Transaction.objectStore(this.QueryStack[this.QueryStack.length - 1].Table);
-//                     //var CursorOpenRequest = Transaction.
-//                 }
-//                 private startExecutionJoinLogic(query, callBack: Function) {
-//                 }
-//                 private doJoinLogic(join1: ITableJoin, join2: ITableJoin) {
-//                     var That = this,
-//                         Transaction = DbConnection.transaction([join1.Table, join2.Table], "readonly"),
-//                         CursorOpenRequest1 = Transaction.objectStore(join1.Table).index(join1.Column).openCursor(),
-//                         CursorOpenRequest2 = Transaction.objectStore(join2.Table).index(join2.Column).openCursor(),
-//                         onErrorCursorRequest = function (e) {
-//                             ++That.ErrorCount;
-//                             That.onErrorRequest(e);
-//                         }
-//                     CursorOpenRequest1.onerror = onErrorCursorRequest;
-//                     CursorOpenRequest2.onerror = onErrorCursorRequest;
-//                     CursorOpenRequest1.onsuccess = function (e) {
-//                     }
-//                     CursorOpenRequest2.onsuccess = function (e) {
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// } 
+/// <reference path="JsStoreInstance.ts" />
+/// <reference path="Business/KeyStores/CreateDbLogic.ts" />
+/// <reference path="Business/KeyStores/OpenDbLogic.ts" />
+/// <reference path="Business/KeyStores/BaseGetLogic.ts" />
+/// <reference path="Business/KeyStores/GetLogic.ts" />
+/// <reference path="Business/KeyStores/SetLogic.ts" />
+/// <reference path="Business/KeyStores/RemoveLogic.ts" />
+/// <reference path="KeyStoreInstance.ts" />
+var JsStorage;
+(function (JsStorage) {
+    var Business;
+    (function (Business) {
+        var KeyStores;
+        (function (KeyStores) {
+            KeyStores.Status = {
+                ConStatus: JsStorage.ConnectionStatus.NotStarted,
+                LastError: ""
+            };
+            var MainLogic = (function () {
+                function MainLogic(dataBase) {
+                    this.openDb = function (objMain, onSuccess, onError) {
+                        var ObjOpenDb = new KeyStores.OpenDbLogic(objMain, onSuccess, onError);
+                    };
+                    this.closeDb = function () {
+                        if (KeyStores.Status.ConStatus == JsStorage.ConnectionStatus.Connected) {
+                            KeyStores.DbConnection.close();
+                        }
+                    };
+                    this.set = function (tableName, value, isReturn, onSuccess, onError) {
+                        var ObjInsert = new KeyStores.SetLogic(tableName, value, isReturn, onSuccess, onError);
+                    };
+                    this.remove = function (query, onSuccess, onError) {
+                        var ObjDelete = new KeyStores.RemoveLogic(query, onSuccess, onError);
+                    };
+                    this.get = function (query, onSuccess, onError) {
+                        new KeyStores.GetLogic(query, onSuccess, onError);
+                    };
+                    this.createDb = function () {
+                        new KeyStores.CreateDbLogic();
+                    };
+                    KeyStores.ActiveDataBase = dataBase;
+                }
+                return MainLogic;
+            }());
+            KeyStores.MainLogic = MainLogic;
+        })(KeyStores = Business.KeyStores || (Business.KeyStores = {}));
+    })(Business = JsStorage.Business || (JsStorage.Business = {}));
+})(JsStorage || (JsStorage = {}));
 //# sourceMappingURL=JsStorage.js.map

@@ -1,7 +1,7 @@
 module JsStorage {
     export module Business {
         export class DbHelperLogic {
-            Results = [];
+           
 
             and() {
                 return this;

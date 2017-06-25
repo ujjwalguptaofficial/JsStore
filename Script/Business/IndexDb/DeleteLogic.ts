@@ -11,7 +11,8 @@ module JsStorage {
                             ErrorCount = 0,
                             RowAffected = 0,
                             onErrorGetRequest = function (e) {
-                                if (onError != null) {
+                                ++ErrorCount;
+                                if (onError != null && this.ErrorCount == 1) {
                                     onError((e as any).target.error);
                                 }
                             };
@@ -47,7 +48,7 @@ module JsStorage {
                                             ExecutionNo = 0;
 
                                         CursorOpenRequest.onerror = function (e) {
-                                            ErrorOccured = true; ++ErrorCount;
+                                            ErrorOccured = true;
                                             onErrorGetRequest(e);
                                         };
                                         CursorOpenRequest.onsuccess = function (e) {

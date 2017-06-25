@@ -5,7 +5,6 @@ module JsStorage {
                 Query: ITableJoin;
                 QueryStack: Array<ITableJoin> = [];
                 CurrentQueryStackIndex = 0;
-                Results: Array<any> = [];
 
                 private onTransactionCompleted = function (e) {
                     if (this.OnSuccess != null && (this.QueryStack.length == this.CurrentQueryStackIndex + 1)) {
