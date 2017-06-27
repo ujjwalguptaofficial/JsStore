@@ -1,6 +1,6 @@
-module JsStorage {
-    export module Business {
-        export module IndexDb {
+module JsStore {
+    export module IndexDb {
+        export module Business {
             export class DeleteLogic {
                 constructor(query: IDelete, onSuccess: Function, onError: Function) {
                     try {
@@ -85,6 +85,5 @@ module JsStorage {
                 }
             }
         }
-
     }
 }

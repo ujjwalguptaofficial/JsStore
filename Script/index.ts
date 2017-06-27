@@ -1,33 +1,47 @@
 
-/// <reference path="Business/CommonLogic.ts" />
-/// <reference path="Business/UtilityLogic.ts" />
-/// <reference path="Model/Column.ts" />
-/// <reference path="Model/Table.ts" />
-/// <reference path="Model/DataBase.ts" />
+// common files
 
-/// <reference path="Business/DbHelperLogic.ts" />
+/// <reference path="CommonLogic.ts" />
+/// <reference path="UtilityLogic.ts" />
+/// <reference path="DbHelperLogic.ts" />
 
-/// <reference path="Business/IndexDb/CreateDbLogic.ts" />
-/// <reference path="Business/IndexDb/DeleteLogic.ts" />
-/// <reference path="Business/IndexDb/DropDbLogic.ts" />
-/// <reference path="Business/IndexDb/InsertLogic.ts" />
-/// <reference path="Business/IndexDb/OpenDbLogic.ts" />
-/// <reference path="Business/IndexDb/BaseSelectLogic.ts" />
-/// <reference path="Business/IndexDb/SelectJoinLogic.ts" />
-/// <reference path="Business/IndexDb/SelectLogic.ts" />
-/// <reference path="Business/IndexDb/UpdateLogic.ts" />
-/// <reference path="Business/IndexDb/ClearLogic.ts" />
+// KeyStores Files
 
-/// <reference path="Business/IndexDb/MainLogic.ts" />
+//Model
+/// <reference path="KeyStores/Model/Column.ts" />
+/// <reference path="KeyStores/Model/Table.ts" />
+/// <reference path="KeyStores/Model/DataBase.ts" />
+//Business
+/// <reference path="KeyStores/Business/CreateDbLogic.ts" />
+/// <reference path="KeyStores/Business/RemoveLogic.ts" />
+/// <reference path="KeyStores/Business/SetLogic.ts" />
+/// <reference path="KeyStores/Business/OpenDbLogic.ts" />
+/// <reference path="KeyStores/Business/BaseGetLogic.ts" />
+/// <reference path="KeyStores/Business/GetLogic.ts" />
+/// <reference path="KeyStores/Business/MainLogic.ts" />
 
-/// <reference path="JsStoreInstance.ts" />
+// IndexDb Files
 
-/// <reference path="Business/KeyStores/CreateDbLogic.ts" />
-/// <reference path="Business/KeyStores/OpenDbLogic.ts" />
-/// <reference path="Business/KeyStores/BaseGetLogic.ts" />
-/// <reference path="Business/KeyStores/GetLogic.ts" />
-/// <reference path="Business/KeyStores/SetLogic.ts" />
-/// <reference path="Business/KeyStores/RemoveLogic.ts" />
+//Model
+/// <reference path="IndexDb/Model/Column.ts" />
+/// <reference path="IndexDb/Model/Table.ts" />
+/// <reference path="IndexDb/Model/DataBase.ts" />
+//Business
+/// <reference path="IndexDb/Business/CreateDbLogic.ts" />
+/// <reference path="IndexDb/Business/DeleteLogic.ts" />
+/// <reference path="IndexDb/Business/DropDbLogic.ts" />
+/// <reference path="IndexDb/Business/InsertLogic.ts" />
+/// <reference path="IndexDb/Business/OpenDbLogic.ts" />
+/// <reference path="IndexDb/Business/BaseSelectLogic.ts" />
+/// <reference path="IndexDb/Business/SelectJoinLogic.ts" />
+/// <reference path="IndexDb/Business/SelectLogic.ts" />
+/// <reference path="IndexDb/Business/UpdateLogic.ts" />
+/// <reference path="IndexDb/Business/ClearLogic.ts" />
+/// <reference path="IndexDb/Business/MainLogic.ts" />
+
+
+//Instance files
 /// <reference path="KeyStoreInstance.ts" />
+/// <reference path="JsStoreInstance.ts" />
 
 

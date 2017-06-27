@@ -1,9 +1,8 @@
-module JsStorage {
-    export module Business {
-        export module KeyStores {
+module JsStore {
+    export module IndexDb {
+        export module Business {
             export class OpenDbLogic {
-
-                constructor(objMain: KeyStore, onSuccess: Function, onError: Function) {
+                constructor(objMain: Instance, onSuccess: Function, onError: Function) {
                     if (Status.ConStatus != ConnectionStatus.Connected) {
                         if (ActiveDataBase.Name.length > 0) {
                             var DbVersion = Number(localStorage.getItem(ActiveDataBase.Name + 'Db_Version')),

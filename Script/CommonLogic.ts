@@ -1,4 +1,4 @@
-module JsStorage {
+module JsStore {
 
     export enum ErrorType {
         UndefinedColumn,
@@ -102,5 +102,5 @@ module JsStorage {
         LastError: string
     }
 
-   
+
 }

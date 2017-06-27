@@ -1,6 +1,6 @@
-module JsStorage {
-    export module Business {
-        export module IndexDb {
+module JsStore {
+    export module IndexDb {
+        export module Business {
             export class UpdateLogic {
                 constructor(query: IUpdate, onSuccess: Function, onError: Function) {
                     try {

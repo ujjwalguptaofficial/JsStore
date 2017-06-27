@@ -1,8 +1,7 @@
-module JsStorage {
-    export module Business {
-        export module IndexDb {
+module JsStore {
+    export module IndexDb {
+        export module Business {
             export class DropDbLogic {
-
                 constructor(name: string, onSuccess: Function, onError: Function) {
 
                     var DbDropRequest = window.indexedDB.deleteDatabase(name);

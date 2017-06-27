@@ -1,6 +1,6 @@
-module JsStorage {
-    export module Business {
-        export module IndexDb {
+module JsStore {
+    export module IndexDb {
+        export module Business {
             export class InsertLogic {
                 RowsAffected = 0;
                 ValuesAffected: Array<any> = [];
@@ -78,7 +78,7 @@ module JsStorage {
                 private checkSchemaAndModifyValue(value, tableName: string) {
                     var CurrentTable: Table,
                         That = this;
-                    Business.IndexDb.Db.Tables.every(function (table) {
+                    ActiveDataBase.Tables.every(function (table) {
                         if (table.Name == tableName) {
                             CurrentTable = table;
                             return false;

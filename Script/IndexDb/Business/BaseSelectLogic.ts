@@ -1,6 +1,6 @@
-module JsStorage {
-    export module Business {
-        export module IndexDb {
+module JsStore {
+    export module IndexDb {
+        export module Business {
             export class BaseSelectLogic extends DbHelperLogic {
                 Results = [];
                 OnSuccess: Function;
@@ -86,7 +86,7 @@ module JsStorage {
                 }
 
                 protected executeSingleWhereInLogic = function (whereIn: IWhereIn) {
-                    var That: SelectLogic = this,
+                    var That: BaseSelectLogic = this,
                         KeyRange: IDBKeyRange = this.getKeyRange(whereIn);
 
                     if (!this.ErrorOccured) {

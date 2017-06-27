@@ -1,8 +1,8 @@
-import Table = JsStorage.Model.Table;
-import Column = JsStorage.Model.Column;
-module JsStorage {
-    export module Business {
-        export module IndexDb {
+import Table = JsStore.IndexDb.Model.Table;
+import Column = JsStore.IndexDb.Model.Column;
+module JsStore {
+    export module IndexDb {
+        export module Business {
             export var DbConnection,
                 ActiveDataBase: DataBase,
                 Status: JsStoreStatus = <JsStoreStatus>{
@@ -41,7 +41,7 @@ module JsStorage {
                     }
                     else {
                         if (onError != null) {
-                            onError(Business.UtilityLogic.getError(ErrorType.NoValueSupplied, true, null));
+                            onError(UtilityLogic.getError(ErrorType.NoValueSupplied, true, null));
                         }
                     }
                 }

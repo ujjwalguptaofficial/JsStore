@@ -1,15 +1,17 @@
-module JsStorage {
-    export module Business {
-        export module KeyStores {
+module JsStore {
+    export module IndexDb {
+        export module Business {
             export var Db: DataBase;
             export class CreateDbLogic {
-                constructor() {
+                constructor(objMain: Instance, onSuccess: Function, onError: Function) {
                     var That = this,
                         DbVersion = Number(localStorage.getItem(ActiveDataBase.Name + 'Db_Version')),
                         DbRequest = window.indexedDB.open(ActiveDataBase.Name, DbVersion);
 
                     DbRequest.onerror = function (event) {
-                        console.error((event as any).target.error);
+                        if (onError != null) {
+                            onError((event as any).target.error);
+                        }
                     };
 
                     DbRequest.onsuccess = function (event) {
@@ -33,6 +35,10 @@ module JsStorage {
                         DbConnection.onabort = function (e) {
                             Status.ConStatus = ConnectionStatus.Closed;
                             Status.LastError = "Connection aborted";
+                        }
+
+                        if (onSuccess != null) {
+                            onSuccess(objMain);
                         }
                     };
 

@@ -1,13 +1,15 @@
-import DataBase = JsStorage.Model.DataBase;
-import IDataBase = JsStorage.Model.IDataBase;
-import IndexDb = JsStorage.Business.IndexDb;
-module JsStorage {
+import Model = JsStore.IndexDb.Model;
+import DataBase = Model.DataBase;
+import IDataBase = Model.IDataBase;
+import IndexDbBusiness = JsStore.IndexDb.Business;
+module JsStore {
 
     export class Instance {
-        IndexDbObj: IndexDb.MainLogic;
+        IndexDbObj: IndexDbBusiness.MainLogic;
 
         constructor() {
-            JsStorage.Business.UtilityLogic.setDbType();
+            UtilityLogic.setDbType();
+            //IndexDb.KeyStoreObj = new KeyStore();
         }
 
         /**
@@ -23,10 +25,10 @@ module JsStorage {
         createDb(dataBase: IDataBase, onSuccess: Function, onError: Function) {
 
             var Db = new DataBase(dataBase)
-            this.IndexDbObj = new Business.IndexDb.MainLogic(Db);
+            this.IndexDbObj = new IndexDbBusiness.MainLogic(Db);
             var DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
             this.IndexDbObj.createDb(this, onSuccess, onError);
-            Business.IndexDb.Db = Db;
+            //Business.IndexDb.Db = Db;
             return this;
         }
 
@@ -68,16 +70,16 @@ module JsStorage {
          * @memberOf Main
          */
         select(query: ISelect, onSuccess: Function, onError: Function) {
-            if (IndexDb.Status.ConStatus == ConnectionStatus.Connected) {
+            if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Connected) {
                 this.IndexDbObj.select(query, onSuccess, onError);
             }
-            else if (IndexDb.Status.ConStatus == ConnectionStatus.NotStarted) {
+            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.NotStarted) {
                 var That = this;
                 setTimeout(function () {
                     That.select(query, onSuccess, onError);
                 }, 50);
             }
-            else if (IndexDb.Status.ConStatus == ConnectionStatus.Closed) {
+            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Closed) {
                 var That = this;
                 this.openDb(function () {
                     That.select(query, onSuccess, onError);
@@ -98,17 +100,17 @@ module JsStorage {
          */
         insert(query: IInsert, onSuccess: Function, onError: Function) {
 
-            if (IndexDb.Status.ConStatus == ConnectionStatus.Connected) {
+            if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Connected) {
                 var IsReturn = query.Return ? query.Return : false;
                 this.IndexDbObj.insert(query.Into, query.Values, IsReturn, onSuccess, onError);
             }
-            else if (IndexDb.Status.ConStatus == ConnectionStatus.NotStarted) {
+            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.NotStarted) {
                 var That = this;
                 setTimeout(function () {
                     That.insert(query, onSuccess, onError);
                 }, 50);
             }
-            else if (IndexDb.Status.ConStatus == ConnectionStatus.Closed) {
+            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Closed) {
                 var That = this;
                 this.openDb(function () {
                     That.insert(query, onSuccess, onError);
@@ -118,16 +120,16 @@ module JsStorage {
         }
 
         update(query: IUpdate, onSuccess: Function, onError: Function) {
-            if (IndexDb.Status.ConStatus == ConnectionStatus.Connected) {
+            if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Connected) {
                 this.IndexDbObj.update(query, onSuccess, onError);
             }
-            else if (IndexDb.Status.ConStatus == ConnectionStatus.NotStarted) {
+            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.NotStarted) {
                 var That = this;
                 setTimeout(function () {
                     That.update(query, onSuccess, onError);
                 }, 50);
             }
-            else if (IndexDb.Status.ConStatus == ConnectionStatus.Closed) {
+            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Closed) {
                 var That = this;
                 this.openDb(function () {
                     That.update(query, onSuccess, onError);
@@ -138,16 +140,16 @@ module JsStorage {
         }
 
         delete(query: IDelete, onSuccess: Function, onError: Function) {
-            if (IndexDb.Status.ConStatus == ConnectionStatus.Connected) {
+            if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Connected) {
                 this.IndexDbObj.delete(query, onSuccess, onError);
             }
-            else if (IndexDb.Status.ConStatus == ConnectionStatus.NotStarted) {
+            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.NotStarted) {
                 var That = this;
                 setTimeout(function () {
                     That.delete(query, onSuccess, onError);
                 }, 50);
             }
-            else if (IndexDb.Status.ConStatus == ConnectionStatus.Closed) {
+            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Closed) {
                 var That = this;
                 this.openDb(function () {
                     That.delete(query, onSuccess, onError);

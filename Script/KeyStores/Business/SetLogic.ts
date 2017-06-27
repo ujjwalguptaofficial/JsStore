@@ -1,6 +1,6 @@
-module JsStorage {
-    export module Business {
-        export module KeyStores {
+module JsStore {
+    export module KeyStores {
+        export module Business {
             export class SetLogic {
                 Store: IDBObjectStore;
                 OnSuccess: Function;

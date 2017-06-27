@@ -1,6 +1,6 @@
-module JsStorage {
-    export module Business {
-        export module IndexDb {
+module JsStore {
+    export module IndexDb {
+        export module Business {
             export class SelectJoinLogic extends BaseSelectLogic {
                 Query: ITableJoin;
                 QueryStack: Array<ITableJoin> = [];

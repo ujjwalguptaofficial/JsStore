@@ -1,6 +1,6 @@
-module JsStorage {
-    export module Business {
-        export module IndexDb {
+module JsStore {
+    export module IndexDb {
+        export module Business {
             export class ClearLogic {
                 constructor(tableName: string, onSuccess: Function, onError: Function) {
                     var ObjectStore: IDBObjectStore = DbConnection.transaction([tableName], "readwrite").Transaction.objectStore(tableName)
@@ -22,3 +22,4 @@ module JsStorage {
         }
     }
 }
+

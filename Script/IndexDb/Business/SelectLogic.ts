@@ -1,6 +1,6 @@
-module JsStorage {
-    export module Business {
-        export module IndexDb {
+module JsStore {
+    export module IndexDb {
+        export module Business {
             export class SelectLogic extends BaseSelectLogic {
                 Query: ISelect;
                 private executeWhereInLogic = function () {
