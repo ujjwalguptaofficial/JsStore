@@ -5,7 +5,6 @@ module JsStore {
             export class CreateDbLogic {
                 constructor() {
                     var That = this,
-                        DbVersion = Number(localStorage.getItem(ActiveDataBase.Name + 'Db_Version')),
                         DbRequest = window.indexedDB.open(ActiveDataBase.Name, DbVersion);
 
                     DbRequest.onerror = function (event) {
@@ -53,7 +52,7 @@ module JsStore {
 
                     }
 
-                    var createObjectStore = function (dbConnection, item: Table) {
+                    var createObjectStore = function (dbConnection, item: KeyStoreModel.Table) {
                         try {
                             if (item.PrimaryKey.length > 0) {
                                 var Store = dbConnection.createObjectStore(item.Name, {
@@ -80,8 +79,6 @@ module JsStore {
                                     }
                                 })
                             }
-                            //setting the table version
-                            localStorage.setItem("JsStorage_" + ActiveDataBase.Name + "_" + item.Name, item.Version.toString());
                         }
                         catch (e) {
                             console.error(e);

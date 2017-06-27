@@ -187,7 +187,6 @@ var JsStore;
                         That.Columns.push(new Model.Column(item, table.Name));
                     });
                     this.setRequireDelete(dbName);
-                    this.setDbVersion(dbName);
                     this.setPrimaryKey();
                 }
                 //private methods
@@ -197,33 +196,11 @@ var JsStore;
                     this.Columns.forEach(function (item, index) {
                         if (item.PrimaryKey && That.PrimaryKey.length == 0) {
                             That.PrimaryKey = item.Name;
-                            localStorage.setItem("JsStorage_" + That.Name + "_" + item.Name, "true");
                         }
-                        else if (item.PrimaryKey && That.PrimaryKey.length > 0) {
-                            localStorage.setItem("JsStorage_" + That.Name + "_" + item.Name, "");
-                            throw "Multiple primary key are not allowed";
-                        }
-                        // else if (index == Length && That.PrimaryKey.length == 0) {
-                        // }
                     });
                 };
                 Table.prototype.setRequireDelete = function (dbName) {
-                    var TableVersion = localStorage.getItem("JsStorage_" + dbName + "_" + this.Name);
-                    if (TableVersion == null || localStorage.getItem('JsStorage_Db_Version') == null) {
-                        this.RequireCreation = true;
-                    }
-                    else if (TableVersion != this.Version.toString()) {
-                        this.RequireDelete = true;
-                    }
-                    this.Version = this.Version == null ? 1 : this.Version;
-                };
-                Table.prototype.setDbVersion = function (dbName) {
-                    if (this.Version == null) {
-                        localStorage.setItem(dbName + 'Db_Version', '1');
-                    }
-                    else if (this.Version > Number(localStorage.getItem(dbName + 'Db_Version'))) {
-                        localStorage.setItem(dbName + 'Db_Version', this.Version.toString());
-                    }
+                    this.RequireDelete = true;
                 };
                 return Table;
             }());
@@ -260,7 +237,7 @@ var JsStore;
         (function (Business) {
             var CreateDbLogic = (function () {
                 function CreateDbLogic() {
-                    var That = this, DbVersion = Number(localStorage.getItem(Business.ActiveDataBase.Name + 'Db_Version')), DbRequest = window.indexedDB.open(Business.ActiveDataBase.Name, DbVersion);
+                    var That = this, DbRequest = window.indexedDB.open(Business.ActiveDataBase.Name, Business.DbVersion);
                     DbRequest.onerror = function (event) {
                         console.error(event.target.error);
                     };
@@ -327,8 +304,6 @@ var JsStore;
                                     }
                                 });
                             }
-                            //setting the table version
-                            localStorage.setItem("JsStorage_" + Business.ActiveDataBase.Name + "_" + item.Name, item.Version.toString());
                         }
                         catch (e) {
                             console.error(e);
@@ -481,7 +456,7 @@ var JsStore;
                 function OpenDbLogic(objMain, onSuccess, onError) {
                     if (Business.Status.ConStatus != JsStore.ConnectionStatus.Connected) {
                         if (Business.ActiveDataBase.Name.length > 0) {
-                            var DbVersion = Number(localStorage.getItem(Business.ActiveDataBase.Name + 'Db_Version')), DbRequest = window.indexedDB.open(Business.ActiveDataBase.Name, DbVersion), That = this;
+                            var DbRequest = window.indexedDB.open(Business.ActiveDataBase.Name, Business.DbVersion), That = this;
                             DbRequest.onerror = function (event) {
                                 if (onError != null) {
                                     onError(event.target.error);
@@ -614,7 +589,7 @@ var JsStore;
     (function (KeyStores) {
         var Business;
         (function (Business) {
-            Business.Status = {
+            Business.DbVersion = 1, Business.Status = {
                 ConStatus: JsStore.ConnectionStatus.NotStarted,
                 LastError: ""
             };
@@ -1917,6 +1892,7 @@ var JsStore;
         })(Business = IndexDb.Business || (IndexDb.Business = {}));
     })(IndexDb = JsStore.IndexDb || (JsStore.IndexDb = {}));
 })(JsStore || (JsStore = {}));
+var KeyStoreModel = JsStore.KeyStores.Model;
 var KeyStoreBusiness = JsStore.KeyStores.Business;
 var JsStore;
 (function (JsStore) {
@@ -1930,16 +1906,14 @@ var JsStore;
                     Columns: [{
                             Name: "Key",
                             PrimaryKey: true
-                        }],
-                    Version: 1
+                        }]
                 };
                 var keyStore_DataBase = {
                     Name: "JsStore_KeyStore",
                     Tables: [Table]
                 };
-                var Db = new DataBase(keyStore_DataBase);
+                var Db = new KeyStoreModel.DataBase(keyStore_DataBase);
                 this.KeyStoreObj = new KeyStoreBusiness.MainLogic(Db);
-                var DbVersion = Number(localStorage.getItem(keyStore_DataBase.Name + 'Db_Version'));
                 this.KeyStoreObj.createDb();
             }
         }
@@ -2049,8 +2023,7 @@ var JsStore;
     }());
     JsStore.KeyStore = KeyStore;
 })(JsStore || (JsStore = {}));
-var Model = JsStore.IndexDb.Model;
-var DataBase = Model.DataBase;
+var IndexDbModel = JsStore.IndexDb.Model;
 var IndexDbBusiness = JsStore.IndexDb.Business;
 var JsStore;
 (function (JsStore) {
@@ -2070,7 +2043,7 @@ var JsStore;
          * @memberOf Main
          */
         Instance.prototype.createDb = function (dataBase, onSuccess, onError) {
-            var Db = new DataBase(dataBase);
+            var Db = new IndexDbModel.DataBase(dataBase);
             this.IndexDbObj = new IndexDbBusiness.MainLogic(Db);
             var DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
             this.IndexDbObj.createDb(this, onSuccess, onError);

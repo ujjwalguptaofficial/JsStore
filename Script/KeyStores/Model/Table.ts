@@ -25,7 +25,6 @@ module JsStore {
                     })
 
                     this.setRequireDelete(dbName);
-                    this.setDbVersion(dbName);
                     this.setPrimaryKey();
                 }
 
@@ -38,39 +37,16 @@ module JsStore {
                     this.Columns.forEach(function (item, index) {
                         if (item.PrimaryKey && That.PrimaryKey.length == 0) {
                             That.PrimaryKey = item.Name;
-                            localStorage.setItem("JsStorage_" + That.Name + "_" + item.Name, "true");
                         }
-                        else if (item.PrimaryKey && That.PrimaryKey.length > 0) {
-                            localStorage.setItem("JsStorage_" + That.Name + "_" + item.Name, "");
-                            throw "Multiple primary key are not allowed";
-                        }
-                        // else if (index == Length && That.PrimaryKey.length == 0) {
-
-                        // }
                     })
 
                 }
 
                 private setRequireDelete(dbName: string) {
-                    var TableVersion = localStorage.getItem("JsStorage_" + dbName + "_" + this.Name);
-                    if (TableVersion == null || localStorage.getItem('JsStorage_Db_Version') == null) {
-                        this.RequireCreation = true;
-                    }
-                    else if (TableVersion != this.Version.toString()) {
-                        this.RequireDelete = true;
-                    }
-                    this.Version = this.Version == null ? 1 : this.Version;
-
+                    this.RequireDelete = true;
                 }
 
-                private setDbVersion(dbName: string) {
-                    if (this.Version == null) {
-                        localStorage.setItem(dbName + 'Db_Version', '1');
-                    }
-                    else if (this.Version > Number(localStorage.getItem(dbName + 'Db_Version'))) {
-                        localStorage.setItem(dbName + 'Db_Version', this.Version.toString());
-                    }
-                }
+
 
             }
         }

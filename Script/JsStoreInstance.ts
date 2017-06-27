@@ -1,6 +1,4 @@
-import Model = JsStore.IndexDb.Model;
-import DataBase = Model.DataBase;
-import IDataBase = Model.IDataBase;
+import IndexDbModel = JsStore.IndexDb.Model;
 import IndexDbBusiness = JsStore.IndexDb.Business;
 module JsStore {
 
@@ -22,9 +20,9 @@ module JsStore {
          * 
          * @memberOf Main
          */
-        createDb(dataBase: IDataBase, onSuccess: Function, onError: Function) {
+        createDb(dataBase: IndexDbModel.IDataBase, onSuccess: Function, onError: Function) {
 
-            var Db = new DataBase(dataBase)
+            var Db = new IndexDbModel.DataBase(dataBase)
             this.IndexDbObj = new IndexDbBusiness.MainLogic(Db);
             var DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
             this.IndexDbObj.createDb(this, onSuccess, onError);

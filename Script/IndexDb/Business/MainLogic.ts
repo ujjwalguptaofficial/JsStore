@@ -4,13 +4,13 @@ module JsStore {
     export module IndexDb {
         export module Business {
             export var DbConnection,
-                ActiveDataBase: DataBase,
+                ActiveDataBase: IndexDbModel.DataBase,
                 Status: JsStoreStatus = <JsStoreStatus>{
                     ConStatus: ConnectionStatus.NotStarted,
                     LastError: ""
                 };
             export class MainLogic {
-                constructor(dataBase: DataBase) {
+                constructor(dataBase: IndexDbModel.DataBase) {
                     ActiveDataBase = dataBase
                 }
 

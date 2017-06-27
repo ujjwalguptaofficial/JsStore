@@ -1,3 +1,4 @@
+import KeyStoreModel = JsStore.KeyStores.Model;
 import KeyStoreBusiness = JsStore.KeyStores.Business;
 module JsStore {
     export interface ISet {
@@ -11,23 +12,21 @@ module JsStore {
         constructor() {
             if (KeyStoreBusiness.Status.ConStatus == ConnectionStatus.NotStarted) {
                 UtilityLogic.setDbType();
-                var Table = <Model.ITable>{
+                var Table = <KeyStoreModel.ITable>{
                     Name: this.TableName,
-                    Columns: [<Model.IColumn>{
+                    Columns: [<KeyStoreModel.IColumn>{
                         Name: "Key",
                         PrimaryKey: true
-                    }],
-                    Version: 1
+                    }]
                 }
 
-                var keyStore_DataBase = <Model.IDataBase>{
+                var keyStore_DataBase = <KeyStoreModel.IDataBase>{
                     Name: "JsStore_KeyStore",
                     Tables: [Table]
                 }
 
-                var Db = new DataBase(keyStore_DataBase);
+                var Db = new KeyStoreModel.DataBase(keyStore_DataBase);
                 this.KeyStoreObj = new KeyStoreBusiness.MainLogic(Db);
-                var DbVersion = Number(localStorage.getItem(keyStore_DataBase.Name + 'Db_Version'));
                 this.KeyStoreObj.createDb();
             }
         }

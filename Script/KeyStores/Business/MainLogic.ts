@@ -2,13 +2,14 @@ module JsStore {
     export module KeyStores {
         export module Business {
             export var DbConnection,
-                ActiveDataBase: DataBase,
+                DbVersion = 1,
+                ActiveDataBase: KeyStoreModel.DataBase,
                 Status: JsStoreStatus = <JsStoreStatus>{
                     ConStatus: ConnectionStatus.NotStarted,
                     LastError: ""
                 };
             export class MainLogic {
-                constructor(dataBase: DataBase) {
+                constructor(dataBase: KeyStoreModel.DataBase) {
                     ActiveDataBase = dataBase
                 }
 

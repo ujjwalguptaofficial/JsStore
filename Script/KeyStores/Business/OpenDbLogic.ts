@@ -6,8 +6,7 @@ module JsStore {
                 constructor(objMain: KeyStore, onSuccess: Function, onError: Function) {
                     if (Status.ConStatus != ConnectionStatus.Connected) {
                         if (ActiveDataBase.Name.length > 0) {
-                            var DbVersion = Number(localStorage.getItem(ActiveDataBase.Name + 'Db_Version')),
-                                DbRequest = window.indexedDB.open(ActiveDataBase.Name, DbVersion),
+                            var DbRequest = window.indexedDB.open(ActiveDataBase.Name, DbVersion),
                                 That = this;
                             DbRequest.onerror = function (event) {
                                 if (onError != null) {

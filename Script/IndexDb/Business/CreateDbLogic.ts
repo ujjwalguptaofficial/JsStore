@@ -1,7 +1,7 @@
 module JsStore {
     export module IndexDb {
         export module Business {
-            export var Db: DataBase;
+            export var Db: IndexDbModel.DataBase;
             export class CreateDbLogic {
                 constructor(objMain: Instance, onSuccess: Function, onError: Function) {
                     var That = this,
