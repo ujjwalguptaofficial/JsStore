@@ -55,7 +55,7 @@ module JsStore {
             this.KeyStoreObj.closeDb();
         }
 
-        get(key: string, onSuccess: Function, onError: Function) {
+        get(key: string, onSuccess: Function, onError: Function = null) {
             if (KeyStoreBusiness.Status.ConStatus == ConnectionStatus.Connected) {
                 var Query = <ISelect>{
                     From: this.TableName,
@@ -90,7 +90,7 @@ module JsStore {
          * 
          * @memberOf Main
          */
-        set(key, value, onSuccess: Function, onError: Function) {
+        set(key, value, onSuccess: Function = null, onError: Function = null) {
             if (KeyStoreBusiness.Status.ConStatus == ConnectionStatus.Connected) {
                 var IsReturn = false;
                 var Value = <ISet>{
@@ -114,7 +114,7 @@ module JsStore {
             }
         }
 
-        remove(key: string, onSuccess: Function, onError: Function) {
+        remove(key: string, onSuccess: Function = null, onError: Function = null) {
             if (KeyStoreBusiness.Status.ConStatus == ConnectionStatus.Connected) {
                 var Query = <IDelete>{
                     From: this.TableName,

@@ -1942,6 +1942,7 @@ var JsStore;
             this.KeyStoreObj.closeDb();
         };
         KeyStore.prototype.get = function (key, onSuccess, onError) {
+            if (onError === void 0) { onError = null; }
             if (KeyStoreBusiness.Status.ConStatus == JsStore.ConnectionStatus.Connected) {
                 var Query = {
                     From: this.TableName,
@@ -1975,6 +1976,8 @@ var JsStore;
          * @memberOf Main
          */
         KeyStore.prototype.set = function (key, value, onSuccess, onError) {
+            if (onSuccess === void 0) { onSuccess = null; }
+            if (onError === void 0) { onError = null; }
             if (KeyStoreBusiness.Status.ConStatus == JsStore.ConnectionStatus.Connected) {
                 var IsReturn = false;
                 var Value = {
@@ -1997,6 +2000,8 @@ var JsStore;
             }
         };
         KeyStore.prototype.remove = function (key, onSuccess, onError) {
+            if (onSuccess === void 0) { onSuccess = null; }
+            if (onError === void 0) { onError = null; }
             if (KeyStoreBusiness.Status.ConStatus == JsStore.ConnectionStatus.Connected) {
                 var Query = {
                     From: this.TableName,
