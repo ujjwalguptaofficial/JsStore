@@ -3,10 +3,9 @@ module JsStore {
         export module Business {
             export var Db: IndexDbModel.DataBase;
             export class CreateDbLogic {
-                constructor(objMain: Instance, onSuccess: Function, onError: Function) {
+                constructor(objMain: Instance, dbVersion, onSuccess: Function, onError: Function) {
                     var That = this,
-                        DbVersion = Number(localStorage.getItem(ActiveDataBase.Name + 'Db_Version')),
-                        DbRequest = window.indexedDB.open(ActiveDataBase.Name, DbVersion);
+                        DbRequest = window.indexedDB.open(ActiveDataBase.Name, dbVersion);
 
                     DbRequest.onerror = function (event) {
                         if (onError != null) {

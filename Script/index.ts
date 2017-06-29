@@ -33,6 +33,7 @@
 /// <reference path="IndexDb/Business/InsertLogic.ts" />
 /// <reference path="IndexDb/Business/OpenDbLogic.ts" />
 /// <reference path="IndexDb/Business/BaseSelectLogic.ts" />
+/// <reference path="IndexDb/Business/SelectHelperLogic.ts" />
 /// <reference path="IndexDb/Business/SelectJoinLogic.ts" />
 /// <reference path="IndexDb/Business/SelectLogic.ts" />
 /// <reference path="IndexDb/Business/UpdateLogic.ts" />

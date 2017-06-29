@@ -1,8 +1,7 @@
 module JsStore {
     export module IndexDb {
         export module Business {
-            export class SelectLogic extends BaseSelectLogic {
-                Query: ISelect;
+            export class SelectLogic extends SelectHelperLogic {
                 private executeWhereInLogic = function () {
                     if (Array.isArray(this.Query.WhereIn)) {
                         this.executeMultipleWhereInLogic(this.Query.WhereIn);
@@ -176,7 +175,6 @@ module JsStore {
                             this.executeWhereLogic();
                         }
                         else {
-
                             this.executeWhereUndefinedLogic();
                         }
                     }

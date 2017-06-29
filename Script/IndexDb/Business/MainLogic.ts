@@ -50,8 +50,7 @@ module JsStore {
                     var ObjDelete = new DeleteLogic(query, onSuccess, onError);
                 }
 
-                public select = function (query: ISelect, onSuccess: Function, onError: Function) {
-
+                public select = function (query, onSuccess: Function, onError: Function) {
                     if (typeof query.From === 'object') {
                         new SelectJoinLogic(<ISelectJoin>query, onSuccess, onError);
                     }
@@ -60,8 +59,18 @@ module JsStore {
                     }
                 }
 
-                public createDb = function (objMain: Instance, onSuccess: Function, onError: Function) {
-                    new CreateDbLogic(objMain, onSuccess, onError);
+                public count = function (query, onSuccess: Function, onError: Function) {
+                    if (typeof query.From === 'object') {
+                        query['Count'] = true;
+                        new SelectJoinLogic(query, onSuccess, onError);
+                    }
+                    else {
+                        new CountLogic(query, onSuccess, onError);
+                    }
+                }
+
+                public createDb = function (objMain: Instance, dbVersion, onSuccess: Function, onError: Function) {
+                    new CreateDbLogic(objMain, dbVersion, onSuccess, onError);
                 }
 
                 public clear = function (tableName: string, onSuccess: Function, onError: Function) {

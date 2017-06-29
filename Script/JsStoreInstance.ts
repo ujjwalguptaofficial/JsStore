@@ -21,12 +21,10 @@ module JsStore {
          * @memberOf Main
          */
         createDb(dataBase: IndexDbModel.IDataBase, onSuccess: Function, onError: Function) {
-
-            var Db = new IndexDbModel.DataBase(dataBase)
+            var Db = new IndexDbModel.DataBase(dataBase),
+                DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
             this.IndexDbObj = new IndexDbBusiness.MainLogic(Db);
-            var DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
-            this.IndexDbObj.createDb(this, onSuccess, onError);
-            //Business.IndexDb.Db = Db;
+            this.IndexDbObj.createDb(this, DbVersion, onSuccess, onError);
             return this;
         }
 
@@ -81,6 +79,25 @@ module JsStore {
                 var That = this;
                 this.openDb(function () {
                     That.select(query, onSuccess, onError);
+                })
+
+            }
+        }
+
+        count(query: ICount, onSuccess: Function, onError: Function) {
+            if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Connected) {
+                this.IndexDbObj.count(query, onSuccess, onError);
+            }
+            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.NotStarted) {
+                var That = this;
+                setTimeout(function () {
+                    That.count(query, onSuccess, onError);
+                }, 50);
+            }
+            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Closed) {
+                var That = this;
+                this.openDb(function () {
+                    That.count(query, onSuccess, onError);
                 })
 
             }

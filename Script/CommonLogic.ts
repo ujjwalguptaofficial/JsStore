@@ -15,12 +15,27 @@ module JsStore {
         TableNotExist
     }
 
+    enum OrderType {
+        Asc = "asc",
+        Desc = "desc"
+    }
+
     export interface ISelect {
         From: any,
         Where: any,
         WhereIn: Array<IWhereIn>,
         Skip: number,
-        Limit: number
+        Limit: number,
+        Order: {
+            By: string,
+            Type: OrderType
+        }
+    }
+
+    export interface ICount {
+        From: any,
+        Where: any,
+        WhereIn: Array<IWhereIn>
     }
 
     export interface IDelete {
@@ -77,13 +92,13 @@ module JsStore {
 
     export interface ISelectJoin {
         From: IJoin, //IJoin
+        Count: boolean
     }
 
     export interface IJoin {
         Table1: ITableJoin,
         Join: string, //inner,left,right,outer
-        Table2: ITableJoin,
-        NextJoin: INextJoin
+        Table2: ITableJoin
     }
 
     export interface INextJoin {

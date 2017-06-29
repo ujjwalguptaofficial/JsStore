@@ -2,13 +2,18 @@ module JsStore {
     export module IndexDb {
         export module Business {
             export class SelectJoinLogic extends BaseSelectLogic {
-                Query: ITableJoin;
+                Query: ISelectJoin;
                 QueryStack: Array<ITableJoin> = [];
                 CurrentQueryStackIndex = 0;
 
                 private onTransactionCompleted = function (e) {
                     if (this.OnSuccess != null && (this.QueryStack.length == this.CurrentQueryStackIndex + 1)) {
-                        this.OnSuccess(this.Results);
+                        if (!this.Query['Count']) {
+                            this.OnSuccess(this.Results);
+                        }
+                        else {
+                            this.OnSuccess(this.Results.length);
+                        }
                     }
                 }
 
@@ -196,6 +201,7 @@ module JsStore {
                     super();
                     this.OnSuccess = onSuccess;
                     this.OnError = onError;
+                    this.Query = query;
                     var That = this,
                         TableList = []; // used to open the multiple object store
 
@@ -217,21 +223,8 @@ module JsStore {
                     };
                     convertQueryIntoStack(query.From);
                     this.QueryStack.reverse();
-                    // if (this.QueryStack.length > 2) {
-                    //     for (var i = 0, length = this.QueryStack.length; i < length; i++) {
-                    //         if (i % 2 == 1 && this.QueryStack[i].NextJoin != null) {
-
-                    //         }
-                    //         else {
-                    //             this.ErrorOccured = true;
-                    //             UtilityLogic.getError(ErrorType.NextJoinNotExist, true, {});
-                    //             break;
-                    //         }
-                    //     }
-                    // }
                     //get the data for first table
                     if (!this.ErrorOccured) {
-
                         new SelectLogic(<ISelect>{
                             From: this.QueryStack[0].Table,
                             Where: this.QueryStack[0].Where,
