@@ -2,12 +2,7 @@
 module JsStore {
     export module IndexDb {
         export module Model {
-            export interface ITable {
-                Name: string;
-                Columns: Array<IColumn>;
-                Version: number;
-            }
-            export class Table {
+            export class Table implements ITable {
                 Name: string = "";
                 Columns: Array<Column> = [];
                 Version: number;
@@ -39,10 +34,10 @@ module JsStore {
                     this.Columns.forEach(function (item, index) {
                         if (item.PrimaryKey && That.PrimaryKey.length == 0) {
                             That.PrimaryKey = item.Name;
-                            localStorage.setItem("JsStorage_" + That.Name + "_" + item.Name, "true");
+                            localStorage.setItem("JsStore_" + That.Name + "_" + item.Name, "true");
                         }
                         else if (item.PrimaryKey && That.PrimaryKey.length > 0) {
-                            localStorage.setItem("JsStorage_" + That.Name + "_" + item.Name, "");
+                            localStorage.setItem("JsStore_" + That.Name + "_" + item.Name, "");
                             throw "Multiple primary key are not allowed";
                         }
                         // else if (index == Length && That.PrimaryKey.length == 0) {
@@ -53,8 +48,8 @@ module JsStore {
                 }
 
                 private setRequireDelete(dbName: string) {
-                    var TableVersion = localStorage.getItem("JsStorage_" + dbName + "_" + this.Name);
-                    if (TableVersion == null || localStorage.getItem('JsStorage_Db_Version') == null) {
+                    var TableVersion = localStorage.getItem("JsStore_" + dbName + "_" + this.Name);
+                    if (TableVersion == null || localStorage.getItem('JsStore_Db_Version') == null) {
                         this.RequireCreation = true;
                     }
                     else if (TableVersion != this.Version.toString()) {

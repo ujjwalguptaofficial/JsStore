@@ -7,11 +7,10 @@ module JsStore {
 
         constructor() {
             UtilityLogic.setDbType();
-            //IndexDb.KeyStoreObj = new KeyStore();
         }
 
         /**
-         * 
+         * creates DataBase
          * 
          * @param {IDataBase} dataBase 
          * @param {Function} onSuccess 
@@ -20,7 +19,7 @@ module JsStore {
          * 
          * @memberOf Main
          */
-        createDb(dataBase: IndexDbModel.IDataBase, onSuccess: Function, onError: Function) {
+        createDb(dataBase: IDataBase, onSuccess: Function, onError: Function= null) {
             var Db = new IndexDbModel.DataBase(dataBase),
                 DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
             this.IndexDbObj = new IndexDbBusiness.MainLogic(Db);
@@ -29,7 +28,7 @@ module JsStore {
         }
 
         /**
-         * 
+         * open DataBase Connection
          * 
          * @param {Function} onSuccess 
          * @param {Function} onError 
@@ -41,23 +40,30 @@ module JsStore {
         }
 
         /**
-         * 
+         * close Database connection
          * 
          * @param {Function} onSuccess 
          * @param {Function} onError 
          * 
          * @memberOf Main
          */
-        closeDb(onSuccess: Function, onError: Function) {
+        closeDb(onSuccess: Function, onError: Function= null) {
             this.IndexDbObj.closeDb();
         }
 
-        dropDb(onSuccess: Function, onError: Function) {
+        /**
+         * drop dataBase
+         * 
+         * @param {Function} onSuccess 
+         * @param {Function} onError 
+         * @memberof Instance
+         */
+        dropDb(onSuccess: Function, onError: Function= null) {
             this.IndexDbObj.dropDb(onSuccess, onError);
         }
 
         /**
-         * 
+         * select data from table
          * 
          * @param {IQuery} query 
          * @param {Function} onSuccess 
@@ -65,7 +71,7 @@ module JsStore {
          * 
          * @memberOf Main
          */
-        select(query: ISelect, onSuccess: Function, onError: Function) {
+        select(query: ISelect, onSuccess: Function, onError: Function = null) {
             if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Connected) {
                 this.IndexDbObj.select(query, onSuccess, onError);
             }
@@ -84,7 +90,15 @@ module JsStore {
             }
         }
 
-        count(query: ICount, onSuccess: Function, onError: Function) {
+        /**
+         * get no of result from table
+         * 
+         * @param {ICount} query 
+         * @param {Function} onSuccess 
+         * @param {Function} [onError=null] 
+         * @memberof Instance
+         */
+        count(query: ICount, onSuccess: Function, onError: Function = null) {
             if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Connected) {
                 this.IndexDbObj.count(query, onSuccess, onError);
             }
@@ -103,17 +117,16 @@ module JsStore {
             }
         }
 
+
         /**
+         * insert data into table
          * 
-         * 
-         * @param {string} table 
-         * @param {any} value 
+         * @param {IInsert} query 
          * @param {Function} onSuccess 
-         * @param {Function} onError 
-         * 
-         * @memberOf Main
+         * @param {Function} [onError=null] 
+         * @memberof Instance
          */
-        insert(query: IInsert, onSuccess: Function, onError: Function) {
+        insert(query: IInsert, onSuccess: Function, onError: Function = null) {
 
             if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Connected) {
                 var IsReturn = query.Return ? query.Return : false;
@@ -134,7 +147,15 @@ module JsStore {
             }
         }
 
-        update(query: IUpdate, onSuccess: Function, onError: Function) {
+        /**
+         * update data into table
+         * 
+         * @param {IUpdate} query 
+         * @param {Function} onSuccess 
+         * @param {Function} [onError=null] 
+         * @memberof Instance
+         */
+        update(query: IUpdate, onSuccess: Function, onError: Function = null) {
             if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Connected) {
                 this.IndexDbObj.update(query, onSuccess, onError);
             }
@@ -154,7 +175,15 @@ module JsStore {
 
         }
 
-        delete(query: IDelete, onSuccess: Function, onError: Function) {
+        /**
+         * delete data from table
+         * 
+         * @param {IDelete} query 
+         * @param {Function} onSuccess 
+         * @param {Function} onError 
+         * @memberof Instance
+         */
+        delete(query: IDelete, onSuccess: Function, onError: Function= null) {
             if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Connected) {
                 this.IndexDbObj.delete(query, onSuccess, onError);
             }

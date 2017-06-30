@@ -1,15 +1,6 @@
 module JsStore {
     export module KeyStores {
         export module Model {
-            export interface IColumn {
-                Name: string;
-                AutoIncrement: boolean;
-                PrimaryKey: boolean;
-                Unique: boolean;
-                CurrentDate: boolean;
-                NotNull: boolean;
-                DataType: string;
-            }
 
             export class Column implements IColumn {
                 Name: string;

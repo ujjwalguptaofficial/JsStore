@@ -92,7 +92,9 @@ module JsStore {
 
     export interface ISelectJoin {
         From: IJoin, //IJoin
-        Count: boolean
+        Count: boolean,
+        Skip: number,
+        Limit: number
     }
 
     export interface IJoin {
@@ -117,5 +119,24 @@ module JsStore {
         LastError: string
     }
 
+    export interface IColumn {
+        Name: string;
+        AutoIncrement: boolean;
+        PrimaryKey: boolean;
+        Unique: boolean;
+        CurrentDate: boolean;
+        NotNull: boolean;
+        DataType: string;
+    }
 
+    export interface IDataBase {
+        Name: string;
+        Tables: Array<ITable>;
+    }
+
+    export interface ITable {
+        Name: string;
+        Columns: Array<IColumn>;
+        Version: number;
+    }
 }

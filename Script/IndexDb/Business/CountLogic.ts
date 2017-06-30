@@ -74,7 +74,7 @@ module JsStore {
                         CursorOpenRequest.onsuccess = function (e) {
                             var Cursor = (<any>e).target.result;
                             if (Cursor) {
-                                That.Results.push(Cursor.value);
+                                ++That.ResultCount;
                                 (Cursor as any).continue();
                             }
 

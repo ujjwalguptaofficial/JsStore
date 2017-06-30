@@ -58,6 +58,9 @@ module JsStore {
                 (window as any).IDBTransaction = (window as any).IDBTransaction || (window as any).webkitIDBTransaction || (window as any).msIDBTransaction;
                 (window as any).IDBKeyRange = (window as any).IDBKeyRange || (window as any).webkitIDBKeyRange || (window as any).msIDBKeyRange
             }
+            else {
+                throw 'Your browser doesnot support IndexedDb';
+            }
         }
 
     }

@@ -8,12 +8,23 @@ module JsStore {
 
                 private onTransactionCompleted = function (e) {
                     if (this.OnSuccess != null && (this.QueryStack.length == this.CurrentQueryStackIndex + 1)) {
-                        if (!this.Query['Count']) {
-                            this.OnSuccess(this.Results);
-                        }
-                        else {
+                        if (this.Query['Count']) {
                             this.OnSuccess(this.Results.length);
                         }
+                        else {
+                            if (this.Query['Skip'] && this.Query['Limit']) {
+                                this.Results.splice(0, this.Query['Skip']);
+                                this.Results.splice(this.Query['Limit'] - 1, this.Results.length);
+                            }
+                            else if (this.Query['Skip']) {
+                                this.Results.splice(0, this.Query['Skip']);
+                            }
+                            else if (this.Query['Limit']) {
+                                this.Results.splice(this.Query['Limit'] - 1, this.Results.length);
+                            }
+                            this.OnSuccess(this.Results);
+                        }
+
                     }
                 }
 

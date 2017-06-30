@@ -1,7 +1,7 @@
 module JsStore {
     export module IndexDb {
         export module Business {
-            export class BaseSelectLogic extends DbHelperLogic {
+            export class BaseSelectLogic {
                 Results = [];
                 OnSuccess: Function;
                 OnError: Function;

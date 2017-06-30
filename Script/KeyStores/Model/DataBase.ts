@@ -1,11 +1,7 @@
 module JsStore {
     export module KeyStores {
         export module Model {
-            export interface IDataBase {
-                Name: string;
-                Tables: Array<ITable>;
-            }
-            export class DataBase {
+            export class DataBase implements IDataBase{
                 Name: string;
                 Tables: Array<Table> = [];
 

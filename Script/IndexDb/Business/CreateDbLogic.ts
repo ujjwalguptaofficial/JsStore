@@ -86,7 +86,7 @@ module JsStore {
                                 })
                             }
                             //setting the table version
-                            localStorage.setItem("JsStorage_" + ActiveDataBase.Name + "_" + item.Name, item.Version.toString());
+                            localStorage.setItem("JsStore_" + ActiveDataBase.Name + "_" + item.Name, item.Version.toString());
                         }
                         catch (e) {
                             console.error(e);

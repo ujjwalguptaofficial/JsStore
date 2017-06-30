@@ -1,12 +1,7 @@
 module JsStore {
     export module KeyStores {
         export module Model {
-            export interface ITable {
-                Name: string;
-                Columns: Array<IColumn>;
-                Version: number;
-            }
-            export class Table {
+            export class Table implements ITable {
                 Name: string = "";
                 Columns: Array<Column> = [];
                 Version: number;

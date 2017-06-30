@@ -12,15 +12,15 @@ module JsStore {
         constructor() {
             if (KeyStoreBusiness.Status.ConStatus == ConnectionStatus.NotStarted) {
                 UtilityLogic.setDbType();
-                var Table = <KeyStoreModel.ITable>{
+                var Table = <ITable>{
                     Name: this.TableName,
-                    Columns: [<KeyStoreModel.IColumn>{
+                    Columns: [<IColumn>{
                         Name: "Key",
                         PrimaryKey: true
                     }]
                 }
 
-                var keyStore_DataBase = <KeyStoreModel.IDataBase>{
+                var keyStore_DataBase = <IDataBase>{
                     Name: "JsStore_KeyStore",
                     Tables: [Table]
                 }

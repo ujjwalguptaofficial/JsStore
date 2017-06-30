@@ -38,14 +38,10 @@ module JsStore {
                             CursorOpenRequest.onerror = onErrorGetRequest;
                         }
                         else {
-                            var Column,
-                                ExecutionNo = 0,
-                                ConditionLength = Object.keys(query.Where).length;
-                            for (Column in query.Where) {
+                            for (var Column in query.Where) {
                                 if (!ErrorOccured) {
                                     if (ObjectStore.indexNames.contains(Column)) {
-                                        var CursorOpenRequest = ObjectStore.index(Column).openCursor(IDBKeyRange.only(query.Where[Column])),
-                                            ExecutionNo = 0;
+                                        var CursorOpenRequest = ObjectStore.index(Column).openCursor(IDBKeyRange.only(query.Where[Column]));
 
                                         CursorOpenRequest.onerror = function (e) {
                                             ErrorOccured = true;

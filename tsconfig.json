@@ -2,7 +2,7 @@
     "compilerOptions": {
         "noImplicitAny": false,
         "noEmitOnError": true,
-        "removeComments": false,
+        "removeComments": true,
         "sourceMap": true,
         "inlineSources": true,
         "out": "../outputfile/JsStorage.js",
