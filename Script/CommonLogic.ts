@@ -15,32 +15,29 @@ module JsStore {
         TableNotExist
     }
 
-    enum OrderType {
-        Asc = "asc",
-        Desc = "desc"
-    }
-
     export interface ISelect {
         From: any,
         Where: any,
         WhereIn: Array<IWhereIn>,
         Skip: number,
         Limit: number,
-        Order: {
-            By: string,
-            Type: OrderType
-        }
+        OnSuccess: Function,
+        OnError: Function
     }
 
     export interface ICount {
         From: any,
         Where: any,
-        WhereIn: Array<IWhereIn>
+        WhereIn: Array<IWhereIn>,
+        OnSuccess: Function,
+        OnError: Function
     }
 
     export interface IDelete {
         From: string,
-        Where: any
+        Where: any,
+        OnSuccess: Function,
+        OnError: Function
     }
 
     export interface IWhereIn {
@@ -53,26 +50,18 @@ module JsStore {
 
     export interface IUpdate {
         In: string,
-
-        /**
-         * A Json Object containing the update values
-         * 
-         * @type {*}
-         * @memberOf IUpdate
-         */
         Set: any,
-        Where: any
+        Where: any,
+        OnSuccess: Function,
+        OnError: Function
     }
 
     export interface IInsert {
         Into: string,
-        Values: Array<IValue>,
-        Return: boolean
-    }
-
-    export interface IValue {
-        Column: string,
-        Value: string
+        Values: Array<any>,
+        Return: boolean,
+        OnSuccess: Function,
+        OnError: Function
     }
 
     export interface ICondition {
@@ -94,7 +83,9 @@ module JsStore {
         From: IJoin, //IJoin
         Count: boolean,
         Skip: number,
-        Limit: number
+        Limit: number,
+        OnSuccess: Function,
+        OnError: Function
     }
 
     export interface IJoin {
@@ -109,9 +100,9 @@ module JsStore {
     }
 
     export enum ConnectionStatus {
-        Connected = 1,
-        Closed = 2,
-        NotStarted = 3
+        Connected = "connected",
+        Closed = "closed",
+        NotStarted = "not_started"
     }
 
     export interface JsStoreStatus {
@@ -119,24 +110,11 @@ module JsStore {
         LastError: string
     }
 
-    export interface IColumn {
-        Name: string;
-        AutoIncrement: boolean;
-        PrimaryKey: boolean;
-        Unique: boolean;
-        CurrentDate: boolean;
-        NotNull: boolean;
-        DataType: string;
-    }
+    export var Status: JsStoreStatus = <JsStoreStatus>{
+        ConStatus: ConnectionStatus.NotStarted,
+        LastError: ""
+    };
 
-    export interface IDataBase {
-        Name: string;
-        Tables: Array<ITable>;
-    }
 
-    export interface ITable {
-        Name: string;
-        Columns: Array<IColumn>;
-        Version: number;
-    }
+
 }

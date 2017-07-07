@@ -27,10 +27,10 @@ module JsStore {
                     break;
                 case ErrorType.TableNotExist: Error.Value = "Table '" + errorDetail['TableName'] + "' does not exist";;
                     break;
-                default: console.warn('the error type is not defined');
+                default: console.error('the error type is not defined');
             }
             if (logError) {
-                console.warn("JsStorage Error :- " + Error.Value);
+                console.error("JsStorage Error :- " + Error.Value);
             }
             return Error;
         }

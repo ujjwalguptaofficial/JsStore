@@ -1,9 +1,11 @@
-import IndexDbModel = JsStore.IndexDb.Model;
-import IndexDbBusiness = JsStore.IndexDb.Business;
+import Model = JsStore.Model;
+import DataBase = Model.DataBase;
+import Column = Model.Column;
+import Table = Model.Table;
 module JsStore {
 
     export class Instance {
-        IndexDbObj: IndexDbBusiness.MainLogic;
+        IndexDbObj: Business.MainLogic;
 
         constructor() {
             UtilityLogic.setDbType();
@@ -14,15 +16,15 @@ module JsStore {
          * 
          * @param {IDataBase} dataBase 
          * @param {Function} onSuccess 
-         * @param {Function} onError 
+         * @param {Function} [onError=null] 
          * @returns 
          * 
          * @memberOf Main
          */
-        createDb(dataBase: IDataBase, onSuccess: Function, onError: Function= null) {
-            var Db = new IndexDbModel.DataBase(dataBase),
+        createDb(dataBase: Model.IDataBase, onSuccess: Function, onError: Function = null) {
+            var Db = new DataBase(dataBase),
                 DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
-            this.IndexDbObj = new IndexDbBusiness.MainLogic(Db);
+            this.IndexDbObj = new Business.MainLogic(Db);
             this.IndexDbObj.createDb(this, DbVersion, onSuccess, onError);
             return this;
         }
@@ -31,7 +33,7 @@ module JsStore {
          * open DataBase Connection
          * 
          * @param {Function} onSuccess 
-         * @param {Function} onError 
+         * @param {Function} [onError=null] 
          * 
          * @memberOf Main
          */
@@ -43,11 +45,11 @@ module JsStore {
          * close Database connection
          * 
          * @param {Function} onSuccess 
-         * @param {Function} onError 
+         * @param {Function} [onError=null] 
          * 
          * @memberOf Main
          */
-        closeDb(onSuccess: Function, onError: Function= null) {
+        closeDb(onSuccess: Function, onError: Function = null) {
             this.IndexDbObj.closeDb();
         }
 
@@ -55,10 +57,10 @@ module JsStore {
          * drop dataBase
          * 
          * @param {Function} onSuccess 
-         * @param {Function} onError 
+         * @param {Function} [onError=null] 
          * @memberof Instance
          */
-        dropDb(onSuccess: Function, onError: Function= null) {
+        dropDb(onSuccess: Function, onError: Function = null) {
             this.IndexDbObj.dropDb(onSuccess, onError);
         }
 
@@ -66,22 +68,24 @@ module JsStore {
          * select data from table
          * 
          * @param {IQuery} query 
-         * @param {Function} onSuccess 
-         * @param {Function} onError 
+         * @param {Function} [onSuccess=null]  
+         * @param {Function} [onError=null] 
          * 
          * @memberOf Main
          */
-        select(query: ISelect, onSuccess: Function, onError: Function = null) {
-            if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Connected) {
-                this.IndexDbObj.select(query, onSuccess, onError);
+        select(query: ISelect, onSuccess: Function = null, onError: Function = null) {
+            if (Status.ConStatus == ConnectionStatus.Connected) {
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
+                    OnError = query.OnError ? query.OnError : onError;
+                this.IndexDbObj.select(query, OnSuccess, OnError);
             }
-            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.NotStarted) {
+            else if (Status.ConStatus == ConnectionStatus.NotStarted) {
                 var That = this;
                 setTimeout(function () {
                     That.select(query, onSuccess, onError);
                 }, 50);
             }
-            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Closed) {
+            else if (Status.ConStatus == ConnectionStatus.Closed) {
                 var That = this;
                 this.openDb(function () {
                     That.select(query, onSuccess, onError);
@@ -94,21 +98,23 @@ module JsStore {
          * get no of result from table
          * 
          * @param {ICount} query 
-         * @param {Function} onSuccess 
+         * @param {Function} [onSuccess=null]  
          * @param {Function} [onError=null] 
          * @memberof Instance
          */
-        count(query: ICount, onSuccess: Function, onError: Function = null) {
-            if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Connected) {
-                this.IndexDbObj.count(query, onSuccess, onError);
+        count(query: ICount, onSuccess: Function = null, onError: Function = null) {
+            if (Status.ConStatus == ConnectionStatus.Connected) {
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
+                    OnError = query.OnError ? query.OnError : onError;
+                this.IndexDbObj.count(query, OnSuccess, OnError);
             }
-            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.NotStarted) {
+            else if (Status.ConStatus == ConnectionStatus.NotStarted) {
                 var That = this;
                 setTimeout(function () {
                     That.count(query, onSuccess, onError);
                 }, 50);
             }
-            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Closed) {
+            else if (Status.ConStatus == ConnectionStatus.Closed) {
                 var That = this;
                 this.openDb(function () {
                     That.count(query, onSuccess, onError);
@@ -122,23 +128,25 @@ module JsStore {
          * insert data into table
          * 
          * @param {IInsert} query 
-         * @param {Function} onSuccess 
+         * @param {Function} [onSuccess=null] 
          * @param {Function} [onError=null] 
          * @memberof Instance
          */
-        insert(query: IInsert, onSuccess: Function, onError: Function = null) {
+        insert(query: IInsert, onSuccess: Function = null, onError: Function = null) {
 
-            if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Connected) {
-                var IsReturn = query.Return ? query.Return : false;
-                this.IndexDbObj.insert(query.Into, query.Values, IsReturn, onSuccess, onError);
+            if (Status.ConStatus == ConnectionStatus.Connected) {
+                var IsReturn = query.Return ? query.Return : false,
+                    OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
+                    OnError = query.OnError ? query.OnError : onError;
+                this.IndexDbObj.insert(query.Into, query.Values, IsReturn, OnSuccess, OnError);
             }
-            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.NotStarted) {
+            else if (Status.ConStatus == ConnectionStatus.NotStarted) {
                 var That = this;
                 setTimeout(function () {
                     That.insert(query, onSuccess, onError);
                 }, 50);
             }
-            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Closed) {
+            else if (Status.ConStatus == ConnectionStatus.Closed) {
                 var That = this;
                 this.openDb(function () {
                     That.insert(query, onSuccess, onError);
@@ -151,21 +159,23 @@ module JsStore {
          * update data into table
          * 
          * @param {IUpdate} query 
-         * @param {Function} onSuccess 
+         * @param {Function} [onSuccess=null] 
          * @param {Function} [onError=null] 
          * @memberof Instance
          */
-        update(query: IUpdate, onSuccess: Function, onError: Function = null) {
-            if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Connected) {
-                this.IndexDbObj.update(query, onSuccess, onError);
+        update(query: IUpdate, onSuccess: Function = null, onError: Function = null) {
+            if (Status.ConStatus == ConnectionStatus.Connected) {
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
+                    OnError = query.OnError ? query.OnError : onError;
+                this.IndexDbObj.update(query, OnSuccess, OnError);
             }
-            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.NotStarted) {
+            else if (Status.ConStatus == ConnectionStatus.NotStarted) {
                 var That = this;
                 setTimeout(function () {
                     That.update(query, onSuccess, onError);
                 }, 50);
             }
-            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Closed) {
+            else if (Status.ConStatus == ConnectionStatus.Closed) {
                 var That = this;
                 this.openDb(function () {
                     That.update(query, onSuccess, onError);
@@ -179,21 +189,23 @@ module JsStore {
          * delete data from table
          * 
          * @param {IDelete} query 
-         * @param {Function} onSuccess 
+         * @param {Function} [onSuccess=null] 
          * @param {Function} onError 
          * @memberof Instance
          */
-        delete(query: IDelete, onSuccess: Function, onError: Function= null) {
-            if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Connected) {
-                this.IndexDbObj.delete(query, onSuccess, onError);
+        delete(query: IDelete, onSuccess: Function = null, onError: Function = null) {
+            if (Status.ConStatus == ConnectionStatus.Connected) {
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
+                    OnError = query.OnError ? query.OnError : onError;
+                this.IndexDbObj.delete(query, OnSuccess, OnError);
             }
-            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.NotStarted) {
+            else if (Status.ConStatus == ConnectionStatus.NotStarted) {
                 var That = this;
                 setTimeout(function () {
                     That.delete(query, onSuccess, onError);
                 }, 50);
             }
-            else if (IndexDbBusiness.Status.ConStatus == ConnectionStatus.Closed) {
+            else if (Status.ConStatus == ConnectionStatus.Closed) {
                 var That = this;
                 this.openDb(function () {
                     That.delete(query, onSuccess, onError);
@@ -201,7 +213,5 @@ module JsStore {
 
             }
         }
-
-
     }
 }
