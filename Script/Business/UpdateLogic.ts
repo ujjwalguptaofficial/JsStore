@@ -1,29 +1,7 @@
 module JsStore {
     export module Business {
-        export class UpdateLogic {
+        export class UpdateLogic extends BaseLogic {
             Query: IUpdate;
-            Error: IError;
-            ErrorOccured: boolean = false;
-            ErrorCount = 0;
-            RowAffected = 0;
-            OnSuccess: Function;
-            OnError: Function;
-            Transaction: IDBTransaction;
-            ObjectStore: IDBObjectStore;
-
-            private onErrorRequest = function (e, customError = false) {
-                ++this.ErrorCount;
-                if (this.ErrorCount == 1) {
-                    if (this.OnError != null) {
-                        if (!customError) {
-                            this.OnError((e as any).target.error);
-                        }
-                        else {
-                            this.OnError(e);
-                        }
-                    }
-                }
-            }
 
             private executeWhereUndefinedlogic() {
                 var That = this,
@@ -41,7 +19,7 @@ module JsStore {
 
                 }
                 CursorOpenRequest.onerror = function (e) {
-                    That.onErrorRequest(e);
+                    That.onErrorOccured(e);
                 }
 
             }
@@ -66,12 +44,12 @@ module JsStore {
                             }
                             CursorOpenRequest.onerror = function (e) {
                                 That.ErrorOccured = true;
-                                That.onErrorRequest(e);
+                                That.onErrorOccured(e);
                             }
                         }
                         else {
                             That.Error = UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
-                            That.onErrorRequest(That.Error, true);
+                            That.onErrorOccured(That.Error, true);
                         }
 
                     }
@@ -83,27 +61,32 @@ module JsStore {
 
             constructor(query: IUpdate, onSuccess: Function, onError: Function) {
                 try {
-                    this.Query = query;
-                    this.OnSuccess = onSuccess;
+                    super();
                     this.OnError = onError;
-                    this.Transaction = DbConnection.transaction([query.In], "readwrite");
-                    this.ObjectStore = this.Transaction.objectStore(query.In);
-                    var That = this;
-
-
-                    this.Transaction.oncomplete = function (e) {
-                        if (onSuccess != null) {
-                            onSuccess(That.RowAffected);
-                        }
-                    },
+                    this.checkSchema(query.Set, query.In);
+                    if (!this.ErrorOccured) {
+                        this.Query = query;
+                        this.OnSuccess = onSuccess;
+                        this.Transaction = DbConnection.transaction([query.In], "readwrite");
+                        this.ObjectStore = this.Transaction.objectStore(query.In);
+                        var That = this;
+                        this.Transaction.oncomplete = function (e) {
+                            if (onSuccess != null) {
+                                onSuccess(That.RowAffected);
+                            }
+                        };
                         (<any>this.Transaction).ontimeout = function () {
                             console.log('transaction timed out');
                         }
-                    if (query.Where == undefined) {
-                        this.executeWhereUndefinedlogic();
+                        if (query.Where == undefined) {
+                            this.executeWhereUndefinedlogic();
+                        }
+                        else {
+                            this.executeWhereLogic();
+                        }
                     }
                     else {
-                        this.executeWhereLogic();
+                        this.onErrorOccured(this.Error, true);
                     }
                 }
                 catch (ex) {
@@ -129,18 +112,20 @@ module JsStore {
                 });
 
                 //
-                CurrentTable.Columns.forEach(function (column) {
+                CurrentTable.Columns.forEach(function (column: Column) {
                     if (!That.ErrorOccured) {
                         //check not null schema
-                        if (column.NotNull && value[column.Name] == null) {
-                            That.ErrorOccured = true;
-                            That.Error = UtilityLogic.getError(ErrorType.NullValue, false, { ColumnName: column.Name });
-                        }
+                        if (column.Name in value) {
+                            if (column.NotNull && That.isNull(value[column.Name])) {
+                                That.ErrorOccured = true;
+                                That.Error = UtilityLogic.getError(ErrorType.NullValue, false, { ColumnName: column.Name });
+                            }
 
-                        //check datatype
-                        if (column.DataType && typeof value[column.Name] != column.DataType) {
-                            That.ErrorOccured = true;
-                            That.Error = UtilityLogic.getError(ErrorType.BadDataType, false, { ColumnName: column.Name });
+                            //check datatype
+                            if (column.DataType && typeof value[column.Name] != column.DataType) {
+                                That.ErrorOccured = true;
+                                That.Error = UtilityLogic.getError(ErrorType.BadDataType, false, { ColumnName: column.Name });
+                            }
                         }
                     }
                 });

@@ -10,7 +10,7 @@ module JsStore {
             }
 
             openDb = function (objMain: Instance, onSuccess: Function, onError: Function) {
-                var ObjOpenDb = new OpenDbLogic(objMain, onSuccess, onError);
+                new OpenDbLogic(objMain, onSuccess, onError);
             }
 
             public closeDb = function () {
@@ -20,11 +20,11 @@ module JsStore {
             }
 
             public dropDb = function (onSuccess: Function, onError: Function) {
-                var ObjDropDb = new DropDbLogic(ActiveDataBase.Name, onSuccess, onError);
+                new DropDbLogic(ActiveDataBase.Name, onSuccess, onError);
             }
 
             public update = function (query: IUpdate, onSuccess: Function, onError: Function) {
-                var ObjUpdate = new UpdateLogic(query, onSuccess, onError);
+                new UpdateLogic(query, onSuccess, onError);
             }
 
             public insert = function (tableName: string, values, isReturn, onSuccess: Function, onError: Function) {
@@ -42,7 +42,7 @@ module JsStore {
             }
 
             public delete = function (query: IDelete, onSuccess: Function, onError: Function) {
-                var ObjDelete = new DeleteLogic(query, onSuccess, onError);
+                new DeleteLogic(query, onSuccess, onError);
             }
 
             public select = function (query, onSuccess: Function, onError: Function) {

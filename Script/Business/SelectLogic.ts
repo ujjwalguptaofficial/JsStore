@@ -28,7 +28,7 @@ module JsStore {
                         var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
                         CursorOpenRequest.onerror = function (e) {
                             That.ErrorOccured = true;
-                            That.onErrorRequest(e);
+                            That.onErrorOccured(e);
                         }
                         if (SkipRecord && LimitRecord) {
                             var RecordSkipped = false;
@@ -140,7 +140,9 @@ module JsStore {
                     }
 
                 }
-                CursorOpenRequest.onerror = That.onErrorRequest;
+                CursorOpenRequest.onerror = function (e) {
+                    That.onErrorOccured(e);
+                }
             }
 
             constructor(query: ISelect, onSuccess: Function, onError: Function) {
@@ -155,10 +157,10 @@ module JsStore {
                         if (That.SendResultFlag && onSuccess != null) {
                             onSuccess(That.Results);
                         }
+                    };
+                    (<any>this.Transaction).ontimeout = function () {
+                        console.log('transaction timed out');
                     }
-                    // (<any>(this.Transaction)).ontimeout = function () {
-                    //     console.log('transaction timed out');
-                    // }
                     this.ObjectStore = this.Transaction.objectStore(query.From);
 
                     if (query.WhereIn != undefined) {

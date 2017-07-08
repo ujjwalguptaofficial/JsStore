@@ -9,6 +9,8 @@
 /// <reference path="Model/Table.ts" />
 /// <reference path="Model/DataBase.ts" />
 //Business
+
+/// <reference path="Business/BaseLogic.ts" />
 /// <reference path="Business/CreateDbLogic.ts" />
 /// <reference path="Business/DeleteLogic.ts" />
 /// <reference path="Business/DropDbLogic.ts" />

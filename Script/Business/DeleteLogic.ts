@@ -1,71 +1,76 @@
 module JsStore {
     export module Business {
-        export class DeleteLogic {
-            constructor(query: IDelete, onSuccess: Function, onError: Function) {
-                try {
-                    var That = this,
-                        Transaction: IDBTransaction = DbConnection.transaction([query.From], "readwrite"),
-                        ObjectStore: IDBObjectStore = Transaction.objectStore(query.From),
-                        ErrorOccured: boolean = false,
-                        ErrorCount = 0,
-                        RowAffected = 0,
-                        onErrorGetRequest = function (e) {
-                            ++ErrorCount;
-                            if (onError != null && this.ErrorCount == 1) {
-                                onError((e as any).target.error);
-                            }
-                        };
-
-                    Transaction.oncomplete = function () {
-                        if (onSuccess != null) {
-                            onSuccess(RowAffected);
-                        }
+        export class DeleteLogic extends BaseLogic {
+            Query: IDelete;
+            private executeWhereUndefinedLogic = function () {
+                var That: DeleteLogic = this,
+                    CursorOpenRequest = this.ObjectStore.openCursor();
+                CursorOpenRequest.onsuccess = function (e) {
+                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                    if (Cursor) {
+                        Cursor.delete();
+                        ++That.RowAffected;
+                        (Cursor as any).continue();
                     }
+                }
+                CursorOpenRequest.onerror = function (e) {
+                    That.onErrorOccured(e);
+                }
+            }
 
-                    Transaction.onerror = onErrorGetRequest;
+            private executeWhereDefinedLogic = function () {
+                var That = this;
+                for (var Column in this.Query.Where) {
+                    if (!That.ErrorOccured) {
+                        if (That.ObjectStore.indexNames.contains(Column)) {
+                            var CursorOpenRequest = That.ObjectStore.index(Column).openCursor(IDBKeyRange.only(this.Query.Where[Column]));
 
-                    if (query.Where == undefined) {
-                        var CursorOpenRequest = ObjectStore.openCursor();
-                        CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                            if (Cursor) {
-                                Cursor.delete();
-                                ++RowAffected;
-                                (Cursor as any).continue();
+                            CursorOpenRequest.onerror = function (e) {
+                                That.ErrorOccured = true;
+                                That.onErrorOccured(e);
+                            };
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                if (Cursor) {
+                                    Cursor.delete();
+                                    ++That.RowAffected;
+                                    Cursor.continue();
+                                }
+
                             }
                         }
-                        CursorOpenRequest.onerror = onErrorGetRequest;
+                        else {
+                            UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                        }
+
                     }
                     else {
-                        for (var Column in query.Where) {
-                            if (!ErrorOccured) {
-                                if (ObjectStore.indexNames.contains(Column)) {
-                                    var CursorOpenRequest = ObjectStore.index(Column).openCursor(IDBKeyRange.only(query.Where[Column]));
+                        return;
+                    }
+                }
+            }
 
-                                    CursorOpenRequest.onerror = function (e) {
-                                        ErrorOccured = true;
-                                        onErrorGetRequest(e);
-                                    };
-                                    CursorOpenRequest.onsuccess = function (e) {
-                                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
-
-                                        if (Cursor) {
-                                            Cursor.delete();
-                                            ++RowAffected;
-                                            Cursor.continue();
-                                        }
-
-                                    }
-                                }
-                                else {
-                                    UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
-                                }
-
-                            }
-                            else {
-                                return;
-                            }
+            constructor(query: IDelete, onSuccess: Function, onError: Function) {
+                super();
+                try {
+                    var That = this;
+                    this.Query = query;
+                    this.Transaction = DbConnection.transaction([query.From], "readwrite");
+                    this.ObjectStore = this.Transaction.objectStore(query.From);
+                    this.Transaction.oncomplete = function () {
+                        if (onSuccess != null) {
+                            onSuccess(That.RowAffected);
                         }
+                    }
+                    this.Transaction.onerror = function (e) {
+                        That.onErrorOccured(e);
+                    }
+
+                    if (query.Where == undefined) {
+                        this.executeWhereUndefinedLogic();
+                    }
+                    else {
+                        this.executeWhereDefinedLogic();
                     }
 
                 }

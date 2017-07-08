@@ -21,7 +21,7 @@ module JsStore {
                         var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
                         CursorOpenRequest.onerror = function (e) {
                             That.ErrorOccured = true;
-                            That.onErrorRequest(e);
+                            That.onErrorOccured(e);
                         }
 
                         CursorOpenRequest.onsuccess = function (e) {
@@ -78,7 +78,9 @@ module JsStore {
                         }
 
                     }
-                    CursorOpenRequest.onerror = That.onErrorRequest;
+                    CursorOpenRequest.onerror = function (e) {
+                        That.onErrorOccured(e);
+                    }
                 }
             }
 

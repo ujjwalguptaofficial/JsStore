@@ -1,23 +1,8 @@
 module JsStore {
     export module Business {
-        export class BaseSelectLogic {
+        export class BaseSelectLogic extends BaseLogic {
             Results = [];
-            OnSuccess: Function;
-            OnError: Function;
-            ErrorOccured: boolean = false;
-            ErrorCount = 0;
-            Transaction: IDBTransaction;
-            ObjectStore: IDBObjectStore;
             SendResultFlag: Boolean = true;
-
-            protected onErrorRequest = function (e) {
-                ++this.ErrorCount;
-                if (this.ErrorCount == 1) {
-                    if (this.OnError != null) {
-                        this.OnError((e as any).target.error);
-                    }
-                }
-            }
 
             protected getKeyRange = function (whereIn: IWhereIn) {
                 var KeyRange: IDBKeyRange;

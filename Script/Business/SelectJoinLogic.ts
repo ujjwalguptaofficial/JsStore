@@ -160,7 +160,9 @@ module JsStore {
                                 // }
                             }
                         }
-                        CursorOpenRequest.onerror = That.onErrorRequest;
+                        CursorOpenRequest.onerror = function (e) {
+                            That.onErrorOccured(e);
+                        }
 
                         var doJoin = function (value) {
                             Results[JoinIndex] = {};
@@ -247,7 +249,7 @@ module JsStore {
                         });
                         That.startExecutionJoinLogic();
                     }, function (error) {
-                        That.onErrorRequest(error);
+                        That.onErrorOccured(error);
                     });
                 }
             }
