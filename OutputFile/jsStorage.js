@@ -633,6 +633,9 @@ var JsStore;
                         case '<=':
                             KeyRange = IDBKeyRange.upperBound(whereIn.Value);
                             break;
+                        case '~':
+                            KeyRange = IDBKeyRange.bound(whereIn.Value, whereIn.Value + '\uffff');
+                            break;
                         default:
                             this.ErrorOccured = true;
                             JsStore.UtilityLogic.getError(JsStore.ErrorType.InvalidOp, true, { Op: whereIn.Op });
@@ -704,12 +707,7 @@ var JsStore;
                                 That.ErrorOccured = true;
                                 That.OnErrorRequest(e);
                             };
-                            if (this.Query.WhereIn.Op == '-') {
-                                CursorOpenRequest = this.ObjectStore.openCursor(KeyRange);
-                                CursorOpenRequest.onsuccess = OnCursorSuccess;
-                                CursorOpenRequest.onerror = OnCursorError;
-                            }
-                            else if (this.ObjectStore.indexNames.contains(WhereIn.Column)) {
+                            if (this.ObjectStore.indexNames.contains(WhereIn.Column)) {
                                 CursorOpenRequest = this.ObjectStore.index(WhereIn.Column).openCursor(KeyRange);
                                 CursorOpenRequest.onsuccess = OnCursorSuccess;
                                 CursorOpenRequest.onerror = OnCursorError;
@@ -736,12 +734,7 @@ var JsStore;
                             this.ErrorOccured = true;
                             this.OnErrorRequest(e);
                         };
-                        if (whereIn.Op == '-') {
-                            CursorOpenRequest = this.ObjectStore.openCursor(KeyRange);
-                            CursorOpenRequest.onsuccess = OnCursorSuccess;
-                            CursorOpenRequest.onerror = OnCursorError;
-                        }
-                        else if (this.ObjectStore.indexNames.contains(whereIn.Column)) {
+                        if (this.ObjectStore.indexNames.contains(whereIn.Column)) {
                             CursorOpenRequest = this.ObjectStore.index(whereIn.Column).openCursor(KeyRange);
                             CursorOpenRequest.onsuccess = OnCursorSuccess;
                             CursorOpenRequest.onerror = OnCursorError;

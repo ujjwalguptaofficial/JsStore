@@ -34,12 +34,7 @@ module JsStore {
                                 That.ErrorOccured = true;
                                 That.OnErrorRequest(e);
                             };
-                        if (this.Query.WhereIn.Op == '-') {
-                            CursorOpenRequest = this.ObjectStore.openCursor(KeyRange);
-                            CursorOpenRequest.onsuccess = OnCursorSuccess;
-                            CursorOpenRequest.onerror = OnCursorError;
-                        }
-                        else if (this.ObjectStore.indexNames.contains(WhereIn.Column)) {
+                        if (this.ObjectStore.indexNames.contains(WhereIn.Column)) {
                             CursorOpenRequest = this.ObjectStore.index(WhereIn.Column).openCursor(KeyRange);
                             CursorOpenRequest.onsuccess = OnCursorSuccess;
                             CursorOpenRequest.onerror = OnCursorError;
@@ -72,12 +67,7 @@ module JsStore {
                             this.ErrorOccured = true;
                             this.OnErrorRequest(e);
                         };
-                    if (whereIn.Op == '-') {
-                        CursorOpenRequest = this.ObjectStore.openCursor(KeyRange);
-                        CursorOpenRequest.onsuccess = OnCursorSuccess;
-                        CursorOpenRequest.onerror = OnCursorError;
-                    }
-                    else if (this.ObjectStore.indexNames.contains(whereIn.Column)) {
+                    if (this.ObjectStore.indexNames.contains(whereIn.Column)) {
                         CursorOpenRequest = this.ObjectStore.index(whereIn.Column).openCursor(KeyRange);
                         CursorOpenRequest.onsuccess = OnCursorSuccess;
                         CursorOpenRequest.onerror = OnCursorError;

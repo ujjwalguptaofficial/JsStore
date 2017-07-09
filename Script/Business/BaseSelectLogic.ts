@@ -12,6 +12,7 @@ module JsStore {
                     case '>=': KeyRange = IDBKeyRange.lowerBound(whereIn.Value); break;
                     case '<': KeyRange = IDBKeyRange.upperBound(whereIn.Value, true); break;
                     case '<=': KeyRange = IDBKeyRange.upperBound(whereIn.Value); break;
+                    case '~': KeyRange = IDBKeyRange.bound(whereIn.Value, whereIn.Value + '\uffff'); break;
                     default: this.ErrorOccured = true; UtilityLogic.getError(ErrorType.InvalidOp, true, { Op: whereIn.Op });
                 }
                 return KeyRange;
