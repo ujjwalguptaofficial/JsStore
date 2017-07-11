@@ -14,13 +14,7 @@ module JsStore {
                 var Column,
                     SkipRecord = this.Query.Skip,
                     LimitRecord = this.Query.Limit,
-                    That: SelectLogic = this,
-                    ConditionLength = 0,
-                    OnSuccessGetRequest = function () {
-                        --ConditionLength;
-                        // if (ConditionLength == 0)
-                        //     That.onSuccessRequest();
-                    };
+                    That: SelectLogic = this;
 
                 var executeInnerWhereLogic = function (column, value) {
 
@@ -40,17 +34,11 @@ module JsStore {
                                             That.Results.push(Cursor);
                                             Cursor.continue();
                                         }
-                                        else {
-                                            OnSuccessGetRequest();
-                                        }
                                     }
                                     else {
                                         RecordSkipped = true;
                                         Cursor.advance(SkipRecord - 1);
                                     }
-                                }
-                                else {
-                                    OnSuccessGetRequest();
                                 }
                             }
                         }
@@ -67,11 +55,6 @@ module JsStore {
                                         RecordSkipped = true;
                                         Cursor.advance(SkipRecord - 1);
                                     }
-
-
-                                }
-                                else {
-                                    OnSuccessGetRequest();
                                 }
                             }
                         }
@@ -81,9 +64,6 @@ module JsStore {
                                 if (Cursor && That.Results.length != LimitRecord) {
                                     That.Results.push(Cursor.value);
                                     Cursor.continue();
-                                }
-                                else {
-                                    OnSuccessGetRequest();
                                 }
                             }
                         }
@@ -95,9 +75,6 @@ module JsStore {
                                         That.Results.push(Cursor.value);
                                     }
                                     Cursor.continue();
-                                }
-                                else {
-                                    OnSuccessGetRequest();
                                 }
                             }
                         }
@@ -111,7 +88,6 @@ module JsStore {
 
                 for (Column in this.Query.Where) {
                     if (Array.isArray(this.Query.Where[Column])) {
-                        ConditionLength = this.Query.Where[Column].length;
                         for (var i = 0; i < this.Query.Where[Column].length; i++) {
                             var ExecutionStatus = executeInnerWhereLogic(Column, this.Query.Where[Column][i])
                             if (ExecutionStatus == false) {
@@ -162,15 +138,8 @@ module JsStore {
                         console.log('transaction timed out');
                     }
                     this.ObjectStore = this.Transaction.objectStore(query.From);
-
                     if (query.WhereIn != undefined) {
-                        if (query.Where != undefined) {
-                            this.SendResultFlag = false;
-                            this.executeWhereLogic();
-                        }
-                        this.SendResultFlag = true;
                         this.executeWhereInLogic();
-
                     }
                     else if (query.Where != undefined) {
                         this.executeWhereLogic();

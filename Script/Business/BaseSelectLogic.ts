@@ -6,17 +6,99 @@ module JsStore {
 
             protected getKeyRange = function (whereIn: IWhereIn) {
                 var KeyRange: IDBKeyRange;
-                switch (this.Query.WhereIn.Op) {
+                switch (whereIn.Op) {
                     case '-': KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End); break;
                     case '>': KeyRange = IDBKeyRange.lowerBound(whereIn.Value, true); break;
                     case '>=': KeyRange = IDBKeyRange.lowerBound(whereIn.Value); break;
                     case '<': KeyRange = IDBKeyRange.upperBound(whereIn.Value, true); break;
                     case '<=': KeyRange = IDBKeyRange.upperBound(whereIn.Value); break;
                     case '~': KeyRange = IDBKeyRange.bound(whereIn.Value, whereIn.Value + '\uffff'); break;
+                    case '=': KeyRange = IDBKeyRange.only(whereIn.Value); break;
                     default: this.ErrorOccured = true; UtilityLogic.getError(ErrorType.InvalidOp, true, { Op: whereIn.Op });
                 }
                 return KeyRange;
 
+            }
+
+            protected filterResultBasedOnOp = function (whereIn) {
+                var That = this,
+                    Column = whereIn.Column,
+                    Value = whereIn.Value,
+                    ValuesFound = [],
+                    executeGreaterThan = function () {
+                        That.Results.forEach(function (item) {
+                            if (item[Column] > Value) {
+                                ValuesFound.push(item);
+                            }
+                        });
+                        That.Results = ValuesFound;
+                    },
+                    executeLessThan = function () {
+                        That.Results.forEach(function (item) {
+                            if (item[Column] > Value) {
+                                ValuesFound.push(item);
+                            }
+                        });
+                        That.Results = ValuesFound;
+                    },
+                    executeContains = function () {
+                        if (typeof That.Results[0][Column] == 'string') {
+                            Value = Value.toLowerCase();
+                            That.Results.forEach(function (item) {
+                                if (item[Column].toLowerCase().indexOf(Value) >= 0) {
+                                    ValuesFound.push(item);
+                                }
+                            });
+                            That.Results = ValuesFound;
+                        }
+                        else {
+                            executeEqualTo();
+                        }
+
+                    },
+                    executeEqualTo = function () {
+                        That.Results.forEach(function (item) {
+                            if (item[Column] == Value) {
+                                ValuesFound.push(item);
+                            }
+                        });
+                        That.Results = ValuesFound;
+                    },
+                    executeBetweenIn = function () {
+                        var LowValue = whereIn.Start, Highvalue = whereIn.End;
+                        That.Results.forEach(function (item) {
+                            if (item[Column] >= LowValue && item[Column] <= LowValue) {
+                                ValuesFound.push(item);
+                            }
+                        });
+                        That.Results = ValuesFound;
+                    },
+                    executeGreaterThanEqual = function () {
+                        That.Results.forEach(function (item) {
+                            if (item[Column] >= Value) {
+                                ValuesFound.push(item);
+                            }
+                        });
+                        That.Results = ValuesFound;
+                    },
+                    executeLessThanEqual = function () {
+                        That.Results.forEach(function (item) {
+                            if (item[Column] <= Value) {
+                                ValuesFound.push(item);
+                            }
+                        });
+                        That.Results = ValuesFound;
+                    };
+                switch (whereIn.Op) {
+                    case '-': executeBetweenIn(); break;
+                    case '>': executeGreaterThan(); break;
+                    case '>=': executeGreaterThanEqual(); break;
+                    case '<': executeLessThan(); break;
+                    case '<=': executeLessThanEqual(); break;
+                    case '~': executeContains(); break;
+                    case '=': executeEqualTo(); break;
+                    default: this.ErrorOccured = true; UtilityLogic.getError(ErrorType.InvalidOp, true, { Op: whereIn.Op });
+                }
             }
 
 
@@ -31,8 +113,7 @@ module JsStore {
              * @memberOf SelectLogic
              */
             protected checkForWhereConditionMatch(where, value) {
-                var TempColumn;
-                for (TempColumn in where) {
+                for (var TempColumn in where) {
                     if (Array.isArray(where[TempColumn])) {
                         var i, Status = true;
                         for (i = 0; i < TempColumn.length; i++) {
@@ -56,6 +137,8 @@ module JsStore {
                 }
                 return true;
             }
+
+
         }
     }
 }

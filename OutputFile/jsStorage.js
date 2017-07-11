@@ -617,7 +617,7 @@ var JsStore;
                 _this.SendResultFlag = true;
                 _this.getKeyRange = function (whereIn) {
                     var KeyRange;
-                    switch (this.Query.WhereIn.Op) {
+                    switch (whereIn.Op) {
                         case '-':
                             KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End);
                             break;
@@ -636,17 +636,104 @@ var JsStore;
                         case '~':
                             KeyRange = IDBKeyRange.bound(whereIn.Value, whereIn.Value + '\uffff');
                             break;
+                        case '=':
+                            KeyRange = IDBKeyRange.only(whereIn.Value);
+                            break;
                         default:
                             this.ErrorOccured = true;
                             JsStore.UtilityLogic.getError(JsStore.ErrorType.InvalidOp, true, { Op: whereIn.Op });
                     }
                     return KeyRange;
                 };
+                _this.filterResultBasedOnOp = function (whereIn) {
+                    var That = this, Column = whereIn.Column, Value = whereIn.Value, ValuesFound = [], executeGreaterThan = function () {
+                        That.Results.forEach(function (item) {
+                            if (item[Column] > Value) {
+                                ValuesFound.push(item);
+                            }
+                        });
+                        That.Results = ValuesFound;
+                    }, executeLessThan = function () {
+                        That.Results.forEach(function (item) {
+                            if (item[Column] > Value) {
+                                ValuesFound.push(item);
+                            }
+                        });
+                        That.Results = ValuesFound;
+                    }, executeContains = function () {
+                        if (typeof That.Results[0][Column] == 'string') {
+                            Value = Value.toLowerCase();
+                            That.Results.forEach(function (item) {
+                                if (item[Column].toLowerCase().indexOf(Value) >= 0) {
+                                    ValuesFound.push(item);
+                                }
+                            });
+                            That.Results = ValuesFound;
+                        }
+                        else {
+                            executeEqualTo();
+                        }
+                    }, executeEqualTo = function () {
+                        That.Results.forEach(function (item) {
+                            if (item[Column] == Value) {
+                                ValuesFound.push(item);
+                            }
+                        });
+                        That.Results = ValuesFound;
+                    }, executeBetweenIn = function () {
+                        var LowValue = whereIn.Start, Highvalue = whereIn.End;
+                        That.Results.forEach(function (item) {
+                            if (item[Column] >= LowValue && item[Column] <= LowValue) {
+                                ValuesFound.push(item);
+                            }
+                        });
+                        That.Results = ValuesFound;
+                    }, executeGreaterThanEqual = function () {
+                        That.Results.forEach(function (item) {
+                            if (item[Column] >= Value) {
+                                ValuesFound.push(item);
+                            }
+                        });
+                        That.Results = ValuesFound;
+                    }, executeLessThanEqual = function () {
+                        That.Results.forEach(function (item) {
+                            if (item[Column] <= Value) {
+                                ValuesFound.push(item);
+                            }
+                        });
+                        That.Results = ValuesFound;
+                    };
+                    switch (whereIn.Op) {
+                        case '-':
+                            executeBetweenIn();
+                            break;
+                        case '>':
+                            executeGreaterThan();
+                            break;
+                        case '>=':
+                            executeGreaterThanEqual();
+                            break;
+                        case '<':
+                            executeLessThan();
+                            break;
+                        case '<=':
+                            executeLessThanEqual();
+                            break;
+                        case '~':
+                            executeContains();
+                            break;
+                        case '=':
+                            executeEqualTo();
+                            break;
+                        default:
+                            this.ErrorOccured = true;
+                            JsStore.UtilityLogic.getError(JsStore.ErrorType.InvalidOp, true, { Op: whereIn.Op });
+                    }
+                };
                 return _this;
             }
             BaseSelectLogic.prototype.checkForWhereConditionMatch = function (where, value) {
-                var TempColumn;
-                for (TempColumn in where) {
+                for (var TempColumn in where) {
                     if (Array.isArray(where[TempColumn])) {
                         var i, Status = true;
                         for (i = 0; i < TempColumn.length; i++) {
@@ -685,43 +772,23 @@ var JsStore;
             function SelectHelperLogic() {
                 var _this = _super !== null && _super.apply(this, arguments) || this;
                 _this.executeMultipleWhereInLogic = function (whereInArray) {
-                    var That = this, WhereIn, ExecutionNo = 0, ConditionLength = Object.keys(this.Query.WhereIn).length, KeyRange, OnSuccessGetRequest = function () {
-                        ++ExecutionNo;
-                        if (ExecutionNo == ConditionLength) {
-                            this.OnSuceessRequest();
+                    var That = this, KeyRange, CurrentIndex = 0, ExecuteLogic = function () {
+                        ++CurrentIndex;
+                        if (CurrentIndex != whereInArray.length) {
+                            That.filterResultBasedOnOp(whereInArray[CurrentIndex]);
+                            ExecuteLogic();
+                        }
+                        else if (That.OnSuccess) {
+                            That.OnSuccess(That.Results);
                         }
                     };
-                    for (WhereIn in whereInArray) {
-                        KeyRange = this.getKeyRange();
-                        if (!this.ErrorOccured) {
-                            var CursorOpenRequest, OnCursorSuccess = function (e) {
-                                var Cursor = e.target.result;
-                                if (Cursor) {
-                                    That.Results.push(Cursor.value);
-                                    Cursor.continue();
-                                }
-                                else {
-                                    OnSuccessGetRequest();
-                                }
-                            }, OnCursorError = function (e) {
-                                That.ErrorOccured = true;
-                                That.OnErrorRequest(e);
-                            };
-                            if (this.ObjectStore.indexNames.contains(WhereIn.Column)) {
-                                CursorOpenRequest = this.ObjectStore.index(WhereIn.Column).openCursor(KeyRange);
-                                CursorOpenRequest.onsuccess = OnCursorSuccess;
-                                CursorOpenRequest.onerror = OnCursorError;
-                            }
-                            else {
-                                JsStore.UtilityLogic.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: Column });
-                            }
-                        }
-                        else {
-                            return;
-                        }
-                    }
+                    this.SendResultFlag = false;
+                    this.executeSingleWhereInLogic(whereInArray[CurrentIndex], function () {
+                        ExecuteLogic();
+                    });
                 };
-                _this.executeSingleWhereInLogic = function (whereIn) {
+                _this.executeSingleWhereInLogic = function (whereIn, callBack) {
+                    if (callBack === void 0) { callBack = null; }
                     var That = this, KeyRange = this.getKeyRange(whereIn);
                     if (!this.ErrorOccured) {
                         var CursorOpenRequest, OnCursorSuccess = function (e) {
@@ -730,9 +797,12 @@ var JsStore;
                                 That.Results.push(Cursor.value);
                                 Cursor.continue();
                             }
+                            else if (callBack) {
+                                callBack();
+                            }
                         }, OnCursorError = function (e) {
-                            this.ErrorOccured = true;
-                            this.OnErrorRequest(e);
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
                         };
                         if (this.ObjectStore.indexNames.contains(whereIn.Column)) {
                             CursorOpenRequest = this.ObjectStore.index(whereIn.Column).openCursor(KeyRange);
@@ -1008,9 +1078,7 @@ var JsStore;
                     }
                 };
                 _this.executeWhereLogic = function () {
-                    var Column, SkipRecord = this.Query.Skip, LimitRecord = this.Query.Limit, That = this, ConditionLength = 0, OnSuccessGetRequest = function () {
-                        --ConditionLength;
-                    };
+                    var Column, SkipRecord = this.Query.Skip, LimitRecord = this.Query.Limit, That = this;
                     var executeInnerWhereLogic = function (column, value) {
                         if (That.ObjectStore.indexNames.contains(column)) {
                             var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
@@ -1028,17 +1096,11 @@ var JsStore;
                                                 That.Results.push(Cursor);
                                                 Cursor.continue();
                                             }
-                                            else {
-                                                OnSuccessGetRequest();
-                                            }
                                         }
                                         else {
                                             RecordSkipped = true;
                                             Cursor.advance(SkipRecord - 1);
                                         }
-                                    }
-                                    else {
-                                        OnSuccessGetRequest();
                                     }
                                 };
                             }
@@ -1056,9 +1118,6 @@ var JsStore;
                                             Cursor.advance(SkipRecord - 1);
                                         }
                                     }
-                                    else {
-                                        OnSuccessGetRequest();
-                                    }
                                 };
                             }
                             else if (LimitRecord) {
@@ -1067,9 +1126,6 @@ var JsStore;
                                     if (Cursor && That.Results.length != LimitRecord) {
                                         That.Results.push(Cursor.value);
                                         Cursor.continue();
-                                    }
-                                    else {
-                                        OnSuccessGetRequest();
                                     }
                                 };
                             }
@@ -1082,9 +1138,6 @@ var JsStore;
                                         }
                                         Cursor.continue();
                                     }
-                                    else {
-                                        OnSuccessGetRequest();
-                                    }
                                 };
                             }
                         }
@@ -1095,7 +1148,6 @@ var JsStore;
                     };
                     for (Column in this.Query.Where) {
                         if (Array.isArray(this.Query.Where[Column])) {
-                            ConditionLength = this.Query.Where[Column].length;
                             for (var i = 0; i < this.Query.Where[Column].length; i++) {
                                 var ExecutionStatus = executeInnerWhereLogic(Column, this.Query.Where[Column][i]);
                                 if (ExecutionStatus == false) {
@@ -1138,11 +1190,6 @@ var JsStore;
                     };
                     _this.ObjectStore = _this.Transaction.objectStore(query.From);
                     if (query.WhereIn != undefined) {
-                        if (query.Where != undefined) {
-                            _this.SendResultFlag = false;
-                            _this.executeWhereLogic();
-                        }
-                        _this.SendResultFlag = true;
                         _this.executeWhereInLogic();
                     }
                     else if (query.Where != undefined) {

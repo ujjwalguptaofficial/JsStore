@@ -5,52 +5,26 @@ module JsStore {
 
             protected executeMultipleWhereInLogic = function (whereInArray: Array<IWhereIn>) {
                 var That = this,
-                    WhereIn,
-                    ExecutionNo = 0,
-                    ConditionLength = Object.keys(this.Query.WhereIn).length,
                     KeyRange: IDBKeyRange,
-                    OnSuccessGetRequest = function () {
-                        ++ExecutionNo;
-                        if (ExecutionNo == ConditionLength) {
-                            this.OnSuceessRequest();
+                    CurrentIndex = 0,
+                    ExecuteLogic = function () {
+                        ++CurrentIndex;
+                        if (CurrentIndex != whereInArray.length) {
+                            That.filterResultBasedOnOp(whereInArray[CurrentIndex]);
+                            ExecuteLogic();
+                        }
+                        else if (That.OnSuccess) {
+                            That.OnSuccess(That.Results);
                         }
                     };
-
-                for (WhereIn in whereInArray) {
-                    KeyRange = this.getKeyRange();
-                    if (!this.ErrorOccured) {
-                        var CursorOpenRequest,
-                            OnCursorSuccess = function (e) {
-                                var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                                if (Cursor) {
-                                    That.Results.push(Cursor.value);
-                                    Cursor.continue();
-                                }
-                                else {
-                                    OnSuccessGetRequest();
-                                }
-                            },
-                            OnCursorError = function (e) {
-                                That.ErrorOccured = true;
-                                That.OnErrorRequest(e);
-                            };
-                        if (this.ObjectStore.indexNames.contains(WhereIn.Column)) {
-                            CursorOpenRequest = this.ObjectStore.index(WhereIn.Column).openCursor(KeyRange);
-                            CursorOpenRequest.onsuccess = OnCursorSuccess;
-                            CursorOpenRequest.onerror = OnCursorError;
-                        }
-                        else {
-                            UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
-                        }
-                    }
-                    else {
-                        return;
-                    }
-                }
+                this.SendResultFlag = false;
+                this.executeSingleWhereInLogic(whereInArray[CurrentIndex], function () {
+                    ExecuteLogic();
+                });
             }
 
-            protected executeSingleWhereInLogic = function (whereIn: IWhereIn) {
-                var That: BaseSelectLogic = this,
+            protected executeSingleWhereInLogic = function (whereIn: IWhereIn, callBack: Function = null) {
+                var That = this,
                     KeyRange: IDBKeyRange = this.getKeyRange(whereIn);
 
                 if (!this.ErrorOccured) {
@@ -61,11 +35,15 @@ module JsStore {
                                 That.Results.push(Cursor.value);
                                 Cursor.continue();
                             }
+                            else if (callBack) {
+                                callBack();
+                            }
 
-                        },
+                        }
+                        ,
                         OnCursorError = function (e) {
-                            this.ErrorOccured = true;
-                            this.OnErrorRequest(e);
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
                         };
                     if (this.ObjectStore.indexNames.contains(whereIn.Column)) {
                         CursorOpenRequest = this.ObjectStore.index(whereIn.Column).openCursor(KeyRange);
