@@ -852,21 +852,16 @@ var JsStore;
                     }
                 };
                 _this.executeWhereJoinLogic = function (joinQuery, query) {
-                    var That = this, Results = [], JoinIndex, TmpResults = That.Results;
+                    var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length;
                     new Business.SelectLogic({
                         From: query.Table,
                         Where: query.Where,
                         WhereIn: query.WhereIn
                     }, function (results) {
-                        JoinIndex = 0;
-                        var Item, ResultLength = TmpResults.length;
                         results.forEach(function (value, index) {
                             for (var i = 0; i < ResultLength; i++) {
                                 Item = TmpResults[i][joinQuery.Table][joinQuery.Column];
-                                if (Item == value[query.Column]) {
-                                    doJoin(value, i);
-                                    ++JoinIndex;
-                                }
+                                doJoin(Item, value, i);
                             }
                         });
                         That.Results = Results;
@@ -877,124 +872,96 @@ var JsStore;
                             That.onTransactionCompleted(null);
                         }
                     }, function (error) {
-                        this.onErrorRequest(error);
+                        That.onErrorOccured(error);
                     });
-                    var doJoin = function (value, itemIndex) {
+                    var doJoin = function (value1, value2, itemIndex) {
                         Results[JoinIndex] = {};
-                        switch (query.JoinType) {
-                            case 'inner':
-                                Results[JoinIndex][query.Table] = value;
-                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                    Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
-                                }
-                                break;
-                            case 'left':
-                                if (value != null) {
-                                    That.Results[JoinIndex][query.Table] = value;
-                                }
-                                else {
-                                    That.Results[JoinIndex][query.Table] = null;
-                                }
-                                ;
-                                break;
-                            case 'right':
-                                if (value[query.Column] == That.Results[JoinIndex][joinQuery.Table][joinQuery.Column]) {
-                                    That.Results[JoinIndex][query.Table] = value;
-                                }
-                                else {
-                                    That.Results.splice(JoinIndex, 0, null);
-                                    That.Results[JoinIndex][joinQuery.Table] = null;
-                                    That.Results[JoinIndex][query.Table] = value;
-                                }
-                                break;
+                        if (value1 == value2[query.Column]) {
+                            Results[JoinIndex][query.Table] = value2;
+                            for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
+                            }
+                            ++JoinIndex;
+                        }
+                        else {
+                            switch (query.JoinType) {
+                                case 'left':
+                                    Results[JoinIndex][query.Table] = value2;
+                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                        Results[JoinIndex][That.QueryStack[j].Table] = null;
+                                    }
+                                    ++JoinIndex;
+                                    break;
+                                case 'right':
+                                    Results[JoinIndex][query.Table] = null;
+                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                        Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
+                                    }
+                                    ++JoinIndex;
+                                    break;
+                            }
                         }
                     };
                 };
                 _this.executeWhereUndefinedLogicForJoin = function (joinQuery, query) {
-                    try {
-                        var That = this, Results = [], JoinIndex, TmpResults = That.Results, CursorOpenRequest, ResultLength = this.Results.length, Transaction = Business.DbConnection.transaction([query.Table], "readonly");
-                        Transaction.oncomplete = function (e) {
-                            That.onTransactionCompleted(e);
+                    var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length, ItemIndex = 0, Where = {}, doJoin = function (results) {
+                        if (results.length > 0) {
+                            results.forEach(function (value) {
+                                Results[JoinIndex] = {};
+                                Results[JoinIndex][query.Table] = value;
+                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                    Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
+                                }
+                                ++JoinIndex;
+                            });
+                        }
+                        else {
+                            Results[JoinIndex] = {};
+                            switch (query.JoinType) {
+                                case 'left':
+                                    Results[JoinIndex][query.Table] = Where[query.Column];
+                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                        Results[JoinIndex][That.QueryStack[j].Table] = null;
+                                    }
+                                    ++JoinIndex;
+                                    break;
+                                case 'right':
+                                    Results[JoinIndex][query.Table] = null;
+                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                        Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
+                                    }
+                                    ++JoinIndex;
+                                    break;
+                            }
+                        }
+                    }, executeLogic = function () {
+                        if (ItemIndex < ResultLength) {
+                            if (!That.ErrorOccured) {
+                                Where[query.Column] = TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column];
+                                new Business.SelectLogic({
+                                    From: query.Table,
+                                    Where: Where
+                                }, function (results) {
+                                    doJoin(results);
+                                    ++ItemIndex;
+                                    executeLogic();
+                                }, function (error) {
+                                    That.ErrorOccured = true;
+                                    That.onErrorOccured(error);
+                                });
+                            }
+                        }
+                        else {
+                            That.Results = Results;
                             if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
                                 That.startExecutionJoinLogic();
                             }
-                        };
-                        var ExecuteLogic = function (item, index) {
-                            JoinIndex = 0;
-                            this.ObjectStore = Transaction.objectStore(query.Table);
-                            CursorOpenRequest = this.ObjectStore.index(query.Column).openCursor(IDBKeyRange.only(item[joinQuery.Column]));
-                            CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = e.target.result;
-                                if (Cursor) {
-                                    doJoin(Cursor.value);
-                                    Cursor.continue();
-                                    ++JoinIndex;
-                                }
-                                else {
-                                    if (That.CurrentQueryStackIndex == 1) {
-                                        That.Results = Results;
-                                    }
-                                    else {
-                                        for (var i = 0; i < Results.length; i++) {
-                                            var ColumnValue = Results[i][joinQuery.Table][joinQuery.Column], TableName;
-                                            for (var j = 0; j < TmpResults.length; j++) {
-                                                if (ColumnValue == TmpResults[j][joinQuery.Table][joinQuery.Column]) {
-                                                    for (var k = 0; k < That.CurrentQueryStackIndex; k++) {
-                                                        TableName = That.QueryStack[k].Table;
-                                                        Results[i][TableName] = TmpResults[j][TableName];
-                                                    }
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        That.Results = Results;
-                                    }
-                                }
-                            };
-                            CursorOpenRequest.onerror = function (e) {
-                                That.onErrorOccured(e);
-                            };
-                            var doJoin = function (value) {
-                                Results[JoinIndex] = {};
-                                switch (query.JoinType) {
-                                    case 'inner':
-                                        Results[JoinIndex][query.Table] = value;
-                                        Results[JoinIndex][joinQuery.Table] = item;
-                                        break;
-                                    case 'left':
-                                        if (value != null) {
-                                            That.Results[index][query.Table] = value;
-                                        }
-                                        else {
-                                            That.Results[index][query.Table] = null;
-                                        }
-                                        ;
-                                        break;
-                                    case 'right':
-                                        if (value[query.Column] == That.Results[index][joinQuery.Table][joinQuery.Column]) {
-                                            That.Results[index][query.Table] = value;
-                                        }
-                                        else {
-                                            That.Results.splice(index, 0, null);
-                                            That.Results[index][joinQuery.Table] = null;
-                                            That.Results[index][query.Table] = value;
-                                        }
-                                        break;
-                                }
-                            };
-                        };
-                        for (var i = 0; i < ResultLength; i++) {
-                            ExecuteLogic(TmpResults[i][joinQuery.Table], i);
+                            else {
+                                That.onTransactionCompleted(null);
+                            }
                         }
-                    }
-                    catch (ex) {
-                        if (ex.name == "NotFoundError") {
-                            JsStore.UtilityLogic.getError(JsStore.ErrorType.TableNotExist, true, { TableName: query.Table });
-                        }
-                        else {
-                            console.warn(ex);
-                        }
-                    }
+                    };
+                    executeLogic();
                 };
                 _this.OnSuccess = onSuccess;
                 _this.OnError = onError;
@@ -1204,7 +1171,7 @@ var JsStore;
                         JsStore.UtilityLogic.getError(JsStore.ErrorType.TableNotExist, true, { TableName: query.From });
                     }
                     else {
-                        console.warn(ex);
+                        console.error(ex);
                     }
                 }
                 return _this;

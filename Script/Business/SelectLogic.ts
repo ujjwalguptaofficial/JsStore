@@ -153,7 +153,7 @@ module JsStore {
                         UtilityLogic.getError(ErrorType.TableNotExist, true, { TableName: query.From });
                     }
                     else {
-                        console.warn(ex);
+                        console.error(ex);
                     }
                 }
             }

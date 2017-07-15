@@ -30,8 +30,11 @@ module JsStore {
             private executeWhereJoinLogic = function (joinQuery: ITableJoin, query: ITableJoin) {
                 var That = <SelectJoinLogic>this,
                     Results = [],
-                    JoinIndex,
-                    TmpResults = That.Results;
+                    JoinIndex = 0,
+                    Column = query.Column,
+                    TmpResults = That.Results,
+                    Item,
+                    ResultLength = TmpResults.length;
 
                 //get the data from query table
                 new SelectLogic(<ISelect>{
@@ -40,21 +43,17 @@ module JsStore {
                     WhereIn: query.WhereIn
                 }, function (results) {
                     //perform join
-                    JoinIndex = 0;
-                    var Item,
-                        ResultLength = TmpResults.length;
                     results.forEach(function (value, index) {
                         //search item through each global result
                         for (var i = 0; i < ResultLength; i++) {
                             Item = TmpResults[i][joinQuery.Table][joinQuery.Column];
-                            if (Item == value[query.Column]) {
-                                doJoin(value, i);
-                                ++JoinIndex;
-                            }
-
+                            //if (Item == value[query.Column]) {
+                            doJoin(Item, value, i);
+                            //}
                         }
                     });
                     That.Results = Results;
+                    //check if further execution needed
                     if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
                         That.startExecutionJoinLogic();
                     }
@@ -63,151 +62,118 @@ module JsStore {
                     }
 
                 }, function (error) {
-                    this.onErrorRequest(error);
+                    That.onErrorOccured(error);
                 });
 
-                var doJoin = function (value, itemIndex) {
-                    // if (Results[JoinIndex] == undefined) {
+                var doJoin = function (value1, value2, itemIndex) {
                     Results[JoinIndex] = {};
-                    // }
-
-                    switch (query.JoinType) {
-                        //inner join
-                        case 'inner':
-                            Results[JoinIndex][query.Table] = value;
-                            //copy other relative data into current result
-                            for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
-                            }
-                            break;
-                        //left join
-                        case 'left': //if (value[query.Column] == That.Results[index][joinQuery.Table][joinQuery.Column]) {
-                            if (value != null) {
-                                That.Results[JoinIndex][query.Table] = value;
-                            }
-                            else { //add null element
-                                That.Results[JoinIndex][query.Table] = null;
-                            };
-                            break;
-                        //right join
-                        case 'right': if (value[query.Column] == That.Results[JoinIndex][joinQuery.Table][joinQuery.Column]) {
-                            That.Results[JoinIndex][query.Table] = value;
+                    if (value1 == value2[query.Column]) {
+                        Results[JoinIndex][query.Table] = value2;
+                        //copy other relative data into current result
+                        for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                            Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
                         }
-                        else { //shift array to 1 position with null as first value and value as second value
-                            That.Results.splice(JoinIndex, 0, null);
-                            That.Results[JoinIndex][joinQuery.Table] = null;
-                            That.Results[JoinIndex][query.Table] = value;
-                        }
-                            break;
+                        ++JoinIndex;
                     }
-
+                    else {
+                        switch (query.JoinType) {
+                            //left join
+                            case 'left':
+                                Results[JoinIndex][query.Table] = value2;
+                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                    Results[JoinIndex][That.QueryStack[j].Table] = null;
+                                }
+                                ++JoinIndex;
+                                break;
+                            //right join
+                            case 'right':
+                                Results[JoinIndex][query.Table] = null;
+                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                    Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
+                                }
+                                ++JoinIndex;
+                                break;
+                        }
+                    }
                 }
 
             }
 
             private executeWhereUndefinedLogicForJoin = function (joinQuery: ITableJoin, query: ITableJoin) {
-                try {
-                    var That: SelectJoinLogic = this,
-                        Results = [],
-                        JoinIndex,
-                        TmpResults = That.Results,
-                        CursorOpenRequest,
-                        ResultLength = this.Results.length,
-                        Transaction = DbConnection.transaction([query.Table], "readonly");
-                    Transaction.oncomplete = function (e) {
-                        That.onTransactionCompleted(e);
-                        if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
-                            That.startExecutionJoinLogic();
-                        }
-                    };
-                    var ExecuteLogic = function (item, index) {
-                        JoinIndex = 0;
-                        this.ObjectStore = Transaction.objectStore(query.Table);
-                        CursorOpenRequest = this.ObjectStore.index(query.Column).openCursor(IDBKeyRange.only(item[joinQuery.Column]));
-
-                        CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                            if (Cursor) {
-                                doJoin(Cursor.value);
-                                Cursor.continue();
-                                ++JoinIndex;
-                            }
-                            else {
+                var That = <SelectJoinLogic>this,
+                    Results = [],
+                    JoinIndex = 0,
+                    Column = query.Column,
+                    TmpResults = That.Results,
+                    Item,
+                    ResultLength = TmpResults.length,
+                    ItemIndex = 0,
+                    Where = {},
+                    doJoin = function (results) {
+                        if (results.length > 0) {
+                            results.forEach(function (value) {
+                                Results[JoinIndex] = {};
+                                Results[JoinIndex][query.Table] = value;
                                 //copy other relative data into current result
-                                if (That.CurrentQueryStackIndex == 1) {
-                                    That.Results = Results;
+                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                    Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
                                 }
-                                else {
-                                    for (var i = 0; i < Results.length; i++) {
-                                        var ColumnValue = Results[i][joinQuery.Table][joinQuery.Column],
-                                            TableName;
-                                        for (var j = 0; j < TmpResults.length; j++) {
-                                            if (ColumnValue == TmpResults[j][joinQuery.Table][joinQuery.Column]) {
-                                                for (var k = 0; k < That.CurrentQueryStackIndex; k++) {
-                                                    // Results[JoinIndex][joinQuery.Table] = item;
-                                                    TableName = That.QueryStack[k].Table;
-                                                    Results[i][TableName] = TmpResults[j][TableName];
-                                                }
-                                                break;
-                                            }
-                                        }
-
-                                    }
-                                    That.Results = Results;
-                                }
-                                // if (index == ResultLength - 1 && (That.QueryStack.length > That.CurrentQueryStackIndex + 1)) {
-                                //     That.startExecutionJoinLogic();
-                                // }
-                            }
+                                ++JoinIndex;
+                            });
                         }
-                        CursorOpenRequest.onerror = function (e) {
-                            That.onErrorOccured(e);
-                        }
-
-                        var doJoin = function (value) {
+                        else {
                             Results[JoinIndex] = {};
                             switch (query.JoinType) {
-                                //inner join
-                                case 'inner':
-                                    Results[JoinIndex][query.Table] = value;
-                                    Results[JoinIndex][joinQuery.Table] = item;
-                                    break;
                                 //left join
-                                case 'left': //if (value[query.Column] == That.Results[index][joinQuery.Table][joinQuery.Column]) {
-                                    if (value != null) {
-                                        That.Results[index][query.Table] = value;
+                                case 'left':
+                                    Results[JoinIndex][query.Table] = Where[query.Column];
+                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                        Results[JoinIndex][That.QueryStack[j].Table] = null;
                                     }
-                                    else { //add null element
-                                        That.Results[index][query.Table] = null;
-                                    };
+                                    ++JoinIndex;
                                     break;
                                 //right join
-                                case 'right': if (value[query.Column] == That.Results[index][joinQuery.Table][joinQuery.Column]) {
-                                    That.Results[index][query.Table] = value;
-                                }
-                                else { //shift array to 1 position with null as first value and value as second value
-                                    That.Results.splice(index, 0, null);
-                                    That.Results[index][joinQuery.Table] = null;
-                                    That.Results[index][query.Table] = value;
-                                }
+                                case 'right':
+                                    Results[JoinIndex][query.Table] = null;
+                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                        Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
+                                    }
+                                    ++JoinIndex;
                                     break;
                             }
-
                         }
-                    }
-                    for (var i = 0; i < ResultLength; i++) {
-                        ExecuteLogic(TmpResults[i][joinQuery.Table], i);
-                    }
-                }
-                catch (ex) {
-                    if (ex.name == "NotFoundError") {
-                        UtilityLogic.getError(ErrorType.TableNotExist, true, { TableName: query.Table });
-                    }
-                    else {
-                        console.warn(ex);
-                    }
-                }
+                    },
+                    executeLogic = function () {
+                        if (ItemIndex < ResultLength) {
+                            if (!That.ErrorOccured) {
+                                Where[query.Column] = TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column];
+                                new SelectLogic(<ISelect>{
+                                    From: query.Table,
+                                    Where: Where
+                                }, function (results) {
+                                    doJoin(results);
+                                    ++ItemIndex;
+                                    executeLogic();
+                                }, function (error) {
+                                    That.ErrorOccured = true;
+                                    That.onErrorOccured(error);
+                                });
+                            }
+                        }
+                        else {
+                            That.Results = Results;
+                            //check if further execution needed
+                            if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
+                                That.startExecutionJoinLogic();
+                            }
+                            else {
+                                That.onTransactionCompleted(null);
+                            }
+                        }
+                    };
+                executeLogic();
             }
+
 
             constructor(query: ISelectJoin, onSuccess: Function, onError: Function) {
                 super();
