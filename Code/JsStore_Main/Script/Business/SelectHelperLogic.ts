@@ -39,15 +39,33 @@ module JsStore {
                                 callBack();
                             }
 
-                        }
-                        ,
+                        },
                         OnCursorError = function (e) {
                             That.ErrorOccured = true;
                             That.onErrorOccured(e);
                         };
                     if (this.ObjectStore.indexNames.contains(whereIn.Column)) {
-                        CursorOpenRequest = this.ObjectStore.index(whereIn.Column).openCursor(KeyRange);
-                        CursorOpenRequest.onsuccess = OnCursorSuccess;
+                        if (whereIn.Op == '~' && typeof whereIn.Value == 'string') {
+                            var Value = whereIn.Value.toLowerCase(),
+                                Column = whereIn.Column;
+                            CursorOpenRequest = this.ObjectStore.index(whereIn.Column).openCursor(KeyRange);
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                if (Cursor) {
+                                    if (Cursor.value[Column].toLowerCase().indexOf(Value) >= 0) {
+                                        That.Results.push(Cursor.value);
+                                    }
+                                    Cursor.continue();
+                                }
+                                else if (callBack) {
+                                    callBack();
+                                }
+                            }
+                        }
+                        else {
+                            CursorOpenRequest = this.ObjectStore.index(whereIn.Column).openCursor(KeyRange);
+                            CursorOpenRequest.onsuccess = OnCursorSuccess;
+                        }
                         CursorOpenRequest.onerror = OnCursorError;
                     }
                     else {

@@ -5,7 +5,7 @@
         "removeComments": true,
         "sourceMap": true,
         "inlineSources": true,
-        "out": "../outputfile/JsStorage.js",
+        "out": "outputfile/JsStorage.js",
         "target": "es5",
         "preserveConstEnums": true
     }

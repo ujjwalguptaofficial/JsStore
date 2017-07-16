@@ -1,0 +1,19 @@
+[{
+        "name": "JsStore Main",
+        "rootPath": "JsStore_Main",
+        "paths": [],
+        "group": ""
+    },
+    {
+        "name": "JsStore Api",
+        "rootPath": "JsStore_Api",
+        "paths": [],
+        "group": ""
+    },
+    {
+        "name": "JsStore Worker",
+        "rootPath": "JsStre_Worker",
+        "paths": [],
+        "group": ""
+    }
+]

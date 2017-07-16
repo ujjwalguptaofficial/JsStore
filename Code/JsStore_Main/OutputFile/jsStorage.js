@@ -619,7 +619,16 @@ var JsStore;
                     var KeyRange;
                     switch (whereIn.Op) {
                         case '-':
-                            KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End);
+                            KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, true, true);
+                            break;
+                        case '=-':
+                            KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, false, true);
+                            break;
+                        case '-=':
+                            KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, true, false);
+                            break;
+                        case '=-=':
+                            KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, false, false);
                             break;
                         case '>':
                             KeyRange = IDBKeyRange.lowerBound(whereIn.Value, true);
@@ -633,9 +642,7 @@ var JsStore;
                         case '<=':
                             KeyRange = IDBKeyRange.upperBound(whereIn.Value);
                             break;
-                        case '~':
-                            KeyRange = IDBKeyRange.bound(whereIn.Value, whereIn.Value + '\uffff');
-                            break;
+                        case '~': break;
                         case '=':
                             KeyRange = IDBKeyRange.only(whereIn.Value);
                             break;
@@ -682,11 +689,34 @@ var JsStore;
                         That.Results = ValuesFound;
                     }, executeBetweenIn = function () {
                         var LowValue = whereIn.Start, Highvalue = whereIn.End;
-                        That.Results.forEach(function (item) {
-                            if (item[Column] >= LowValue && item[Column] <= LowValue) {
-                                ValuesFound.push(item);
-                            }
-                        });
+                        if (whereIn.Op == '-') {
+                            That.Results.forEach(function (item) {
+                                if (item[Column] > LowValue && item[Column] < LowValue) {
+                                    ValuesFound.push(item);
+                                }
+                            });
+                        }
+                        else if (whereIn.Op == '=-') {
+                            That.Results.forEach(function (item) {
+                                if (item[Column] >= LowValue && item[Column] < LowValue) {
+                                    ValuesFound.push(item);
+                                }
+                            });
+                        }
+                        else if (whereIn.Op == '-=') {
+                            That.Results.forEach(function (item) {
+                                if (item[Column] > LowValue && item[Column] <= LowValue) {
+                                    ValuesFound.push(item);
+                                }
+                            });
+                        }
+                        else if (whereIn.Op == '=-=') {
+                            That.Results.forEach(function (item) {
+                                if (item[Column] >= LowValue && item[Column] <= LowValue) {
+                                    ValuesFound.push(item);
+                                }
+                            });
+                        }
                         That.Results = ValuesFound;
                     }, executeGreaterThanEqual = function () {
                         That.Results.forEach(function (item) {
@@ -705,6 +735,9 @@ var JsStore;
                     };
                     switch (whereIn.Op) {
                         case '-':
+                        case '=-':
+                        case '-=':
+                        case '=-=':
                             executeBetweenIn();
                             break;
                         case '>':
@@ -805,8 +838,26 @@ var JsStore;
                             That.onErrorOccured(e);
                         };
                         if (this.ObjectStore.indexNames.contains(whereIn.Column)) {
-                            CursorOpenRequest = this.ObjectStore.index(whereIn.Column).openCursor(KeyRange);
-                            CursorOpenRequest.onsuccess = OnCursorSuccess;
+                            if (whereIn.Op == '~' && typeof whereIn.Value == 'string') {
+                                var Value = whereIn.Value.toLowerCase(), Column = whereIn.Column;
+                                CursorOpenRequest = this.ObjectStore.index(whereIn.Column).openCursor(KeyRange);
+                                CursorOpenRequest.onsuccess = function (e) {
+                                    var Cursor = e.target.result;
+                                    if (Cursor) {
+                                        if (Cursor.value[Column].toLowerCase().indexOf(Value) >= 0) {
+                                            That.Results.push(Cursor.value);
+                                        }
+                                        Cursor.continue();
+                                    }
+                                    else if (callBack) {
+                                        callBack();
+                                    }
+                                };
+                            }
+                            else {
+                                CursorOpenRequest = this.ObjectStore.index(whereIn.Column).openCursor(KeyRange);
+                                CursorOpenRequest.onsuccess = OnCursorSuccess;
+                            }
                             CursorOpenRequest.onerror = OnCursorError;
                         }
                         else {

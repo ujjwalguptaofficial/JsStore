@@ -7,12 +7,15 @@ module JsStore {
             protected getKeyRange = function (whereIn: IWhereIn) {
                 var KeyRange: IDBKeyRange;
                 switch (whereIn.Op) {
-                    case '-': KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End); break;
+                    case '-': KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, true, true); break;
+                    case '=-': KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, false, true); break;
+                    case '-=': KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, true, false); break;
+                    case '=-=': KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, false, false); break;
                     case '>': KeyRange = IDBKeyRange.lowerBound(whereIn.Value, true); break;
                     case '>=': KeyRange = IDBKeyRange.lowerBound(whereIn.Value); break;
                     case '<': KeyRange = IDBKeyRange.upperBound(whereIn.Value, true); break;
                     case '<=': KeyRange = IDBKeyRange.upperBound(whereIn.Value); break;
-                    case '~': KeyRange = IDBKeyRange.bound(whereIn.Value, whereIn.Value + '\uffff'); break;
+                    case '~': break;//IDBKeyRange.bound(whereIn.Value, whereIn.Value + '\uffff', false, false); break;
                     case '=': KeyRange = IDBKeyRange.only(whereIn.Value); break;
                     default: this.ErrorOccured = true; UtilityLogic.getError(ErrorType.InvalidOp, true, { Op: whereIn.Op });
                 }
@@ -66,11 +69,35 @@ module JsStore {
                     },
                     executeBetweenIn = function () {
                         var LowValue = whereIn.Start, Highvalue = whereIn.End;
-                        That.Results.forEach(function (item) {
-                            if (item[Column] >= LowValue && item[Column] <= LowValue) {
-                                ValuesFound.push(item);
-                            }
-                        });
+                        if (whereIn.Op == '-') {
+                            That.Results.forEach(function (item) {
+                                if (item[Column] > LowValue && item[Column] < LowValue) {
+                                    ValuesFound.push(item);
+                                }
+                            });
+                        }
+                        else if (whereIn.Op == '=-') {
+                            That.Results.forEach(function (item) {
+                                if (item[Column] >= LowValue && item[Column] < LowValue) {
+                                    ValuesFound.push(item);
+                                }
+                            });
+                        }
+                        else if (whereIn.Op == '-=') {
+                            That.Results.forEach(function (item) {
+                                if (item[Column] > LowValue && item[Column] <= LowValue) {
+                                    ValuesFound.push(item);
+                                }
+                            });
+                        }
+                        else if (whereIn.Op == '=-=') {
+                            That.Results.forEach(function (item) {
+                                if (item[Column] >= LowValue && item[Column] <= LowValue) {
+                                    ValuesFound.push(item);
+                                }
+                            });
+                        }
+
                         That.Results = ValuesFound;
                     },
                     executeGreaterThanEqual = function () {
@@ -90,7 +117,10 @@ module JsStore {
                         That.Results = ValuesFound;
                     };
                 switch (whereIn.Op) {
-                    case '-': executeBetweenIn(); break;
+                    case '-':
+                    case '=-':
+                    case '-=':
+                    case '=-=': executeBetweenIn(); break;
                     case '>': executeGreaterThan(); break;
                     case '>=': executeGreaterThanEqual(); break;
                     case '<': executeLessThan(); break;
