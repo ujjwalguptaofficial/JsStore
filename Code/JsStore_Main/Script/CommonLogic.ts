@@ -1,5 +1,4 @@
 module JsStore {
-
     export enum ErrorType {
         UndefinedColumn,
         UndefinedValue,
@@ -22,7 +21,13 @@ module JsStore {
         Skip: number,
         Limit: number,
         OnSuccess: Function,
-        OnError: Function
+        OnError: Function,
+        Order: IOrder
+    }
+
+    export interface IOrder {
+        By: string, // Column name
+        Type: string
     }
 
     export interface ICount {
@@ -75,6 +80,7 @@ module JsStore {
         Table: string,
         Where: any,
         WhereIn: Array<IWhereIn>,
+        Order: IOrder
         JoinType: string,
         NextJoin: INextJoin
     }

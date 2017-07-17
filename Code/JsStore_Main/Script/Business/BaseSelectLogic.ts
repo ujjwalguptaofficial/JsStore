@@ -3,7 +3,7 @@ module JsStore {
         export class BaseSelectLogic extends BaseLogic {
             Results = [];
             SendResultFlag: Boolean = true;
-
+            Sorted: boolean = false;
             protected getKeyRange = function (whereIn: IWhereIn) {
                 var KeyRange: IDBKeyRange;
                 switch (whereIn.Op) {

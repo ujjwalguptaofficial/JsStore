@@ -106,8 +106,16 @@ module JsStore {
 
             private executeWhereUndefinedLogic = function () {
                 var That: SelectLogic = this,
+                    CursorOpenRequest;
+                if (this.Query.Order && this.Query.Order.By) {
+                    // this.Query.Order.Type = this.Query.Order.Type ? this.Query.Order.Type.toLowerCase() : 'asc';
+                    var Order = this.Query.Order.Type && this.Query.Order.Type.toLowerCase() == 'desc' ? 'prev' : 'next';
+                    this.Sorted = true;
+                    CursorOpenRequest = this.ObjectStore.index(That.Query.Order.By).openCursor(null, Order);
+                }
+                else {
                     CursorOpenRequest = this.ObjectStore.openCursor();
-
+                }
                 CursorOpenRequest.onsuccess = function (e) {
                     var Cursor = (<any>e).target.result;
                     if (Cursor) {
@@ -130,7 +138,49 @@ module JsStore {
                 try {
                     this.Transaction = DbConnection.transaction([query.From], "readonly");
                     this.Transaction.oncomplete = function (e) {
-                        if (That.SendResultFlag && onSuccess != null) {
+                        if (query.Order && query.Order.By && !That.Sorted) {
+                            query.Order.Type = query.Order.Type ? query.Order.Type.toLowerCase() : 'asc';
+                            var OrderColumn = query.Order.By,
+                                sortNumberInAsc = function () {
+                                    That.Results.sort(function (a, b) {
+                                        return a[OrderColumn] - b[OrderColumn];
+                                    });
+                                },
+                                sortNumberInDesc = function () {
+                                    That.Results.sort(function (a, b) {
+                                        return b[OrderColumn] - a[OrderColumn];
+                                    });
+                                },
+                                sortAlphabetInAsc = function () {
+                                    That.Results.sort(function (a, b) {
+                                        return a[OrderColumn].toLowerCase().localeCompare(b[OrderColumn].toLowerCase());
+                                    });
+                                },
+                                sortAlphabetInDesc = function () {
+                                    That.Results.sort(function (a, b) {
+                                        return b[OrderColumn].toLowerCase().localeCompare(a[OrderColumn].toLowerCase());
+                                    });
+                                };
+                            if (typeof That.Results[0][OrderColumn] == 'string') {
+                                if (query.Order.Type == 'asc') {
+                                    sortAlphabetInAsc();
+                                }
+                                else {
+                                    sortAlphabetInDesc();
+                                }
+                            }
+                            else if (typeof That.Results[0][OrderColumn] == 'number') {
+                                if (query.Order.Type == 'asc') {
+                                    sortNumberInAsc();
+                                }
+                                else {
+                                    sortNumberInDesc();
+                                }
+                            }
+                            onSuccess(That.Results);
+
+                        }
+                        else if (That.SendResultFlag && onSuccess != null) {
                             onSuccess(That.Results);
                         }
                     };

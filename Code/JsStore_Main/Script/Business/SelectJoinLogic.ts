@@ -40,7 +40,8 @@ module JsStore {
                 new SelectLogic(<ISelect>{
                     From: query.Table,
                     Where: query.Where,
-                    WhereIn: query.WhereIn
+                    WhereIn: query.WhereIn,
+                    Order: query.Order
                 }, function (results) {
                     //perform join
                     results.forEach(function (value, index) {
@@ -149,7 +150,8 @@ module JsStore {
                                 Where[query.Column] = TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column];
                                 new SelectLogic(<ISelect>{
                                     From: query.Table,
-                                    Where: Where
+                                    Where: Where,
+                                    Order: query.Order
                                 }, function (results) {
                                     doJoin(results);
                                     ++ItemIndex;

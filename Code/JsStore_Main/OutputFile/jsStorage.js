@@ -615,6 +615,7 @@ var JsStore;
                 var _this = _super !== null && _super.apply(this, arguments) || this;
                 _this.Results = [];
                 _this.SendResultFlag = true;
+                _this.Sorted = false;
                 _this.getKeyRange = function (whereIn) {
                     var KeyRange;
                     switch (whereIn.Op) {
@@ -907,7 +908,8 @@ var JsStore;
                     new Business.SelectLogic({
                         From: query.Table,
                         Where: query.Where,
-                        WhereIn: query.WhereIn
+                        WhereIn: query.WhereIn,
+                        Order: query.Order
                     }, function (results) {
                         results.forEach(function (value, index) {
                             for (var i = 0; i < ResultLength; i++) {
@@ -991,7 +993,8 @@ var JsStore;
                                 Where[query.Column] = TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column];
                                 new Business.SelectLogic({
                                     From: query.Table,
-                                    Where: Where
+                                    Where: Where,
+                                    Order: query.Order
                                 }, function (results) {
                                     doJoin(results);
                                     ++ItemIndex;
@@ -1180,7 +1183,15 @@ var JsStore;
                     }
                 };
                 _this.executeWhereUndefinedLogic = function () {
-                    var That = this, CursorOpenRequest = this.ObjectStore.openCursor();
+                    var That = this, CursorOpenRequest;
+                    if (this.Query.Order && this.Query.Order.By) {
+                        var Order = this.Query.Order.Type && this.Query.Order.Type.toLowerCase() == 'desc' ? 'prev' : 'next';
+                        this.Sorted = true;
+                        CursorOpenRequest = this.ObjectStore.index(That.Query.Order.By).openCursor(null, Order);
+                    }
+                    else {
+                        CursorOpenRequest = this.ObjectStore.openCursor();
+                    }
                     CursorOpenRequest.onsuccess = function (e) {
                         var Cursor = e.target.result;
                         if (Cursor) {
@@ -1199,7 +1210,44 @@ var JsStore;
                 try {
                     _this.Transaction = Business.DbConnection.transaction([query.From], "readonly");
                     _this.Transaction.oncomplete = function (e) {
-                        if (That.SendResultFlag && onSuccess != null) {
+                        if (query.Order && query.Order.By && !That.Sorted) {
+                            query.Order.Type = query.Order.Type ? query.Order.Type.toLowerCase() : 'asc';
+                            var OrderColumn = query.Order.By, sortNumberInAsc = function () {
+                                That.Results.sort(function (a, b) {
+                                    return a[OrderColumn] - b[OrderColumn];
+                                });
+                            }, sortNumberInDesc = function () {
+                                That.Results.sort(function (a, b) {
+                                    return b[OrderColumn] - a[OrderColumn];
+                                });
+                            }, sortAlphabetInAsc = function () {
+                                That.Results.sort(function (a, b) {
+                                    return a[OrderColumn].toLowerCase().localeCompare(b[OrderColumn].toLowerCase());
+                                });
+                            }, sortAlphabetInDesc = function () {
+                                That.Results.sort(function (a, b) {
+                                    return b[OrderColumn].toLowerCase().localeCompare(a[OrderColumn].toLowerCase());
+                                });
+                            };
+                            if (typeof That.Results[0][OrderColumn] == 'string') {
+                                if (query.Order.Type == 'asc') {
+                                    sortAlphabetInAsc();
+                                }
+                                else {
+                                    sortAlphabetInDesc();
+                                }
+                            }
+                            else if (typeof That.Results[0][OrderColumn] == 'number') {
+                                if (query.Order.Type == 'asc') {
+                                    sortNumberInAsc();
+                                }
+                                else {
+                                    sortNumberInDesc();
+                                }
+                            }
+                            onSuccess(That.Results);
+                        }
+                        else if (That.SendResultFlag && onSuccess != null) {
                             onSuccess(That.Results);
                         }
                     };
