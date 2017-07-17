@@ -3,7 +3,12 @@ module JsStore {
         export class SelectLogic extends SelectHelperLogic {
             private executeWhereInLogic = function () {
                 if (Array.isArray(this.Query.WhereIn)) {
-                    this.executeMultipleWhereInLogic(this.Query.WhereIn);
+                    if (this.Query.WhereIn.length > 0) {
+                        this.executeMultipleWhereInLogic(this.Query.WhereIn);
+                    }
+                    else {
+                        this.executeWhereUndefinedLogic();
+                    }
                 }
                 else {
                     this.executeSingleWhereInLogic(this.Query.WhereIn);

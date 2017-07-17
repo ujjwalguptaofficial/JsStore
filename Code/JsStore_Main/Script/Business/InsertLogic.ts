@@ -1,30 +1,10 @@
 module JsStore {
     export module Business {
-        export class InsertLogic {
-            RowsAffected = 0;
-            ValuesAffected: Array<any> = [];
-            Store: IDBObjectStore;
-            OnSuccess: Function;
-            OnError: Function;
-            ErrorOccured: boolean = false;
-            ErrorCount = 0;
-            Error: IError;
-
-            public onErrorRequest = function (e, customError = false) {
-                ++this.ErrorCount;
-                if (this.ErrorCount == 1) {
-                    if (this.OnError != null) {
-                        if (!customError) {
-                            this.OnError((e as any).target.error);
-                        }
-                        else {
-                            this.OnError(e);
-                        }
-                    }
-                }
-            }
+        export class InsertLogic extends BaseLogic {
+            ValuesAffected = []
 
             constructor(tableName: string, values, isReturn, onSuccess: Function, onError: Function) {
+                super();
                 try {
                     this.OnSuccess = onSuccess;
                     this.OnError = onError;
@@ -32,31 +12,31 @@ module JsStore {
                         Transaction = DbConnection.transaction([tableName], "readwrite");
                     Transaction.oncomplete = function (e) {
                         if (onSuccess != null) {
-                            onSuccess(isReturn ? That.ValuesAffected : That.RowsAffected);
+                            onSuccess(isReturn ? That.ValuesAffected : That.RowAffected);
                         }
                     },
                         (<any>Transaction).ontimeout = function () {
                             console.log('transaction timed out');
                         }
-                    this.Store = Transaction.objectStore(tableName);
+                    var Store = Transaction.objectStore(tableName);
                     values.forEach(function (value) {
                         That.checkSchemaAndModifyValue(value, tableName);
                         if (!That.ErrorOccured) {
-                            var AddResult = That.Store.add(value);
+                            var AddResult = Store.add(value);
                             AddResult.onerror = function (e) {
-                                That.onErrorRequest(e);
+                                That.onErrorOccured(e);
                             }
                             AddResult.onsuccess = function (e) {
                                 if (isReturn) {
                                     That.ValuesAffected.push(value);
                                 }
                                 else {
-                                    ++That.RowsAffected;
+                                    ++That.RowAffected;
                                 }
                             }
                         }
                         else {
-                            That.onErrorRequest(That.Error, true);
+                            That.onErrorOccured(That.Error, true);
                         }
                     });
                 }
@@ -94,7 +74,12 @@ module JsStore {
                             localStorage.setItem(tableName + "_" + column.Name + "value:", ColumnValue.toString());
                         }
                         else if (column.CurrentDate) { //check CurrentDate Schema
-                            value[column.Name] = new Date();
+                            var CurDate = new Date();
+                            value[column.Name] = {
+                                DD: CurDate.getDate(),
+                                MM: CurDate.getMonth() + 1,
+                                YY: CurDate.getFullYear()
+                            }
                         }
 
                         //check not null schema

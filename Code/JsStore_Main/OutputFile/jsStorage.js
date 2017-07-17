@@ -454,63 +454,49 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var InsertLogic = (function () {
+        var InsertLogic = (function (_super) {
+            __extends(InsertLogic, _super);
             function InsertLogic(tableName, values, isReturn, onSuccess, onError) {
-                this.RowsAffected = 0;
-                this.ValuesAffected = [];
-                this.ErrorOccured = false;
-                this.ErrorCount = 0;
-                this.onErrorRequest = function (e, customError) {
-                    if (customError === void 0) { customError = false; }
-                    ++this.ErrorCount;
-                    if (this.ErrorCount == 1) {
-                        if (this.OnError != null) {
-                            if (!customError) {
-                                this.OnError(e.target.error);
-                            }
-                            else {
-                                this.OnError(e);
-                            }
-                        }
-                    }
-                };
+                var _this = _super.call(this) || this;
+                _this.ValuesAffected = [];
                 try {
-                    this.OnSuccess = onSuccess;
-                    this.OnError = onError;
-                    var That = this, Transaction = Business.DbConnection.transaction([tableName], "readwrite");
+                    _this.OnSuccess = onSuccess;
+                    _this.OnError = onError;
+                    var That = _this, Transaction = Business.DbConnection.transaction([tableName], "readwrite");
                     Transaction.oncomplete = function (e) {
                         if (onSuccess != null) {
-                            onSuccess(isReturn ? That.ValuesAffected : That.RowsAffected);
+                            onSuccess(isReturn ? That.ValuesAffected : That.RowAffected);
                         }
                     },
                         Transaction.ontimeout = function () {
                             console.log('transaction timed out');
                         };
-                    this.Store = Transaction.objectStore(tableName);
+                    var Store = Transaction.objectStore(tableName);
                     values.forEach(function (value) {
                         That.checkSchemaAndModifyValue(value, tableName);
                         if (!That.ErrorOccured) {
-                            var AddResult = That.Store.add(value);
+                            var AddResult = Store.add(value);
                             AddResult.onerror = function (e) {
-                                That.onErrorRequest(e);
+                                That.onErrorOccured(e);
                             };
                             AddResult.onsuccess = function (e) {
                                 if (isReturn) {
                                     That.ValuesAffected.push(value);
                                 }
                                 else {
-                                    ++That.RowsAffected;
+                                    ++That.RowAffected;
                                 }
                             };
                         }
                         else {
-                            That.onErrorRequest(That.Error, true);
+                            That.onErrorOccured(That.Error, true);
                         }
                     });
                 }
                 catch (ex) {
                     console.error(ex);
                 }
+                return _this;
             }
             InsertLogic.prototype.checkSchemaAndModifyValue = function (value, tableName) {
                 var CurrentTable, That = this;
@@ -529,7 +515,12 @@ var JsStore;
                             localStorage.setItem(tableName + "_" + column.Name + "value:", ColumnValue.toString());
                         }
                         else if (column.CurrentDate) {
-                            value[column.Name] = new Date();
+                            var CurDate = new Date();
+                            value[column.Name] = {
+                                DD: CurDate.getDate(),
+                                MM: CurDate.getMonth() + 1,
+                                YY: CurDate.getFullYear()
+                            };
                         }
                         if (column.NotNull && value[column.Name] == null) {
                             That.ErrorOccured = true;
@@ -543,7 +534,7 @@ var JsStore;
                 });
             };
             return InsertLogic;
-        }());
+        }(Business.BaseLogic));
         Business.InsertLogic = InsertLogic;
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
@@ -1092,7 +1083,12 @@ var JsStore;
                 var _this = _super.call(this) || this;
                 _this.executeWhereInLogic = function () {
                     if (Array.isArray(this.Query.WhereIn)) {
-                        this.executeMultipleWhereInLogic(this.Query.WhereIn);
+                        if (this.Query.WhereIn.length > 0) {
+                            this.executeMultipleWhereInLogic(this.Query.WhereIn);
+                        }
+                        else {
+                            this.executeWhereUndefinedLogic();
+                        }
                     }
                     else {
                         this.executeSingleWhereInLogic(this.Query.WhereIn);
