@@ -110,6 +110,40 @@ module JsStore {
                     ResultLength = TmpResults.length,
                     ItemIndex = 0,
                     Where = {},
+                    onExecutionFinished = function () {
+                        That.Results = Results;
+                        //check if further execution needed
+                        if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
+                            That.startExecutionJoinLogic();
+                        }
+                        else {
+                            That.onTransactionCompleted(null);
+                        }
+                    },
+                    doRightJoin = function (results) {
+                        var ValueFound = false;
+                        results.forEach(function (item, index) {
+                            for (ItemIndex = 0; ItemIndex < ResultLength; ItemIndex++) {
+                                if (item[query.Column] == TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column]) {
+                                    ValueFound = true;
+                                    break;
+                                }
+                            }
+                            Results[index] = {};
+                            Results[index][query.Table] = item;
+                            if (ValueFound) {
+                                ValueFound = false;
+                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                    Results[index][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
+                                }
+                            }
+                            else {
+                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                    Results[index][That.QueryStack[j].Table] = null;
+                                }
+                            }
+                        });
+                    },
                     doJoin = function (results) {
                         if (results.length > 0) {
                             results.forEach(function (value) {
@@ -123,54 +157,49 @@ module JsStore {
                             });
                         }
                         else {
+                            //left join
                             Results[JoinIndex] = {};
-                            switch (query.JoinType) {
-                                //left join
-                                case 'left':
-                                    Results[JoinIndex][query.Table] = Where[query.Column];
-                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                        Results[JoinIndex][That.QueryStack[j].Table] = null;
-                                    }
-                                    ++JoinIndex;
-                                    break;
-                                //right join
-                                case 'right':
-                                    Results[JoinIndex][query.Table] = null;
-                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                        Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
-                                    }
-                                    ++JoinIndex;
-                                    break;
-                            }
+                            Results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
+                            Results[JoinIndex][query.Table] = null;
+                            ++JoinIndex;
                         }
                     },
                     executeLogic = function () {
                         if (ItemIndex < ResultLength) {
                             if (!That.ErrorOccured) {
-                                Where[query.Column] = TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column];
-                                new SelectLogic(<ISelect>{
-                                    From: query.Table,
-                                    Where: Where,
-                                    Order: query.Order
-                                }, function (results) {
-                                    doJoin(results);
-                                    ++ItemIndex;
-                                    executeLogic();
-                                }, function (error) {
-                                    That.ErrorOccured = true;
-                                    That.onErrorOccured(error);
-                                });
+                                if (!(query.JoinType == 'right')) {
+                                    Where[query.Column] = TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column];
+                                    new SelectLogic(<ISelect>{
+                                        From: query.Table,
+                                        Where: Where,
+                                        Order: query.Order
+                                    }, function (results) {
+                                        doJoin(results);
+                                        ++ItemIndex;
+                                        executeLogic();
+                                    }, function (error) {
+                                        That.ErrorOccured = true;
+                                        That.onErrorOccured(error);
+                                    });
+                                }
+                                else {
+                                    new SelectLogic(<ISelect>{
+                                        From: query.Table,
+                                        Where: query.Where,
+                                        WhereIn: query.WhereIn,
+                                        Order: query.Order
+                                    }, function (results) {
+                                        doRightJoin(results);
+                                        onExecutionFinished();
+                                    }, function (error) {
+                                        That.ErrorOccured = true;
+                                        That.onErrorOccured(error);
+                                    });
+                                }
                             }
                         }
                         else {
-                            That.Results = Results;
-                            //check if further execution needed
-                            if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
-                                That.startExecutionJoinLogic();
-                            }
-                            else {
-                                That.onTransactionCompleted(null);
-                            }
+                            onExecutionFinished();
                         }
                     };
                 executeLogic();

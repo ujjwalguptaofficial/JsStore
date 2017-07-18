@@ -29,50 +29,45 @@ module JsStore {
 
                 this.setRequireDelete(dbName);
                 this.setDbVersion(dbName);
-                this.setPrimaryKey();
+                this.setPrimaryKey(dbName);
             }
 
             //private methods
 
-            private setPrimaryKey() {
+            private setPrimaryKey(dbName) {
                 //this.Key = new Column();//
                 var That = this,
                     Length = this.Columns.length;
-                this.Columns.forEach(function (item, index) {
-                    if (item.PrimaryKey && That.PrimaryKey.length == 0) {
+                this.Columns.every(function (item) {
+                    if (item.PrimaryKey) {
                         That.PrimaryKey = item.Name;
-                        localStorage.setItem("JsStore_" + That.Name + "_" + item.Name, "true");
+                        localStorage.setItem("JsStore_" + dbName + "_" + That.Name + "_" + item.Name, "true");
+                        return false;
                     }
-                    else if (item.PrimaryKey && That.PrimaryKey.length > 0) {
-                        localStorage.setItem("JsStore_" + That.Name + "_" + item.Name, "");
-                        throw "Multiple primary key are not allowed";
-                    }
-                    // else if (index == Length && That.PrimaryKey.length == 0) {
-
-                    // }
+                    return true;
                 })
 
             }
 
             private setRequireDelete(dbName: string) {
                 var TableVersion = localStorage.getItem("JsStore_" + dbName + "_" + this.Name);
-                if (TableVersion == null || localStorage.getItem('JsStore_Db_Version') == null) {
+                if (TableVersion == null) {
                     this.RequireCreation = true;
                 }
                 else if (TableVersion != this.Version.toString()) {
                     this.RequireDelete = true;
                 }
-                this.Version = this.Version == null ? 1 : this.Version;
-
             }
 
             private setDbVersion(dbName: string) {
-                if (this.Version == null) {
-                    localStorage.setItem(dbName + 'Db_Version', '1');
+                var Version = this.Version.toString(),
+                    DbVersion = Number(localStorage.getItem('JsStore_' + dbName + 'Db_Version'));
+                if (this.Version > DbVersion) {
+                    //setting db version
+                    localStorage.setItem('JsStore_' + dbName + 'Db_Version', Version);
                 }
-                else if (this.Version > Number(localStorage.getItem(dbName + 'Db_Version'))) {
-                    localStorage.setItem(dbName + 'Db_Version', this.Version.toString());
-                }
+                //setting table version
+                localStorage.setItem("JsStore_" + dbName + "_" + this.Name, Version);
             }
 
         }

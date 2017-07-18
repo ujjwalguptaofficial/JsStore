@@ -158,38 +158,34 @@ var JsStore;
                 });
                 this.setRequireDelete(dbName);
                 this.setDbVersion(dbName);
-                this.setPrimaryKey();
+                this.setPrimaryKey(dbName);
             }
-            Table.prototype.setPrimaryKey = function () {
+            Table.prototype.setPrimaryKey = function (dbName) {
                 var That = this, Length = this.Columns.length;
-                this.Columns.forEach(function (item, index) {
-                    if (item.PrimaryKey && That.PrimaryKey.length == 0) {
+                this.Columns.every(function (item) {
+                    if (item.PrimaryKey) {
                         That.PrimaryKey = item.Name;
-                        localStorage.setItem("JsStore_" + That.Name + "_" + item.Name, "true");
+                        localStorage.setItem("JsStore_" + dbName + "_" + That.Name + "_" + item.Name, "true");
+                        return false;
                     }
-                    else if (item.PrimaryKey && That.PrimaryKey.length > 0) {
-                        localStorage.setItem("JsStore_" + That.Name + "_" + item.Name, "");
-                        throw "Multiple primary key are not allowed";
-                    }
+                    return true;
                 });
             };
             Table.prototype.setRequireDelete = function (dbName) {
                 var TableVersion = localStorage.getItem("JsStore_" + dbName + "_" + this.Name);
-                if (TableVersion == null || localStorage.getItem('JsStore_Db_Version') == null) {
+                if (TableVersion == null) {
                     this.RequireCreation = true;
                 }
                 else if (TableVersion != this.Version.toString()) {
                     this.RequireDelete = true;
                 }
-                this.Version = this.Version == null ? 1 : this.Version;
             };
             Table.prototype.setDbVersion = function (dbName) {
-                if (this.Version == null) {
-                    localStorage.setItem(dbName + 'Db_Version', '1');
+                var Version = this.Version.toString(), DbVersion = Number(localStorage.getItem('JsStore_' + dbName + 'Db_Version'));
+                if (this.Version > DbVersion) {
+                    localStorage.setItem('JsStore_' + dbName + 'Db_Version', Version);
                 }
-                else if (this.Version > Number(localStorage.getItem(dbName + 'Db_Version'))) {
-                    localStorage.setItem(dbName + 'Db_Version', this.Version.toString());
-                }
+                localStorage.setItem("JsStore_" + dbName + "_" + this.Name, Version);
             };
             return Table;
         }());
@@ -948,7 +944,38 @@ var JsStore;
                     };
                 };
                 _this.executeWhereUndefinedLogicForJoin = function (joinQuery, query) {
-                    var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length, ItemIndex = 0, Where = {}, doJoin = function (results) {
+                    var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length, ItemIndex = 0, Where = {}, onExecutionFinished = function () {
+                        That.Results = Results;
+                        if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
+                            That.startExecutionJoinLogic();
+                        }
+                        else {
+                            That.onTransactionCompleted(null);
+                        }
+                    }, doRightJoin = function (results) {
+                        var ValueFound = false;
+                        results.forEach(function (item, index) {
+                            for (ItemIndex = 0; ItemIndex < ResultLength; ItemIndex++) {
+                                if (item[query.Column] == TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column]) {
+                                    ValueFound = true;
+                                    break;
+                                }
+                            }
+                            Results[index] = {};
+                            Results[index][query.Table] = item;
+                            if (ValueFound) {
+                                ValueFound = false;
+                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                    Results[index][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
+                                }
+                            }
+                            else {
+                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                    Results[index][That.QueryStack[j].Table] = null;
+                                }
+                            }
+                        });
+                    }, doJoin = function (results) {
                         if (results.length > 0) {
                             results.forEach(function (value) {
                                 Results[JoinIndex] = {};
@@ -961,49 +988,46 @@ var JsStore;
                         }
                         else {
                             Results[JoinIndex] = {};
-                            switch (query.JoinType) {
-                                case 'left':
-                                    Results[JoinIndex][query.Table] = Where[query.Column];
-                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                        Results[JoinIndex][That.QueryStack[j].Table] = null;
-                                    }
-                                    ++JoinIndex;
-                                    break;
-                                case 'right':
-                                    Results[JoinIndex][query.Table] = null;
-                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                        Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
-                                    }
-                                    ++JoinIndex;
-                                    break;
-                            }
+                            Results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
+                            Results[JoinIndex][query.Table] = null;
+                            ++JoinIndex;
                         }
                     }, executeLogic = function () {
                         if (ItemIndex < ResultLength) {
                             if (!That.ErrorOccured) {
-                                Where[query.Column] = TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column];
-                                new Business.SelectLogic({
-                                    From: query.Table,
-                                    Where: Where,
-                                    Order: query.Order
-                                }, function (results) {
-                                    doJoin(results);
-                                    ++ItemIndex;
-                                    executeLogic();
-                                }, function (error) {
-                                    That.ErrorOccured = true;
-                                    That.onErrorOccured(error);
-                                });
+                                if (!(query.JoinType == 'right')) {
+                                    Where[query.Column] = TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column];
+                                    new Business.SelectLogic({
+                                        From: query.Table,
+                                        Where: Where,
+                                        Order: query.Order
+                                    }, function (results) {
+                                        doJoin(results);
+                                        ++ItemIndex;
+                                        executeLogic();
+                                    }, function (error) {
+                                        That.ErrorOccured = true;
+                                        That.onErrorOccured(error);
+                                    });
+                                }
+                                else {
+                                    new Business.SelectLogic({
+                                        From: query.Table,
+                                        Where: query.Where,
+                                        WhereIn: query.WhereIn,
+                                        Order: query.Order
+                                    }, function (results) {
+                                        doRightJoin(results);
+                                        onExecutionFinished();
+                                    }, function (error) {
+                                        That.ErrorOccured = true;
+                                        That.onErrorOccured(error);
+                                    });
+                                }
                             }
                         }
                         else {
-                            That.Results = Results;
-                            if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
-                                That.startExecutionJoinLogic();
-                            }
-                            else {
-                                That.onTransactionCompleted(null);
-                            }
+                            onExecutionFinished();
                         }
                     };
                     executeLogic();
@@ -1181,9 +1205,15 @@ var JsStore;
                 _this.executeWhereUndefinedLogic = function () {
                     var That = this, CursorOpenRequest;
                     if (this.Query.Order && this.Query.Order.By) {
-                        var Order = this.Query.Order.Type && this.Query.Order.Type.toLowerCase() == 'desc' ? 'prev' : 'next';
-                        this.Sorted = true;
-                        CursorOpenRequest = this.ObjectStore.index(That.Query.Order.By).openCursor(null, Order);
+                        if (That.ObjectStore.indexNames.contains(this.Query.Order.By)) {
+                            var Order = this.Query.Order.Type && this.Query.Order.Type.toLowerCase() == 'desc' ? 'prev' : 'next';
+                            this.Sorted = true;
+                            CursorOpenRequest = this.ObjectStore.index(That.Query.Order.By).openCursor(null, Order);
+                        }
+                        else {
+                            JsStore.UtilityLogic.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: this.Query.Order.By });
+                            return false;
+                        }
                     }
                     else {
                         CursorOpenRequest = this.ObjectStore.openCursor();
@@ -1206,7 +1236,7 @@ var JsStore;
                 try {
                     _this.Transaction = Business.DbConnection.transaction([query.From], "readonly");
                     _this.Transaction.oncomplete = function (e) {
-                        if (query.Order && query.Order.By && !That.Sorted) {
+                        if (That.Results.length > 0 && !That.Sorted && query.Order && query.Order.By) {
                             query.Order.Type = query.Order.Type ? query.Order.Type.toLowerCase() : 'asc';
                             var OrderColumn = query.Order.By, sortNumberInAsc = function () {
                                 That.Results.sort(function (a, b) {
@@ -1502,7 +1532,7 @@ var JsStore;
         }
         Instance.prototype.createDb = function (dataBase, onSuccess, onError) {
             if (onError === void 0) { onError = null; }
-            var Db = new DataBase(dataBase), DbVersion = Number(localStorage.getItem(dataBase.Name + 'Db_Version'));
+            var Db = new DataBase(dataBase), DbVersion = Number(localStorage.getItem('JsStore_' + dataBase.Name + 'Db_Version'));
             this.IndexDbObj = new JsStore.Business.MainLogic(Db);
             this.IndexDbObj.createDb(this, DbVersion, onSuccess, onError);
             return this;

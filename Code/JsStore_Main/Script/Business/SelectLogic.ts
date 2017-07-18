@@ -113,10 +113,16 @@ module JsStore {
                 var That: SelectLogic = this,
                     CursorOpenRequest;
                 if (this.Query.Order && this.Query.Order.By) {
-                    // this.Query.Order.Type = this.Query.Order.Type ? this.Query.Order.Type.toLowerCase() : 'asc';
-                    var Order = this.Query.Order.Type && this.Query.Order.Type.toLowerCase() == 'desc' ? 'prev' : 'next';
-                    this.Sorted = true;
-                    CursorOpenRequest = this.ObjectStore.index(That.Query.Order.By).openCursor(null, Order);
+                    if (That.ObjectStore.indexNames.contains(this.Query.Order.By)) {
+                        // this.Query.Order.Type = this.Query.Order.Type ? this.Query.Order.Type.toLowerCase() : 'asc';
+                        var Order = this.Query.Order.Type && this.Query.Order.Type.toLowerCase() == 'desc' ? 'prev' : 'next';
+                        this.Sorted = true;
+                        CursorOpenRequest = this.ObjectStore.index(That.Query.Order.By).openCursor(null, Order);
+                    }
+                    else {
+                        UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: this.Query.Order.By });
+                        return false;
+                    }
                 }
                 else {
                     CursorOpenRequest = this.ObjectStore.openCursor();
@@ -143,7 +149,7 @@ module JsStore {
                 try {
                     this.Transaction = DbConnection.transaction([query.From], "readonly");
                     this.Transaction.oncomplete = function (e) {
-                        if (query.Order && query.Order.By && !That.Sorted) {
+                        if (That.Results.length > 0 && !That.Sorted && query.Order && query.Order.By) {
                             query.Order.Type = query.Order.Type ? query.Order.Type.toLowerCase() : 'asc';
                             var OrderColumn = query.Order.By,
                                 sortNumberInAsc = function () {
