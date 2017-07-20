@@ -19,11 +19,8 @@ module JsStore {
                 var Column,
                     SkipRecord = this.Query.Skip,
                     LimitRecord = this.Query.Limit,
-                    That: SelectLogic = this;
-
-                var executeInnerWhereLogic = function (column, value) {
-
-                    if (That.ObjectStore.indexNames.contains(column)) {
+                    That: SelectLogic = this,
+                    executeInnerWhereLogic = function (column, value) {
                         var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
                         CursorOpenRequest.onerror = function (e) {
                             That.ErrorOccured = true;
@@ -84,29 +81,31 @@ module JsStore {
                             }
                         }
                     }
-                    else {
-                        UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
-                        return false;
-                    }
-
-                }
 
                 for (Column in this.Query.Where) {
-                    if (Array.isArray(this.Query.Where[Column])) {
-                        for (var i = 0; i < this.Query.Where[Column].length; i++) {
-                            var ExecutionStatus = executeInnerWhereLogic(Column, this.Query.Where[Column][i])
-                            if (ExecutionStatus == false) {
-                                break;
+                    if (!this.ErrorOccured) {
+                        if (this.ObjectStore.indexNames.contains(Column)) {
+                            if (Array.isArray(this.Query.Where[Column])) {
+                                for (var i = 0; i < this.Query.Where[Column].length; i++) {
+                                    executeInnerWhereLogic(Column, this.Query.Where[Column][i])
+                                }
+                            }
+                            else {
+                                executeInnerWhereLogic(Column, this.Query.Where[Column]);
                             }
                         }
+                        else {
+                            That.ErrorOccured = true;
+                            That.Error = UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                            That.onErrorOccured(That.Error, true);
+                        }
+                        break;
 
                     }
                     else {
-                        executeInnerWhereLogic(Column, this.Query.Where[Column]);
+                        return;
                     }
-                    break;
                 }
-
             }
 
             private executeWhereUndefinedLogic = function () {
@@ -210,12 +209,7 @@ module JsStore {
                     }
                 }
                 catch (ex) {
-                    if (ex.name == "NotFoundError") {
-                        UtilityLogic.getError(ErrorType.TableNotExist, true, { TableName: query.From });
-                    }
-                    else {
-                        console.error(ex);
-                    }
+                    this.onExceptionOccured(ex, { TableName: query.From });
                 }
             }
 

@@ -16,6 +16,10 @@ module JsStore {
                 }
                 DbDropRequest.onsuccess = function () {
                     Status.ConStatus = ConnectionStatus.Closed;
+                    localStorage.removeItem('JsStore_' + ActiveDataBase.Name + '_Db_Version');
+                    ActiveDataBase.Tables.forEach(function (item: Model.ITable) {
+                        localStorage.removeItem("JsStore_" + ActiveDataBase.Name + "_" + item.Name);
+                    });
                     if (onSuccess != null) {
                         onSuccess();
                     }

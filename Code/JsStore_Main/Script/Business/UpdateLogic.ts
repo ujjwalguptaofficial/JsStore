@@ -25,33 +25,47 @@ module JsStore {
             }
 
             private executeWhereLogic() {
-                var That = this;
-                for (var TmpColumn in this.Query.Where) {
-                    if (!this.ErrorOccured) {
-                        if (this.ObjectStore.indexNames.contains(TmpColumn)) {
-                            var CursorOpenRequest = That.ObjectStore.index(TmpColumn).openCursor(IDBKeyRange.only(That.Query.Where[TmpColumn]));
-                            CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                                if (Cursor) {
+                var That = this,
+                    executeInnerUpdateLogic = function (column, value) {
+                        var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
+                        CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            if (Cursor) {
+                                if (That.checkForWhereConditionMatch(That.Query.Where, Cursor.value)) {
                                     for (var key in That.Query.Set) {
                                         Cursor.value[key] = That.Query.Set[key];
                                     }
                                     Cursor.update(Cursor.value);
                                     ++That.RowAffected;
-                                    Cursor.continue();
                                 }
-
+                                Cursor.continue();
                             }
-                            CursorOpenRequest.onerror = function (e) {
-                                That.ErrorOccured = true;
-                                That.onErrorOccured(e);
+
+                        }
+                        CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        }
+
+                    };
+                for (var Column in this.Query.Where) {
+                    if (!this.ErrorOccured) {
+                        if (this.ObjectStore.indexNames.contains(Column)) {
+                            if (Array.isArray(this.Query.Where[Column])) {
+                                for (var i = 0; i < this.Query.Where[Column].length; i++) {
+                                    executeInnerUpdateLogic(Column, this.Query.Where[Column][i])
+                                }
+                            }
+                            else {
+                                executeInnerUpdateLogic(Column, this.Query.Where[Column]);
                             }
                         }
                         else {
+                            That.ErrorOccured = true;
                             That.Error = UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
                             That.onErrorOccured(That.Error, true);
                         }
-
+                        break;
                     }
                     else {
                         return;
@@ -90,16 +104,11 @@ module JsStore {
                     }
                 }
                 catch (ex) {
-                    if (ex.name == "NotFoundError") {
-                        UtilityLogic.getError(ErrorType.TableNotExist, true, { TableName: query.In });
-                    }
-                    else {
-                        console.error(ex);
-                    }
+                    this.onExceptionOccured(ex, { TableName: query.In });
                 }
             }
 
-            private checkSchema(value, tableName: string) {
+            private checkSchema(suppliedValue, tableName: string) {
                 var CurrentTable: Table,
                     That = this;
                 //get current table
@@ -111,22 +120,26 @@ module JsStore {
                     return true;
                 });
 
-                //
+                //loop through table column and find data is valid
                 CurrentTable.Columns.forEach(function (column: Column) {
                     if (!That.ErrorOccured) {
-                        //check not null schema
-                        if (column.Name in value) {
-                            if (column.NotNull && That.isNull(value[column.Name])) {
-                                That.ErrorOccured = true;
-                                That.Error = UtilityLogic.getError(ErrorType.NullValue, false, { ColumnName: column.Name });
-                            }
+                        if (column.Name in suppliedValue) {
+                            var executeCheck = function (value) {
+                                //check not null schema
+                                if (column.NotNull && That.isNull(value)) {
+                                    That.ErrorOccured = true;
+                                    That.Error = UtilityLogic.getError(ErrorType.NullValue, false, { ColumnName: column.Name });
+                                }
 
-                            //check datatype
-                            if (column.DataType && typeof value[column.Name] != column.DataType) {
-                                That.ErrorOccured = true;
-                                That.Error = UtilityLogic.getError(ErrorType.BadDataType, false, { ColumnName: column.Name });
-                            }
+                                //check datatype
+                                if (column.DataType && typeof value != column.DataType) {
+                                    That.ErrorOccured = true;
+                                    That.Error = UtilityLogic.getError(ErrorType.BadDataType, false, { ColumnName: column.Name });
+                                }
+                            };
+                            executeCheck(suppliedValue[column.Name]);
                         }
+
                     }
                 });
             }

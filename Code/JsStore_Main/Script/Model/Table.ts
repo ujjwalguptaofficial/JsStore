@@ -61,10 +61,10 @@ module JsStore {
 
             private setDbVersion(dbName: string) {
                 var Version = this.Version.toString(),
-                    DbVersion = Number(localStorage.getItem('JsStore_' + dbName + 'Db_Version'));
+                    DbVersion = Number(localStorage.getItem('JsStore_' + dbName + '_Db_Version'));
                 if (this.Version > DbVersion) {
                     //setting db version
-                    localStorage.setItem('JsStore_' + dbName + 'Db_Version', Version);
+                    localStorage.setItem('JsStore_' + dbName + '_Db_Version', Version);
                 }
                 //setting table version
                 localStorage.setItem("JsStore_" + dbName + "_" + this.Name, Version);

@@ -41,7 +41,7 @@ module JsStore {
                     });
                 }
                 catch (ex) {
-                    console.error(ex);
+                    this.onExceptionOccured(ex, { TableName: tableName });
                 }
             }
 

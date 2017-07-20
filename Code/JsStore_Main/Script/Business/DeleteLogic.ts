@@ -19,30 +19,44 @@ module JsStore {
             }
 
             private executeWhereDefinedLogic = function () {
-                var That = this;
+                var That = this,
+                    executeInnerDeleteLogic = function (column, value) {
+                        var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
+                        CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                        CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            if (Cursor) {
+                                if (That.checkForWhereConditionMatch(That.Query.Where, Cursor.value)) {
+                                    Cursor.delete();
+                                    ++That.RowAffected;
+                                }
+                                Cursor.continue();
+                            }
+
+                        }
+                    };
+
                 for (var Column in this.Query.Where) {
                     if (!That.ErrorOccured) {
                         if (That.ObjectStore.indexNames.contains(Column)) {
-                            var CursorOpenRequest = That.ObjectStore.index(Column).openCursor(IDBKeyRange.only(this.Query.Where[Column]));
-
-                            CursorOpenRequest.onerror = function (e) {
-                                That.ErrorOccured = true;
-                                That.onErrorOccured(e);
-                            };
-                            CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                                if (Cursor) {
-                                    Cursor.delete();
-                                    ++That.RowAffected;
-                                    Cursor.continue();
+                            if (Array.isArray(this.Query.Where[Column])) {
+                                for (var i = 0; i < this.Query.Where[Column].length; i++) {
+                                    executeInnerDeleteLogic(Column, this.Query.Where[Column][i])
                                 }
-
+                            }
+                            else {
+                                executeInnerDeleteLogic(Column, this.Query.Where[Column]);
                             }
                         }
                         else {
-                            UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                            That.ErrorOccured = true;
+                            That.Error = UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                            That.onErrorOccured(That.Error, true);
+                            return;
                         }
-
                     }
                     else {
                         return;
@@ -75,12 +89,7 @@ module JsStore {
 
                 }
                 catch (ex) {
-                    if (ex.name == "NotFoundError") {
-                        UtilityLogic.getError(ErrorType.TableNotExist, true, { TableName: query.From });
-                    }
-                    else {
-                        console.error(ex);
-                    }
+                    this.onExceptionOccured(ex, { TableName: query.From });
                 }
             }
         }

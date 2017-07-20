@@ -131,44 +131,6 @@ module JsStore {
                 }
             }
 
-
-            /**
-             * For matching the different column value existance
-             * 
-             * @private
-             * @param {any} where 
-             * @param {any} value 
-             * @returns 
-             * 
-             * @memberOf SelectLogic
-             */
-            protected checkForWhereConditionMatch(where, value) {
-                for (var TempColumn in where) {
-                    if (Array.isArray(where[TempColumn])) {
-                        var i, Status = true;
-                        for (i = 0; i < TempColumn.length; i++) {
-                            if (where[TempColumn][i] == value[TempColumn]) {
-                                Status = true;
-                                break;
-                            }
-                            else {
-                                Status = false;
-                            }
-                        };
-                        if (!Status) {
-                            return Status;
-                        }
-                    }
-                    else {
-                        if (where[TempColumn] != value[TempColumn]) {
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            }
-
-
         }
     }
 }

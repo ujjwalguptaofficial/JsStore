@@ -23,7 +23,7 @@ module JsStore {
          */
         createDb(dataBase: Model.IDataBase, onSuccess: Function, onError: Function = null) {
             var Db = new DataBase(dataBase),
-                DbVersion = Number(localStorage.getItem('JsStore_' + dataBase.Name + 'Db_Version'));
+                DbVersion = Number(localStorage.getItem('JsStore_' + dataBase.Name + '_Db_Version'));
             this.IndexDbObj = new Business.MainLogic(Db);
             this.IndexDbObj.createDb(this, DbVersion, onSuccess, onError);
             return this;
