@@ -591,7 +591,7 @@ var JsStore;
                             value[column.Name] = ++ColumnValue;
                             localStorage.setItem(tableName + "_" + column.Name + "value:", ColumnValue.toString());
                         }
-                        else if (column.Default) {
+                        else if (!value[column.Name] && column.Default) {
                             value[column.Name] = column.Default;
                         }
                         if (column.NotNull && value[column.Name] == null) {
@@ -1709,6 +1709,25 @@ var JsStore;
                 var That = this;
                 this.openDb(function () {
                     That.delete(query, onSuccess, onError);
+                });
+            }
+        };
+        Instance.prototype.clear = function (tableName, onSuccess, onError) {
+            if (onSuccess === void 0) { onSuccess = null; }
+            if (onError === void 0) { onError = null; }
+            if (JsStore.Status.ConStatus == JsStore.ConnectionStatus.Connected) {
+                this.IndexDbObj.clear(tableName, onSuccess, onSuccess);
+            }
+            else if (JsStore.Status.ConStatus == JsStore.ConnectionStatus.NotStarted) {
+                var That = this;
+                setTimeout(function () {
+                    That.clear(tableName, onSuccess, onSuccess);
+                }, 50);
+            }
+            else if (JsStore.Status.ConStatus == JsStore.ConnectionStatus.Closed) {
+                var That = this;
+                this.openDb(function () {
+                    That.clear(tableName, onSuccess, onSuccess);
                 });
             }
         };

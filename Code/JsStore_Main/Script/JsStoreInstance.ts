@@ -213,5 +213,23 @@ module JsStore {
 
             }
         }
+
+        clear(tableName: string, onSuccess: Function = null, onError: Function = null) {
+            if (Status.ConStatus == ConnectionStatus.Connected) {
+                this.IndexDbObj.clear(tableName, onSuccess, onSuccess);
+            }
+            else if (Status.ConStatus == ConnectionStatus.NotStarted) {
+                var That = this;
+                setTimeout(function () {
+                    That.clear(tableName, onSuccess, onSuccess);
+                }, 50);
+            }
+            else if (Status.ConStatus == ConnectionStatus.Closed) {
+                var That = this;
+                this.openDb(function () {
+                    That.clear(tableName, onSuccess, onSuccess);
+                })
+            }
+        }
     }
 }

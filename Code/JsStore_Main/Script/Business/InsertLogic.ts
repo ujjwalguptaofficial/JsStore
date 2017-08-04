@@ -73,7 +73,7 @@ module JsStore {
                             value[column.Name] = ++ColumnValue;
                             localStorage.setItem(tableName + "_" + column.Name + "value:", ColumnValue.toString());
                         }
-                        else if (column.Default) { //check Default Schema
+                        else if (!value[column.Name] && column.Default) { //check Default Schema
                             value[column.Name] = column.Default;
                         }
 
