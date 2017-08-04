@@ -73,13 +73,8 @@ module JsStore {
                             value[column.Name] = ++ColumnValue;
                             localStorage.setItem(tableName + "_" + column.Name + "value:", ColumnValue.toString());
                         }
-                        else if (column.CurrentDate) { //check CurrentDate Schema
-                            var CurDate = new Date();
-                            value[column.Name] = {
-                                DD: CurDate.getDate(),
-                                MM: CurDate.getMonth() + 1,
-                                YY: CurDate.getFullYear()
-                            }
+                        else if (column.Default) { //check Default Schema
+                            value[column.Name] = column.Default;
                         }
 
                         //check not null schema

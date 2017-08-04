@@ -6,9 +6,9 @@ module JsStore {
             AutoIncrement: boolean;
             PrimaryKey: boolean;
             Unique: boolean;
-            CurrentDate: boolean;
             NotNull: boolean;
             DataType: string;
+            Default: any;
         }
 
         export class Column implements IColumn {
@@ -16,10 +16,9 @@ module JsStore {
             AutoIncrement: boolean;
             PrimaryKey: boolean;
             Unique: boolean;
-            CurrentDate: boolean;
             NotNull: boolean;
             DataType: string;
-            Searchable: boolean;
+            Default: any;
 
             constructor(key: IColumn, tableName: string) {
                 if (key.Name != null) {
@@ -31,9 +30,9 @@ module JsStore {
                 this.AutoIncrement = key.AutoIncrement != null ? key.AutoIncrement : false;
                 this.PrimaryKey = key.PrimaryKey != null ? key.PrimaryKey : false;
                 this.Unique = key.Unique != null ? key.Unique : false;
-                this.CurrentDate = key.CurrentDate != null ? key.CurrentDate : false;
                 this.NotNull = key.NotNull != null ? key.NotNull : false;
                 this.DataType = key.DataType != null ? key.DataType : '';
+                this.Default = key.Default;
             }
 
         }

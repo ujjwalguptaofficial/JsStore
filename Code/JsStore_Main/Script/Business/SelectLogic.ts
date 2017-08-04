@@ -113,10 +113,9 @@ module JsStore {
                     CursorOpenRequest;
                 if (this.Query.Order && this.Query.Order.By) {
                     if (That.ObjectStore.indexNames.contains(this.Query.Order.By)) {
-                        // this.Query.Order.Type = this.Query.Order.Type ? this.Query.Order.Type.toLowerCase() : 'asc';
-                        var Order = this.Query.Order.Type && this.Query.Order.Type.toLowerCase() == 'desc' ? 'prev' : 'next';
+                        var OrderType = this.Query.Order.Type && this.Query.Order.Type.toLowerCase() == 'desc' ? 'prev' : 'next';
                         this.Sorted = true;
-                        CursorOpenRequest = this.ObjectStore.index(That.Query.Order.By).openCursor(null, Order);
+                        CursorOpenRequest = this.ObjectStore.index(That.Query.Order.By).openCursor(null, OrderType);
                     }
                     else {
                         UtilityLogic.getError(ErrorType.ColumnNotExist, true, { ColumnName: this.Query.Order.By });

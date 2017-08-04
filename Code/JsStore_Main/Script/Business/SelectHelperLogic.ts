@@ -46,7 +46,7 @@ module JsStore {
                         };
                     if (this.ObjectStore.indexNames.contains(whereIn.Column)) {
                         if (whereIn.Op == '~' && typeof whereIn.Value == 'string') {
-                            var Value = whereIn.Value.toLowerCase(),
+                            var Value = (<any>whereIn.Value).toLowerCase(),
                                 Column = whereIn.Column;
                             CursorOpenRequest = this.ObjectStore.index(whereIn.Column).openCursor(KeyRange);
                             CursorOpenRequest.onsuccess = function (e) {

@@ -130,9 +130,9 @@ var JsStore;
                 this.AutoIncrement = key.AutoIncrement != null ? key.AutoIncrement : false;
                 this.PrimaryKey = key.PrimaryKey != null ? key.PrimaryKey : false;
                 this.Unique = key.Unique != null ? key.Unique : false;
-                this.CurrentDate = key.CurrentDate != null ? key.CurrentDate : false;
                 this.NotNull = key.NotNull != null ? key.NotNull : false;
                 this.DataType = key.DataType != null ? key.DataType : '';
+                this.Default = key.Default;
             }
             return Column;
         }());
@@ -591,13 +591,8 @@ var JsStore;
                             value[column.Name] = ++ColumnValue;
                             localStorage.setItem(tableName + "_" + column.Name + "value:", ColumnValue.toString());
                         }
-                        else if (column.CurrentDate) {
-                            var CurDate = new Date();
-                            value[column.Name] = {
-                                DD: CurDate.getDate(),
-                                MM: CurDate.getMonth() + 1,
-                                YY: CurDate.getFullYear()
-                            };
+                        else if (column.Default) {
+                            value[column.Name] = column.Default;
                         }
                         if (column.NotNull && value[column.Name] == null) {
                             That.ErrorOccured = true;
@@ -688,16 +683,16 @@ var JsStore;
                     var KeyRange;
                     switch (whereIn.Op) {
                         case '-':
-                            KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, true, true);
+                            KeyRange = IDBKeyRange.bound(whereIn.Value.Low, whereIn.Value.High, true, true);
                             break;
                         case '=-':
-                            KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, false, true);
+                            KeyRange = IDBKeyRange.bound(whereIn.Value.Low, whereIn.Value.High, false, true);
                             break;
                         case '-=':
-                            KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, true, false);
+                            KeyRange = IDBKeyRange.bound(whereIn.Value.Low, whereIn.Value.High, true, false);
                             break;
                         case '=-=':
-                            KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, false, false);
+                            KeyRange = IDBKeyRange.bound(whereIn.Value.Low, whereIn.Value.High, false, false);
                             break;
                         case '>':
                             KeyRange = IDBKeyRange.lowerBound(whereIn.Value, true);
@@ -757,31 +752,31 @@ var JsStore;
                         });
                         That.Results = ValuesFound;
                     }, executeBetweenIn = function () {
-                        var LowValue = whereIn.Start, Highvalue = whereIn.End;
+                        var LowValue = Value.Low, Highvalue = Value.High;
                         if (whereIn.Op == '-') {
                             That.Results.forEach(function (item) {
-                                if (item[Column] > LowValue && item[Column] < LowValue) {
+                                if (item[Column] > LowValue && item[Column] < Highvalue) {
                                     ValuesFound.push(item);
                                 }
                             });
                         }
                         else if (whereIn.Op == '=-') {
                             That.Results.forEach(function (item) {
-                                if (item[Column] >= LowValue && item[Column] < LowValue) {
+                                if (item[Column] >= LowValue && item[Column] <= Highvalue) {
                                     ValuesFound.push(item);
                                 }
                             });
                         }
                         else if (whereIn.Op == '-=') {
                             That.Results.forEach(function (item) {
-                                if (item[Column] > LowValue && item[Column] <= LowValue) {
+                                if (item[Column] >= LowValue && item[Column] < Highvalue) {
                                     ValuesFound.push(item);
                                 }
                             });
                         }
                         else if (whereIn.Op == '=-=') {
                             That.Results.forEach(function (item) {
-                                if (item[Column] >= LowValue && item[Column] <= LowValue) {
+                                if (item[Column] >= LowValue && item[Column] <= Highvalue) {
                                     ValuesFound.push(item);
                                 }
                             });
@@ -1267,9 +1262,9 @@ var JsStore;
                     var That = this, CursorOpenRequest;
                     if (this.Query.Order && this.Query.Order.By) {
                         if (That.ObjectStore.indexNames.contains(this.Query.Order.By)) {
-                            var Order = this.Query.Order.Type && this.Query.Order.Type.toLowerCase() == 'desc' ? 'prev' : 'next';
+                            var OrderType = this.Query.Order.Type && this.Query.Order.Type.toLowerCase() == 'desc' ? 'prev' : 'next';
                             this.Sorted = true;
-                            CursorOpenRequest = this.ObjectStore.index(That.Query.Order.By).openCursor(null, Order);
+                            CursorOpenRequest = this.ObjectStore.index(That.Query.Order.By).openCursor(null, OrderType);
                         }
                         else {
                             JsStore.UtilityLogic.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: this.Query.Order.By });
@@ -1918,4 +1913,4 @@ var JsStore;
         Business.CountLogic = CountLogic;
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
-//# sourceMappingURL=JsStorage.js.map
+//# sourceMappingURL=JsStore.js.map

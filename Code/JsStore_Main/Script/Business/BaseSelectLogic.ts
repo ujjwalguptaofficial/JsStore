@@ -7,10 +7,10 @@ module JsStore {
             protected getKeyRange = function (whereIn: IWhereIn) {
                 var KeyRange: IDBKeyRange;
                 switch (whereIn.Op) {
-                    case '-': KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, true, true); break;
-                    case '=-': KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, false, true); break;
-                    case '-=': KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, true, false); break;
-                    case '=-=': KeyRange = IDBKeyRange.bound(whereIn.Start, whereIn.End, false, false); break;
+                    case '-': KeyRange = IDBKeyRange.bound(whereIn.Value.Low, whereIn.Value.High, true, true); break;
+                    case '=-': KeyRange = IDBKeyRange.bound(whereIn.Value.Low, whereIn.Value.High, false, true); break;
+                    case '-=': KeyRange = IDBKeyRange.bound(whereIn.Value.Low, whereIn.Value.High, true, false); break;
+                    case '=-=': KeyRange = IDBKeyRange.bound(whereIn.Value.Low, whereIn.Value.High, false, false); break;
                     case '>': KeyRange = IDBKeyRange.lowerBound(whereIn.Value, true); break;
                     case '>=': KeyRange = IDBKeyRange.lowerBound(whereIn.Value); break;
                     case '<': KeyRange = IDBKeyRange.upperBound(whereIn.Value, true); break;
@@ -23,7 +23,7 @@ module JsStore {
 
             }
 
-            protected filterResultBasedOnOp = function (whereIn) {
+            protected filterResultBasedOnOp = function (whereIn: IWhereIn) {
                 var That = this,
                     Column = whereIn.Column,
                     Value = whereIn.Value,
@@ -46,7 +46,7 @@ module JsStore {
                     },
                     executeContains = function () {
                         if (typeof That.Results[0][Column] == 'string') {
-                            Value = Value.toLowerCase();
+                            Value = (Value as any).toLowerCase();
                             That.Results.forEach(function (item) {
                                 if (item[Column].toLowerCase().indexOf(Value) >= 0) {
                                     ValuesFound.push(item);
@@ -68,31 +68,31 @@ module JsStore {
                         That.Results = ValuesFound;
                     },
                     executeBetweenIn = function () {
-                        var LowValue = whereIn.Start, Highvalue = whereIn.End;
+                        var LowValue = Value.Low, Highvalue = Value.High;
                         if (whereIn.Op == '-') {
                             That.Results.forEach(function (item) {
-                                if (item[Column] > LowValue && item[Column] < LowValue) {
+                                if (item[Column] > LowValue && item[Column] < Highvalue) {
                                     ValuesFound.push(item);
                                 }
                             });
                         }
                         else if (whereIn.Op == '=-') {
                             That.Results.forEach(function (item) {
-                                if (item[Column] >= LowValue && item[Column] < LowValue) {
+                                if (item[Column] >= LowValue && item[Column] <= Highvalue) {
                                     ValuesFound.push(item);
                                 }
                             });
                         }
                         else if (whereIn.Op == '-=') {
                             That.Results.forEach(function (item) {
-                                if (item[Column] > LowValue && item[Column] <= LowValue) {
+                                if (item[Column] >= LowValue && item[Column] < Highvalue) {
                                     ValuesFound.push(item);
                                 }
                             });
                         }
                         else if (whereIn.Op == '=-=') {
                             That.Results.forEach(function (item) {
-                                if (item[Column] >= LowValue && item[Column] <= LowValue) {
+                                if (item[Column] >= LowValue && item[Column] <= Highvalue) {
                                     ValuesFound.push(item);
                                 }
                             });

@@ -47,10 +47,11 @@ module JsStore {
 
     export interface IWhereIn {
         Column: string,
-        Value,
-        Start,
-        Op,
-        End
+        Value: {
+            Low: any,
+            High: any
+        },
+        Op
     }
 
     export interface IUpdate {
