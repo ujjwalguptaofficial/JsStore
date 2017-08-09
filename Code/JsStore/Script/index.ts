@@ -9,7 +9,7 @@
 /// <reference path="Model/Table.ts" />
 /// <reference path="Model/DataBase.ts" />
 //Business
-/// <reference path="Business/AjaxHelperLogic.ts" />
+
 /// <reference path="Business/BaseLogic.ts" />
 /// <reference path="Business/CreateDbLogic.ts" />
 /// <reference path="Business/DeleteLogic.ts" />
@@ -29,5 +29,8 @@
 /// <reference path="CodeExecutionHelper.ts" />
 
 /// <reference path="JsStoreInstance.ts" />
+
+/// <reference path="WebWorkerEventLogic.ts" />
+
 
 

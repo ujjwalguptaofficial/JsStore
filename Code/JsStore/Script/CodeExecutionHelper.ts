@@ -74,28 +74,37 @@ module JsStore {
 
         protected createWorker = function () {
             var That = this;
-            new WebWorker.Main().getWorkerUrl(function (url) {
-                That.WorkerInstance = new Worker(url);
-                That.WorkerInstance.onmessage = function (msg) {
+            if (Worker) {
+                this.WorkerInstance = new Worker(this.getScriptUrl());
+                this.WorkerInstance.onmessage = function (msg) {
                     That.onMessageFromWorker(msg);
                 }
                 setTimeout(function () {
                     if (That.WorkerStatus != WebWorkerStatus.Failed) {
                         That.WorkerStatus = WebWorkerStatus.Registered;
                     }
-                    else {
-                        console.warn('JsStore is not runing in web worker');
-                    }
                     That.executeCode();
                 }, 100);
+            }
+            else {
+                console.warn('JsStore is not runing in web worker');
+                That.WorkerStatus = WebWorkerStatus.Failed;
+                That.executeCode();
+            }
+        }
 
-            }, function () {
-                setTimeout(function () {
-                    console.warn('JsStore is not runing in web worker');
-                    That.WorkerStatus = WebWorkerStatus.Failed;
-                    That.executeCode();
-                }, 100);
-            });
+        private getScriptUrl(fileName: string) {
+            var ScriptUrl = "";
+            var FileName = fileName ? fileName.toLowerCase() : "jsstorage";
+            var Scripts = document.getElementsByTagName('script');
+            for (var i = Scripts.length - 1; i >= 0; i--) {
+                ScriptUrl = Scripts[i].src.toLowerCase();
+                if (ScriptUrl.length > 0 && ScriptUrl.indexOf(FileName) >= 0) {
+                    console.log(ScriptUrl);
+                    break;
+                }
+            }
+            return ScriptUrl;
         }
 
         private onMessageFromWorker = function (msg) {

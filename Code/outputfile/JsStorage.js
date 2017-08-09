@@ -80,27 +80,23 @@ var JsStore;
             };
             this.createWorker = function () {
                 var That = this;
-                new JsStore.WebWorker.Main().getWorkerUrl(function (url) {
-                    That.WorkerInstance = new Worker(url);
-                    That.WorkerInstance.onmessage = function (msg) {
+                if (Worker) {
+                    this.WorkerInstance = new Worker(this.getScriptUrl());
+                    this.WorkerInstance.onmessage = function (msg) {
                         That.onMessageFromWorker(msg);
                     };
                     setTimeout(function () {
                         if (That.WorkerStatus != WebWorkerStatus.Failed) {
                             That.WorkerStatus = WebWorkerStatus.Registered;
                         }
-                        else {
-                            console.warn('JsStore is not runing in web worker');
-                        }
                         That.executeCode();
                     }, 100);
-                }, function () {
-                    setTimeout(function () {
-                        console.warn('JsStore is not runing in web worker');
-                        That.WorkerStatus = WebWorkerStatus.Failed;
-                        That.executeCode();
-                    }, 100);
-                });
+                }
+                else {
+                    console.warn('JsStore is not runing in web worker');
+                    That.WorkerStatus = WebWorkerStatus.Failed;
+                    That.executeCode();
+                }
             };
             this.onMessageFromWorker = function (msg) {
                 if (typeof msg.data == 'string') {
@@ -116,6 +112,19 @@ var JsStore;
                 }
             };
         }
+        CodeExecutionHelper.prototype.getScriptUrl = function (fileName) {
+            var ScriptUrl = "";
+            var FileName = fileName ? fileName.toLowerCase() : "jsstorage";
+            var Scripts = document.getElementsByTagName('script');
+            for (var i = Scripts.length - 1; i >= 0; i--) {
+                ScriptUrl = Scripts[i].src.toLowerCase();
+                if (ScriptUrl.length > 0 && ScriptUrl.indexOf(FileName) >= 0) {
+                    console.log(ScriptUrl);
+                    break;
+                }
+            }
+            return ScriptUrl;
+        };
         return CodeExecutionHelper;
     }());
     JsStore.CodeExecutionHelper = CodeExecutionHelper;
@@ -344,71 +353,6 @@ var JsStore;
         }());
         Model.DataBase = DataBase;
     })(Model = JsStore.Model || (JsStore.Model = {}));
-})(JsStore || (JsStore = {}));
-var JsStore;
-(function (JsStore) {
-    var Business;
-    (function (Business) {
-        var AjaxReqType;
-        (function (AjaxReqType) {
-            AjaxReqType["Get"] = "GET";
-            AjaxReqType["Post"] = "POST";
-        })(AjaxReqType = Business.AjaxReqType || (Business.AjaxReqType = {}));
-        var AjaxHelper = (function () {
-            function AjaxHelper() {
-                this.XMLHttpFactories = [
-                    function () { return new XMLHttpRequest(); },
-                    function () { return new ActiveXObject("Msxml3.XMLHTTP"); },
-                    function () { return new ActiveXObject("Msxml2.XMLHTTP.6.0"); },
-                    function () { return new ActiveXObject("Msxml2.XMLHTTP.3.0"); },
-                    function () { return new ActiveXObject("Msxml2.XMLHTTP"); },
-                    function () { return new ActiveXObject("Microsoft.XMLHTTP"); }
-                ];
-                this.sendRequest = function (option) {
-                    var Req = this.createXMLHTTPObject();
-                    if (!Req)
-                        return;
-                    Req.open(option.Type, option.Url, true);
-                    if (option.Type == AjaxReqType.Post) {
-                        var ContentType = option.ContentType ? option.ContentType : 'application/x-www-form-urlencoded';
-                        Req.setRequestHeader('Content-type', ContentType);
-                    }
-                    Req.onreadystatechange = function () {
-                        if (Req.readyState != 4)
-                            return;
-                        if (Req.status != 200 && Req.status != 304) {
-                            if (option.OnError) {
-                                option.OnError(Req.responseText, Req.status);
-                            }
-                        }
-                        else {
-                            if (option.OnSuccess) {
-                                option.OnSuccess(Req.responseText, Req.status);
-                            }
-                        }
-                    };
-                    if (Req.readyState == 4)
-                        return;
-                    Req.send(option.PostData);
-                };
-                this.createXMLHTTPObject = function () {
-                    var xmlhttp = false;
-                    for (var i = 0; i < this.XMLHttpFactories.length; i++) {
-                        try {
-                            xmlhttp = this.XMLHttpFactories[i]();
-                        }
-                        catch (e) {
-                            continue;
-                        }
-                        break;
-                    }
-                    return xmlhttp;
-                };
-            }
-            return AjaxHelper;
-        }());
-        Business.AjaxHelper = AjaxHelper;
-    })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
@@ -1992,6 +1936,14 @@ var JsStore;
     }(JsStore.CodeExecutionHelper));
     JsStore.Instance = Instance;
 })(JsStore || (JsStore = {}));
+(!self.alert);
+{
+    self.onmessage = function (e) {
+        console.log("WebWorker:" + e.data.Name);
+        var Request = e.data, IndexDbObject = new JsStore.Business.Main();
+        IndexDbObject.checkConnectionAndExecuteLogic(Request);
+    };
+}
 var JsStore;
 (function (JsStore) {
     var Business;
@@ -2188,65 +2140,6 @@ var JsStore;
         }(Business.BaseCount));
         Business.Count = Count;
     })(Business = JsStore.Business || (JsStore.Business = {}));
-})(JsStore || (JsStore = {}));
-var JsStore;
-(function (JsStore) {
-    var WebWorker;
-    (function (WebWorker) {
-        var Main = (function () {
-            function Main() {
-                this.getWorkerUrl = function (onSuccess, onFail) {
-                    var That = this;
-                    new JsStore.Business.AjaxHelper().sendRequest({
-                        Url: this.getScriptUrl(),
-                        Type: JsStore.Business.AjaxReqType.Get,
-                        OnError: function (response, status) {
-                            if (status != 0) {
-                                console.error('unable to load JsStore, error code:' + status + " response is : " + response);
-                            }
-                            onFail();
-                        },
-                        OnSuccess: function (response) {
-                            if (response.length > 0) {
-                                var Url = That.convertStringIntoWorker(response + That.getWorkerEventsinString());
-                                onSuccess(Url);
-                            }
-                            else {
-                                onFail();
-                            }
-                        },
-                        PostData: null,
-                        ContentType: null
-                    });
-                };
-                this.getWorkerEventsinString = function () {
-                    var WorkerEventsInString = "\n;self.onmessage = function (e) {\n                    console.log(\"WebWorker:\"+e.data.Name);\n                var Request = e.data, IndexDbObject = new JsStore.Business.Main();\n                IndexDbObject.checkConnectionAndExecuteLogic(Request);\n                };";
-                    return WorkerEventsInString;
-                };
-                this.convertStringIntoWorker = function (string) {
-                    var BlobStorage = new Blob([string], {
-                        type: "text/javascript"
-                    }), Url = window.URL.createObjectURL(BlobStorage);
-                    return Url;
-                };
-            }
-            Main.prototype.getScriptUrl = function (fileName) {
-                var ScriptUrl = "";
-                var FileName = fileName ? fileName.toLowerCase() : "jsstorage";
-                var Scripts = document.getElementsByTagName('script');
-                for (var i = Scripts.length - 1; i >= 0; i--) {
-                    ScriptUrl = Scripts[i].src.toLowerCase();
-                    if (ScriptUrl.length > 0 && ScriptUrl.indexOf(FileName) >= 0) {
-                        console.log(ScriptUrl);
-                        break;
-                    }
-                }
-                return ScriptUrl;
-            };
-            return Main;
-        }());
-        WebWorker.Main = Main;
-    })(WebWorker = JsStore.WebWorker || (JsStore.WebWorker = {}));
 })(JsStore || (JsStore = {}));
 var KeyStore;
 (function (KeyStore) {
