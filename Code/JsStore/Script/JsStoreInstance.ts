@@ -14,9 +14,9 @@ module JsStore {
             }
             catch (ex) {
                 this.WorkerStatus = WebWorkerStatus.Failed;
+                console.warn('JsStore is not runing in web worker');
             }
         }
-
 
         /**
          * creates DataBase

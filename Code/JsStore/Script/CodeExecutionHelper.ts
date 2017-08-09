@@ -112,6 +112,7 @@ module JsStore {
                 var Datas = msg.data.split(':')[1];
                 switch (Datas) {
                     case 'WorkerFailed': this.WorkerStatus = WebWorkerStatus.Failed;
+                        console.warn('JsStore is not runing in web worker');
                         break;
                 }
             }

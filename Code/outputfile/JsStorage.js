@@ -104,6 +104,7 @@ var JsStore;
                     switch (Datas) {
                         case 'WorkerFailed':
                             this.WorkerStatus = WebWorkerStatus.Failed;
+                            console.warn('JsStore is not runing in web worker');
                             break;
                     }
                 }
@@ -762,7 +763,7 @@ var JsStore;
                             if (column.AutoIncrement) {
                                 KeyStore.get("JsStore_" + Business.ActiveDataBase.Name + "_" + TableName + "_" + column.Name + "_Value", function (columnValue) {
                                     value[column.Name] = ++columnValue;
-                                    KeyStore.set(TableName + "_" + column.Name + "_Value", columnValue);
+                                    KeyStore.set("JsStore_" + Business.ActiveDataBase.Name + "_" + TableName + "_" + column.Name + "_Value", columnValue);
                                     CheckNotNullAndDataType();
                                 });
                             }
@@ -1846,6 +1847,7 @@ var JsStore;
             }
             catch (ex) {
                 _this.WorkerStatus = JsStore.WebWorkerStatus.Failed;
+                console.warn('JsStore is not runing in web worker');
             }
             return _this;
         }

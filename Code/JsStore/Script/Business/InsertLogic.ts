@@ -101,7 +101,7 @@ module JsStore {
                                 if (column.AutoIncrement) {
                                     KeyStore.get("JsStore_" + ActiveDataBase.Name + "_" + TableName + "_" + column.Name + "_Value", function (columnValue: number) {
                                         value[column.Name] = ++columnValue;
-                                        KeyStore.set(TableName + "_" + column.Name + "_Value", columnValue);
+                                        KeyStore.set("JsStore_" + ActiveDataBase.Name + "_" + TableName + "_" + column.Name + "_Value", columnValue);
                                         CheckNotNullAndDataType();
                                     });
                                 }
