@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "noImplicitAny": false,
+        "noEmitOnError": true,
+        "removeComments": true,
+        "sourceMap": true,
+        "inlineSources": true,
+        "out": "outputfile/JsStorage.js",
+        "target": "es5",
+        "preserveConstEnums": true
+    }
+}
