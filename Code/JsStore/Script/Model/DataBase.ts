@@ -24,12 +24,10 @@ module JsStore {
                 var That = this,
                     createDb = function () {
                         setTimeout(function () {
-                            console.log('calling create db');
                             var LastTable = (<ITable>That.Tables[That.Tables.length - 1]);
                             KeyStore.get("JsStore_" + That.Name + "_" + LastTable.Name + "_Version", function (version) {
                                 if (version == LastTable.Version) {
                                     KeyStore.get('JsStore_' + That.Name + '_Db_Version', function (dbVersion) {
-                                        console.log('db version is: ' + dbVersion);
                                         Business.ActiveDataBase = That;
                                         new Business.CreateDb(dbVersion, onSuccess, onError)
                                     });

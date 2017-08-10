@@ -37,6 +37,8 @@ module JsStore {
                     if (onSuccess != null) {
                         onSuccess();
                     }
+                    //save dbSchema in keystore
+                    KeyStore.set("JsStore_" + ActiveDataBase.Name + "_Schema", ActiveDataBase);
                 };
 
                 DbRequest.onupgradeneeded = function (event) {

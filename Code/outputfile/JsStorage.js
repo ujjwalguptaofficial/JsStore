@@ -326,12 +326,10 @@ var JsStore;
                     console.log('create Database called');
                     var That = this, createDb = function () {
                         setTimeout(function () {
-                            console.log('calling create db');
                             var LastTable = That.Tables[That.Tables.length - 1];
                             KeyStore.get("JsStore_" + That.Name + "_" + LastTable.Name + "_Version", function (version) {
                                 if (version == LastTable.Version) {
                                     KeyStore.get('JsStore_' + That.Name + '_Db_Version', function (dbVersion) {
-                                        console.log('db version is: ' + dbVersion);
                                         JsStore.Business.ActiveDataBase = That;
                                         new JsStore.Business.CreateDb(dbVersion, onSuccess, onError);
                                     });
@@ -492,6 +490,7 @@ var JsStore;
                     if (onSuccess != null) {
                         onSuccess();
                     }
+                    KeyStore.set("JsStore_" + Business.ActiveDataBase.Name + "_Schema", Business.ActiveDataBase);
                 };
                 DbRequest.onupgradeneeded = function (event) {
                     var db = event.target.result;
@@ -1759,19 +1758,40 @@ var JsStore;
                         case 'insert':
                             this.insert(request.Query, OnSuccess, OnError);
                             break;
-                        case 'update': break;
-                        case 'delete': break;
+                        case 'update':
+                            this.update(request.Query, OnSuccess, OnError);
+                            break;
+                        case 'delete':
+                            this.delete(request.Query, OnSuccess, OnError);
+                            break;
                         case 'create_db':
                             this.createDb(request.Query, OnSuccess, OnError);
                             break;
-                        case 'clear': break;
-                        case 'dropDb': break;
-                        case 'count': break;
+                        case 'clear':
+                            this.clear(request.Query, OnSuccess, OnError);
+                            break;
+                        case 'dropDb':
+                            this.dropDb(OnSuccess, OnError);
+                            break;
+                        case 'count':
+                            this.count(request.Query, OnSuccess, OnError);
+                            break;
+                        case 'open_db':
+                            this.openDb(request.Query, OnSuccess, OnError);
+                            break;
                     }
                 };
-                this.openDb = function (onSuccess, onError) {
-                    KeyStore.get(Business.ActiveDataBase.Name + 'Db_Version', function (dbVersion) {
-                        new Business.OpenDb(dbVersion, onSuccess, onError);
+                this.openDb = function (dbName, onSuccess, onError) {
+                    KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
+                        if (dbVersion != null) {
+                            KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
+                                Business.ActiveDataBase = result;
+                                new Business.OpenDb(dbVersion, onSuccess, onError);
+                            });
+                        }
+                        else {
+                            console.error('Database: ' + dbName + " does not exist");
+                        }
                     });
                 };
                 this.closeDb = function () {
@@ -1839,9 +1859,16 @@ var JsStore;
 (function (JsStore) {
     var Instance = (function (_super) {
         __extends(Instance, _super);
-        function Instance() {
+        function Instance(dbName) {
             var _this = _super.call(this) || this;
             JsStore.Utils.setDbType();
+            if (dbName != null) {
+                _this.prcoessExecutionOfCode({
+                    Name: 'open_db',
+                    Query: dbName
+                });
+                return _this;
+            }
             try {
                 _this.createWorker();
             }
@@ -1868,6 +1895,7 @@ var JsStore;
                 OnSuccess: onSuccess,
                 OnError: onError
             });
+            return this;
         };
         Instance.prototype.select = function (query, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
@@ -1879,6 +1907,7 @@ var JsStore;
                 OnSuccess: OnSuccess,
                 OnError: OnError
             });
+            return this;
         };
         Instance.prototype.count = function (query, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
@@ -1890,6 +1919,7 @@ var JsStore;
                 OnSuccess: OnSuccess,
                 OnError: OnError
             });
+            return this;
         };
         Instance.prototype.insert = function (query, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
@@ -1901,6 +1931,7 @@ var JsStore;
                 OnSuccess: OnSuccess,
                 OnError: OnError
             });
+            return this;
         };
         Instance.prototype.update = function (query, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
@@ -1912,6 +1943,7 @@ var JsStore;
                 OnSuccess: OnSuccess,
                 OnError: OnError
             });
+            return this;
         };
         Instance.prototype.delete = function (query, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
@@ -1923,6 +1955,7 @@ var JsStore;
                 OnSuccess: OnSuccess,
                 OnError: OnError
             });
+            return this;
         };
         Instance.prototype.clear = function (tableName, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
@@ -1933,6 +1966,7 @@ var JsStore;
                 OnSuccess: onSuccess,
                 OnError: onerror
             });
+            return this;
         };
         return Instance;
     }(JsStore.CodeExecutionHelper));

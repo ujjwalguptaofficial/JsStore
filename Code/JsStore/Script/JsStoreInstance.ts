@@ -5,10 +5,16 @@ import Table = Model.Table;
 module JsStore {
 
     export class Instance extends CodeExecutionHelper {
-
-        constructor() {
+        constructor(dbName) {
             super();
             Utils.setDbType();
+            if (dbName != null) {
+                this.prcoessExecutionOfCode(<IWebWorkerRequest>{
+                    Name: 'open_db',
+                    Query: dbName
+                });
+                return this;
+            }
             try {
                 this.createWorker();
             }
@@ -52,6 +58,7 @@ module JsStore {
                 OnSuccess: onSuccess,
                 OnError: onError
             });
+            return this;
         }
 
         /**
@@ -72,6 +79,7 @@ module JsStore {
                 OnSuccess: OnSuccess,
                 OnError: OnError
             });
+            return this;
         }
 
         /**
@@ -91,6 +99,7 @@ module JsStore {
                 OnSuccess: OnSuccess,
                 OnError: OnError
             });
+            return this;
         }
 
 
@@ -111,6 +120,7 @@ module JsStore {
                 OnSuccess: OnSuccess,
                 OnError: OnError
             });
+            return this;
         }
 
         /**
@@ -130,6 +140,7 @@ module JsStore {
                 OnSuccess: OnSuccess,
                 OnError: OnError
             });
+            return this;
         }
 
         /**
@@ -149,6 +160,7 @@ module JsStore {
                 OnSuccess: OnSuccess,
                 OnError: OnError
             });
+            return this;
         }
 
         /**
@@ -166,6 +178,7 @@ module JsStore {
                 OnSuccess: onSuccess,
                 OnError: onerror
             });
+            return this;
         }
     }
 }

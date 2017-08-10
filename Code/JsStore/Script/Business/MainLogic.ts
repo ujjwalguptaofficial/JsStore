@@ -70,19 +70,34 @@ module JsStore {
                         break;
                     case 'insert': this.insert(request.Query, OnSuccess, OnError);
                         break;
-                    case 'update': break;
-                    case 'delete': break;
+                    case 'update': this.update(request.Query, OnSuccess, OnError);
+                        break;
+                    case 'delete': this.delete(request.Query, OnSuccess, OnError);
+                        break;
                     case 'create_db': this.createDb(request.Query, OnSuccess, OnError);
                         break;
-                    case 'clear': break;
-                    case 'dropDb': break;
-                    case 'count': break;
+                    case 'clear': this.clear(request.Query, OnSuccess, OnError);
+                        break;
+                    case 'dropDb': this.dropDb(OnSuccess, OnError);
+                        break;
+                    case 'count': this.count(request.Query, OnSuccess, OnError);
+                        break;
+                    case 'open_db': this.openDb(request.Query, OnSuccess, OnError);
+                        break;
                 }
             }
 
-            openDb = function (onSuccess: Function, onError: Function) {
-                KeyStore.get(ActiveDataBase.Name + 'Db_Version', function (dbVersion) {
-                    new OpenDb(dbVersion, onSuccess, onError);
+            openDb = function (dbName, onSuccess: Function, onError: Function) {
+                KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
+                    if (dbVersion != null) {
+                        KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
+                            ActiveDataBase = result;
+                            new OpenDb(dbVersion, onSuccess, onError);
+                        });
+                    }
+                    else {
+                        console.error('Database: ' + dbName + " does not exist");
+                    }
                 });
             }
 
