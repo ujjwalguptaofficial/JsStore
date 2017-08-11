@@ -73,23 +73,38 @@ module JsStore {
         }
 
         protected createWorker = function () {
-            var That = this;
-            if (Worker) {
-                this.WorkerInstance = new Worker(this.getScriptUrl());
-                this.WorkerInstance.onmessage = function (msg) {
-                    That.onMessageFromWorker(msg);
-                }
-                setTimeout(function () {
-                    if (That.WorkerStatus != WebWorkerStatus.Failed) {
-                        That.WorkerStatus = WebWorkerStatus.Registered;
-                    }
+            var That = this,
+                onFailed = function () {
+                    console.warn('JsStore is not runing in web worker');
+                    That.WorkerStatus = WebWorkerStatus.Failed;
                     That.executeCode();
-                }, 100);
+                }
+            try {
+                if (Worker) {
+                    var ScriptUrl = this.getScriptUrl();
+                    if (ScriptUrl.length > 0) {
+                        this.WorkerInstance = new Worker(ScriptUrl);
+                        this.WorkerInstance.onmessage = function (msg) {
+                            That.onMessageFromWorker(msg);
+                        }
+                        setTimeout(function () {
+                            if (That.WorkerStatus != WebWorkerStatus.Failed) {
+                                That.WorkerStatus = WebWorkerStatus.Registered;
+                            }
+                            That.executeCode();
+                        }, 100);
+                    }
+                    else {
+                        onFailed();
+                    }
+
+                }
+                else {
+                    onFailed();
+                }
             }
-            else {
-                console.warn('JsStore is not runing in web worker');
-                That.WorkerStatus = WebWorkerStatus.Failed;
-                That.executeCode();
+            catch (ex) {
+                onFailed();
             }
         }
 
@@ -97,9 +112,10 @@ module JsStore {
             var ScriptUrl = "";
             var FileName = fileName ? fileName.toLowerCase() : "jsstorage";
             var Scripts = document.getElementsByTagName('script');
-            for (var i = Scripts.length - 1; i >= 0; i--) {
-                ScriptUrl = Scripts[i].src.toLowerCase();
-                if (ScriptUrl.length > 0 && ScriptUrl.indexOf(FileName) >= 0) {
+            for (var i = Scripts.length - 1, url = ""; i >= 0; i--) {
+                url = Scripts[i].src.toLowerCase();
+                if (url.length > 0 && url.indexOf(FileName) >= 0) {
+                    ScriptUrl = url;
                     console.log(ScriptUrl);
                     break;
                 }

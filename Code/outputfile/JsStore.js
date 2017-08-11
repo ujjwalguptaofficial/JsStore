@@ -79,23 +79,36 @@ var JsStore;
                 }
             };
             this.createWorker = function () {
-                var That = this;
-                if (Worker) {
-                    this.WorkerInstance = new Worker(this.getScriptUrl());
-                    this.WorkerInstance.onmessage = function (msg) {
-                        That.onMessageFromWorker(msg);
-                    };
-                    setTimeout(function () {
-                        if (That.WorkerStatus != WebWorkerStatus.Failed) {
-                            That.WorkerStatus = WebWorkerStatus.Registered;
-                        }
-                        That.executeCode();
-                    }, 100);
-                }
-                else {
+                var That = this, onFailed = function () {
                     console.warn('JsStore is not runing in web worker');
                     That.WorkerStatus = WebWorkerStatus.Failed;
                     That.executeCode();
+                };
+                try {
+                    if (Worker) {
+                        var ScriptUrl = this.getScriptUrl();
+                        if (ScriptUrl.length > 0) {
+                            this.WorkerInstance = new Worker(ScriptUrl);
+                            this.WorkerInstance.onmessage = function (msg) {
+                                That.onMessageFromWorker(msg);
+                            };
+                            setTimeout(function () {
+                                if (That.WorkerStatus != WebWorkerStatus.Failed) {
+                                    That.WorkerStatus = WebWorkerStatus.Registered;
+                                }
+                                That.executeCode();
+                            }, 100);
+                        }
+                        else {
+                            onFailed();
+                        }
+                    }
+                    else {
+                        onFailed();
+                    }
+                }
+                catch (ex) {
+                    onFailed();
                 }
             };
             this.onMessageFromWorker = function (msg) {
@@ -117,9 +130,10 @@ var JsStore;
             var ScriptUrl = "";
             var FileName = fileName ? fileName.toLowerCase() : "jsstorage";
             var Scripts = document.getElementsByTagName('script');
-            for (var i = Scripts.length - 1; i >= 0; i--) {
-                ScriptUrl = Scripts[i].src.toLowerCase();
-                if (ScriptUrl.length > 0 && ScriptUrl.indexOf(FileName) >= 0) {
+            for (var i = Scripts.length - 1, url = ""; i >= 0; i--) {
+                url = Scripts[i].src.toLowerCase();
+                if (url.length > 0 && url.indexOf(FileName) >= 0) {
+                    ScriptUrl = url;
                     console.log(ScriptUrl);
                     break;
                 }
@@ -132,6 +146,16 @@ var JsStore;
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
+    JsStore.isDbExist = function (dbName, callback) {
+        KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
+            if (dbVersion != null) {
+                callback(true);
+            }
+            else {
+                callback(false);
+            }
+        });
+    };
     var ErrorType;
     (function (ErrorType) {
         ErrorType["UndefinedColumn"] = "undefined_column";
@@ -155,6 +179,14 @@ var JsStore;
         ConnectionStatus["NotStarted"] = "not_started";
     })(ConnectionStatus = JsStore.ConnectionStatus || (JsStore.ConnectionStatus = {}));
 })(JsStore || (JsStore = {}));
+(!self.alert);
+{
+    self.onmessage = function (e) {
+        console.log("WebWorker:" + e.data.Name);
+        var Request = e.data, IndexDbObject = new JsStore.Business.Main();
+        IndexDbObject.checkConnectionAndExecuteLogic(Request);
+    };
+}
 var JsStore;
 (function (JsStore) {
     var Utils = (function () {
@@ -163,7 +195,7 @@ var JsStore;
         Utils.getError = function (errorType, logError, errorDetail) {
             if (logError === void 0) { logError = false; }
             var Error = {
-                Name: JsStore.ErrorType[errorType],
+                Name: errorType,
                 Value: ''
             };
             switch (errorType) {
@@ -691,7 +723,7 @@ var JsStore;
                                 AddResult.onsuccess = function (e) {
                                     That.ValuesAffected.push(value);
                                     ++That.RowAffected;
-                                    That.insertData(That.Query.Values[this.ValuesIndex++]);
+                                    That.insertData(That.Query.Values[That.ValuesIndex++]);
                                 };
                             }
                             else {
@@ -1772,9 +1804,7 @@ var JsStore;
                         }
                         else {
                             var Error = JsStore.Utils.getError(JsStore.ErrorType.DbNotExist, true, { DbName: dbName });
-                            if (onError) {
-                                onError(Error);
-                            }
+                            throw Error;
                         }
                     });
                 };
@@ -1823,7 +1853,7 @@ var JsStore;
                     }
                 };
                 this.createDb = function (dataBase, onSuccess, onError) {
-                    Business.ActiveDataBase = new DataBase(dataBase);
+                    Business.ActiveDataBase = new JsStore.Model.DataBase(dataBase);
                     var That = this, createDb = function () {
                         setTimeout(function () {
                             var LastTable = Business.ActiveDataBase.Tables[Business.ActiveDataBase.Tables.length - 1];
@@ -1867,15 +1897,8 @@ var JsStore;
                     Name: 'open_db',
                     Query: dbName
                 });
-                return _this;
             }
-            try {
-                _this.createWorker();
-            }
-            catch (ex) {
-                _this.WorkerStatus = JsStore.WebWorkerStatus.Failed;
-                console.warn('JsStore is not runing in web worker');
-            }
+            _this.createWorker();
             return _this;
         }
         Instance.prototype.createDb = function (dataBase, onSuccess, onError) {
@@ -1972,14 +1995,6 @@ var JsStore;
     }(JsStore.CodeExecutionHelper));
     JsStore.Instance = Instance;
 })(JsStore || (JsStore = {}));
-(!self.alert);
-{
-    self.onmessage = function (e) {
-        console.log("WebWorker:" + e.data.Name);
-        var Request = e.data, IndexDbObject = new JsStore.Business.Main();
-        IndexDbObject.checkConnectionAndExecuteLogic(Request);
-    };
-}
 var JsStore;
 (function (JsStore) {
     var Business;
@@ -2632,4 +2647,4 @@ var KeyStore;
     };
 })(KeyStore || (KeyStore = {}));
 KeyStore.init();
-//# sourceMappingURL=JsStorage.js.map
+//# sourceMappingURL=JsStore.js.map

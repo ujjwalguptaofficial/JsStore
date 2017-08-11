@@ -1,17 +1,36 @@
 module JsStore {
+
+    /**
+    * checks whether db exist or not
+    * 
+    * @param {string} dbName 
+    * @param {Function} callback 
+    */
+    export var isDbExist = function (dbName: string, callback: Function) {
+        KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
+            if (dbVersion != null) {
+                callback(true);
+            }
+            else {
+                callback(false);
+            }
+        });
+    }
+
     export enum ErrorType {
-        UndefinedColumn,
-        UndefinedValue,
-        UndefinedColumnName,
-        UndefinedColumnValue,
-        NotArray,
-        NoValueSupplied,
-        ColumnNotExist,
-        InvalidOp,
-        NullValue,
-        BadDataType,
-        NextJoinNotExist,
-        TableNotExist
+        UndefinedColumn = "undefined_column",
+        UndefinedValue = "undefined_value",
+        UndefinedColumnName = "undefined_column_name",
+        UndefinedColumnValue = "undefined_column_value",
+        NotArray = "not_array",
+        NoValueSupplied = "no_value_supplied",
+        ColumnNotExist = "column_not_exist",
+        InvalidOp = "invalid_operator",
+        NullValue = "null_value",
+        BadDataType = "bad_data_type",
+        NextJoinNotExist = "next_join_not_exist",
+        TableNotExist = "table_not_exist",
+        DbNotExist = "db_not_exist"
     }
 
     export interface ISelect {

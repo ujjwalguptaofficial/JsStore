@@ -13,15 +13,8 @@ module JsStore {
                     Name: 'open_db',
                     Query: dbName
                 });
-                return this;
             }
-            try {
-                this.createWorker();
-            }
-            catch (ex) {
-                this.WorkerStatus = WebWorkerStatus.Failed;
-                console.warn('JsStore is not runing in web worker');
-            }
+            this.createWorker();
         }
 
         /**

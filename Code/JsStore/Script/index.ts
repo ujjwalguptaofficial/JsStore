@@ -30,7 +30,7 @@
 
 /// <reference path="JsStoreInstance.ts" />
 
-/// <reference path="WebWorkerEventLogic.ts" />
+/// <reference path="DirectCode.ts" />
 
 
 

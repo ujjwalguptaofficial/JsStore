@@ -25,7 +25,7 @@ module JsStore {
                             AddResult.onsuccess = function (e) {
                                 That.ValuesAffected.push(value);
                                 ++That.RowAffected;
-                                That.insertData(That.Query.Values[this.ValuesIndex++]);
+                                That.insertData(That.Query.Values[That.ValuesIndex++]);
                             }
                         }
                         else {

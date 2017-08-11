@@ -6,7 +6,7 @@ module JsStore {
     export class Utils {
         static getError(errorType: ErrorType, logError: boolean = false, errorDetail: any) {
             var Error: IError = {
-                Name: ErrorType[errorType],
+                Name: errorType,
                 Value: ''
             };
             switch (errorType) {
@@ -25,12 +25,14 @@ module JsStore {
                     break;
                 case ErrorType.NextJoinNotExist: Error.Value = "Next join details not supplied";
                     break;
-                case ErrorType.TableNotExist: Error.Value = "Table '" + errorDetail['TableName'] + "' does not exist";;
+                case ErrorType.TableNotExist: Error.Value = "Table '" + errorDetail['TableName'] + "' does not exist";
+                    break;
+                case ErrorType.DbNotExist: Error.Value = "Database '" + errorDetail['DbName'] + "' does not exist";
                     break;
                 default: console.error('the error type is not defined');
             }
             if (logError) {
-                console.error("JsStorage Error :- " + Error.Value);
+                console.error("JsStore Error :- " + Error.Value);
             }
             return Error;
         }

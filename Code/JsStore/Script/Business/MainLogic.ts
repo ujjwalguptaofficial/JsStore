@@ -32,10 +32,8 @@ module JsStore {
                     }
                     else if (Status.ConStatus == ConnectionStatus.Closed) {
                         var That = this;
-                        this.openDb(function () {
+                        this.openDb(ActiveDataBase.Name, function () {
                             That.checkConnectionAndExecuteLogic(request);
-                        }, function (err) {
-                            console.error(err);
                         });
                     }
                 }
@@ -96,7 +94,8 @@ module JsStore {
                         });
                     }
                     else {
-                        console.error('Database: ' + dbName + " does not exist");
+                        var Error = Utils.getError(ErrorType.DbNotExist, true, { DbName: dbName });
+                        throw Error;
                     }
                 });
             }
@@ -153,7 +152,24 @@ module JsStore {
             }
 
             public createDb = function (dataBase, onSuccess: Function, onError: Function) {
-                new DataBase(dataBase).create(onSuccess, onError);
+                ActiveDataBase = new Model.DataBase(dataBase); //.create(onSuccess, onError);
+                var That = this,
+                    createDb = function () {
+                        setTimeout(function () {
+                            var LastTable = (<Model.ITable>ActiveDataBase.Tables[ActiveDataBase.Tables.length - 1]);
+                            KeyStore.get("JsStore_" + ActiveDataBase.Name + "_" + LastTable.Name + "_Version", function (version) {
+                                if (version == LastTable.Version) {
+                                    KeyStore.get('JsStore_' + ActiveDataBase.Name + '_Db_Version', function (dbVersion) {
+                                        new CreateDb(dbVersion, onSuccess, onError)
+                                    });
+                                }
+                                else {
+                                    createDb();
+                                }
+                            });
+                        }, 200);
+                    }
+                createDb();
             }
 
             public clear = function (tableName: string, onSuccess: Function, onError: Function) {
