@@ -789,6 +789,9 @@ var JsStore;
                                 CheckNotNullAndDataType();
                             }
                         }
+                        else {
+                            callBack();
+                        }
                     }
                     else {
                         callBack();

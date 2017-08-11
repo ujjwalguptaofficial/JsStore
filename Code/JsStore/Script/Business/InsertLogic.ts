@@ -113,6 +113,9 @@ module JsStore {
                                     CheckNotNullAndDataType();
                                 }
                             }
+                            else {
+                                callBack();
+                            }
                         }
                         else {
                             callBack();
