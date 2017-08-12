@@ -8,13 +8,13 @@ module JsStore {
         constructor(dbName) {
             super();
             Utils.setDbType();
+            this.createWorker();
             if (dbName != null) {
                 this.prcoessExecutionOfCode(<IWebWorkerRequest>{
                     Name: 'open_db',
                     Query: dbName
                 });
             }
-            this.createWorker();
         }
 
         /**

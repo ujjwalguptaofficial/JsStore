@@ -318,7 +318,6 @@ var JsStore;
                 this.Columns.forEach(function (item) {
                     if (item.PrimaryKey) {
                         That.PrimaryKey = item.Name;
-                        KeyStore.set("JsStore_" + dbName + "_" + That.Name + "_" + item.Name, true);
                     }
                 });
             };
@@ -682,9 +681,15 @@ var JsStore;
                 DbDropRequest.onsuccess = function () {
                     Business.Status.ConStatus = JsStore.ConnectionStatus.Closed;
                     KeyStore.remove('JsStore_' + Business.ActiveDataBase.Name + '_Db_Version');
-                    Business.ActiveDataBase.Tables.forEach(function (item) {
-                        KeyStore.remove("JsStore_" + Business.ActiveDataBase.Name + "_" + item.Name);
+                    Business.ActiveDataBase.Tables.forEach(function (table) {
+                        KeyStore.remove("JsStore_" + Business.ActiveDataBase.Name + "_" + table.Name + "_Version");
+                        table.Columns.forEach(function (column) {
+                            if (column.AutoIncrement) {
+                                KeyStore.remove("JsStore_" + Business.ActiveDataBase.Name + "_" + table.Name + "_" + column.Name + "_Value");
+                            }
+                        });
                     });
+                    KeyStore.remove("JsStore_" + Business.ActiveDataBase.Name + "_Schema");
                     if (onSuccess != null) {
                         onSuccess();
                     }
@@ -1786,7 +1791,7 @@ var JsStore;
                         case 'clear':
                             this.clear(request.Query, OnSuccess, OnError);
                             break;
-                        case 'dropDb':
+                        case 'drop_db':
                             this.dropDb(OnSuccess, OnError);
                             break;
                         case 'count':
@@ -1895,13 +1900,13 @@ var JsStore;
         function Instance(dbName) {
             var _this = _super.call(this) || this;
             JsStore.Utils.setDbType();
+            _this.createWorker();
             if (dbName != null) {
                 _this.prcoessExecutionOfCode({
                     Name: 'open_db',
                     Query: dbName
                 });
             }
-            _this.createWorker();
             return _this;
         }
         Instance.prototype.createDb = function (dataBase, onSuccess, onError) {

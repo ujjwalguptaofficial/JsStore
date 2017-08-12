@@ -38,7 +38,6 @@ module JsStore {
                 this.Columns.forEach(function (item) {
                     if (item.PrimaryKey) {
                         That.PrimaryKey = item.Name;
-                        KeyStore.set("JsStore_" + dbName + "_" + That.Name + "_" + item.Name, true);
                     }
                 })
 

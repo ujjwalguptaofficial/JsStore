@@ -76,7 +76,7 @@ module JsStore {
                         break;
                     case 'clear': this.clear(request.Query, OnSuccess, OnError);
                         break;
-                    case 'dropDb': this.dropDb(OnSuccess, OnError);
+                    case 'drop_db': this.dropDb(OnSuccess, OnError);
                         break;
                     case 'count': this.count(request.Query, OnSuccess, OnError);
                         break;
