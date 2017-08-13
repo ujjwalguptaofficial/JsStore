@@ -32,6 +32,7 @@ module JsStore {
                             That.Transaction.oncomplete = function (e) {
                                 That.onTransactionCompleted();
                             }
+                            insertDataintoTable(That.Query.Values[That.ValuesIndex++]);
                         }
                     },
                     insertDataintoTable = function (value) {
@@ -47,7 +48,7 @@ module JsStore {
                                 else {
                                     ++That.RowAffected;
                                 }
-                                That.insertDataintoTable(That.Query.Values[That.ValuesIndex++]);
+                                insertDataintoTable(That.Query.Values[That.ValuesIndex++]);
                             }
                         }
                     }

@@ -734,6 +734,7 @@ var JsStore;
                             That.Transaction.oncomplete = function (e) {
                                 That.onTransactionCompleted();
                             };
+                            insertDataintoTable(That.Query.Values[That.ValuesIndex++]);
                         }
                     }, insertDataintoTable = function (value) {
                         if (value) {
@@ -748,7 +749,7 @@ var JsStore;
                                 else {
                                     ++That.RowAffected;
                                 }
-                                That.insertDataintoTable(That.Query.Values[That.ValuesIndex++]);
+                                insertDataintoTable(That.Query.Values[That.ValuesIndex++]);
                             };
                         }
                     };
@@ -1386,7 +1387,7 @@ var JsStore;
                     }
                 };
                 _this.executeWhereLogic = function () {
-                    var Column, SkipRecord = this.Query.Skip, LimitRecord = this.Query.Limit, That = this, executeInnerWhereLogic = function (column, value) {
+                    var SkipRecord = this.Query.Skip, LimitRecord = this.Query.Limit, That = this, executeInnerWhereLogic = function (column, value) {
                         var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
                         CursorOpenRequest.onerror = function (e) {
                             That.ErrorOccured = true;
@@ -1397,11 +1398,9 @@ var JsStore;
                             CursorOpenRequest.onsuccess = function (e) {
                                 var Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (RecordSkipped) {
-                                        if (That.Results.length != LimitRecord) {
-                                            That.Results.push(Cursor);
-                                            Cursor.continue();
-                                        }
+                                    if (RecordSkipped && That.Results.length != LimitRecord) {
+                                        That.Results.push(Cursor);
+                                        Cursor.continue();
                                     }
                                     else {
                                         RecordSkipped = true;
@@ -1447,7 +1446,7 @@ var JsStore;
                             };
                         }
                     };
-                    for (Column in this.Query.Where) {
+                    for (var Column in this.Query.Where) {
                         if (!this.ErrorOccured) {
                             if (this.ObjectStore.indexNames.contains(Column)) {
                                 if (Array.isArray(this.Query.Where[Column])) {
@@ -1472,7 +1471,7 @@ var JsStore;
                     }
                 };
                 _this.executeWhereUndefinedLogic = function () {
-                    var That = this, CursorOpenRequest;
+                    var SkipRecord = this.Query.Skip, LimitRecord = this.Query.Limit, That = this, CursorOpenRequest;
                     if (this.Query.Order && this.Query.Order.By) {
                         if (That.ObjectStore.indexNames.contains(this.Query.Order.By)) {
                             var OrderType = this.Query.Order.Type && this.Query.Order.Type.toLowerCase() == 'desc' ? 'prev' : 'next';
@@ -1487,14 +1486,58 @@ var JsStore;
                     else {
                         CursorOpenRequest = this.ObjectStore.openCursor();
                     }
-                    CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor = e.target.result;
-                        if (Cursor) {
-                            That.Results.push(Cursor.value);
-                            Cursor.continue();
-                        }
-                    };
+                    if (SkipRecord && LimitRecord) {
+                        var RecordSkipped = false;
+                        CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                if (RecordSkipped && That.Results.length != LimitRecord) {
+                                    That.Results.push(Cursor);
+                                    Cursor.continue();
+                                }
+                                else {
+                                    RecordSkipped = true;
+                                    Cursor.advance(SkipRecord - 1);
+                                }
+                            }
+                        };
+                    }
+                    else if (SkipRecord) {
+                        var RecordSkipped = false;
+                        CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                if (RecordSkipped) {
+                                    That.Results.push(Cursor);
+                                    Cursor.continue();
+                                }
+                                else {
+                                    RecordSkipped = true;
+                                    Cursor.advance(SkipRecord - 1);
+                                }
+                            }
+                        };
+                    }
+                    else if (LimitRecord) {
+                        CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor && That.Results.length != LimitRecord) {
+                                That.Results.push(Cursor.value);
+                                Cursor.continue();
+                            }
+                        };
+                    }
+                    else {
+                        CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                That.Results.push(Cursor.value);
+                                Cursor.continue();
+                            }
+                        };
+                    }
                     CursorOpenRequest.onerror = function (e) {
+                        That.ErrorOccured = true;
                         That.onErrorOccured(e);
                     };
                 };

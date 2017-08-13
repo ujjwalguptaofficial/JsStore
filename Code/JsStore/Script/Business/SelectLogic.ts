@@ -16,8 +16,7 @@ module JsStore {
             }
 
             private executeWhereLogic = function () {
-                var Column,
-                    SkipRecord = this.Query.Skip,
+                var SkipRecord = this.Query.Skip,
                     LimitRecord = this.Query.Limit,
                     That: Select = this,
                     executeInnerWhereLogic = function (column, value) {
@@ -31,11 +30,9 @@ module JsStore {
                             CursorOpenRequest.onsuccess = function (e) {
                                 var Cursor: IDBCursorWithValue = (<any>e).target.result;
                                 if (Cursor) {
-                                    if (RecordSkipped) {
-                                        if (That.Results.length != LimitRecord) {
-                                            That.Results.push(Cursor);
-                                            Cursor.continue();
-                                        }
+                                    if (RecordSkipped && That.Results.length != LimitRecord) {
+                                        That.Results.push(Cursor);
+                                        Cursor.continue();
                                     }
                                     else {
                                         RecordSkipped = true;
@@ -82,7 +79,7 @@ module JsStore {
                         }
                     }
 
-                for (Column in this.Query.Where) {
+                for (var Column in this.Query.Where) {
                     if (!this.ErrorOccured) {
                         if (this.ObjectStore.indexNames.contains(Column)) {
                             if (Array.isArray(this.Query.Where[Column])) {
@@ -109,7 +106,9 @@ module JsStore {
             }
 
             private executeWhereUndefinedLogic = function () {
-                var That: Select = this,
+                var SkipRecord = this.Query.Skip,
+                    LimitRecord = this.Query.Limit,
+                    That: Select = this,
                     CursorOpenRequest;
                 if (this.Query.Order && this.Query.Order.By) {
                     if (That.ObjectStore.indexNames.contains(this.Query.Order.By)) {
@@ -125,15 +124,59 @@ module JsStore {
                 else {
                     CursorOpenRequest = this.ObjectStore.openCursor();
                 }
-                CursorOpenRequest.onsuccess = function (e) {
-                    var Cursor = (<any>e).target.result;
-                    if (Cursor) {
-                        That.Results.push(Cursor.value);
-                        (Cursor as any).continue();
+                if (SkipRecord && LimitRecord) {
+                    var RecordSkipped = false;
+                    CursorOpenRequest.onsuccess = function (e) {
+                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                        if (Cursor) {
+                            if (RecordSkipped && That.Results.length != LimitRecord) {
+                                That.Results.push(Cursor);
+                                Cursor.continue();
+                            }
+                            else {
+                                RecordSkipped = true;
+                                Cursor.advance(SkipRecord - 1);
+                            }
+                        }
                     }
+                }
+                else if (SkipRecord) { //skip exist
+                    var RecordSkipped = false;
+                    CursorOpenRequest.onsuccess = function (e) {
+                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                        if (Cursor) {
+                            if (RecordSkipped) {
+                                That.Results.push(Cursor);
+                                Cursor.continue();
+                            }
+                            else {
+                                RecordSkipped = true;
+                                Cursor.advance(SkipRecord - 1);
+                            }
+                        }
+                    }
+                }
+                else if (LimitRecord) {
+                    CursorOpenRequest.onsuccess = function (e) {
+                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                        if (Cursor && That.Results.length != LimitRecord) {
+                            That.Results.push(Cursor.value);
+                            Cursor.continue();
+                        }
+                    }
+                }
+                else {
+                    CursorOpenRequest.onsuccess = function (e) {
+                        var Cursor = (<any>e).target.result;
+                        if (Cursor) {
+                            That.Results.push(Cursor.value);
+                            (Cursor as any).continue();
+                        }
 
+                    }
                 }
                 CursorOpenRequest.onerror = function (e) {
+                    That.ErrorOccured = true;
                     That.onErrorOccured(e);
                 }
             }
