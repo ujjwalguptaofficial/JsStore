@@ -11,32 +11,47 @@ module JsStore {
                 }
             }
 
-            private insertData = function (value) {
-                if (value) {
-                    var That = this;
-                    That.checkSchemaAndModifyValue(value, function () {
-                        if (!That.ErrorOccured) {
-                            var Transaction = DbConnection.transaction([That.Query.Into], "readwrite"),
-                                ObjectStore = Transaction.objectStore(That.Query.Into);
-                            var AddResult = ObjectStore.add(value);
+            private insertData = function () {
+                var That = this,
+                    IsReturn = this.Query.Return,
+                    checkSchemaInternal = function (value) {
+                        if (value) {
+                            That.checkSchemaAndModifyValue(value, function () {
+                                if (!That.ErrorOccured) {
+                                    checkSchemaInternal(That.Query.Values[That.ValuesIndex++]);
+                                }
+                                else {
+                                    That.onErrorOccured(That.Error, true);
+                                }
+                            });
+                        }
+                        else {
+                            That.ValuesIndex = 0;
+                            That.Transaction = DbConnection.transaction([That.Query.Into], "readwrite");
+                            That.ObjectStore = That.Transaction.objectStore(That.Query.Into);
+                            That.Transaction.oncomplete = function (e) {
+                                That.onTransactionCompleted();
+                            }
+                        }
+                    },
+                    insertDataintoTable = function (value) {
+                        if (value) {
+                            var AddResult = That.ObjectStore.add(value);
                             AddResult.onerror = function (e) {
                                 That.onErrorOccured(e);
                             }
                             AddResult.onsuccess = function (e) {
-                                That.ValuesAffected.push(value);
-                                ++That.RowAffected;
-                                That.insertData(That.Query.Values[That.ValuesIndex++]);
+                                if (IsReturn) {
+                                    That.ValuesAffected.push(value);
+                                }
+                                else {
+                                    ++That.RowAffected;
+                                }
+                                That.insertDataintoTable(That.Query.Values[That.ValuesIndex++]);
                             }
                         }
-                        else {
-                            That.onErrorOccured(That.Error, true);
-                        }
-                    });
-
-                }
-                else {
-                    this.onTransactionCompleted();
-                }
+                    }
+                checkSchemaInternal(this.Query.Values[this.ValuesIndex++]);
             }
 
             constructor(query: IInsert, onSuccess: Function, onError: Function) {
@@ -47,7 +62,7 @@ module JsStore {
                     this.OnError = onError;
                     var That = this;
                     this.Table = this.getTable(query.Into);
-                    this.insertData(this.Query.Values[this.ValuesIndex++]);
+                    this.insertData();
                 }
                 catch (ex) {
                     this.onExceptionOccured(ex, { TableName: query.Into });

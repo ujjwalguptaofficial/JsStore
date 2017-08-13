@@ -4,7 +4,7 @@ module JsStore {
             constructor(dbVersion, onSuccess: Function, onError: Function) {
                 if (Status.ConStatus != ConnectionStatus.Connected) {
                     if (ActiveDataBase.Name.length > 0) {
-                        var DbRequest = window.indexedDB.open(ActiveDataBase.Name, dbVersion),
+                        var DbRequest = indexedDB.open(ActiveDataBase.Name, dbVersion),
                             That = this;
                         DbRequest.onerror = function (event) {
                             if (onError != null) {

@@ -128,7 +128,7 @@ var JsStore;
         }
         CodeExecutionHelper.prototype.getScriptUrl = function (fileName) {
             var ScriptUrl = "";
-            var FileName = fileName ? fileName.toLowerCase() : "jsstorage";
+            var FileName = fileName ? fileName.toLowerCase() : "jsstore";
             var Scripts = document.getElementsByTagName('script');
             for (var i = Scripts.length - 1, url = ""; i >= 0; i--) {
                 url = Scripts[i].src.toLowerCase();
@@ -666,7 +666,7 @@ var JsStore;
     (function (Business) {
         var DropDb = (function () {
             function DropDb(name, onSuccess, onError) {
-                var DbDropRequest = window.indexedDB.deleteDatabase(name);
+                var DbDropRequest = indexedDB.deleteDatabase(name);
                 DbDropRequest.onblocked = function () {
                     if (onError != null) {
                         onError("delete database is in progress");
@@ -715,30 +715,44 @@ var JsStore;
                         this.OnSuccess(this.IsReturn ? this.ValuesAffected : this.RowAffected);
                     }
                 };
-                _this.insertData = function (value) {
-                    if (value) {
-                        var That = this;
-                        That.checkSchemaAndModifyValue(value, function () {
-                            if (!That.ErrorOccured) {
-                                var Transaction = Business.DbConnection.transaction([That.Query.Into], "readwrite"), ObjectStore = Transaction.objectStore(That.Query.Into);
-                                var AddResult = ObjectStore.add(value);
-                                AddResult.onerror = function (e) {
-                                    That.onErrorOccured(e);
-                                };
-                                AddResult.onsuccess = function (e) {
+                _this.insertData = function () {
+                    var That = this, IsReturn = this.Query.Return, checkSchemaInternal = function (value) {
+                        if (value) {
+                            That.checkSchemaAndModifyValue(value, function () {
+                                if (!That.ErrorOccured) {
+                                    checkSchemaInternal(That.Query.Values[That.ValuesIndex++]);
+                                }
+                                else {
+                                    That.onErrorOccured(That.Error, true);
+                                }
+                            });
+                        }
+                        else {
+                            That.ValuesIndex = 0;
+                            That.Transaction = Business.DbConnection.transaction([That.Query.Into], "readwrite");
+                            That.ObjectStore = That.Transaction.objectStore(That.Query.Into);
+                            That.Transaction.oncomplete = function (e) {
+                                That.onTransactionCompleted();
+                            };
+                        }
+                    }, insertDataintoTable = function (value) {
+                        if (value) {
+                            var AddResult = That.ObjectStore.add(value);
+                            AddResult.onerror = function (e) {
+                                That.onErrorOccured(e);
+                            };
+                            AddResult.onsuccess = function (e) {
+                                if (IsReturn) {
                                     That.ValuesAffected.push(value);
+                                }
+                                else {
                                     ++That.RowAffected;
-                                    That.insertData(That.Query.Values[That.ValuesIndex++]);
-                                };
-                            }
-                            else {
-                                That.onErrorOccured(That.Error, true);
-                            }
-                        });
-                    }
-                    else {
-                        this.onTransactionCompleted();
-                    }
+                                }
+                                That.insertDataintoTable(That.Query.Values[That.ValuesIndex++]);
+                            };
+                        }
+                    };
+                    checkSchemaInternal(this.Query.Values[this.ValuesIndex++]);
                 };
                 _this.getTable = function (tableName) {
                     var CurrentTable, That = this;
@@ -757,7 +771,7 @@ var JsStore;
                     _this.OnError = onError;
                     var That = _this;
                     _this.Table = _this.getTable(query.Into);
-                    _this.insertData(_this.Query.Values[_this.ValuesIndex++]);
+                    _this.insertData();
                 }
                 catch (ex) {
                     _this.onExceptionOccured(ex, { TableName: query.Into });
@@ -817,7 +831,7 @@ var JsStore;
             function OpenDb(dbVersion, onSuccess, onError) {
                 if (Business.Status.ConStatus != JsStore.ConnectionStatus.Connected) {
                     if (Business.ActiveDataBase.Name.length > 0) {
-                        var DbRequest = window.indexedDB.open(Business.ActiveDataBase.Name, dbVersion), That = this;
+                        var DbRequest = indexedDB.open(Business.ActiveDataBase.Name, dbVersion), That = this;
                         DbRequest.onerror = function (event) {
                             if (onError != null) {
                                 onError(event.target.error);
@@ -1932,6 +1946,8 @@ var JsStore;
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
             var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = null;
+            query.OnError = null;
             this.prcoessExecutionOfCode({
                 Name: 'select',
                 Query: query,
@@ -1944,6 +1960,8 @@ var JsStore;
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
             var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = null;
+            query.OnError = null;
             this.prcoessExecutionOfCode({
                 Name: 'count',
                 Query: query,
@@ -1956,6 +1974,8 @@ var JsStore;
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
             var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = null;
+            query.OnError = null;
             this.prcoessExecutionOfCode({
                 Name: 'insert',
                 Query: query,
@@ -1968,6 +1988,8 @@ var JsStore;
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
             var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = null;
+            query.OnError = null;
             this.prcoessExecutionOfCode({
                 Name: 'update',
                 Query: query,
@@ -1980,6 +2002,8 @@ var JsStore;
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
             var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = null;
+            query.OnError = null;
             this.prcoessExecutionOfCode({
                 Name: 'delete',
                 Query: query,

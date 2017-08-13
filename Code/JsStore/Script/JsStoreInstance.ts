@@ -66,6 +66,8 @@ module JsStore {
         select(query: ISelect, onSuccess: Function = null, onError: Function = null) {
             var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
                 OnError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = null;
+            query.OnError = null;
             this.prcoessExecutionOfCode(<IWebWorkerRequest>{
                 Name: 'select',
                 Query: query,
@@ -86,6 +88,8 @@ module JsStore {
         count(query: ICount, onSuccess: Function = null, onError: Function = null) {
             var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
                 OnError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = null;
+            query.OnError = null;
             this.prcoessExecutionOfCode(<IWebWorkerRequest>{
                 Name: 'count',
                 Query: query,
@@ -107,6 +111,8 @@ module JsStore {
         insert(query: IInsert, onSuccess: Function = null, onError: Function = null) {
             var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
                 OnError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = null;
+            query.OnError = null;
             this.prcoessExecutionOfCode(<IWebWorkerRequest>{
                 Name: 'insert',
                 Query: query,
@@ -127,6 +133,8 @@ module JsStore {
         update(query: IUpdate, onSuccess: Function = null, onError: Function = null) {
             var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
                 OnError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = null;
+            query.OnError = null;
             this.prcoessExecutionOfCode(<IWebWorkerRequest>{
                 Name: 'update',
                 Query: query,
@@ -147,6 +155,8 @@ module JsStore {
         delete(query: IDelete, onSuccess: Function = null, onError: Function = null) {
             var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
                 OnError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = null;
+            query.OnError = null;
             this.prcoessExecutionOfCode(<IWebWorkerRequest>{
                 Name: 'delete',
                 Query: query,

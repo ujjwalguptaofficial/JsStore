@@ -3,7 +3,7 @@ module JsStore {
         export class DropDb {
             constructor(name: string, onSuccess: Function, onError: Function) {
 
-                var DbDropRequest = window.indexedDB.deleteDatabase(name);
+                var DbDropRequest = indexedDB.deleteDatabase(name);
                 DbDropRequest.onblocked = function () {
                     if (onError != null) {
                         onError("delete database is in progress");

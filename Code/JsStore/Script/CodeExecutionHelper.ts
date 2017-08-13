@@ -110,7 +110,7 @@ module JsStore {
 
         private getScriptUrl(fileName: string) {
             var ScriptUrl = "";
-            var FileName = fileName ? fileName.toLowerCase() : "jsstorage";
+            var FileName = fileName ? fileName.toLowerCase() : "jsstore";
             var Scripts = document.getElementsByTagName('script');
             for (var i = Scripts.length - 1, url = ""; i >= 0; i--) {
                 url = Scripts[i].src.toLowerCase();
