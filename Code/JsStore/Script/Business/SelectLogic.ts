@@ -36,7 +36,7 @@ module JsStore {
                                     }
                                     else {
                                         RecordSkipped = true;
-                                        Cursor.advance(SkipRecord - 1);
+                                        Cursor.advance(SkipRecord);
                                     }
                                 }
                             }
@@ -52,7 +52,7 @@ module JsStore {
                                     }
                                     else {
                                         RecordSkipped = true;
-                                        Cursor.advance(SkipRecord - 1);
+                                        Cursor.advance(SkipRecord);
                                     }
                                 }
                             }
@@ -130,12 +130,12 @@ module JsStore {
                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
                         if (Cursor) {
                             if (RecordSkipped && That.Results.length != LimitRecord) {
-                                That.Results.push(Cursor);
+                                That.Results.push(Cursor.value);
                                 Cursor.continue();
                             }
                             else {
                                 RecordSkipped = true;
-                                Cursor.advance(SkipRecord - 1);
+                                Cursor.advance(SkipRecord);
                             }
                         }
                     }
@@ -146,12 +146,12 @@ module JsStore {
                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
                         if (Cursor) {
                             if (RecordSkipped) {
-                                That.Results.push(Cursor);
+                                That.Results.push(Cursor.value);
                                 Cursor.continue();
                             }
                             else {
                                 RecordSkipped = true;
-                                Cursor.advance(SkipRecord - 1);
+                                Cursor.advance(SkipRecord);
                             }
                         }
                     }

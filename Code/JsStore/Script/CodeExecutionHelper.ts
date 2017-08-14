@@ -4,18 +4,16 @@ module JsStore {
         Failed = "failed",
         NotStarted = "not_started"
     };
-
+    export var WorkerStatus: WebWorkerStatus = WebWorkerStatus.NotStarted,
+        WorkerInstance: Worker;
     export class CodeExecutionHelper {
         RequestQueue: Array<IWebWorkerRequest> = [];
-        WorkerInstance: Worker;
         IsCodeExecuting = false;
-        WorkerStatus: WebWorkerStatus = WebWorkerStatus.NotStarted;
 
         protected prcoessExecutionOfCode = function (request: IWebWorkerRequest) {
             this.RequestQueue.push(request);
             console.log("request pushed:" + request.Name);
-            if (this.RequestQueue.length == 1 && this.WorkerStatus != WebWorkerStatus.NotStarted) {
-                console.log("request executing from processExecutionOfCode:" + request.Name);
+            if (this.RequestQueue.length == 1 && WorkerStatus != WebWorkerStatus.NotStarted) {
                 this.executeCode();
             }
         }
@@ -28,7 +26,7 @@ module JsStore {
                     Name: this.RequestQueue[0].Name,
                     Query: this.RequestQueue[0].Query
                 }
-                if (this.WorkerStatus == WebWorkerStatus.Registered) {
+                if (WorkerStatus == WebWorkerStatus.Registered) {
                     this.executeCodeUsingWorker(Request);
                 } else {
                     this.executeCodeDirect(Request);
@@ -45,7 +43,7 @@ module JsStore {
         }
 
         private executeCodeUsingWorker = function (request: IWebWorkerRequest) {
-            this.WorkerInstance.postMessage(request);
+            WorkerInstance.postMessage(request);
         }
 
         private processFinishedRequest = function (message: IWebWorkerResult) {
@@ -76,20 +74,20 @@ module JsStore {
             var That = this,
                 onFailed = function () {
                     console.warn('JsStore is not runing in web worker');
-                    That.WorkerStatus = WebWorkerStatus.Failed;
+                    WorkerStatus = WebWorkerStatus.Failed;
                     That.executeCode();
                 }
             try {
                 if (Worker) {
                     var ScriptUrl = this.getScriptUrl();
                     if (ScriptUrl.length > 0) {
-                        this.WorkerInstance = new Worker(ScriptUrl);
-                        this.WorkerInstance.onmessage = function (msg) {
+                        WorkerInstance = new Worker(ScriptUrl);
+                        WorkerInstance.onmessage = function (msg) {
                             That.onMessageFromWorker(msg);
                         }
                         setTimeout(function () {
-                            if (That.WorkerStatus != WebWorkerStatus.Failed) {
-                                That.WorkerStatus = WebWorkerStatus.Registered;
+                            if (WorkerStatus != WebWorkerStatus.Failed) {
+                                WorkerStatus = WebWorkerStatus.Registered;
                             }
                             That.executeCode();
                         }, 100);
@@ -127,7 +125,7 @@ module JsStore {
             if (typeof msg.data == 'string') {
                 var Datas = msg.data.split(':')[1];
                 switch (Datas) {
-                    case 'WorkerFailed': this.WorkerStatus = WebWorkerStatus.Failed;
+                    case 'WorkerFailed': WorkerStatus = WebWorkerStatus.Failed;
                         console.warn('JsStore is not runing in web worker');
                         break;
                 }

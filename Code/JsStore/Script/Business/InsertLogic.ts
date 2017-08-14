@@ -70,19 +70,6 @@ module JsStore {
                 }
             }
 
-            private getTable = function (tableName: string) {
-                var CurrentTable: Table,
-                    That = this;
-                ActiveDataBase.Tables.every(function (table) {
-                    if (table.Name == tableName) {
-                        CurrentTable = table;
-                        return false;
-                    }
-                    return true;
-                });
-                return CurrentTable;
-            }
-
             /**
              * check the defined schema and based upon that modify or create the value
              * 
@@ -100,7 +87,7 @@ module JsStore {
                         if (column) {
                             var CheckNotNullAndDataType = function () {
                                 //check not null schema
-                                if (column.NotNull && value[column.Name] == null) {
+                                if (column.NotNull && That.isNull(value[column.Name])) {
                                     That.ErrorOccured = true;
                                     That.Error = Utils.getError(ErrorType.NullValue, false, { ColumnName: column.Name });
                                 }

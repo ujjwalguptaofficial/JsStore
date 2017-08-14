@@ -17,16 +17,15 @@ var JsStore;
         WebWorkerStatus["NotStarted"] = "not_started";
     })(WebWorkerStatus = JsStore.WebWorkerStatus || (JsStore.WebWorkerStatus = {}));
     ;
+    JsStore.WorkerStatus = WebWorkerStatus.NotStarted;
     var CodeExecutionHelper = (function () {
         function CodeExecutionHelper() {
             this.RequestQueue = [];
             this.IsCodeExecuting = false;
-            this.WorkerStatus = WebWorkerStatus.NotStarted;
             this.prcoessExecutionOfCode = function (request) {
                 this.RequestQueue.push(request);
                 console.log("request pushed:" + request.Name);
-                if (this.RequestQueue.length == 1 && this.WorkerStatus != WebWorkerStatus.NotStarted) {
-                    console.log("request executing from processExecutionOfCode:" + request.Name);
+                if (this.RequestQueue.length == 1 && JsStore.WorkerStatus != WebWorkerStatus.NotStarted) {
                     this.executeCode();
                 }
             };
@@ -38,7 +37,7 @@ var JsStore;
                         Name: this.RequestQueue[0].Name,
                         Query: this.RequestQueue[0].Query
                     };
-                    if (this.WorkerStatus == WebWorkerStatus.Registered) {
+                    if (JsStore.WorkerStatus == WebWorkerStatus.Registered) {
                         this.executeCodeUsingWorker(Request);
                     }
                     else {
@@ -53,7 +52,7 @@ var JsStore;
                 }).checkConnectionAndExecuteLogic(request);
             };
             this.executeCodeUsingWorker = function (request) {
-                this.WorkerInstance.postMessage(request);
+                JsStore.WorkerInstance.postMessage(request);
             };
             this.processFinishedRequest = function (message) {
                 var FinishedRequest = this.RequestQueue.shift();
@@ -81,20 +80,20 @@ var JsStore;
             this.createWorker = function () {
                 var That = this, onFailed = function () {
                     console.warn('JsStore is not runing in web worker');
-                    That.WorkerStatus = WebWorkerStatus.Failed;
+                    JsStore.WorkerStatus = WebWorkerStatus.Failed;
                     That.executeCode();
                 };
                 try {
                     if (Worker) {
                         var ScriptUrl = this.getScriptUrl();
                         if (ScriptUrl.length > 0) {
-                            this.WorkerInstance = new Worker(ScriptUrl);
-                            this.WorkerInstance.onmessage = function (msg) {
+                            JsStore.WorkerInstance = new Worker(ScriptUrl);
+                            JsStore.WorkerInstance.onmessage = function (msg) {
                                 That.onMessageFromWorker(msg);
                             };
                             setTimeout(function () {
-                                if (That.WorkerStatus != WebWorkerStatus.Failed) {
-                                    That.WorkerStatus = WebWorkerStatus.Registered;
+                                if (JsStore.WorkerStatus != WebWorkerStatus.Failed) {
+                                    JsStore.WorkerStatus = WebWorkerStatus.Registered;
                                 }
                                 That.executeCode();
                             }, 100);
@@ -116,7 +115,7 @@ var JsStore;
                     var Datas = msg.data.split(':')[1];
                     switch (Datas) {
                         case 'WorkerFailed':
-                            this.WorkerStatus = WebWorkerStatus.Failed;
+                            JsStore.WorkerStatus = WebWorkerStatus.Failed;
                             console.warn('JsStore is not runing in web worker');
                             break;
                     }
@@ -403,6 +402,17 @@ var JsStore;
                     else {
                         console.error(ex);
                     }
+                };
+                this.getTable = function (tableName) {
+                    var CurrentTable, That = this;
+                    Business.ActiveDataBase.Tables.every(function (table) {
+                        if (table.Name == tableName) {
+                            CurrentTable = table;
+                            return false;
+                        }
+                        return true;
+                    });
+                    return CurrentTable;
                 };
             }
             Base.prototype.checkForWhereConditionMatch = function (where, value) {
@@ -755,17 +765,6 @@ var JsStore;
                     };
                     checkSchemaInternal(this.Query.Values[this.ValuesIndex++]);
                 };
-                _this.getTable = function (tableName) {
-                    var CurrentTable, That = this;
-                    Business.ActiveDataBase.Tables.every(function (table) {
-                        if (table.Name == tableName) {
-                            CurrentTable = table;
-                            return false;
-                        }
-                        return true;
-                    });
-                    return CurrentTable;
-                };
                 try {
                     _this.Query = query;
                     _this.OnSuccess = onSuccess;
@@ -783,7 +782,7 @@ var JsStore;
                 var That = this, TableName = this.Table.Name, Index = 0, checkAndModifyInternal = function (column) {
                     if (column) {
                         var CheckNotNullAndDataType = function () {
-                            if (column.NotNull && value[column.Name] == null) {
+                            if (column.NotNull && That.isNull(value[column.Name])) {
                                 That.ErrorOccured = true;
                                 That.Error = JsStore.Utils.getError(JsStore.ErrorType.NullValue, false, { ColumnName: column.Name });
                             }
@@ -830,50 +829,43 @@ var JsStore;
     (function (Business) {
         var OpenDb = (function () {
             function OpenDb(dbVersion, onSuccess, onError) {
-                if (Business.Status.ConStatus != JsStore.ConnectionStatus.Connected) {
-                    if (Business.ActiveDataBase.Name.length > 0) {
-                        var DbRequest = indexedDB.open(Business.ActiveDataBase.Name, dbVersion), That = this;
-                        DbRequest.onerror = function (event) {
-                            if (onError != null) {
-                                onError(event.target.error);
-                            }
-                        };
-                        DbRequest.onsuccess = function (event) {
-                            Business.Status.ConStatus = JsStore.ConnectionStatus.Connected;
-                            Business.DbConnection = DbRequest.result;
-                            Business.DbConnection.onclose = function () {
-                                Business.Status.ConStatus = JsStore.ConnectionStatus.Closed;
-                                Business.Status.LastError = "Connection Closed, trying to reconnect";
-                            };
-                            Business.DbConnection.onversionchange = function (e) {
-                                if (e.newVersion === null) {
-                                    e.target.close();
-                                }
-                            };
-                            Business.DbConnection.onerror = function (e) {
-                                Business.Status.LastError = "Error occured in connection :" + e.target.result;
-                            };
-                            Business.DbConnection.onabort = function (e) {
-                                Business.Status.ConStatus = JsStore.ConnectionStatus.Closed;
-                                Business.Status.LastError = "Connection Aborted";
-                            };
-                            if (onSuccess != null) {
-                                onSuccess();
-                            }
-                        };
-                    }
-                    else {
+                if (Business.ActiveDataBase.Name.length > 0) {
+                    var DbRequest = indexedDB.open(Business.ActiveDataBase.Name, dbVersion), That = this;
+                    DbRequest.onerror = function (event) {
                         if (onError != null) {
-                            onError({
-                                Name: "DbNotFound",
-                                Value: "DataBase name is not found, please first initiate the db using createDb"
-                            });
+                            onError(event.target.error);
                         }
-                    }
+                    };
+                    DbRequest.onsuccess = function (event) {
+                        Business.Status.ConStatus = JsStore.ConnectionStatus.Connected;
+                        Business.DbConnection = DbRequest.result;
+                        Business.DbConnection.onclose = function () {
+                            Business.Status.ConStatus = JsStore.ConnectionStatus.Closed;
+                            Business.Status.LastError = "Connection Closed, trying to reconnect";
+                        };
+                        Business.DbConnection.onversionchange = function (e) {
+                            if (e.newVersion === null) {
+                                e.target.close();
+                            }
+                        };
+                        Business.DbConnection.onerror = function (e) {
+                            Business.Status.LastError = "Error occured in connection :" + e.target.result;
+                        };
+                        Business.DbConnection.onabort = function (e) {
+                            Business.Status.ConStatus = JsStore.ConnectionStatus.Closed;
+                            Business.Status.LastError = "Connection Aborted";
+                        };
+                        if (onSuccess != null) {
+                            onSuccess();
+                        }
+                    };
                 }
                 else {
-                    if (onSuccess != null) {
-                        onSuccess();
+                    if (onError != null) {
+                        onError({
+                            Name: "DbNotFound",
+                            Value: "DataBase name is not found, please first initiate the db using createDb"
+                        });
                     }
                 }
             }
@@ -1404,7 +1396,7 @@ var JsStore;
                                     }
                                     else {
                                         RecordSkipped = true;
-                                        Cursor.advance(SkipRecord - 1);
+                                        Cursor.advance(SkipRecord);
                                     }
                                 }
                             };
@@ -1420,7 +1412,7 @@ var JsStore;
                                     }
                                     else {
                                         RecordSkipped = true;
-                                        Cursor.advance(SkipRecord - 1);
+                                        Cursor.advance(SkipRecord);
                                     }
                                 }
                             };
@@ -1492,12 +1484,12 @@ var JsStore;
                             var Cursor = e.target.result;
                             if (Cursor) {
                                 if (RecordSkipped && That.Results.length != LimitRecord) {
-                                    That.Results.push(Cursor);
+                                    That.Results.push(Cursor.value);
                                     Cursor.continue();
                                 }
                                 else {
                                     RecordSkipped = true;
-                                    Cursor.advance(SkipRecord - 1);
+                                    Cursor.advance(SkipRecord);
                                 }
                             }
                         };
@@ -1508,12 +1500,12 @@ var JsStore;
                             var Cursor = e.target.result;
                             if (Cursor) {
                                 if (RecordSkipped) {
-                                    That.Results.push(Cursor);
+                                    That.Results.push(Cursor.value);
                                     Cursor.continue();
                                 }
                                 else {
                                     RecordSkipped = true;
-                                    Cursor.advance(SkipRecord - 1);
+                                    Cursor.advance(SkipRecord);
                                 }
                             }
                         };
@@ -1722,15 +1714,8 @@ var JsStore;
                 }
             };
             Update.prototype.checkSchema = function (suppliedValue, tableName) {
-                var CurrentTable, That = this;
-                Business.ActiveDataBase.Tables.every(function (table) {
-                    if (table.Name == tableName) {
-                        CurrentTable = table;
-                        return false;
-                    }
-                    return true;
-                });
-                CurrentTable.Columns.forEach(function (column) {
+                var CurrentTable = this.getTable(tableName), That = this;
+                CurrentTable.Columns.every(function (column) {
                     if (!That.ErrorOccured) {
                         if (column.Name in suppliedValue) {
                             var executeCheck = function (value) {
@@ -1744,7 +1729,11 @@ var JsStore;
                                 }
                             };
                             executeCheck(suppliedValue[column.Name]);
+                            return true;
                         }
+                    }
+                    else {
+                        return false;
                     }
                 });
             };
@@ -1956,8 +1945,14 @@ var JsStore;
         __extends(Instance, _super);
         function Instance(dbName) {
             var _this = _super.call(this) || this;
-            JsStore.Utils.setDbType();
-            _this.createWorker();
+            if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.NotStarted) {
+                JsStore.Utils.setDbType();
+                _this.createWorker();
+            }
+            else {
+                JsStore.WorkerInstance.terminate();
+                _this.createWorker();
+            }
             if (dbName != null) {
                 _this.prcoessExecutionOfCode({
                     Name: 'open_db',

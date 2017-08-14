@@ -77,6 +77,19 @@ module JsStore {
                 return true;
             }
 
+            protected getTable = function (tableName: string) {
+                var CurrentTable: Table,
+                    That = this;
+                ActiveDataBase.Tables.every(function (table) {
+                    if (table.Name == tableName) {
+                        CurrentTable = table;
+                        return false;
+                    }
+                    return true;
+                });
+                return CurrentTable;
+            }
+
             private checkWhereSchema(suppliedValue, tableName: string) {
                 var CurrentTable: Table,
                     That = this;

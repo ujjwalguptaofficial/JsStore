@@ -109,19 +109,11 @@ module JsStore {
             }
 
             private checkSchema(suppliedValue, tableName: string) {
-                var CurrentTable: Table,
+                var CurrentTable: Table = this.getTable(tableName),
                     That = this;
-                //get current table
-                ActiveDataBase.Tables.every(function (table) {
-                    if (table.Name == tableName) {
-                        CurrentTable = table;
-                        return false;
-                    }
-                    return true;
-                });
-
+                    
                 //loop through table column and find data is valid
-                CurrentTable.Columns.forEach(function (column: Column) {
+                CurrentTable.Columns.every(function (column: Column) {
                     if (!That.ErrorOccured) {
                         if (column.Name in suppliedValue) {
                             var executeCheck = function (value) {
@@ -138,8 +130,11 @@ module JsStore {
                                 }
                             };
                             executeCheck(suppliedValue[column.Name]);
+                            return true;
                         }
-
+                    }
+                    else {
+                        return false;
                     }
                 });
             }
