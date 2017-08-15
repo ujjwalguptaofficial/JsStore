@@ -9,6 +9,7 @@ module JsStore {
             OnError: Function;
             Transaction: IDBTransaction;
             ObjectStore: IDBObjectStore;
+            Query;
 
             protected onErrorOccured = function (e, customError = false) {
                 ++this.ErrorCount;
@@ -51,30 +52,109 @@ module JsStore {
             * 
             * @memberOf SelectLogic
             */
-            protected checkForWhereConditionMatch(where, value) {
-                for (var Column in where) {
-                    if (Array.isArray(where[Column])) {
-                        var Status = true;
-                        for (var i = 0, length = where[Column].length; i < length; i++) {
-                            if (where[Column][i] == value[Column]) {
-                                Status = true;
-                                break;
-                            }
-                            else {
-                                Status = false;
-                            }
-                        };
-                        if (!Status) {
-                            return Status;
+            protected checkForWhereConditionMatch(rowValue) {
+                var Where = this.Query.Where,
+                    Status = true;
+
+
+                var checkIn = function (column, value) {
+                    var Values = Where[column].In;
+                    for (var i = 0, length = Values.length; i < length; i++) {
+                        if (Values[i] == value) {
+                            Status = true;
+                            break;
                         }
+                        else {
+                            Status = false;
+                        }
+                    };
+                },
+                    checkLike = function (column, value) {
+                        var Values = Where[column].Like.split('%'),
+                            CompSymbol: Occurence,
+                            CompValue,
+                            SymbolIndex;
+                        if (Values[1]) {
+                            CompValue = Values[1];
+                            CompSymbol = Values.length > 2 ? Occurence.Any : Occurence.Last;
+                        }
+                        else {
+                            CompValue = Values[0];
+                            CompSymbol = Occurence.First;
+                        }
+                        value = value.toLowerCase();
+                        SymbolIndex = value.indexOf(CompValue.toLowerCase())
+                        switch (CompSymbol) {
+                            case Occurence.Any: if (SymbolIndex < 0) {
+                                Status = false;
+                            }; break;
+                            case Occurence.First: if (SymbolIndex > 0 || SymbolIndex < 0) {
+                                Status = false;
+                            }; break;
+                            default: if (SymbolIndex(CompValue) < value.length - 1) {
+                                Status = false;
+                            };
+                        }
+                    },
+                    checkComparisionOp = function (column, value, symbol) {
+                        var CompareValue = Where[column][symbol];
+                        switch (symbol) {
+                            //greater than
+                            case '>': if (value <= CompareValue) {
+                                Status = false;
+                            }; break;
+                            //less than
+                            case '<': if (value >= CompareValue) {
+                                Status = false;
+                            }; break;
+                            //less than equal
+                            case '<=': if (value > CompareValue) {
+                                Status = false;
+                            }; break;
+                            //greather than equal
+                            case '<': if (value < CompareValue) {
+                                Status = false;
+                            }; break;
+                            //between
+                            case '-': if (value < CompareValue.Low || value > CompareValue.High) {
+                                Status = false;
+                            }; break;
+                        }
+                    }
+                for (var Column in Where) {
+                    var ColumnValue = Where[Column];
+                    if (Status) {
+                        var CompareValue = rowValue[Column];
+                        if (typeof ColumnValue == 'string' && ColumnValue != CompareValue) {
+                            Status = false;
+                        }
+                        else {
+                            for (var key in ColumnValue) {
+                                if (Status) {
+                                    switch (key) {
+                                        case 'In': checkIn(Column, rowValue[Column]); break;
+                                        case 'Like': checkLike(Column, rowValue[Column]); break;
+                                        case '-':
+                                        case '>':
+                                        case '<':
+                                        case '>=':
+                                        case '<=':
+                                            checkComparisionOp(Column, rowValue[Column], key); break;
+                                    }
+                                }
+                                else {
+                                    break;
+                                }
+                            }
+                        }
+
                     }
                     else {
-                        if (where[Column] != value[Column]) {
-                            return false;
-                        }
+                        break;
                     }
+
                 }
-                return true;
+                return Status;
             }
 
             protected getTable = function (tableName: string) {
@@ -90,49 +170,18 @@ module JsStore {
                 return CurrentTable;
             }
 
-            private checkWhereSchema(suppliedValue, tableName: string) {
-                var CurrentTable: Table,
-                    That = this;
-                //get current table
-                ActiveDataBase.Tables.every(function (table) {
-                    if (table.Name == tableName) {
-                        CurrentTable = table;
-                        return false;
-                    }
-                    return true;
-                });
+            protected getKeyRange = function (value, op) {
+                var KeyRange: IDBKeyRange;
+                switch (op) {
+                    case '-': KeyRange = IDBKeyRange.bound(value.Low, value.High, false, false); break;
+                    case '>': KeyRange = IDBKeyRange.lowerBound(value, true); break;
+                    case '>=': KeyRange = IDBKeyRange.lowerBound(value); break;
+                    case '<': KeyRange = IDBKeyRange.upperBound(value, true); break;
+                    case '<=': KeyRange = IDBKeyRange.upperBound(value); break;
+                    default: KeyRange = IDBKeyRange.only(value); break;
+                }
+                return KeyRange;
 
-                //loop through table column and find data is valid
-                CurrentTable.Columns.forEach(function (column: Column) {
-                    if (!That.ErrorOccured) {
-                        if (column.Name in suppliedValue) {
-                            var Value = suppliedValue[column.Name],
-                                executeCheck = function (value) {
-                                    //check not null schema
-                                    if (column.NotNull && That.isNull(value)) {
-                                        That.ErrorOccured = true;
-                                        That.Error = Utils.getError(ErrorType.NullValue, false, { ColumnName: column.Name });
-                                    }
-
-                                    //check datatype
-                                    if (column.DataType && typeof value != column.DataType) {
-                                        That.ErrorOccured = true;
-                                        That.Error = Utils.getError(ErrorType.BadDataType, false, { ColumnName: column.Name });
-                                    }
-                                };
-
-                            if (Array.isArray(Value)) {
-                                Value.forEach(function (item) {
-                                    executeCheck(item);
-                                })
-                            }
-                            else {
-                                executeCheck(Value);
-                            }
-                        }
-
-                    }
-                });
             }
         }
     }

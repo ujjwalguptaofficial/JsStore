@@ -36,7 +36,6 @@ module JsStore {
     export interface ISelect {
         From: any,
         Where: any,
-        WhereIn: Array<IWhereIn>,
         Skip: number,
         Limit: number,
         OnSuccess: Function,
@@ -52,7 +51,6 @@ module JsStore {
     export interface ICount {
         From: any,
         Where: any,
-        WhereIn: Array<IWhereIn>,
         OnSuccess: Function,
         OnError: Function
     }
@@ -64,14 +62,7 @@ module JsStore {
         OnError: Function
     }
 
-    export interface IWhereIn {
-        Column: string,
-        Value: {
-            Low: any,
-            High: any
-        },
-        Op
-    }
+
 
     export interface IUpdate {
         In: string,
@@ -99,7 +90,6 @@ module JsStore {
         Column: string,
         Table: string,
         Where: any,
-        WhereIn: Array<IWhereIn>,
         Order: IOrder
         JoinType: string,
         NextJoin: INextJoin
@@ -149,5 +139,9 @@ module JsStore {
         ReturnedValue: any;
     }
 
-
+    export enum Occurence {
+        First = 'f',
+        Last = 'l',
+        Any = 'a'
+    };
 }

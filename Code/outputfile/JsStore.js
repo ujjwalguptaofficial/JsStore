@@ -177,6 +177,13 @@ var JsStore;
         ConnectionStatus["Closed"] = "closed";
         ConnectionStatus["NotStarted"] = "not_started";
     })(ConnectionStatus = JsStore.ConnectionStatus || (JsStore.ConnectionStatus = {}));
+    var Occurence;
+    (function (Occurence) {
+        Occurence["First"] = "f";
+        Occurence["Last"] = "l";
+        Occurence["Any"] = "a";
+    })(Occurence = JsStore.Occurence || (JsStore.Occurence = {}));
+    ;
 })(JsStore || (JsStore = {}));
 (!self.alert);
 {
@@ -195,52 +202,52 @@ var JsStore;
             if (logError === void 0) { logError = false; }
             var Error = {
                 Name: errorType,
-                Value: ''
+                Message: ''
             };
             switch (errorType) {
                 case JsStore.ErrorType.NotArray:
-                    Error.Value = "Supplied value is not an array";
+                    Error.Message = "Supplied value is not an array";
                     break;
                 case JsStore.ErrorType.UndefinedColumn:
-                    Error.Value = "Column is undefined in Where";
+                    Error.Message = "Column is undefined in Where";
                     break;
                 case JsStore.ErrorType.UndefinedValue:
-                    Error.Value = "Value is undefined in Where";
+                    Error.Message = "Value is undefined in Where";
                     break;
                 case JsStore.ErrorType.UndefinedColumnName:
-                    Error.Value = "Column name is undefined";
+                    Error.Message = "Column name is undefined";
                     break;
                 case JsStore.ErrorType.UndefinedColumnValue:
-                    Error.Value = "Column value is undefined";
+                    Error.Message = "Column value is undefined";
                     break;
                 case JsStore.ErrorType.NoValueSupplied:
-                    Error.Value = "No value supplied";
+                    Error.Message = "No value supplied";
                     break;
                 case JsStore.ErrorType.InvalidOp:
-                    Error.Value = "Invalid Op Value '" + errorDetail['Op'] + "'";
+                    Error.Message = "Invalid Op Value '" + errorDetail['Op'] + "'";
                     break;
                 case JsStore.ErrorType.ColumnNotExist:
-                    Error.Value = "Column '" + errorDetail['ColumnName'] + "' does not exist";
+                    Error.Message = "Column '" + errorDetail['ColumnName'] + "' does not exist";
                     break;
                 case JsStore.ErrorType.NullValue:
-                    Error.Value = "Null value is not allowed for column '" + errorDetail['ColumnName'] + "'";
+                    Error.Message = "Null value is not allowed for column '" + errorDetail['ColumnName'] + "'";
                     break;
                 case JsStore.ErrorType.BadDataType:
-                    Error.Value = "Supplied value for column '" + errorDetail['ColumnName'] + "' does not have valid type";
+                    Error.Message = "Supplied value for column '" + errorDetail['ColumnName'] + "' does not have valid type";
                     break;
                 case JsStore.ErrorType.NextJoinNotExist:
-                    Error.Value = "Next join details not supplied";
+                    Error.Message = "Next join details not supplied";
                     break;
                 case JsStore.ErrorType.TableNotExist:
-                    Error.Value = "Table '" + errorDetail['TableName'] + "' does not exist";
+                    Error.Message = "Table '" + errorDetail['TableName'] + "' does not exist";
                     break;
                 case JsStore.ErrorType.DbNotExist:
-                    Error.Value = "Database '" + errorDetail['DbName'] + "' does not exist";
+                    Error.Message = "Database '" + errorDetail['DbName'] + "' does not exist";
                     break;
                 default: console.error('the error type is not defined');
             }
             if (logError) {
-                console.error("JsStore Error :- " + Error.Value);
+                console.error("JsStore Error :- " + Error.Message);
             }
             return Error;
         };
@@ -414,66 +421,148 @@ var JsStore;
                     });
                     return CurrentTable;
                 };
+                this.getKeyRange = function (value, op) {
+                    var KeyRange;
+                    switch (op) {
+                        case '-':
+                            KeyRange = IDBKeyRange.bound(value.Low, value.High, false, false);
+                            break;
+                        case '>':
+                            KeyRange = IDBKeyRange.lowerBound(value, true);
+                            break;
+                        case '>=':
+                            KeyRange = IDBKeyRange.lowerBound(value);
+                            break;
+                        case '<':
+                            KeyRange = IDBKeyRange.upperBound(value, true);
+                            break;
+                        case '<=':
+                            KeyRange = IDBKeyRange.upperBound(value);
+                            break;
+                        default:
+                            KeyRange = IDBKeyRange.only(value);
+                            break;
+                    }
+                    return KeyRange;
+                };
             }
-            Base.prototype.checkForWhereConditionMatch = function (where, value) {
-                for (var Column in where) {
-                    if (Array.isArray(where[Column])) {
-                        var Status = true;
-                        for (var i = 0, length = where[Column].length; i < length; i++) {
-                            if (where[Column][i] == value[Column]) {
-                                Status = true;
-                                break;
-                            }
-                            else {
+            Base.prototype.checkForWhereConditionMatch = function (rowValue) {
+                var Where = this.Query.Where, Status = true;
+                var checkIn = function (column, value) {
+                    var Values = Where[column].In;
+                    for (var i = 0, length = Values.length; i < length; i++) {
+                        if (Values[i] == value) {
+                            Status = true;
+                            break;
+                        }
+                        else {
+                            Status = false;
+                        }
+                    }
+                    ;
+                }, checkLike = function (column, value) {
+                    var Values = Where[column].Like.split('%'), CompSymbol, CompValue, SymbolIndex;
+                    if (Values[1]) {
+                        CompValue = Values[1];
+                        CompSymbol = Values.length > 2 ? JsStore.Occurence.Any : JsStore.Occurence.Last;
+                    }
+                    else {
+                        CompValue = Values[0];
+                        CompSymbol = JsStore.Occurence.First;
+                    }
+                    value = value.toLowerCase();
+                    SymbolIndex = value.indexOf(CompValue.toLowerCase());
+                    switch (CompSymbol) {
+                        case JsStore.Occurence.Any:
+                            if (SymbolIndex < 0) {
                                 Status = false;
                             }
+                            ;
+                            break;
+                        case JsStore.Occurence.First:
+                            if (SymbolIndex > 0 || SymbolIndex < 0) {
+                                Status = false;
+                            }
+                            ;
+                            break;
+                        default:
+                            if (SymbolIndex(CompValue) < value.length - 1) {
+                                Status = false;
+                            }
+                            ;
+                    }
+                }, checkComparisionOp = function (column, value, symbol) {
+                    var CompareValue = Where[column][symbol];
+                    switch (symbol) {
+                        case '>':
+                            if (value <= CompareValue) {
+                                Status = false;
+                            }
+                            ;
+                            break;
+                        case '<':
+                            if (value >= CompareValue) {
+                                Status = false;
+                            }
+                            ;
+                            break;
+                        case '<=':
+                            if (value > CompareValue) {
+                                Status = false;
+                            }
+                            ;
+                            break;
+                        case '<':
+                            if (value < CompareValue) {
+                                Status = false;
+                            }
+                            ;
+                            break;
+                        case '-':
+                            if (value < CompareValue.Low || value > CompareValue.High) {
+                                Status = false;
+                            }
+                            ;
+                            break;
+                    }
+                };
+                for (var Column in Where) {
+                    var ColumnValue = Where[Column];
+                    if (Status) {
+                        var CompareValue = rowValue[Column];
+                        if (typeof ColumnValue == 'string' && ColumnValue != CompareValue) {
+                            Status = false;
                         }
-                        ;
-                        if (!Status) {
-                            return Status;
+                        else {
+                            for (var key in ColumnValue) {
+                                if (Status) {
+                                    switch (key) {
+                                        case 'In':
+                                            checkIn(Column, rowValue[Column]);
+                                            break;
+                                        case 'Like':
+                                            checkLike(Column, rowValue[Column]);
+                                            break;
+                                        case '-':
+                                        case '>':
+                                        case '<':
+                                        case '>=':
+                                        case '<=':
+                                            checkComparisionOp(Column, rowValue[Column], key);
+                                            break;
+                                    }
+                                }
+                                else {
+                                    break;
+                                }
+                            }
                         }
                     }
                     else {
-                        if (where[Column] != value[Column]) {
-                            return false;
-                        }
+                        break;
                     }
                 }
-                return true;
-            };
-            Base.prototype.checkWhereSchema = function (suppliedValue, tableName) {
-                var CurrentTable, That = this;
-                Business.ActiveDataBase.Tables.every(function (table) {
-                    if (table.Name == tableName) {
-                        CurrentTable = table;
-                        return false;
-                    }
-                    return true;
-                });
-                CurrentTable.Columns.forEach(function (column) {
-                    if (!That.ErrorOccured) {
-                        if (column.Name in suppliedValue) {
-                            var Value = suppliedValue[column.Name], executeCheck = function (value) {
-                                if (column.NotNull && That.isNull(value)) {
-                                    That.ErrorOccured = true;
-                                    That.Error = JsStore.Utils.getError(JsStore.ErrorType.NullValue, false, { ColumnName: column.Name });
-                                }
-                                if (column.DataType && typeof value != column.DataType) {
-                                    That.ErrorOccured = true;
-                                    That.Error = JsStore.Utils.getError(JsStore.ErrorType.BadDataType, false, { ColumnName: column.Name });
-                                }
-                            };
-                            if (Array.isArray(Value)) {
-                                Value.forEach(function (item) {
-                                    executeCheck(item);
-                                });
-                            }
-                            else {
-                                executeCheck(Value);
-                            }
-                        }
-                    }
-                });
+                return Status;
             };
             return Base;
         }());
@@ -574,100 +663,6 @@ var JsStore;
             return CreateDb;
         }());
         Business.CreateDb = CreateDb;
-    })(Business = JsStore.Business || (JsStore.Business = {}));
-})(JsStore || (JsStore = {}));
-var JsStore;
-(function (JsStore) {
-    var Business;
-    (function (Business) {
-        var Delete = (function (_super) {
-            __extends(Delete, _super);
-            function Delete(query, onSuccess, onError) {
-                var _this = _super.call(this) || this;
-                _this.executeWhereUndefinedLogic = function () {
-                    var That = this, CursorOpenRequest = this.ObjectStore.openCursor();
-                    CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor = e.target.result;
-                        if (Cursor) {
-                            Cursor.delete();
-                            ++That.RowAffected;
-                            Cursor.continue();
-                        }
-                    };
-                    CursorOpenRequest.onerror = function (e) {
-                        That.onErrorOccured(e);
-                    };
-                };
-                _this.executeWhereDefinedLogic = function () {
-                    var That = this, executeInnerDeleteLogic = function (column, value) {
-                        var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
-                        CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
-                            That.onErrorOccured(e);
-                        };
-                        CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = e.target.result;
-                            if (Cursor) {
-                                if (That.checkForWhereConditionMatch(That.Query.Where, Cursor.value)) {
-                                    Cursor.delete();
-                                    ++That.RowAffected;
-                                }
-                                Cursor.continue();
-                            }
-                        };
-                    };
-                    for (var Column in this.Query.Where) {
-                        if (!That.ErrorOccured) {
-                            if (That.ObjectStore.indexNames.contains(Column)) {
-                                if (Array.isArray(this.Query.Where[Column])) {
-                                    for (var i = 0; i < this.Query.Where[Column].length; i++) {
-                                        executeInnerDeleteLogic(Column, this.Query.Where[Column][i]);
-                                    }
-                                }
-                                else {
-                                    executeInnerDeleteLogic(Column, this.Query.Where[Column]);
-                                }
-                            }
-                            else {
-                                That.ErrorOccured = true;
-                                That.Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: Column });
-                                That.onErrorOccured(That.Error, true);
-                                return;
-                            }
-                        }
-                        else {
-                            return;
-                        }
-                    }
-                };
-                try {
-                    var That = _this;
-                    _this.Query = query;
-                    _this.Transaction = Business.DbConnection.transaction([query.From], "readwrite");
-                    _this.ObjectStore = _this.Transaction.objectStore(query.From);
-                    _this.Transaction.oncomplete = function () {
-                        if (onSuccess != null) {
-                            onSuccess(That.RowAffected);
-                        }
-                    };
-                    _this.Transaction.onerror = function (e) {
-                        That.onErrorOccured(e);
-                    };
-                    if (query.Where == undefined) {
-                        _this.executeWhereUndefinedLogic();
-                    }
-                    else {
-                        _this.executeWhereDefinedLogic();
-                    }
-                }
-                catch (ex) {
-                    _this.onExceptionOccured(ex, { TableName: query.From });
-                }
-                return _this;
-            }
-            return Delete;
-        }(Business.Base));
-        Business.Delete = Delete;
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
@@ -862,10 +857,7 @@ var JsStore;
                 }
                 else {
                     if (onError != null) {
-                        onError({
-                            Name: "DbNotFound",
-                            Value: "DataBase name is not found, please first initiate the db using createDb"
-                        });
+                        onError(JsStore.Utils.getError(JsStore.ErrorType.DbNotExist, true, { DbName: Business.ActiveDataBase.Name }));
                     }
                 }
             }
@@ -878,878 +870,18 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var BaseSelect = (function (_super) {
-            __extends(BaseSelect, _super);
-            function BaseSelect() {
-                var _this = _super !== null && _super.apply(this, arguments) || this;
-                _this.Results = [];
-                _this.SendResultFlag = true;
-                _this.Sorted = false;
-                _this.getKeyRange = function (whereIn) {
-                    var KeyRange;
-                    switch (whereIn.Op) {
-                        case '-':
-                            KeyRange = IDBKeyRange.bound(whereIn.Value.Low, whereIn.Value.High, true, true);
-                            break;
-                        case '=-':
-                            KeyRange = IDBKeyRange.bound(whereIn.Value.Low, whereIn.Value.High, false, true);
-                            break;
-                        case '-=':
-                            KeyRange = IDBKeyRange.bound(whereIn.Value.Low, whereIn.Value.High, true, false);
-                            break;
-                        case '=-=':
-                            KeyRange = IDBKeyRange.bound(whereIn.Value.Low, whereIn.Value.High, false, false);
-                            break;
-                        case '>':
-                            KeyRange = IDBKeyRange.lowerBound(whereIn.Value, true);
-                            break;
-                        case '>=':
-                            KeyRange = IDBKeyRange.lowerBound(whereIn.Value);
-                            break;
-                        case '<':
-                            KeyRange = IDBKeyRange.upperBound(whereIn.Value, true);
-                            break;
-                        case '<=':
-                            KeyRange = IDBKeyRange.upperBound(whereIn.Value);
-                            break;
-                        case '~': break;
-                        case '=':
-                            KeyRange = IDBKeyRange.only(whereIn.Value);
-                            break;
-                        default:
-                            this.ErrorOccured = true;
-                            JsStore.Utils.getError(JsStore.ErrorType.InvalidOp, true, { Op: whereIn.Op });
-                    }
-                    return KeyRange;
-                };
-                _this.filterResultBasedOnOp = function (whereIn) {
-                    var That = this, Column = whereIn.Column, Value = whereIn.Value, ValuesFound = [], executeGreaterThan = function () {
-                        That.Results.forEach(function (item) {
-                            if (item[Column] > Value) {
-                                ValuesFound.push(item);
-                            }
-                        });
-                        That.Results = ValuesFound;
-                    }, executeLessThan = function () {
-                        That.Results.forEach(function (item) {
-                            if (item[Column] > Value) {
-                                ValuesFound.push(item);
-                            }
-                        });
-                        That.Results = ValuesFound;
-                    }, executeContains = function () {
-                        if (typeof That.Results[0][Column] == 'string') {
-                            Value = Value.toLowerCase();
-                            That.Results.forEach(function (item) {
-                                if (item[Column].toLowerCase().indexOf(Value) >= 0) {
-                                    ValuesFound.push(item);
-                                }
-                            });
-                            That.Results = ValuesFound;
-                        }
-                        else {
-                            executeEqualTo();
-                        }
-                    }, executeEqualTo = function () {
-                        That.Results.forEach(function (item) {
-                            if (item[Column] == Value) {
-                                ValuesFound.push(item);
-                            }
-                        });
-                        That.Results = ValuesFound;
-                    }, executeBetweenIn = function () {
-                        var LowValue = Value.Low, Highvalue = Value.High;
-                        if (whereIn.Op == '-') {
-                            That.Results.forEach(function (item) {
-                                if (item[Column] > LowValue && item[Column] < Highvalue) {
-                                    ValuesFound.push(item);
-                                }
-                            });
-                        }
-                        else if (whereIn.Op == '=-') {
-                            That.Results.forEach(function (item) {
-                                if (item[Column] >= LowValue && item[Column] <= Highvalue) {
-                                    ValuesFound.push(item);
-                                }
-                            });
-                        }
-                        else if (whereIn.Op == '-=') {
-                            That.Results.forEach(function (item) {
-                                if (item[Column] >= LowValue && item[Column] < Highvalue) {
-                                    ValuesFound.push(item);
-                                }
-                            });
-                        }
-                        else if (whereIn.Op == '=-=') {
-                            That.Results.forEach(function (item) {
-                                if (item[Column] >= LowValue && item[Column] <= Highvalue) {
-                                    ValuesFound.push(item);
-                                }
-                            });
-                        }
-                        That.Results = ValuesFound;
-                    }, executeGreaterThanEqual = function () {
-                        That.Results.forEach(function (item) {
-                            if (item[Column] >= Value) {
-                                ValuesFound.push(item);
-                            }
-                        });
-                        That.Results = ValuesFound;
-                    }, executeLessThanEqual = function () {
-                        That.Results.forEach(function (item) {
-                            if (item[Column] <= Value) {
-                                ValuesFound.push(item);
-                            }
-                        });
-                        That.Results = ValuesFound;
-                    };
-                    switch (whereIn.Op) {
-                        case '-':
-                        case '=-':
-                        case '-=':
-                        case '=-=':
-                            executeBetweenIn();
-                            break;
-                        case '>':
-                            executeGreaterThan();
-                            break;
-                        case '>=':
-                            executeGreaterThanEqual();
-                            break;
-                        case '<':
-                            executeLessThan();
-                            break;
-                        case '<=':
-                            executeLessThanEqual();
-                            break;
-                        case '~':
-                            executeContains();
-                            break;
-                        case '=':
-                            executeEqualTo();
-                            break;
-                        default:
-                            this.ErrorOccured = true;
-                            JsStore.Utils.getError(JsStore.ErrorType.InvalidOp, true, { Op: whereIn.Op });
-                    }
-                };
-                return _this;
-            }
-            return BaseSelect;
-        }(Business.Base));
-        Business.BaseSelect = BaseSelect;
-    })(Business = JsStore.Business || (JsStore.Business = {}));
-})(JsStore || (JsStore = {}));
-var JsStore;
-(function (JsStore) {
-    var Business;
-    (function (Business) {
-        var SelectHelper = (function (_super) {
-            __extends(SelectHelper, _super);
-            function SelectHelper() {
-                var _this = _super !== null && _super.apply(this, arguments) || this;
-                _this.executeMultipleWhereInLogic = function (whereInArray) {
-                    var That = this, KeyRange, CurrentIndex = 0, ExecuteLogic = function () {
-                        ++CurrentIndex;
-                        if (CurrentIndex != whereInArray.length) {
-                            That.filterResultBasedOnOp(whereInArray[CurrentIndex]);
-                            ExecuteLogic();
-                        }
-                        else if (That.OnSuccess) {
-                            That.OnSuccess(That.Results);
-                        }
-                    };
-                    this.SendResultFlag = false;
-                    this.executeSingleWhereInLogic(whereInArray[CurrentIndex], function () {
-                        ExecuteLogic();
-                    });
-                };
-                _this.executeSingleWhereInLogic = function (whereIn, callBack) {
-                    if (callBack === void 0) { callBack = null; }
-                    var That = this, KeyRange = this.getKeyRange(whereIn);
-                    if (!this.ErrorOccured) {
-                        var CursorOpenRequest, OnCursorSuccess = function (e) {
-                            var Cursor = e.target.result;
-                            if (Cursor) {
-                                That.Results.push(Cursor.value);
-                                Cursor.continue();
-                            }
-                            else if (callBack) {
-                                callBack();
-                            }
-                        }, OnCursorError = function (e) {
-                            That.ErrorOccured = true;
-                            That.onErrorOccured(e);
-                        };
-                        if (this.ObjectStore.indexNames.contains(whereIn.Column)) {
-                            if (whereIn.Op == '~' && typeof whereIn.Value == 'string') {
-                                var Value = whereIn.Value.toLowerCase(), Column = whereIn.Column;
-                                CursorOpenRequest = this.ObjectStore.index(whereIn.Column).openCursor(KeyRange);
-                                CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor = e.target.result;
-                                    if (Cursor) {
-                                        if (Cursor.value[Column].toLowerCase().indexOf(Value) >= 0) {
-                                            That.Results.push(Cursor.value);
-                                        }
-                                        Cursor.continue();
-                                    }
-                                    else if (callBack) {
-                                        callBack();
-                                    }
-                                };
-                            }
-                            else {
-                                CursorOpenRequest = this.ObjectStore.index(whereIn.Column).openCursor(KeyRange);
-                                CursorOpenRequest.onsuccess = OnCursorSuccess;
-                            }
-                            CursorOpenRequest.onerror = OnCursorError;
-                        }
-                        else {
-                            JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: whereIn.Column });
-                        }
-                    }
-                };
-                return _this;
-            }
-            return SelectHelper;
-        }(Business.BaseSelect));
-        Business.SelectHelper = SelectHelper;
-    })(Business = JsStore.Business || (JsStore.Business = {}));
-})(JsStore || (JsStore = {}));
-var JsStore;
-(function (JsStore) {
-    var Business;
-    (function (Business) {
-        var SelectJoin = (function (_super) {
-            __extends(SelectJoin, _super);
-            function SelectJoin(query, onSuccess, onError) {
-                var _this = _super.call(this) || this;
-                _this.QueryStack = [];
-                _this.CurrentQueryStackIndex = 0;
-                _this.onTransactionCompleted = function (e) {
-                    if (this.OnSuccess != null && (this.QueryStack.length == this.CurrentQueryStackIndex + 1)) {
-                        if (this.Query['Count']) {
-                            this.OnSuccess(this.Results.length);
-                        }
-                        else {
-                            if (this.Query['Skip'] && this.Query['Limit']) {
-                                this.Results.splice(0, this.Query['Skip']);
-                                this.Results.splice(this.Query['Limit'] - 1, this.Results.length);
-                            }
-                            else if (this.Query['Skip']) {
-                                this.Results.splice(0, this.Query['Skip']);
-                            }
-                            else if (this.Query['Limit']) {
-                                this.Results.splice(this.Query['Limit'] - 1, this.Results.length);
-                            }
-                            this.OnSuccess(this.Results);
-                        }
-                    }
-                };
-                _this.executeWhereJoinLogic = function (joinQuery, query) {
-                    var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length;
-                    new Business.Select({
-                        From: query.Table,
-                        Where: query.Where,
-                        WhereIn: query.WhereIn,
-                        Order: query.Order
-                    }, function (results) {
-                        results.forEach(function (value, index) {
-                            for (var i = 0; i < ResultLength; i++) {
-                                Item = TmpResults[i][joinQuery.Table][joinQuery.Column];
-                                doJoin(Item, value, i);
-                            }
-                        });
-                        That.Results = Results;
-                        if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
-                            That.startExecutionJoinLogic();
-                        }
-                        else {
-                            That.onTransactionCompleted(null);
-                        }
-                    }, function (error) {
-                        That.onErrorOccured(error);
-                    });
-                    var doJoin = function (value1, value2, itemIndex) {
-                        Results[JoinIndex] = {};
-                        if (value1 == value2[query.Column]) {
-                            Results[JoinIndex][query.Table] = value2;
-                            for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
-                            }
-                            ++JoinIndex;
-                        }
-                        else if (query.JoinType == 'left') {
-                            Results[JoinIndex] = {};
-                            Results[JoinIndex][query.Table] = null;
-                            for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
-                            }
-                            ++JoinIndex;
-                        }
-                    };
-                };
-                _this.executeRightJoin = function (joinQuery, query) {
-                    var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length, ItemIndex = 0, Where = {}, onExecutionFinished = function () {
-                        That.Results = Results;
-                        if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
-                            That.startExecutionJoinLogic();
-                        }
-                        else {
-                            That.onTransactionCompleted(null);
-                        }
-                    }, doRightJoin = function (results) {
-                        var ValueFound = false;
-                        results.forEach(function (item, index) {
-                            for (ItemIndex = 0; ItemIndex < ResultLength; ItemIndex++) {
-                                if (item[query.Column] == TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column]) {
-                                    ValueFound = true;
-                                    break;
-                                }
-                            }
-                            Results[index] = {};
-                            Results[index][query.Table] = item;
-                            if (ValueFound) {
-                                ValueFound = false;
-                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                    Results[index][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
-                                }
-                            }
-                            else {
-                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                    Results[index][That.QueryStack[j].Table] = null;
-                                }
-                            }
-                        });
-                    }, executeLogic = function () {
-                        new Business.Select({
-                            From: query.Table,
-                            Where: query.Where,
-                            WhereIn: query.WhereIn,
-                            Order: query.Order
-                        }, function (results) {
-                            doRightJoin(results);
-                            onExecutionFinished();
-                        }, function (error) {
-                            That.ErrorOccured = true;
-                            That.onErrorOccured(error);
-                        });
-                    };
-                    executeLogic();
-                };
-                _this.executeWhereUndefinedLogicForJoin = function (joinQuery, query) {
-                    var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length, ItemIndex = 0, Where = {}, onExecutionFinished = function () {
-                        That.Results = Results;
-                        if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
-                            That.startExecutionJoinLogic();
-                        }
-                        else {
-                            That.onTransactionCompleted(null);
-                        }
-                    }, doJoin = function (results) {
-                        if (results.length > 0) {
-                            results.forEach(function (value) {
-                                Results[JoinIndex] = {};
-                                Results[JoinIndex][query.Table] = value;
-                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                    Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
-                                }
-                                ++JoinIndex;
-                            });
-                        }
-                        else if (query.JoinType == 'left') {
-                            Results[JoinIndex] = {};
-                            Results[JoinIndex][query.Table] = null;
-                            for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
-                            }
-                            ++JoinIndex;
-                        }
-                    }, executeLogic = function () {
-                        if (ItemIndex < ResultLength) {
-                            if (!That.ErrorOccured) {
-                                Where[query.Column] = TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column];
-                                new Business.Select({
-                                    From: query.Table,
-                                    Where: Where,
-                                    Order: query.Order
-                                }, function (results) {
-                                    doJoin(results);
-                                    ++ItemIndex;
-                                    executeLogic();
-                                }, function (error) {
-                                    That.ErrorOccured = true;
-                                    That.onErrorOccured(error);
-                                });
-                            }
-                        }
-                        else {
-                            onExecutionFinished();
-                        }
-                    };
-                    executeLogic();
-                };
-                _this.OnSuccess = onSuccess;
-                _this.OnError = onError;
-                _this.Query = query;
-                var That = _this, TableList = [];
-                var convertQueryIntoStack = function (query) {
-                    if (query.hasOwnProperty('Table1')) {
-                        query.Table2['JoinType'] = query.Join == undefined ? 'inner' : query.Join.toLowerCase();
-                        That.QueryStack.push(query.Table2);
-                        if (That.QueryStack.length % 2 == 0) {
-                            That.QueryStack[That.QueryStack.length - 1].NextJoin = query.NextJoin;
-                        }
-                        TableList.push(query.Table2.Table);
-                        return convertQueryIntoStack(query.Table1);
-                    }
-                    else {
-                        That.QueryStack.push(query);
-                        TableList.push(query.Table);
-                        return;
-                    }
-                };
-                convertQueryIntoStack(query.From);
-                _this.QueryStack.reverse();
-                if (!_this.ErrorOccured) {
-                    new Business.Select({
-                        From: _this.QueryStack[0].Table,
-                        Where: _this.QueryStack[0].Where,
-                        WhereIn: _this.QueryStack[0].WhereIn
-                    }, function (results) {
-                        var TableName = That.QueryStack[0].Table;
-                        results.forEach(function (item, index) {
-                            That.Results[index] = {};
-                            That.Results[index][TableName] = item;
-                        });
-                        That.startExecutionJoinLogic();
-                    }, function (error) {
-                        That.onErrorOccured(error);
-                    });
-                }
-                return _this;
-            }
-            SelectJoin.prototype.startExecutionJoinLogic = function () {
-                var JoinQuery;
-                if (this.CurrentQueryStackIndex >= 1 && this.CurrentQueryStackIndex % 2 == 1) {
-                    JoinQuery = {
-                        Table: this.QueryStack[this.CurrentQueryStackIndex].NextJoin.Table,
-                        Column: this.QueryStack[this.CurrentQueryStackIndex].NextJoin.Column
-                    };
-                    this.CurrentQueryStackIndex++;
-                }
-                else {
-                    JoinQuery = this.QueryStack[this.CurrentQueryStackIndex++];
-                }
-                var Query = this.QueryStack[this.CurrentQueryStackIndex];
-                if (Query.JoinType == 'right') {
-                    this.executeRightJoin(JoinQuery, Query);
-                }
-                else if (Query.WhereIn || Query.Where) {
-                    this.executeWhereJoinLogic(JoinQuery, Query);
-                }
-                else {
-                    this.executeWhereUndefinedLogicForJoin(JoinQuery, Query);
-                }
-            };
-            return SelectJoin;
-        }(Business.BaseSelect));
-        Business.SelectJoin = SelectJoin;
-    })(Business = JsStore.Business || (JsStore.Business = {}));
-})(JsStore || (JsStore = {}));
-var JsStore;
-(function (JsStore) {
-    var Business;
-    (function (Business) {
-        var Select = (function (_super) {
-            __extends(Select, _super);
-            function Select(query, onSuccess, onError) {
-                var _this = _super.call(this) || this;
-                _this.executeWhereInLogic = function () {
-                    if (Array.isArray(this.Query.WhereIn)) {
-                        if (this.Query.WhereIn.length > 0) {
-                            this.executeMultipleWhereInLogic(this.Query.WhereIn);
-                        }
-                        else {
-                            this.executeWhereUndefinedLogic();
-                        }
-                    }
-                    else {
-                        this.executeSingleWhereInLogic(this.Query.WhereIn);
-                    }
-                };
-                _this.executeWhereLogic = function () {
-                    var SkipRecord = this.Query.Skip, LimitRecord = this.Query.Limit, That = this, executeInnerWhereLogic = function (column, value) {
-                        var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
-                        CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
-                            That.onErrorOccured(e);
-                        };
-                        if (SkipRecord && LimitRecord) {
-                            var RecordSkipped = false;
-                            CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = e.target.result;
-                                if (Cursor) {
-                                    if (RecordSkipped && That.Results.length != LimitRecord) {
-                                        That.Results.push(Cursor);
-                                        Cursor.continue();
-                                    }
-                                    else {
-                                        RecordSkipped = true;
-                                        Cursor.advance(SkipRecord);
-                                    }
-                                }
-                            };
-                        }
-                        else if (SkipRecord) {
-                            var RecordSkipped = false;
-                            CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = e.target.result;
-                                if (Cursor) {
-                                    if (RecordSkipped) {
-                                        That.Results.push(Cursor);
-                                        Cursor.continue();
-                                    }
-                                    else {
-                                        RecordSkipped = true;
-                                        Cursor.advance(SkipRecord);
-                                    }
-                                }
-                            };
-                        }
-                        else if (LimitRecord) {
-                            CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = e.target.result;
-                                if (Cursor && That.Results.length != LimitRecord) {
-                                    That.Results.push(Cursor.value);
-                                    Cursor.continue();
-                                }
-                            };
-                        }
-                        else {
-                            CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = e.target.result;
-                                if (Cursor) {
-                                    if (That.checkForWhereConditionMatch(That.Query.Where, Cursor.value)) {
-                                        That.Results.push(Cursor.value);
-                                    }
-                                    Cursor.continue();
-                                }
-                            };
-                        }
-                    };
-                    for (var Column in this.Query.Where) {
-                        if (!this.ErrorOccured) {
-                            if (this.ObjectStore.indexNames.contains(Column)) {
-                                if (Array.isArray(this.Query.Where[Column])) {
-                                    for (var i = 0; i < this.Query.Where[Column].length; i++) {
-                                        executeInnerWhereLogic(Column, this.Query.Where[Column][i]);
-                                    }
-                                }
-                                else {
-                                    executeInnerWhereLogic(Column, this.Query.Where[Column]);
-                                }
-                            }
-                            else {
-                                That.ErrorOccured = true;
-                                That.Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: Column });
-                                That.onErrorOccured(That.Error, true);
-                            }
-                            break;
-                        }
-                        else {
-                            return;
-                        }
-                    }
-                };
-                _this.executeWhereUndefinedLogic = function () {
-                    var SkipRecord = this.Query.Skip, LimitRecord = this.Query.Limit, That = this, CursorOpenRequest;
-                    if (this.Query.Order && this.Query.Order.By) {
-                        if (That.ObjectStore.indexNames.contains(this.Query.Order.By)) {
-                            var OrderType = this.Query.Order.Type && this.Query.Order.Type.toLowerCase() == 'desc' ? 'prev' : 'next';
-                            this.Sorted = true;
-                            CursorOpenRequest = this.ObjectStore.index(That.Query.Order.By).openCursor(null, OrderType);
-                        }
-                        else {
-                            JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: this.Query.Order.By });
-                            return false;
-                        }
-                    }
-                    else {
-                        CursorOpenRequest = this.ObjectStore.openCursor();
-                    }
-                    if (SkipRecord && LimitRecord) {
-                        var RecordSkipped = false;
-                        CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = e.target.result;
-                            if (Cursor) {
-                                if (RecordSkipped && That.Results.length != LimitRecord) {
-                                    That.Results.push(Cursor.value);
-                                    Cursor.continue();
-                                }
-                                else {
-                                    RecordSkipped = true;
-                                    Cursor.advance(SkipRecord);
-                                }
-                            }
-                        };
-                    }
-                    else if (SkipRecord) {
-                        var RecordSkipped = false;
-                        CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = e.target.result;
-                            if (Cursor) {
-                                if (RecordSkipped) {
-                                    That.Results.push(Cursor.value);
-                                    Cursor.continue();
-                                }
-                                else {
-                                    RecordSkipped = true;
-                                    Cursor.advance(SkipRecord);
-                                }
-                            }
-                        };
-                    }
-                    else if (LimitRecord) {
-                        CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = e.target.result;
-                            if (Cursor && That.Results.length != LimitRecord) {
-                                That.Results.push(Cursor.value);
-                                Cursor.continue();
-                            }
-                        };
-                    }
-                    else {
-                        CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = e.target.result;
-                            if (Cursor) {
-                                That.Results.push(Cursor.value);
-                                Cursor.continue();
-                            }
-                        };
-                    }
-                    CursorOpenRequest.onerror = function (e) {
-                        That.ErrorOccured = true;
-                        That.onErrorOccured(e);
-                    };
-                };
-                var That = _this;
-                _this.Query = query;
-                _this.OnSuccess = onSuccess;
-                _this.OnError = onError;
-                try {
-                    _this.Transaction = Business.DbConnection.transaction([query.From], "readonly");
-                    _this.Transaction.oncomplete = function (e) {
-                        if (That.Results.length > 0 && !That.Sorted && query.Order && query.Order.By) {
-                            query.Order.Type = query.Order.Type ? query.Order.Type.toLowerCase() : 'asc';
-                            var OrderColumn = query.Order.By, sortNumberInAsc = function () {
-                                That.Results.sort(function (a, b) {
-                                    return a[OrderColumn] - b[OrderColumn];
-                                });
-                            }, sortNumberInDesc = function () {
-                                That.Results.sort(function (a, b) {
-                                    return b[OrderColumn] - a[OrderColumn];
-                                });
-                            }, sortAlphabetInAsc = function () {
-                                That.Results.sort(function (a, b) {
-                                    return a[OrderColumn].toLowerCase().localeCompare(b[OrderColumn].toLowerCase());
-                                });
-                            }, sortAlphabetInDesc = function () {
-                                That.Results.sort(function (a, b) {
-                                    return b[OrderColumn].toLowerCase().localeCompare(a[OrderColumn].toLowerCase());
-                                });
-                            };
-                            if (typeof That.Results[0][OrderColumn] == 'string') {
-                                if (query.Order.Type == 'asc') {
-                                    sortAlphabetInAsc();
-                                }
-                                else {
-                                    sortAlphabetInDesc();
-                                }
-                            }
-                            else if (typeof That.Results[0][OrderColumn] == 'number') {
-                                if (query.Order.Type == 'asc') {
-                                    sortNumberInAsc();
-                                }
-                                else {
-                                    sortNumberInDesc();
-                                }
-                            }
-                            if (That.OnSuccess) {
-                                That.OnSuccess(That.Results);
-                            }
-                        }
-                        else if (That.SendResultFlag) {
-                            if (That.OnSuccess) {
-                                That.OnSuccess(That.Results);
-                            }
-                        }
-                    };
-                    _this.Transaction.ontimeout = function () {
-                        console.log('transaction timed out');
-                    };
-                    _this.ObjectStore = _this.Transaction.objectStore(query.From);
-                    if (query.WhereIn != undefined) {
-                        _this.executeWhereInLogic();
-                    }
-                    else if (query.Where != undefined) {
-                        _this.executeWhereLogic();
-                    }
-                    else {
-                        _this.executeWhereUndefinedLogic();
-                    }
-                }
-                catch (ex) {
-                    _this.onExceptionOccured(ex, { TableName: query.From });
-                }
-                return _this;
-            }
-            return Select;
-        }(Business.SelectHelper));
-        Business.Select = Select;
-    })(Business = JsStore.Business || (JsStore.Business = {}));
-})(JsStore || (JsStore = {}));
-var JsStore;
-(function (JsStore) {
-    var Business;
-    (function (Business) {
-        var Update = (function (_super) {
-            __extends(Update, _super);
-            function Update(query, onSuccess, onError) {
-                var _this = this;
-                try {
-                    _this = _super.call(this) || this;
-                    _this.OnError = onError;
-                    _this.checkSchema(query.Set, query.In);
-                    if (!_this.ErrorOccured) {
-                        _this.Query = query;
-                        _this.OnSuccess = onSuccess;
-                        _this.Transaction = Business.DbConnection.transaction([query.In], "readwrite");
-                        _this.ObjectStore = _this.Transaction.objectStore(query.In);
-                        var That = _this;
-                        _this.Transaction.oncomplete = function (e) {
-                            if (onSuccess != null) {
-                                onSuccess(That.RowAffected);
-                            }
-                        };
-                        _this.Transaction.ontimeout = function () {
-                            console.log('transaction timed out');
-                        };
-                        if (query.Where == undefined) {
-                            _this.executeWhereUndefinedlogic();
-                        }
-                        else {
-                            _this.executeWhereLogic();
-                        }
-                    }
-                    else {
-                        _this.onErrorOccured(_this.Error, true);
-                    }
-                }
-                catch (ex) {
-                    _this.onExceptionOccured(ex, { TableName: query.In });
-                }
-                return _this;
-            }
-            Update.prototype.executeWhereUndefinedlogic = function () {
-                var That = this, CursorOpenRequest = this.ObjectStore.openCursor();
-                CursorOpenRequest.onsuccess = function (e) {
-                    var Cursor = e.target.result;
-                    if (Cursor) {
-                        for (var key in That.Query.Set) {
-                            Cursor.value[key] = That.Query.Set[key];
-                        }
-                        Cursor.update(Cursor.value);
-                        ++That.RowAffected;
-                        Cursor.continue();
-                    }
-                };
-                CursorOpenRequest.onerror = function (e) {
-                    That.onErrorOccured(e);
-                };
-            };
-            Update.prototype.executeWhereLogic = function () {
-                var That = this, executeInnerUpdateLogic = function (column, value) {
-                    var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
-                    CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor = e.target.result;
-                        if (Cursor) {
-                            if (That.checkForWhereConditionMatch(That.Query.Where, Cursor.value)) {
-                                for (var key in That.Query.Set) {
-                                    Cursor.value[key] = That.Query.Set[key];
-                                }
-                                Cursor.update(Cursor.value);
-                                ++That.RowAffected;
-                            }
-                            Cursor.continue();
-                        }
-                    };
-                    CursorOpenRequest.onerror = function (e) {
-                        That.ErrorOccured = true;
-                        That.onErrorOccured(e);
-                    };
-                };
-                for (var Column in this.Query.Where) {
-                    if (!this.ErrorOccured) {
-                        if (this.ObjectStore.indexNames.contains(Column)) {
-                            if (Array.isArray(this.Query.Where[Column])) {
-                                for (var i = 0; i < this.Query.Where[Column].length; i++) {
-                                    executeInnerUpdateLogic(Column, this.Query.Where[Column][i]);
-                                }
-                            }
-                            else {
-                                executeInnerUpdateLogic(Column, this.Query.Where[Column]);
-                            }
-                        }
-                        else {
-                            That.ErrorOccured = true;
-                            That.Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: Column });
-                            That.onErrorOccured(That.Error, true);
-                        }
-                        break;
-                    }
-                    else {
-                        return;
-                    }
-                }
-            };
-            Update.prototype.checkSchema = function (suppliedValue, tableName) {
-                var CurrentTable = this.getTable(tableName), That = this;
-                CurrentTable.Columns.every(function (column) {
-                    if (!That.ErrorOccured) {
-                        if (column.Name in suppliedValue) {
-                            var executeCheck = function (value) {
-                                if (column.NotNull && That.isNull(value)) {
-                                    That.ErrorOccured = true;
-                                    That.Error = JsStore.Utils.getError(JsStore.ErrorType.NullValue, false, { ColumnName: column.Name });
-                                }
-                                if (column.DataType && typeof value != column.DataType) {
-                                    That.ErrorOccured = true;
-                                    That.Error = JsStore.Utils.getError(JsStore.ErrorType.BadDataType, false, { ColumnName: column.Name });
-                                }
-                            };
-                            executeCheck(suppliedValue[column.Name]);
-                            return true;
-                        }
-                    }
-                    else {
-                        return false;
-                    }
-                });
-            };
-            return Update;
-        }(Business.Base));
-        Business.Update = Update;
-    })(Business = JsStore.Business || (JsStore.Business = {}));
-})(JsStore || (JsStore = {}));
-var JsStore;
-(function (JsStore) {
-    var Business;
-    (function (Business) {
-        var Clear = (function () {
+        var Clear = (function (_super) {
+            __extends(Clear, _super);
             function Clear(tableName, onSuccess, onError) {
-                var ObjectStore = Business.DbConnection.transaction([tableName], "readwrite").Transaction.objectStore(tableName), ClearRequest = ObjectStore.clear();
+                var _this = _super.call(this) || this;
+                var That = _this, ObjectStore = Business.DbConnection.transaction([tableName], "readwrite").Transaction.objectStore(tableName), ClearRequest = ObjectStore.clear();
                 ClearRequest.onsuccess = function (e) {
+                    var CurrentTable = That.getTable(tableName);
+                    CurrentTable.Columns.forEach(function (column) {
+                        if (column.AutoIncrement) {
+                            KeyStore.remove("JsStore_" + Business.ActiveDataBase.Name + "_" + tableName + "_" + column.Name + "_Value");
+                        }
+                    });
                     if (onSuccess != null) {
                         onSuccess();
                     }
@@ -1759,9 +891,10 @@ var JsStore;
                         onError();
                     }
                 };
+                return _this;
             }
             return Clear;
-        }());
+        }(Business.Base));
         Business.Clear = Clear;
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
@@ -1871,7 +1004,7 @@ var JsStore;
                     new Business.DropDb(Business.ActiveDataBase.Name, onSuccess, onError);
                 };
                 this.update = function (query, onSuccess, onError) {
-                    new Business.Update(query, onSuccess, onError);
+                    new Business.Update.Instance(query, onSuccess, onError);
                 };
                 this.insert = function (query, onSuccess, onError) {
                     if (!Array.isArray(query.Values)) {
@@ -1887,23 +1020,23 @@ var JsStore;
                     }
                 };
                 this.delete = function (query, onSuccess, onError) {
-                    new Business.Delete(query, onSuccess, onError);
+                    new Business.Delete.Instance(query, onSuccess, onError);
                 };
                 this.select = function (query, onSuccess, onError) {
                     if (typeof query.From === 'object') {
-                        new Business.SelectJoin(query, onSuccess, onError);
+                        new Business.Select.Join(query, onSuccess, onError);
                     }
                     else {
-                        new Business.Select(query, onSuccess, onError);
+                        new Business.Select.Instance(query, onSuccess, onError);
                     }
                 };
                 this.count = function (query, onSuccess, onError) {
                     if (typeof query.From === 'object') {
                         query['Count'] = true;
-                        new Business.SelectJoin(query, onSuccess, onError);
+                        new Business.Select.Join(query, onSuccess, onError);
                     }
                     else {
-                        new Business.Count(query, onSuccess, onError);
+                        new Business.Count.Instance(query, onSuccess, onError);
                     }
                 };
                 this.createDb = function (dataBase, onSuccess, onError) {
@@ -1933,6 +1066,1556 @@ var JsStore;
             return Main;
         }());
         Business.Main = Main;
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Select;
+        (function (Select) {
+            var BaseSelect = (function (_super) {
+                __extends(BaseSelect, _super);
+                function BaseSelect() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.Results = [];
+                    _this.SendResultFlag = true;
+                    _this.Sorted = false;
+                    return _this;
+                }
+                return BaseSelect;
+            }(Business.Base));
+            Select.BaseSelect = BaseSelect;
+        })(Select = Business.Select || (Business.Select = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Select;
+        (function (Select) {
+            var NotWhere = (function (_super) {
+                __extends(NotWhere, _super);
+                function NotWhere() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.executeWhereUndefinedLogic = function () {
+                        var That = this, CursorOpenRequest, executeSkipAndLimit = function () {
+                            var RecordSkipped = false;
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor = e.target.result;
+                                if (Cursor) {
+                                    if (RecordSkipped && That.Results.length != That.LimitRecord) {
+                                        That.Results.push(Cursor.value);
+                                        Cursor.continue();
+                                    }
+                                    else {
+                                        RecordSkipped = true;
+                                        Cursor.advance(That.SkipRecord);
+                                    }
+                                }
+                            };
+                        }, executeSkip = function () {
+                            var RecordSkipped = false;
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor = e.target.result;
+                                if (Cursor) {
+                                    if (RecordSkipped) {
+                                        That.Results.push(Cursor.value);
+                                        Cursor.continue();
+                                    }
+                                    else {
+                                        RecordSkipped = true;
+                                        Cursor.advance(That.SkipRecord);
+                                    }
+                                }
+                            };
+                        }, executeSimple = function () {
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor = e.target.result;
+                                if (Cursor) {
+                                    That.Results.push(Cursor.value);
+                                    Cursor.continue();
+                                }
+                            };
+                        }, executeLimit = function () {
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor = e.target.result;
+                                if (Cursor && That.Results.length != That.LimitRecord) {
+                                    That.Results.push(Cursor.value);
+                                    Cursor.continue();
+                                }
+                            };
+                        };
+                        if (this.Query.Order && this.Query.Order.By) {
+                            if (That.ObjectStore.indexNames.contains(this.Query.Order.By)) {
+                                var OrderType = this.Query.Order.Type && this.Query.Order.Type.toLowerCase() == 'desc' ? 'prev' : 'next';
+                                this.Sorted = true;
+                                CursorOpenRequest = this.ObjectStore.index(That.Query.Order.By).openCursor(null, OrderType);
+                            }
+                            else {
+                                JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: this.Query.Order.By });
+                                return false;
+                            }
+                        }
+                        else {
+                            CursorOpenRequest = this.ObjectStore.openCursor();
+                        }
+                        if (this.SkipRecord && this.LimitRecord) {
+                            executeSkipAndLimit();
+                        }
+                        else if (this.SkipRecord) {
+                            executeSkip();
+                        }
+                        else if (this.LimitRecord) {
+                            executeLimit();
+                        }
+                        else {
+                            executeSimple();
+                        }
+                        CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                    };
+                    return _this;
+                }
+                return NotWhere;
+            }(Select.BaseSelect));
+            Select.NotWhere = NotWhere;
+        })(Select = Business.Select || (Business.Select = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Select;
+        (function (Select) {
+            var Like = (function (_super) {
+                __extends(Like, _super);
+                function Like() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.CheckFlag = false;
+                    _this.filterOnOccurence = function (value) {
+                        var Found = false, Value = value[this.Column].toLowerCase();
+                        switch (this.CompSymbol) {
+                            case JsStore.Occurence.Any:
+                                if (Value.indexOf(this.CompValue) >= 0) {
+                                    Found = true;
+                                }
+                                ;
+                                break;
+                            case JsStore.Occurence.First:
+                                if (Value.indexOf(this.CompValue) == 0) {
+                                    Found = true;
+                                }
+                                ;
+                                break;
+                            default:
+                                if (Value.lastIndexOf(this.CompValue) == Value.length - 1) {
+                                    Found = true;
+                                }
+                                ;
+                        }
+                        return Found;
+                    };
+                    _this.executeSkipAndLimit = function () {
+                        var RecordSkipped = false, That = this;
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                if (RecordSkipped && That.Results.length != That.LimitRecord) {
+                                    if (That.filterOnOccurence(Cursor.value) &&
+                                        That.checkForWhereConditionMatch(Cursor.value)) {
+                                        That.Results.push(Cursor.value);
+                                    }
+                                    Cursor.continue();
+                                }
+                                else {
+                                    RecordSkipped = true;
+                                    Cursor.advance(That.SkipRecord);
+                                }
+                            }
+                        };
+                    };
+                    _this.executeSkip = function () {
+                        var RecordSkipped = false, That = this;
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                if (RecordSkipped) {
+                                    if (That.filterOnOccurence(Cursor.value) &&
+                                        That.checkForWhereConditionMatch(Cursor.value)) {
+                                        That.Results.push(Cursor.value);
+                                    }
+                                    Cursor.continue();
+                                }
+                                else {
+                                    RecordSkipped = true;
+                                    Cursor.advance(That.SkipRecord);
+                                }
+                            }
+                        };
+                    };
+                    _this.executeLimit = function () {
+                        var That = this;
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor && That.Results.length != That.LimitRecord) {
+                                if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                                    That.Results.push(Cursor.value);
+                                }
+                                Cursor.continue();
+                            }
+                        };
+                    };
+                    _this.executeSimple = function () {
+                        var That = this;
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                if (That.filterOnOccurence(Cursor.value) && That.checkForWhereConditionMatch(Cursor.value)) {
+                                    That.Results.push(Cursor.value);
+                                }
+                                Cursor.continue();
+                            }
+                        };
+                    };
+                    _this.executeLikeLogic = function (column, value, symbol) {
+                        var That = this;
+                        this.CompValue = value.toLowerCase();
+                        this.CompSymbol = symbol;
+                        this.Column = column;
+                        this.CursorOpenRequest = this.ObjectStore.index(column).openCursor();
+                        this.CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                        if (this.SkipRecord && this.LimitRecord) {
+                            this.executeSkipAndLimit();
+                        }
+                        else if (this.SkipRecord) {
+                            this.executeSkip();
+                        }
+                        else if (this.LimitRecord) {
+                            this.executeLimit();
+                        }
+                        else {
+                            this.executeSimple();
+                        }
+                    };
+                    return _this;
+                }
+                return Like;
+            }(Select.NotWhere));
+            Select.Like = Like;
+        })(Select = Business.Select || (Business.Select = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Select;
+        (function (Select) {
+            var Where = (function (_super) {
+                __extends(Where, _super);
+                function Where() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.executeRequest = function (column, value, op) {
+                        var That = this, CursorOpenRequest, executeSkipAndLimit = function () {
+                            var RecordSkipped = false;
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor = e.target.result;
+                                if (Cursor) {
+                                    if (RecordSkipped && That.Results.length != That.LimitRecord) {
+                                        if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                            That.Results.push(Cursor.value);
+                                        }
+                                        Cursor.continue();
+                                    }
+                                    else {
+                                        RecordSkipped = true;
+                                        Cursor.advance(That.SkipRecord);
+                                    }
+                                }
+                            };
+                        }, executeSkip = function () {
+                            var RecordSkipped = false;
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor = e.target.result;
+                                if (Cursor) {
+                                    if (RecordSkipped) {
+                                        if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                            That.Results.push(Cursor.value);
+                                        }
+                                        Cursor.continue();
+                                    }
+                                    else {
+                                        RecordSkipped = true;
+                                        Cursor.advance(That.SkipRecord);
+                                    }
+                                }
+                            };
+                        }, executeLimit = function () {
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor = e.target.result;
+                                if (Cursor && That.Results.length != That.LimitRecord) {
+                                    if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                        That.Results.push(Cursor.value);
+                                    }
+                                    Cursor.continue();
+                                }
+                            };
+                        }, executeSimple = function () {
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor = e.target.result;
+                                if (Cursor) {
+                                    if (!That.CheckFlag) {
+                                        That.Results.push(Cursor.value);
+                                    }
+                                    else if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                        That.Results.push(Cursor.value);
+                                    }
+                                    Cursor.continue();
+                                }
+                            };
+                        };
+                        value = op ? value[op] : value;
+                        CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
+                        if (this.SkipRecord && this.LimitRecord) {
+                            executeSkipAndLimit();
+                        }
+                        else if (this.SkipRecord) {
+                            executeSkip();
+                        }
+                        else if (this.LimitRecord) {
+                            executeLimit();
+                        }
+                        else {
+                            executeSimple();
+                        }
+                        CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                    };
+                    _this.executeWhereLogic = function () {
+                        for (var Column in this.Query.Where) {
+                            if (!this.ErrorOccured) {
+                                if (this.ObjectStore.indexNames.contains(Column)) {
+                                    var Value = this.Query.Where[Column];
+                                    if (typeof Value == 'string') {
+                                        this.executeRequest(Column, Value);
+                                    }
+                                    else {
+                                        this.CheckFlag = Object.keys(Value).length > 1 || Object.keys(this.Query.Where).length > 1 ? true : false;
+                                        if (Value.Like) {
+                                            var FilterValue = Value.Like.split('%');
+                                            if (FilterValue[1]) {
+                                                if (FilterValue.length > 2) {
+                                                    this.executeLikeLogic(Column, FilterValue[1], JsStore.Occurence.Any);
+                                                }
+                                                else {
+                                                    this.executeLikeLogic(Column, FilterValue[1], JsStore.Occurence.Last);
+                                                }
+                                            }
+                                            else {
+                                                this.executeLikeLogic(Column, FilterValue[0], JsStore.Occurence.First);
+                                            }
+                                        }
+                                        else if (Value['In']) {
+                                            for (var i = 0; i < Value['In'].length; i++) {
+                                                this.executeRequest(Column, Value['In'][i]);
+                                            }
+                                        }
+                                        else if (Value['-']) {
+                                            this.executeRequest(Column, Value, '-');
+                                        }
+                                        else if (Value['>']) {
+                                            this.executeRequest(Column, Value, '>');
+                                        }
+                                        else if (Value['<']) {
+                                            this.executeRequest(Column, Value, '<');
+                                        }
+                                        else if (Value['>=']) {
+                                            this.executeRequest(Column, Value, '>=');
+                                        }
+                                        else if (Value['<=']) {
+                                            this.executeRequest(Column, Value, '<=');
+                                        }
+                                        else {
+                                            this.executeRequest(Column, Value);
+                                        }
+                                    }
+                                }
+                                else {
+                                    this.ErrorOccured = true;
+                                    this.Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                                    this.onErrorOccured(this.Error, true);
+                                }
+                            }
+                            break;
+                        }
+                    };
+                    return _this;
+                }
+                return Where;
+            }(Select.Like));
+            Select.Where = Where;
+        })(Select = Business.Select || (Business.Select = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Select;
+        (function (Select) {
+            var Join = (function (_super) {
+                __extends(Join, _super);
+                function Join(query, onSuccess, onError) {
+                    var _this = _super.call(this) || this;
+                    _this.QueryStack = [];
+                    _this.CurrentQueryStackIndex = 0;
+                    _this.onTransactionCompleted = function (e) {
+                        if (this.OnSuccess != null && (this.QueryStack.length == this.CurrentQueryStackIndex + 1)) {
+                            if (this.Query['Count']) {
+                                this.OnSuccess(this.Results.length);
+                            }
+                            else {
+                                if (this.Query['Skip'] && this.Query['Limit']) {
+                                    this.Results.splice(0, this.Query['Skip']);
+                                    this.Results.splice(this.Query['Limit'] - 1, this.Results.length);
+                                }
+                                else if (this.Query['Skip']) {
+                                    this.Results.splice(0, this.Query['Skip']);
+                                }
+                                else if (this.Query['Limit']) {
+                                    this.Results.splice(this.Query['Limit'] - 1, this.Results.length);
+                                }
+                                this.OnSuccess(this.Results);
+                            }
+                        }
+                    };
+                    _this.executeWhereJoinLogic = function (joinQuery, query) {
+                        var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length;
+                        new Select.Instance({
+                            From: query.Table,
+                            Where: query.Where,
+                            Order: query.Order
+                        }, function (results) {
+                            results.forEach(function (value, index) {
+                                for (var i = 0; i < ResultLength; i++) {
+                                    Item = TmpResults[i][joinQuery.Table][joinQuery.Column];
+                                    doJoin(Item, value, i);
+                                }
+                            });
+                            That.Results = Results;
+                            if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
+                                That.startExecutionJoinLogic();
+                            }
+                            else {
+                                That.onTransactionCompleted(null);
+                            }
+                        }, function (error) {
+                            That.onErrorOccured(error);
+                        });
+                        var doJoin = function (value1, value2, itemIndex) {
+                            Results[JoinIndex] = {};
+                            if (value1 == value2[query.Column]) {
+                                Results[JoinIndex][query.Table] = value2;
+                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                    Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
+                                }
+                                ++JoinIndex;
+                            }
+                            else if (query.JoinType == 'left') {
+                                Results[JoinIndex] = {};
+                                Results[JoinIndex][query.Table] = null;
+                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                    Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
+                                }
+                                ++JoinIndex;
+                            }
+                        };
+                    };
+                    _this.executeRightJoin = function (joinQuery, query) {
+                        var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length, ItemIndex = 0, Where = {}, onExecutionFinished = function () {
+                            That.Results = Results;
+                            if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
+                                That.startExecutionJoinLogic();
+                            }
+                            else {
+                                That.onTransactionCompleted(null);
+                            }
+                        }, doRightJoin = function (results) {
+                            var ValueFound = false;
+                            results.forEach(function (item, index) {
+                                for (ItemIndex = 0; ItemIndex < ResultLength; ItemIndex++) {
+                                    if (item[query.Column] == TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column]) {
+                                        ValueFound = true;
+                                        break;
+                                    }
+                                }
+                                Results[index] = {};
+                                Results[index][query.Table] = item;
+                                if (ValueFound) {
+                                    ValueFound = false;
+                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                        Results[index][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
+                                    }
+                                }
+                                else {
+                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                        Results[index][That.QueryStack[j].Table] = null;
+                                    }
+                                }
+                            });
+                        }, executeLogic = function () {
+                            new Select.Instance({
+                                From: query.Table,
+                                Where: query.Where,
+                                Order: query.Order
+                            }, function (results) {
+                                doRightJoin(results);
+                                onExecutionFinished();
+                            }, function (error) {
+                                That.ErrorOccured = true;
+                                That.onErrorOccured(error);
+                            });
+                        };
+                        executeLogic();
+                    };
+                    _this.executeWhereUndefinedLogicForJoin = function (joinQuery, query) {
+                        var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length, ItemIndex = 0, Where = {}, onExecutionFinished = function () {
+                            That.Results = Results;
+                            if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
+                                That.startExecutionJoinLogic();
+                            }
+                            else {
+                                That.onTransactionCompleted(null);
+                            }
+                        }, doJoin = function (results) {
+                            if (results.length > 0) {
+                                results.forEach(function (value) {
+                                    Results[JoinIndex] = {};
+                                    Results[JoinIndex][query.Table] = value;
+                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                        Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
+                                    }
+                                    ++JoinIndex;
+                                });
+                            }
+                            else if (query.JoinType == 'left') {
+                                Results[JoinIndex] = {};
+                                Results[JoinIndex][query.Table] = null;
+                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
+                                    Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
+                                }
+                                ++JoinIndex;
+                            }
+                        }, executeLogic = function () {
+                            if (ItemIndex < ResultLength) {
+                                if (!That.ErrorOccured) {
+                                    Where[query.Column] = TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column];
+                                    new Select.Instance({
+                                        From: query.Table,
+                                        Where: Where,
+                                        Order: query.Order
+                                    }, function (results) {
+                                        doJoin(results);
+                                        ++ItemIndex;
+                                        executeLogic();
+                                    }, function (error) {
+                                        That.ErrorOccured = true;
+                                        That.onErrorOccured(error);
+                                    });
+                                }
+                            }
+                            else {
+                                onExecutionFinished();
+                            }
+                        };
+                        executeLogic();
+                    };
+                    _this.OnSuccess = onSuccess;
+                    _this.OnError = onError;
+                    _this.Query = query;
+                    var That = _this, TableList = [];
+                    var convertQueryIntoStack = function (query) {
+                        if (query.hasOwnProperty('Table1')) {
+                            query.Table2['JoinType'] = query.Join == undefined ? 'inner' : query.Join.toLowerCase();
+                            That.QueryStack.push(query.Table2);
+                            if (That.QueryStack.length % 2 == 0) {
+                                That.QueryStack[That.QueryStack.length - 1].NextJoin = query.NextJoin;
+                            }
+                            TableList.push(query.Table2.Table);
+                            return convertQueryIntoStack(query.Table1);
+                        }
+                        else {
+                            That.QueryStack.push(query);
+                            TableList.push(query.Table);
+                            return;
+                        }
+                    };
+                    convertQueryIntoStack(query.From);
+                    _this.QueryStack.reverse();
+                    if (!_this.ErrorOccured) {
+                        new Select.Instance({
+                            From: _this.QueryStack[0].Table,
+                            Where: _this.QueryStack[0].Where
+                        }, function (results) {
+                            var TableName = That.QueryStack[0].Table;
+                            results.forEach(function (item, index) {
+                                That.Results[index] = {};
+                                That.Results[index][TableName] = item;
+                            });
+                            That.startExecutionJoinLogic();
+                        }, function (error) {
+                            That.onErrorOccured(error);
+                        });
+                    }
+                    return _this;
+                }
+                Join.prototype.startExecutionJoinLogic = function () {
+                    var JoinQuery;
+                    if (this.CurrentQueryStackIndex >= 1 && this.CurrentQueryStackIndex % 2 == 1) {
+                        JoinQuery = {
+                            Table: this.QueryStack[this.CurrentQueryStackIndex].NextJoin.Table,
+                            Column: this.QueryStack[this.CurrentQueryStackIndex].NextJoin.Column
+                        };
+                        this.CurrentQueryStackIndex++;
+                    }
+                    else {
+                        JoinQuery = this.QueryStack[this.CurrentQueryStackIndex++];
+                    }
+                    var Query = this.QueryStack[this.CurrentQueryStackIndex];
+                    if (Query.JoinType == 'right') {
+                        this.executeRightJoin(JoinQuery, Query);
+                    }
+                    else if (Query.Where) {
+                        this.executeWhereJoinLogic(JoinQuery, Query);
+                    }
+                    else {
+                        this.executeWhereUndefinedLogicForJoin(JoinQuery, Query);
+                    }
+                };
+                return Join;
+            }(Select.BaseSelect));
+            Select.Join = Join;
+        })(Select = Business.Select || (Business.Select = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Select;
+        (function (Select) {
+            var Instance = (function (_super) {
+                __extends(Instance, _super);
+                function Instance(query, onSuccess, onError) {
+                    var _this = _super.call(this) || this;
+                    _this.onTransactionCompleted = function () {
+                        var Order = this.Query.Order;
+                        if (Order && this.Results.length > 0 && !this.Sorted && Order.By) {
+                            Order.Type = Order.Type ? Order.Type.toLowerCase() : 'asc';
+                            var That = this, OrderColumn = Order.By, sortNumberInAsc = function () {
+                                That.Results.sort(function (a, b) {
+                                    return a[OrderColumn] - b[OrderColumn];
+                                });
+                            }, sortNumberInDesc = function () {
+                                That.Results.sort(function (a, b) {
+                                    return b[OrderColumn] - a[OrderColumn];
+                                });
+                            }, sortAlphabetInAsc = function () {
+                                That.Results.sort(function (a, b) {
+                                    return a[OrderColumn].toLowerCase().localeCompare(b[OrderColumn].toLowerCase());
+                                });
+                            }, sortAlphabetInDesc = function () {
+                                That.Results.sort(function (a, b) {
+                                    return b[OrderColumn].toLowerCase().localeCompare(a[OrderColumn].toLowerCase());
+                                });
+                            };
+                            if (typeof this.Results[0][OrderColumn] == 'string') {
+                                if (Order.Type == 'asc') {
+                                    sortAlphabetInAsc();
+                                }
+                                else {
+                                    sortAlphabetInDesc();
+                                }
+                            }
+                            else if (typeof this.Results[0][OrderColumn] == 'number') {
+                                if (Order.Type == 'asc') {
+                                    sortNumberInAsc();
+                                }
+                                else {
+                                    sortNumberInDesc();
+                                }
+                            }
+                            if (this.OnSuccess) {
+                                this.OnSuccess(this.Results);
+                            }
+                        }
+                        else if (this.SendResultFlag) {
+                            if (this.OnSuccess) {
+                                this.OnSuccess(this.Results);
+                            }
+                        }
+                    };
+                    var That = _this;
+                    _this.Query = query;
+                    _this.OnSuccess = onSuccess;
+                    _this.OnError = onError;
+                    _this.SkipRecord = _this.Query.Skip;
+                    _this.LimitRecord = _this.Query.Limit;
+                    try {
+                        _this.Transaction = Business.DbConnection.transaction([query.From], "readonly");
+                        _this.Transaction.oncomplete = function (e) {
+                            That.onTransactionCompleted();
+                        };
+                        _this.Transaction.ontimeout = That.onTransactionCompleted;
+                        _this.ObjectStore = _this.Transaction.objectStore(query.From);
+                        if (query.Where != undefined) {
+                            _this.executeWhereLogic();
+                        }
+                        else {
+                            _this.executeWhereUndefinedLogic();
+                        }
+                    }
+                    catch (ex) {
+                        _this.onExceptionOccured(ex, { TableName: query.From });
+                    }
+                    return _this;
+                }
+                return Instance;
+            }(Select.Where));
+            Select.Instance = Instance;
+        })(Select = Business.Select || (Business.Select = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Count;
+        (function (Count) {
+            var BaseCount = (function (_super) {
+                __extends(BaseCount, _super);
+                function BaseCount() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.ResultCount = 0;
+                    _this.SendResultFlag = true;
+                    _this.CheckFlag = false;
+                    return _this;
+                }
+                return BaseCount;
+            }(Business.Base));
+            Count.BaseCount = BaseCount;
+        })(Count = Business.Count || (Business.Count = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Count;
+        (function (Count) {
+            var NotWhere = (function (_super) {
+                __extends(NotWhere, _super);
+                function NotWhere() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.executeWhereUndefinedLogic = function () {
+                        var That = this, CursorOpenRequest = this.ObjectStore.openCursor();
+                        CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                ++That.ResultCount;
+                                Cursor.continue();
+                            }
+                        };
+                        CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                    };
+                    return _this;
+                }
+                return NotWhere;
+            }(Count.BaseCount));
+            Count.NotWhere = NotWhere;
+        })(Count = Business.Count || (Business.Count = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Count;
+        (function (Count) {
+            var Like = (function (_super) {
+                __extends(Like, _super);
+                function Like() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.filterOnOccurence = function (value) {
+                        var Found = false, Value = value[this.Column].toLowerCase();
+                        switch (this.CompSymbol) {
+                            case JsStore.Occurence.Any:
+                                if (Value.indexOf(this.CompValue) >= 0) {
+                                    Found = true;
+                                }
+                                ;
+                                break;
+                            case JsStore.Occurence.First:
+                                if (Value.indexOf(this.CompValue) == 0) {
+                                    Found = true;
+                                }
+                                ;
+                                break;
+                            default:
+                                if (Value.lastIndexOf(this.CompValue) == Value.length - 1) {
+                                    Found = true;
+                                }
+                                ;
+                        }
+                        return Found;
+                    };
+                    _this.executeLikeLogic = function (column, value, symbol) {
+                        var That = this;
+                        this.CompValue = value.toLowerCase();
+                        this.CompSymbol = symbol;
+                        this.Column = column;
+                        this.CursorOpenRequest = this.ObjectStore.index(column).openCursor();
+                        this.CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                if (That.filterOnOccurence(Cursor.value) && That.checkForWhereConditionMatch(Cursor.value)) {
+                                    ++That.ResultCount;
+                                }
+                                Cursor.continue();
+                            }
+                        };
+                    };
+                    return _this;
+                }
+                return Like;
+            }(Count.NotWhere));
+            Count.Like = Like;
+        })(Count = Business.Count || (Business.Count = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Count;
+        (function (Count) {
+            var Where = (function (_super) {
+                __extends(Where, _super);
+                function Where() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.executeRequest = function (column, value, op) {
+                        var That = this, CursorOpenRequest;
+                        value = op ? value[op] : value;
+                        CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
+                        CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                if (!That.CheckFlag) {
+                                    ++That.ResultCount;
+                                }
+                                else if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                    ++That.ResultCount;
+                                }
+                                Cursor.continue();
+                            }
+                        };
+                        CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                    };
+                    _this.executeWhereLogic = function () {
+                        for (var Column in this.Query.Where) {
+                            if (!this.ErrorOccured) {
+                                if (this.ObjectStore.indexNames.contains(Column)) {
+                                    var Value = this.Query.Where[Column];
+                                    if (typeof Value == 'string') {
+                                        this.executeRequest(Column, Value);
+                                    }
+                                    else {
+                                        this.CheckFlag = Object.keys(Value).length > 1 || Object.keys(this.Query.Where).length > 1 ? true : false;
+                                        if (Value.Like) {
+                                            var FilterValue = Value.Like.split('%');
+                                            if (FilterValue[1]) {
+                                                if (FilterValue.length > 2) {
+                                                    this.executeLikeLogic(Column, FilterValue[1], JsStore.Occurence.Any);
+                                                }
+                                                else {
+                                                    this.executeLikeLogic(Column, FilterValue[1], JsStore.Occurence.Last);
+                                                }
+                                            }
+                                            else {
+                                                this.executeLikeLogic(Column, FilterValue[0], JsStore.Occurence.First);
+                                            }
+                                        }
+                                        else if (Value['In']) {
+                                            for (var i = 0; i < Value['In'].length; i++) {
+                                                this.executeRequest(Column, Value['In'][i]);
+                                            }
+                                        }
+                                        else if (Value['-']) {
+                                            this.executeRequest(Column, Value, '-');
+                                        }
+                                        else if (Value['>']) {
+                                            this.executeRequest(Column, Value, '>');
+                                        }
+                                        else if (Value['<']) {
+                                            this.executeRequest(Column, Value, '<');
+                                        }
+                                        else if (Value['>=']) {
+                                            this.executeRequest(Column, Value, '>=');
+                                        }
+                                        else if (Value['<=']) {
+                                            this.executeRequest(Column, Value, '<=');
+                                        }
+                                        else {
+                                            this.executeRequest(Column, Value);
+                                        }
+                                    }
+                                }
+                                else {
+                                    this.ErrorOccured = true;
+                                    this.Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                                    this.onErrorOccured(this.Error, true);
+                                }
+                            }
+                            break;
+                        }
+                    };
+                    return _this;
+                }
+                return Where;
+            }(Count.Like));
+            Count.Where = Where;
+        })(Count = Business.Count || (Business.Count = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Count;
+        (function (Count) {
+            var Instance = (function (_super) {
+                __extends(Instance, _super);
+                function Instance(query, onSuccess, onError) {
+                    var _this = _super.call(this) || this;
+                    _this.onTransactionCompleted = function () {
+                        if (this.SendResultFlag && this.OnSuccess != null) {
+                            this.OnSuccess(this.ResultCount);
+                        }
+                    };
+                    var That = _this;
+                    _this.Query = query;
+                    _this.OnSuccess = onSuccess;
+                    _this.OnError = onError;
+                    try {
+                        _this.Transaction = Business.DbConnection.transaction([query.From], "readonly");
+                        _this.Transaction.oncomplete = function (e) {
+                            That.onTransactionCompleted();
+                        };
+                        _this.ObjectStore = _this.Transaction.objectStore(query.From);
+                        if (query.Where != undefined) {
+                            _this.executeWhereLogic();
+                        }
+                        else {
+                            _this.executeWhereUndefinedLogic();
+                        }
+                    }
+                    catch (ex) {
+                        if (ex.name == "NotFoundError") {
+                            JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, true, { TableName: query.From });
+                        }
+                        else {
+                            console.warn(ex);
+                        }
+                    }
+                    return _this;
+                }
+                return Instance;
+            }(Count.Where));
+            Count.Instance = Instance;
+        })(Count = Business.Count || (Business.Count = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Update;
+        (function (Update) {
+            var BaseUpdate = (function (_super) {
+                __extends(BaseUpdate, _super);
+                function BaseUpdate() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.SendResultFlag = true;
+                    _this.CheckFlag = false;
+                    return _this;
+                }
+                return BaseUpdate;
+            }(Business.Base));
+            Update.BaseUpdate = BaseUpdate;
+        })(Update = Business.Update || (Business.Update = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Update;
+        (function (Update) {
+            var NotWhere = (function (_super) {
+                __extends(NotWhere, _super);
+                function NotWhere() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.executeWhereUndefinedLogic = function () {
+                        var That = this, CursorOpenRequest = this.ObjectStore.openCursor();
+                        CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                for (var key in That.Query.Set) {
+                                    Cursor.value[key] = That.Query.Set[key];
+                                }
+                                Cursor.update(Cursor.value);
+                                ++That.RowAffected;
+                                Cursor.continue();
+                            }
+                        };
+                        CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                    };
+                    return _this;
+                }
+                return NotWhere;
+            }(Update.BaseUpdate));
+            Update.NotWhere = NotWhere;
+        })(Update = Business.Update || (Business.Update = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Update;
+        (function (Update) {
+            var Like = (function (_super) {
+                __extends(Like, _super);
+                function Like() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.filterOnOccurence = function (value) {
+                        var Found = false, Value = value[this.Column].toLowerCase();
+                        switch (this.CompSymbol) {
+                            case JsStore.Occurence.Any:
+                                if (Value.indexOf(this.CompValue) >= 0) {
+                                    Found = true;
+                                }
+                                ;
+                                break;
+                            case JsStore.Occurence.First:
+                                if (Value.indexOf(this.CompValue) == 0) {
+                                    Found = true;
+                                }
+                                ;
+                                break;
+                            default:
+                                if (Value.lastIndexOf(this.CompValue) == Value.length - 1) {
+                                    Found = true;
+                                }
+                                ;
+                        }
+                        return Found;
+                    };
+                    _this.executeLikeLogic = function (column, value, symbol) {
+                        var That = this;
+                        this.CompValue = value.toLowerCase();
+                        this.CompSymbol = symbol;
+                        this.Column = column;
+                        this.CursorOpenRequest = this.ObjectStore.index(column).openCursor();
+                        this.CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                if (That.filterOnOccurence(Cursor.value) && That.checkForWhereConditionMatch(Cursor.value)) {
+                                    for (var key in That.Query.Set) {
+                                        Cursor.value[key] = That.Query.Set[key];
+                                    }
+                                    Cursor.update(Cursor.value);
+                                    ++That.RowAffected;
+                                }
+                                Cursor.continue();
+                            }
+                        };
+                    };
+                    return _this;
+                }
+                return Like;
+            }(Update.NotWhere));
+            Update.Like = Like;
+        })(Update = Business.Update || (Business.Update = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Update;
+        (function (Update) {
+            var Where = (function (_super) {
+                __extends(Where, _super);
+                function Where() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.executeRequest = function (column, value, op) {
+                        var That = this, CursorOpenRequest;
+                        value = op ? value[op] : value;
+                        CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
+                        CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                var updateValue = function () {
+                                    for (var key in That.Query.Set) {
+                                        Cursor.value[key] = That.Query.Set[key];
+                                    }
+                                    Cursor.update(Cursor.value);
+                                    ++That.RowAffected;
+                                };
+                                if (!That.CheckFlag) {
+                                    updateValue();
+                                }
+                                else if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                    updateValue();
+                                }
+                                Cursor.continue();
+                            }
+                        };
+                        CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                    };
+                    _this.executeWhereLogic = function () {
+                        for (var Column in this.Query.Where) {
+                            if (!this.ErrorOccured) {
+                                if (this.ObjectStore.indexNames.contains(Column)) {
+                                    var Value = this.Query.Where[Column];
+                                    if (typeof Value == 'string') {
+                                        this.executeRequest(Column, Value);
+                                    }
+                                    else {
+                                        this.CheckFlag = Object.keys(Value).length > 1 || Object.keys(this.Query.Where).length > 1 ? true : false;
+                                        if (Value.Like) {
+                                            var FilterValue = Value.Like.split('%');
+                                            if (FilterValue[1]) {
+                                                if (FilterValue.length > 2) {
+                                                    this.executeLikeLogic(Column, FilterValue[1], JsStore.Occurence.Any);
+                                                }
+                                                else {
+                                                    this.executeLikeLogic(Column, FilterValue[1], JsStore.Occurence.Last);
+                                                }
+                                            }
+                                            else {
+                                                this.executeLikeLogic(Column, FilterValue[0], JsStore.Occurence.First);
+                                            }
+                                        }
+                                        else if (Value['In']) {
+                                            for (var i = 0; i < Value['In'].length; i++) {
+                                                this.executeRequest(Column, Value['In'][i]);
+                                            }
+                                        }
+                                        else if (Value['-']) {
+                                            this.executeRequest(Column, Value, '-');
+                                        }
+                                        else if (Value['>']) {
+                                            this.executeRequest(Column, Value, '>');
+                                        }
+                                        else if (Value['<']) {
+                                            this.executeRequest(Column, Value, '<');
+                                        }
+                                        else if (Value['>=']) {
+                                            this.executeRequest(Column, Value, '>=');
+                                        }
+                                        else if (Value['<=']) {
+                                            this.executeRequest(Column, Value, '<=');
+                                        }
+                                        else {
+                                            this.executeRequest(Column, Value);
+                                        }
+                                    }
+                                }
+                                else {
+                                    this.ErrorOccured = true;
+                                    this.Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                                    this.onErrorOccured(this.Error, true);
+                                }
+                            }
+                            break;
+                        }
+                    };
+                    return _this;
+                }
+                return Where;
+            }(Update.Like));
+            Update.Where = Where;
+        })(Update = Business.Update || (Business.Update = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Update;
+        (function (Update) {
+            var Instance = (function (_super) {
+                __extends(Instance, _super);
+                function Instance(query, onSuccess, onError) {
+                    var _this = _super.call(this) || this;
+                    _this.onTransactionCompleted = function () {
+                        if (this.OnSuccess != null) {
+                            this.OnSuccess(this.RowAffected);
+                        }
+                    };
+                    try {
+                        var That = _this;
+                        _this.checkSchema(query.Set, query.In);
+                        if (!_this.ErrorOccured) {
+                            _this.Query = query;
+                            _this.OnSuccess = onSuccess;
+                            _this.OnError = onError;
+                            _this.Transaction = Business.DbConnection.transaction([query.In], "readwrite");
+                            _this.ObjectStore = _this.Transaction.objectStore(query.In);
+                            var That = _this;
+                            _this.Transaction.oncomplete = function (e) {
+                                That.onTransactionCompleted();
+                            };
+                            _this.Transaction.ontimeout = That.onTransactionTimeout;
+                            if (query.Where == undefined) {
+                                _this.executeWhereUndefinedLogic();
+                            }
+                            else {
+                                _this.executeWhereLogic();
+                            }
+                        }
+                        else {
+                            _this.onErrorOccured(_this.Error, true);
+                        }
+                    }
+                    catch (ex) {
+                        _this.onExceptionOccured(ex, { TableName: query.In });
+                    }
+                    return _this;
+                }
+                Instance.prototype.checkSchema = function (suppliedValue, tableName) {
+                    var CurrentTable = this.getTable(tableName), That = this;
+                    CurrentTable.Columns.every(function (column) {
+                        if (!That.ErrorOccured) {
+                            if (column.Name in suppliedValue) {
+                                var executeCheck = function (value) {
+                                    if (column.NotNull && That.isNull(value)) {
+                                        That.ErrorOccured = true;
+                                        That.Error = JsStore.Utils.getError(JsStore.ErrorType.NullValue, false, { ColumnName: column.Name });
+                                    }
+                                    if (column.DataType && typeof value != column.DataType) {
+                                        That.ErrorOccured = true;
+                                        That.Error = JsStore.Utils.getError(JsStore.ErrorType.BadDataType, false, { ColumnName: column.Name });
+                                    }
+                                };
+                                executeCheck(suppliedValue[column.Name]);
+                                return true;
+                            }
+                        }
+                        else {
+                            return false;
+                        }
+                    });
+                };
+                return Instance;
+            }(Update.Where));
+            Update.Instance = Instance;
+        })(Update = Business.Update || (Business.Update = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Delete;
+        (function (Delete) {
+            var BaseDelete = (function (_super) {
+                __extends(BaseDelete, _super);
+                function BaseDelete() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.SendResultFlag = true;
+                    _this.CheckFlag = false;
+                    return _this;
+                }
+                return BaseDelete;
+            }(Business.Base));
+            Delete.BaseDelete = BaseDelete;
+        })(Delete = Business.Delete || (Business.Delete = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Delete;
+        (function (Delete) {
+            var NotWhere = (function (_super) {
+                __extends(NotWhere, _super);
+                function NotWhere() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.executeWhereUndefinedLogic = function () {
+                        var That = this, CursorOpenRequest = this.ObjectStore.openCursor();
+                        CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                Cursor.delete();
+                                ++That.RowAffected;
+                                Cursor.continue();
+                            }
+                        };
+                        CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                    };
+                    return _this;
+                }
+                return NotWhere;
+            }(Delete.BaseDelete));
+            Delete.NotWhere = NotWhere;
+        })(Delete = Business.Delete || (Business.Delete = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Delete;
+        (function (Delete) {
+            var Like = (function (_super) {
+                __extends(Like, _super);
+                function Like() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.filterOnOccurence = function (value) {
+                        var Found = false, Value = value[this.Column].toLowerCase();
+                        switch (this.CompSymbol) {
+                            case JsStore.Occurence.Any:
+                                if (Value.indexOf(this.CompValue) >= 0) {
+                                    Found = true;
+                                }
+                                ;
+                                break;
+                            case JsStore.Occurence.First:
+                                if (Value.indexOf(this.CompValue) == 0) {
+                                    Found = true;
+                                }
+                                ;
+                                break;
+                            default:
+                                if (Value.lastIndexOf(this.CompValue) == Value.length - 1) {
+                                    Found = true;
+                                }
+                                ;
+                        }
+                        return Found;
+                    };
+                    _this.executeLikeLogic = function (column, value, symbol) {
+                        var That = this;
+                        this.CompValue = value.toLowerCase();
+                        this.CompSymbol = symbol;
+                        this.Column = column;
+                        this.CursorOpenRequest = this.ObjectStore.index(column).openCursor();
+                        this.CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                if (That.filterOnOccurence(Cursor.value) && That.checkForWhereConditionMatch(Cursor.value)) {
+                                    Cursor.delete();
+                                    ++That.RowAffected;
+                                }
+                                Cursor.continue();
+                            }
+                        };
+                    };
+                    return _this;
+                }
+                return Like;
+            }(Delete.NotWhere));
+            Delete.Like = Like;
+        })(Delete = Business.Delete || (Business.Delete = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Delete;
+        (function (Delete) {
+            var Where = (function (_super) {
+                __extends(Where, _super);
+                function Where() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.executeRequest = function (column, value, op) {
+                        var That = this, CursorOpenRequest;
+                        value = op ? value[op] : value;
+                        CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
+                        CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor = e.target.result;
+                            if (Cursor) {
+                                var deleteValue = function () {
+                                    Cursor.delete();
+                                    ++That.RowAffected;
+                                };
+                                if (!That.CheckFlag) {
+                                    deleteValue();
+                                }
+                                else if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                    deleteValue();
+                                }
+                                Cursor.continue();
+                            }
+                        };
+                        CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                    };
+                    _this.executeWhereLogic = function () {
+                        for (var Column in this.Query.Where) {
+                            if (!this.ErrorOccured) {
+                                if (this.ObjectStore.indexNames.contains(Column)) {
+                                    var Value = this.Query.Where[Column];
+                                    if (typeof Value == 'string') {
+                                        this.executeRequest(Column, Value);
+                                    }
+                                    else {
+                                        this.CheckFlag = Object.keys(Value).length > 1 || Object.keys(this.Query.Where).length > 1 ? true : false;
+                                        if (Value.Like) {
+                                            var FilterValue = Value.Like.split('%');
+                                            if (FilterValue[1]) {
+                                                if (FilterValue.length > 2) {
+                                                    this.executeLikeLogic(Column, FilterValue[1], JsStore.Occurence.Any);
+                                                }
+                                                else {
+                                                    this.executeLikeLogic(Column, FilterValue[1], JsStore.Occurence.Last);
+                                                }
+                                            }
+                                            else {
+                                                this.executeLikeLogic(Column, FilterValue[0], JsStore.Occurence.First);
+                                            }
+                                        }
+                                        else if (Value['In']) {
+                                            for (var i = 0; i < Value['In'].length; i++) {
+                                                this.executeRequest(Column, Value['In'][i]);
+                                            }
+                                        }
+                                        else if (Value['-']) {
+                                            this.executeRequest(Column, Value, '-');
+                                        }
+                                        else if (Value['>']) {
+                                            this.executeRequest(Column, Value, '>');
+                                        }
+                                        else if (Value['<']) {
+                                            this.executeRequest(Column, Value, '<');
+                                        }
+                                        else if (Value['>=']) {
+                                            this.executeRequest(Column, Value, '>=');
+                                        }
+                                        else if (Value['<=']) {
+                                            this.executeRequest(Column, Value, '<=');
+                                        }
+                                        else {
+                                            this.executeRequest(Column, Value);
+                                        }
+                                    }
+                                }
+                                else {
+                                    this.ErrorOccured = true;
+                                    this.Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: Column });
+                                    this.onErrorOccured(this.Error, true);
+                                }
+                            }
+                            break;
+                        }
+                    };
+                    return _this;
+                }
+                return Where;
+            }(Delete.Like));
+            Delete.Where = Where;
+        })(Delete = Business.Delete || (Business.Delete = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Delete;
+        (function (Delete) {
+            var Instance = (function (_super) {
+                __extends(Instance, _super);
+                function Instance(query, onSuccess, onError) {
+                    var _this = _super.call(this) || this;
+                    _this.onTransactionCompleted = function () {
+                        if (this.OnSuccess != null) {
+                            this.OnSuccess(this.RowAffected);
+                        }
+                    };
+                    try {
+                        var That = _this;
+                        _this.Query = query;
+                        _this.OnSuccess = onSuccess;
+                        _this.OnError = onError;
+                        _this.Transaction = Business.DbConnection.transaction([query.From], "readwrite");
+                        _this.ObjectStore = _this.Transaction.objectStore(query.From);
+                        _this.Transaction.oncomplete = function () {
+                            That.onTransactionCompleted();
+                        };
+                        _this.Transaction.onerror = function (e) {
+                            That.onErrorOccured(e);
+                        };
+                        if (query.Where == undefined) {
+                            _this.executeWhereUndefinedLogic();
+                        }
+                        else {
+                            _this.executeWhereLogic();
+                        }
+                    }
+                    catch (ex) {
+                        _this.onExceptionOccured(ex, { TableName: query.From });
+                    }
+                    return _this;
+                }
+                return Instance;
+            }(Delete.Where));
+            Delete.Instance = Instance;
+        })(Delete = Business.Delete || (Business.Delete = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
 var Model = JsStore.Model;
@@ -2064,203 +2747,6 @@ var JsStore;
         return Instance;
     }(JsStore.CodeExecutionHelper));
     JsStore.Instance = Instance;
-})(JsStore || (JsStore = {}));
-var JsStore;
-(function (JsStore) {
-    var Business;
-    (function (Business) {
-        var BaseCount = (function (_super) {
-            __extends(BaseCount, _super);
-            function BaseCount() {
-                var _this = _super !== null && _super.apply(this, arguments) || this;
-                _this.ResultCount = 0;
-                _this.executeMultipleWhereInLogic = function (whereInArray) {
-                    var That = this, WhereIn, KeyRange;
-                    for (WhereIn in whereInArray) {
-                        KeyRange = this.getKeyRange();
-                        if (!this.ErrorOccured) {
-                            var CursorOpenRequest, OnCursorSuccess = function (e) {
-                                var Cursor = e.target.result;
-                                if (Cursor) {
-                                    ++That.ResultCount;
-                                    Cursor.continue();
-                                }
-                            }, OnCursorError = function (e) {
-                                That.ErrorOccured = true;
-                                That.OnErrorRequest(e);
-                            };
-                            if (this.Query.WhereIn.Op == '-') {
-                                CursorOpenRequest = this.ObjectStore.openCursor(KeyRange);
-                                CursorOpenRequest.onsuccess = OnCursorSuccess;
-                                CursorOpenRequest.onerror = OnCursorError;
-                            }
-                            else if (this.ObjectStore.indexNames.contains(WhereIn.Column)) {
-                                CursorOpenRequest = this.ObjectStore.index(WhereIn.Column).openCursor(KeyRange);
-                                CursorOpenRequest.onsuccess = OnCursorSuccess;
-                                CursorOpenRequest.onerror = OnCursorError;
-                            }
-                            else {
-                                JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: Column });
-                            }
-                        }
-                        else {
-                            return;
-                        }
-                    }
-                };
-                _this.executeSingleWhereInLogic = function (whereIn) {
-                    var That = this, KeyRange = this.getKeyRange(whereIn);
-                    if (!this.ErrorOccured) {
-                        var CursorOpenRequest, OnCursorSuccess = function (e) {
-                            var Cursor = e.target.result;
-                            if (Cursor) {
-                                ++That.ResultCount;
-                                Cursor.continue();
-                            }
-                        }, OnCursorError = function (e) {
-                            this.ErrorOccured = true;
-                            this.OnErrorRequest(e);
-                        };
-                        if (whereIn.Op == '-') {
-                            CursorOpenRequest = this.ObjectStore.openCursor(KeyRange);
-                            CursorOpenRequest.onsuccess = OnCursorSuccess;
-                            CursorOpenRequest.onerror = OnCursorError;
-                        }
-                        else if (this.ObjectStore.indexNames.contains(whereIn.Column)) {
-                            CursorOpenRequest = this.ObjectStore.index(whereIn.Column).openCursor(KeyRange);
-                            CursorOpenRequest.onsuccess = OnCursorSuccess;
-                            CursorOpenRequest.onerror = OnCursorError;
-                        }
-                        else {
-                            JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: whereIn.Column });
-                        }
-                    }
-                };
-                return _this;
-            }
-            return BaseCount;
-        }(Business.BaseSelect));
-        Business.BaseCount = BaseCount;
-    })(Business = JsStore.Business || (JsStore.Business = {}));
-})(JsStore || (JsStore = {}));
-var JsStore;
-(function (JsStore) {
-    var Business;
-    (function (Business) {
-        var Count = (function (_super) {
-            __extends(Count, _super);
-            function Count(query, onSuccess, onError) {
-                var _this = _super.call(this) || this;
-                _this.executeWhereInLogic = function () {
-                    if (Array.isArray(this.Query.WhereIn)) {
-                        this.executeMultipleWhereInLogic(this.Query.WhereIn);
-                    }
-                    else {
-                        this.executeSingleWhereInLogic(this.Query.WhereIn);
-                    }
-                };
-                _this.executeWhereLogic = function () {
-                    var Column, That = this;
-                    var executeInnerWhereLogic = function (column, value) {
-                        if (That.ObjectStore.indexNames.contains(column)) {
-                            var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
-                            CursorOpenRequest.onerror = function (e) {
-                                That.ErrorOccured = true;
-                                That.onErrorOccured(e);
-                            };
-                            CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = e.target.result;
-                                if (Cursor) {
-                                    if (That.checkForWhereConditionMatch(That.Query.Where, Cursor.value)) {
-                                        ++That.ResultCount;
-                                    }
-                                    Cursor.continue();
-                                }
-                            };
-                        }
-                        else {
-                            JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, true, { ColumnName: Column });
-                            return false;
-                        }
-                    };
-                    for (Column in this.Query.Where) {
-                        if (Array.isArray(this.Query.Where[Column])) {
-                            for (var i = 0, length = this.Query.Where[Column].length; i < length; i++) {
-                                var ExecutionStatus = executeInnerWhereLogic(Column, this.Query.Where[Column][i]);
-                                if (ExecutionStatus == false) {
-                                    break;
-                                }
-                            }
-                        }
-                        else {
-                            executeInnerWhereLogic(Column, this.Query.Where[Column]);
-                        }
-                        break;
-                    }
-                };
-                _this.executeWhereUndefinedLogic = function () {
-                    var That = this;
-                    if (this.ObjectStore.count) {
-                        var CountRequest = this.ObjectStore.count();
-                        CountRequest.onsuccess = function () {
-                            That.ResultCount += CountRequest.result;
-                        };
-                    }
-                    else {
-                        var CursorOpenRequest = this.ObjectStore.openCursor();
-                        CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = e.target.result;
-                            if (Cursor) {
-                                ++That.ResultCount;
-                                Cursor.continue();
-                            }
-                        };
-                        CursorOpenRequest.onerror = function (e) {
-                            That.onErrorOccured(e);
-                        };
-                    }
-                };
-                var That = _this;
-                _this.Query = query;
-                _this.OnSuccess = onSuccess;
-                _this.OnError = onError;
-                try {
-                    _this.Transaction = Business.DbConnection.transaction([query.From], "readonly");
-                    _this.Transaction.oncomplete = function (e) {
-                        if (That.SendResultFlag && onSuccess != null) {
-                            onSuccess(That.ResultCount);
-                        }
-                    };
-                    _this.ObjectStore = _this.Transaction.objectStore(query.From);
-                    if (query.WhereIn != undefined) {
-                        if (query.Where != undefined) {
-                            _this.SendResultFlag = false;
-                            _this.executeWhereLogic();
-                        }
-                        _this.SendResultFlag = true;
-                        _this.executeWhereInLogic();
-                    }
-                    else if (query.Where != undefined) {
-                        _this.executeWhereLogic();
-                    }
-                    else {
-                        _this.executeWhereUndefinedLogic();
-                    }
-                }
-                catch (ex) {
-                    if (ex.name == "NotFoundError") {
-                        JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, true, { TableName: query.From });
-                    }
-                    else {
-                        console.warn(ex);
-                    }
-                }
-                return _this;
-            }
-            return Count;
-        }(Business.BaseCount));
-        Business.Count = Count;
-    })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
 var KeyStore;
 (function (KeyStore) {

@@ -41,10 +41,7 @@ module JsStore {
                 }
                 else {
                     if (onError != null) {
-                        onError(<IError>{
-                            Name: "DbNotFound",
-                            Value: "DataBase name is not found, please first initiate the db using createDb"
-                        });
+                        onError(Utils.getError(ErrorType.DbNotExist, true, { DbName: ActiveDataBase.Name }));
                     }
                 }
             }

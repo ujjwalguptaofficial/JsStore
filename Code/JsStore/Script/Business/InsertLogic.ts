@@ -126,8 +126,6 @@ module JsStore {
                     }
                 checkAndModifyInternal(That.Table.Columns[Index++]);
             }
-
-
         }
     }
 }

@@ -111,7 +111,7 @@ module JsStore {
             }
 
             public update = function (query: IUpdate, onSuccess: Function, onError: Function) {
-                new Update(query, onSuccess, onError);
+                new Update.Instance(query, onSuccess, onError);
             }
 
             public insert = function (query: IInsert, onSuccess: Function, onError: Function) {
@@ -129,25 +129,25 @@ module JsStore {
             }
 
             public delete = function (query: IDelete, onSuccess: Function, onError: Function) {
-                new Delete(query, onSuccess, onError);
+                new Delete.Instance(query, onSuccess, onError);
             }
 
             public select = function (query, onSuccess: Function, onError: Function) {
                 if (typeof query.From === 'object') {
-                    new SelectJoin(<ISelectJoin>query, onSuccess, onError);
+                    new Select.Join(<ISelectJoin>query, onSuccess, onError);
                 }
                 else {
-                    new Select(query, onSuccess, onError);
+                    new Select.Instance(query, onSuccess, onError);
                 }
             }
 
             public count = function (query, onSuccess: Function, onError: Function) {
                 if (typeof query.From === 'object') {
                     query['Count'] = true;
-                    new SelectJoin(query, onSuccess, onError);
+                    new Select.Join(query, onSuccess, onError);
                 }
                 else {
-                    new Count(query, onSuccess, onError);
+                    new Count.Instance(query, onSuccess, onError);
                 }
             }
 

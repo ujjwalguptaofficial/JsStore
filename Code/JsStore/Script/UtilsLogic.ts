@@ -1,38 +1,38 @@
 module JsStore {
     export interface IError {
         Name: string,
-        Value: string
+        Message: string
     }
     export class Utils {
         static getError(errorType: ErrorType, logError: boolean = false, errorDetail: any) {
             var Error: IError = {
                 Name: errorType,
-                Value: ''
+                Message: ''
             };
             switch (errorType) {
-                case ErrorType.NotArray: Error.Value = "Supplied value is not an array"; break;
-                case ErrorType.UndefinedColumn: Error.Value = "Column is undefined in Where"; break;
-                case ErrorType.UndefinedValue: Error.Value = "Value is undefined in Where"; break;
-                case ErrorType.UndefinedColumnName: Error.Value = "Column name is undefined"; break;
-                case ErrorType.UndefinedColumnValue: Error.Value = "Column value is undefined"; break;
-                case ErrorType.NoValueSupplied: Error.Value = "No value supplied"; break;
-                case ErrorType.InvalidOp: Error.Value = "Invalid Op Value '" + errorDetail['Op'] + "'"; break;
-                case ErrorType.ColumnNotExist: Error.Value = "Column '" + errorDetail['ColumnName'] + "' does not exist";
+                case ErrorType.NotArray: Error.Message = "Supplied value is not an array"; break;
+                case ErrorType.UndefinedColumn: Error.Message = "Column is undefined in Where"; break;
+                case ErrorType.UndefinedValue: Error.Message = "Value is undefined in Where"; break;
+                case ErrorType.UndefinedColumnName: Error.Message = "Column name is undefined"; break;
+                case ErrorType.UndefinedColumnValue: Error.Message = "Column value is undefined"; break;
+                case ErrorType.NoValueSupplied: Error.Message = "No value supplied"; break;
+                case ErrorType.InvalidOp: Error.Message = "Invalid Op Value '" + errorDetail['Op'] + "'"; break;
+                case ErrorType.ColumnNotExist: Error.Message = "Column '" + errorDetail['ColumnName'] + "' does not exist";
                     break;
-                case ErrorType.NullValue: Error.Value = "Null value is not allowed for column '" + errorDetail['ColumnName'] + "'";
+                case ErrorType.NullValue: Error.Message = "Null value is not allowed for column '" + errorDetail['ColumnName'] + "'";
                     break;
-                case ErrorType.BadDataType: Error.Value = "Supplied value for column '" + errorDetail['ColumnName'] + "' does not have valid type";
+                case ErrorType.BadDataType: Error.Message = "Supplied value for column '" + errorDetail['ColumnName'] + "' does not have valid type";
                     break;
-                case ErrorType.NextJoinNotExist: Error.Value = "Next join details not supplied";
+                case ErrorType.NextJoinNotExist: Error.Message = "Next join details not supplied";
                     break;
-                case ErrorType.TableNotExist: Error.Value = "Table '" + errorDetail['TableName'] + "' does not exist";
+                case ErrorType.TableNotExist: Error.Message = "Table '" + errorDetail['TableName'] + "' does not exist";
                     break;
-                case ErrorType.DbNotExist: Error.Value = "Database '" + errorDetail['DbName'] + "' does not exist";
+                case ErrorType.DbNotExist: Error.Message = "Database '" + errorDetail['DbName'] + "' does not exist";
                     break;
                 default: console.error('the error type is not defined');
             }
             if (logError) {
-                console.error("JsStore Error :- " + Error.Value);
+                console.error("JsStore Error :- " + Error.Message);
             }
             return Error;
         }
