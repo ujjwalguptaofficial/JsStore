@@ -27,14 +27,12 @@ var JsStore;
             this.IsCodeExecuting = false;
             this.prcoessExecutionOfCode = function (request) {
                 this.RequestQueue.push(request);
-                console.log("request pushed:" + request.Name);
                 if (this.RequestQueue.length == 1 && JsStore.WorkerStatus != WebWorkerStatus.NotStarted) {
                     this.executeCode();
                 }
             };
             this.executeCode = function () {
                 if (!this.IsCodeExecuting && this.RequestQueue.length > 0) {
-                    console.log("request executing" + this.RequestQueue[0].Name);
                     this.IsCodeExecuting = true;
                     var Request = {
                         Name: this.RequestQueue[0].Name,
@@ -61,7 +59,6 @@ var JsStore;
                 var FinishedRequest = this.RequestQueue.shift();
                 this.IsCodeExecuting = false;
                 if (FinishedRequest) {
-                    console.log("request finished:" + FinishedRequest.Name);
                     if (message.ErrorOccured) {
                         if (FinishedRequest.OnError) {
                             FinishedRequest.OnError(message.ErrorDetails);
@@ -195,7 +192,6 @@ var JsStore;
 (!self.alert);
 {
     self.onmessage = function (e) {
-        console.log("Request executing from WebWorker, request name:" + e.data.Name);
         var Request = e.data, IndexDbObject = new JsStore.Business.Main();
         IndexDbObject.checkConnectionAndExecuteLogic(Request);
     };
@@ -913,7 +909,6 @@ var JsStore;
             function Main(onSuccess) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 this.checkConnectionAndExecuteLogic = function (request) {
-                    console.log('checking connection and executing request:' + request.Name);
                     if (request.Name == 'create_db' || request.Name == 'open_db') {
                         this.executeLogic(request);
                     }
