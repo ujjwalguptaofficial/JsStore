@@ -1,3 +1,6 @@
+/*! JsStore.js - v1.0.0 - 19/8/2017
+ * https://github.com/ujjwalguptaofficial/JsStore
+ * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -77,16 +80,17 @@ var JsStore;
                     this.executeCode();
                 }
             };
+            this.onWorkerFailed = function () {
+                console.warn('JsStore is not runing in web worker');
+                JsStore.WorkerStatus = WebWorkerStatus.Failed;
+                this.executeCode();
+            };
             this.createWorker = function () {
-                var That = this, onFailed = function () {
-                    console.warn('JsStore is not runing in web worker');
-                    JsStore.WorkerStatus = WebWorkerStatus.Failed;
-                    That.executeCode();
-                };
+                var That = this;
                 try {
                     if (Worker) {
                         var ScriptUrl = this.getScriptUrl();
-                        if (ScriptUrl.length > 0) {
+                        if (ScriptUrl && ScriptUrl.length > 0) {
                             JsStore.WorkerInstance = new Worker(ScriptUrl);
                             JsStore.WorkerInstance.onmessage = function (msg) {
                                 That.onMessageFromWorker(msg);
@@ -99,24 +103,24 @@ var JsStore;
                             }, 100);
                         }
                         else {
-                            onFailed();
+                            That.onWorkerFailed();
                         }
                     }
                     else {
-                        onFailed();
+                        That.onWorkerFailed();
                     }
                 }
                 catch (ex) {
-                    onFailed();
+                    That.onWorkerFailed();
                 }
             };
             this.onMessageFromWorker = function (msg) {
+                var That = this;
                 if (typeof msg.data == 'string') {
                     var Datas = msg.data.split(':')[1];
                     switch (Datas) {
                         case 'WorkerFailed':
-                            JsStore.WorkerStatus = WebWorkerStatus.Failed;
-                            console.warn('JsStore is not runing in web worker');
+                            That.onWorkerFailed();
                             break;
                     }
                 }
@@ -130,11 +134,11 @@ var JsStore;
             var FileName = fileName ? fileName.toLowerCase() : "jsstore";
             var Scripts = document.getElementsByTagName('script');
             for (var i = Scripts.length - 1, url = ""; i >= 0; i--) {
-                url = Scripts[i].src.toLowerCase();
+                url = Scripts[i].src;
+                url = url.substring(url.lastIndexOf('/') + 1).toLowerCase();
                 if (url.length > 0 && url.indexOf(FileName) >= 0) {
-                    ScriptUrl = url;
-                    console.log(ScriptUrl);
-                    break;
+                    ScriptUrl = Scripts[i].src;
+                    return ScriptUrl;
                 }
             }
             return ScriptUrl;
@@ -147,13 +151,16 @@ var JsStore;
 (function (JsStore) {
     JsStore.isDbExist = function (dbName, callback) {
         KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
-            if (dbVersion != null) {
-                callback(true);
-            }
-            else {
-                callback(false);
-            }
+            callback(Boolean(dbVersion));
         });
+    };
+    JsStore.getDbVersion = function (dbName, callback) {
+        KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
+            callback(Number(dbVersion));
+        });
+    };
+    JsStore.setDbVersion = function (dbName, version, callback) {
+        KeyStore.set("JsStore_" + dbName + '_Db_Version', version, callback);
     };
     var ErrorType;
     (function (ErrorType) {
@@ -188,7 +195,7 @@ var JsStore;
 (!self.alert);
 {
     self.onmessage = function (e) {
-        console.log("WebWorker:" + e.data.Name);
+        console.log("Request executing from WebWorker, request name:" + e.data.Name);
         var Request = e.data, IndexDbObject = new JsStore.Business.Main();
         IndexDbObject.checkConnectionAndExecuteLogic(Request);
     };
@@ -334,20 +341,16 @@ var JsStore;
                         That.RequireCreation = true;
                     }
                     else if (tableVersion != That.Version) {
-                        this.RequireDelete = true;
+                        That.RequireDelete = true;
                     }
                 });
             };
             Table.prototype.setDbVersion = function (dbName) {
                 var That = this;
                 KeyStore.get('JsStore_' + dbName + '_Db_Version', function (dbVersion) {
-                    if (!dbVersion) {
-                        KeyStore.set('JsStore_' + dbName + '_Db_Version', That.Version);
-                    }
-                    else if (That.Version > dbVersion) {
-                        KeyStore.set('JsStore_' + dbName + '_Db_Version', That.Version);
-                    }
-                    KeyStore.set("JsStore_" + dbName + "_" + That.Name + "_Version", That.Version);
+                    dbVersion = dbVersion ? dbVersion : That.Version;
+                    KeyStore.set('JsStore_' + dbName + '_Db_Version', dbVersion);
+                    KeyStore.set("JsStore_" + dbName + "_" + That.Name + "_Version", dbVersion);
                 });
             };
             return Table;
@@ -874,7 +877,7 @@ var JsStore;
             __extends(Clear, _super);
             function Clear(tableName, onSuccess, onError) {
                 var _this = _super.call(this) || this;
-                var That = _this, ObjectStore = Business.DbConnection.transaction([tableName], "readwrite").Transaction.objectStore(tableName), ClearRequest = ObjectStore.clear();
+                var That = _this, ObjectStore = Business.DbConnection.transaction([tableName], "readwrite").objectStore(tableName), ClearRequest = ObjectStore.clear();
                 ClearRequest.onsuccess = function (e) {
                     var CurrentTable = That.getTable(tableName);
                     CurrentTable.Columns.forEach(function (column) {
@@ -910,7 +913,7 @@ var JsStore;
             function Main(onSuccess) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 this.checkConnectionAndExecuteLogic = function (request) {
-                    console.log('executing logic from checkConnection:' + request.Name);
+                    console.log('checking connection and executing request:' + request.Name);
                     if (request.Name == 'create_db' || request.Name == 'open_db') {
                         this.executeLogic(request);
                     }

@@ -8,14 +8,33 @@ module JsStore {
     */
     export var isDbExist = function (dbName: string, callback: Function) {
         KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
-            if (dbVersion != null) {
-                callback(true);
-            }
-            else {
-                callback(false);
-            }
+            callback(Boolean(dbVersion));
         });
     }
+
+    /**
+    * get Db Version
+    * 
+    * @param {string} dbName 
+    * @param {Function} callback 
+    */
+    export var getDbVersion = function (dbName: string, callback: Function) {
+        KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
+            callback(Number(dbVersion));
+        });
+    }
+
+    /**
+    * set Db version
+    * 
+    * @param {string} dbName 
+    * @param {number} version 
+    * @param {Function} callback 
+    */
+    export var setDbVersion = function (dbName: string, version: number, callback: Function) {
+        KeyStore.set("JsStore_" + dbName + '_Db_Version', version, callback);
+    }
+
 
     export enum ErrorType {
         UndefinedColumn = "undefined_column",

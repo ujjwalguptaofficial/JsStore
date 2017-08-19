@@ -16,7 +16,7 @@ module JsStore {
             }
 
             public checkConnectionAndExecuteLogic = function (request: IWebWorkerRequest) {
-                console.log('executing logic from checkConnection:' + request.Name);
+                console.log('checking connection and executing request:' + request.Name);
                 if (request.Name == 'create_db' || request.Name == 'open_db') {
                     this.executeLogic(request);
                 }

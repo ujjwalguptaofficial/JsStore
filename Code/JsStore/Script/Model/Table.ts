@@ -50,7 +50,7 @@ module JsStore {
                         That.RequireCreation = true;
                     }
                     else if (tableVersion != That.Version) {
-                        this.RequireDelete = true;
+                        That.RequireDelete = true;
                     }
                 });
 
@@ -59,20 +59,13 @@ module JsStore {
             private setDbVersion(dbName: string) {
                 var That = this;
                 KeyStore.get('JsStore_' + dbName + '_Db_Version', function (dbVersion) {
+                    dbVersion = dbVersion ? dbVersion : That.Version;
                     //setting db version
-                    if (!dbVersion) {
-                        KeyStore.set('JsStore_' + dbName + '_Db_Version', That.Version);
-                    }
-                    else if (That.Version > dbVersion) {
-                        KeyStore.set('JsStore_' + dbName + '_Db_Version', That.Version);
-                    }
-
+                    KeyStore.set('JsStore_' + dbName + '_Db_Version', dbVersion);
                     //setting table version
-                    KeyStore.set("JsStore_" + dbName + "_" + That.Name + "_Version", That.Version);
+                    KeyStore.set("JsStore_" + dbName + "_" + That.Name + "_Version", dbVersion);
 
                 });
-
-
             }
 
         }

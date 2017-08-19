@@ -4,7 +4,7 @@ module JsStore {
             constructor(tableName: string, onSuccess: Function, onError: Function) {
                 super();
                 var That = this,
-                    ObjectStore: IDBObjectStore = DbConnection.transaction([tableName], "readwrite").Transaction.objectStore(tableName)
+                    ObjectStore: IDBObjectStore = DbConnection.transaction([tableName], "readwrite").objectStore(tableName)
                     , ClearRequest = ObjectStore.clear();
 
                 ClearRequest.onsuccess = function (e) {

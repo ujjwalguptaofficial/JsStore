@@ -70,17 +70,18 @@ module JsStore {
             }
         }
 
+        private onWorkerFailed = function () {
+            console.warn('JsStore is not runing in web worker');
+            WorkerStatus = WebWorkerStatus.Failed;
+            this.executeCode();
+        }
+
         protected createWorker = function () {
-            var That = this,
-                onFailed = function () {
-                    console.warn('JsStore is not runing in web worker');
-                    WorkerStatus = WebWorkerStatus.Failed;
-                    That.executeCode();
-                }
+            var That = this;
             try {
                 if (Worker) {
                     var ScriptUrl = this.getScriptUrl();
-                    if (ScriptUrl.length > 0) {
+                    if (ScriptUrl && ScriptUrl.length > 0) {
                         WorkerInstance = new Worker(ScriptUrl);
                         WorkerInstance.onmessage = function (msg) {
                             That.onMessageFromWorker(msg);
@@ -93,16 +94,16 @@ module JsStore {
                         }, 100);
                     }
                     else {
-                        onFailed();
+                        That.onWorkerFailed();
                     }
 
                 }
                 else {
-                    onFailed();
+                    That.onWorkerFailed();
                 }
             }
             catch (ex) {
-                onFailed();
+                That.onWorkerFailed();
             }
         }
 
@@ -111,22 +112,22 @@ module JsStore {
             var FileName = fileName ? fileName.toLowerCase() : "jsstore";
             var Scripts = document.getElementsByTagName('script');
             for (var i = Scripts.length - 1, url = ""; i >= 0; i--) {
-                url = Scripts[i].src.toLowerCase();
+                url = Scripts[i].src;
+                url = url.substring(url.lastIndexOf('/') + 1).toLowerCase();
                 if (url.length > 0 && url.indexOf(FileName) >= 0) {
-                    ScriptUrl = url;
-                    console.log(ScriptUrl);
-                    break;
+                    ScriptUrl = Scripts[i].src;
+                    return ScriptUrl;
                 }
             }
             return ScriptUrl;
         }
 
         private onMessageFromWorker = function (msg) {
+            var That = this;
             if (typeof msg.data == 'string') {
                 var Datas = msg.data.split(':')[1];
                 switch (Datas) {
-                    case 'WorkerFailed': WorkerStatus = WebWorkerStatus.Failed;
-                        console.warn('JsStore is not runing in web worker');
+                    case 'WorkerFailed': That.onWorkerFailed();
                         break;
                 }
             }

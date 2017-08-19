@@ -7,6 +7,11 @@
         "inlineSources": true,
         "out": "outputfile/JsStore.js",
         "target": "es5",
-        "preserveConstEnums": true
-    }
+        "preserveConstEnums": true,
+        "declaration": true
+    },
+    "include": [
+        "JsStore/**/*",
+        "KeyStore/**/*"
+    ]
 }
