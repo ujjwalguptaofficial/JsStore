@@ -7,7 +7,7 @@ module JsStore {
             Table: Model.ITable;
             public onTransactionCompleted = function () {
                 if (this.OnSuccess != null) {
-                    this.OnSuccess(this.IsReturn ? this.ValuesAffected : this.RowAffected);
+                    this.OnSuccess(this.Query.Return ? this.ValuesAffected : this.RowAffected);
                 }
             }
 
@@ -63,7 +63,13 @@ module JsStore {
                     this.OnError = onError;
                     var That = this;
                     this.Table = this.getTable(query.Into);
-                    this.insertData();
+                    if (this.Table) {
+                        this.insertData();
+                    }
+                    else {
+                        var Error = Utils.getError(ErrorType.TableNotExist, false, { TableName: query.Into })
+                        throw Error;
+                    }
                 }
                 catch (ex) {
                     this.onExceptionOccured(ex, { TableName: query.Into });

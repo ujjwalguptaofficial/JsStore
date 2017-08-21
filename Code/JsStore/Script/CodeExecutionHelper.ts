@@ -12,7 +12,9 @@ module JsStore {
 
         protected prcoessExecutionOfCode = function (request: IWebWorkerRequest) {
             this.RequestQueue.push(request);
-            console.log("request pushed:" + request.Name);
+            if (EnableLog) {
+                console.log("request pushed:" + request.Name);
+            }
             if (this.RequestQueue.length == 1 && WorkerStatus != WebWorkerStatus.NotStarted) {
                 this.executeCode();
             }
@@ -20,7 +22,9 @@ module JsStore {
 
         private executeCode = function () {
             if (!this.IsCodeExecuting && this.RequestQueue.length > 0) {
-                console.log("request executing" + this.RequestQueue[0].Name)
+                if (EnableLog) {
+                    console.log("request executing" + this.RequestQueue[0].Name)
+                }
                 this.IsCodeExecuting = true;
                 var Request = <IWebWorkerRequest>{
                     Name: this.RequestQueue[0].Name,
@@ -50,7 +54,9 @@ module JsStore {
             var FinishedRequest: IWebWorkerRequest = this.RequestQueue.shift();
             this.IsCodeExecuting = false;
             if (FinishedRequest) {
-                console.log("request finished:" + FinishedRequest.Name);
+                if (EnableLog) {
+                    console.log("request finished:" + FinishedRequest.Name);
+                }
                 if (message.ErrorOccured) {
                     if (FinishedRequest.OnError) {
                         FinishedRequest.OnError(message.ErrorDetails);

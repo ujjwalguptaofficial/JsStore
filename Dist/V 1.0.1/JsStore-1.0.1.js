@@ -1,4 +1,4 @@
-/*! JsStore.js - v1.0.0 - 19/8/2017
+/*! JsStore.js - v1.0.1 - 20/8/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 var __extends = (this && this.__extends) || (function () {
@@ -27,12 +27,18 @@ var JsStore;
             this.IsCodeExecuting = false;
             this.prcoessExecutionOfCode = function (request) {
                 this.RequestQueue.push(request);
+                if (JsStore.EnableLog) {
+                    console.log("request pushed:" + request.Name);
+                }
                 if (this.RequestQueue.length == 1 && JsStore.WorkerStatus != WebWorkerStatus.NotStarted) {
                     this.executeCode();
                 }
             };
             this.executeCode = function () {
                 if (!this.IsCodeExecuting && this.RequestQueue.length > 0) {
+                    if (JsStore.EnableLog) {
+                        console.log("request executing" + this.RequestQueue[0].Name);
+                    }
                     this.IsCodeExecuting = true;
                     var Request = {
                         Name: this.RequestQueue[0].Name,
@@ -59,6 +65,9 @@ var JsStore;
                 var FinishedRequest = this.RequestQueue.shift();
                 this.IsCodeExecuting = false;
                 if (FinishedRequest) {
+                    if (JsStore.EnableLog) {
+                        console.log("request finished:" + FinishedRequest.Name);
+                    }
                     if (message.ErrorOccured) {
                         if (FinishedRequest.OnError) {
                             FinishedRequest.OnError(message.ErrorDetails);
@@ -188,10 +197,14 @@ var JsStore;
         Occurence["Any"] = "a";
     })(Occurence = JsStore.Occurence || (JsStore.Occurence = {}));
     ;
+    JsStore.EnableLog = false;
 })(JsStore || (JsStore = {}));
 (!self.alert);
 {
     self.onmessage = function (e) {
+        if (JsStore.EnableLog) {
+            console.log("Request executing from WebWorker, request name:" + e.data.Name);
+        }
         var Request = e.data, IndexDbObject = new JsStore.Business.Main();
         IndexDbObject.checkConnectionAndExecuteLogic(Request);
     };
@@ -716,7 +729,7 @@ var JsStore;
                 _this.ValuesIndex = 0;
                 _this.onTransactionCompleted = function () {
                     if (this.OnSuccess != null) {
-                        this.OnSuccess(this.IsReturn ? this.ValuesAffected : this.RowAffected);
+                        this.OnSuccess(this.Query.Return ? this.ValuesAffected : this.RowAffected);
                     }
                 };
                 _this.insertData = function () {
@@ -765,7 +778,13 @@ var JsStore;
                     _this.OnError = onError;
                     var That = _this;
                     _this.Table = _this.getTable(query.Into);
-                    _this.insertData();
+                    if (_this.Table) {
+                        _this.insertData();
+                    }
+                    else {
+                        var Error = JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, false, { TableName: query.Into });
+                        throw Error;
+                    }
                 }
                 catch (ex) {
                     _this.onExceptionOccured(ex, { TableName: query.Into });
@@ -909,6 +928,9 @@ var JsStore;
             function Main(onSuccess) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 this.checkConnectionAndExecuteLogic = function (request) {
+                    if (JsStore.EnableLog) {
+                        console.log('checking connection and executing request:' + request.Name);
+                    }
                     if (request.Name == 'create_db' || request.Name == 'open_db') {
                         this.executeLogic(request);
                     }

@@ -163,4 +163,6 @@ module JsStore {
         Last = 'l',
         Any = 'a'
     };
+
+    export var EnableLog = false;
 }
