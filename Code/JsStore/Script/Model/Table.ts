@@ -58,14 +58,12 @@ module JsStore {
 
             private setDbVersion(dbName: string) {
                 var That = this;
-                KeyStore.get('JsStore_' + dbName + '_Db_Version', function (dbVersion) {
-                    dbVersion = dbVersion ? dbVersion : That.Version;
-                    //setting db version
-                    KeyStore.set('JsStore_' + dbName + '_Db_Version', dbVersion);
+                DbVersion = DbVersion ? (DbVersion > That.Version ? DbVersion : That.Version) : That.Version;
+                //setting db version
+                KeyStore.set('JsStore_' + dbName + '_Db_Version', DbVersion)
                     //setting table version
-                    KeyStore.set("JsStore_" + dbName + "_" + That.Name + "_Version", dbVersion);
-
-                });
+                    .set("JsStore_" + dbName + "_" + That.Name + "_Version", DbVersion);
+                That.Version = DbVersion;
             }
 
         }

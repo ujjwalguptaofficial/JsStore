@@ -100,11 +100,11 @@ module JsStore {
                         var CompareValue = Where[column][symbol];
                         switch (symbol) {
                             //greater than
-                            case '>': if (value <= CompareValue) {
+                            case '>': if (CompareValue <= value) {
                                 Status = false;
                             }; break;
                             //less than
-                            case '<': if (value >= CompareValue) {
+                            case '<': if (CompareValue >= value) {
                                 Status = false;
                             }; break;
                             //less than equal
@@ -112,7 +112,7 @@ module JsStore {
                                 Status = false;
                             }; break;
                             //greather than equal
-                            case '<': if (value < CompareValue) {
+                            case '>=': if (value < CompareValue) {
                                 Status = false;
                             }; break;
                             //between

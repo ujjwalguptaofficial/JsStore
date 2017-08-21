@@ -6,10 +6,18 @@ module JsStore {
     * @param {string} dbName 
     * @param {Function} callback 
     */
-    export var isDbExist = function (dbName: string, callback: Function) {
-        KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
-            callback(Boolean(dbVersion));
-        });
+    export var isDbExist = function (dbInfo: DbInfo, callback: Function) {
+        var DbName;
+        if (typeof dbInfo == 'string') {
+            getDbVersion(dbInfo, function (dbVersion) {
+                callback(Boolean(dbVersion));
+            });
+        }
+        else {
+            getDbVersion(dbInfo.DbName, function (dbVersion) {
+                callback(dbInfo.Table.Version <= dbVersion)
+            });
+        }
     }
 
     /**
@@ -24,17 +32,13 @@ module JsStore {
         });
     }
 
-    /**
-    * set Db version
-    * 
-    * @param {string} dbName 
-    * @param {number} version 
-    * @param {Function} callback 
-    */
-    export var setDbVersion = function (dbName: string, version: number, callback: Function) {
-        KeyStore.set("JsStore_" + dbName + '_Db_Version', version, callback);
+    export interface DbInfo {
+        DbName: string,
+        Table: {
+            Name: string,
+            Version: number
+        }
     }
-
 
     export enum ErrorType {
         UndefinedColumn = "undefined_column",
@@ -164,5 +168,6 @@ module JsStore {
         Any = 'a'
     };
 
-    export var EnableLog = false;
+    export var EnableLog = false,
+        DbVersion;
 }

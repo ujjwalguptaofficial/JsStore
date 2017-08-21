@@ -153,25 +153,27 @@ module JsStore {
                 }
             }
 
-            public createDb = function (dataBase, onSuccess: Function, onError: Function) {
-                ActiveDataBase = new Model.DataBase(dataBase); //.create(onSuccess, onError);
-                var That = this,
-                    createDb = function () {
+            public createDb = function (dataBase: Model.IDataBase, onSuccess: Function, onError: Function) {
+                var That = this;
+                KeyStore.get("JsStore_" + dataBase.Name + "_Db_Version", function (version) {
+                    DbVersion = version;
+                    ActiveDataBase = new Model.DataBase(dataBase);
+                    var createDbInternal = function () {
                         setTimeout(function () {
                             var LastTable = (<Model.ITable>ActiveDataBase.Tables[ActiveDataBase.Tables.length - 1]);
                             KeyStore.get("JsStore_" + ActiveDataBase.Name + "_" + LastTable.Name + "_Version", function (version) {
                                 if (version == LastTable.Version) {
-                                    KeyStore.get('JsStore_' + ActiveDataBase.Name + '_Db_Version', function (dbVersion) {
-                                        new CreateDb(dbVersion, onSuccess, onError)
-                                    });
+                                    new CreateDb(DbVersion, onSuccess, onError)
                                 }
                                 else {
-                                    createDb();
+                                    createDbInternal();
                                 }
                             });
                         }, 200);
                     }
-                createDb();
+                    createDbInternal();
+                });
+
             }
 
             public clear = function (tableName: string, onSuccess: Function, onError: Function) {
