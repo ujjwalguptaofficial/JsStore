@@ -97,9 +97,8 @@ module JsStore {
                                     That.ErrorOccured = true;
                                     That.Error = Utils.getError(ErrorType.NullValue, false, { ColumnName: column.Name });
                                 }
-
                                 //check datatype
-                                if (column.DataType && typeof value[column.Name] != column.DataType) {
+                                else if (column.DataType && typeof value[column.Name] != column.DataType) {
                                     That.ErrorOccured = true;
                                     That.Error = Utils.getError(ErrorType.BadDataType, false, { ColumnName: column.Name });
                                 }

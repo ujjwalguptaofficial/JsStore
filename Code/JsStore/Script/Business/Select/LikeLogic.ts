@@ -25,43 +25,41 @@ module JsStore {
                 }
 
                 private executeSkipAndLimit = function () {
-                    var RecordSkipped = false,
+                    var Skip = this.SkipRecord,
                         That = this;
                     this.CursorOpenRequest.onsuccess = function (e) {
                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                        if (Cursor) {
-                            if (RecordSkipped && That.Results.length != That.LimitRecord) {
-                                if (That.filterOnOccurence(Cursor.value) &&
-                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                        if (That.Results.length != That.LimitRecord && Cursor) {
+                            if (That.filterOnOccurence(Cursor.value) &&
+                                That.checkForWhereConditionMatch(Cursor.value)) {
+                                if (Skip == 0) {
                                     That.Results.push(Cursor.value);
                                 }
-                                Cursor.continue();
+                                else {
+                                    --Skip;
+                                }
                             }
-                            else {
-                                RecordSkipped = true;
-                                Cursor.advance(That.SkipRecord);
-                            }
+                            Cursor.continue();
                         }
                     }
                 }
 
                 private executeSkip = function () {
-                    var RecordSkipped = false,
+                    var Skip = this.SkipRecord,
                         That = this;
                     this.CursorOpenRequest.onsuccess = function (e) {
                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
                         if (Cursor) {
-                            if (RecordSkipped) {
-                                if (That.filterOnOccurence(Cursor.value) &&
-                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                            if (That.filterOnOccurence(Cursor.value) &&
+                                That.checkForWhereConditionMatch(Cursor.value)) {
+                                if (Skip == 0) {
                                     That.Results.push(Cursor.value);
                                 }
-                                Cursor.continue();
+                                else {
+                                    --Skip;
+                                }
                             }
-                            else {
-                                RecordSkipped = true;
-                                Cursor.advance(That.SkipRecord);
-                            }
+                            Cursor.continue();
                         }
                     }
                 }
@@ -70,7 +68,7 @@ module JsStore {
                     var That = this;
                     this.CursorOpenRequest.onsuccess = function (e) {
                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                        if (Cursor && That.Results.length != That.LimitRecord) {
+                        if (That.Results.length != That.LimitRecord && Cursor) {
                             if (That.filterOnOccurence(Cursor.value) &&
                                 That.checkForWhereConditionMatch(Cursor.value)) {
                                 That.Results.push(Cursor.value);

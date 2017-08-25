@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.0.3 - 23/8/2017
+/** JsStore.js - v1.1.0 - 25/8/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var JsStore;
@@ -700,8 +700,7 @@ var JsStore;
                                 That.ErrorOccured = true;
                                 That.Error = JsStore.Utils.getError(JsStore.ErrorType.NullValue, false, { ColumnName: column.Name });
                             }
-                            //check datatype
-                            if (column.DataType && typeof value[column.Name] != column.DataType) {
+                            else if (column.DataType && typeof value[column.Name] != column.DataType) {
                                 That.ErrorOccured = true;
                                 That.Error = JsStore.Utils.getError(JsStore.ErrorType.BadDataType, false, { ColumnName: column.Name });
                             }
@@ -1146,40 +1145,38 @@ var JsStore;
                         return Found;
                     };
                     _this.executeSkipAndLimit = function () {
-                        var RecordSkipped = false, That = this;
+                        var Skip = this.SkipRecord, That = this;
                         this.CursorOpenRequest.onsuccess = function (e) {
                             var Cursor = e.target.result;
-                            if (Cursor) {
-                                if (RecordSkipped && That.Results.length != That.LimitRecord) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
-                                        That.checkForWhereConditionMatch(Cursor.value)) {
+                            if (That.Results.length != That.LimitRecord && Cursor) {
+                                if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                                    if (Skip == 0) {
                                         That.Results.push(Cursor.value);
                                     }
-                                    Cursor.continue();
+                                    else {
+                                        --Skip;
+                                    }
                                 }
-                                else {
-                                    RecordSkipped = true;
-                                    Cursor.advance(That.SkipRecord);
-                                }
+                                Cursor.continue();
                             }
                         };
                     };
                     _this.executeSkip = function () {
-                        var RecordSkipped = false, That = this;
+                        var Skip = this.SkipRecord, That = this;
                         this.CursorOpenRequest.onsuccess = function (e) {
                             var Cursor = e.target.result;
                             if (Cursor) {
-                                if (RecordSkipped) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
-                                        That.checkForWhereConditionMatch(Cursor.value)) {
+                                if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                                    if (Skip == 0) {
                                         That.Results.push(Cursor.value);
                                     }
-                                    Cursor.continue();
+                                    else {
+                                        --Skip;
+                                    }
                                 }
-                                else {
-                                    RecordSkipped = true;
-                                    Cursor.advance(That.SkipRecord);
-                                }
+                                Cursor.continue();
                             }
                         };
                     };
@@ -1187,7 +1184,7 @@ var JsStore;
                         var That = this;
                         this.CursorOpenRequest.onsuccess = function (e) {
                             var Cursor = e.target.result;
-                            if (Cursor && That.Results.length != That.LimitRecord) {
+                            if (That.Results.length != That.LimitRecord && Cursor) {
                                 if (That.filterOnOccurence(Cursor.value) &&
                                     That.checkForWhereConditionMatch(Cursor.value)) {
                                     That.Results.push(Cursor.value);
@@ -3398,4 +3395,4 @@ var KeyStore;
     };
 })(KeyStore || (KeyStore = {}));
 KeyStore.init();
-//# sourceMappingURL=JsStore.js.map
+//# sourceMappingURL=JsStore-1.1.0.js.map
