@@ -69,7 +69,7 @@ module JsStore {
                                     Store.createIndex(column.Name, column.Name, { unique: true });
                                 }
                                 else {
-                                    Store.createIndex(column.Name, column.Name, { unique: false });
+                                    Store.createIndex(column.Name, column.Name, { unique: column.Unique });
                                 }
 
                                 if (column.AutoIncrement) {
@@ -82,12 +82,7 @@ module JsStore {
                                 autoIncrement: true
                             });
                             item.Columns.forEach(function (column: Column) {
-                                if (column.Unique) {
-                                    Store.createIndex(column.Name, column.Name, { unique: true });
-                                } else {
-                                    Store.createIndex(column.Name, column.Name, { unique: false });
-                                }
-
+                                Store.createIndex(column.Name, column.Name, { unique: column.Unique });
                                 if (column.AutoIncrement) {
                                     KeyStore.set("JsStore_" + ActiveDataBase.Name + "_" + item.Name + "_" + column.Name + "_Value", 0);
                                 }

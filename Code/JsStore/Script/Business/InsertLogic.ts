@@ -93,7 +93,7 @@ module JsStore {
                         if (column) {
                             var CheckNotNullAndDataType = function () {
                                 //check not null schema
-                                if (column.NotNull && That.isNull(value[column.Name])) {
+                                if (column.NotNull && isNull(value[column.Name])) {
                                     That.ErrorOccured = true;
                                     That.Error = Utils.getError(ErrorType.NullValue, false, { ColumnName: column.Name });
                                 }

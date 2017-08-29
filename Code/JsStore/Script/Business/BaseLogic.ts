@@ -16,10 +16,17 @@ module JsStore {
                 if (this.ErrorCount == 1) {
                     if (this.OnError != null) {
                         if (!customError) {
-                            this.OnError((e as any).target.error);
+                            var Error = <IError>{
+                                Name: (e as any).target.error.name,
+                                Message: (e as any).target.error.message
+                            }
+                            this.OnError(Error);
                         }
                         else {
                             this.OnError(e);
+                        }
+                        if (EnableLog) {
+                            console.error(Error);
                         }
                     }
                 }
@@ -29,16 +36,11 @@ module JsStore {
                 console.log('transaction timed out');
             }
 
-            protected isNull = function (value) {
-                return value == null || value.length == 0;
-            }
-
             protected onExceptionOccured = function (ex: DOMException, info) {
-                if (ex.name == "NotFoundError") {
-                    Utils.getError(ErrorType.TableNotExist, true, info);
-                }
-                else {
-                    console.error(ex);
+                switch (ex.name) {
+                    case 'NotFoundError':
+                        Utils.getError(ErrorType.TableNotExist, true, info); break;
+                    default: console.error(ex);
                 }
             }
 

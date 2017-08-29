@@ -11,18 +11,15 @@ module JsStore {
                     CursorOpenRequest.onsuccess = function (e) {
                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
                         if (Cursor) {
-                            var updateValue = function () {
-                                for (var key in That.Query.Set) {
-                                    Cursor.value[key] = That.Query.Set[key];
-                                }
-                                Cursor.update(Cursor.value);
+                            var updateValueInternal = function () {
+                                Cursor.update(updateValue(That.Query.Set, Cursor.value));
                                 ++That.RowAffected;
                             }
                             if (!That.CheckFlag) {
-                                updateValue();
+                                updateValueInternal();
                             }
                             else if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                updateValue();
+                                updateValueInternal();
                             }
                             Cursor.continue();
                         }

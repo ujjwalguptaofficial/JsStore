@@ -1,37 +1,4 @@
 module JsStore {
-
-    /**
-    * checks whether db exist or not
-    * 
-    * @param {string} dbName 
-    * @param {Function} callback 
-    */
-    export var isDbExist = function (dbInfo: DbInfo, callback: Function) {
-        var DbName;
-        if (typeof dbInfo == 'string') {
-            getDbVersion(dbInfo, function (dbVersion) {
-                callback(Boolean(dbVersion));
-            });
-        }
-        else {
-            getDbVersion(dbInfo.DbName, function (dbVersion) {
-                callback(dbInfo.Table.Version <= dbVersion)
-            });
-        }
-    }
-
-    /**
-    * get Db Version
-    * 
-    * @param {string} dbName 
-    * @param {Function} callback 
-    */
-    export var getDbVersion = function (dbName: string, callback: Function) {
-        KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
-            callback(Number(dbVersion));
-        });
-    }
-
     export interface DbInfo {
         DbName: string,
         Table: {
@@ -84,8 +51,6 @@ module JsStore {
         OnSuccess: Function,
         OnError: Function
     }
-
-
 
     export interface IUpdate {
         In: string,
@@ -169,5 +134,5 @@ module JsStore {
     };
 
     export var EnableLog = false,
-        DbVersion;
+        DbVersion: number;
 }

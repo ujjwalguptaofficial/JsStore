@@ -45,32 +45,37 @@ module JsStore {
                 private checkSchema(suppliedValue, tableName: string) {
                     var CurrentTable: Table = this.getTable(tableName),
                         That = this;
+                    if (CurrentTable) {
+                        //loop through table column and find data is valid
+                        CurrentTable.Columns.every(function (column: Column) {
+                            if (!That.ErrorOccured) {
+                                if (column.Name in suppliedValue) {
+                                    var executeCheck = function (value) {
+                                        //check not null schema
+                                        if (column.NotNull && isNull(value)) {
+                                            That.ErrorOccured = true;
+                                            That.Error = Utils.getError(ErrorType.NullValue, false, { ColumnName: column.Name });
+                                        }
 
-                    //loop through table column and find data is valid
-                    CurrentTable.Columns.every(function (column: Column) {
-                        if (!That.ErrorOccured) {
-                            if (column.Name in suppliedValue) {
-                                var executeCheck = function (value) {
-                                    //check not null schema
-                                    if (column.NotNull && That.isNull(value)) {
-                                        That.ErrorOccured = true;
-                                        That.Error = Utils.getError(ErrorType.NullValue, false, { ColumnName: column.Name });
-                                    }
-
-                                    //check datatype
-                                    if (column.DataType && typeof value != column.DataType) {
-                                        That.ErrorOccured = true;
-                                        That.Error = Utils.getError(ErrorType.BadDataType, false, { ColumnName: column.Name });
-                                    }
-                                };
-                                executeCheck(suppliedValue[column.Name]);
-                                return true;
+                                        //check datatype
+                                        if (column.DataType && typeof value != column.DataType) {
+                                            That.ErrorOccured = true;
+                                            That.Error = Utils.getError(ErrorType.BadDataType, false, { ColumnName: column.Name });
+                                        }
+                                    };
+                                    executeCheck(suppliedValue[column.Name]);
+                                    return true;
+                                }
                             }
-                        }
-                        else {
-                            return false;
-                        }
-                    });
+                            else {
+                                return false;
+                            }
+                        });
+                    }
+                    else {
+                        var Error = Utils.getError(ErrorType.TableNotExist, false, { TableName: tableName });
+                        throw Error;
+                    }
                 }
             }
         }

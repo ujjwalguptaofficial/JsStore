@@ -8,41 +8,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.1.0 - 25/8/2017
+/** JsStore.js - v1.1.1 - 29/8/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var JsStore;
 (function (JsStore) {
-    /**
-    * checks whether db exist or not
-    *
-    * @param {string} dbName
-    * @param {Function} callback
-    */
-    JsStore.isDbExist = function (dbInfo, callback) {
-        var DbName;
-        if (typeof dbInfo == 'string') {
-            JsStore.getDbVersion(dbInfo, function (dbVersion) {
-                callback(Boolean(dbVersion));
-            });
-        }
-        else {
-            JsStore.getDbVersion(dbInfo.DbName, function (dbVersion) {
-                callback(dbInfo.Table.Version <= dbVersion);
-            });
-        }
-    };
-    /**
-    * get Db Version
-    *
-    * @param {string} dbName
-    * @param {Function} callback
-    */
-    JsStore.getDbVersion = function (dbName, callback) {
-        KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
-            callback(Number(dbVersion));
-        });
-    };
     var ErrorType;
     (function (ErrorType) {
         ErrorType["UndefinedColumn"] = "undefined_column";
@@ -163,6 +133,84 @@ var JsStore;
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
+    /**
+    * checks whether db exist or not
+    *
+    * @param {string} dbName
+    * @param {Function} callback
+    */
+    JsStore.isDbExist = function (dbInfo, callback) {
+        var DbName;
+        if (typeof dbInfo == 'string') {
+            JsStore.getDbVersion(dbInfo, function (dbVersion) {
+                callback(Boolean(dbVersion));
+            });
+        }
+        else {
+            JsStore.getDbVersion(dbInfo.DbName, function (dbVersion) {
+                callback(dbInfo.Table.Version <= dbVersion);
+            });
+        }
+    };
+    /**
+    * get Db Version
+    *
+    * @param {string} dbName
+    * @param {Function} callback
+    */
+    JsStore.getDbVersion = function (dbName, callback) {
+        KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
+            callback(Number(dbVersion));
+        });
+    };
+    /**
+    * get Database Schema
+    *
+    * @param {string} dbName
+    * @param {Function} callback
+    */
+    JsStore.getDbSchema = function (dbName, callback) {
+        if (callback) {
+            KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
+                callback(result);
+            });
+        }
+    };
+    /**
+    * check value null or not
+    *
+    * @param {any} value
+    * @returns
+    */
+    JsStore.isNull = function (value) {
+        if (value == null) {
+            return true;
+        }
+        else {
+            switch (typeof value) {
+                case 'string': return value.length == 0;
+                case 'number': return isNaN(value);
+            }
+        }
+        return false;
+    };
+    /**
+    * Enable log
+    *
+    */
+    JsStore.enableLog = function () {
+        JsStore.EnableLog = true;
+    };
+    /**
+    * disable log
+    *
+    */
+    JsStore.disableLog = function () {
+        JsStore.EnableLog = false;
+    };
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
     var Model;
     (function (Model) {
         var Column = (function () {
@@ -273,10 +321,17 @@ var JsStore;
                     if (this.ErrorCount == 1) {
                         if (this.OnError != null) {
                             if (!customError) {
-                                this.OnError(e.target.error);
+                                var Error = {
+                                    Name: e.target.error.name,
+                                    Message: e.target.error.message
+                                };
+                                this.OnError(Error);
                             }
                             else {
                                 this.OnError(e);
+                            }
+                            if (JsStore.EnableLog) {
+                                console.error(Error);
                             }
                         }
                     }
@@ -284,15 +339,12 @@ var JsStore;
                 this.onTransactionTimeout = function (e) {
                     console.log('transaction timed out');
                 };
-                this.isNull = function (value) {
-                    return value == null || value.length == 0;
-                };
                 this.onExceptionOccured = function (ex, info) {
-                    if (ex.name == "NotFoundError") {
-                        JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, true, info);
-                    }
-                    else {
-                        console.error(ex);
+                    switch (ex.name) {
+                        case 'NotFoundError':
+                            JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, true, info);
+                            break;
+                        default: console.error(ex);
                     }
                 };
                 this.getTable = function (tableName) {
@@ -532,7 +584,7 @@ var JsStore;
                                     Store.createIndex(column.Name, column.Name, { unique: true });
                                 }
                                 else {
-                                    Store.createIndex(column.Name, column.Name, { unique: false });
+                                    Store.createIndex(column.Name, column.Name, { unique: column.Unique });
                                 }
                                 if (column.AutoIncrement) {
                                     KeyStore.set("JsStore_" + Business.ActiveDataBase.Name + "_" + item.Name + "_" + column.Name + "_Value", 0);
@@ -544,12 +596,7 @@ var JsStore;
                                 autoIncrement: true
                             });
                             item.Columns.forEach(function (column) {
-                                if (column.Unique) {
-                                    Store.createIndex(column.Name, column.Name, { unique: true });
-                                }
-                                else {
-                                    Store.createIndex(column.Name, column.Name, { unique: false });
-                                }
+                                Store.createIndex(column.Name, column.Name, { unique: column.Unique });
                                 if (column.AutoIncrement) {
                                     KeyStore.set("JsStore_" + Business.ActiveDataBase.Name + "_" + item.Name + "_" + column.Name + "_Value", 0);
                                 }
@@ -696,7 +743,7 @@ var JsStore;
                     if (column) {
                         var CheckNotNullAndDataType = function () {
                             //check not null schema
-                            if (column.NotNull && That.isNull(value[column.Name])) {
+                            if (column.NotNull && JsStore.isNull(value[column.Name])) {
                                 That.ErrorOccured = true;
                                 That.Error = JsStore.Utils.getError(JsStore.ErrorType.NullValue, false, { ColumnName: column.Name });
                             }
@@ -2001,18 +2048,44 @@ var JsStore;
     (function (Business) {
         var Update;
         (function (Update) {
-            var BaseUpdate = (function (_super) {
-                __extends(BaseUpdate, _super);
-                function BaseUpdate() {
-                    var _this = _super !== null && _super.apply(this, arguments) || this;
-                    _this.SendResultFlag = true;
-                    _this.CheckFlag = false;
-                    return _this;
+            Update.updateValue = function (suppliedValue, storedValue) {
+                for (var key in suppliedValue) {
+                    for (var op in suppliedValue[key]) {
+                        switch (op) {
+                            case 0:
+                                storedValue[key] = suppliedValue[key];
+                                break;
+                            case '+':
+                                storedValue[key] += suppliedValue[key][op];
+                                break;
+                            case '-':
+                                storedValue[key] -= suppliedValue[key][op];
+                                break;
+                            case '*':
+                                storedValue[key] *= suppliedValue[key][op];
+                                break;
+                            case '/':
+                                storedValue[key] /= suppliedValue[key][op];
+                                break;
+                            default: storedValue[key] = suppliedValue;
+                        }
+                        break;
+                    }
                 }
-                return BaseUpdate;
-            }(Business.Base));
-            Update.BaseUpdate = BaseUpdate;
+                return storedValue;
+            };
         })(Update = Business.Update || (Business.Update = {}));
+        var BaseUpdate = (function (_super) {
+            __extends(BaseUpdate, _super);
+            function BaseUpdate() {
+                var _this = _super !== null && _super.apply(this, arguments) || this;
+                _this.SendResultFlag = true;
+                _this.CheckFlag = false;
+                return _this;
+            }
+            return BaseUpdate;
+        }(Business.Base));
+        Business.BaseUpdate = BaseUpdate;
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
@@ -2030,10 +2103,7 @@ var JsStore;
                         CursorOpenRequest.onsuccess = function (e) {
                             var Cursor = e.target.result;
                             if (Cursor) {
-                                for (var key in That.Query.Set) {
-                                    Cursor.value[key] = That.Query.Set[key];
-                                }
-                                Cursor.update(Cursor.value);
+                                Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
                                 ++That.RowAffected;
                                 Cursor.continue();
                             }
@@ -2046,7 +2116,7 @@ var JsStore;
                     return _this;
                 }
                 return NotWhere;
-            }(Update.BaseUpdate));
+            }(Business.BaseUpdate));
             Update.NotWhere = NotWhere;
         })(Update = Business.Update || (Business.Update = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));
@@ -2098,10 +2168,7 @@ var JsStore;
                             var Cursor = e.target.result;
                             if (Cursor) {
                                 if (That.filterOnOccurence(Cursor.value) && That.checkForWhereConditionMatch(Cursor.value)) {
-                                    for (var key in That.Query.Set) {
-                                        Cursor.value[key] = That.Query.Set[key];
-                                    }
-                                    Cursor.update(Cursor.value);
+                                    Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
                                     ++That.RowAffected;
                                 }
                                 Cursor.continue();
@@ -2133,18 +2200,15 @@ var JsStore;
                         CursorOpenRequest.onsuccess = function (e) {
                             var Cursor = e.target.result;
                             if (Cursor) {
-                                var updateValue = function () {
-                                    for (var key in That.Query.Set) {
-                                        Cursor.value[key] = That.Query.Set[key];
-                                    }
-                                    Cursor.update(Cursor.value);
+                                var updateValueInternal = function () {
+                                    Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
                                     ++That.RowAffected;
                                 };
                                 if (!That.CheckFlag) {
-                                    updateValue();
+                                    updateValueInternal();
                                 }
                                 else if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                    updateValue();
+                                    updateValueInternal();
                                 }
                                 Cursor.continue();
                             }
@@ -2267,30 +2331,36 @@ var JsStore;
                 }
                 Instance.prototype.checkSchema = function (suppliedValue, tableName) {
                     var CurrentTable = this.getTable(tableName), That = this;
-                    //loop through table column and find data is valid
-                    CurrentTable.Columns.every(function (column) {
-                        if (!That.ErrorOccured) {
-                            if (column.Name in suppliedValue) {
-                                var executeCheck = function (value) {
-                                    //check not null schema
-                                    if (column.NotNull && That.isNull(value)) {
-                                        That.ErrorOccured = true;
-                                        That.Error = JsStore.Utils.getError(JsStore.ErrorType.NullValue, false, { ColumnName: column.Name });
-                                    }
-                                    //check datatype
-                                    if (column.DataType && typeof value != column.DataType) {
-                                        That.ErrorOccured = true;
-                                        That.Error = JsStore.Utils.getError(JsStore.ErrorType.BadDataType, false, { ColumnName: column.Name });
-                                    }
-                                };
-                                executeCheck(suppliedValue[column.Name]);
-                                return true;
+                    if (CurrentTable) {
+                        //loop through table column and find data is valid
+                        CurrentTable.Columns.every(function (column) {
+                            if (!That.ErrorOccured) {
+                                if (column.Name in suppliedValue) {
+                                    var executeCheck = function (value) {
+                                        //check not null schema
+                                        if (column.NotNull && JsStore.isNull(value)) {
+                                            That.ErrorOccured = true;
+                                            That.Error = JsStore.Utils.getError(JsStore.ErrorType.NullValue, false, { ColumnName: column.Name });
+                                        }
+                                        //check datatype
+                                        if (column.DataType && typeof value != column.DataType) {
+                                            That.ErrorOccured = true;
+                                            That.Error = JsStore.Utils.getError(JsStore.ErrorType.BadDataType, false, { ColumnName: column.Name });
+                                        }
+                                    };
+                                    executeCheck(suppliedValue[column.Name]);
+                                    return true;
+                                }
                             }
-                        }
-                        else {
-                            return false;
-                        }
-                    });
+                            else {
+                                return false;
+                            }
+                        });
+                    }
+                    else {
+                        var Error = JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, false, { TableName: tableName });
+                        throw Error;
+                    }
                 };
                 return Instance;
             }(Update.Where));
@@ -3395,4 +3465,4 @@ var KeyStore;
     };
 })(KeyStore || (KeyStore = {}));
 KeyStore.init();
-//# sourceMappingURL=JsStore-1.1.0.js.map
+//# sourceMappingURL=JsStore-1.1.1.js.map

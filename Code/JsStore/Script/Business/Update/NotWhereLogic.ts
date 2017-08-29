@@ -9,10 +9,7 @@ module JsStore {
                     CursorOpenRequest.onsuccess = function (e) {
                         var Cursor = (<any>e).target.result;
                         if (Cursor) {
-                            for (var key in That.Query.Set) {
-                                Cursor.value[key] = That.Query.Set[key];
-                            }
-                            Cursor.update(Cursor.value);
+                            Cursor.update(updateValue(That.Query.Set, Cursor.value));
                             ++That.RowAffected;
                             (Cursor as any).continue();
                         }

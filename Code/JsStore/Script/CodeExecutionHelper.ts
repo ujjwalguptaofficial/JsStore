@@ -36,7 +36,6 @@ module JsStore {
                     this.executeCodeDirect(Request);
                 }
             }
-
         }
 
         private executeCodeDirect = function (request: IWebWorkerRequest) {

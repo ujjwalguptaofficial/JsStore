@@ -5,7 +5,7 @@
         "removeComments": false,
         "sourceMap": true,
         "inlineSources": true,
-        "out": "outputfile/JsStore-1.1.0.js",
+        "out": "outputfile/JsStore-1.1.1.js",
         "target": "es5",
         "preserveConstEnums": true,
         "declaration": true
@@ -17,6 +17,7 @@
         // common files
         "JsStore/Script/CommonLogic.ts",
         "JsStore/Script/UtilsLogic.ts",
+        "JsStore/Script/HelperLogic.ts",
         // Model
         "JsStore/Script/Model/Column.ts",
         "JsStore/Script/Model/Table.ts",

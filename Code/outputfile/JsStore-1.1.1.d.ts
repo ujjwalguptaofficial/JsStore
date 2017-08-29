@@ -1,18 +1,4 @@
 declare module JsStore {
-    /**
-    * checks whether db exist or not
-    *
-    * @param {string} dbName
-    * @param {Function} callback
-    */
-    var isDbExist: (dbInfo: DbInfo, callback: Function) => void;
-    /**
-    * get Db Version
-    *
-    * @param {string} dbName
-    * @param {Function} callback
-    */
-    var getDbVersion: (dbName: string, callback: Function) => void;
     interface DbInfo {
         DbName: string;
         Table: {
@@ -129,7 +115,7 @@ declare module JsStore {
         Last = "l",
         Any = "a",
     }
-    var EnableLog: boolean, DbVersion: any;
+    var EnableLog: boolean, DbVersion: number;
 }
 declare module JsStore {
     interface IError {
@@ -147,6 +133,46 @@ declare module JsStore {
          */
         static setDbType: () => void;
     }
+}
+declare module JsStore {
+    /**
+    * checks whether db exist or not
+    *
+    * @param {string} dbName
+    * @param {Function} callback
+    */
+    var isDbExist: (dbInfo: DbInfo, callback: Function) => void;
+    /**
+    * get Db Version
+    *
+    * @param {string} dbName
+    * @param {Function} callback
+    */
+    var getDbVersion: (dbName: string, callback: Function) => void;
+    /**
+    * get Database Schema
+    *
+    * @param {string} dbName
+    * @param {Function} callback
+    */
+    var getDbSchema: (dbName: string, callback: Function) => void;
+    /**
+    * check value null or not
+    *
+    * @param {any} value
+    * @returns
+    */
+    var isNull: (value: any) => boolean;
+    /**
+    * Enable log
+    *
+    */
+    var enableLog: () => void;
+    /**
+    * disable log
+    *
+    */
+    var disableLog: () => void;
 }
 declare module JsStore {
     module Model {
@@ -219,7 +245,6 @@ declare module JsStore {
             Query: any;
             protected onErrorOccured: (e: any, customError?: boolean) => void;
             protected onTransactionTimeout: (e: any) => void;
-            protected isNull: (value: any) => boolean;
             protected onExceptionOccured: (ex: DOMException, info: any) => void;
             /**
             * For matching the different column value existance
@@ -445,10 +470,11 @@ declare module JsStore {
 declare module JsStore {
     module Business {
         module Update {
-            class BaseUpdate extends Base {
-                SendResultFlag: Boolean;
-                CheckFlag: boolean;
-            }
+            var updateValue: (suppliedValue: any, storedValue: any) => any;
+        }
+        class BaseUpdate extends Base {
+            SendResultFlag: Boolean;
+            CheckFlag: boolean;
         }
     }
 }

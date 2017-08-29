@@ -23,8 +23,6 @@ module JsStore {
                     return Found;
                 }
 
-
-
                 protected executeLikeLogic = function (column, value, symbol: Occurence) {
                     var That = this;
                     this.CompValue = (<string>value).toLowerCase();
@@ -39,10 +37,7 @@ module JsStore {
                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
                         if (Cursor) {
                             if (That.filterOnOccurence(Cursor.value) && That.checkForWhereConditionMatch(Cursor.value)) {
-                                for (var key in That.Query.Set) {
-                                    Cursor.value[key] = That.Query.Set[key];
-                                }
-                                Cursor.update(Cursor.value);
+                                Cursor.update(updateValue(That.Query.Set, Cursor.value));
                                 ++That.RowAffected;
                             }
                             Cursor.continue();
