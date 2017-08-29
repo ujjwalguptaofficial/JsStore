@@ -6,12 +6,12 @@ module JsStore {
                 for (var key in suppliedValue) {
                     for (var op in suppliedValue[key]) {
                         switch (op as any) {
-                            case 0: storedValue[key] = suppliedValue[key]; break;
+                            case '0': storedValue[key] = suppliedValue[key]; break;
                             case '+': storedValue[key] += suppliedValue[key][op]; break;
                             case '-': storedValue[key] -= suppliedValue[key][op]; break;
                             case '*': storedValue[key] *= suppliedValue[key][op]; break;
                             case '/': storedValue[key] /= suppliedValue[key][op]; break;
-                            default: storedValue[key] = suppliedValue;
+                            default: storedValue[key] = suppliedValue[key];
                         }
                         break;
                     }

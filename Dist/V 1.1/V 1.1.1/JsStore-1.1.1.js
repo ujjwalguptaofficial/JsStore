@@ -2052,7 +2052,7 @@ var JsStore;
                 for (var key in suppliedValue) {
                     for (var op in suppliedValue[key]) {
                         switch (op) {
-                            case 0:
+                            case '0':
                                 storedValue[key] = suppliedValue[key];
                                 break;
                             case '+':
@@ -2067,7 +2067,7 @@ var JsStore;
                             case '/':
                                 storedValue[key] /= suppliedValue[key][op];
                                 break;
-                            default: storedValue[key] = suppliedValue;
+                            default: storedValue[key] = suppliedValue[key];
                         }
                         break;
                     }
