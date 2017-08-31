@@ -11,14 +11,13 @@ module JsStore {
                 }
             }
 
-            private insertData = function () {
+            private checkAndModifyValues = function (callBack) {
                 var That = this,
-                    IsReturn = this.Query.Return,
-                    checkSchemaInternal = function (value) {
+                    checkInternal = function (value) {
                         if (value) {
-                            That.checkSchemaAndModifyValue(value, function () {
+                            That.checkAndModifyValue(value, function () {
                                 if (!That.ErrorOccured) {
-                                    checkSchemaInternal(That.Query.Values[That.ValuesIndex++]);
+                                    checkInternal(That.Query.Values[That.ValuesIndex++]);
                                 }
                                 else {
                                     That.onErrorOccured(That.Error, true);
@@ -26,15 +25,15 @@ module JsStore {
                             });
                         }
                         else {
-                            That.ValuesIndex = 0;
-                            That.Transaction = DbConnection.transaction([That.Query.Into], "readwrite");
-                            That.ObjectStore = That.Transaction.objectStore(That.Query.Into);
-                            That.Transaction.oncomplete = function (e) {
-                                That.onTransactionCompleted();
-                            }
-                            insertDataintoTable(That.Query.Values[That.ValuesIndex++]);
+                            callBack();
                         }
-                    },
+                    };
+                checkInternal(this.Query.Values[this.ValuesIndex++]);
+            }
+
+            private insertData = function () {
+                var That = this,
+                    IsReturn = this.Query.Return,
                     insertDataintoTable = function (value) {
                         if (value) {
                             var AddResult = That.ObjectStore.add(value);
@@ -52,7 +51,14 @@ module JsStore {
                             }
                         }
                     }
-                checkSchemaInternal(this.Query.Values[this.ValuesIndex++]);
+
+                That.ValuesIndex = 0;
+                That.Transaction = DbConnection.transaction([That.Query.Into], "readwrite");
+                That.ObjectStore = That.Transaction.objectStore(That.Query.Into);
+                That.Transaction.oncomplete = function (e) {
+                    That.onTransactionCompleted();
+                }
+                insertDataintoTable(this.Query.Values[That.ValuesIndex++]);
             }
 
             constructor(query: IInsert, onSuccess: Function, onError: Function) {
@@ -64,7 +70,14 @@ module JsStore {
                     var That = this;
                     this.Table = this.getTable(query.Into);
                     if (this.Table) {
-                        this.insertData();
+                        if (!this.Query.SkipExtraCheck) {
+                            this.checkAndModifyValues(function () {
+                                That.insertData();
+                            });
+                        }
+                        else {
+                            this.insertData();
+                        }
                     }
                     else {
                         var Error = Utils.getError(ErrorType.TableNotExist, false, { TableName: query.Into })
@@ -77,7 +90,7 @@ module JsStore {
             }
 
             /**
-             * check the defined schema and based upon that modify or create the value
+             * check the value based on defined schema and modify or create the value
              * 
              * @private
              * @param {any} value 
@@ -85,7 +98,7 @@ module JsStore {
              * 
              * @memberof InsertLogic
              */
-            private checkSchemaAndModifyValue(value, callBack: Function) {
+            private checkAndModifyValue(value, callBack: Function) {
                 var That = this,
                     TableName = this.Table.Name,
                     Index = 0,

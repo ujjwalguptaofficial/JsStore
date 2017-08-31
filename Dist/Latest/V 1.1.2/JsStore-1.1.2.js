@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.1.1 - 29/8/2017
+/** JsStore.js - v1.1.2 - 31/8/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var JsStore;
@@ -342,8 +342,8 @@ var JsStore;
                 this.onExceptionOccured = function (ex, info) {
                     switch (ex.name) {
                         case 'NotFoundError':
-                            JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, true, info);
-                            break;
+                            var Error = JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, false, info);
+                            throw Error;
                         default: console.error(ex);
                     }
                 };
@@ -670,12 +670,12 @@ var JsStore;
                         this.OnSuccess(this.Query.Return ? this.ValuesAffected : this.RowAffected);
                     }
                 };
-                _this.insertData = function () {
-                    var That = this, IsReturn = this.Query.Return, checkSchemaInternal = function (value) {
+                _this.checkAndModifyValues = function (callBack) {
+                    var That = this, checkInternal = function (value) {
                         if (value) {
-                            That.checkSchemaAndModifyValue(value, function () {
+                            That.checkAndModifyValue(value, function () {
                                 if (!That.ErrorOccured) {
-                                    checkSchemaInternal(That.Query.Values[That.ValuesIndex++]);
+                                    checkInternal(That.Query.Values[That.ValuesIndex++]);
                                 }
                                 else {
                                     That.onErrorOccured(That.Error, true);
@@ -683,15 +683,13 @@ var JsStore;
                             });
                         }
                         else {
-                            That.ValuesIndex = 0;
-                            That.Transaction = Business.DbConnection.transaction([That.Query.Into], "readwrite");
-                            That.ObjectStore = That.Transaction.objectStore(That.Query.Into);
-                            That.Transaction.oncomplete = function (e) {
-                                That.onTransactionCompleted();
-                            };
-                            insertDataintoTable(That.Query.Values[That.ValuesIndex++]);
+                            callBack();
                         }
-                    }, insertDataintoTable = function (value) {
+                    };
+                    checkInternal(this.Query.Values[this.ValuesIndex++]);
+                };
+                _this.insertData = function () {
+                    var That = this, IsReturn = this.Query.Return, insertDataintoTable = function (value) {
                         if (value) {
                             var AddResult = That.ObjectStore.add(value);
                             AddResult.onerror = function (e) {
@@ -708,7 +706,13 @@ var JsStore;
                             };
                         }
                     };
-                    checkSchemaInternal(this.Query.Values[this.ValuesIndex++]);
+                    That.ValuesIndex = 0;
+                    That.Transaction = Business.DbConnection.transaction([That.Query.Into], "readwrite");
+                    That.ObjectStore = That.Transaction.objectStore(That.Query.Into);
+                    That.Transaction.oncomplete = function (e) {
+                        That.onTransactionCompleted();
+                    };
+                    insertDataintoTable(this.Query.Values[That.ValuesIndex++]);
                 };
                 try {
                     _this.Query = query;
@@ -717,7 +721,14 @@ var JsStore;
                     var That = _this;
                     _this.Table = _this.getTable(query.Into);
                     if (_this.Table) {
-                        _this.insertData();
+                        if (!_this.Query.SkipExtraCheck) {
+                            _this.checkAndModifyValues(function () {
+                                That.insertData();
+                            });
+                        }
+                        else {
+                            _this.insertData();
+                        }
                     }
                     else {
                         var Error = JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, false, { TableName: query.Into });
@@ -730,7 +741,7 @@ var JsStore;
                 return _this;
             }
             /**
-             * check the defined schema and based upon that modify or create the value
+             * check the value based on defined schema and modify or create the value
              *
              * @private
              * @param {any} value
@@ -738,7 +749,7 @@ var JsStore;
              *
              * @memberof InsertLogic
              */
-            Insert.prototype.checkSchemaAndModifyValue = function (value, callBack) {
+            Insert.prototype.checkAndModifyValue = function (value, callBack) {
                 var That = this, TableName = this.Table.Name, Index = 0, checkAndModifyInternal = function (column) {
                     if (column) {
                         var CheckNotNullAndDataType = function () {
@@ -2050,26 +2061,28 @@ var JsStore;
         (function (Update) {
             Update.updateValue = function (suppliedValue, storedValue) {
                 for (var key in suppliedValue) {
-                    for (var op in suppliedValue[key]) {
-                        switch (op) {
-                            case '0':
-                                storedValue[key] = suppliedValue[key];
-                                break;
-                            case '+':
-                                storedValue[key] += suppliedValue[key][op];
-                                break;
-                            case '-':
-                                storedValue[key] -= suppliedValue[key][op];
-                                break;
-                            case '*':
-                                storedValue[key] *= suppliedValue[key][op];
-                                break;
-                            case '/':
-                                storedValue[key] /= suppliedValue[key][op];
-                                break;
-                            default: storedValue[key] = suppliedValue[key];
+                    if (typeof suppliedValue[key] != 'object') {
+                        storedValue[key] = suppliedValue[key];
+                    }
+                    else {
+                        for (var op in suppliedValue[key]) {
+                            switch (op) {
+                                case '+':
+                                    storedValue[key] += suppliedValue[key][op];
+                                    break;
+                                case '-':
+                                    storedValue[key] -= suppliedValue[key][op];
+                                    break;
+                                case '*':
+                                    storedValue[key] *= suppliedValue[key][op];
+                                    break;
+                                case '/':
+                                    storedValue[key] /= suppliedValue[key][op];
+                                    break;
+                                default: storedValue[key] = suppliedValue[key];
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
                 return storedValue;
@@ -3465,4 +3478,4 @@ var KeyStore;
     };
 })(KeyStore || (KeyStore = {}));
 KeyStore.init();
-//# sourceMappingURL=JsStore-1.1.1.js.map
+//# sourceMappingURL=JsStore-1.1.2.js.map

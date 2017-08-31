@@ -65,7 +65,8 @@ module JsStore {
         Values: Array<any>,
         Return: boolean,
         OnSuccess: Function,
-        OnError: Function
+        OnError: Function,
+        SkipExtraCheck: boolean
     }
 
     export interface ICondition {

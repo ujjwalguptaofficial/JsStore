@@ -1,3 +1,6 @@
+/** JsStore.js - v1.1.2 - 31/8/2017
+ * https://github.com/ujjwalguptaofficial/JsStore
+ * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 declare module JsStore {
     interface DbInfo {
         DbName: string;
@@ -59,6 +62,7 @@ declare module JsStore {
         Return: boolean;
         OnSuccess: Function;
         OnError: Function;
+        SkipExtraCheck: boolean;
     }
     interface ICondition {
         Column: string;
@@ -284,10 +288,11 @@ declare module JsStore {
             ValuesIndex: number;
             Table: Model.ITable;
             onTransactionCompleted: () => void;
+            private checkAndModifyValues;
             private insertData;
             constructor(query: IInsert, onSuccess: Function, onError: Function);
             /**
-             * check the defined schema and based upon that modify or create the value
+             * check the value based on defined schema and modify or create the value
              *
              * @private
              * @param {any} value
@@ -295,7 +300,7 @@ declare module JsStore {
              *
              * @memberof InsertLogic
              */
-            private checkSchemaAndModifyValue(value, callBack);
+            private checkAndModifyValue(value, callBack);
         }
     }
 }

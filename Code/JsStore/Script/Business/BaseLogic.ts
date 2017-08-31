@@ -39,7 +39,8 @@ module JsStore {
             protected onExceptionOccured = function (ex: DOMException, info) {
                 switch (ex.name) {
                     case 'NotFoundError':
-                        Utils.getError(ErrorType.TableNotExist, true, info); break;
+                        var Error = Utils.getError(ErrorType.TableNotExist, false, info);
+                        throw Error;
                     default: console.error(ex);
                 }
             }
