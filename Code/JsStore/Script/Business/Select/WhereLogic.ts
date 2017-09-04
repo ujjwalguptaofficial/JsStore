@@ -12,7 +12,10 @@ module JsStore {
                                 var Cursor: IDBCursorWithValue = (<any>e).target.result;
                                 if (Cursor) {
                                     if (RecordSkipped && That.Results.length != That.LimitRecord) {
-                                        if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                        if (!That.CheckFlag) {
+                                            That.Results.push(Cursor.value);
+                                        }
+                                        else if (That.checkForWhereConditionMatch(Cursor.value)) {
                                             That.Results.push(Cursor.value);
                                         }
                                         Cursor.continue();
@@ -30,7 +33,10 @@ module JsStore {
                                 var Cursor: IDBCursorWithValue = (<any>e).target.result;
                                 if (Cursor) {
                                     if (RecordSkipped) {
-                                        if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                        if (!That.CheckFlag) {
+                                            That.Results.push(Cursor.value);
+                                        }
+                                        else if (That.checkForWhereConditionMatch(Cursor.value)) {
                                             That.Results.push(Cursor.value);
                                         }
                                         Cursor.continue();
@@ -46,7 +52,10 @@ module JsStore {
                             CursorOpenRequest.onsuccess = function (e) {
                                 var Cursor: IDBCursorWithValue = (<any>e).target.result;
                                 if (Cursor && That.Results.length != That.LimitRecord) {
-                                    if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                    if (!That.CheckFlag) {
+                                        That.Results.push(Cursor.value);
+                                    }
+                                    else if (That.checkForWhereConditionMatch(Cursor.value)) {
                                         That.Results.push(Cursor.value);
                                     }
                                     Cursor.continue();

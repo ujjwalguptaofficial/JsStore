@@ -28,16 +28,22 @@ module JsStore {
                     var Skip = this.SkipRecord,
                         That = this;
                     this.CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                        if (That.Results.length != That.LimitRecord && Cursor) {
-                            if (That.filterOnOccurence(Cursor.value) &&
-                                That.checkForWhereConditionMatch(Cursor.value)) {
+                        var Cursor: IDBCursorWithValue = (<any>e).target.result,
+                            skipOrPush = function () {
                                 if (Skip == 0) {
                                     That.Results.push(Cursor.value);
                                 }
                                 else {
                                     --Skip;
                                 }
+                            };
+                        if (That.Results.length != That.LimitRecord && Cursor) {
+                            if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
+                                skipOrPush();
+                            }
+                            else if (That.filterOnOccurence(Cursor.value) &&
+                                That.checkForWhereConditionMatch(Cursor.value)) {
+                                skipOrPush();
                             }
                             Cursor.continue();
                         }
@@ -48,16 +54,22 @@ module JsStore {
                     var Skip = this.SkipRecord,
                         That = this;
                     this.CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                        var Cursor: IDBCursorWithValue = (<any>e).target.result,
+                        skipOrPush = function () {
+                            if (Skip == 0) {
+                                That.Results.push(Cursor.value);
+                            }
+                            else {
+                                --Skip;
+                            }
+                        };
                         if (Cursor) {
-                            if (That.filterOnOccurence(Cursor.value) &&
+                            if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
+                                skipOrPush();
+                            }
+                            else if (That.filterOnOccurence(Cursor.value) &&
                                 That.checkForWhereConditionMatch(Cursor.value)) {
-                                if (Skip == 0) {
-                                    That.Results.push(Cursor.value);
-                                }
-                                else {
-                                    --Skip;
-                                }
+                                skipOrPush();
                             }
                             Cursor.continue();
                         }
@@ -69,9 +81,12 @@ module JsStore {
                     this.CursorOpenRequest.onsuccess = function (e) {
                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
                         if (That.Results.length != That.LimitRecord && Cursor) {
-                            if (That.filterOnOccurence(Cursor.value) &&
-                                That.checkForWhereConditionMatch(Cursor.value)) {
+                            if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
                                 That.Results.push(Cursor.value);
+                            }
+                            else if (That.filterOnOccurence(Cursor.value) &&
+                                That.checkForWhereConditionMatch(Cursor.value)) {
+                                    That.Results.push(Cursor.value);
                             }
                             Cursor.continue();
                         }
@@ -83,8 +98,12 @@ module JsStore {
                     this.CursorOpenRequest.onsuccess = function (e) {
                         var Cursor: IDBCursorWithValue = (<any>e).target.result;
                         if (Cursor) {
-                            if (That.filterOnOccurence(Cursor.value) && That.checkForWhereConditionMatch(Cursor.value)) {
+                            if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
                                 That.Results.push(Cursor.value);
+                            }
+                            else if (That.filterOnOccurence(Cursor.value) &&
+                                That.checkForWhereConditionMatch(Cursor.value)) {
+                                    That.Results.push(Cursor.value);
                             }
                             Cursor.continue();
                         }

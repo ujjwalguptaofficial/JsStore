@@ -34,11 +34,18 @@ module JsStore {
                         That.onErrorOccured(e);
                     }
                     this.CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                        if (Cursor) {
-                            if (That.filterOnOccurence(Cursor.value) && That.checkForWhereConditionMatch(Cursor.value)) {
+                        var Cursor: IDBCursorWithValue = (<any>e).target.result,
+                            updateValueInternal = function () {
                                 Cursor.update(updateValue(That.Query.Set, Cursor.value));
                                 ++That.RowAffected;
+                            };
+                        if (Cursor) {
+                            if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
+                                updateValueInternal();
+                            }
+                            else if (That.filterOnOccurence(Cursor.value) &&
+                                That.checkForWhereConditionMatch(Cursor.value)) {
+                                updateValueInternal();
                             }
                             Cursor.continue();
                         }

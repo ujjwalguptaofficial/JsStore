@@ -9,12 +9,12 @@ module JsStore {
                     CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
 
                     CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                        if (Cursor) {
-                            var deleteValue = function () {
+                        var Cursor: IDBCursorWithValue = (<any>e).target.result,
+                            deleteValue = function () {
                                 Cursor.delete();
                                 ++That.RowAffected;
-                            }
+                            };
+                        if (Cursor) {
                             if (!That.CheckFlag) {
                                 deleteValue();
                             }

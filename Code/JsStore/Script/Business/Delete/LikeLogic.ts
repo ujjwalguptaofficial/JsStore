@@ -36,11 +36,17 @@ module JsStore {
                         That.onErrorOccured(e);
                     }
                     this.CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                        if (Cursor) {
-                            if (That.filterOnOccurence(Cursor.value) && That.checkForWhereConditionMatch(Cursor.value)) {
+                        var Cursor: IDBCursorWithValue = (<any>e).target.result,
+                            deleteValue = function () {
                                 Cursor.delete();
                                 ++That.RowAffected;
+                            };
+                        if (Cursor) {
+                            if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
+                                deleteValue();
+                            }
+                            else if (That.filterOnOccurence(Cursor.value) && That.checkForWhereConditionMatch(Cursor.value)) {
+                                deleteValue();
                             }
                             Cursor.continue();
                         }

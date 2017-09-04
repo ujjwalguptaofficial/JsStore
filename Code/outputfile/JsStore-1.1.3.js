@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.1.2 - 31/8/2017
+/** JsStore.js - v1.1.3 - 04/09/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var JsStore;
@@ -1205,16 +1205,21 @@ var JsStore;
                     _this.executeSkipAndLimit = function () {
                         var Skip = this.SkipRecord, That = this;
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = e.target.result;
+                            var Cursor = e.target.result, skipOrPush = function () {
+                                if (Skip == 0) {
+                                    That.Results.push(Cursor.value);
+                                }
+                                else {
+                                    --Skip;
+                                }
+                            };
                             if (That.Results.length != That.LimitRecord && Cursor) {
-                                if (That.filterOnOccurence(Cursor.value) &&
+                                if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
+                                    skipOrPush();
+                                }
+                                else if (That.filterOnOccurence(Cursor.value) &&
                                     That.checkForWhereConditionMatch(Cursor.value)) {
-                                    if (Skip == 0) {
-                                        That.Results.push(Cursor.value);
-                                    }
-                                    else {
-                                        --Skip;
-                                    }
+                                    skipOrPush();
                                 }
                                 Cursor.continue();
                             }
@@ -1223,16 +1228,21 @@ var JsStore;
                     _this.executeSkip = function () {
                         var Skip = this.SkipRecord, That = this;
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = e.target.result;
+                            var Cursor = e.target.result, skipOrPush = function () {
+                                if (Skip == 0) {
+                                    That.Results.push(Cursor.value);
+                                }
+                                else {
+                                    --Skip;
+                                }
+                            };
                             if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.value) &&
+                                if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
+                                    skipOrPush();
+                                }
+                                else if (That.filterOnOccurence(Cursor.value) &&
                                     That.checkForWhereConditionMatch(Cursor.value)) {
-                                    if (Skip == 0) {
-                                        That.Results.push(Cursor.value);
-                                    }
-                                    else {
-                                        --Skip;
-                                    }
+                                    skipOrPush();
                                 }
                                 Cursor.continue();
                             }
@@ -1243,7 +1253,10 @@ var JsStore;
                         this.CursorOpenRequest.onsuccess = function (e) {
                             var Cursor = e.target.result;
                             if (That.Results.length != That.LimitRecord && Cursor) {
-                                if (That.filterOnOccurence(Cursor.value) &&
+                                if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
+                                    That.Results.push(Cursor.value);
+                                }
+                                else if (That.filterOnOccurence(Cursor.value) &&
                                     That.checkForWhereConditionMatch(Cursor.value)) {
                                     That.Results.push(Cursor.value);
                                 }
@@ -1256,7 +1269,11 @@ var JsStore;
                         this.CursorOpenRequest.onsuccess = function (e) {
                             var Cursor = e.target.result;
                             if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.value) && That.checkForWhereConditionMatch(Cursor.value)) {
+                                if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
+                                    That.Results.push(Cursor.value);
+                                }
+                                else if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
                                     That.Results.push(Cursor.value);
                                 }
                                 Cursor.continue();
@@ -1311,7 +1328,10 @@ var JsStore;
                                 var Cursor = e.target.result;
                                 if (Cursor) {
                                     if (RecordSkipped && That.Results.length != That.LimitRecord) {
-                                        if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                        if (!That.CheckFlag) {
+                                            That.Results.push(Cursor.value);
+                                        }
+                                        else if (That.checkForWhereConditionMatch(Cursor.value)) {
                                             That.Results.push(Cursor.value);
                                         }
                                         Cursor.continue();
@@ -1328,7 +1348,10 @@ var JsStore;
                                 var Cursor = e.target.result;
                                 if (Cursor) {
                                     if (RecordSkipped) {
-                                        if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                        if (!That.CheckFlag) {
+                                            That.Results.push(Cursor.value);
+                                        }
+                                        else if (That.checkForWhereConditionMatch(Cursor.value)) {
                                             That.Results.push(Cursor.value);
                                         }
                                         Cursor.continue();
@@ -1343,7 +1366,10 @@ var JsStore;
                             CursorOpenRequest.onsuccess = function (e) {
                                 var Cursor = e.target.result;
                                 if (Cursor && That.Results.length != That.LimitRecord) {
-                                    if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                    if (!That.CheckFlag) {
+                                        That.Results.push(Cursor.value);
+                                    }
+                                    else if (That.checkForWhereConditionMatch(Cursor.value)) {
                                         That.Results.push(Cursor.value);
                                     }
                                     Cursor.continue();
@@ -2178,11 +2204,17 @@ var JsStore;
                             That.onErrorOccured(e);
                         };
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = e.target.result;
+                            var Cursor = e.target.result, updateValueInternal = function () {
+                                Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
+                                ++That.RowAffected;
+                            };
                             if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.value) && That.checkForWhereConditionMatch(Cursor.value)) {
-                                    Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
-                                    ++That.RowAffected;
+                                if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
+                                    updateValueInternal();
+                                }
+                                else if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                                    updateValueInternal();
                                 }
                                 Cursor.continue();
                             }
@@ -2478,11 +2510,16 @@ var JsStore;
                             That.onErrorOccured(e);
                         };
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = e.target.result;
+                            var Cursor = e.target.result, deleteValue = function () {
+                                Cursor.delete();
+                                ++That.RowAffected;
+                            };
                             if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.value) && That.checkForWhereConditionMatch(Cursor.value)) {
-                                    Cursor.delete();
-                                    ++That.RowAffected;
+                                if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
+                                    deleteValue();
+                                }
+                                else if (That.filterOnOccurence(Cursor.value) && That.checkForWhereConditionMatch(Cursor.value)) {
+                                    deleteValue();
                                 }
                                 Cursor.continue();
                             }
@@ -2511,12 +2548,11 @@ var JsStore;
                         value = op ? value[op] : value;
                         CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
                         CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = e.target.result;
+                            var Cursor = e.target.result, deleteValue = function () {
+                                Cursor.delete();
+                                ++That.RowAffected;
+                            };
                             if (Cursor) {
-                                var deleteValue = function () {
-                                    Cursor.delete();
-                                    ++That.RowAffected;
-                                };
                                 if (!That.CheckFlag) {
                                     deleteValue();
                                 }
@@ -3478,4 +3514,4 @@ var KeyStore;
     };
 })(KeyStore || (KeyStore = {}));
 KeyStore.init();
-//# sourceMappingURL=JsStore-1.1.2.js.map
+//# sourceMappingURL=JsStore-1.1.3.js.map
