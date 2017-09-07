@@ -25,7 +25,7 @@ module JsStore {
                     this.Name = key.Name;
                 }
                 else {
-                    throw "Column Name is not defined for table:" + tableName;
+                    throwError("Column Name is not defined for table:" + tableName);
                 }
                 this.AutoIncrement = key.AutoIncrement != null ? key.AutoIncrement : false;
                 this.PrimaryKey = key.PrimaryKey != null ? key.PrimaryKey : false;

@@ -23,7 +23,7 @@ module JsStore {
         private executeCode = function () {
             if (!this.IsCodeExecuting && this.RequestQueue.length > 0) {
                 if (EnableLog) {
-                    console.log("request executing" + this.RequestQueue[0].Name)
+                    console.log("request executing : " + this.RequestQueue[0].Name)
                 }
                 this.IsCodeExecuting = true;
                 var Request = <IWebWorkerRequest>{
@@ -54,7 +54,7 @@ module JsStore {
             this.IsCodeExecuting = false;
             if (FinishedRequest) {
                 if (EnableLog) {
-                    console.log("request finished:" + FinishedRequest.Name);
+                    console.log("request finished : " + FinishedRequest.Name);
                 }
                 if (message.ErrorOccured) {
                     if (FinishedRequest.OnError) {

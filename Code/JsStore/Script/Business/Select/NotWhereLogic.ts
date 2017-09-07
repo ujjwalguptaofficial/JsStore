@@ -65,8 +65,8 @@ module JsStore {
                             CursorOpenRequest = this.ObjectStore.index(That.Query.Order.By).openCursor(null, OrderType);
                         }
                         else {
-                            Utils.getError(ErrorType.ColumnNotExist, true, { ColumnName: this.Query.Order.By });
-                            return false;
+                            var Error = Utils.getError(ErrorType.ColumnNotExist, { ColumnName: this.Query.Order.By });
+                            throwError(Error);
                         }
                     }
                     else {

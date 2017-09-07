@@ -15,7 +15,6 @@ module JsStore {
                     this.Query = query;
                     this.OnSuccess = onSuccess;
                     this.OnError = onError;
-                   
                     try {
                         this.Transaction = DbConnection.transaction([query.From], "readonly");
                         this.Transaction.oncomplete = function (e) {
@@ -30,12 +29,7 @@ module JsStore {
                         }
                     }
                     catch (ex) {
-                        if (ex.name == "NotFoundError") {
-                            Utils.getError(ErrorType.TableNotExist, true, { TableName: query.From });
-                        }
-                        else {
-                            console.warn(ex);
-                        }
+                        this.onExceptionOccured(ex,{ TableName: query.From })
                     }
                 }
 

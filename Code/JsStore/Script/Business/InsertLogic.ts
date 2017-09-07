@@ -80,8 +80,8 @@ module JsStore {
                         }
                     }
                     else {
-                        var Error = Utils.getError(ErrorType.TableNotExist, false, { TableName: query.Into })
-                        throw Error;
+                        var Error = Utils.getError(ErrorType.TableNotExist, { TableName: query.Into })
+                        throwError(Error);
                     }
                 }
                 catch (ex) {
@@ -108,12 +108,12 @@ module JsStore {
                                 //check not null schema
                                 if (column.NotNull && isNull(value[column.Name])) {
                                     That.ErrorOccured = true;
-                                    That.Error = Utils.getError(ErrorType.NullValue, false, { ColumnName: column.Name });
+                                    That.Error = Utils.getError(ErrorType.NullValue, { ColumnName: column.Name });
                                 }
                                 //check datatype
                                 else if (column.DataType && typeof value[column.Name] != column.DataType) {
                                     That.ErrorOccured = true;
-                                    That.Error = Utils.getError(ErrorType.BadDataType, false, { ColumnName: column.Name });
+                                    That.Error = Utils.getError(ErrorType.BadDataType, { ColumnName: column.Name });
                                 }
                                 checkAndModifyInternal(That.Table.Columns[Index++]);
                             };

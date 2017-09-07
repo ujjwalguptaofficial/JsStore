@@ -96,7 +96,7 @@ module JsStore {
                         });
                     }
                     else {
-                        var Error = Utils.getError(ErrorType.DbNotExist, true, { DbName: dbName });
+                        var Error = Utils.getError(ErrorType.DbNotExist, { DbName: dbName });
                         throw Error;
                     }
                 });
@@ -118,15 +118,10 @@ module JsStore {
 
             public insert = function (query: IInsert, onSuccess: Function, onError: Function) {
                 if (!Array.isArray(query.Values)) {
-                    throw "Value should be array :- supplied value is not array";
-                }
-                else if (query.Values.length > 0) {
-                    new Insert(query, onSuccess, onError);
+                    throwError("Value should be array :- supplied value is not array");
                 }
                 else {
-                    if (onError != null) {
-                        onError(Utils.getError(ErrorType.NoValueSupplied, true, null));
-                    }
+                    new Insert(query, onSuccess, onError);
                 }
             }
 

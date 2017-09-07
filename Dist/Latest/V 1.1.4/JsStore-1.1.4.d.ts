@@ -1,11 +1,7 @@
+/** JsStore.js - v1.1.4 - 07/09/2017
+ * https://github.com/ujjwalguptaofficial/JsStore
+ * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 declare module JsStore {
-    interface DbInfo {
-        DbName: string;
-        Table: {
-            Name: string;
-            Version: number;
-        };
-    }
     enum ErrorType {
         UndefinedColumn = "undefined_column",
         UndefinedValue = "undefined_value",
@@ -20,6 +16,20 @@ declare module JsStore {
         NextJoinNotExist = "next_join_not_exist",
         TableNotExist = "table_not_exist",
         DbNotExist = "db_not_exist",
+    }
+    enum Occurence {
+        First = "f",
+        Last = "l",
+        Any = "a",
+    }
+}
+declare module JsStore {
+    interface DbInfo {
+        DbName: string;
+        Table: {
+            Name: string;
+            Version: number;
+        };
     }
     interface ISelect {
         From: any;
@@ -111,12 +121,10 @@ declare module JsStore {
         ErrorDetails: any;
         ReturnedValue: any;
     }
-    enum Occurence {
-        First = "f",
-        Last = "l",
-        Any = "a",
-    }
+}
+declare module JsStore {
     var EnableLog: boolean, DbVersion: number;
+    var throwError: (error: any) => never;
 }
 declare module JsStore {
     interface IError {
@@ -124,7 +132,7 @@ declare module JsStore {
         Message: string;
     }
     class Utils {
-        static getError(errorType: ErrorType, logError: boolean, errorDetail: any): IError;
+        static getError(errorType: ErrorType, errorDetail: any): IError;
         static convertObjectintoLowerCase(obj: any): void;
         /**
          * determine and set the DataBase Type
@@ -354,7 +362,7 @@ declare module JsStore {
     module Business {
         module Select {
             class NotWhere extends BaseSelect {
-                protected executeWhereUndefinedLogic: () => boolean;
+                protected executeWhereUndefinedLogic: () => void;
             }
         }
     }

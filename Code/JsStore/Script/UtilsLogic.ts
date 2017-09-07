@@ -4,7 +4,7 @@ module JsStore {
         Message: string
     }
     export class Utils {
-        static getError(errorType: ErrorType, logError: boolean = false, errorDetail: any) {
+        static getError(errorType: ErrorType, errorDetail: any) {
             var Error: IError = {
                 Name: errorType,
                 Message: ''
@@ -30,9 +30,6 @@ module JsStore {
                 case ErrorType.DbNotExist: Error.Message = "Database '" + errorDetail['DbName'] + "' does not exist";
                     break;
                 default: console.error('the error type is not defined');
-            }
-            if (logError) {
-                console.error("JsStore Error :- " + Error.Message);
             }
             return Error;
         }
@@ -60,7 +57,7 @@ module JsStore {
                 (self as any).IDBKeyRange = (self as any).IDBKeyRange || (self as any).webkitIDBKeyRange || (self as any).msIDBKeyRange
             }
             else {
-                throw 'Your browser doesnot support IndexedDb';
+                throwError('Your browser doesnot support IndexedDb');
             }
         }
     }

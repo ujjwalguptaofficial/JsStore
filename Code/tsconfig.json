@@ -5,7 +5,7 @@
         "removeComments": false,
         "sourceMap": true,
         "inlineSources": true,
-        "out": "outputfile/JsStore-1.1.3.js",
+        "out": "outputfile/JsStore-1.1.4.js",
         "target": "es5",
         "preserveConstEnums": true,
         "declaration": true
@@ -15,6 +15,8 @@
         "License.ts",
         //JsStore
         // common files
+        "JsStore/Script/enums.ts",
+        "JsStore/Script/interfaces.ts",
         "JsStore/Script/CommonLogic.ts",
         "JsStore/Script/UtilsLogic.ts",
         "JsStore/Script/HelperLogic.ts",

@@ -13,11 +13,11 @@ module JsStore {
                     super();
                     try {
                         var That = this;
+                        this.OnError = onError;
                         this.checkSchema(query.Set, query.In);
                         if (!this.ErrorOccured) {
                             this.Query = query;
                             this.OnSuccess = onSuccess;
-                            this.OnError = onError;
                             this.Transaction = DbConnection.transaction([query.In], "readwrite");
                             this.ObjectStore = this.Transaction.objectStore(query.In);
                             var That = this;
@@ -54,18 +54,18 @@ module JsStore {
                                         //check not null schema
                                         if (column.NotNull && isNull(value)) {
                                             That.ErrorOccured = true;
-                                            That.Error = Utils.getError(ErrorType.NullValue, false, { ColumnName: column.Name });
+                                            That.Error = Utils.getError(ErrorType.NullValue, { ColumnName: column.Name });
                                         }
 
                                         //check datatype
                                         if (column.DataType && typeof value != column.DataType) {
                                             That.ErrorOccured = true;
-                                            That.Error = Utils.getError(ErrorType.BadDataType, false, { ColumnName: column.Name });
+                                            That.Error = Utils.getError(ErrorType.BadDataType, { ColumnName: column.Name });
                                         }
                                     };
                                     executeCheck(suppliedValue[column.Name]);
-                                    return true;
                                 }
+                                return true;
                             }
                             else {
                                 return false;
@@ -73,7 +73,7 @@ module JsStore {
                         });
                     }
                     else {
-                        var Error = Utils.getError(ErrorType.TableNotExist, false, { TableName: tableName });
+                        var Error = Utils.getError(ErrorType.TableNotExist, { TableName: tableName });
                         throw Error;
                     }
                 }

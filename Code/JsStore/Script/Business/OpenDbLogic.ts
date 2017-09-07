@@ -40,9 +40,8 @@ module JsStore {
                     };
                 }
                 else {
-                    if (onError != null) {
-                        onError(Utils.getError(ErrorType.DbNotExist, true, { DbName: ActiveDataBase.Name }));
-                    }
+                    var Error = "Database name is not supplied.";
+                    throwError(Error);
                 }
             }
         }

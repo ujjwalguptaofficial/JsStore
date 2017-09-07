@@ -78,8 +78,8 @@ module JsStore {
                             }
                             else {
                                 this.ErrorOccured = true;
-                                this.Error = Utils.getError(ErrorType.ColumnNotExist, true, { ColumnName: Column });
-                                this.onErrorOccured(this.Error, true);
+                                this.Error = Utils.getError(ErrorType.ColumnNotExist, { ColumnName: Column });
+                                throwError(this.Error);
                             }
                         }
                         break;
