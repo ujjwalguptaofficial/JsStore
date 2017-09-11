@@ -3,27 +3,37 @@ module JsStore {
         export module Count {
             export class Where extends Like {
                 private executeRequest = function (column, value, op) {
-                    var That = this,
-                        CursorOpenRequest;
+                    var That = this;
                     value = op ? value[op] : value;
-                    CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
-
-                    CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                        if (Cursor) {
-                            if (!That.CheckFlag) {
-                                ++That.ResultCount;
-                            }
-                            else if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                ++That.ResultCount;
-                            }
-                            Cursor.continue();
+                    if (!That.CheckFlag && this.ObjectStore.count) {
+                        var CountRequest = this.ObjectStore.index(column).count(this.getKeyRange(value, op));
+                        CountRequest.onsuccess = function () {
+                            That.ResultCount = CountRequest.result;
+                        }
+                        CountRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
                         }
                     }
+                    else {
+                        var CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
+                        CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            if (Cursor) {
+                                if (!That.CheckFlag) {
+                                    ++That.ResultCount;
+                                }
+                                else if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                    ++That.ResultCount;
+                                }
+                                Cursor.continue();
+                            }
+                        }
 
-                    CursorOpenRequest.onerror = function (e) {
-                        That.ErrorOccured = true;
-                        That.onErrorOccured(e);
+                        CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        }
                     }
                 }
 

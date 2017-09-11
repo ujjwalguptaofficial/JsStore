@@ -88,12 +88,6 @@ module JsStore {
         Column: string
     }
 
-    export enum ConnectionStatus {
-        Connected = "connected",
-        Closed = "closed",
-        NotStarted = "not_started"
-    }
-
     export interface JsStoreStatus {
         ConStatus: ConnectionStatus,
         LastError: string

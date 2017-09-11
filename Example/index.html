@@ -1,0 +1,196 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>JsStore Example</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="scripts/jquery.js"></script>
+    <link rel="stylesheet" type="text/css" href="style/bootstrap.css" />
+    <script src="scripts/bootstrap.js"></script>
+    <link rel="stylesheet" href="style/font-awesome.min.css" />
+    <script src="Scripts/JsStore-1.1.4.min.js "></script>
+    <script>
+        var DbConnection;
+        window.onload = function () {
+            initiateDb();
+            $('#btnAddStudent').click(function () {
+                window.location.href = 'add.html';
+            })
+            $('#tblGrid tbody').on('click', '.edit', function () {
+                var StudentId = $(this).parents().eq(1).attr('itemid');
+                window.location.href = 'add.html?id=' + StudentId;
+            });
+            $('#tblGrid tbody').on('click', '.delete', function () {
+                var Result = confirm('Are you sure, you want to delete?');
+                if (Result) {
+                    var StudentId = $(this).parents().eq(1).attr('itemid');
+                    deleteData(StudentId);
+                }
+            });
+        };
+
+        function deleteData(studentId) {
+            DbConnection.delete({
+                From: 'Student',
+                Where: {
+                    Id: Number(studentId)
+                }
+            }, function (rowsDeleted) {
+                console.log(rowsDeleted + ' rows deleted');
+                if (rowsDeleted > 0) {
+                    showTableData();
+                }
+            }, function (error) {
+                alert(error.Message);
+            })
+        }
+
+        function initiateDb() {
+            var DbName = "Students";
+            JsStore.isDbExist(DbName, function (isExist) {
+                if (isExist) {
+                    DbConnection = new JsStore.Instance(DbName);
+                    onDbInitiated();
+                } else {
+                    var DataBase = getDatabase();
+                    DbConnection = new JsStore.Instance().createDb(DataBase);
+                    insertStudents();
+                    onDbInitiated();
+                }
+            });
+        }
+
+        function onDbInitiated() {
+            showTableData();
+        }
+
+        function insertStudents() {
+            var Students = getStudents();
+            DbConnection.insert({
+                Into: "Student",
+                Values: Students
+            }, function (rowsAdded) {
+
+            }, function (err) {
+                console.log(err);
+                alert('Error Occured while adding data')
+            })
+        }
+
+        function getDatabase() {
+            var TblStudent = {
+                Name: "Student",
+                Columns: [{
+                    Name: "Id",
+                    PrimaryKey: true,
+                    AutoIncrement: true
+                },
+                    {
+                        Name: "Name",
+                        NotNull: true,
+                        DataType: "string"
+                    },
+                    {
+                        Name: "Gender",
+                        DataType: "string",
+                        Default: 'male'
+                    },
+                    {
+                        Name: "Country",
+                        NotNull: true,
+                        DataType: "string"
+                    },
+                    {
+                        Name: "City",
+                        NotNull: true
+                    }
+                ]
+            }
+            var DataBase = {
+                Name: "Students",
+                Tables: [TblStudent]
+            }
+
+            return DataBase;
+        }
+
+
+
+
+        //This function refreshes the table
+        function showTableData() {
+            DbConnection.select({
+                From: "Student"
+            }, function (students) {
+                var HtmlString = "";
+                students.forEach(function (student) {
+                    HtmlString += "<tr ItemId=" + student.Id + "><td>" +
+                        student.Name + "</td><td>" +
+                        student.Gender + "</td><td>" +
+                        student.Country + "</td><td>" +
+                        student.City + "</td><td>" +
+                        "<a href='#' class='edit'>Edit</a></td>" +
+                        "<td><a href='#' class='delete''>Delete</a></td>";
+                }, function (error) {
+                    console.log(error);
+                })
+                $('#tblGrid tbody').html(HtmlString);
+            });
+        }
+
+        function getStudents() {
+            //Student Array
+            var Students = [{
+                Name: 'Alfreds',
+                Gender: 'male',
+                Country: 'Germany',
+                City: 'Berlin'
+            },
+                {
+                    Name: 'george',
+                    Gender: 'male',
+                    Country: 'America',
+                    City: 'xyx'
+                },
+                {
+                    Name: 'Berglunds',
+                    Gender: 'female',
+                    Country: 'Sweden',
+                    City: 'Luleå'
+                },
+                {
+                    Name: 'Eastern',
+                    Gender: 'male',
+                    Country: 'Canada',
+                    City: 'qwe'
+                },
+            ]
+            return Students;
+        }
+    </script>
+</head>
+<body>
+    <div class="row row-centered " style="margin-top:10px; ">
+        <div class="col-xs-12 col-sm-10 col-centered ">
+            <div style="text-align:center;">
+                <button id="btnAddStudent" class="btn btn-success"><i class="fa fa-plus" aria-hidden="true"></i> Add Student</button>
+            </div>
+            <table id="tblGrid" class="table table-hover ">
+                <caption style="text-align:center;padding:7px 0px 7px 0px;background:#4f4f86;color:white;font-family:cursive;font-size:18px; ">Student's Details</caption>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Gender</th>
+                        <th>Country</th>
+                        <th>City</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <link href="style/main.css " rel="stylesheet " type="text/css " />
+</body>
+</html>

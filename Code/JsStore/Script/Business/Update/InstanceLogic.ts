@@ -62,6 +62,10 @@ module JsStore {
                                             That.ErrorOccured = true;
                                             That.Error = Utils.getError(ErrorType.BadDataType, { ColumnName: column.Name });
                                         }
+                                        else if (column.AutoIncrement && typeof value != 'number') {
+                                            That.ErrorOccured = true;
+                                            That.Error = Utils.getError(ErrorType.BadDataType, { ColumnName: column.Name });
+                                        }
                                     };
                                     executeCheck(suppliedValue[column.Name]);
                                 }

@@ -20,4 +20,17 @@ module JsStore {
         Last = 'l',
         Any = 'a'
     };
+
+    export enum WebWorkerStatus {
+        Registered = "registerd",
+        Failed = "failed",
+        NotStarted = "not_started"
+    };
+
+    export enum ConnectionStatus {
+        Connected = "connected",
+        Closed = "closed",
+        NotStarted = "not_started",
+        IndexedDbUndefined = "indexeddb_undefined"
+    }
 }

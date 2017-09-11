@@ -19,6 +19,17 @@ declare module JsStore {
         Last = "l",
         Any = "a",
     }
+    enum WebWorkerStatus {
+        Registered = "registerd",
+        Failed = "failed",
+        NotStarted = "not_started",
+    }
+    enum ConnectionStatus {
+        Connected = "connected",
+        Closed = "closed",
+        NotStarted = "not_started",
+        IndexedDbUndefined = "indexeddb_undefined",
+    }
 }
 declare module JsStore {
     interface DbInfo {
@@ -98,11 +109,6 @@ declare module JsStore {
         Table: string;
         Column: string;
     }
-    enum ConnectionStatus {
-        Connected = "connected",
-        Closed = "closed",
-        NotStarted = "not_started",
-    }
     interface JsStoreStatus {
         ConStatus: ConnectionStatus;
         LastError: string;
@@ -120,7 +126,7 @@ declare module JsStore {
     }
 }
 declare module JsStore {
-    var EnableLog: boolean, DbVersion: number;
+    var EnableLog: boolean, DbVersion: number, Status: JsStoreStatus;
     var throwError: (error: any) => never;
 }
 declare module JsStore {
@@ -148,6 +154,7 @@ declare module JsStore {
     * @param {Function} callback
     */
     var isDbExist: (dbInfo: DbInfo, callback: Function) => void;
+    var isIndexedDbSupported: () => boolean;
     /**
     * get Db Version
     *
@@ -322,7 +329,7 @@ declare module JsStore {
 }
 declare module JsStore {
     module Business {
-        var DbConnection: any, ActiveDataBase: DataBase, Status: JsStoreStatus;
+        var DbConnection: any, ActiveDataBase: DataBase;
         class Main {
             OnSuccess: Function;
             constructor(onSuccess?: any);
@@ -581,11 +588,6 @@ declare module JsStore {
     }
 }
 declare module JsStore {
-    enum WebWorkerStatus {
-        Registered = "registerd",
-        Failed = "failed",
-        NotStarted = "not_started",
-    }
     var WorkerStatus: WebWorkerStatus, WorkerInstance: Worker;
     class CodeExecutionHelper {
         RequestQueue: Array<IWebWorkerRequest>;

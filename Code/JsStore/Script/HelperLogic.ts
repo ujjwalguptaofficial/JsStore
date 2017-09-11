@@ -6,16 +6,30 @@ module JsStore {
     * @param {Function} callback 
     */
     export var isDbExist = function (dbInfo: DbInfo, callback: Function) {
-        var DbName;
-        if (typeof dbInfo == 'string') {
-            getDbVersion(dbInfo, function (dbVersion) {
-                callback(Boolean(dbVersion));
-            });
+        if (isIndexedDbSupported()) {
+            var DbName;
+            if (typeof dbInfo == 'string') {
+                getDbVersion(dbInfo, function (dbVersion) {
+                    callback(Boolean(dbVersion));
+                });
+            }
+            else {
+                getDbVersion(dbInfo.DbName, function (dbVersion) {
+                    callback(dbInfo.Table.Version <= dbVersion)
+                });
+            }
         }
         else {
-            getDbVersion(dbInfo.DbName, function (dbVersion) {
-                callback(dbInfo.Table.Version <= dbVersion)
-            });
+            throw JsStore.Status.LastError;
+        }
+    }
+
+    export var isIndexedDbSupported = function () {
+        if (Status.ConStatus == ConnectionStatus.IndexedDbUndefined) {
+            return false;
+        }
+        else {
+            return true;
         }
     }
 

@@ -2,12 +2,7 @@
 module JsStore {
     export module Business {
         export var DbConnection,
-            ActiveDataBase: DataBase,
-            Status: JsStoreStatus = <JsStoreStatus>{
-                ConStatus: ConnectionStatus.NotStarted,
-                LastError: ""
-            };
-
+            ActiveDataBase: DataBase;
 
         export class Main {
             OnSuccess: Function;

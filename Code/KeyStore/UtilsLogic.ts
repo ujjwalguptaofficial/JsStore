@@ -21,7 +21,10 @@ module KeyStore {
                 (self as any).postMessage('message:WorkerFailed');
             }
             else {
-                throw 'Your browser doesnot support IndexedDb';
+                JsStore.Status = {
+                    ConStatus: JsStore.ConnectionStatus.IndexedDbUndefined,
+                    LastError: 'Your browser doesnot support IndexedDb'
+                }
             }
         }
     }

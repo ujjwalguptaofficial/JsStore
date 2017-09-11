@@ -1,9 +1,5 @@
 module JsStore {
-    export enum WebWorkerStatus {
-        Registered = "registerd",
-        Failed = "failed",
-        NotStarted = "not_started"
-    };
+    
     export var WorkerStatus: WebWorkerStatus = WebWorkerStatus.NotStarted,
         WorkerInstance: Worker;
     export class CodeExecutionHelper {

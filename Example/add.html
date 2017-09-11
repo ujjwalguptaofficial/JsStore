@@ -1,0 +1,169 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>JsStore Example</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="scripts/jquery.js"></script>
+    <link rel="stylesheet" type="text/css" href="style/bootstrap.css" />
+    <script src="scripts/bootstrap.js"></script>
+    <link rel="stylesheet" href="style/font-awesome.min.css" />
+    <script src="Scripts/JsStore-1.1.4.min.js "></script>
+    <script>
+        var DbConnection,
+            StudentId;
+        window.onload = function () {
+            initiateDb();
+        };
+
+        function initiateDb() {
+            var DbName = "Students";
+            JsStore.isDbExist(DbName, function (isExist) {
+                if (isExist) {
+                    DbConnection = new JsStore.Instance(DbName);
+                    onDbInitiated();
+                } else {
+                    window.location.href = "index.html";
+                }
+            });
+        }
+
+        function onDbInitiated() {
+            StudentId = getQsValueByName('id');
+            if (StudentId) {
+                DbConnection.select({
+                    From: 'Student',
+                    Where: {
+                        Id: Number(StudentId)
+                    }
+                }, function (results) {
+                    if (results.length > 0) {
+                        var Student = results[0];
+                        $('#txtName').val(Student.Name);
+                        $("input[name='Gender'][value=" + Student.Gender + "]").prop('checked', true);
+                        $('#txtCountry').val(Student.Country);
+                        $('#txtCity').val(Student.City)
+                    }
+                    else {
+                        alert('Invalid student id');
+                    }
+
+                }, function (error) {
+                    alert(error.Message);
+                })
+            }
+        }
+
+        function Submit() {
+            if (StudentId) {
+                updateStudent()
+            }
+            else {
+                addStudent();
+            }
+        }
+
+        function updateStudent() {
+            var Value = {
+                Name: $('#txtName').val(),
+                Gender: $("input[name='Gender']:checked").val(),
+                Country: $('#txtCountry').val(),
+                City: $('#txtCity').val()
+            };
+            DbConnection.update({
+                In: 'Student',
+                Set: Value,
+                Where: {
+                    Id: Number(StudentId)
+                }
+            }, function (rowsAffected) {
+                alert(rowsAffected + " rows Updated");
+                if (rowsAffected > 0) {
+                    window.location.href = "index.html";
+                }
+
+            }, function (error) {
+                alert(error.Message);
+            })
+        }
+
+        function addStudent() {
+            var Value = {
+                Name: $('#txtName').val(),
+                Gender: $("input[name='Gender']:checked").val(),
+                Country: $('#txtCountry').val(),
+                City: $('#txtCity').val()
+            };
+
+            DbConnection.insert({
+                Into: "Student",
+                Values: [Value]
+            }, function (rowsAdded) {
+                alert(rowsAdded + " rows Added");
+                window.location.href = "index.html";
+            }, function (error) {
+                alert(error.Message);
+            })
+
+        }
+    </script>
+</head>
+<body>
+    <div class="row row-centered">
+        <div class="col-xs-11 col-sm-8 col-centered">
+            <form class="form-horizontal" data-student-id="" role="form" style="margin-top:50px;">
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="txtName">Name:</label>
+                    <div class="col-sm-7">
+                        <input type="text" class="form-control" id="txtName" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="txtLastName">Gender:</label>
+                    <div class="col-sm-7">
+                        <label class="radio-inline"><input type="radio" value="male" name="Gender" />Male</label>
+                        <label class="radio-inline"><input type="radio" value="female" name="Gender" />FeMale</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="txtCountry">Country:</label>
+                    <div class="col-sm-7">
+                        <input type="text" class="form-control" id="txtCountry" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="txtCity">City:</label>
+                    <div class="col-sm-7">
+                        <input type="text" class="form-control" id="txtCity" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-12" style="text-align:center;margin-top:30px;">
+                        <button id="btnSubmit" type="button" onclick="Submit();" class="btn btn-primary" style="padding:9px 15px 9px 15px;">
+                            <i class="fa fa-check" aria-hidden="true"></i> <span>Submit</span>
+                        </button>
+                        <button id="btnCancel " type="button" class="btn btn-primary " style="padding:9px 15px 9px 15px;margin-left:10px; ">
+                            <i class="fa fa-times" aria-hidden="true"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <link href="style/main.css " rel="stylesheet " type="text/css " />
+    <script>
+        function getQsValueByName(name, url) {
+            if (!url) {
+                url = window.location.href;
+            }
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
+
+    </script>
+</body>
+</html>
