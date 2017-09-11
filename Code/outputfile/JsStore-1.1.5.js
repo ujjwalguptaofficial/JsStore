@@ -1991,10 +1991,7 @@ var JsStore;
                             CursorOpenRequest.onsuccess = function (e) {
                                 var Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (!That.CheckFlag) {
-                                        ++That.ResultCount;
-                                    }
-                                    else if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                    if (That.checkForWhereConditionMatch(Cursor.value)) {
                                         ++That.ResultCount;
                                     }
                                     Cursor.continue();
@@ -3559,4 +3556,4 @@ var KeyStore;
     };
 })(KeyStore || (KeyStore = {}));
 KeyStore.init();
-//# sourceMappingURL=JsStore-1.1.4.js.map
+//# sourceMappingURL=JsStore-1.1.5.js.map

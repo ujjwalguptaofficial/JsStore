@@ -20,10 +20,7 @@ module JsStore {
                         CursorOpenRequest.onsuccess = function (e) {
                             var Cursor: IDBCursorWithValue = (<any>e).target.result;
                             if (Cursor) {
-                                if (!That.CheckFlag) {
-                                    ++That.ResultCount;
-                                }
-                                else if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                if (That.checkForWhereConditionMatch(Cursor.value)) {
                                     ++That.ResultCount;
                                 }
                                 Cursor.continue();

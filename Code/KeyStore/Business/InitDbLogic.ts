@@ -3,7 +3,16 @@ module KeyStore {
         export class InitDb {
             constructor(dbName: string, tableName: string, onSuccess: Function, onError: Function) {
                 var That = this,
+                    DbRequest;
+                try {
                     DbRequest = self.indexedDB.open(dbName, 1);
+                }
+                catch (ex) {
+                    JsStore.Status = {
+                        ConStatus: JsStore.ConnectionStatus.IndexedDbUndefined,
+                        LastError: 'Your browser doesnot support IndexedDb'
+                    }
+                }
 
                 DbRequest.onerror = function (event) {
                     if (onError != null) {
