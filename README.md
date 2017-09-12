@@ -1,5 +1,3 @@
-[![TypeScript definitions on DefinitelyTyped](//definitelytyped.org/badges/standard.svg)](http://definitelytyped.org)
-
 # Overview
 
 JsStore is Sql Like IndexedDb Wrapper.It provides simple api to store, retrieve, delete, remove, and for other advanced Database functionalities.
@@ -18,7 +16,7 @@ JsStore is Sql Like IndexedDb Wrapper.It provides simple api to store, retrieve,
 * https://ujjwalguptaofficial.github.io/ShopStore/
 
 ## Note : - 
-Demos are created and managed by particular user. So it may be buggy or not working Properly.JsStore does not take responsibility of these demo projects.
+Demos are created and managed by particular user. So it may be buggy or not working Properly. JsStore does not take responsibility of these demo projects.
 
 # Website
 
