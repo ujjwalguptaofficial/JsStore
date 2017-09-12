@@ -23,14 +23,13 @@ module KeyStore {
                         var That = this;
                         setTimeout(function () {
                             That.checkConnectionAndExecuteLogic(request);
-                        }, 50);
+                        }, 100);
                     }
                     else if (Status.ConStatus == ConnectionStatus.Closed) {
                         var That = this;
-                        this.createDb(TableName);
-                        setTimeout(function () {
+                        this.createDb(TableName, function () {
                             That.checkConnectionAndExecuteLogic(request);
-                        }, 50);
+                        }, 100);
                     }
                 }
             }

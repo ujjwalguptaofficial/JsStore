@@ -150,11 +150,11 @@ declare module JsStore {
     /**
     * checks whether db exist or not
     *
-    * @param {string} dbName
+    * @param {DbInfo} dbInfo
     * @param {Function} callback
+    * @param {Function} errCallBack
     */
-    var isDbExist: (dbInfo: DbInfo, callback: Function) => void;
-    var isIndexedDbSupported: () => boolean;
+    var isDbExist: (dbInfo: DbInfo, callback: Function, errCallBack: Function) => void;
     /**
     * get Db Version
     *

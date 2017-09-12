@@ -149,11 +149,12 @@ var JsStore;
     /**
     * checks whether db exist or not
     *
-    * @param {string} dbName
+    * @param {DbInfo} dbInfo
     * @param {Function} callback
+    * @param {Function} errCallBack
     */
-    JsStore.isDbExist = function (dbInfo, callback) {
-        if (JsStore.isIndexedDbSupported()) {
+    JsStore.isDbExist = function (dbInfo, callback, errCallBack) {
+        if (JsStore.Status.ConStatus != JsStore.ConnectionStatus.IndexedDbUndefined) {
             var DbName;
             if (typeof dbInfo == 'string') {
                 JsStore.getDbVersion(dbInfo, function (dbVersion) {
@@ -167,15 +168,9 @@ var JsStore;
             }
         }
         else {
-            throw JsStore.Status.LastError;
-        }
-    };
-    JsStore.isIndexedDbSupported = function () {
-        if (JsStore.Status.ConStatus == JsStore.ConnectionStatus.IndexedDbUndefined) {
-            return false;
-        }
-        else {
-            return true;
+            if (errCallBack) {
+                errCallBack(JsStore.Status.LastError);
+            }
         }
     };
     /**
@@ -923,7 +918,7 @@ var JsStore;
                             var That = this;
                             setTimeout(function () {
                                 That.checkConnectionAndExecuteLogic(request);
-                            }, 50);
+                            }, 100);
                         }
                         else if (JsStore.Status.ConStatus == JsStore.ConnectionStatus.Closed) {
                             var That = this;
@@ -3331,17 +3326,14 @@ var KeyStore;
     (function (Business) {
         var InitDb = (function () {
             function InitDb(dbName, tableName, onSuccess, onError) {
-                var That = this, DbRequest;
-                try {
-                    DbRequest = self.indexedDB.open(dbName, 1);
-                }
-                catch (ex) {
-                    JsStore.Status = {
-                        ConStatus: JsStore.ConnectionStatus.IndexedDbUndefined,
-                        LastError: 'Your browser doesnot support IndexedDb'
-                    };
-                }
+                var That = this, DbRequest = self.indexedDB.open(dbName, 1);
                 DbRequest.onerror = function (event) {
+                    if (event.target.error.name == 'InvalidStateError') {
+                        JsStore.Status = {
+                            ConStatus: JsStore.ConnectionStatus.IndexedDbUndefined,
+                            LastError: 'IndexedDb is blocked'
+                        };
+                    }
                     if (onError != null) {
                         onError(event.target.error);
                     }
@@ -3404,14 +3396,13 @@ var KeyStore;
                             var That = this;
                             setTimeout(function () {
                                 That.checkConnectionAndExecuteLogic(request);
-                            }, 50);
+                            }, 100);
                         }
                         else if (Business.Status.ConStatus == KeyStore.ConnectionStatus.Closed) {
                             var That = this;
-                            this.createDb(KeyStore.TableName);
-                            setTimeout(function () {
+                            this.createDb(KeyStore.TableName, function () {
                                 That.checkConnectionAndExecuteLogic(request);
-                            }, 50);
+                            }, 100);
                         }
                     }
                 };

@@ -1,12 +1,14 @@
 module JsStore {
+
     /**
     * checks whether db exist or not
     * 
-    * @param {string} dbName 
+    * @param {DbInfo} dbInfo 
     * @param {Function} callback 
+    * @param {Function} errCallBack 
     */
-    export var isDbExist = function (dbInfo: DbInfo, callback: Function) {
-        if (isIndexedDbSupported()) {
+    export var isDbExist = function (dbInfo: DbInfo, callback: Function, errCallBack: Function) {
+        if (Status.ConStatus != ConnectionStatus.IndexedDbUndefined) {
             var DbName;
             if (typeof dbInfo == 'string') {
                 getDbVersion(dbInfo, function (dbVersion) {
@@ -20,16 +22,9 @@ module JsStore {
             }
         }
         else {
-            throw JsStore.Status.LastError;
-        }
-    }
-
-    export var isIndexedDbSupported = function () {
-        if (Status.ConStatus == ConnectionStatus.IndexedDbUndefined) {
-            return false;
-        }
-        else {
-            return true;
+            if (errCallBack) {
+                errCallBack(JsStore.Status.LastError);
+            }
         }
     }
 
