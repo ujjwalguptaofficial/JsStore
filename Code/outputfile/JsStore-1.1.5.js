@@ -53,7 +53,7 @@ var JsStore;
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
-    JsStore.EnableLog = false, JsStore.Status = {
+    JsStore.EnableLog = false, JsStore.DbVersion = 0, JsStore.Status = {
         ConStatus: JsStore.ConnectionStatus.NotStarted,
         LastError: ""
     };
@@ -291,14 +291,14 @@ var JsStore;
                     if (tableVersion == null) {
                         That.RequireCreation = true;
                     }
-                    else if (tableVersion != That.Version) {
+                    else if (tableVersion < That.Version) {
                         That.RequireDelete = true;
                     }
                 });
             };
             Table.prototype.setDbVersion = function (dbName) {
                 var That = this;
-                JsStore.DbVersion = JsStore.DbVersion ? (JsStore.DbVersion > That.Version ? JsStore.DbVersion : That.Version) : That.Version;
+                JsStore.DbVersion = JsStore.DbVersion > That.Version ? JsStore.DbVersion : That.Version;
                 //setting db version
                 KeyStore.set('JsStore_' + dbName + '_Db_Version', JsStore.DbVersion)
                     .set("JsStore_" + dbName + "_" + That.Name + "_Version", JsStore.DbVersion);

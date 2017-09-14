@@ -49,16 +49,16 @@ module JsStore {
                     if (tableVersion == null) {
                         That.RequireCreation = true;
                     }
-                    else if (tableVersion != That.Version) {
+                    //mark only table which has version greater than store version
+                    else if (tableVersion < That.Version) {
                         That.RequireDelete = true;
                     }
                 });
-
             }
 
             private setDbVersion(dbName: string) {
                 var That = this;
-                DbVersion = DbVersion ? (DbVersion > That.Version ? DbVersion : That.Version) : That.Version;
+                DbVersion = DbVersion > That.Version ? DbVersion : That.Version;
                 //setting db version
                 KeyStore.set('JsStore_' + dbName + '_Db_Version', DbVersion)
                     //setting table version
