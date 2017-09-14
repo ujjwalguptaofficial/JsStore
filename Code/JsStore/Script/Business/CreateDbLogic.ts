@@ -3,6 +3,7 @@ module JsStore {
         export class CreateDb {
             constructor(dbVersion, onSuccess: Function, onError: Function) {
                 var That = this,
+                    DbCreatedList = [],
                     DbRequest = indexedDB.open(ActiveDataBase.Name, dbVersion);
 
                 DbRequest.onerror = function (event) {
@@ -35,7 +36,7 @@ module JsStore {
                     }
 
                     if (onSuccess != null) {
-                        onSuccess();
+                        onSuccess(DbCreatedList);
                     }
                     //save dbSchema in keystore
                     KeyStore.set("JsStore_" + ActiveDataBase.Name + "_Schema", ActiveDataBase);
@@ -88,6 +89,7 @@ module JsStore {
                                 }
                             })
                         }
+                        DbCreatedList.push(item.Name);
                         //setting the table version
                         KeyStore.set("JsStore_" + ActiveDataBase.Name + "_" + item.Name + "_Version", item.Version);
                     }

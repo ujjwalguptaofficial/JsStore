@@ -31,7 +31,7 @@ module JsStore {
                 this.PrimaryKey = key.PrimaryKey != null ? key.PrimaryKey : false;
                 this.Unique = key.Unique != null ? key.Unique : false;
                 this.NotNull = key.NotNull != null ? key.NotNull : false;
-                this.DataType = key.DataType != null ? key.DataType : '';
+                this.DataType = key.DataType != null ? key.DataType : (key.AutoIncrement ? 'number' : null);
                 this.Default = key.Default;
             }
 

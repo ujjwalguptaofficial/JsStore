@@ -4,7 +4,7 @@ module JsStore {
         Status: JsStoreStatus = <JsStoreStatus>{
             ConStatus: ConnectionStatus.NotStarted,
             LastError: ""
-        };
+        }
 
     export var throwError = function (error) {
         throw error;

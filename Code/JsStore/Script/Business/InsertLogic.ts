@@ -104,19 +104,21 @@ module JsStore {
                     Index = 0,
                     checkAndModifyInternal = function (column) {
                         if (column) {
-                            var CheckNotNullAndDataType = function () {
-                                //check not null schema
-                                if (column.NotNull && isNull(value[column.Name])) {
-                                    That.ErrorOccured = true;
-                                    That.Error = Utils.getError(ErrorType.NullValue, { ColumnName: column.Name });
-                                }
-                                //check datatype
-                                else if (column.DataType && typeof value[column.Name] != column.DataType) {
-                                    That.ErrorOccured = true;
-                                    That.Error = Utils.getError(ErrorType.BadDataType, { ColumnName: column.Name });
-                                }
-                                checkAndModifyInternal(That.Table.Columns[Index++]);
-                            };
+                            var onValidationError = function (error: ErrorType, details: any) {
+                                That.ErrorOccured = true;
+                                That.Error = Utils.getError(error, details);
+                            },
+                                CheckNotNullAndDataType = function () {
+                                    //check not null schema
+                                    if (column.NotNull && isNull(value[column.Name])) {
+                                        onValidationError(ErrorType.NullValue, { ColumnName: column.Name });
+                                    }
+                                    //check datatype
+                                    else if (column.DataType && typeof value[column.Name] != column.DataType) {
+                                        onValidationError(ErrorType.BadDataType, { ColumnName: column.Name });
+                                    }
+                                    checkAndModifyInternal(That.Table.Columns[Index++]);
+                                };
                             if (!That.ErrorOccured) {
                                 //check auto increment scheme
                                 if (column.AutoIncrement) {

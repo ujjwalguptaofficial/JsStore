@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.1.5 - 11/09/2017
+/** JsStore.js - v1.1.5 - 14/09/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var JsStore;
@@ -246,7 +246,7 @@ var JsStore;
                 this.PrimaryKey = key.PrimaryKey != null ? key.PrimaryKey : false;
                 this.Unique = key.Unique != null ? key.Unique : false;
                 this.NotNull = key.NotNull != null ? key.NotNull : false;
-                this.DataType = key.DataType != null ? key.DataType : '';
+                this.DataType = key.DataType != null ? key.DataType : (key.AutoIncrement ? 'number' : null);
                 this.Default = key.Default;
             }
             return Column;
@@ -548,7 +548,7 @@ var JsStore;
     (function (Business) {
         var CreateDb = (function () {
             function CreateDb(dbVersion, onSuccess, onError) {
-                var That = this, DbRequest = indexedDB.open(Business.ActiveDataBase.Name, dbVersion);
+                var That = this, DbCreatedList = [], DbRequest = indexedDB.open(Business.ActiveDataBase.Name, dbVersion);
                 DbRequest.onerror = function (event) {
                     if (onError != null) {
                         onError(event.target.error);
@@ -574,7 +574,7 @@ var JsStore;
                         JsStore.Status.LastError = "Connection aborted";
                     };
                     if (onSuccess != null) {
-                        onSuccess();
+                        onSuccess(DbCreatedList);
                     }
                     //save dbSchema in keystore
                     KeyStore.set("JsStore_" + Business.ActiveDataBase.Name + "_Schema", Business.ActiveDataBase);
@@ -623,6 +623,7 @@ var JsStore;
                                 }
                             });
                         }
+                        DbCreatedList.push(item.Name);
                         //setting the table version
                         KeyStore.set("JsStore_" + Business.ActiveDataBase.Name + "_" + item.Name + "_Version", item.Version);
                     }
@@ -773,15 +774,16 @@ var JsStore;
             Insert.prototype.checkAndModifyValue = function (value, callBack) {
                 var That = this, TableName = this.Table.Name, Index = 0, checkAndModifyInternal = function (column) {
                     if (column) {
-                        var CheckNotNullAndDataType = function () {
+                        var onValidationError = function (error, details) {
+                            That.ErrorOccured = true;
+                            That.Error = JsStore.Utils.getError(error, details);
+                        }, CheckNotNullAndDataType = function () {
                             //check not null schema
                             if (column.NotNull && JsStore.isNull(value[column.Name])) {
-                                That.ErrorOccured = true;
-                                That.Error = JsStore.Utils.getError(JsStore.ErrorType.NullValue, { ColumnName: column.Name });
+                                onValidationError(JsStore.ErrorType.NullValue, { ColumnName: column.Name });
                             }
                             else if (column.DataType && typeof value[column.Name] != column.DataType) {
-                                That.ErrorOccured = true;
-                                That.Error = JsStore.Utils.getError(JsStore.ErrorType.BadDataType, { ColumnName: column.Name });
+                                onValidationError(JsStore.ErrorType.BadDataType, { ColumnName: column.Name });
                             }
                             checkAndModifyInternal(That.Table.Columns[Index++]);
                         };
@@ -2405,6 +2407,10 @@ var JsStore;
                 Instance.prototype.checkSchema = function (suppliedValue, tableName) {
                     var CurrentTable = this.getTable(tableName), That = this;
                     if (CurrentTable) {
+                        var onValidationError = function (error, details) {
+                            That.ErrorOccured = true;
+                            That.Error = JsStore.Utils.getError(error, details);
+                        };
                         //loop through table column and find data is valid
                         CurrentTable.Columns.every(function (column) {
                             if (!That.ErrorOccured) {
@@ -2412,17 +2418,25 @@ var JsStore;
                                     var executeCheck = function (value) {
                                         //check not null schema
                                         if (column.NotNull && JsStore.isNull(value)) {
-                                            That.ErrorOccured = true;
-                                            That.Error = JsStore.Utils.getError(JsStore.ErrorType.NullValue, { ColumnName: column.Name });
+                                            onValidationError(JsStore.ErrorType.NullValue, { ColumnName: column.Name });
                                         }
                                         //check datatype
-                                        if (column.DataType && typeof value != column.DataType) {
-                                            That.ErrorOccured = true;
-                                            That.Error = JsStore.Utils.getError(JsStore.ErrorType.BadDataType, { ColumnName: column.Name });
-                                        }
-                                        else if (column.AutoIncrement && typeof value != 'number') {
-                                            That.ErrorOccured = true;
-                                            That.Error = JsStore.Utils.getError(JsStore.ErrorType.BadDataType, { ColumnName: column.Name });
+                                        if (column.DataType) {
+                                            var Type = typeof value;
+                                            if (Type != column.DataType) {
+                                                if (Type != 'object') {
+                                                    onValidationError(JsStore.ErrorType.BadDataType, { ColumnName: column.Name });
+                                                }
+                                                else {
+                                                    var AllowedProp = ['+', '-', '*', '/'];
+                                                    for (var prop in value) {
+                                                        if (AllowedProp.indexOf(prop) < 0) {
+                                                            onValidationError(JsStore.ErrorType.BadDataType, { ColumnName: column.Name });
+                                                        }
+                                                        break;
+                                                    }
+                                                }
+                                            }
                                         }
                                     };
                                     executeCheck(suppliedValue[column.Name]);
@@ -2436,7 +2450,7 @@ var JsStore;
                     }
                     else {
                         var Error = JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, { TableName: tableName });
-                        throw Error;
+                        JsStore.throwError(Error);
                     }
                 };
                 return Instance;
@@ -2729,14 +2743,14 @@ var JsStore;
             };
             this.executeCode = function () {
                 if (!this.IsCodeExecuting && this.RequestQueue.length > 0) {
-                    if (JsStore.EnableLog) {
-                        console.log("request executing : " + this.RequestQueue[0].Name);
-                    }
                     this.IsCodeExecuting = true;
-                    var Request = {
-                        Name: this.RequestQueue[0].Name,
-                        Query: this.RequestQueue[0].Query
+                    var FirstRequest = this.RequestQueue[0], Request = {
+                        Name: FirstRequest.Name,
+                        Query: FirstRequest.Query
                     };
+                    if (JsStore.EnableLog) {
+                        console.log("request executing : " + FirstRequest.Name);
+                    }
                     if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.Registered) {
                         this.executeCodeUsingWorker(Request);
                     }

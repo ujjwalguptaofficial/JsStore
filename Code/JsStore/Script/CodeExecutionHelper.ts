@@ -1,11 +1,10 @@
 module JsStore {
-    
+
     export var WorkerStatus: WebWorkerStatus = WebWorkerStatus.NotStarted,
         WorkerInstance: Worker;
     export class CodeExecutionHelper {
         RequestQueue: Array<IWebWorkerRequest> = [];
         IsCodeExecuting = false;
-
         protected prcoessExecutionOfCode = function (request: IWebWorkerRequest) {
             this.RequestQueue.push(request);
             if (EnableLog) {
@@ -18,13 +17,14 @@ module JsStore {
 
         private executeCode = function () {
             if (!this.IsCodeExecuting && this.RequestQueue.length > 0) {
-                if (EnableLog) {
-                    console.log("request executing : " + this.RequestQueue[0].Name)
-                }
                 this.IsCodeExecuting = true;
-                var Request = <IWebWorkerRequest>{
-                    Name: this.RequestQueue[0].Name,
-                    Query: this.RequestQueue[0].Query
+                var FirstRequest = this.RequestQueue[0],
+                    Request = <IWebWorkerRequest>{
+                        Name: FirstRequest.Name,
+                        Query: FirstRequest.Query
+                    }
+                if (EnableLog) {
+                    console.log("request executing : " + FirstRequest.Name)
                 }
                 if (WorkerStatus == WebWorkerStatus.Registered) {
                     this.executeCodeUsingWorker(Request);
@@ -137,6 +137,5 @@ module JsStore {
             }
 
         }
-
     }
 }

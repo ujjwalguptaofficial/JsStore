@@ -46,6 +46,10 @@ module JsStore {
                     var CurrentTable: Table = this.getTable(tableName),
                         That = this;
                     if (CurrentTable) {
+                        var onValidationError = function (error: ErrorType, details: any) {
+                            That.ErrorOccured = true;
+                            That.Error = Utils.getError(error, details);
+                        }
                         //loop through table column and find data is valid
                         CurrentTable.Columns.every(function (column: Column) {
                             if (!That.ErrorOccured) {
@@ -53,18 +57,26 @@ module JsStore {
                                     var executeCheck = function (value) {
                                         //check not null schema
                                         if (column.NotNull && isNull(value)) {
-                                            That.ErrorOccured = true;
-                                            That.Error = Utils.getError(ErrorType.NullValue, { ColumnName: column.Name });
+                                            onValidationError(ErrorType.NullValue, { ColumnName: column.Name });
                                         }
 
                                         //check datatype
-                                        if (column.DataType && typeof value != column.DataType) {
-                                            That.ErrorOccured = true;
-                                            That.Error = Utils.getError(ErrorType.BadDataType, { ColumnName: column.Name });
-                                        }
-                                        else if (column.AutoIncrement && typeof value != 'number') {
-                                            That.ErrorOccured = true;
-                                            That.Error = Utils.getError(ErrorType.BadDataType, { ColumnName: column.Name });
+                                        if (column.DataType) {
+                                            var Type = typeof value;
+                                            if (Type != column.DataType) {
+                                                if (Type != 'object') {
+                                                    onValidationError(ErrorType.BadDataType, { ColumnName: column.Name });
+                                                }
+                                                else {
+                                                    var AllowedProp = ['+', '-', '*', '/'];
+                                                    for (var prop in value) {
+                                                        if (AllowedProp.indexOf(prop) < 0) {
+                                                            onValidationError(ErrorType.BadDataType, { ColumnName: column.Name });
+                                                        }
+                                                        break;
+                                                    }
+                                                }
+                                            }
                                         }
                                     };
                                     executeCheck(suppliedValue[column.Name]);
@@ -78,7 +90,7 @@ module JsStore {
                     }
                     else {
                         var Error = Utils.getError(ErrorType.TableNotExist, { TableName: tableName });
-                        throw Error;
+                        throwError(Error);
                     }
                 }
             }
