@@ -1,6 +1,3 @@
-/** JsStore.js - v1.1.4 - 07/09/2017
- * https://github.com/ujjwalguptaofficial/JsStore
- * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 declare module JsStore {
     enum ErrorType {
         UndefinedColumn = "undefined_column",
@@ -21,6 +18,17 @@ declare module JsStore {
         First = "f",
         Last = "l",
         Any = "a",
+    }
+    enum WebWorkerStatus {
+        Registered = "registerd",
+        Failed = "failed",
+        NotStarted = "not_started",
+    }
+    enum ConnectionStatus {
+        Connected = "connected",
+        Closed = "closed",
+        NotStarted = "not_started",
+        IndexedDbUndefined = "indexeddb_undefined",
     }
 }
 declare module JsStore {
@@ -101,11 +109,6 @@ declare module JsStore {
         Table: string;
         Column: string;
     }
-    enum ConnectionStatus {
-        Connected = "connected",
-        Closed = "closed",
-        NotStarted = "not_started",
-    }
     interface JsStoreStatus {
         ConStatus: ConnectionStatus;
         LastError: string;
@@ -123,7 +126,7 @@ declare module JsStore {
     }
 }
 declare module JsStore {
-    var EnableLog: boolean, DbVersion: number;
+    var EnableLog: boolean, DbVersion: number, Status: JsStoreStatus;
     var throwError: (error: any) => never;
 }
 declare module JsStore {
@@ -147,10 +150,11 @@ declare module JsStore {
     /**
     * checks whether db exist or not
     *
-    * @param {string} dbName
+    * @param {DbInfo} dbInfo
     * @param {Function} callback
+    * @param {Function} errCallBack
     */
-    var isDbExist: (dbInfo: DbInfo, callback: Function) => void;
+    var isDbExist: (dbInfo: DbInfo, callback: Function, errCallBack: Function) => void;
     /**
     * get Db Version
     *
@@ -325,7 +329,7 @@ declare module JsStore {
 }
 declare module JsStore {
     module Business {
-        var DbConnection: any, ActiveDataBase: DataBase, Status: JsStoreStatus;
+        var DbConnection: any, ActiveDataBase: DataBase;
         class Main {
             OnSuccess: Function;
             constructor(onSuccess?: any);
@@ -584,11 +588,6 @@ declare module JsStore {
     }
 }
 declare module JsStore {
-    enum WebWorkerStatus {
-        Registered = "registerd",
-        Failed = "failed",
-        NotStarted = "not_started",
-    }
     var WorkerStatus: WebWorkerStatus, WorkerInstance: Worker;
     class CodeExecutionHelper {
         RequestQueue: Array<IWebWorkerRequest>;
@@ -610,7 +609,7 @@ import Column = Model.Column;
 import Table = Model.Table;
 declare module JsStore {
     class Instance extends CodeExecutionHelper {
-        constructor(dbName: any);
+        constructor(dbName?: any);
         /**
          * creates DataBase
          *
@@ -621,7 +620,7 @@ declare module JsStore {
          *
          * @memberOf Main
          */
-        createDb(dataBase: Model.IDataBase, onSuccess: Function, onError?: Function): this;
+        createDb(dataBase: Model.IDataBase, onSuccess?: Function, onError?: Function): this;
         /**
          * drop dataBase
          *

@@ -5,7 +5,7 @@ import Table = Model.Table;
 module JsStore {
 
     export class Instance extends CodeExecutionHelper {
-        constructor(dbName) {
+        constructor(dbName = null) {
             super();
             if (WorkerStatus == WebWorkerStatus.NotStarted) {
                 Utils.setDbType();
@@ -33,7 +33,7 @@ module JsStore {
          * 
          * @memberOf Main
          */
-        createDb(dataBase: Model.IDataBase, onSuccess: Function, onError: Function = null) {
+        createDb(dataBase: Model.IDataBase, onSuccess: Function = null, onError: Function = null) {
             this.prcoessExecutionOfCode(<IWebWorkerRequest>{
                 Name: 'create_db',
                 OnSuccess: onSuccess,
