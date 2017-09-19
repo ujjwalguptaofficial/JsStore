@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.1.6 - 19/09/2017
+/** JsStore.js - v1.1.7 - 20/09/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var JsStore;
@@ -512,15 +512,19 @@ var JsStore;
                             ;
                             break;
                     }
+                }, checkOr = function (column, value) {
+                    var OrData = Where[column];
+                    for (var prop in OrData) {
+                        if (value[prop] && value[prop] == OrData[prop]) {
+                            //skip everything when this matches
+                            return true;
+                        }
+                    }
                 };
                 for (var Column in Where) {
                     var ColumnValue = Where[Column];
                     if (Status) {
-                        var CompareValue = rowValue[Column];
-                        if (typeof ColumnValue == 'string' && ColumnValue != CompareValue) {
-                            Status = false;
-                        }
-                        else {
+                        if (typeof ColumnValue == 'object') {
                             for (var key in ColumnValue) {
                                 if (Status) {
                                     switch (key) {
@@ -542,6 +546,13 @@ var JsStore;
                                 else {
                                     break;
                                 }
+                            }
+                        }
+                        else {
+                            var CompareValue = rowValue[Column];
+                            if (ColumnValue != CompareValue) {
+                                Status = false;
+                                break;
                             }
                         }
                     }
@@ -1440,11 +1451,8 @@ var JsStore;
                             if (!this.ErrorOccured) {
                                 if (this.ObjectStore.indexNames.contains(Column)) {
                                     var Value = this.Query.Where[Column];
-                                    if (typeof Value == 'string') {
-                                        this.executeRequest(Column, Value);
-                                    }
-                                    else {
-                                        this.CheckFlag = Object.keys(Value).length > 1 || Object.keys(this.Query.Where).length > 1 ? true : false;
+                                    if (typeof Value == 'object') {
+                                        this.CheckFlag = Boolean(Object.keys(Value).length || Object.keys(this.Query.Where).length);
                                         if (Value.Like) {
                                             var FilterValue = Value.Like.split('%');
                                             if (FilterValue[1]) {
@@ -1482,6 +1490,10 @@ var JsStore;
                                         else {
                                             this.executeRequest(Column, Value);
                                         }
+                                    }
+                                    else {
+                                        this.CheckFlag = Boolean(Object.keys(this.Query.Where).length);
+                                        this.executeRequest(Column, Value);
                                     }
                                 }
                                 else {
@@ -2019,11 +2031,8 @@ var JsStore;
                             if (!this.ErrorOccured) {
                                 if (this.ObjectStore.indexNames.contains(Column)) {
                                     var Value = this.Query.Where[Column];
-                                    if (typeof Value == 'string') {
-                                        this.executeRequest(Column, Value);
-                                    }
-                                    else {
-                                        this.CheckFlag = Object.keys(Value).length > 1 || Object.keys(this.Query.Where).length > 1 ? true : false;
+                                    if (typeof Value == 'object') {
+                                        this.CheckFlag = Boolean(Object.keys(Value).length || Object.keys(this.Query.Where).length);
                                         if (Value.Like) {
                                             var FilterValue = Value.Like.split('%');
                                             if (FilterValue[1]) {
@@ -2061,6 +2070,10 @@ var JsStore;
                                         else {
                                             this.executeRequest(Column, Value);
                                         }
+                                    }
+                                    else {
+                                        this.CheckFlag = Boolean(Object.keys(this.Query.Where).length);
+                                        this.executeRequest(Column, Value);
                                     }
                                 }
                                 else {
@@ -2312,11 +2325,8 @@ var JsStore;
                             if (!this.ErrorOccured) {
                                 if (this.ObjectStore.indexNames.contains(Column)) {
                                     var Value = this.Query.Where[Column];
-                                    if (typeof Value == 'string') {
-                                        this.executeRequest(Column, Value);
-                                    }
-                                    else {
-                                        this.CheckFlag = Object.keys(Value).length > 1 || Object.keys(this.Query.Where).length > 1 ? true : false;
+                                    if (typeof Value == 'object') {
+                                        this.CheckFlag = Boolean(Object.keys(Value).length || Object.keys(this.Query.Where).length);
                                         if (Value.Like) {
                                             var FilterValue = Value.Like.split('%');
                                             if (FilterValue[1]) {
@@ -2354,6 +2364,10 @@ var JsStore;
                                         else {
                                             this.executeRequest(Column, Value);
                                         }
+                                    }
+                                    else {
+                                        this.CheckFlag = Boolean(Object.keys(this.Query.Where).length);
+                                        this.executeRequest(Column, Value);
                                     }
                                 }
                                 else {
@@ -2632,11 +2646,8 @@ var JsStore;
                             if (!this.ErrorOccured) {
                                 if (this.ObjectStore.indexNames.contains(Column)) {
                                     var Value = this.Query.Where[Column];
-                                    if (typeof Value == 'string') {
-                                        this.executeRequest(Column, Value);
-                                    }
-                                    else {
-                                        this.CheckFlag = Object.keys(Value).length > 1 || Object.keys(this.Query.Where).length > 1 ? true : false;
+                                    if (typeof Value == 'object') {
+                                        this.CheckFlag = Boolean(Object.keys(Value).length || Object.keys(this.Query.Where).length);
                                         if (Value.Like) {
                                             var FilterValue = Value.Like.split('%');
                                             if (FilterValue[1]) {
@@ -2674,6 +2685,10 @@ var JsStore;
                                         else {
                                             this.executeRequest(Column, Value);
                                         }
+                                    }
+                                    else {
+                                        this.CheckFlag = Boolean(Object.keys(this.Query.Where).length);
+                                        this.executeRequest(Column, Value);
                                     }
                                 }
                                 else {
@@ -3577,4 +3592,4 @@ var KeyStore;
     };
 })(KeyStore || (KeyStore = {}));
 KeyStore.init();
-//# sourceMappingURL=JsStore-1.1.6.js.map
+//# sourceMappingURL=JsStore-1.1.7.js.map

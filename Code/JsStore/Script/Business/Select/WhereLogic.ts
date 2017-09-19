@@ -104,11 +104,8 @@ module JsStore {
                         if (!this.ErrorOccured) {
                             if (this.ObjectStore.indexNames.contains(Column)) {
                                 var Value = this.Query.Where[Column];
-                                if (typeof Value == 'string') {
-                                    this.executeRequest(Column, Value);
-                                }
-                                else {
-                                    this.CheckFlag = Object.keys(Value).length > 1 || Object.keys(this.Query.Where).length > 1 ? true : false;
+                                if (typeof Value == 'object') {
+                                    this.CheckFlag = Boolean(Object.keys(Value).length || Object.keys(this.Query.Where).length);
                                     if (Value.Like) {
                                         var FilterValue = Value.Like.split('%');
                                         if (FilterValue[1]) {
@@ -146,6 +143,10 @@ module JsStore {
                                     else {
                                         this.executeRequest(Column, Value);
                                     }
+                                }
+                                else {
+                                    this.CheckFlag = Boolean(Object.keys(this.Query.Where).length);
+                                    this.executeRequest(Column, Value);
                                 }
                             }
                             else {

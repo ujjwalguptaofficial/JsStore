@@ -123,15 +123,20 @@ module JsStore {
                                 Status = false;
                             }; break;
                         }
-                    }
+                    },
+                    checkOr = function (column, value) {
+                        var OrData = Where[column];
+                        for (var prop in OrData) {
+                            if (value[prop] && value[prop] == OrData[prop]) {
+                                //skip everything when this matches
+                                return true;
+                            }
+                        }
+                    };
                 for (var Column in Where) {
                     var ColumnValue = Where[Column];
                     if (Status) {
-                        var CompareValue = rowValue[Column];
-                        if (typeof ColumnValue == 'string' && ColumnValue != CompareValue) {
-                            Status = false;
-                        }
-                        else {
+                        if (typeof ColumnValue == 'object') {
                             for (var key in ColumnValue) {
                                 if (Status) {
                                     switch (key) {
@@ -143,6 +148,7 @@ module JsStore {
                                         case '>=':
                                         case '<=':
                                             checkComparisionOp(Column, rowValue[Column], key); break;
+                                        // case 'Or': checkOr(Column, rowValue[Column]); break;
                                     }
                                 }
                                 else {
@@ -150,7 +156,13 @@ module JsStore {
                                 }
                             }
                         }
-
+                        else {
+                            var CompareValue = rowValue[Column];
+                            if (ColumnValue != CompareValue) {
+                                Status = false;
+                                break;
+                            }
+                        }
                     }
                     else {
                         break;
