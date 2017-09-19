@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.1.5 - 14/09/2017
+/** JsStore.js - v1.1.6 - 19/09/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var JsStore;
@@ -28,6 +28,8 @@ var JsStore;
         ErrorType["NextJoinNotExist"] = "next_join_not_exist";
         ErrorType["TableNotExist"] = "table_not_exist";
         ErrorType["DbNotExist"] = "db_not_exist";
+        ErrorType["IndexedDbUndefined"] = "indexeddb_undefined";
+        ErrorType["IndexedDbBlocked"] = "indexeddb_blocked";
     })(ErrorType = JsStore.ErrorType || (JsStore.ErrorType = {}));
     var Occurence;
     (function (Occurence) {
@@ -48,7 +50,7 @@ var JsStore;
         ConnectionStatus["Connected"] = "connected";
         ConnectionStatus["Closed"] = "closed";
         ConnectionStatus["NotStarted"] = "not_started";
-        ConnectionStatus["IndexedDbUndefined"] = "indexeddb_undefined";
+        ConnectionStatus["UnableToStart"] = "unable_to_start";
     })(ConnectionStatus = JsStore.ConnectionStatus || (JsStore.ConnectionStatus = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
@@ -154,7 +156,7 @@ var JsStore;
     * @param {Function} errCallBack
     */
     JsStore.isDbExist = function (dbInfo, callback, errCallBack) {
-        if (JsStore.Status.ConStatus != JsStore.ConnectionStatus.IndexedDbUndefined) {
+        if (JsStore.Status.ConStatus != JsStore.ConnectionStatus.UnableToStart) {
             var DbName;
             if (typeof dbInfo == 'string') {
                 JsStore.getDbVersion(dbInfo, function (dbVersion) {
@@ -169,7 +171,19 @@ var JsStore;
         }
         else {
             if (errCallBack) {
-                errCallBack(JsStore.Status.LastError);
+                var Error = {
+                    Name: JsStore.Status.LastError,
+                    Message: ''
+                };
+                switch (Error.Name) {
+                    case JsStore.ErrorType.IndexedDbBlocked:
+                        Error.Message = "IndexedDB is blocked";
+                        break;
+                    case JsStore.ErrorType.IndexedDbUndefined:
+                        Error.Message = "IndexedDB is not supported";
+                        break;
+                }
+                errCallBack(Error);
             }
         }
     };
@@ -3091,8 +3105,8 @@ var KeyStore;
             }
             else {
                 JsStore.Status = {
-                    ConStatus: JsStore.ConnectionStatus.IndexedDbUndefined,
-                    LastError: 'Your browser doesnot support IndexedDb'
+                    ConStatus: JsStore.ConnectionStatus.UnableToStart,
+                    LastError: JsStore.ErrorType.IndexedDbUndefined
                 };
             }
         };
@@ -3346,8 +3360,8 @@ var KeyStore;
                 DbRequest.onerror = function (event) {
                     if (event.target.error.name == 'InvalidStateError') {
                         JsStore.Status = {
-                            ConStatus: JsStore.ConnectionStatus.IndexedDbUndefined,
-                            LastError: 'IndexedDb is blocked'
+                            ConStatus: JsStore.ConnectionStatus.UnableToStart,
+                            LastError: JsStore.ErrorType.IndexedDbBlocked,
                         };
                     }
                     if (onError != null) {
@@ -3563,4 +3577,4 @@ var KeyStore;
     };
 })(KeyStore || (KeyStore = {}));
 KeyStore.init();
-//# sourceMappingURL=JsStore-1.1.5.js.map
+//# sourceMappingURL=JsStore-1.1.6.js.map

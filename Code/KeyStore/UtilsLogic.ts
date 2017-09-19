@@ -22,8 +22,8 @@ module KeyStore {
             }
             else {
                 JsStore.Status = {
-                    ConStatus: JsStore.ConnectionStatus.IndexedDbUndefined,
-                    LastError: 'Your browser doesnot support IndexedDb'
+                    ConStatus: JsStore.ConnectionStatus.UnableToStart,
+                    LastError: JsStore.ErrorType.IndexedDbUndefined
                 }
             }
         }

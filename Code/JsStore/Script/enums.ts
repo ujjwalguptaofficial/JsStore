@@ -12,7 +12,9 @@ module JsStore {
         BadDataType = "bad_data_type",
         NextJoinNotExist = "next_join_not_exist",
         TableNotExist = "table_not_exist",
-        DbNotExist = "db_not_exist"
+        DbNotExist = "db_not_exist",
+        IndexedDbUndefined = "indexeddb_undefined",
+        IndexedDbBlocked = "indexeddb_blocked"
     }
 
     export enum Occurence {
@@ -31,6 +33,6 @@ module JsStore {
         Connected = "connected",
         Closed = "closed",
         NotStarted = "not_started",
-        IndexedDbUndefined = "indexeddb_undefined"
+        UnableToStart = "unable_to_start"
     }
 }

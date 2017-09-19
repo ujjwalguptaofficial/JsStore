@@ -8,7 +8,7 @@ module JsStore {
     * @param {Function} errCallBack 
     */
     export var isDbExist = function (dbInfo: DbInfo, callback: Function, errCallBack: Function) {
-        if (Status.ConStatus != ConnectionStatus.IndexedDbUndefined) {
+        if (Status.ConStatus != ConnectionStatus.UnableToStart) {
             var DbName;
             if (typeof dbInfo == 'string') {
                 getDbVersion(dbInfo, function (dbVersion) {
@@ -23,7 +23,17 @@ module JsStore {
         }
         else {
             if (errCallBack) {
-                errCallBack(JsStore.Status.LastError);
+                var Error = <IError>{
+                    Name: Status.LastError,
+                    Message: ''
+                };
+                switch (Error.Name) {
+                    case ErrorType.IndexedDbBlocked:
+                        Error.Message = "IndexedDB is blocked"; break;
+                    case ErrorType.IndexedDbUndefined:
+                        Error.Message = "IndexedDB is not supported"; break;
+                }
+                errCallBack(Error);
             }
         }
     }

@@ -1,3 +1,6 @@
+/** JsStore.js - v1.1.6 - 19/09/2017
+ * https://github.com/ujjwalguptaofficial/JsStore
+ * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 declare module JsStore {
     enum ErrorType {
         UndefinedColumn = "undefined_column",
@@ -13,6 +16,8 @@ declare module JsStore {
         NextJoinNotExist = "next_join_not_exist",
         TableNotExist = "table_not_exist",
         DbNotExist = "db_not_exist",
+        IndexedDbUndefined = "indexeddb_undefined",
+        IndexedDbBlocked = "indexeddb_blocked",
     }
     enum Occurence {
         First = "f",
@@ -28,7 +33,7 @@ declare module JsStore {
         Connected = "connected",
         Closed = "closed",
         NotStarted = "not_started",
-        IndexedDbUndefined = "indexeddb_undefined",
+        UnableToStart = "unable_to_start",
     }
 }
 declare module JsStore {

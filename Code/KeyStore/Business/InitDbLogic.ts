@@ -8,8 +8,8 @@ module KeyStore {
                 DbRequest.onerror = function (event) {
                     if ((event as any).target.error.name == 'InvalidStateError') {
                         JsStore.Status = {
-                            ConStatus: JsStore.ConnectionStatus.IndexedDbUndefined,
-                            LastError: 'IndexedDb is blocked'
+                            ConStatus: JsStore.ConnectionStatus.UnableToStart,
+                            LastError: JsStore.ErrorType.IndexedDbBlocked,
                         }
                     }
                     if (onError != null) {
