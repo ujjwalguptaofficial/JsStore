@@ -100,67 +100,54 @@ module JsStore {
                 }
 
                 protected executeWhereLogic = function () {
-                    for (var Column in this.Query.Where) {
-                        if (!this.ErrorOccured) {
-                            if (this.ObjectStore.indexNames.contains(Column)) {
-                                var Value = this.Query.Where[Column];
-                                if (typeof Value == 'object') {
-                                    this.CheckFlag = Boolean(Object.keys(Value).length || Object.keys(this.Query.Where).length);
-                                    if (Value.Like) {
-                                        var FilterValue = Value.Like.split('%');
-                                        if (FilterValue[1]) {
-                                            if (FilterValue.length > 2) {
-                                                this.executeLikeLogic(Column, FilterValue[1], Occurence.Any);
-                                            }
-                                            else {
-                                                this.executeLikeLogic(Column, FilterValue[1], Occurence.Last);
-                                            }
+                    var Column = this.getObjectFirstKey(this.Query.Where);
+                    if (this.ObjectStore.indexNames.contains(Column)) {
+                        var Value = this.Query.Where[Column];
+                        if (typeof Value == 'object') {
+                            this.CheckFlag = Boolean(Object.keys(Value).length || Object.keys(this.Query.Where).length);
+                            var Key = this.getObjectFirstKey(Value);
+                            switch (Key) {
+                                case 'Like': {
+                                    var FilterValue = Value.Like.split('%');
+                                    if (FilterValue[1]) {
+                                        if (FilterValue.length > 2) {
+                                            this.executeLikeLogic(Column, FilterValue[1], Occurence.Any);
                                         }
                                         else {
-                                            this.executeLikeLogic(Column, FilterValue[0], Occurence.First);
+                                            this.executeLikeLogic(Column, FilterValue[1], Occurence.Last);
                                         }
-                                    }
-                                    else if (Value['In']) {
-                                        for (var i = 0; i < Value['In'].length; i++) {
-                                            this.executeRequest(Column, Value['In'][i])
-                                        }
-                                    }
-                                    else if (Value['-']) {
-                                        this.executeRequest(Column, Value, '-');
-                                    }
-                                    else if (Value['>']) {
-                                        this.executeRequest(Column, Value, '>');
-                                    }
-                                    else if (Value['<']) {
-                                        this.executeRequest(Column, Value, '<');
-                                    }
-                                    else if (Value['>=']) {
-                                        this.executeRequest(Column, Value, '>=');
-                                    }
-                                    else if (Value['<=']) {
-                                        this.executeRequest(Column, Value, '<=');
                                     }
                                     else {
-                                        this.executeRequest(Column, Value);
+                                        this.executeLikeLogic(Column, FilterValue[0], Occurence.First);
                                     }
-                                }
-                                else {
-                                    this.CheckFlag = Boolean(Object.keys(this.Query.Where).length);
-                                    this.executeRequest(Column, Value);
-                                }
-                            }
-                            else {
-                                this.ErrorOccured = true;
-                                this.Error = Utils.getError(ErrorType.ColumnNotExist, { ColumnName: Column });
-                                throwError(this.Error);
+                                }; break;
+                                case 'In': {
+                                    for (var i = 0; i < Value['In'].length; i++) {
+                                        this.executeRequest(Column, Value['In'][i])
+                                    }
+                                }; break;
+                                case '-':
+                                case '>':
+                                case '<':
+                                case '>=':
+                                case '<=':
+                                    this.executeRequest(Column, Value, Key);
+                                    break;
+                                default: this.executeRequest(Column, Value);
                             }
                         }
-                        break;
+                        else {
+                            this.CheckFlag = Boolean(Object.keys(this.Query.Where).length);
+                            this.executeRequest(Column, Value);
+                        }
+                    }
+                    else {
+                        this.ErrorOccured = true;
+                        this.Error = Utils.getError(ErrorType.ColumnNotExist, { ColumnName: Column });
+                        throwError(this.Error);
                     }
                 }
-
             }
         }
-
     }
 }

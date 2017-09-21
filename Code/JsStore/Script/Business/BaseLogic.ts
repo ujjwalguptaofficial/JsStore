@@ -86,7 +86,7 @@ module JsStore {
                             CompSymbol = Occurence.First;
                         }
                         value = value.toLowerCase();
-                        SymbolIndex = value.indexOf(CompValue.toLowerCase())
+                        SymbolIndex = value.indexOf(CompValue.toLowerCase());
                         switch (CompSymbol) {
                             case Occurence.Any: if (SymbolIndex < 0) {
                                 Status = false;
@@ -197,6 +197,12 @@ module JsStore {
                 }
                 return KeyRange;
 
+            }
+
+            protected getObjectFirstKey = function (value) {
+                for (var key in value) {
+                    return key;
+                }
             }
         }
     }

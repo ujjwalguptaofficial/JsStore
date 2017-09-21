@@ -1452,7 +1452,7 @@ var JsStore;
                         };
                     };
                     _this.executeWhereLogic = function () {
-                        var Column = this.getObjectFirstKey(Value)(this.Query.Where);
+                        var Column = this.getObjectFirstKey(this.Query.Where);
                         if (this.ObjectStore.indexNames.contains(Column)) {
                             var Value = this.Query.Where[Column];
                             if (typeof Value == 'object') {
@@ -2027,13 +2027,15 @@ var JsStore;
                         }
                     };
                     _this.executeWhereLogic = function () {
-                        for (var Column in this.Query.Where) {
-                            if (!this.ErrorOccured) {
-                                if (this.ObjectStore.indexNames.contains(Column)) {
-                                    var Value = this.Query.Where[Column];
-                                    if (typeof Value == 'object') {
-                                        this.CheckFlag = Boolean(Object.keys(Value).length || Object.keys(this.Query.Where).length);
-                                        if (Value.Like) {
+                        var Column = this.getObjectFirstKey(this.Query.Where);
+                        if (this.ObjectStore.indexNames.contains(Column)) {
+                            var Value = this.Query.Where[Column];
+                            if (typeof Value == 'object') {
+                                this.CheckFlag = Boolean(Object.keys(Value).length || Object.keys(this.Query.Where).length);
+                                var Key = this.getObjectFirstKey(Value);
+                                switch (Key) {
+                                    case 'Like':
+                                        {
                                             var FilterValue = Value.Like.split('%');
                                             if (FilterValue[1]) {
                                                 if (FilterValue.length > 2) {
@@ -2047,42 +2049,35 @@ var JsStore;
                                                 this.executeLikeLogic(Column, FilterValue[0], JsStore.Occurence.First);
                                             }
                                         }
-                                        else if (Value['In']) {
+                                        ;
+                                        break;
+                                    case 'In':
+                                        {
                                             for (var i = 0; i < Value['In'].length; i++) {
                                                 this.executeRequest(Column, Value['In'][i]);
                                             }
                                         }
-                                        else if (Value['-']) {
-                                            this.executeRequest(Column, Value, '-');
-                                        }
-                                        else if (Value['>']) {
-                                            this.executeRequest(Column, Value, '>');
-                                        }
-                                        else if (Value['<']) {
-                                            this.executeRequest(Column, Value, '<');
-                                        }
-                                        else if (Value['>=']) {
-                                            this.executeRequest(Column, Value, '>=');
-                                        }
-                                        else if (Value['<=']) {
-                                            this.executeRequest(Column, Value, '<=');
-                                        }
-                                        else {
-                                            this.executeRequest(Column, Value);
-                                        }
-                                    }
-                                    else {
-                                        this.CheckFlag = Boolean(Object.keys(this.Query.Where).length);
-                                        this.executeRequest(Column, Value);
-                                    }
-                                }
-                                else {
-                                    this.ErrorOccured = true;
-                                    this.Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, { ColumnName: Column });
-                                    JsStore.throwError(this.Error);
+                                        ;
+                                        break;
+                                    case '-':
+                                    case '>':
+                                    case '<':
+                                    case '>=':
+                                    case '<=':
+                                        this.executeRequest(Column, Value, Key);
+                                        break;
+                                    default: this.executeRequest(Column, Value);
                                 }
                             }
-                            break;
+                            else {
+                                this.CheckFlag = Boolean(Object.keys(this.Query.Where).length);
+                                this.executeRequest(Column, Value);
+                            }
+                        }
+                        else {
+                            this.ErrorOccured = true;
+                            this.Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, { ColumnName: Column });
+                            JsStore.throwError(this.Error);
                         }
                     };
                     return _this;
@@ -2321,13 +2316,15 @@ var JsStore;
                         };
                     };
                     _this.executeWhereLogic = function () {
-                        for (var Column in this.Query.Where) {
-                            if (!this.ErrorOccured) {
-                                if (this.ObjectStore.indexNames.contains(Column)) {
-                                    var Value = this.Query.Where[Column];
-                                    if (typeof Value == 'object') {
-                                        this.CheckFlag = Boolean(Object.keys(Value).length || Object.keys(this.Query.Where).length);
-                                        if (Value.Like) {
+                        var Column = this.getObjectFirstKey(this.Query.Where);
+                        if (this.ObjectStore.indexNames.contains(Column)) {
+                            var Value = this.Query.Where[Column];
+                            if (typeof Value == 'object') {
+                                this.CheckFlag = Boolean(Object.keys(Value).length || Object.keys(this.Query.Where).length);
+                                var Key = this.getObjectFirstKey(Value);
+                                switch (Key) {
+                                    case 'Like':
+                                        {
                                             var FilterValue = Value.Like.split('%');
                                             if (FilterValue[1]) {
                                                 if (FilterValue.length > 2) {
@@ -2341,42 +2338,35 @@ var JsStore;
                                                 this.executeLikeLogic(Column, FilterValue[0], JsStore.Occurence.First);
                                             }
                                         }
-                                        else if (Value['In']) {
+                                        ;
+                                        break;
+                                    case 'In':
+                                        {
                                             for (var i = 0; i < Value['In'].length; i++) {
                                                 this.executeRequest(Column, Value['In'][i]);
                                             }
                                         }
-                                        else if (Value['-']) {
-                                            this.executeRequest(Column, Value, '-');
-                                        }
-                                        else if (Value['>']) {
-                                            this.executeRequest(Column, Value, '>');
-                                        }
-                                        else if (Value['<']) {
-                                            this.executeRequest(Column, Value, '<');
-                                        }
-                                        else if (Value['>=']) {
-                                            this.executeRequest(Column, Value, '>=');
-                                        }
-                                        else if (Value['<=']) {
-                                            this.executeRequest(Column, Value, '<=');
-                                        }
-                                        else {
-                                            this.executeRequest(Column, Value);
-                                        }
-                                    }
-                                    else {
-                                        this.CheckFlag = Boolean(Object.keys(this.Query.Where).length);
-                                        this.executeRequest(Column, Value);
-                                    }
-                                }
-                                else {
-                                    this.ErrorOccured = true;
-                                    this.Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, { ColumnName: Column });
-                                    JsStore.throwError(this.Error);
+                                        ;
+                                        break;
+                                    case '-':
+                                    case '>':
+                                    case '<':
+                                    case '>=':
+                                    case '<=':
+                                        this.executeRequest(Column, Value, Key);
+                                        break;
+                                    default: this.executeRequest(Column, Value);
                                 }
                             }
-                            break;
+                            else {
+                                this.CheckFlag = Boolean(Object.keys(this.Query.Where).length);
+                                this.executeRequest(Column, Value);
+                            }
+                        }
+                        else {
+                            this.ErrorOccured = true;
+                            this.Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, { ColumnName: Column });
+                            JsStore.throwError(this.Error);
                         }
                     };
                     return _this;
@@ -3587,4 +3577,4 @@ var KeyStore;
     };
 })(KeyStore || (KeyStore = {}));
 KeyStore.init();
-//# sourceMappingURL=JsStore-1.1.7.js.map
+//# sourceMappingURL=JsStore-1.1.8.js.map
