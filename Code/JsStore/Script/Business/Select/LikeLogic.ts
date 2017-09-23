@@ -5,8 +5,7 @@ module JsStore {
                 CompSymbol: Occurence;
                 CompValue;
                 Column;
-                CheckFlag = false;
-
+                CompValueLength: Number;
                 private filterOnOccurence = function (value) {
                     var Found = false,
                         Value = value[this.Column].toLowerCase();
@@ -17,7 +16,7 @@ module JsStore {
                         case Occurence.First: if (Value.indexOf(this.CompValue) == 0) {
                             Found = true;
                         }; break;
-                        default: if (Value.lastIndexOf(this.CompValue) == Value.length - 1) {
+                        default: if (Value.lastIndexOf(this.CompValue) == Value.length - this.CompValueLength) {
                             Found = true;
                         };
                     }
@@ -26,86 +25,126 @@ module JsStore {
 
                 private executeSkipAndLimit = function () {
                     var Skip = this.SkipRecord,
-                        That = this;
-                    this.CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor: IDBCursorWithValue = (<any>e).target.result,
-                            skipOrPush = function () {
-                                if (Skip == 0) {
-                                    That.Results.push(Cursor.value);
-                                }
-                                else {
-                                    --Skip;
-                                }
-                            };
-                        if (That.Results.length != That.LimitRecord && Cursor) {
-                            if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
-                                skipOrPush();
+                        That = this,
+                        skipOrPush = function (value) {
+                            if (Skip == 0) {
+                                That.Results.push(value);
                             }
-                            else if (That.filterOnOccurence(Cursor.value) &&
-                                That.checkForWhereConditionMatch(Cursor.value)) {
-                                skipOrPush();
+                            else {
+                                --Skip;
                             }
-                            Cursor.continue();
+                        };
+                    if (!That.CheckFlag) {
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            if (That.Results.length != That.LimitRecord && Cursor) {
+                                if (That.filterOnOccurence(Cursor.value)) {
+                                    skipOrPush(Cursor.value);
+                                }
+                                Cursor.continue();
+                            }
+                        }
+                    }
+                    else {
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            if (That.Results.length != That.LimitRecord && Cursor) {
+                                if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                                    skipOrPush(Cursor.value);
+                                }
+                                Cursor.continue();
+                            }
                         }
                     }
                 }
 
                 private executeSkip = function () {
                     var Skip = this.SkipRecord,
-                        That = this;
-                    this.CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor: IDBCursorWithValue = (<any>e).target.result,
-                        skipOrPush = function () {
+                        That = this,
+                        skipOrPush = function (value) {
                             if (Skip == 0) {
-                                That.Results.push(Cursor.value);
+                                That.Results.push(value);
                             }
                             else {
                                 --Skip;
                             }
                         };
-                        if (Cursor) {
-                            if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
-                                skipOrPush();
+                    if (!That.CheckFlag) {
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            if (Cursor) {
+                                if (That.filterOnOccurence(Cursor.value)) {
+                                    skipOrPush((Cursor.value));
+                                }
+                                Cursor.continue();
                             }
-                            else if (That.filterOnOccurence(Cursor.value) &&
-                                That.checkForWhereConditionMatch(Cursor.value)) {
-                                skipOrPush();
+                        }
+                    }
+                    else {
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            if (Cursor) {
+                                if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                                    skipOrPush((Cursor.value));
+                                }
+                                Cursor.continue();
                             }
-                            Cursor.continue();
                         }
                     }
                 }
 
                 private executeLimit = function () {
                     var That = this;
-                    this.CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                        if (That.Results.length != That.LimitRecord && Cursor) {
-                            if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
-                                That.Results.push(Cursor.value);
-                            }
-                            else if (That.filterOnOccurence(Cursor.value) &&
-                                That.checkForWhereConditionMatch(Cursor.value)) {
+                    if (!That.CheckFlag) {
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            if (That.Results.length != That.LimitRecord && Cursor) {
+                                if (That.filterOnOccurence(Cursor.value)) {
                                     That.Results.push(Cursor.value);
+                                }
+                                Cursor.continue();
                             }
-                            Cursor.continue();
+                        }
+                    }
+                    else {
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            if (That.Results.length != That.LimitRecord && Cursor) {
+                                if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                                    That.Results.push(Cursor.value);
+                                }
+                                Cursor.continue();
+                            }
                         }
                     }
                 }
 
                 private executeSimple = function () {
                     var That = this;
-                    this.CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                        if (Cursor) {
-                            if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
-                                That.Results.push(Cursor.value);
-                            }
-                            else if (That.filterOnOccurence(Cursor.value) &&
-                                That.checkForWhereConditionMatch(Cursor.value)) {
+                    if (!That.CheckFlag) {
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            if (Cursor) {
+                                if (That.filterOnOccurence(Cursor.value)) {
                                     That.Results.push(Cursor.value);
+                                }
+                                Cursor.continue();
                             }
-                            Cursor.continue();
+                        }
+                    }
+                    else {
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            if (Cursor) {
+                                if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                                    That.Results.push(Cursor.value);
+                                }
+                                Cursor.continue();
+                            }
                         }
                     }
                 }
@@ -113,6 +152,7 @@ module JsStore {
                 protected executeLikeLogic = function (column, value, symbol: Occurence) {
                     var That = this;
                     this.CompValue = (<string>value).toLowerCase();
+                    this.CompValueLength = this.CompValue.length;
                     this.CompSymbol = symbol;
                     this.Column = column;
                     this.CursorOpenRequest = this.ObjectStore.index(column).openCursor();

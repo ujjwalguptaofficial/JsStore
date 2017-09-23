@@ -7,6 +7,7 @@ module JsStore {
                 Sorted: boolean = false;
                 SkipRecord;
                 LimitRecord;
+                CheckFlag = false;
             }
         }
     }

@@ -86,28 +86,34 @@ module JsStore {
                             CompSymbol = Occurence.First;
                         }
                         value = value.toLowerCase();
-                        SymbolIndex = value.indexOf(CompValue.toLowerCase());
+
                         switch (CompSymbol) {
-                            case Occurence.Any: if (SymbolIndex < 0) {
-                                Status = false;
-                            }; break;
-                            case Occurence.First: if (SymbolIndex > 0 || SymbolIndex < 0) {
-                                Status = false;
-                            }; break;
-                            default: if (SymbolIndex(CompValue) < value.length - 1) {
-                                Status = false;
-                            };
+                            case Occurence.Any:
+                                SymbolIndex = value.indexOf(CompValue.toLowerCase());
+                                if (SymbolIndex < 0) {
+                                    Status = false;
+                                }; break;
+                            case Occurence.First:
+                                SymbolIndex = value.indexOf(CompValue.toLowerCase());
+                                if (SymbolIndex > 0 || SymbolIndex < 0) {
+                                    Status = false;
+                                }; break;
+                            default:
+                                SymbolIndex = value.lastIndexOf(CompValue.toLowerCase());
+                                if (SymbolIndex < value.length - CompValue.length) {
+                                    Status = false;
+                                };
                         }
                     },
                     checkComparisionOp = function (column, value, symbol) {
                         var CompareValue = Where[column][symbol];
                         switch (symbol) {
                             //greater than
-                            case '>': if (CompareValue <= value) {
+                            case '>': if (value <= CompareValue) {
                                 Status = false;
                             }; break;
                             //less than
-                            case '<': if (CompareValue >= value) {
+                            case '<': if (value >= CompareValue) {
                                 Status = false;
                             }; break;
                             //less than equal
@@ -202,6 +208,55 @@ module JsStore {
             protected getObjectFirstKey = function (value) {
                 for (var key in value) {
                     return key;
+                }
+            }
+
+            protected goToWhereLogic = function () {
+                var Column = this.getObjectFirstKey(this.Query.Where);
+                if (this.ObjectStore.indexNames.contains(Column)) {
+                    var Value = this.Query.Where[Column];
+                    if (typeof Value == 'object') {
+                        this.CheckFlag = Boolean(Object.keys(Value).length > 1 || Object.keys(this.Query.Where).length > 1);
+                        var Key = this.getObjectFirstKey(Value);
+                        switch (Key) {
+                            case 'Like': {
+                                var FilterValue = Value.Like.split('%');
+                                if (FilterValue[1]) {
+                                    if (FilterValue.length > 2) {
+                                        this.executeLikeLogic(Column, FilterValue[1], Occurence.Any);
+                                    }
+                                    else {
+                                        this.executeLikeLogic(Column, FilterValue[1], Occurence.Last);
+                                    }
+                                }
+                                else {
+                                    this.executeLikeLogic(Column, FilterValue[0], Occurence.First);
+                                }
+                            }; break;
+                            case 'In': {
+                                for (var i = 0; i < Value['In'].length; i++) {
+                                    this.executeWhereLogic(Column, Value['In'][i])
+                                }
+                            }; break;
+                            case '-':
+                            case '>':
+                            case '<':
+                            case '>=':
+                            case '<=':
+                                this.executeWhereLogic(Column, Value, Key);
+                                break;
+                            default: this.executeWhereLogic(Column, Value);
+                        }
+                    }
+                    else {
+                        this.CheckFlag = Boolean(Object.keys(this.Query.Where).length > 1);
+                        this.executeWhereLogic(Column, Value);
+                    }
+                }
+                else {
+                    this.ErrorOccured = true;
+                    this.Error = Utils.getError(ErrorType.ColumnNotExist, { ColumnName: Column });
+                    throwError(this.Error);
                 }
             }
         }

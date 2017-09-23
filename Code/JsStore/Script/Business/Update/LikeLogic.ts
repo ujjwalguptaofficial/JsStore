@@ -5,7 +5,7 @@ module JsStore {
                 CompSymbol: Occurence;
                 CompValue;
                 Column;
-
+                CompValueLength: Number;
                 private filterOnOccurence = function (value) {
                     var Found = false,
                         Value = value[this.Column].toLowerCase();
@@ -16,7 +16,7 @@ module JsStore {
                         case Occurence.First: if (Value.indexOf(this.CompValue) == 0) {
                             Found = true;
                         }; break;
-                        default: if (Value.lastIndexOf(this.CompValue) == Value.length - 1) {
+                        default: if (Value.lastIndexOf(this.CompValue) == Value.length - this.CompValueLength) {
                             Found = true;
                         };
                     }
@@ -26,6 +26,7 @@ module JsStore {
                 protected executeLikeLogic = function (column, value, symbol: Occurence) {
                     var That = this;
                     this.CompValue = (<string>value).toLowerCase();
+                    this.CompValueLength = this.CompValue.length;
                     this.CompSymbol = symbol;
                     this.Column = column;
                     this.CursorOpenRequest = this.ObjectStore.index(column).openCursor();
@@ -33,21 +34,29 @@ module JsStore {
                         That.ErrorOccured = true;
                         That.onErrorOccured(e);
                     }
-                    this.CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor: IDBCursorWithValue = (<any>e).target.result,
-                            updateValueInternal = function () {
-                                Cursor.update(updateValue(That.Query.Set, Cursor.value));
-                                ++That.RowAffected;
-                            };
-                        if (Cursor) {
-                            if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
-                                updateValueInternal();
+                    if (!That.CheckFlag) {
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            if (Cursor) {
+                                if (That.filterOnOccurence(Cursor.value)) {
+                                    Cursor.update(updateValue(That.Query.Set, Cursor.value));
+                                    ++That.RowAffected;
+                                }
+                                Cursor.continue();
                             }
-                            else if (That.filterOnOccurence(Cursor.value) &&
-                                That.checkForWhereConditionMatch(Cursor.value)) {
-                                updateValueInternal();
+                        }
+                    }
+                    else {
+                        this.CursorOpenRequest.onsuccess = function (e) {
+                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            if (Cursor) {
+                                if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                                    Cursor.update(updateValue(That.Query.Set, Cursor.value));
+                                    ++That.RowAffected;
+                                }
+                                Cursor.continue();
                             }
-                            Cursor.continue();
                         }
                     }
                 }

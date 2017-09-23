@@ -22,14 +22,14 @@ module JsStore {
                         }
                         this.ObjectStore = this.Transaction.objectStore(query.From);
                         if (query.Where != undefined) {
-                            this.executeWhereLogic();
+                            this.goToWhereLogic();
                         }
                         else {
                             this.executeWhereUndefinedLogic();
                         }
                     }
                     catch (ex) {
-                        this.onExceptionOccured(ex,{ TableName: query.From })
+                        this.onExceptionOccured(ex, { TableName: query.From })
                     }
                 }
 

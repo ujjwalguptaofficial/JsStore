@@ -30,7 +30,7 @@ module JsStore {
                                 this.executeWhereUndefinedLogic();
                             }
                             else {
-                                this.executeWhereLogic();
+                                this.goToWhereLogic();
                             }
                         }
                         else {

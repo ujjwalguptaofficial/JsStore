@@ -275,6 +275,7 @@ declare module JsStore {
             protected getTable: (tableName: string) => Table;
             protected getKeyRange: (value: any, op: any) => IDBKeyRange;
             protected getObjectFirstKey: (value: any) => string;
+            protected goToWhereLogic: () => void;
         }
     }
 }
@@ -361,6 +362,7 @@ declare module JsStore {
                 Sorted: boolean;
                 SkipRecord: any;
                 LimitRecord: any;
+                CheckFlag: boolean;
             }
         }
     }
@@ -381,7 +383,7 @@ declare module JsStore {
                 CompSymbol: Occurence;
                 CompValue: any;
                 Column: any;
-                CheckFlag: boolean;
+                CompValueLength: Number;
                 private filterOnOccurence;
                 private executeSkipAndLimit;
                 private executeSkip;
@@ -396,8 +398,7 @@ declare module JsStore {
     module Business {
         module Select {
             class Where extends Like {
-                private executeRequest;
-                protected executeWhereLogic: () => void;
+                private executeWhereLogic;
             }
         }
     }
@@ -458,6 +459,7 @@ declare module JsStore {
                 CompSymbol: Occurence;
                 CompValue: any;
                 Column: any;
+                CompValueLength: Number;
                 private filterOnOccurence;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
             }
@@ -468,8 +470,7 @@ declare module JsStore {
     module Business {
         module Count {
             class Where extends Like {
-                private executeRequest;
-                protected executeWhereLogic: () => void;
+                private executeWhereLogic;
             }
         }
     }
@@ -511,6 +512,7 @@ declare module JsStore {
                 CompSymbol: Occurence;
                 CompValue: any;
                 Column: any;
+                CompValueLength: Number;
                 private filterOnOccurence;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
             }
@@ -521,8 +523,7 @@ declare module JsStore {
     module Business {
         module Update {
             class Where extends Like {
-                private executeRequest;
-                protected executeWhereLogic: () => void;
+                private executeWhereLogic;
             }
         }
     }
@@ -564,6 +565,7 @@ declare module JsStore {
                 CompSymbol: Occurence;
                 CompValue: any;
                 Column: any;
+                CompValueLength: Number;
                 private filterOnOccurence;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
             }
@@ -574,8 +576,7 @@ declare module JsStore {
     module Business {
         module Delete {
             class Where extends Like {
-                private executeRequest;
-                protected executeWhereLogic: () => void;
+                private executeWhereLogic;
             }
         }
     }

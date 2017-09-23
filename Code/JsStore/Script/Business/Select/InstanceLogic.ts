@@ -72,7 +72,7 @@ module JsStore {
                         (<any>this.Transaction).ontimeout = That.onTransactionCompleted;
                         this.ObjectStore = this.Transaction.objectStore(query.From);
                         if (query.Where != undefined) {
-                            this.executeWhereLogic();
+                            this.goToWhereLogic();
                         }
                         else {
                             this.executeWhereUndefinedLogic();
