@@ -10,6 +10,7 @@ module JsStore {
             Transaction: IDBTransaction;
             ObjectStore: IDBObjectStore;
             Query;
+            SendResultFlag: Boolean = true;
 
             protected onErrorOccured = function (e, customError = false) {
                 ++this.ErrorCount;
@@ -58,8 +59,6 @@ module JsStore {
             protected checkForWhereConditionMatch(rowValue) {
                 var Where = this.Query.Where,
                     Status = true;
-
-
                 var checkIn = function (column, value) {
                     var Values = Where[column].In;
                     for (var i = 0, length = Values.length; i < length; i++) {
@@ -129,15 +128,6 @@ module JsStore {
                                 Status = false;
                             }; break;
                         }
-                    },
-                    checkOr = function (column, value) {
-                        var OrData = Where[column];
-                        for (var prop in OrData) {
-                            if (value[prop] && value[prop] == OrData[prop]) {
-                                //skip everything when this matches
-                                return true;
-                            }
-                        }
                     };
                 for (var Column in Where) {
                     var ColumnValue = Where[Column];
@@ -154,7 +144,6 @@ module JsStore {
                                         case '>=':
                                         case '<=':
                                             checkComparisionOp(Column, rowValue[Column], key); break;
-                                        // case 'Or': checkOr(Column, rowValue[Column]); break;
                                     }
                                 }
                                 else {
@@ -173,7 +162,6 @@ module JsStore {
                     else {
                         break;
                     }
-
                 }
                 return Status;
             }
@@ -205,19 +193,25 @@ module JsStore {
 
             }
 
-            protected getObjectFirstKey = function (value) {
+            protected getObjectSecondKey = function (value) {
+                var IsSecond = false;
                 for (var key in value) {
-                    return key;
+                    if (IsSecond) {
+                        return key;
+                    }
+                    else {
+                        IsSecond = true;
+                    }
                 }
             }
 
             protected goToWhereLogic = function () {
-                var Column = this.getObjectFirstKey(this.Query.Where);
+                var Column = getObjectFirstKey(this.Query.Where);
                 if (this.ObjectStore.indexNames.contains(Column)) {
                     var Value = this.Query.Where[Column];
                     if (typeof Value == 'object') {
                         this.CheckFlag = Boolean(Object.keys(Value).length > 1 || Object.keys(this.Query.Where).length > 1);
-                        var Key = this.getObjectFirstKey(Value);
+                        var Key = getObjectFirstKey(Value);
                         switch (Key) {
                             case 'Like': {
                                 var FilterValue = Value.Like.split('%');

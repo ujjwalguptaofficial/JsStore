@@ -25,7 +25,6 @@ module JsStore {
         }
 
         export class BaseUpdate extends Base {
-            SendResultFlag: Boolean = true;
             CheckFlag = false;
         }
     }

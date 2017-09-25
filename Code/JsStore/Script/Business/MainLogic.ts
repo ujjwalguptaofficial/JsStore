@@ -2,7 +2,18 @@
 module JsStore {
     export module Business {
         export var DbConnection,
-            ActiveDataBase: DataBase;
+            ActiveDataBase: DataBase,
+            getPrimaryKey = function (tableName) {
+                var PrimaryKey = null;
+                ActiveDataBase.Tables.every(function (table) {
+                    if (table.Name == tableName) {
+                        PrimaryKey = table.PrimaryKey;
+                        return false;
+                    }
+                    return true;
+                });
+                return PrimaryKey;
+            };
 
         export class Main {
             OnSuccess: Function;
@@ -129,6 +140,47 @@ module JsStore {
                     new Select.Join(<ISelectJoin>query, onSuccess, onError);
                 }
                 else {
+                    // if (query.Where && query.Where.Or) {
+                    //     var OrInfo = {
+                    //         OrQuery: query.Where.Or,
+                    //         OnSucess: onSuccess,
+                    //         Results: [],
+                    //         Length: Object.keys(query.Where.Or).length
+                    //     },
+                    //         TmpQry = <ISelect>{
+                    //             From: query.From,
+                    //             Where: {}
+                    //         };
+                    //     onSuccess = function (results) {
+                    //         OrInfo.Results = OrInfo.Results.concat(results);
+                    //         var Key = getObjectFirstKey(OrInfo.OrQuery);
+                    //         if (Key != null) {
+                    //             var Value = OrInfo.OrQuery[Key];
+                    //             delete OrInfo.OrQuery[Key];
+                    //             TmpQry['Where'][Key] = Value;
+                    //             new Select.Instance(TmpQry, onSuccess, onError);
+                    //         }
+                    //         else {
+                    //             if (OrInfo.OnSucess) {
+                    //                 var removeDuplicates = function () {
+                    //                     var PrimKey = getPrimaryKey(TmpQry.From);
+                    //                     var newArray = [];
+                    //                     var lookupObject = {};
+                    //                     for (var i in OrInfo.Results) {
+                    //                         lookupObject[OrInfo.Results[i][PrimKey]] = OrInfo.Results[i];
+                    //                     }
+                    //                     for (i in lookupObject) {
+                    //                         newArray.push(lookupObject[i]);
+                    //                     }
+                    //                     OrInfo.Results = newArray;
+                    //                 };
+                    //                 removeDuplicates();
+                    //                 OrInfo.OnSucess(OrInfo.Results);
+                    //             }
+                    //         }
+                    //     }
+                    //     delete query.Where.Or;
+                    // }
                     new Select.Instance(query, onSuccess, onError);
                 }
             }

@@ -97,5 +97,4 @@ module JsStore {
     export var disableLog = function () {
         EnableLog = false;
     }
-
 }

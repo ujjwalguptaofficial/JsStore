@@ -58,9 +58,15 @@ var JsStore;
     JsStore.EnableLog = false, JsStore.DbVersion = 0, JsStore.Status = {
         ConStatus: JsStore.ConnectionStatus.NotStarted,
         LastError: ""
-    };
+    }, JsStore.TempResults = [];
     JsStore.throwError = function (error) {
         throw error;
+    };
+    JsStore.getObjectFirstKey = function (value) {
+        for (var key in value) {
+            return key;
+        }
+        return null;
     };
 })(JsStore || (JsStore = {}));
 var JsStore;
@@ -350,6 +356,7 @@ var JsStore;
                 this.ErrorOccured = false;
                 this.ErrorCount = 0;
                 this.RowAffected = 0;
+                this.SendResultFlag = true;
                 this.onErrorOccured = function (e, customError) {
                     if (customError === void 0) { customError = false; }
                     ++this.ErrorCount;
@@ -417,18 +424,24 @@ var JsStore;
                     }
                     return KeyRange;
                 };
-                this.getObjectFirstKey = function (value) {
+                this.getObjectSecondKey = function (value) {
+                    var IsSecond = false;
                     for (var key in value) {
-                        return key;
+                        if (IsSecond) {
+                            return key;
+                        }
+                        else {
+                            IsSecond = true;
+                        }
                     }
                 };
                 this.goToWhereLogic = function () {
-                    var Column = this.getObjectFirstKey(this.Query.Where);
+                    var Column = JsStore.getObjectFirstKey(this.Query.Where);
                     if (this.ObjectStore.indexNames.contains(Column)) {
                         var Value = this.Query.Where[Column];
                         if (typeof Value == 'object') {
                             this.CheckFlag = Boolean(Object.keys(Value).length > 1 || Object.keys(this.Query.Where).length > 1);
-                            var Key = this.getObjectFirstKey(Value);
+                            var Key = JsStore.getObjectFirstKey(Value);
                             switch (Key) {
                                 case 'Like':
                                     {
@@ -572,14 +585,6 @@ var JsStore;
                             }
                             ;
                             break;
-                    }
-                }, checkOr = function (column, value) {
-                    var OrData = Where[column];
-                    for (var prop in OrData) {
-                        if (value[prop] && value[prop] == OrData[prop]) {
-                            //skip everything when this matches
-                            return true;
-                        }
                     }
                 };
                 for (var Column in Where) {
@@ -988,6 +993,17 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
+        Business.getPrimaryKey = function (tableName) {
+            var PrimaryKey = null;
+            Business.ActiveDataBase.Tables.every(function (table) {
+                if (table.Name == tableName) {
+                    PrimaryKey = table.PrimaryKey;
+                    return false;
+                }
+                return true;
+            });
+            return PrimaryKey;
+        };
         var Main = (function () {
             function Main(onSuccess) {
                 if (onSuccess === void 0) { onSuccess = null; }
@@ -1106,6 +1122,47 @@ var JsStore;
                         new Business.Select.Join(query, onSuccess, onError);
                     }
                     else {
+                        // if (query.Where && query.Where.Or) {
+                        //     var OrInfo = {
+                        //         OrQuery: query.Where.Or,
+                        //         OnSucess: onSuccess,
+                        //         Results: [],
+                        //         Length: Object.keys(query.Where.Or).length
+                        //     },
+                        //         TmpQry = <ISelect>{
+                        //             From: query.From,
+                        //             Where: {}
+                        //         };
+                        //     onSuccess = function (results) {
+                        //         OrInfo.Results = OrInfo.Results.concat(results);
+                        //         var Key = getObjectFirstKey(OrInfo.OrQuery);
+                        //         if (Key != null) {
+                        //             var Value = OrInfo.OrQuery[Key];
+                        //             delete OrInfo.OrQuery[Key];
+                        //             TmpQry['Where'][Key] = Value;
+                        //             new Select.Instance(TmpQry, onSuccess, onError);
+                        //         }
+                        //         else {
+                        //             if (OrInfo.OnSucess) {
+                        //                 var removeDuplicates = function () {
+                        //                     var PrimKey = getPrimaryKey(TmpQry.From);
+                        //                     var newArray = [];
+                        //                     var lookupObject = {};
+                        //                     for (var i in OrInfo.Results) {
+                        //                         lookupObject[OrInfo.Results[i][PrimKey]] = OrInfo.Results[i];
+                        //                     }
+                        //                     for (i in lookupObject) {
+                        //                         newArray.push(lookupObject[i]);
+                        //                     }
+                        //                     OrInfo.Results = newArray;
+                        //                 };
+                        //                 removeDuplicates();
+                        //                 OrInfo.OnSucess(OrInfo.Results);
+                        //             }
+                        //         }
+                        //     }
+                        //     delete query.Where.Or;
+                        // }
                         new Business.Select.Instance(query, onSuccess, onError);
                     }
                 };
@@ -1160,7 +1217,6 @@ var JsStore;
                 function BaseSelect() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.Results = [];
-                    _this.SendResultFlag = true;
                     _this.Sorted = false;
                     _this.CheckFlag = false;
                     return _this;
@@ -1913,6 +1969,70 @@ var JsStore;
                             }
                         }
                     };
+                    _this.createtransactionForOrLogic = function (query) {
+                        var That = this;
+                        this.Query = query;
+                        try {
+                            this.Transaction = Business.DbConnection.transaction([query.From], "readonly");
+                            this.Transaction.oncomplete = function (e) {
+                                That.onTransactionCompleted();
+                            };
+                            this.Transaction.ontimeout = That.onTransactionCompleted;
+                            this.ObjectStore = this.Transaction.objectStore(query.From);
+                            if (query.Where) {
+                                this.goToWhereLogic();
+                            }
+                            else {
+                                this.executeWhereUndefinedLogic();
+                            }
+                        }
+                        catch (ex) {
+                            this.onExceptionOccured(ex, { TableName: query.From });
+                        }
+                    };
+                    _this.executeOrLogic = function (query) {
+                        this.OrInfo = {
+                            OrQuery: query.Where.Or,
+                            OnSucess: this.OnSuccess,
+                            Results: [],
+                            Length: Object.keys(query.Where.Or).length
+                        };
+                        this.TmpQry = {
+                            From: query.From,
+                            Where: {}
+                        };
+                        var onSuccess = function () {
+                            this.OrInfo.Results = this.OrInfo.Results.concat(this.Results);
+                            this.Results = [];
+                            var Key = JsStore.getObjectFirstKey(this.OrInfo.OrQuery);
+                            if (Key != null) {
+                                var Value = this.OrInfo.OrQuery[Key];
+                                delete this.OrInfo.OrQuery[Key];
+                                this.TmpQry['Where'][Key] = Value;
+                                this.createtransactionForOrLogic(this.TmpQry);
+                            }
+                            else {
+                                var Datas = this.OrInfo.Results;
+                                //remove extra data
+                                this.OrInfo.Results = undefined;
+                                var removeDuplicates = function () {
+                                    var PrimKey = Business.getPrimaryKey(query.From);
+                                    var newArray = [];
+                                    var lookupObject = {};
+                                    for (var i in Datas) {
+                                        lookupObject[Datas[i][PrimKey]] = Datas[i];
+                                    }
+                                    for (i in lookupObject) {
+                                        newArray.push(lookupObject[i]);
+                                    }
+                                    Datas = newArray;
+                                };
+                                removeDuplicates();
+                                this.OrInfo.OnSucess(Datas);
+                            }
+                        };
+                        this.OnSuccess = onSuccess;
+                    };
                     var That = _this;
                     _this.Query = query;
                     _this.OnSuccess = onSuccess;
@@ -1926,7 +2046,10 @@ var JsStore;
                         };
                         _this.Transaction.ontimeout = That.onTransactionCompleted;
                         _this.ObjectStore = _this.Transaction.objectStore(query.From);
-                        if (query.Where != undefined) {
+                        if (query.Where) {
+                            if (query.Where.Or) {
+                                _this.executeOrLogic(query);
+                            }
                             _this.goToWhereLogic();
                         }
                         else {
@@ -1955,7 +2078,6 @@ var JsStore;
                 function BaseCount() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.ResultCount = 0;
-                    _this.SendResultFlag = true;
                     _this.CheckFlag = false;
                     return _this;
                 }
@@ -2215,7 +2337,6 @@ var JsStore;
             __extends(BaseUpdate, _super);
             function BaseUpdate() {
                 var _this = _super !== null && _super.apply(this, arguments) || this;
-                _this.SendResultFlag = true;
                 _this.CheckFlag = false;
                 return _this;
             }
@@ -2494,7 +2615,6 @@ var JsStore;
                 __extends(BaseDelete, _super);
                 function BaseDelete() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
-                    _this.SendResultFlag = true;
                     _this.CheckFlag = false;
                     return _this;
                 }

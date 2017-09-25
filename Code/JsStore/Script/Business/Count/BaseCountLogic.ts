@@ -5,7 +5,6 @@ module JsStore {
                 ResultCount: number = 0;
                 SkipRecord;
                 LimitRecord;
-                SendResultFlag: Boolean = true;
                 CheckFlag = false;
             }
         }

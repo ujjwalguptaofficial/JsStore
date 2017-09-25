@@ -128,8 +128,9 @@ declare module JsStore {
     }
 }
 declare module JsStore {
-    var EnableLog: boolean, DbVersion: number, Status: JsStoreStatus;
+    var EnableLog: boolean, DbVersion: number, Status: JsStoreStatus, TempResults: Array<any>;
     var throwError: (error: any) => never;
+    var getObjectFirstKey: (value: any) => string;
 }
 declare module JsStore {
     interface IError {
@@ -258,6 +259,7 @@ declare module JsStore {
             Transaction: IDBTransaction;
             ObjectStore: IDBObjectStore;
             Query: any;
+            SendResultFlag: Boolean;
             protected onErrorOccured: (e: any, customError?: boolean) => void;
             protected onTransactionTimeout: (e: any) => void;
             protected onExceptionOccured: (ex: DOMException, info: any) => void;
@@ -274,7 +276,7 @@ declare module JsStore {
             protected checkForWhereConditionMatch(rowValue: any): boolean;
             protected getTable: (tableName: string) => Table;
             protected getKeyRange: (value: any, op: any) => IDBKeyRange;
-            protected getObjectFirstKey: (value: any) => string;
+            protected getObjectSecondKey: (value: any) => string;
             protected goToWhereLogic: () => void;
         }
     }
@@ -333,7 +335,7 @@ declare module JsStore {
 }
 declare module JsStore {
     module Business {
-        var DbConnection: any, ActiveDataBase: DataBase;
+        var DbConnection: any, ActiveDataBase: DataBase, getPrimaryKey: (tableName: any) => any;
         class Main {
             OnSuccess: Function;
             constructor(onSuccess?: any);
@@ -358,7 +360,6 @@ declare module JsStore {
         module Select {
             class BaseSelect extends Base {
                 Results: any[];
-                SendResultFlag: Boolean;
                 Sorted: boolean;
                 SkipRecord: any;
                 LimitRecord: any;
@@ -425,6 +426,8 @@ declare module JsStore {
         module Select {
             class Instance extends Where {
                 onTransactionCompleted: () => void;
+                private createtransactionForOrLogic;
+                private executeOrLogic;
                 constructor(query: ISelect, onSuccess: Function, onError: Function);
             }
         }
@@ -437,7 +440,6 @@ declare module JsStore {
                 ResultCount: number;
                 SkipRecord: any;
                 LimitRecord: any;
-                SendResultFlag: Boolean;
                 CheckFlag: boolean;
             }
         }
@@ -491,7 +493,6 @@ declare module JsStore {
             var updateValue: (suppliedValue: any, storedValue: any) => any;
         }
         class BaseUpdate extends Base {
-            SendResultFlag: Boolean;
             CheckFlag: boolean;
         }
     }
@@ -543,7 +544,6 @@ declare module JsStore {
     module Business {
         module Delete {
             class BaseDelete extends Base {
-                SendResultFlag: Boolean;
                 CheckFlag: boolean;
             }
         }
