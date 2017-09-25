@@ -993,17 +993,6 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        Business.getPrimaryKey = function (tableName) {
-            var PrimaryKey = null;
-            Business.ActiveDataBase.Tables.every(function (table) {
-                if (table.Name == tableName) {
-                    PrimaryKey = table.PrimaryKey;
-                    return false;
-                }
-                return true;
-            });
-            return PrimaryKey;
-        };
         var Main = (function () {
             function Main(onSuccess) {
                 if (onSuccess === void 0) { onSuccess = null; }
@@ -1122,47 +1111,6 @@ var JsStore;
                         new Business.Select.Join(query, onSuccess, onError);
                     }
                     else {
-                        // if (query.Where && query.Where.Or) {
-                        //     var OrInfo = {
-                        //         OrQuery: query.Where.Or,
-                        //         OnSucess: onSuccess,
-                        //         Results: [],
-                        //         Length: Object.keys(query.Where.Or).length
-                        //     },
-                        //         TmpQry = <ISelect>{
-                        //             From: query.From,
-                        //             Where: {}
-                        //         };
-                        //     onSuccess = function (results) {
-                        //         OrInfo.Results = OrInfo.Results.concat(results);
-                        //         var Key = getObjectFirstKey(OrInfo.OrQuery);
-                        //         if (Key != null) {
-                        //             var Value = OrInfo.OrQuery[Key];
-                        //             delete OrInfo.OrQuery[Key];
-                        //             TmpQry['Where'][Key] = Value;
-                        //             new Select.Instance(TmpQry, onSuccess, onError);
-                        //         }
-                        //         else {
-                        //             if (OrInfo.OnSucess) {
-                        //                 var removeDuplicates = function () {
-                        //                     var PrimKey = getPrimaryKey(TmpQry.From);
-                        //                     var newArray = [];
-                        //                     var lookupObject = {};
-                        //                     for (var i in OrInfo.Results) {
-                        //                         lookupObject[OrInfo.Results[i][PrimKey]] = OrInfo.Results[i];
-                        //                     }
-                        //                     for (i in lookupObject) {
-                        //                         newArray.push(lookupObject[i]);
-                        //                     }
-                        //                     OrInfo.Results = newArray;
-                        //                 };
-                        //                 removeDuplicates();
-                        //                 OrInfo.OnSucess(OrInfo.Results);
-                        //             }
-                        //         }
-                        //     }
-                        //     delete query.Where.Or;
-                        // }
                         new Business.Select.Instance(query, onSuccess, onError);
                     }
                 };
@@ -1219,6 +1167,30 @@ var JsStore;
                     _this.Results = [];
                     _this.Sorted = false;
                     _this.CheckFlag = false;
+                    _this.removeDuplicates = function () {
+                        var Datas = this.Results;
+                        //free results memory
+                        this.Results = undefined;
+                        var Key = this.getPrimaryKey(this.Query.From);
+                        var lookupObject = {};
+                        for (var i in Datas) {
+                            lookupObject[Datas[i][Key]] = Datas[i];
+                        }
+                        //free datas memory
+                        Datas = [];
+                        for (i in lookupObject) {
+                            Datas.push(lookupObject[i]);
+                        }
+                        this.Results = Datas;
+                    };
+                    _this.getPrimaryKey = function (tableName) {
+                        var PrimaryKey = this.getTable(tableName).PrimaryKey;
+                        return PrimaryKey ? PrimaryKey : this.getKeyPath();
+                    };
+                    _this.getKeyPath = function (tableName) {
+                        var Transaction = Business.DbConnection.transaction([tableName], "readonly"), ObjectStore = Transaction.objectStore(tableName);
+                        return ObjectStore.keyPath;
+                    };
                     return _this;
                 }
                 return BaseSelect;
@@ -1518,11 +1490,11 @@ var JsStore;
                 function Where() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeWhereLogic = function (column, value, op) {
-                        var That = this, CursorOpenRequest, executeSkipAndLimit = function () {
+                        var That = this, CursorOpenRequest, Cursor, executeSkipAndLimit = function () {
                             var RecordSkipped = false;
                             if (!That.CheckFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor = e.target.result;
+                                    Cursor = e.target.result;
                                     if (Cursor) {
                                         if (RecordSkipped && That.Results.length != That.LimitRecord) {
                                             That.Results.push(Cursor.value);
@@ -1537,7 +1509,7 @@ var JsStore;
                             }
                             else {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor = e.target.result;
+                                    Cursor = e.target.result;
                                     if (Cursor) {
                                         if (RecordSkipped && That.Results.length != That.LimitRecord) {
                                             if (That.checkForWhereConditionMatch(Cursor.value)) {
@@ -1556,7 +1528,7 @@ var JsStore;
                             var RecordSkipped = false;
                             if (!That.CheckFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor = e.target.result;
+                                    Cursor = e.target.result;
                                     if (Cursor) {
                                         if (RecordSkipped) {
                                             That.Results.push(Cursor.value);
@@ -1571,7 +1543,7 @@ var JsStore;
                             }
                             else {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor = e.target.result;
+                                    Cursor = e.target.result;
                                     if (Cursor) {
                                         if (RecordSkipped) {
                                             if (That.checkForWhereConditionMatch(Cursor.value)) {
@@ -1589,7 +1561,7 @@ var JsStore;
                         }, executeLimit = function () {
                             if (!That.CheckFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor = e.target.result;
+                                    Cursor = e.target.result;
                                     if (Cursor && That.Results.length != That.LimitRecord) {
                                         That.Results.push(Cursor.value);
                                         Cursor.continue();
@@ -1598,7 +1570,7 @@ var JsStore;
                             }
                             else {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor = e.target.result;
+                                    Cursor = e.target.result;
                                     if (Cursor && That.Results.length != That.LimitRecord && That.checkForWhereConditionMatch(Cursor.value)) {
                                         That.Results.push(Cursor.value);
                                         Cursor.continue();
@@ -1608,7 +1580,7 @@ var JsStore;
                         }, executeSimple = function () {
                             if (!That.CheckFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor = e.target.result;
+                                    Cursor = e.target.result;
                                     if (Cursor) {
                                         That.Results.push(Cursor.value);
                                         Cursor.continue();
@@ -1617,7 +1589,7 @@ var JsStore;
                             }
                             else {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor = e.target.result;
+                                    Cursor = e.target.result;
                                     if (Cursor) {
                                         if (That.checkForWhereConditionMatch(Cursor.value)) {
                                             That.Results.push(Cursor.value);
@@ -1629,6 +1601,10 @@ var JsStore;
                         };
                         value = op ? value[op] : value;
                         CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
+                        CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
                         if (this.SkipRecord && this.LimitRecord) {
                             executeSkipAndLimit();
                         }
@@ -1641,10 +1617,6 @@ var JsStore;
                         else {
                             executeSimple();
                         }
-                        CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
-                            That.onErrorOccured(e);
-                        };
                     };
                     return _this;
                 }
@@ -1959,14 +1931,10 @@ var JsStore;
                                     sortNumberInDesc();
                                 }
                             }
-                            if (this.OnSuccess) {
-                                this.OnSuccess(this.Results);
-                            }
+                            this.OnSuccess(this.Results);
                         }
                         else if (this.SendResultFlag) {
-                            if (this.OnSuccess) {
-                                this.OnSuccess(this.Results);
-                            }
+                            this.OnSuccess(this.Results);
                         }
                     };
                     _this.createtransactionForOrLogic = function (query) {
@@ -1990,45 +1958,40 @@ var JsStore;
                             this.onExceptionOccured(ex, { TableName: query.From });
                         }
                     };
-                    _this.executeOrLogic = function (query) {
+                    _this.orQuerySuccess = function () {
+                        this.Results = this.OrInfo.Results;
+                        //free var memory
+                        this.OrInfo.Results = undefined;
+                        this.removeDuplicates();
+                        this.OrInfo.OnSucess(this.Results);
+                    };
+                    _this.executeOrLogic = function () {
                         this.OrInfo = {
-                            OrQuery: query.Where.Or,
+                            OrQuery: this.Query.Where.Or,
                             OnSucess: this.OnSuccess,
-                            Results: [],
-                            Length: Object.keys(query.Where.Or).length
+                            Results: []
                         };
                         this.TmpQry = {
-                            From: query.From,
+                            From: this.Query.From,
                             Where: {}
                         };
                         var onSuccess = function () {
                             this.OrInfo.Results = this.OrInfo.Results.concat(this.Results);
-                            this.Results = [];
-                            var Key = JsStore.getObjectFirstKey(this.OrInfo.OrQuery);
-                            if (Key != null) {
-                                var Value = this.OrInfo.OrQuery[Key];
-                                delete this.OrInfo.OrQuery[Key];
-                                this.TmpQry['Where'][Key] = Value;
-                                this.createtransactionForOrLogic(this.TmpQry);
+                            if (!this.Query.Limit || (this.Query.Limit > this.OrInfo.Results.length)) {
+                                this.Results = [];
+                                var Key = JsStore.getObjectFirstKey(this.OrInfo.OrQuery);
+                                if (Key != null) {
+                                    var Value = this.OrInfo.OrQuery[Key];
+                                    delete this.OrInfo.OrQuery[Key];
+                                    this.TmpQry['Where'][Key] = Value;
+                                    this.createtransactionForOrLogic(this.TmpQry);
+                                }
+                                else {
+                                    this.orQuerySuccess();
+                                }
                             }
                             else {
-                                var Datas = this.OrInfo.Results;
-                                //remove extra data
-                                this.OrInfo.Results = undefined;
-                                var removeDuplicates = function () {
-                                    var PrimKey = Business.getPrimaryKey(query.From);
-                                    var newArray = [];
-                                    var lookupObject = {};
-                                    for (var i in Datas) {
-                                        lookupObject[Datas[i][PrimKey]] = Datas[i];
-                                    }
-                                    for (i in lookupObject) {
-                                        newArray.push(lookupObject[i]);
-                                    }
-                                    Datas = newArray;
-                                };
-                                removeDuplicates();
-                                this.OrInfo.OnSucess(Datas);
+                                this.orQuerySuccess();
                             }
                         };
                         this.OnSuccess = onSuccess;
@@ -2048,7 +2011,7 @@ var JsStore;
                         _this.ObjectStore = _this.Transaction.objectStore(query.From);
                         if (query.Where) {
                             if (query.Where.Or) {
-                                _this.executeOrLogic(query);
+                                _this.executeOrLogic();
                             }
                             _this.goToWhereLogic();
                         }

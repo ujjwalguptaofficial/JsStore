@@ -2,7 +2,6 @@ module JsStore {
     export module Business {
         export module Select {
             export class Instance extends Where {
-
                 public onTransactionCompleted = function () {
                     var Order = this.Query.Order;
                     if (Order && this.Results.length > 0 && !this.Sorted && Order.By) {
@@ -44,15 +43,10 @@ module JsStore {
                                 sortNumberInDesc();
                             }
                         }
-                        if (this.OnSuccess) {
-                            this.OnSuccess(this.Results);
-                        }
-
+                        this.OnSuccess(this.Results);
                     }
                     else if (this.SendResultFlag) {
-                        if (this.OnSuccess) {
-                            this.OnSuccess(this.Results);
-                        }
+                        this.OnSuccess(this.Results);
                     }
                 }
 
@@ -78,45 +72,41 @@ module JsStore {
                     }
                 }
 
-                private executeOrLogic = function (query) {
+                private orQuerySuccess = function () {
+                    this.Results = (this as any).OrInfo.Results;
+                    //free var memory
+                    (this as any).OrInfo.Results = undefined;
+                    this.removeDuplicates();
+                    (this as any).OrInfo.OnSucess(this.Results);
+                }
+
+                private executeOrLogic = function () {
                     (this as any).OrInfo = {
-                        OrQuery: query.Where.Or,
+                        OrQuery: this.Query.Where.Or,
                         OnSucess: this.OnSuccess,
-                        Results: [],
-                        Length: Object.keys(query.Where.Or).length
+                        Results: []
                     };
                     (this as any).TmpQry = <ISelect>{
-                        From: query.From,
+                        From: this.Query.From,
                         Where: {}
                     };
                     var onSuccess = function () {
                         (this as any).OrInfo.Results = (this as any).OrInfo.Results.concat(this.Results);
-                        this.Results = [];
-                        var Key = getObjectFirstKey((this as any).OrInfo.OrQuery);
-                        if (Key != null) {
-                            var Value = (this as any).OrInfo.OrQuery[Key];
-                            delete (this as any).OrInfo.OrQuery[Key];
-                            (this as any).TmpQry['Where'][Key] = Value;
-                            this.createtransactionForOrLogic((this as any).TmpQry);
+                        if (!this.Query.Limit || (this.Query.Limit > (this as any).OrInfo.Results.length)) {
+                            this.Results = [];
+                            var Key = getObjectFirstKey((this as any).OrInfo.OrQuery);
+                            if (Key != null) {
+                                var Value = (this as any).OrInfo.OrQuery[Key];
+                                delete (this as any).OrInfo.OrQuery[Key];
+                                (this as any).TmpQry['Where'][Key] = Value;
+                                this.createtransactionForOrLogic((this as any).TmpQry);
+                            }
+                            else {
+                                this.orQuerySuccess();
+                            }
                         }
                         else {
-                            var Datas = (this as any).OrInfo.Results;
-                            //remove extra data
-                            (this as any).OrInfo.Results = undefined;
-                            var removeDuplicates = function () {
-                                var PrimKey = getPrimaryKey(query.From);
-                                var newArray = [];
-                                var lookupObject = {};
-                                for (var i in Datas) {
-                                    lookupObject[Datas[i][PrimKey]] = Datas[i];
-                                }
-                                for (i in lookupObject) {
-                                    newArray.push(lookupObject[i]);
-                                }
-                                Datas = newArray;
-                            };
-                            removeDuplicates();
-                            (this as any).OrInfo.OnSucess(Datas);
+                            this.orQuerySuccess();
                         }
                     }
                     this.OnSuccess = onSuccess;
@@ -140,7 +130,7 @@ module JsStore {
                         this.ObjectStore = this.Transaction.objectStore(query.From);
                         if (query.Where) {
                             if (query.Where.Or) {
-                                this.executeOrLogic(query);
+                                this.executeOrLogic();
                             }
                             this.goToWhereLogic();
                         }

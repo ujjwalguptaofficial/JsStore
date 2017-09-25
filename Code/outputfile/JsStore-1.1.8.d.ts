@@ -335,7 +335,7 @@ declare module JsStore {
 }
 declare module JsStore {
     module Business {
-        var DbConnection: any, ActiveDataBase: DataBase, getPrimaryKey: (tableName: any) => any;
+        var DbConnection: any, ActiveDataBase: DataBase;
         class Main {
             OnSuccess: Function;
             constructor(onSuccess?: any);
@@ -364,6 +364,9 @@ declare module JsStore {
                 SkipRecord: any;
                 LimitRecord: any;
                 CheckFlag: boolean;
+                protected removeDuplicates: () => void;
+                protected getPrimaryKey: (tableName: any) => any;
+                protected getKeyPath: (tableName: any) => string | string[];
             }
         }
     }
@@ -427,6 +430,7 @@ declare module JsStore {
             class Instance extends Where {
                 onTransactionCompleted: () => void;
                 private createtransactionForOrLogic;
+                private orQuerySuccess;
                 private executeOrLogic;
                 constructor(query: ISelect, onSuccess: Function, onError: Function);
             }

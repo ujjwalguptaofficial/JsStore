@@ -6,11 +6,12 @@ module JsStore {
                 private executeWhereLogic = function (column, value, op) {
                     var That = this,
                         CursorOpenRequest,
+                        Cursor: IDBCursorWithValue,
                         executeSkipAndLimit = function () {
                             var RecordSkipped = false;
                             if (!That.CheckFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    Cursor = (<any>e).target.result;
                                     if (Cursor) {
                                         if (RecordSkipped && That.Results.length != That.LimitRecord) {
                                             That.Results.push(Cursor.value);
@@ -25,7 +26,7 @@ module JsStore {
                             }
                             else {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    Cursor = (<any>e).target.result;
                                     if (Cursor) {
                                         if (RecordSkipped && That.Results.length != That.LimitRecord) {
                                             if (That.checkForWhereConditionMatch(Cursor.value)) {
@@ -45,7 +46,7 @@ module JsStore {
                             var RecordSkipped = false;
                             if (!That.CheckFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    Cursor = (<any>e).target.result;
                                     if (Cursor) {
                                         if (RecordSkipped) {
                                             That.Results.push(Cursor.value);
@@ -60,7 +61,7 @@ module JsStore {
                             }
                             else {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    Cursor = (<any>e).target.result;
                                     if (Cursor) {
                                         if (RecordSkipped) {
                                             if (That.checkForWhereConditionMatch(Cursor.value)) {
@@ -79,7 +80,7 @@ module JsStore {
                         executeLimit = function () {
                             if (!That.CheckFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    Cursor = (<any>e).target.result;
                                     if (Cursor && That.Results.length != That.LimitRecord) {
                                         That.Results.push(Cursor.value);
                                         Cursor.continue();
@@ -88,7 +89,7 @@ module JsStore {
                             }
                             else {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    Cursor = (<any>e).target.result;
                                     if (Cursor && That.Results.length != That.LimitRecord && That.checkForWhereConditionMatch(Cursor.value)) {
                                         That.Results.push(Cursor.value);
                                         Cursor.continue();
@@ -99,7 +100,7 @@ module JsStore {
                         executeSimple = function () {
                             if (!That.CheckFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    Cursor = (<any>e).target.result;
                                     if (Cursor) {
                                         That.Results.push(Cursor.value);
                                         Cursor.continue();
@@ -109,7 +110,7 @@ module JsStore {
                             }
                             else {
                                 CursorOpenRequest.onsuccess = function (e) {
-                                    var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                    Cursor = (<any>e).target.result;
                                     if (Cursor) {
                                         if (That.checkForWhereConditionMatch(Cursor.value)) {
                                             That.Results.push(Cursor.value);
@@ -123,6 +124,11 @@ module JsStore {
                     value = op ? value[op] : value;
                     CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
 
+                    CursorOpenRequest.onerror = function (e) {
+                        That.ErrorOccured = true;
+                        That.onErrorOccured(e);
+                    }
+
                     if (this.SkipRecord && this.LimitRecord) {
                         executeSkipAndLimit();
                     }
@@ -134,11 +140,6 @@ module JsStore {
                     }
                     else {
                         executeSimple();
-                    }
-
-                    CursorOpenRequest.onerror = function (e) {
-                        That.ErrorOccured = true;
-                        That.onErrorOccured(e);
                     }
                 }
             }

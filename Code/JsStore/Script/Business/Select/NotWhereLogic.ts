@@ -2,7 +2,6 @@ module JsStore {
     export module Business {
         export module Select {
             export class NotWhere extends BaseSelect {
-
                 protected executeWhereUndefinedLogic = function () {
                     var That = this,
                         CursorOpenRequest,
