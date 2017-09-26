@@ -4,7 +4,7 @@ module JsStore {
             export class Instance extends Where {
 
                 public onTransactionCompleted = function () {
-                    if (this.SendResultFlag && this.OnSuccess != null) {
+                    if (this.SendResultFlag) {
                         this.OnSuccess(this.ResultCount);
                     }
                 }
@@ -16,15 +16,28 @@ module JsStore {
                     this.OnSuccess = onSuccess;
                     this.OnError = onError;
                     try {
-                        this.Transaction = DbConnection.transaction([query.From], "readonly");
-                        this.Transaction.oncomplete = function (e) {
-                            That.onTransactionCompleted();
+                        var createTransaction = function () {
+                            That.Transaction = DbConnection.transaction([query.From], "readonly");
+                            That.ObjectStore = That.Transaction.objectStore(query.From);
+                            That.Transaction.oncomplete = function (e) {
+                                That.onTransactionCompleted();
+                            };
+                            (<any>That.Transaction).ontimeout = That.onTransactionTimeout;
                         }
-                        this.ObjectStore = this.Transaction.objectStore(query.From);
                         if (query.Where != undefined) {
-                            this.goToWhereLogic();
+                            if (query.Where.Or) {
+                                new Select.Instance(query as ISelect, function (results) {
+                                    That.ResultCount = results.length;
+                                    That.onTransactionCompleted()
+                                }, this.OnError);
+                            }
+                            else {
+                                createTransaction();
+                                this.goToWhereLogic();
+                            }
                         }
                         else {
+                            createTransaction();
                             this.executeWhereUndefinedLogic();
                         }
                     }

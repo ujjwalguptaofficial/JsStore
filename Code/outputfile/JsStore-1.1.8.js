@@ -489,6 +489,14 @@ var JsStore;
                         JsStore.throwError(this.Error);
                     }
                 };
+                this.getPrimaryKey = function (tableName) {
+                    var PrimaryKey = this.getTable(tableName).PrimaryKey;
+                    return PrimaryKey ? PrimaryKey : this.getKeyPath();
+                };
+                this.getKeyPath = function (tableName) {
+                    var Transaction = Business.DbConnection.transaction([tableName], "readonly"), ObjectStore = Transaction.objectStore(tableName);
+                    return ObjectStore.keyPath;
+                };
             }
             /**
             * For matching the different column value existance
@@ -1182,14 +1190,6 @@ var JsStore;
                             Datas.push(lookupObject[i]);
                         }
                         this.Results = Datas;
-                    };
-                    _this.getPrimaryKey = function (tableName) {
-                        var PrimaryKey = this.getTable(tableName).PrimaryKey;
-                        return PrimaryKey ? PrimaryKey : this.getKeyPath();
-                    };
-                    _this.getKeyPath = function (tableName) {
-                        var Transaction = Business.DbConnection.transaction([tableName], "readonly"), ObjectStore = Transaction.objectStore(tableName);
-                        return ObjectStore.keyPath;
                     };
                     return _this;
                 }
@@ -1947,12 +1947,7 @@ var JsStore;
                             };
                             this.Transaction.ontimeout = That.onTransactionCompleted;
                             this.ObjectStore = this.Transaction.objectStore(query.From);
-                            if (query.Where) {
-                                this.goToWhereLogic();
-                            }
-                            else {
-                                this.executeWhereUndefinedLogic();
-                            }
+                            this.goToWhereLogic();
                         }
                         catch (ex) {
                             this.onExceptionOccured(ex, { TableName: query.From });
@@ -1981,9 +1976,8 @@ var JsStore;
                                 this.Results = [];
                                 var Key = JsStore.getObjectFirstKey(this.OrInfo.OrQuery);
                                 if (Key != null) {
-                                    var Value = this.OrInfo.OrQuery[Key];
+                                    this.TmpQry['Where'][Key] = this.OrInfo.OrQuery[Key];
                                     delete this.OrInfo.OrQuery[Key];
-                                    this.TmpQry['Where'][Key] = Value;
                                     this.createtransactionForOrLogic(this.TmpQry);
                                 }
                                 else {
@@ -1994,6 +1988,8 @@ var JsStore;
                                 this.orQuerySuccess();
                             }
                         };
+                        //free or memory
+                        this.Query.Where.Or = undefined;
                         this.OnSuccess = onSuccess;
                     };
                     var That = _this;
@@ -2229,7 +2225,7 @@ var JsStore;
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
                     _this.onTransactionCompleted = function () {
-                        if (this.SendResultFlag && this.OnSuccess != null) {
+                        if (this.SendResultFlag) {
                             this.OnSuccess(this.ResultCount);
                         }
                     };
@@ -2238,15 +2234,28 @@ var JsStore;
                     _this.OnSuccess = onSuccess;
                     _this.OnError = onError;
                     try {
-                        _this.Transaction = Business.DbConnection.transaction([query.From], "readonly");
-                        _this.Transaction.oncomplete = function (e) {
-                            That.onTransactionCompleted();
+                        var createTransaction = function () {
+                            That.Transaction = Business.DbConnection.transaction([query.From], "readonly");
+                            That.ObjectStore = That.Transaction.objectStore(query.From);
+                            That.Transaction.oncomplete = function (e) {
+                                That.onTransactionCompleted();
+                            };
+                            That.Transaction.ontimeout = That.onTransactionTimeout;
                         };
-                        _this.ObjectStore = _this.Transaction.objectStore(query.From);
                         if (query.Where != undefined) {
-                            _this.goToWhereLogic();
+                            if (query.Where.Or) {
+                                new Business.Select.Instance(query, function (results) {
+                                    That.ResultCount = results.length;
+                                    That.onTransactionCompleted();
+                                }, _this.OnError);
+                            }
+                            else {
+                                createTransaction();
+                                _this.goToWhereLogic();
+                            }
                         }
                         else {
+                            createTransaction();
                             _this.executeWhereUndefinedLogic();
                         }
                     }
@@ -2483,25 +2492,67 @@ var JsStore;
                             this.OnSuccess(this.RowAffected);
                         }
                     };
+                    _this.createtransactionForOrLogic = function (query) {
+                        var That = this;
+                        this.Query = query;
+                        try {
+                            this.Transaction = Business.DbConnection.transaction([query.In], "readwrite");
+                            this.Transaction.oncomplete = function (e) {
+                                That.onTransactionCompleted();
+                            };
+                            this.Transaction.ontimeout = That.onTransactionCompleted;
+                            this.ObjectStore = this.Transaction.objectStore(query.In);
+                            this.goToWhereLogic();
+                        }
+                        catch (ex) {
+                            this.onExceptionOccured(ex, { TableName: query.From });
+                        }
+                    };
+                    _this.executeOrLogic = function () {
+                        var That = this;
+                        new Business.Select.Instance({
+                            From: this.Query.In,
+                            Where: this.Query.Where
+                        }, function (results) {
+                            var Key = That.getPrimaryKey(That.Query.In), InQuery = [], WhereQry = {};
+                            results.forEach(function (value) {
+                                InQuery.push(value[Key]);
+                            });
+                            WhereQry[Key] = { In: InQuery };
+                            That.createtransactionForOrLogic({
+                                In: That.Query.In,
+                                Where: WhereQry,
+                                Set: That.Query.Set
+                            });
+                        }, this.OnError);
+                    };
                     try {
-                        var That = _this;
+                        _this.OnSuccess = onSuccess;
                         _this.OnError = onError;
                         _this.checkSchema(query.Set, query.In);
                         if (!_this.ErrorOccured) {
                             _this.Query = query;
-                            _this.OnSuccess = onSuccess;
-                            _this.Transaction = Business.DbConnection.transaction([query.In], "readwrite");
-                            _this.ObjectStore = _this.Transaction.objectStore(query.In);
                             var That = _this;
-                            _this.Transaction.oncomplete = function (e) {
-                                That.onTransactionCompleted();
+                            var createTransaction = function () {
+                                That.Transaction = Business.DbConnection.transaction([query.In], "readwrite");
+                                That.ObjectStore = That.Transaction.objectStore(query.In);
+                                That.Transaction.oncomplete = function (e) {
+                                    That.onTransactionCompleted();
+                                };
+                                That.Transaction.ontimeout = That.onTransactionTimeout;
                             };
-                            _this.Transaction.ontimeout = That.onTransactionTimeout;
-                            if (query.Where == undefined) {
-                                _this.executeWhereUndefinedLogic();
+                            if (query.Where) {
+                                if (query.Where.Or) {
+                                    _this.executeOrLogic();
+                                }
+                                else {
+                                    createTransaction();
+                                    _this.goToWhereLogic();
+                                }
                             }
                             else {
-                                _this.goToWhereLogic();
+                                createTransaction();
+                                _this.executeWhereUndefinedLogic();
                             }
                         }
                         else {
@@ -2514,52 +2565,59 @@ var JsStore;
                     return _this;
                 }
                 Instance.prototype.checkSchema = function (suppliedValue, tableName) {
-                    var CurrentTable = this.getTable(tableName), That = this;
-                    if (CurrentTable) {
-                        var onValidationError = function (error, details) {
-                            That.ErrorOccured = true;
-                            That.Error = JsStore.Utils.getError(error, details);
-                        };
-                        //loop through table column and find data is valid
-                        CurrentTable.Columns.every(function (column) {
-                            if (!That.ErrorOccured) {
-                                if (column.Name in suppliedValue) {
-                                    var executeCheck = function (value) {
-                                        //check not null schema
-                                        if (column.NotNull && JsStore.isNull(value)) {
-                                            onValidationError(JsStore.ErrorType.NullValue, { ColumnName: column.Name });
-                                        }
-                                        //check datatype
-                                        if (column.DataType) {
-                                            var Type = typeof value;
-                                            if (Type != column.DataType) {
-                                                if (Type != 'object') {
-                                                    onValidationError(JsStore.ErrorType.BadDataType, { ColumnName: column.Name });
-                                                }
-                                                else {
-                                                    var AllowedProp = ['+', '-', '*', '/'];
-                                                    for (var prop in value) {
-                                                        if (AllowedProp.indexOf(prop) < 0) {
-                                                            onValidationError(JsStore.ErrorType.BadDataType, { ColumnName: column.Name });
+                    if (suppliedValue) {
+                        var CurrentTable = this.getTable(tableName), That = this;
+                        if (CurrentTable) {
+                            var onValidationError = function (error, details) {
+                                That.ErrorOccured = true;
+                                That.Error = JsStore.Utils.getError(error, details);
+                            };
+                            //loop through table column and find data is valid
+                            CurrentTable.Columns.every(function (column) {
+                                if (!That.ErrorOccured) {
+                                    if (column.Name in suppliedValue) {
+                                        var executeCheck = function (value) {
+                                            //check not null schema
+                                            if (column.NotNull && JsStore.isNull(value)) {
+                                                onValidationError(JsStore.ErrorType.NullValue, { ColumnName: column.Name });
+                                            }
+                                            //check datatype
+                                            if (column.DataType) {
+                                                var Type = typeof value;
+                                                if (Type != column.DataType) {
+                                                    if (Type != 'object') {
+                                                        onValidationError(JsStore.ErrorType.BadDataType, { ColumnName: column.Name });
+                                                    }
+                                                    else {
+                                                        var AllowedProp = ['+', '-', '*', '/'];
+                                                        for (var prop in value) {
+                                                            if (AllowedProp.indexOf(prop) < 0) {
+                                                                onValidationError(JsStore.ErrorType.BadDataType, { ColumnName: column.Name });
+                                                            }
+                                                            break;
                                                         }
-                                                        break;
                                                     }
                                                 }
                                             }
-                                        }
-                                    };
-                                    executeCheck(suppliedValue[column.Name]);
+                                        };
+                                        executeCheck(suppliedValue[column.Name]);
+                                    }
+                                    return true;
                                 }
-                                return true;
-                            }
-                            else {
-                                return false;
-                            }
-                        });
+                                else {
+                                    return false;
+                                }
+                            });
+                        }
+                        else {
+                            var Error = JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, { TableName: tableName });
+                            JsStore.throwError(Error);
+                        }
                     }
                     else {
-                        var Error = JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, { TableName: tableName });
-                        JsStore.throwError(Error);
+                        this.ErrorOccured = true;
+                        //execute onSuccess with supplying 0 as rows affected
+                        this.OnSuccess(0);
                     }
                 };
                 return Instance;
@@ -2757,9 +2815,47 @@ var JsStore;
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
                     _this.onTransactionCompleted = function () {
-                        if (this.OnSuccess != null) {
-                            this.OnSuccess(this.RowAffected);
+                        this.OnSuccess(this.RowAffected);
+                    };
+                    _this.createtransactionForOrLogic = function (query) {
+                        var That = this;
+                        this.Query = query;
+                        try {
+                            this.Transaction = Business.DbConnection.transaction([query.From], "readwrite");
+                            this.Transaction.oncomplete = function (e) {
+                                That.onTransactionCompleted();
+                            };
+                            this.Transaction.ontimeout = That.onTransactionCompleted;
+                            this.ObjectStore = this.Transaction.objectStore(query.From);
+                            this.goToWhereLogic();
                         }
+                        catch (ex) {
+                            this.onExceptionOccured(ex, { TableName: query.From });
+                        }
+                    };
+                    _this.executeOrLogic = function () {
+                        this.OrInfo = {
+                            OrQuery: this.Query.Where.Or,
+                            OnSucess: this.OnSuccess
+                        };
+                        this.TmpQry = {
+                            From: this.Query.From,
+                            Where: {}
+                        };
+                        var onSuccess = function () {
+                            var Key = JsStore.getObjectFirstKey(this.OrInfo.OrQuery);
+                            if (Key != null) {
+                                this.TmpQry['Where'][Key] = this.OrInfo.OrQuery[Key];
+                                delete this.OrInfo.OrQuery[Key];
+                                this.createtransactionForOrLogic(this.TmpQry);
+                            }
+                            else {
+                                this.OrInfo.OnSucess(this.RowAffected);
+                            }
+                        };
+                        //free or memory
+                        this.Query.Where.Or = undefined;
+                        this.OnSuccess = onSuccess;
                     };
                     try {
                         var That = _this;
@@ -2774,11 +2870,14 @@ var JsStore;
                         _this.Transaction.onerror = function (e) {
                             That.onErrorOccured(e);
                         };
-                        if (query.Where == undefined) {
-                            _this.executeWhereUndefinedLogic();
+                        if (query.Where) {
+                            if (query.Where.Or) {
+                                _this.executeOrLogic();
+                            }
+                            _this.goToWhereLogic();
                         }
                         else {
-                            _this.goToWhereLogic();
+                            _this.executeWhereUndefinedLogic();
                         }
                     }
                     catch (ex) {

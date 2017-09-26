@@ -278,6 +278,8 @@ declare module JsStore {
             protected getKeyRange: (value: any, op: any) => IDBKeyRange;
             protected getObjectSecondKey: (value: any) => string;
             protected goToWhereLogic: () => void;
+            protected getPrimaryKey: (tableName: any) => any;
+            private getKeyPath;
         }
     }
 }
@@ -365,8 +367,6 @@ declare module JsStore {
                 LimitRecord: any;
                 CheckFlag: boolean;
                 protected removeDuplicates: () => void;
-                protected getPrimaryKey: (tableName: any) => any;
-                protected getKeyPath: (tableName: any) => string | string[];
             }
         }
     }
@@ -537,7 +537,9 @@ declare module JsStore {
     module Business {
         module Update {
             class Instance extends Where {
-                onTransactionCompleted: () => void;
+                protected onTransactionCompleted: () => void;
+                private createtransactionForOrLogic;
+                private executeOrLogic;
                 constructor(query: IUpdate, onSuccess: Function, onError: Function);
                 private checkSchema(suppliedValue, tableName);
             }
@@ -590,6 +592,8 @@ declare module JsStore {
         module Delete {
             class Instance extends Where {
                 private onTransactionCompleted;
+                private createtransactionForOrLogic;
+                private executeOrLogic;
                 constructor(query: IDelete, onSuccess: Function, onError: Function);
             }
         }

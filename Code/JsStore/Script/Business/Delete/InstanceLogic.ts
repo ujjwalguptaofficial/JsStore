@@ -4,9 +4,49 @@ module JsStore {
             export class Instance extends Where {
 
                 private onTransactionCompleted = function () {
-                    if (this.OnSuccess != null) {
-                        this.OnSuccess(this.RowAffected);
+                    this.OnSuccess(this.RowAffected);
+                }
+
+                private createtransactionForOrLogic = function (query) {
+                    var That = this;
+                    this.Query = query;
+                    try {
+                        this.Transaction = DbConnection.transaction([query.From], "readwrite");
+                        this.Transaction.oncomplete = function (e) {
+                            That.onTransactionCompleted();
+                        };
+                        (<any>this.Transaction).ontimeout = That.onTransactionCompleted;
+                        this.ObjectStore = this.Transaction.objectStore(query.From);
+                        this.goToWhereLogic();
                     }
+                    catch (ex) {
+                        this.onExceptionOccured(ex, { TableName: query.From });
+                    }
+                }
+
+                private executeOrLogic = function () {
+                    (this as any).OrInfo = {
+                        OrQuery: this.Query.Where.Or,
+                        OnSucess: this.OnSuccess
+                    };
+                    (this as any).TmpQry = <ISelect>{
+                        From: this.Query.From,
+                        Where: {}
+                    };
+                    var onSuccess = function () {
+                        var Key = getObjectFirstKey((this as any).OrInfo.OrQuery);
+                        if (Key != null) {
+                            (this as any).TmpQry['Where'][Key] = (this as any).OrInfo.OrQuery[Key];
+                            delete (this as any).OrInfo.OrQuery[Key];
+                            this.createtransactionForOrLogic((this as any).TmpQry);
+                        }
+                        else {
+                            (this as any).OrInfo.OnSucess(this.RowAffected);
+                        }
+                    }
+                    //free or memory
+                    this.Query.Where.Or = undefined;
+                    this.OnSuccess = onSuccess;
                 }
 
                 constructor(query: IDelete, onSuccess: Function, onError: Function) {
@@ -25,11 +65,14 @@ module JsStore {
                             That.onErrorOccured(e);
                         }
 
-                        if (query.Where == undefined) {
-                            this.executeWhereUndefinedLogic();
+                        if (query.Where) {
+                            if (query.Where.Or) {
+                                this.executeOrLogic();
+                            }
+                            this.goToWhereLogic();
                         }
                         else {
-                            this.goToWhereLogic();
+                            this.executeWhereUndefinedLogic();
                         }
 
                     }

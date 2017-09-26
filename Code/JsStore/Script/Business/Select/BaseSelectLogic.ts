@@ -24,17 +24,6 @@ module JsStore {
                     }
                     this.Results = Datas;
                 };
-
-                protected getPrimaryKey = function (tableName) {
-                    var PrimaryKey = this.getTable(tableName).PrimaryKey
-                    return PrimaryKey ? PrimaryKey : this.getKeyPath();
-                };
-
-                protected getKeyPath = function (tableName) {
-                    var Transaction: IDBTransaction = DbConnection.transaction([tableName], "readonly"),
-                        ObjectStore = Transaction.objectStore(tableName);
-                    return ObjectStore.keyPath;
-                }
             }
         }
     }

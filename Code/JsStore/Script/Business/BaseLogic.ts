@@ -253,6 +253,17 @@ module JsStore {
                     throwError(this.Error);
                 }
             }
+
+            protected getPrimaryKey = function (tableName) {
+                var PrimaryKey = this.getTable(tableName).PrimaryKey
+                return PrimaryKey ? PrimaryKey : this.getKeyPath();
+            };
+
+            private getKeyPath = function (tableName) {
+                var Transaction: IDBTransaction = DbConnection.transaction([tableName], "readonly"),
+                    ObjectStore = Transaction.objectStore(tableName);
+                return ObjectStore.keyPath;
+            }
         }
     }
 

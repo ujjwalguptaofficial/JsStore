@@ -60,12 +60,7 @@ module JsStore {
                         };
                         (<any>this.Transaction).ontimeout = That.onTransactionCompleted;
                         this.ObjectStore = this.Transaction.objectStore(query.From);
-                        if (query.Where) {
-                            this.goToWhereLogic();
-                        }
-                        else {
-                            this.executeWhereUndefinedLogic();
-                        }
+                        this.goToWhereLogic();
                     }
                     catch (ex) {
                         this.onExceptionOccured(ex, { TableName: query.From });
@@ -96,9 +91,8 @@ module JsStore {
                             this.Results = [];
                             var Key = getObjectFirstKey((this as any).OrInfo.OrQuery);
                             if (Key != null) {
-                                var Value = (this as any).OrInfo.OrQuery[Key];
+                                (this as any).TmpQry['Where'][Key] = (this as any).OrInfo.OrQuery[Key];
                                 delete (this as any).OrInfo.OrQuery[Key];
-                                (this as any).TmpQry['Where'][Key] = Value;
                                 this.createtransactionForOrLogic((this as any).TmpQry);
                             }
                             else {
@@ -109,6 +103,8 @@ module JsStore {
                             this.orQuerySuccess();
                         }
                     }
+                    //free or memory
+                    this.Query.Where.Or = undefined;
                     this.OnSuccess = onSuccess;
                 }
 
@@ -145,6 +141,5 @@ module JsStore {
 
             }
         }
-
     }
 }
