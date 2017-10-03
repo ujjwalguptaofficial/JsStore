@@ -1,6 +1,3 @@
-/** JsStore.js - v1.1.9 - 26/09/2017
- * https://github.com/ujjwalguptaofficial/JsStore
- * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -3534,4 +3531,4 @@ var KeyStore;
     };
 })(KeyStore || (KeyStore = {}));
 KeyStore.init();
-//# sourceMappingURL=JsStore-1.1.9.js.map
+//# sourceMappingURL=JsStore-1.1.10.js.map
