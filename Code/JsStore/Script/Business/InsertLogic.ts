@@ -23,6 +23,7 @@ module JsStore {
                             });
                         }
                         else {
+                            That.ValuesIndex = 0;
                             callBack();
                         }
                     };
