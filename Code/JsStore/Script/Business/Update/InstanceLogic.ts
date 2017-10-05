@@ -2,11 +2,8 @@ module JsStore {
     export module Business {
         export module Update {
             export class Instance extends Where {
-
                 protected onTransactionCompleted = function () {
-                    if (this.OnSuccess != null) {
-                        this.OnSuccess(this.RowAffected);
-                    }
+                    this.OnSuccess(this.RowAffected);
                 }
 
                 private createtransactionForOrLogic = function (query) {

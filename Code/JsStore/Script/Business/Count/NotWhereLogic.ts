@@ -16,9 +16,10 @@ module JsStore {
                         }
                     }
                     else {
-                        var CursorOpenRequest = this.ObjectStore.openCursor();
+                        var Cursor,
+                            CursorOpenRequest = this.ObjectStore.openCursor();
                         CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = (<any>e).target.result;
+                            Cursor = (<any>e).target.result;
                             if (Cursor) {
                                 ++That.ResultCount;
                                 (Cursor as any).continue();

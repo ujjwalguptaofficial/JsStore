@@ -4,10 +4,11 @@ module JsStore {
             export class NotWhere extends BaseUpdate {
 
                 protected executeWhereUndefinedLogic = function () {
-                    var That = this,
+                    var Cursor,
+                        That = this,
                         CursorOpenRequest = this.ObjectStore.openCursor();
                     CursorOpenRequest.onsuccess = function (e) {
-                        var Cursor = (<any>e).target.result;
+                        Cursor = (<any>e).target.result;
                         if (Cursor) {
                             Cursor.update(updateValue(That.Query.Set, Cursor.value));
                             ++That.RowAffected;

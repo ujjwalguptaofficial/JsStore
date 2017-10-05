@@ -24,7 +24,8 @@ module JsStore {
                 }
 
                 protected executeLikeLogic = function (column, value, symbol: Occurence) {
-                    var That = this;
+                    var Cursor: IDBCursorWithValue,
+                        That = this;
                     this.CompValue = (<string>value).toLowerCase();
                     this.CompValueLength = this.CompValue.length;
                     this.CompSymbol = symbol;
@@ -34,24 +35,25 @@ module JsStore {
                         That.ErrorOccured = true;
                         That.onErrorOccured(e);
                     }
-                    if (!That.CheckFlag) {
+                    if (That.CheckFlag) {
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            Cursor = (<any>e).target.result;
                             if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.value)) {
+                                if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
                                     Cursor.update(updateValue(That.Query.Set, Cursor.value));
                                     ++That.RowAffected;
                                 }
                                 Cursor.continue();
                             }
+
                         }
                     }
                     else {
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            Cursor = (<any>e).target.result;
                             if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.value) &&
-                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                                if (That.filterOnOccurence(Cursor.value)) {
                                     Cursor.update(updateValue(That.Query.Set, Cursor.value));
                                     ++That.RowAffected;
                                 }

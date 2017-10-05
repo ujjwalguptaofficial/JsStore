@@ -3,28 +3,29 @@ module JsStore {
         export module Update {
             export class Where extends Like {
                 private executeWhereLogic = function (column, value, op) {
-                    var That = this,
+                    var Cursor: IDBCursorWithValue,
+                        That = this,
                         CursorOpenRequest;
                     value = op ? value[op] : value;
                     CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
-                    if (!That.CheckFlag) {
+                    if (That.CheckFlag) {
                         CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            Cursor = (<any>e).target.result;
                             if (Cursor) {
-                                Cursor.update(updateValue(That.Query.Set, Cursor.value));
-                                ++That.RowAffected;
+                                if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                    Cursor.update(updateValue(That.Query.Set, Cursor.value));
+                                    ++That.RowAffected;
+                                }
                                 Cursor.continue();
                             }
                         }
                     }
                     else {
                         CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            Cursor = (<any>e).target.result;
                             if (Cursor) {
-                                if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                    Cursor.update(updateValue(That.Query.Set, Cursor.value));
-                                    ++That.RowAffected;
-                                }
+                                Cursor.update(updateValue(That.Query.Set, Cursor.value));
+                                ++That.RowAffected;
                                 Cursor.continue();
                             }
                         }

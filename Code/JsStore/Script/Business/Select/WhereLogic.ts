@@ -8,12 +8,14 @@ module JsStore {
                         Cursor: IDBCursorWithValue,
                         executeSkipAndLimit = function () {
                             var RecordSkipped = false;
-                            if (!That.CheckFlag) {
+                            if (That.CheckFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = (<any>e).target.result;
                                     if (Cursor) {
                                         if (RecordSkipped && That.Results.length != That.LimitRecord) {
-                                            That.Results.push(Cursor.value);
+                                            if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                                That.Results.push(Cursor.value);
+                                            }
                                             Cursor.continue();
                                         }
                                         else {
@@ -28,9 +30,7 @@ module JsStore {
                                     Cursor = (<any>e).target.result;
                                     if (Cursor) {
                                         if (RecordSkipped && That.Results.length != That.LimitRecord) {
-                                            if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                                That.Results.push(Cursor.value);
-                                            }
+                                            That.Results.push(Cursor.value);
                                             Cursor.continue();
                                         }
                                         else {
@@ -43,22 +43,7 @@ module JsStore {
                         },
                         executeSkip = function () {
                             var RecordSkipped = false;
-                            if (!That.CheckFlag) {
-                                CursorOpenRequest.onsuccess = function (e) {
-                                    Cursor = (<any>e).target.result;
-                                    if (Cursor) {
-                                        if (RecordSkipped) {
-                                            That.Results.push(Cursor.value);
-                                            Cursor.continue();
-                                        }
-                                        else {
-                                            RecordSkipped = true;
-                                            Cursor.advance(That.SkipRecord);
-                                        }
-                                    }
-                                }
-                            }
-                            else {
+                            if (That.CheckFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = (<any>e).target.result;
                                     if (Cursor) {
@@ -75,18 +60,24 @@ module JsStore {
                                     }
                                 }
                             }
-                        },
-                        executeLimit = function () {
-                            if (!That.CheckFlag) {
+                            else {
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = (<any>e).target.result;
-                                    if (Cursor && That.Results.length != That.LimitRecord) {
-                                        That.Results.push(Cursor.value);
-                                        Cursor.continue();
+                                    if (Cursor) {
+                                        if (RecordSkipped) {
+                                            That.Results.push(Cursor.value);
+                                            Cursor.continue();
+                                        }
+                                        else {
+                                            RecordSkipped = true;
+                                            Cursor.advance(That.SkipRecord);
+                                        }
                                     }
                                 }
                             }
-                            else {
+                        },
+                        executeLimit = function () {
+                            if (That.CheckFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = (<any>e).target.result;
                                     if (Cursor && That.Results.length != That.LimitRecord && That.checkForWhereConditionMatch(Cursor.value)) {
@@ -95,19 +86,18 @@ module JsStore {
                                     }
                                 }
                             }
-                        },
-                        executeSimple = function () {
-                            if (!That.CheckFlag) {
+                            else {
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = (<any>e).target.result;
-                                    if (Cursor) {
+                                    if (Cursor && That.Results.length != That.LimitRecord) {
                                         That.Results.push(Cursor.value);
                                         Cursor.continue();
                                     }
-
                                 }
                             }
-                            else {
+                        },
+                        executeSimple = function () {
+                            if (That.CheckFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = (<any>e).target.result;
                                     if (Cursor) {
@@ -116,6 +106,16 @@ module JsStore {
                                         }
                                         Cursor.continue();
                                     }
+                                }
+                            }
+                            else {
+                                CursorOpenRequest.onsuccess = function (e) {
+                                    Cursor = (<any>e).target.result;
+                                    if (Cursor) {
+                                        That.Results.push(Cursor.value);
+                                        Cursor.continue();
+                                    }
+
                                 }
                             }
                         };

@@ -3,12 +3,13 @@ module JsStore {
         export module Select {
             export class NotWhere extends BaseSelect {
                 protected executeWhereUndefinedLogic = function () {
-                    var That = this,
+                    var Cursor: IDBCursorWithValue,
+                        That = this,
                         CursorOpenRequest,
                         executeSkipAndLimit = function () {
                             var RecordSkipped = false;
                             CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                Cursor = (<any>e).target.result;
                                 if (Cursor) {
                                     if (RecordSkipped && That.Results.length != That.LimitRecord) {
                                         That.Results.push(Cursor.value);
@@ -24,7 +25,7 @@ module JsStore {
                         executeSkip = function () {
                             var RecordSkipped = false;
                             CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                Cursor = (<any>e).target.result;
                                 if (Cursor) {
                                     if (RecordSkipped) {
                                         That.Results.push(Cursor.value);
@@ -39,7 +40,7 @@ module JsStore {
                         },
                         executeSimple = function () {
                             CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = (<any>e).target.result;
+                                Cursor = (<any>e).target.result;
                                 if (Cursor) {
                                     That.Results.push(Cursor.value);
                                     (Cursor as any).continue();
@@ -49,7 +50,7 @@ module JsStore {
                         },
                         executeLimit = function () {
                             CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                                Cursor = (<any>e).target.result;
                                 if (Cursor && That.Results.length != That.LimitRecord) {
                                     That.Results.push(Cursor.value);
                                     Cursor.continue();

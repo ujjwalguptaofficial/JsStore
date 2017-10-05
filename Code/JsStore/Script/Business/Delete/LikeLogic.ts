@@ -26,7 +26,8 @@ module JsStore {
 
 
                 protected executeLikeLogic = function (column, value, symbol: Occurence) {
-                    var That = this;
+                    var That = this,
+                        Cursor: IDBCursorWithValue;
                     this.CompValue = (<string>value).toLowerCase();
                     this.CompValueLength = this.CompValue.length;
                     this.CompSymbol = symbol;
@@ -36,11 +37,12 @@ module JsStore {
                         That.ErrorOccured = true;
                         That.onErrorOccured(e);
                     }
-                    if (!That.CheckFlag) {
+                    if (That.CheckFlag) {
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            Cursor = (<any>e).target.result;
                             if (Cursor) {
-                                if (!That.CheckFlag && That.filterOnOccurence(Cursor.value)) {
+                                if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
                                     Cursor.delete();
                                     ++That.RowAffected;
                                 }
@@ -50,9 +52,9 @@ module JsStore {
                     }
                     else {
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            Cursor = (<any>e).target.result;
                             if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.value) && That.checkForWhereConditionMatch(Cursor.value)) {
+                                if (That.filterOnOccurence(Cursor.value)) {
                                     Cursor.delete();
                                     ++That.RowAffected;
                                 }
