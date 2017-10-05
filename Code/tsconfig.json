@@ -2,7 +2,7 @@
     "compilerOptions": {
         "noImplicitAny": false,
         "noEmitOnError": true,
-        "removeComments": true,
+        "removeComments": false,
         "sourceMap": true,
         "inlineSources": true,
         "out": "outputfile/JsStore-1.1.10.js",

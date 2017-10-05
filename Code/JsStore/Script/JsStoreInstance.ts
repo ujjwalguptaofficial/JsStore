@@ -7,14 +7,10 @@ module JsStore {
     export class Instance extends CodeExecutionHelper {
         constructor(dbName = null) {
             super();
-            if (WorkerStatus == WebWorkerStatus.NotStarted) {
-                Utils.setDbType();
-                this.createWorker();
-            }
-            else {
+            if (WorkerStatus == WebWorkerStatus.Registered) {
                 WorkerInstance.terminate();
-                this.createWorker();
             }
+            this.createWorker();
             if (dbName != null) {
                 this.prcoessExecutionOfCode(<IWebWorkerRequest>{
                     Name: 'open_db',

@@ -24,7 +24,8 @@ module JsStore {
                 }
 
                 private executeSkipAndLimit = function () {
-                    var Skip = this.SkipRecord,
+                    var Cursor: IDBCursorWithValue,
+                        Skip = this.SkipRecord,
                         That = this,
                         skipOrPush = function (value) {
                             if (Skip == 0) {
@@ -34,11 +35,12 @@ module JsStore {
                                 --Skip;
                             }
                         };
-                    if (!That.CheckFlag) {
+                    if (That.CheckFlag) {
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            Cursor = (<any>e).target.result;
                             if (That.Results.length != That.LimitRecord && Cursor) {
-                                if (That.filterOnOccurence(Cursor.value)) {
+                                if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
                                     skipOrPush(Cursor.value);
                                 }
                                 Cursor.continue();
@@ -47,10 +49,9 @@ module JsStore {
                     }
                     else {
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            Cursor = (<any>e).target.result;
                             if (That.Results.length != That.LimitRecord && Cursor) {
-                                if (That.filterOnOccurence(Cursor.value) &&
-                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                                if (That.filterOnOccurence(Cursor.value)) {
                                     skipOrPush(Cursor.value);
                                 }
                                 Cursor.continue();
@@ -60,7 +61,8 @@ module JsStore {
                 }
 
                 private executeSkip = function () {
-                    var Skip = this.SkipRecord,
+                    var Cursor: IDBCursorWithValue,
+                        Skip = this.SkipRecord,
                         That = this,
                         skipOrPush = function (value) {
                             if (Skip == 0) {
@@ -70,11 +72,12 @@ module JsStore {
                                 --Skip;
                             }
                         };
-                    if (!That.CheckFlag) {
+                    if (That.CheckFlag) {
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            Cursor = (<any>e).target.result;
                             if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.value)) {
+                                if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
                                     skipOrPush((Cursor.value));
                                 }
                                 Cursor.continue();
@@ -83,10 +86,9 @@ module JsStore {
                     }
                     else {
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            Cursor = (<any>e).target.result;
                             if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.value) &&
-                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                                if (That.filterOnOccurence(Cursor.value)) {
                                     skipOrPush((Cursor.value));
                                 }
                                 Cursor.continue();
@@ -96,12 +98,14 @@ module JsStore {
                 }
 
                 private executeLimit = function () {
-                    var That = this;
-                    if (!That.CheckFlag) {
+                    var Cursor: IDBCursorWithValue,
+                        That = this;
+                    if (That.CheckFlag) {
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            Cursor = (<any>e).target.result;
                             if (That.Results.length != That.LimitRecord && Cursor) {
-                                if (That.filterOnOccurence(Cursor.value)) {
+                                if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
                                     That.Results.push(Cursor.value);
                                 }
                                 Cursor.continue();
@@ -110,10 +114,9 @@ module JsStore {
                     }
                     else {
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            Cursor = (<any>e).target.result;
                             if (That.Results.length != That.LimitRecord && Cursor) {
-                                if (That.filterOnOccurence(Cursor.value) &&
-                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                                if (That.filterOnOccurence(Cursor.value)) {
                                     That.Results.push(Cursor.value);
                                 }
                                 Cursor.continue();
@@ -123,12 +126,14 @@ module JsStore {
                 }
 
                 private executeSimple = function () {
-                    var That = this;
-                    if (!That.CheckFlag) {
+                    var Cursor: IDBCursorWithValue,
+                        That = this;
+                    if (That.CheckFlag) {
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            Cursor = (<any>e).target.result;
                             if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.value)) {
+                                if (That.filterOnOccurence(Cursor.value) &&
+                                    That.checkForWhereConditionMatch(Cursor.value)) {
                                     That.Results.push(Cursor.value);
                                 }
                                 Cursor.continue();
@@ -137,10 +142,9 @@ module JsStore {
                     }
                     else {
                         this.CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
+                            Cursor = (<any>e).target.result;
                             if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.value) &&
-                                    That.checkForWhereConditionMatch(Cursor.value)) {
+                                if (That.filterOnOccurence(Cursor.value)) {
                                     That.Results.push(Cursor.value);
                                 }
                                 Cursor.continue();

@@ -2,7 +2,6 @@ module JsStore {
     export module Business {
         export module Select {
             export class Where extends Like {
-
                 private executeWhereLogic = function (column, value, op) {
                     var That = this,
                         CursorOpenRequest,

@@ -8,6 +8,9 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+/** JsStore.js - v1.1.11 - 05/10/2017
+ * https://github.com/ujjwalguptaofficial/JsStore
+ * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var JsStore;
 (function (JsStore) {
     var ErrorType;
@@ -68,7 +71,7 @@ var JsStore;
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
-    var Utils = (function () {
+    var Utils = /** @class */ (function () {
         function Utils() {
         }
         Utils.getError = function (errorType, errorDetail) {
@@ -129,6 +132,12 @@ var JsStore;
                 delete obj[key];
             }
         };
+        /**
+         * determine and set the DataBase Type
+         *
+         *
+         * @memberOf MainLogic
+         */
         Utils.setDbType = function () {
             self.indexedDB = self.indexedDB || self.mozIndexedDB || self.webkitIndexedDB || self.msIndexedDB;
             if (indexedDB) {
@@ -145,6 +154,13 @@ var JsStore;
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
+    /**
+    * checks whether db exist or not
+    *
+    * @param {DbInfo} dbInfo
+    * @param {Function} callback
+    * @param {Function} errCallBack
+    */
     JsStore.isDbExist = function (dbInfo, callback, errCallBack) {
         if (JsStore.Status.ConStatus != JsStore.ConnectionStatus.UnableToStart) {
             var DbName;
@@ -177,11 +193,23 @@ var JsStore;
             }
         }
     };
+    /**
+    * get Db Version
+    *
+    * @param {string} dbName
+    * @param {Function} callback
+    */
     JsStore.getDbVersion = function (dbName, callback) {
         KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
             callback(Number(dbVersion));
         });
     };
+    /**
+    * get Database Schema
+    *
+    * @param {string} dbName
+    * @param {Function} callback
+    */
     JsStore.getDbSchema = function (dbName, callback) {
         if (callback) {
             KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
@@ -189,6 +217,12 @@ var JsStore;
             });
         }
     };
+    /**
+    * check value null or not
+    *
+    * @param {any} value
+    * @returns
+    */
     JsStore.isNull = function (value) {
         if (value == null) {
             return true;
@@ -201,9 +235,17 @@ var JsStore;
         }
         return false;
     };
+    /**
+    * Enable log
+    *
+    */
     JsStore.enableLog = function () {
         JsStore.EnableLog = true;
     };
+    /**
+    * disable log
+    *
+    */
     JsStore.disableLog = function () {
         JsStore.EnableLog = false;
     };
@@ -212,7 +254,7 @@ var JsStore;
 (function (JsStore) {
     var Model;
     (function (Model) {
-        var Column = (function () {
+        var Column = /** @class */ (function () {
             function Column(key, tableName) {
                 if (key.Name != null) {
                     this.Name = key.Name;
@@ -236,10 +278,11 @@ var JsStore;
 (function (JsStore) {
     var Model;
     (function (Model) {
-        var Table = (function () {
+        var Table = /** @class */ (function () {
             function Table(table, dbName) {
                 this.Name = "";
                 this.Columns = [];
+                //internal Members
                 this.RequireDelete = false;
                 this.RequireCreation = false;
                 this.PrimaryKey = "";
@@ -253,6 +296,7 @@ var JsStore;
                 this.setDbVersion(dbName);
                 this.setPrimaryKey(dbName);
             }
+            //private methods
             Table.prototype.setPrimaryKey = function (dbName) {
                 var That = this;
                 this.Columns.forEach(function (item) {
@@ -275,6 +319,7 @@ var JsStore;
             Table.prototype.setDbVersion = function (dbName) {
                 var That = this;
                 JsStore.DbVersion = JsStore.DbVersion > That.Version ? JsStore.DbVersion : That.Version;
+                //setting db version
                 KeyStore.set('JsStore_' + dbName + '_Db_Version', JsStore.DbVersion)
                     .set("JsStore_" + dbName + "_" + That.Name + "_Version", JsStore.DbVersion);
                 That.Version = JsStore.DbVersion;
@@ -288,7 +333,7 @@ var JsStore;
 (function (JsStore) {
     var Model;
     (function (Model) {
-        var DataBase = (function () {
+        var DataBase = /** @class */ (function () {
             function DataBase(dataBase) {
                 this.Tables = [];
                 var That = this;
@@ -306,7 +351,7 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var Base = (function () {
+        var Base = /** @class */ (function () {
             function Base() {
                 this.ErrorOccured = false;
                 this.ErrorCount = 0;
@@ -453,6 +498,16 @@ var JsStore;
                     return ObjectStore.keyPath;
                 };
             }
+            /**
+            * For matching the different column value existance
+            *
+            * @private
+            * @param {any} where
+            * @param {any} value
+            * @returns
+            *
+            * @memberOf SelectLogic
+            */
             Base.prototype.checkForWhereConditionMatch = function (rowValue) {
                 var Where = this.Query.Where, Status = true;
                 var checkIn = function (column, value) {
@@ -503,30 +558,35 @@ var JsStore;
                 }, checkComparisionOp = function (column, value, symbol) {
                     var CompareValue = Where[column][symbol];
                     switch (symbol) {
+                        //greater than
                         case '>':
                             if (value <= CompareValue) {
                                 Status = false;
                             }
                             ;
                             break;
+                        //less than
                         case '<':
                             if (value >= CompareValue) {
                                 Status = false;
                             }
                             ;
                             break;
+                        //less than equal
                         case '<=':
                             if (value > CompareValue) {
                                 Status = false;
                             }
                             ;
                             break;
+                        //greather than equal
                         case '>=':
                             if (value < CompareValue) {
                                 Status = false;
                             }
                             ;
                             break;
+                        //between
                         case '-':
                             if (value < CompareValue.Low || value > CompareValue.High) {
                                 Status = false;
@@ -585,7 +645,7 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var CreateDb = (function () {
+        var CreateDb = /** @class */ (function () {
             function CreateDb(dbVersion, onSuccess, onError) {
                 var That = this, DbCreatedList = [], DbRequest = indexedDB.open(Business.ActiveDataBase.Name, dbVersion);
                 DbRequest.onerror = function (event) {
@@ -602,7 +662,7 @@ var JsStore;
                     };
                     Business.DbConnection.onversionchange = function (e) {
                         if (e.newVersion === null) {
-                            e.target.close();
+                            e.target.close(); // Manually close our connection to the db
                         }
                     };
                     Business.DbConnection.onerror = function (e) {
@@ -615,12 +675,14 @@ var JsStore;
                     if (onSuccess != null) {
                         onSuccess(DbCreatedList);
                     }
+                    //save dbSchema in keystore
                     KeyStore.set("JsStore_" + Business.ActiveDataBase.Name + "_Schema", Business.ActiveDataBase);
                 };
                 DbRequest.onupgradeneeded = function (event) {
                     var db = event.target.result;
                     Business.ActiveDataBase.Tables.forEach(function (item) {
                         if (item.RequireDelete) {
+                            // Delete the old datastore.    
                             if (db.objectStoreNames.contains(item.Name)) {
                                 db.deleteObjectStore(item.Name);
                             }
@@ -661,6 +723,7 @@ var JsStore;
                             });
                         }
                         DbCreatedList.push(item.Name);
+                        //setting the table version
                         KeyStore.set("JsStore_" + Business.ActiveDataBase.Name + "_" + item.Name + "_Version", item.Version);
                     }
                     catch (e) {
@@ -677,7 +740,7 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var DropDb = (function () {
+        var DropDb = /** @class */ (function () {
             function DropDb(name, onSuccess, onError) {
                 var DbDropRequest = indexedDB.deleteDatabase(name);
                 DbDropRequest.onblocked = function () {
@@ -717,16 +780,14 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var Insert = (function (_super) {
+        var Insert = /** @class */ (function (_super) {
             __extends(Insert, _super);
             function Insert(query, onSuccess, onError) {
                 var _this = _super.call(this) || this;
                 _this.ValuesAffected = [];
                 _this.ValuesIndex = 0;
                 _this.onTransactionCompleted = function () {
-                    if (this.OnSuccess != null) {
-                        this.OnSuccess(this.Query.Return ? this.ValuesAffected : this.RowAffected);
-                    }
+                    this.OnSuccess(this.Query.Return ? this.ValuesAffected : this.RowAffected);
                 };
                 _this.checkAndModifyValues = function (callBack) {
                     var That = this, checkInternal = function (value) {
@@ -741,6 +802,7 @@ var JsStore;
                             });
                         }
                         else {
+                            That.ValuesIndex = 0;
                             callBack();
                         }
                     };
@@ -764,13 +826,23 @@ var JsStore;
                             };
                         }
                     };
-                    That.ValuesIndex = 0;
                     That.Transaction = Business.DbConnection.transaction([That.Query.Into], "readwrite");
                     That.ObjectStore = That.Transaction.objectStore(That.Query.Into);
                     That.Transaction.oncomplete = function (e) {
                         That.onTransactionCompleted();
                     };
                     insertDataintoTable(this.Query.Values[That.ValuesIndex++]);
+                };
+                _this.bulkinsertData = function () {
+                    var That = this;
+                    this.Transaction = Business.DbConnection.transaction([this.Query.Into], "readwrite");
+                    this.ObjectStore = this.Transaction.objectStore(this.Query.Into);
+                    this.Transaction.oncomplete = function (e) {
+                        That.OnSuccess();
+                    };
+                    this.Query.Values.forEach(function (value) {
+                        That.ObjectStore.add(value);
+                    });
                 };
                 try {
                     _this.Query = query;
@@ -779,13 +851,13 @@ var JsStore;
                     var That = _this;
                     _this.Table = _this.getTable(query.Into);
                     if (_this.Table) {
-                        if (!_this.Query.SkipExtraCheck) {
+                        if (_this.Query.BulkInsert) {
+                            _this.bulkinsertData();
+                        }
+                        else {
                             _this.checkAndModifyValues(function () {
                                 That.insertData();
                             });
-                        }
-                        else {
-                            _this.insertData();
                         }
                     }
                     else {
@@ -798,6 +870,15 @@ var JsStore;
                 }
                 return _this;
             }
+            /**
+             * check the value based on defined schema and modify or create the value
+             *
+             * @private
+             * @param {any} value
+             * @param {string} tableName
+             *
+             * @memberof InsertLogic
+             */
             Insert.prototype.checkAndModifyValue = function (value, callBack) {
                 var That = this, TableName = this.Table.Name, Index = 0, checkAndModifyInternal = function (column) {
                     if (column) {
@@ -805,6 +886,7 @@ var JsStore;
                             That.ErrorOccured = true;
                             That.Error = JsStore.Utils.getError(error, details);
                         }, CheckNotNullAndDataType = function () {
+                            //check not null schema
                             if (column.NotNull && JsStore.isNull(value[column.Name])) {
                                 onValidationError(JsStore.ErrorType.NullValue, { ColumnName: column.Name });
                             }
@@ -814,6 +896,7 @@ var JsStore;
                             checkAndModifyInternal(That.Table.Columns[Index++]);
                         };
                         if (!That.ErrorOccured) {
+                            //check auto increment scheme
                             if (column.AutoIncrement) {
                                 KeyStore.get("JsStore_" + Business.ActiveDataBase.Name + "_" + TableName + "_" + column.Name + "_Value", function (columnValue) {
                                     value[column.Name] = ++columnValue;
@@ -848,7 +931,7 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var OpenDb = (function () {
+        var OpenDb = /** @class */ (function () {
             function OpenDb(dbVersion, onSuccess, onError) {
                 if (Business.ActiveDataBase.Name.length > 0) {
                     var DbRequest = indexedDB.open(Business.ActiveDataBase.Name, dbVersion), That = this;
@@ -866,7 +949,7 @@ var JsStore;
                         };
                         Business.DbConnection.onversionchange = function (e) {
                             if (e.newVersion === null) {
-                                e.target.close();
+                                e.target.close(); // Manually close our connection to the db
                             }
                         };
                         Business.DbConnection.onerror = function (e) {
@@ -895,7 +978,7 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var Clear = (function (_super) {
+        var Clear = /** @class */ (function (_super) {
             __extends(Clear, _super);
             function Clear(tableName, onSuccess, onError) {
                 var _this = _super.call(this) || this;
@@ -927,7 +1010,7 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var Main = (function () {
+        var Main = /** @class */ (function () {
             function Main(onSuccess) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 this.checkConnectionAndExecuteLogic = function (request) {
@@ -1094,7 +1177,7 @@ var JsStore;
     (function (Business) {
         var Select;
         (function (Select) {
-            var BaseSelect = (function (_super) {
+            var BaseSelect = /** @class */ (function (_super) {
                 __extends(BaseSelect, _super);
                 function BaseSelect() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -1103,12 +1186,14 @@ var JsStore;
                     _this.CheckFlag = false;
                     _this.removeDuplicates = function () {
                         var Datas = this.Results;
+                        //free results memory
                         this.Results = undefined;
                         var Key = this.getPrimaryKey(this.Query.From);
                         var lookupObject = {};
                         for (var i in Datas) {
                             lookupObject[Datas[i][Key]] = Datas[i];
                         }
+                        //free datas memory
                         Datas = [];
                         for (i in lookupObject) {
                             Datas.push(lookupObject[i]);
@@ -1129,7 +1214,7 @@ var JsStore;
     (function (Business) {
         var Select;
         (function (Select) {
-            var NotWhere = (function (_super) {
+            var NotWhere = /** @class */ (function (_super) {
                 __extends(NotWhere, _super);
                 function NotWhere() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -1226,7 +1311,7 @@ var JsStore;
     (function (Business) {
         var Select;
         (function (Select) {
-            var Like = (function (_super) {
+            var Like = /** @class */ (function (_super) {
                 __extends(Like, _super);
                 function Like() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -1254,7 +1339,7 @@ var JsStore;
                         return Found;
                     };
                     _this.executeSkipAndLimit = function () {
-                        var Skip = this.SkipRecord, That = this, skipOrPush = function (value) {
+                        var Cursor, Skip = this.SkipRecord, That = this, skipOrPush = function (value) {
                             if (Skip == 0) {
                                 That.Results.push(value);
                             }
@@ -1262,11 +1347,12 @@ var JsStore;
                                 --Skip;
                             }
                         };
-                        if (!That.CheckFlag) {
+                        if (That.CheckFlag) {
                             this.CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = e.target.result;
+                                Cursor = e.target.result;
                                 if (That.Results.length != That.LimitRecord && Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.value) &&
+                                        That.checkForWhereConditionMatch(Cursor.value)) {
                                         skipOrPush(Cursor.value);
                                     }
                                     Cursor.continue();
@@ -1275,10 +1361,9 @@ var JsStore;
                         }
                         else {
                             this.CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = e.target.result;
+                                Cursor = e.target.result;
                                 if (That.Results.length != That.LimitRecord && Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
-                                        That.checkForWhereConditionMatch(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.value)) {
                                         skipOrPush(Cursor.value);
                                     }
                                     Cursor.continue();
@@ -1287,7 +1372,7 @@ var JsStore;
                         }
                     };
                     _this.executeSkip = function () {
-                        var Skip = this.SkipRecord, That = this, skipOrPush = function (value) {
+                        var Cursor, Skip = this.SkipRecord, That = this, skipOrPush = function (value) {
                             if (Skip == 0) {
                                 That.Results.push(value);
                             }
@@ -1295,11 +1380,12 @@ var JsStore;
                                 --Skip;
                             }
                         };
-                        if (!That.CheckFlag) {
+                        if (That.CheckFlag) {
                             this.CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = e.target.result;
+                                Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.value) &&
+                                        That.checkForWhereConditionMatch(Cursor.value)) {
                                         skipOrPush((Cursor.value));
                                     }
                                     Cursor.continue();
@@ -1308,10 +1394,9 @@ var JsStore;
                         }
                         else {
                             this.CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = e.target.result;
+                                Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
-                                        That.checkForWhereConditionMatch(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.value)) {
                                         skipOrPush((Cursor.value));
                                     }
                                     Cursor.continue();
@@ -1320,12 +1405,13 @@ var JsStore;
                         }
                     };
                     _this.executeLimit = function () {
-                        var That = this;
-                        if (!That.CheckFlag) {
+                        var Cursor, That = this;
+                        if (That.CheckFlag) {
                             this.CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = e.target.result;
+                                Cursor = e.target.result;
                                 if (That.Results.length != That.LimitRecord && Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.value) &&
+                                        That.checkForWhereConditionMatch(Cursor.value)) {
                                         That.Results.push(Cursor.value);
                                     }
                                     Cursor.continue();
@@ -1334,10 +1420,9 @@ var JsStore;
                         }
                         else {
                             this.CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = e.target.result;
+                                Cursor = e.target.result;
                                 if (That.Results.length != That.LimitRecord && Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
-                                        That.checkForWhereConditionMatch(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.value)) {
                                         That.Results.push(Cursor.value);
                                     }
                                     Cursor.continue();
@@ -1346,12 +1431,13 @@ var JsStore;
                         }
                     };
                     _this.executeSimple = function () {
-                        var That = this;
-                        if (!That.CheckFlag) {
+                        var Cursor, That = this;
+                        if (That.CheckFlag) {
                             this.CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = e.target.result;
+                                Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.value) &&
+                                        That.checkForWhereConditionMatch(Cursor.value)) {
                                         That.Results.push(Cursor.value);
                                     }
                                     Cursor.continue();
@@ -1360,10 +1446,9 @@ var JsStore;
                         }
                         else {
                             this.CursorOpenRequest.onsuccess = function (e) {
-                                var Cursor = e.target.result;
+                                Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
-                                        That.checkForWhereConditionMatch(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.value)) {
                                         That.Results.push(Cursor.value);
                                     }
                                     Cursor.continue();
@@ -1409,7 +1494,7 @@ var JsStore;
     (function (Business) {
         var Select;
         (function (Select) {
-            var Where = (function (_super) {
+            var Where = /** @class */ (function (_super) {
                 __extends(Where, _super);
                 function Where() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -1556,7 +1641,7 @@ var JsStore;
     (function (Business) {
         var Select;
         (function (Select) {
-            var Join = (function (_super) {
+            var Join = /** @class */ (function (_super) {
                 __extends(Join, _super);
                 function Join(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
@@ -1584,18 +1669,24 @@ var JsStore;
                     };
                     _this.executeWhereJoinLogic = function (joinQuery, query) {
                         var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length;
+                        //get the data from query table
                         new Select.Instance({
                             From: query.Table,
                             Where: query.Where,
                             Order: query.Order
                         }, function (results) {
+                            //perform join
                             results.forEach(function (value, index) {
+                                //search item through each global result
                                 for (var i = 0; i < ResultLength; i++) {
                                     Item = TmpResults[i][joinQuery.Table][joinQuery.Column];
+                                    //if (Item == value[query.Column]) {
                                     doJoin(Item, value, i);
+                                    //}
                                 }
                             });
                             That.Results = Results;
+                            //check if further execution needed
                             if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
                                 That.startExecutionJoinLogic();
                             }
@@ -1609,17 +1700,21 @@ var JsStore;
                             Results[JoinIndex] = {};
                             if (value1 == value2[query.Column]) {
                                 Results[JoinIndex][query.Table] = value2;
+                                //copy other relative data into current result
                                 for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
                                     Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
                                 }
                                 ++JoinIndex;
                             }
                             else if (query.JoinType == 'left') {
+                                //left join
                                 Results[JoinIndex] = {};
                                 Results[JoinIndex][query.Table] = null;
+                                //copy other relative data into current result
                                 for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
                                     Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
                                 }
+                                //Results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
                                 ++JoinIndex;
                             }
                         };
@@ -1627,6 +1722,7 @@ var JsStore;
                     _this.executeRightJoin = function (joinQuery, query) {
                         var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length, ItemIndex = 0, Where = {}, onExecutionFinished = function () {
                             That.Results = Results;
+                            //check if further execution needed
                             if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
                                 That.startExecutionJoinLogic();
                             }
@@ -1674,6 +1770,7 @@ var JsStore;
                     _this.executeWhereUndefinedLogicForJoin = function (joinQuery, query) {
                         var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length, ItemIndex = 0, Where = {}, onExecutionFinished = function () {
                             That.Results = Results;
+                            //check if further execution needed
                             if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
                                 That.startExecutionJoinLogic();
                             }
@@ -1685,6 +1782,7 @@ var JsStore;
                                 results.forEach(function (value) {
                                     Results[JoinIndex] = {};
                                     Results[JoinIndex][query.Table] = value;
+                                    //copy other relative data into current result
                                     for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
                                         Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
                                     }
@@ -1692,11 +1790,14 @@ var JsStore;
                                 });
                             }
                             else if (query.JoinType == 'left') {
+                                //left join
                                 Results[JoinIndex] = {};
                                 Results[JoinIndex][query.Table] = null;
+                                //copy other relative data into current result
                                 for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
                                     Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
                                 }
+                                //Results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
                                 ++JoinIndex;
                             }
                         }, executeLogic = function () {
@@ -1726,7 +1827,7 @@ var JsStore;
                     _this.OnSuccess = onSuccess;
                     _this.OnError = onError;
                     _this.Query = query;
-                    var That = _this, TableList = [];
+                    var That = _this, TableList = []; // used to open the multiple object store
                     var convertQueryIntoStack = function (query) {
                         if (query.hasOwnProperty('Table1')) {
                             query.Table2['JoinType'] = query.Join == undefined ? 'inner' : query.Join.toLowerCase();
@@ -1745,6 +1846,7 @@ var JsStore;
                     };
                     convertQueryIntoStack(query.From);
                     _this.QueryStack.reverse();
+                    //get the data for first table
                     if (!_this.ErrorOccured) {
                         new Select.Instance({
                             From: _this.QueryStack[0].Table,
@@ -1797,7 +1899,7 @@ var JsStore;
     (function (Business) {
         var Select;
         (function (Select) {
-            var Instance = (function (_super) {
+            var Instance = /** @class */ (function (_super) {
                 __extends(Instance, _super);
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
@@ -1862,6 +1964,7 @@ var JsStore;
                     };
                     _this.orQuerySuccess = function () {
                         this.Results = this.OrInfo.Results;
+                        //free var memory
                         this.OrInfo.Results = undefined;
                         this.removeDuplicates();
                         this.OrInfo.OnSucess(this.Results);
@@ -1894,6 +1997,7 @@ var JsStore;
                                 this.orQuerySuccess();
                             }
                         };
+                        //free or memory
                         this.Query.Where.Or = undefined;
                         this.OnSuccess = onSuccess;
                     };
@@ -1937,7 +2041,7 @@ var JsStore;
     (function (Business) {
         var Count;
         (function (Count) {
-            var BaseCount = (function (_super) {
+            var BaseCount = /** @class */ (function (_super) {
                 __extends(BaseCount, _super);
                 function BaseCount() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -1957,7 +2061,7 @@ var JsStore;
     (function (Business) {
         var Count;
         (function (Count) {
-            var NotWhere = (function (_super) {
+            var NotWhere = /** @class */ (function (_super) {
                 __extends(NotWhere, _super);
                 function NotWhere() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -2002,7 +2106,7 @@ var JsStore;
     (function (Business) {
         var Count;
         (function (Count) {
-            var Like = (function (_super) {
+            var Like = /** @class */ (function (_super) {
                 __extends(Like, _super);
                 function Like() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -2077,7 +2181,7 @@ var JsStore;
     (function (Business) {
         var Count;
         (function (Count) {
-            var Where = (function (_super) {
+            var Where = /** @class */ (function (_super) {
                 __extends(Where, _super);
                 function Where() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -2125,7 +2229,7 @@ var JsStore;
     (function (Business) {
         var Count;
         (function (Count) {
-            var Instance = (function (_super) {
+            var Instance = /** @class */ (function (_super) {
                 __extends(Instance, _super);
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
@@ -2210,7 +2314,7 @@ var JsStore;
                 return storedValue;
             };
         })(Update = Business.Update || (Business.Update = {}));
-        var BaseUpdate = (function (_super) {
+        var BaseUpdate = /** @class */ (function (_super) {
             __extends(BaseUpdate, _super);
             function BaseUpdate() {
                 var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -2228,7 +2332,7 @@ var JsStore;
     (function (Business) {
         var Update;
         (function (Update) {
-            var NotWhere = (function (_super) {
+            var NotWhere = /** @class */ (function (_super) {
                 __extends(NotWhere, _super);
                 function NotWhere() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -2261,7 +2365,7 @@ var JsStore;
     (function (Business) {
         var Update;
         (function (Update) {
-            var Like = (function (_super) {
+            var Like = /** @class */ (function (_super) {
                 __extends(Like, _super);
                 function Like() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -2339,7 +2443,7 @@ var JsStore;
     (function (Business) {
         var Update;
         (function (Update) {
-            var Where = (function (_super) {
+            var Where = /** @class */ (function (_super) {
                 __extends(Where, _super);
                 function Where() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -2388,7 +2492,7 @@ var JsStore;
     (function (Business) {
         var Update;
         (function (Update) {
-            var Instance = (function (_super) {
+            var Instance = /** @class */ (function (_super) {
                 __extends(Instance, _super);
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
@@ -2477,13 +2581,16 @@ var JsStore;
                                 That.ErrorOccured = true;
                                 That.Error = JsStore.Utils.getError(error, details);
                             };
+                            //loop through table column and find data is valid
                             CurrentTable.Columns.every(function (column) {
                                 if (!That.ErrorOccured) {
                                     if (column.Name in suppliedValue) {
                                         var executeCheck = function (value) {
+                                            //check not null schema
                                             if (column.NotNull && JsStore.isNull(value)) {
                                                 onValidationError(JsStore.ErrorType.NullValue, { ColumnName: column.Name });
                                             }
+                                            //check datatype
                                             if (column.DataType) {
                                                 var Type = typeof value;
                                                 if (Type != column.DataType) {
@@ -2518,6 +2625,7 @@ var JsStore;
                     }
                     else {
                         this.ErrorOccured = true;
+                        //execute onSuccess with supplying 0 as rows affected
                         this.OnSuccess(0);
                     }
                 };
@@ -2533,7 +2641,7 @@ var JsStore;
     (function (Business) {
         var Delete;
         (function (Delete) {
-            var BaseDelete = (function (_super) {
+            var BaseDelete = /** @class */ (function (_super) {
                 __extends(BaseDelete, _super);
                 function BaseDelete() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -2552,7 +2660,7 @@ var JsStore;
     (function (Business) {
         var Delete;
         (function (Delete) {
-            var NotWhere = (function (_super) {
+            var NotWhere = /** @class */ (function (_super) {
                 __extends(NotWhere, _super);
                 function NotWhere() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -2585,7 +2693,7 @@ var JsStore;
     (function (Business) {
         var Delete;
         (function (Delete) {
-            var Like = (function (_super) {
+            var Like = /** @class */ (function (_super) {
                 __extends(Like, _super);
                 function Like() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -2662,7 +2770,7 @@ var JsStore;
     (function (Business) {
         var Delete;
         (function (Delete) {
-            var Where = (function (_super) {
+            var Where = /** @class */ (function (_super) {
                 __extends(Where, _super);
                 function Where() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -2711,7 +2819,7 @@ var JsStore;
     (function (Business) {
         var Delete;
         (function (Delete) {
-            var Instance = (function (_super) {
+            var Instance = /** @class */ (function (_super) {
                 __extends(Instance, _super);
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
@@ -2754,6 +2862,7 @@ var JsStore;
                                 this.OrInfo.OnSucess(this.RowAffected);
                             }
                         };
+                        //free or memory
                         this.Query.Where.Or = undefined;
                         this.OnSuccess = onSuccess;
                     };
@@ -2794,7 +2903,7 @@ var JsStore;
 var JsStore;
 (function (JsStore) {
     JsStore.WorkerStatus = JsStore.WebWorkerStatus.NotStarted;
-    var CodeExecutionHelper = (function () {
+    var CodeExecutionHelper = /** @class */ (function () {
         function CodeExecutionHelper() {
             this.RequestQueue = [];
             this.IsCodeExecuting = false;
@@ -2932,19 +3041,15 @@ var Column = Model.Column;
 var Table = Model.Table;
 var JsStore;
 (function (JsStore) {
-    var Instance = (function (_super) {
+    var Instance = /** @class */ (function (_super) {
         __extends(Instance, _super);
         function Instance(dbName) {
             if (dbName === void 0) { dbName = null; }
             var _this = _super.call(this) || this;
-            if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.NotStarted) {
-                JsStore.Utils.setDbType();
-                _this.createWorker();
-            }
-            else {
+            if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.Registered) {
                 JsStore.WorkerInstance.terminate();
-                _this.createWorker();
             }
+            _this.createWorker();
             if (dbName != null) {
                 _this.prcoessExecutionOfCode({
                     Name: 'open_db',
@@ -2953,6 +3058,16 @@ var JsStore;
             }
             return _this;
         }
+        /**
+         * creates DataBase
+         *
+         * @param {IDataBase} dataBase
+         * @param {Function} onSuccess
+         * @param {Function} [onError=null]
+         * @returns
+         *
+         * @memberOf Main
+         */
         Instance.prototype.createDb = function (dataBase, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
@@ -2964,6 +3079,13 @@ var JsStore;
             });
             return this;
         };
+        /**
+         * drop dataBase
+         *
+         * @param {Function} onSuccess
+         * @param {Function} [onError=null]
+         * @memberof Instance
+         */
         Instance.prototype.dropDb = function (onSuccess, onError) {
             if (onError === void 0) { onError = null; }
             this.prcoessExecutionOfCode({
@@ -2973,6 +3095,15 @@ var JsStore;
             });
             return this;
         };
+        /**
+         * select data from table
+         *
+         * @param {IQuery} query
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         *
+         * @memberOf Main
+         */
         Instance.prototype.select = function (query, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
@@ -2987,6 +3118,14 @@ var JsStore;
             });
             return this;
         };
+        /**
+         * get no of result from table
+         *
+         * @param {ICount} query
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         * @memberof Instance
+         */
         Instance.prototype.count = function (query, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
@@ -3001,6 +3140,14 @@ var JsStore;
             });
             return this;
         };
+        /**
+         * insert data into table
+         *
+         * @param {IInsert} query
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         * @memberof Instance
+         */
         Instance.prototype.insert = function (query, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
@@ -3015,6 +3162,14 @@ var JsStore;
             });
             return this;
         };
+        /**
+         * update data into table
+         *
+         * @param {IUpdate} query
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         * @memberof Instance
+         */
         Instance.prototype.update = function (query, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
@@ -3029,6 +3184,14 @@ var JsStore;
             });
             return this;
         };
+        /**
+         * delete data from table
+         *
+         * @param {IDelete} query
+         * @param {Function} [onSuccess=null]
+         * @param {Function} onError
+         * @memberof Instance
+         */
         Instance.prototype.delete = function (query, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
@@ -3043,6 +3206,14 @@ var JsStore;
             });
             return this;
         };
+        /**
+         * delete all data from table
+         *
+         * @param {string} tableName
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         * @memberof Instance
+         */
         Instance.prototype.clear = function (tableName, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
@@ -3070,9 +3241,15 @@ var JsStore;
 }
 var KeyStore;
 (function (KeyStore) {
-    var Utils = (function () {
+    var Utils = /** @class */ (function () {
         function Utils() {
         }
+        /**
+         * determine and set the DataBase Type
+         *
+         *
+         * @memberOf UtilityLogic
+         */
         Utils.setDbType = function () {
             self.indexedDB = self.indexedDB || self.mozIndexedDB || self.webkitIndexedDB || self.msIndexedDB;
             if (indexedDB) {
@@ -3156,7 +3333,7 @@ var KeyStore;
 (function (KeyStore) {
     var Business;
     (function (Business) {
-        var Base = (function () {
+        var Base = /** @class */ (function () {
             function Base() {
                 this.Results = null;
                 this.ErrorOccured = false;
@@ -3180,7 +3357,7 @@ var KeyStore;
 (function (KeyStore) {
     var Business;
     (function (Business) {
-        var Get = (function (_super) {
+        var Get = /** @class */ (function (_super) {
             __extends(Get, _super);
             function Get(query, onSuccess, onError) {
                 var _this = _super.call(this) || this;
@@ -3225,7 +3402,7 @@ var KeyStore;
 (function (KeyStore) {
     var Business;
     (function (Business) {
-        var Set = (function (_super) {
+        var Set = /** @class */ (function (_super) {
             __extends(Set, _super);
             function Set(query, onSuccess, onError) {
                 var _this = _super.call(this) || this;
@@ -3281,7 +3458,7 @@ var KeyStore;
 (function (KeyStore) {
     var Business;
     (function (Business) {
-        var Remove = (function (_super) {
+        var Remove = /** @class */ (function (_super) {
             __extends(Remove, _super);
             function Remove(query, onSuccess, onError) {
                 var _this = _super.call(this) || this;
@@ -3334,7 +3511,7 @@ var KeyStore;
 (function (KeyStore) {
     var Business;
     (function (Business) {
-        var InitDb = (function () {
+        var InitDb = /** @class */ (function () {
             function InitDb(dbName, tableName, onSuccess, onError) {
                 var That = this, DbRequest = self.indexedDB.open(dbName, 1);
                 DbRequest.onerror = function (event) {
@@ -3357,7 +3534,7 @@ var KeyStore;
                     };
                     Business.DbConnection.onversionchange = function (e) {
                         if (e.newVersion === null) {
-                            e.target.close();
+                            e.target.close(); // Manually close our connection to the db
                         }
                     };
                     Business.DbConnection.onerror = function (e) {
@@ -3391,7 +3568,7 @@ var KeyStore;
             ConStatus: KeyStore.ConnectionStatus.NotStarted,
             LastError: ""
         };
-        var Main = (function () {
+        var Main = /** @class */ (function () {
             function Main(onSuccess) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 this.checkConnectionAndExecuteLogic = function (request) {
@@ -3469,6 +3646,10 @@ var KeyStore;
 })(KeyStore || (KeyStore = {}));
 var KeyStore;
 (function (KeyStore) {
+    /**
+     * Initialize KeyStore
+     *
+     */
     KeyStore.init = function () {
         KeyStore.Utils.setDbType();
         if (indexedDB) {
@@ -3478,6 +3659,13 @@ var KeyStore;
             });
         }
     };
+    /**
+    * return the value by key
+    *
+    * @param {string} key
+    * @param {Function} onSuccess
+    * @param {Function} [onError=null]
+    */
     KeyStore.get = function (key, onSuccess, onError) {
         if (onError === void 0) { onError = null; }
         var Query = {
@@ -3494,6 +3682,14 @@ var KeyStore;
         });
         return this;
     };
+    /**
+    * insert or update value
+    *
+    * @param {any} key
+    * @param {any} value
+    * @param {Function} [onSuccess=null]
+    * @param {Function} [onError=null]
+    */
     KeyStore.set = function (key, value, onSuccess, onError) {
         if (onSuccess === void 0) { onSuccess = null; }
         if (onError === void 0) { onError = null; }
@@ -3512,6 +3708,13 @@ var KeyStore;
         });
         return this;
     };
+    /**
+    * delete value
+    *
+    * @param {string} key
+    * @param {Function} [onSuccess=null]
+    * @param {Function} [onError=null]
+    */
     KeyStore.remove = function (key, onSuccess, onError) {
         if (onSuccess === void 0) { onSuccess = null; }
         if (onError === void 0) { onError = null; }

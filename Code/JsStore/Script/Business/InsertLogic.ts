@@ -6,9 +6,7 @@ module JsStore {
             ValuesIndex = 0;
             Table: Model.ITable;
             public onTransactionCompleted = function () {
-                if (this.OnSuccess != null) {
-                    this.OnSuccess(this.Query.Return ? this.ValuesAffected : this.RowAffected);
-                }
+                this.OnSuccess(this.Query.Return ? this.ValuesAffected : this.RowAffected);
             }
 
             private checkAndModifyValues = function (callBack) {
@@ -51,14 +49,24 @@ module JsStore {
                             }
                         }
                     }
-
-                That.ValuesIndex = 0;
                 That.Transaction = DbConnection.transaction([That.Query.Into], "readwrite");
                 That.ObjectStore = That.Transaction.objectStore(That.Query.Into);
                 That.Transaction.oncomplete = function (e) {
                     That.onTransactionCompleted();
                 }
                 insertDataintoTable(this.Query.Values[That.ValuesIndex++]);
+            }
+
+            private bulkinsertData = function () {
+                var That = this;
+                this.Transaction = DbConnection.transaction([this.Query.Into], "readwrite");
+                this.ObjectStore = this.Transaction.objectStore(this.Query.Into);
+                this.Transaction.oncomplete = function (e) {
+                    That.OnSuccess();
+                }
+                this.Query.Values.forEach(function (value) {
+                    That.ObjectStore.add(value);
+                });
             }
 
             constructor(query: IInsert, onSuccess: Function, onError: Function) {
@@ -70,13 +78,13 @@ module JsStore {
                     var That = this;
                     this.Table = this.getTable(query.Into);
                     if (this.Table) {
-                        if (!this.Query.SkipExtraCheck) {
+                        if (this.Query.BulkInsert) {
+                            this.bulkinsertData();
+                        }
+                        else {
                             this.checkAndModifyValues(function () {
                                 That.insertData();
                             });
-                        }
-                        else {
-                            this.insertData();
                         }
                     }
                     else {
