@@ -1,18 +1,31 @@
 module JsStore {
-
     export var WorkerStatus: WebWorkerStatus = WebWorkerStatus.NotStarted,
         WorkerInstance: Worker;
     export class CodeExecutionHelper {
         RequestQueue: Array<IWebWorkerRequest> = [];
         IsCodeExecuting = false;
         protected prcoessExecutionOfCode = function (request: IWebWorkerRequest) {
-            this.RequestQueue.push(request);
+            if (Status.ConStatus == ConnectionStatus.NotStarted) {
+                switch (request.Name) {
+                    case 'create_db':
+                    case 'open_db': this.RequestQueue.splice(0, 0, request);
+                        if (WorkerStatus != WebWorkerStatus.NotStarted) {
+                            this.executeCode();
+                        };
+                        break;
+                    default: this.RequestQueue.push(request);
+                }
+            }
+            else {
+                this.RequestQueue.push(request);
+                if (this.RequestQueue.length == 1 && WorkerStatus != WebWorkerStatus.NotStarted) {
+                    this.executeCode();
+                }
+            }
             if (EnableLog) {
                 console.log("request pushed:" + request.Name);
             }
-            if (this.RequestQueue.length == 1 && WorkerStatus != WebWorkerStatus.NotStarted) {
-                this.executeCode();
-            }
+
         }
 
         private executeCode = function () {
@@ -78,7 +91,7 @@ module JsStore {
         }
 
         protected createWorker = function () {
-            var That = this;
+            var That: CodeExecutionHelper = this;
             try {
                 if (Worker) {
                     var ScriptUrl = this.getScriptUrl();
@@ -87,6 +100,12 @@ module JsStore {
                         WorkerInstance.onmessage = function (msg) {
                             That.onMessageFromWorker(msg);
                         }
+                        That.executeCodeUsingWorker(<IWebWorkerRequest>{
+                            Name: 'change_log_status',
+                            Query: {
+                                logging: EnableLog
+                            }
+                        });
                         setTimeout(function () {
                             if (WorkerStatus != WebWorkerStatus.Failed) {
                                 WorkerStatus = WebWorkerStatus.Registered;

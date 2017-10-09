@@ -15,25 +15,34 @@ module JsStore {
                 if (EnableLog) {
                     console.log('checking connection and executing request:' + request.Name);
                 }
-                if (request.Name == 'create_db' || request.Name == 'open_db') {
-                    this.executeLogic(request);
+                switch (request.Name) {
+                    case 'create_db':
+                    case 'open_db':
+                        this.executeLogic(request);
+                        break;
+                    case 'change_log_status':
+                        this.changeLogStatus(request);
+                    default:
+                        switch (Status.ConStatus) {
+                            case ConnectionStatus.Connected: {
+                                this.executeLogic(request);
+                            }; break;
+                            case ConnectionStatus.Closed: {
+                                var That = this;
+                                this.openDb(ActiveDataBase.Name, function () {
+                                    That.checkConnectionAndExecuteLogic(request);
+                                });
+                            }; break;
+                        }
+                }
+            }
+
+            private changeLogStatus = function (request) {
+                if (request.Query['logging'] === true) {
+                    EnableLog = true;
                 }
                 else {
-                    if (Status.ConStatus == ConnectionStatus.Connected) {
-                        this.executeLogic(request);
-                    }
-                    else if (Status.ConStatus == ConnectionStatus.NotStarted) {
-                        var That = this;
-                        setTimeout(function () {
-                            That.checkConnectionAndExecuteLogic(request);
-                        }, 100);
-                    }
-                    else if (Status.ConStatus == ConnectionStatus.Closed) {
-                        var That = this;
-                        this.openDb(ActiveDataBase.Name, function () {
-                            That.checkConnectionAndExecuteLogic(request);
-                        });
-                    }
+                    EnableLog = false;
                 }
             }
 

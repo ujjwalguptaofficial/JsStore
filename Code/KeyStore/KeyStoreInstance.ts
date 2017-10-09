@@ -84,5 +84,3 @@ module KeyStore {
         return this;
     }
 }
-
-KeyStore.init();

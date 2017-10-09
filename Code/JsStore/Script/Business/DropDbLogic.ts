@@ -2,11 +2,18 @@ module JsStore {
     export module Business {
         export class DropDb {
             constructor(name: string, onSuccess: Function, onError: Function) {
+                var That = this;
+                DbConnection.close();
+                setTimeout(function () {
+                    That.deleteDb(name, onSuccess, onError);
+                }, 100);
+            }
 
+            deleteDb = function (name: string, onSuccess: Function, onError: Function) {
                 var DbDropRequest = indexedDB.deleteDatabase(name);
                 DbDropRequest.onblocked = function () {
                     if (onError != null) {
-                        onError("delete database is in progress");
+                        onError("database is blocked, cant be deleted right now.");
                     };
                 };
                 DbDropRequest.onerror = function (e) {
@@ -26,11 +33,8 @@ module JsStore {
                         });
                     });
                     KeyStore.remove("JsStore_" + ActiveDataBase.Name + "_Schema");
-                    if (onSuccess != null) {
-                        onSuccess();
-                    }
+                    onSuccess();
                 }
-
             }
         }
     }

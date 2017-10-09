@@ -1,3 +1,159 @@
+declare module KeyStore {
+    interface IError {
+        Name: string;
+        Value: string;
+    }
+    class Utils {
+        /**
+         * determine and set the DataBase Type
+         *
+         *
+         * @memberOf UtilityLogic
+         */
+        static setDbType: () => void;
+    }
+}
+declare module KeyStore {
+    interface ISelect {
+        From: any;
+        Where: any;
+    }
+    interface IDelete {
+        From: string;
+        Where: any;
+    }
+    enum ConnectionStatus {
+        Connected = "connected",
+        Closed = "closed",
+        NotStarted = "not_connected",
+    }
+    interface KeyStoreStatus {
+        ConStatus: ConnectionStatus;
+        LastError: string;
+    }
+    interface IInsert {
+        TableName: string;
+        Set: {
+            Key: string;
+            Value;
+            any;
+        };
+    }
+    interface IWebWorkerRequest {
+        Name: string;
+        Query: any;
+        OnSuccess: Function;
+        OnError: Function;
+    }
+    interface IWebWorkerResult {
+        ErrorOccured: boolean;
+        ErrorDetails: any;
+        ReturnedValue: any;
+    }
+    var RequestQueue: Array<IWebWorkerRequest>, TableName: string, IsCodeExecuting: boolean;
+}
+declare module KeyStore {
+    var prcoessExecutionOfCode: (request: IWebWorkerRequest) => void;
+    var executeCode: () => void;
+    var executeCodeDirect: (request: IWebWorkerRequest) => void;
+    var processFinishedRequest: (message: IWebWorkerResult) => void;
+}
+declare module KeyStore {
+    module Business {
+        class Base {
+            Results: any;
+            OnSuccess: Function;
+            OnError: Function;
+            ErrorOccured: boolean;
+            ErrorCount: number;
+            Transaction: IDBTransaction;
+            ObjectStore: IDBObjectStore;
+            protected onErrorOccured: (e: any) => void;
+        }
+    }
+}
+declare module KeyStore {
+    module Business {
+        class Get extends Base {
+            Query: ISelect;
+            private get;
+            constructor(query: ISelect, onSuccess: Function, onError: Function);
+        }
+    }
+}
+declare module KeyStore {
+    module Business {
+        class Set extends Base {
+            private setData;
+            constructor(query: IInsert, onSuccess: Function, onError: Function);
+        }
+    }
+}
+declare module KeyStore {
+    module Business {
+        class Remove extends Base {
+            Query: IDelete;
+            RowAffected: number;
+            private remove;
+            constructor(query: IDelete, onSuccess: Function, onError: Function);
+        }
+    }
+}
+declare module KeyStore {
+    module Business {
+        class InitDb {
+            constructor(dbName: string, tableName: string, onSuccess: Function, onError: Function);
+        }
+    }
+}
+declare module KeyStore {
+    module Business {
+        var DbConnection: any, Status: KeyStoreStatus;
+        class Main {
+            OnSuccess: Function;
+            constructor(onSuccess?: any);
+            checkConnectionAndExecuteLogic: (request: IWebWorkerRequest) => void;
+            private returnResult;
+            private executeLogic;
+            set: (query: IInsert, onSuccess: Function, onError: Function) => void;
+            remove: (query: IDelete, onSuccess: Function, onError: Function) => void;
+            get: (query: ISelect, onSuccess: Function, onError: Function) => void;
+            createDb: (tableName: any, onSuccess: Function, onError: Function) => void;
+        }
+    }
+}
+declare module KeyStore {
+    /**
+     * Initialize KeyStore
+     *
+     */
+    var init: () => void;
+    /**
+    * return the value by key
+    *
+    * @param {string} key
+    * @param {Function} onSuccess
+    * @param {Function} [onError=null]
+    */
+    var get: (key: string, onSuccess: Function, onError?: Function) => any;
+    /**
+    * insert or update value
+    *
+    * @param {any} key
+    * @param {any} value
+    * @param {Function} [onSuccess=null]
+    * @param {Function} [onError=null]
+    */
+    var set: (key: any, value: any, onSuccess?: Function, onError?: Function) => any;
+    /**
+    * delete value
+    *
+    * @param {string} key
+    * @param {Function} [onSuccess=null]
+    * @param {Function} [onError=null]
+    */
+    var remove: (key: string, onSuccess?: Function, onError?: Function) => any;
+}
 declare module JsStore {
     enum ErrorType {
         UndefinedColumn = "undefined_column",
@@ -79,7 +235,7 @@ declare module JsStore {
         Return: boolean;
         OnSuccess: Function;
         OnError: Function;
-        BulkInsert: boolean;
+        SkipDataCheck: any;
     }
     interface ICondition {
         Column: string;
@@ -294,6 +450,7 @@ declare module JsStore {
     module Business {
         class DropDb {
             constructor(name: string, onSuccess: Function, onError: Function);
+            deleteDb: (name: string, onSuccess: Function, onError: Function) => void;
         }
     }
 }
@@ -307,7 +464,6 @@ declare module JsStore {
             onTransactionCompleted: () => void;
             private checkAndModifyValues;
             private insertData;
-            private bulkinsertData;
             constructor(query: IInsert, onSuccess: Function, onError: Function);
             /**
              * check the value based on defined schema and modify or create the value
@@ -319,6 +475,19 @@ declare module JsStore {
              * @memberof InsertLogic
              */
             private checkAndModifyValue(value, callBack);
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        class BulkInsert extends Base {
+            ValuesAffected: any[];
+            Query: IInsert;
+            ValuesIndex: number;
+            Table: Model.ITable;
+            onTransactionCompleted: () => void;
+            private bulkinsertData;
+            constructor(query: IInsert, onSuccess: Function, onError: Function);
         }
     }
 }
@@ -343,6 +512,7 @@ declare module JsStore {
             OnSuccess: Function;
             constructor(onSuccess?: any);
             checkConnectionAndExecuteLogic: (request: IWebWorkerRequest) => void;
+            private changeLogStatus;
             private returnResult;
             private executeLogic;
             openDb: (dbName: any, onSuccess: Function, onError: Function) => void;
@@ -624,14 +794,23 @@ declare module JsStore {
     class Instance extends CodeExecutionHelper {
         constructor(dbName?: any);
         /**
-         * creates DataBase
+         * open database
          *
-         * @param {IDataBase} dataBase
-         * @param {Function} onSuccess
+         * @param {string} dbName
+         * @param {Function} [onSuccess=null]
          * @param {Function} [onError=null]
          * @returns
+         * @memberof Instance
+         */
+        openDb(dbName: string, onSuccess?: Function, onError?: Function): this;
+        /**
+         * creates DataBase
          *
-         * @memberOf Main
+         * @param {Model.IDataBase} dataBase
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         * @returns
+         * @memberof Instance
          */
         createDb(dataBase: Model.IDataBase, onSuccess?: Function, onError?: Function): this;
         /**
@@ -698,160 +877,4 @@ declare module JsStore {
          */
         clear(tableName: string, onSuccess?: Function, onError?: Function): this;
     }
-}
-declare module KeyStore {
-    interface IError {
-        Name: string;
-        Value: string;
-    }
-    class Utils {
-        /**
-         * determine and set the DataBase Type
-         *
-         *
-         * @memberOf UtilityLogic
-         */
-        static setDbType: () => void;
-    }
-}
-declare module KeyStore {
-    interface ISelect {
-        From: any;
-        Where: any;
-    }
-    interface IDelete {
-        From: string;
-        Where: any;
-    }
-    enum ConnectionStatus {
-        Connected = "connected",
-        Closed = "closed",
-        NotStarted = "not_connected",
-    }
-    interface KeyStoreStatus {
-        ConStatus: ConnectionStatus;
-        LastError: string;
-    }
-    interface IInsert {
-        TableName: string;
-        Set: {
-            Key: string;
-            Value;
-            any;
-        };
-    }
-    interface IWebWorkerRequest {
-        Name: string;
-        Query: any;
-        OnSuccess: Function;
-        OnError: Function;
-    }
-    interface IWebWorkerResult {
-        ErrorOccured: boolean;
-        ErrorDetails: any;
-        ReturnedValue: any;
-    }
-    var RequestQueue: Array<IWebWorkerRequest>, TableName: string, IsCodeExecuting: boolean;
-}
-declare module KeyStore {
-    var prcoessExecutionOfCode: (request: IWebWorkerRequest) => void;
-    var executeCode: () => void;
-    var executeCodeDirect: (request: IWebWorkerRequest) => void;
-    var processFinishedRequest: (message: IWebWorkerResult) => void;
-}
-declare module KeyStore {
-    module Business {
-        class Base {
-            Results: any;
-            OnSuccess: Function;
-            OnError: Function;
-            ErrorOccured: boolean;
-            ErrorCount: number;
-            Transaction: IDBTransaction;
-            ObjectStore: IDBObjectStore;
-            protected onErrorOccured: (e: any) => void;
-        }
-    }
-}
-declare module KeyStore {
-    module Business {
-        class Get extends Base {
-            Query: ISelect;
-            private get;
-            constructor(query: ISelect, onSuccess: Function, onError: Function);
-        }
-    }
-}
-declare module KeyStore {
-    module Business {
-        class Set extends Base {
-            private setData;
-            constructor(query: IInsert, onSuccess: Function, onError: Function);
-        }
-    }
-}
-declare module KeyStore {
-    module Business {
-        class Remove extends Base {
-            Query: IDelete;
-            RowAffected: number;
-            private remove;
-            constructor(query: IDelete, onSuccess: Function, onError: Function);
-        }
-    }
-}
-declare module KeyStore {
-    module Business {
-        class InitDb {
-            constructor(dbName: string, tableName: string, onSuccess: Function, onError: Function);
-        }
-    }
-}
-declare module KeyStore {
-    module Business {
-        var DbConnection: any, Status: KeyStoreStatus;
-        class Main {
-            OnSuccess: Function;
-            constructor(onSuccess?: any);
-            checkConnectionAndExecuteLogic: (request: IWebWorkerRequest) => void;
-            private returnResult;
-            private executeLogic;
-            set: (query: IInsert, onSuccess: Function, onError: Function) => void;
-            remove: (query: IDelete, onSuccess: Function, onError: Function) => void;
-            get: (query: ISelect, onSuccess: Function, onError: Function) => void;
-            createDb: (tableName: any, onSuccess: Function, onError: Function) => void;
-        }
-    }
-}
-declare module KeyStore {
-    /**
-     * Initialize KeyStore
-     *
-     */
-    var init: () => void;
-    /**
-    * return the value by key
-    *
-    * @param {string} key
-    * @param {Function} onSuccess
-    * @param {Function} [onError=null]
-    */
-    var get: (key: string, onSuccess: Function, onError?: Function) => any;
-    /**
-    * insert or update value
-    *
-    * @param {any} key
-    * @param {any} value
-    * @param {Function} [onSuccess=null]
-    * @param {Function} [onError=null]
-    */
-    var set: (key: any, value: any, onSuccess?: Function, onError?: Function) => any;
-    /**
-    * delete value
-    *
-    * @param {string} key
-    * @param {Function} [onSuccess=null]
-    * @param {Function} [onError=null]
-    */
-    var remove: (key: string, onSuccess?: Function, onError?: Function) => any;
 }

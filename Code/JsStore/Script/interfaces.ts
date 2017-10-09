@@ -50,7 +50,7 @@ module JsStore {
         Return: boolean,
         OnSuccess: Function,
         OnError: Function,
-        BulkInsert: boolean
+        SkipDataCheck
     }
 
     export interface ICondition {

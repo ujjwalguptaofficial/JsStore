@@ -39,15 +39,17 @@ module JsStore {
                             AddResult.onerror = function (e) {
                                 That.onErrorOccured(e);
                             }
-                            AddResult.onsuccess = function (e) {
-                                if (IsReturn) {
+                            if (IsReturn) {
+                                AddResult.onsuccess = function (e) {
                                     That.ValuesAffected.push(value);
                                 }
-                                else {
+                            }
+                            else {
+                                AddResult.onsuccess = function (e) {
                                     ++That.RowAffected;
                                 }
-                                insertDataintoTable(That.Query.Values[That.ValuesIndex++]);
                             }
+                            insertDataintoTable(That.Query.Values[That.ValuesIndex++]);
                         }
                     }
                 That.Transaction = DbConnection.transaction([That.Query.Into], "readwrite");
@@ -56,18 +58,6 @@ module JsStore {
                     That.onTransactionCompleted();
                 }
                 insertDataintoTable(this.Query.Values[That.ValuesIndex++]);
-            }
-
-            private bulkinsertData = function () {
-                var That = this;
-                this.Transaction = DbConnection.transaction([this.Query.Into], "readwrite");
-                this.ObjectStore = this.Transaction.objectStore(this.Query.Into);
-                this.Transaction.oncomplete = function (e) {
-                    That.OnSuccess();
-                }
-                this.Query.Values.forEach(function (value) {
-                    That.ObjectStore.add(value);
-                });
             }
 
             constructor(query: IInsert, onSuccess: Function, onError: Function) {
@@ -79,8 +69,8 @@ module JsStore {
                     var That = this;
                     this.Table = this.getTable(query.Into);
                     if (this.Table) {
-                        if (this.Query.BulkInsert) {
-                            this.bulkinsertData();
+                        if (this.Query.SkipDataCheck) {
+                            That.insertData();
                         }
                         else {
                             this.checkAndModifyValues(function () {

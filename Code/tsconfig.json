@@ -5,7 +5,7 @@
         "removeComments": false,
         "sourceMap": true,
         "inlineSources": true,
-        "out": "outputfile/JsStore-1.1.10.js",
+        "out": "outputfile/JsStore-1.2.js",
         "target": "es5",
         "preserveConstEnums": true,
         "declaration": true
@@ -13,6 +13,25 @@
     "files": [
         //License
         "License.ts",
+
+        //KeyStore
+
+        //Common
+        "KeyStore/UtilsLogic.ts",
+        "KeyStore/CommonLogic.ts",
+        "KeyStore/Helper.ts",
+
+        //Business
+        "KeyStore/Business/BaseLogic.ts",
+        "KeyStore/Business/GetLogic.ts",
+        "KeyStore/Business/SetLogic.ts",
+        "KeyStore/Business/RemoveLogic.ts",
+        "KeyStore/Business/InitDbLogic.ts",
+        "KeyStore/Business/MainLogic.ts",
+
+        //Instance
+        "KeyStore/KeyStoreInstance.ts",
+
         //JsStore
         // common files
         "JsStore/Script/enums.ts",
@@ -29,6 +48,7 @@
         "JsStore/Script/Business/CreateDbLogic.ts",
         "JsStore/Script/Business/DropDbLogic.ts",
         "JsStore/Script/Business/InsertLogic.ts",
+        "JsStore/Script/Business/BulkInsertLogic.ts",
         "JsStore/Script/Business/OpenDbLogic.ts",
         "JsStore/Script/Business/ClearLogic.ts",
         "JsStore/Script/Business/MainLogic.ts",
@@ -60,24 +80,6 @@
         //Instance
         "JsStore/Script/CodeExecutionHelper.ts",
         "JsStore/Script/JsStoreInstance.ts",
-        "JsStore/Script/DirectCode.ts",
-
-        //KeyStore
-
-        //Common
-        "KeyStore/UtilsLogic.ts",
-        "KeyStore/CommonLogic.ts",
-        "KeyStore/Helper.ts",
-
-        //Business
-        "KeyStore/Business/BaseLogic.ts",
-        "KeyStore/Business/GetLogic.ts",
-        "KeyStore/Business/SetLogic.ts",
-        "KeyStore/Business/RemoveLogic.ts",
-        "KeyStore/Business/InitDbLogic.ts",
-        "KeyStore/Business/MainLogic.ts",
-
-        //Instance
-        "KeyStore/KeyStoreInstance.ts"
+        "JsStore/Script/DirectCode.ts"
     ]
 }

@@ -88,6 +88,12 @@ module JsStore {
     */
     export var enableLog = function () {
         EnableLog = true;
+        WorkerInstance.postMessage(<IWebWorkerRequest>{
+            Name: 'change_log_status',
+            Query: {
+                logging: EnableLog
+            }
+        });
     }
 
     /**
@@ -96,5 +102,11 @@ module JsStore {
     */
     export var disableLog = function () {
         EnableLog = false;
+        WorkerInstance.postMessage(<IWebWorkerRequest>{
+            Name: 'change_log_status',
+            Query: {
+                logging: EnableLog
+            }
+        });
     }
 }
