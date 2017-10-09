@@ -8,10 +8,12 @@ module JsStore {
             if (Status.ConStatus == ConnectionStatus.NotStarted) {
                 switch (request.Name) {
                     case 'create_db':
-                    case 'open_db': this.RequestQueue.splice(0, 0, request);
+                    case 'open_db':
+                        this.RequestQueue.splice(0, 0, request);
                         if (WorkerStatus != WebWorkerStatus.NotStarted) {
                             this.executeCode();
                         };
+                        Status.ConStatus = ConnectionStatus.Connected;
                         break;
                     default: this.RequestQueue.push(request);
                 }

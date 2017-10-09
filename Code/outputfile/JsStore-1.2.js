@@ -3497,6 +3497,7 @@ var JsStore;
                                 this.executeCode();
                             }
                             ;
+                            JsStore.Status.ConStatus = JsStore.ConnectionStatus.Connected;
                             break;
                         default: this.RequestQueue.push(request);
                     }
@@ -3852,11 +3853,12 @@ var JsStore;
 if (!self.alert) {
     self.onmessage = function (e) {
         if (JsStore.EnableLog) {
-            console.log("Request executing from WebWorker, request name:" + e.data.Name);
+            console.log("Request executing from WebWorker, request name: " + e.data.Name);
         }
         var Request = e.data, IndexDbObject = new JsStore.Business.Main();
         IndexDbObject.checkConnectionAndExecuteLogic(Request);
     };
+    JsStore.WorkerStatus = JsStore.WebWorkerStatus.Registered;
     KeyStore.init();
 }
 //# sourceMappingURL=JsStore-1.2.js.map
