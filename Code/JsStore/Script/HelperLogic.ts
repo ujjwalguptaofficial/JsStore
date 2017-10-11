@@ -7,7 +7,7 @@ module JsStore {
     * @param {Function} callback 
     * @param {Function} errCallBack 
     */
-    export var isDbExist = function (dbInfo: DbInfo, callback: Function, errCallBack: Function) {
+    export var isDbExist = function (dbInfo: DbInfo, callback: Function, errCallBack: Function = null) {
         if (Status.ConStatus != ConnectionStatus.UnableToStart) {
             var DbName;
             if (typeof dbInfo == 'string') {

@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.2 - 05/10/2017
+/** JsStore.js - v1.2.0 - 11/10/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var KeyStore;
@@ -656,6 +656,7 @@ var JsStore;
     * @param {Function} errCallBack
     */
     JsStore.isDbExist = function (dbInfo, callback, errCallBack) {
+        if (errCallBack === void 0) { errCallBack = null; }
         if (JsStore.Status.ConStatus != JsStore.ConnectionStatus.UnableToStart) {
             var DbName;
             if (typeof dbInfo == 'string') {
@@ -3509,7 +3510,7 @@ var JsStore;
                     }
                 }
                 if (JsStore.EnableLog) {
-                    console.log("request pushed:" + request.Name);
+                    console.log("request pushed: " + request.Name);
                 }
             };
             this.executeCode = function () {
@@ -3656,7 +3657,7 @@ var JsStore;
             }
             _this.createWorker();
             if (dbName) {
-                throw 'The Api is changed. Please take a look at - http://jsstore.net/tutorial/create_database';
+                _this.openDb(dbName);
             }
             return _this;
         }
@@ -3861,4 +3862,4 @@ if (!self.alert) {
     JsStore.WorkerStatus = JsStore.WebWorkerStatus.Registered;
     KeyStore.init();
 }
-//# sourceMappingURL=JsStore-1.2.js.map
+//# sourceMappingURL=JsStore-1.2.0.js.map

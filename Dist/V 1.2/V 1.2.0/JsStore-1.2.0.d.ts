@@ -1,3 +1,6 @@
+/** JsStore.js - v1.2 - 11/10/2017
+ * https://github.com/ujjwalguptaofficial/JsStore
+ * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 declare module KeyStore {
     interface IError {
         Name: string;
@@ -313,7 +316,7 @@ declare module JsStore {
     * @param {Function} callback
     * @param {Function} errCallBack
     */
-    var isDbExist: (dbInfo: DbInfo, callback: Function, errCallBack: Function) => void;
+    var isDbExist: (dbInfo: DbInfo, callback: Function, errCallBack?: Function) => void;
     /**
     * get Db Version
     *
@@ -878,3 +881,4 @@ declare module JsStore {
         clear(tableName: string, onSuccess?: Function, onError?: Function): this;
     }
 }
+export = JsStore;

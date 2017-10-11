@@ -25,7 +25,7 @@ module JsStore {
                 }
             }
             if (EnableLog) {
-                console.log("request pushed:" + request.Name);
+                console.log("request pushed: " + request.Name);
             }
 
         }

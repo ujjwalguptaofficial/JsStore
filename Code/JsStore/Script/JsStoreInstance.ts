@@ -14,7 +14,7 @@ module JsStore {
             }
             this.createWorker();
             if (dbName) {
-                throw 'The Api is changed. Please take a look at - http://jsstore.net/tutorial/create_database';
+                this.openDb(dbName);
             }
         }
 
