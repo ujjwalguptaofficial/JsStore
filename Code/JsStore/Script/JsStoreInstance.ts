@@ -9,7 +9,7 @@ module JsStore {
             if (WorkerStatus == WebWorkerStatus.Registered) {
                 WorkerInstance.terminate();
             }
-            else {
+            else if (WorkerStatus == WebWorkerStatus.NotStarted) {
                 KeyStore.init();
             }
             this.createWorker();
@@ -28,7 +28,7 @@ module JsStore {
          * @returns 
          * @memberof Instance
          */
-        openDb(dbName: string, onSuccess: Function = null, onError: Function = null) {
+        openDb = function (dbName: string, onSuccess: Function = null, onError: Function = null) {
             this.prcoessExecutionOfCode(<IWebWorkerRequest>{
                 Name: 'open_db',
                 Query: dbName,
@@ -37,7 +37,6 @@ module JsStore {
             });
             return this;
         }
-
 
         /**
          * creates DataBase
@@ -48,7 +47,7 @@ module JsStore {
          * @returns 
          * @memberof Instance
          */
-        createDb(dataBase: Model.IDataBase, onSuccess: Function = null, onError: Function = null) {
+        createDb = function (dataBase: Model.IDataBase, onSuccess: Function = null, onError: Function = null) {
             this.prcoessExecutionOfCode(<IWebWorkerRequest>{
                 Name: 'create_db',
                 OnSuccess: onSuccess,
@@ -66,7 +65,7 @@ module JsStore {
          * @param {Function} [onError=null] 
          * @memberof Instance
          */
-        dropDb(onSuccess: Function, onError: Function = null) {
+        dropDb = function (onSuccess: Function, onError: Function = null) {
             this.prcoessExecutionOfCode(<IWebWorkerRequest>{
                 Name: 'drop_db',
                 OnSuccess: onSuccess,
@@ -84,7 +83,7 @@ module JsStore {
          * 
          * @memberOf Main
          */
-        select(query: ISelect, onSuccess: Function = null, onError: Function = null) {
+        select = function (query: ISelect, onSuccess: Function = null, onError: Function = null) {
             var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
                 OnError = query.OnError ? query.OnError : onError;
             query.OnSuccess = null;
@@ -106,7 +105,7 @@ module JsStore {
          * @param {Function} [onError=null] 
          * @memberof Instance
          */
-        count(query: ICount, onSuccess: Function = null, onError: Function = null) {
+        count = function (query: ICount, onSuccess: Function = null, onError: Function = null) {
             var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
                 OnError = query.OnError ? query.OnError : onError;
             query.OnSuccess = null;
@@ -129,7 +128,7 @@ module JsStore {
          * @param {Function} [onError=null] 
          * @memberof Instance
          */
-        insert(query: IInsert, onSuccess: Function = null, onError: Function = null) {
+        insert = function (query: IInsert, onSuccess: Function = null, onError: Function = null) {
             var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
                 OnError = query.OnError ? query.OnError : onError;
             query.OnSuccess = null;
@@ -151,7 +150,7 @@ module JsStore {
          * @param {Function} [onError=null] 
          * @memberof Instance
          */
-        update(query: IUpdate, onSuccess: Function = null, onError: Function = null) {
+        update = function (query: IUpdate, onSuccess: Function = null, onError: Function = null) {
             var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
                 OnError = query.OnError ? query.OnError : onError;
             query.OnSuccess = null;
@@ -173,7 +172,7 @@ module JsStore {
          * @param {Function} onError 
          * @memberof Instance
          */
-        delete(query: IDelete, onSuccess: Function = null, onError: Function = null) {
+        delete = function (query: IDelete, onSuccess: Function = null, onError: Function = null) {
             var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
                 OnError = query.OnError ? query.OnError : onError;
             query.OnSuccess = null;
@@ -195,12 +194,35 @@ module JsStore {
          * @param {Function} [onError=null] 
          * @memberof Instance
          */
-        clear(tableName: string, onSuccess: Function = null, onError: Function = null) {
+        clear = function (tableName: string, onSuccess: Function = null, onError: Function = null) {
             this.prcoessExecutionOfCode(<IWebWorkerRequest>{
                 Name: 'clear',
                 Query: tableName,
                 OnSuccess: onSuccess,
                 OnError: onerror
+            });
+            return this;
+        }
+
+        /**
+         * insert bulk amount of data
+         * 
+         * @param {IInsert} query 
+         * @param {Function} [onSuccess=null] 
+         * @param {Function} [onError=null] 
+         * @returns 
+         * @memberof Instance
+         */
+        bulkInsert = function (query: IInsert, onSuccess: Function = null, onError: Function = null) {
+            var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
+                OnError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = null;
+            query.OnError = null;
+            this.prcoessExecutionOfCode(<IWebWorkerRequest>{
+                Name: 'bulk_insert',
+                Query: query,
+                OnSuccess: OnSuccess,
+                OnError: OnError
             });
             return this;
         }

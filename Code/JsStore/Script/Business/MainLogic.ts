@@ -79,6 +79,8 @@ module JsStore {
                         break;
                     case 'delete': this.delete(request.Query, OnSuccess, OnError);
                         break;
+                    case 'open_db': this.openDb(request.Query, OnSuccess, OnError);
+                        break;
                     case 'create_db': this.createDb(request.Query, OnSuccess, OnError);
                         break;
                     case 'clear': this.clear(request.Query, OnSuccess, OnError);
@@ -87,7 +89,7 @@ module JsStore {
                         break;
                     case 'count': this.count(request.Query, OnSuccess, OnError);
                         break;
-                    case 'open_db': this.openDb(request.Query, OnSuccess, OnError);
+                    case 'bulk_insert': this.bulkInsert(request.Query, OnSuccess, OnError);
                         break;
                 }
             }
@@ -127,6 +129,15 @@ module JsStore {
                 }
                 else {
                     new Insert(query, onSuccess, onError);
+                }
+            }
+
+            public bulkInsert = function (query: IInsert, onSuccess: Function, onError: Function) {
+                if (!Array.isArray(query.Values)) {
+                    throwError("Value should be array :- supplied value is not array");
+                }
+                else {
+                    new BulkInsert(query, onSuccess, onError);
                 }
             }
 

@@ -1,3 +1,6 @@
+/** JsStore.js - v1.2.1 - 13/10/2017
+ * https://github.com/ujjwalguptaofficial/JsStore
+ * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 declare module KeyStore {
     interface IError {
         Name: string;
@@ -282,6 +285,10 @@ declare module JsStore {
         ErrorDetails: any;
         ReturnedValue: any;
     }
+    interface IError {
+        Name: string;
+        Message: string;
+    }
 }
 declare module JsStore {
     var EnableLog: boolean, DbVersion: number, Status: JsStoreStatus, TempResults: Array<any>;
@@ -289,10 +296,6 @@ declare module JsStore {
     var getObjectFirstKey: (value: any) => string;
 }
 declare module JsStore {
-    interface IError {
-        Name: string;
-        Message: string;
-    }
     class Utils {
         static getError(errorType: ErrorType, errorDetail: any): IError;
         static convertObjectintoLowerCase(obj: any): void;
@@ -345,6 +348,13 @@ declare module JsStore {
     *
     */
     var disableLog: () => void;
+    /**
+    * get the results in file by file type
+    *
+    * @param {*} qry
+    * @param {string} type
+    */
+    var getFile: (qry: any, data: any, type?: string) => void;
 }
 declare module JsStore {
     module Model {
@@ -520,6 +530,7 @@ declare module JsStore {
             dropDb: (onSuccess: Function, onError: Function) => void;
             update: (query: IUpdate, onSuccess: Function, onError: Function) => void;
             insert: (query: IInsert, onSuccess: Function, onError: Function) => void;
+            bulkInsert: (query: IInsert, onSuccess: Function, onError: Function) => void;
             delete: (query: IDelete, onSuccess: Function, onError: Function) => void;
             select: (query: any, onSuccess: Function, onError: Function) => void;
             count: (query: any, onSuccess: Function, onError: Function) => void;
@@ -802,7 +813,7 @@ declare module JsStore {
          * @returns
          * @memberof Instance
          */
-        openDb(dbName: string, onSuccess?: Function, onError?: Function): this;
+        openDb: (dbName: string, onSuccess?: Function, onError?: Function) => any;
         /**
          * creates DataBase
          *
@@ -812,7 +823,7 @@ declare module JsStore {
          * @returns
          * @memberof Instance
          */
-        createDb(dataBase: Model.IDataBase, onSuccess?: Function, onError?: Function): this;
+        createDb: (dataBase: Model.IDataBase, onSuccess?: Function, onError?: Function) => any;
         /**
          * drop dataBase
          *
@@ -820,7 +831,7 @@ declare module JsStore {
          * @param {Function} [onError=null]
          * @memberof Instance
          */
-        dropDb(onSuccess: Function, onError?: Function): this;
+        dropDb: (onSuccess: Function, onError?: Function) => any;
         /**
          * select data from table
          *
@@ -830,7 +841,7 @@ declare module JsStore {
          *
          * @memberOf Main
          */
-        select(query: ISelect, onSuccess?: Function, onError?: Function): this;
+        select: (query: ISelect, onSuccess?: Function, onError?: Function) => any;
         /**
          * get no of result from table
          *
@@ -839,7 +850,7 @@ declare module JsStore {
          * @param {Function} [onError=null]
          * @memberof Instance
          */
-        count(query: ICount, onSuccess?: Function, onError?: Function): this;
+        count: (query: ICount, onSuccess?: Function, onError?: Function) => any;
         /**
          * insert data into table
          *
@@ -848,7 +859,7 @@ declare module JsStore {
          * @param {Function} [onError=null]
          * @memberof Instance
          */
-        insert(query: IInsert, onSuccess?: Function, onError?: Function): this;
+        insert: (query: IInsert, onSuccess?: Function, onError?: Function) => any;
         /**
          * update data into table
          *
@@ -857,7 +868,7 @@ declare module JsStore {
          * @param {Function} [onError=null]
          * @memberof Instance
          */
-        update(query: IUpdate, onSuccess?: Function, onError?: Function): this;
+        update: (query: IUpdate, onSuccess?: Function, onError?: Function) => any;
         /**
          * delete data from table
          *
@@ -866,7 +877,7 @@ declare module JsStore {
          * @param {Function} onError
          * @memberof Instance
          */
-        delete(query: IDelete, onSuccess?: Function, onError?: Function): this;
+        delete: (query: IDelete, onSuccess?: Function, onError?: Function) => any;
         /**
          * delete all data from table
          *
@@ -875,6 +886,17 @@ declare module JsStore {
          * @param {Function} [onError=null]
          * @memberof Instance
          */
-        clear(tableName: string, onSuccess?: Function, onError?: Function): this;
+        clear: (tableName: string, onSuccess?: Function, onError?: Function) => any;
+        /**
+         * insert bulk amount of data
+         *
+         * @param {IInsert} query
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         * @returns
+         * @memberof Instance
+         */
+        bulkInsert: (query: IInsert, onSuccess?: Function, onError?: Function) => any;
     }
 }
+export = JsStore;

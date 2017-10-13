@@ -89,7 +89,9 @@ module JsStore {
         private onWorkerFailed = function () {
             console.warn('JsStore is not runing in web worker');
             WorkerStatus = WebWorkerStatus.Failed;
-            this.executeCode();
+            if (Status.ConStatus == ConnectionStatus.NotStarted) {
+                this.executeCode();
+            }
         }
 
         protected createWorker = function () {
@@ -112,7 +114,9 @@ module JsStore {
                             if (WorkerStatus != WebWorkerStatus.Failed) {
                                 WorkerStatus = WebWorkerStatus.Registered;
                             }
-                            That.executeCode();
+                            if (Status.ConStatus == ConnectionStatus.Connected) {
+                                That.executeCode();
+                            }
                         }, 100);
                     }
                     else {

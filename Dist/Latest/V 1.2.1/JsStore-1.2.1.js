@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.2.0 - 11/10/2017
+/** JsStore.js - v1.2.1 - 13/10/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var KeyStore;
@@ -736,12 +736,14 @@ var JsStore;
     */
     JsStore.enableLog = function () {
         JsStore.EnableLog = true;
-        JsStore.WorkerInstance.postMessage({
-            Name: 'change_log_status',
-            Query: {
-                logging: JsStore.EnableLog
-            }
-        });
+        if (JsStore.WorkerInstance) {
+            JsStore.WorkerInstance.postMessage({
+                Name: 'change_log_status',
+                Query: {
+                    logging: JsStore.EnableLog
+                }
+            });
+        }
     };
     /**
     * disable log
@@ -749,12 +751,49 @@ var JsStore;
     */
     JsStore.disableLog = function () {
         JsStore.EnableLog = false;
-        JsStore.WorkerInstance.postMessage({
-            Name: 'change_log_status',
-            Query: {
-                logging: JsStore.EnableLog
-            }
-        });
+        if (JsStore.WorkerInstance) {
+            JsStore.WorkerInstance.postMessage({
+                Name: 'change_log_status',
+                Query: {
+                    logging: JsStore.EnableLog
+                }
+            });
+        }
+    };
+    /**
+    * get the results in file by file type
+    *
+    * @param {*} qry
+    * @param {string} type
+    */
+    JsStore.getFile = function (qry, data, type) {
+        if (type === void 0) { type = null; }
+        var downloadJson = function (qry) {
+            // var Result = [];
+            // var Table = document.querySelector('#divResultSQL table tbody');
+            // for (var i = 1, rowLength = Table.rows.length; i < rowLength; i++) {
+            //     var Obj = {};
+            //     for (var j = 0, colLength = Table.rows[i].cells.length; j < colLength; j++) {
+            //         if (j == 1 || j == 4) {
+            //             Obj[Table.rows[0].cells[j].innerText] = Table.rows[i].cells[j].innerText;
+            //         } else {
+            //             Obj[Table.rows[0].cells[j].innerText] = Number(Table.rows[i].cells[j].innerText);
+            //         }
+            //     }
+            //     Result.push(Obj);
+            // }
+            // var a = document.createElement("a");
+            // var file = new Blob([JSON.stringify(Result)], {
+            //     type: "text/json"
+            // });
+            // a.href = URL.createObjectURL(file);
+            // a.download = fileName + ".json";
+            // a.click();        
+        };
+        switch (type.toLowerCase()) {
+            case 'csv':
+            default: downloadJson(qry);
+        }
     };
 })(JsStore || (JsStore = {}));
 var JsStore;
@@ -1635,6 +1674,9 @@ var JsStore;
                         case 'delete':
                             this.delete(request.Query, OnSuccess, OnError);
                             break;
+                        case 'open_db':
+                            this.openDb(request.Query, OnSuccess, OnError);
+                            break;
                         case 'create_db':
                             this.createDb(request.Query, OnSuccess, OnError);
                             break;
@@ -1647,8 +1689,8 @@ var JsStore;
                         case 'count':
                             this.count(request.Query, OnSuccess, OnError);
                             break;
-                        case 'open_db':
-                            this.openDb(request.Query, OnSuccess, OnError);
+                        case 'bulk_insert':
+                            this.bulkInsert(request.Query, OnSuccess, OnError);
                             break;
                     }
                 };
@@ -1683,6 +1725,14 @@ var JsStore;
                     }
                     else {
                         new Business.Insert(query, onSuccess, onError);
+                    }
+                };
+                this.bulkInsert = function (query, onSuccess, onError) {
+                    if (!Array.isArray(query.Values)) {
+                        JsStore.throwError("Value should be array :- supplied value is not array");
+                    }
+                    else {
+                        new Business.BulkInsert(query, onSuccess, onError);
                     }
                 };
                 this.delete = function (query, onSuccess, onError) {
@@ -3568,7 +3618,9 @@ var JsStore;
             this.onWorkerFailed = function () {
                 console.warn('JsStore is not runing in web worker');
                 JsStore.WorkerStatus = JsStore.WebWorkerStatus.Failed;
-                this.executeCode();
+                if (JsStore.Status.ConStatus == JsStore.ConnectionStatus.NotStarted) {
+                    this.executeCode();
+                }
             };
             this.createWorker = function () {
                 var That = this;
@@ -3590,7 +3642,9 @@ var JsStore;
                                 if (JsStore.WorkerStatus != JsStore.WebWorkerStatus.Failed) {
                                     JsStore.WorkerStatus = JsStore.WebWorkerStatus.Registered;
                                 }
-                                That.executeCode();
+                                if (JsStore.Status.ConStatus == JsStore.ConnectionStatus.Connected) {
+                                    That.executeCode();
+                                }
                             }, 100);
                         }
                         else {
@@ -3649,10 +3703,219 @@ var JsStore;
         function Instance(dbName) {
             if (dbName === void 0) { dbName = null; }
             var _this = _super.call(this) || this;
+            /**
+             * open database
+             *
+             * @param {string} dbName
+             * @param {Function} [onSuccess=null]
+             * @param {Function} [onError=null]
+             * @returns
+             * @memberof Instance
+             */
+            _this.openDb = function (dbName, onSuccess, onError) {
+                if (onSuccess === void 0) { onSuccess = null; }
+                if (onError === void 0) { onError = null; }
+                this.prcoessExecutionOfCode({
+                    Name: 'open_db',
+                    Query: dbName,
+                    OnSuccess: onSuccess,
+                    OnError: onError,
+                });
+                return this;
+            };
+            /**
+             * creates DataBase
+             *
+             * @param {Model.IDataBase} dataBase
+             * @param {Function} [onSuccess=null]
+             * @param {Function} [onError=null]
+             * @returns
+             * @memberof Instance
+             */
+            _this.createDb = function (dataBase, onSuccess, onError) {
+                if (onSuccess === void 0) { onSuccess = null; }
+                if (onError === void 0) { onError = null; }
+                this.prcoessExecutionOfCode({
+                    Name: 'create_db',
+                    OnSuccess: onSuccess,
+                    OnError: onError,
+                    Query: dataBase
+                });
+                return this;
+            };
+            /**
+             * drop dataBase
+             *
+             * @param {Function} onSuccess
+             * @param {Function} [onError=null]
+             * @memberof Instance
+             */
+            _this.dropDb = function (onSuccess, onError) {
+                if (onError === void 0) { onError = null; }
+                this.prcoessExecutionOfCode({
+                    Name: 'drop_db',
+                    OnSuccess: onSuccess,
+                    OnError: onError
+                });
+                return this;
+            };
+            /**
+             * select data from table
+             *
+             * @param {IQuery} query
+             * @param {Function} [onSuccess=null]
+             * @param {Function} [onError=null]
+             *
+             * @memberOf Main
+             */
+            _this.select = function (query, onSuccess, onError) {
+                if (onSuccess === void 0) { onSuccess = null; }
+                if (onError === void 0) { onError = null; }
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = null;
+                query.OnError = null;
+                this.prcoessExecutionOfCode({
+                    Name: 'select',
+                    Query: query,
+                    OnSuccess: OnSuccess,
+                    OnError: OnError
+                });
+                return this;
+            };
+            /**
+             * get no of result from table
+             *
+             * @param {ICount} query
+             * @param {Function} [onSuccess=null]
+             * @param {Function} [onError=null]
+             * @memberof Instance
+             */
+            _this.count = function (query, onSuccess, onError) {
+                if (onSuccess === void 0) { onSuccess = null; }
+                if (onError === void 0) { onError = null; }
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = null;
+                query.OnError = null;
+                this.prcoessExecutionOfCode({
+                    Name: 'count',
+                    Query: query,
+                    OnSuccess: OnSuccess,
+                    OnError: OnError
+                });
+                return this;
+            };
+            /**
+             * insert data into table
+             *
+             * @param {IInsert} query
+             * @param {Function} [onSuccess=null]
+             * @param {Function} [onError=null]
+             * @memberof Instance
+             */
+            _this.insert = function (query, onSuccess, onError) {
+                if (onSuccess === void 0) { onSuccess = null; }
+                if (onError === void 0) { onError = null; }
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = null;
+                query.OnError = null;
+                this.prcoessExecutionOfCode({
+                    Name: 'insert',
+                    Query: query,
+                    OnSuccess: OnSuccess,
+                    OnError: OnError
+                });
+                return this;
+            };
+            /**
+             * update data into table
+             *
+             * @param {IUpdate} query
+             * @param {Function} [onSuccess=null]
+             * @param {Function} [onError=null]
+             * @memberof Instance
+             */
+            _this.update = function (query, onSuccess, onError) {
+                if (onSuccess === void 0) { onSuccess = null; }
+                if (onError === void 0) { onError = null; }
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = null;
+                query.OnError = null;
+                this.prcoessExecutionOfCode({
+                    Name: 'update',
+                    Query: query,
+                    OnSuccess: OnSuccess,
+                    OnError: OnError
+                });
+                return this;
+            };
+            /**
+             * delete data from table
+             *
+             * @param {IDelete} query
+             * @param {Function} [onSuccess=null]
+             * @param {Function} onError
+             * @memberof Instance
+             */
+            _this.delete = function (query, onSuccess, onError) {
+                if (onSuccess === void 0) { onSuccess = null; }
+                if (onError === void 0) { onError = null; }
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = null;
+                query.OnError = null;
+                this.prcoessExecutionOfCode({
+                    Name: 'delete',
+                    Query: query,
+                    OnSuccess: OnSuccess,
+                    OnError: OnError
+                });
+                return this;
+            };
+            /**
+             * delete all data from table
+             *
+             * @param {string} tableName
+             * @param {Function} [onSuccess=null]
+             * @param {Function} [onError=null]
+             * @memberof Instance
+             */
+            _this.clear = function (tableName, onSuccess, onError) {
+                if (onSuccess === void 0) { onSuccess = null; }
+                if (onError === void 0) { onError = null; }
+                this.prcoessExecutionOfCode({
+                    Name: 'clear',
+                    Query: tableName,
+                    OnSuccess: onSuccess,
+                    OnError: onerror
+                });
+                return this;
+            };
+            /**
+             * insert bulk amount of data
+             *
+             * @param {IInsert} query
+             * @param {Function} [onSuccess=null]
+             * @param {Function} [onError=null]
+             * @returns
+             * @memberof Instance
+             */
+            _this.bulkInsert = function (query, onSuccess, onError) {
+                if (onSuccess === void 0) { onSuccess = null; }
+                if (onError === void 0) { onError = null; }
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = null;
+                query.OnError = null;
+                this.prcoessExecutionOfCode({
+                    Name: 'bulk_insert',
+                    Query: query,
+                    OnSuccess: OnSuccess,
+                    OnError: OnError
+                });
+                return this;
+            };
             if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.Registered) {
                 JsStore.WorkerInstance.terminate();
             }
-            else {
+            else if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.NotStarted) {
                 KeyStore.init();
             }
             _this.createWorker();
@@ -3661,197 +3924,11 @@ var JsStore;
             }
             return _this;
         }
-        /**
-         * open database
-         *
-         * @param {string} dbName
-         * @param {Function} [onSuccess=null]
-         * @param {Function} [onError=null]
-         * @returns
-         * @memberof Instance
-         */
-        Instance.prototype.openDb = function (dbName, onSuccess, onError) {
-            if (onSuccess === void 0) { onSuccess = null; }
-            if (onError === void 0) { onError = null; }
-            this.prcoessExecutionOfCode({
-                Name: 'open_db',
-                Query: dbName,
-                OnSuccess: onSuccess,
-                OnError: onError,
-            });
-            return this;
-        };
-        /**
-         * creates DataBase
-         *
-         * @param {Model.IDataBase} dataBase
-         * @param {Function} [onSuccess=null]
-         * @param {Function} [onError=null]
-         * @returns
-         * @memberof Instance
-         */
-        Instance.prototype.createDb = function (dataBase, onSuccess, onError) {
-            if (onSuccess === void 0) { onSuccess = null; }
-            if (onError === void 0) { onError = null; }
-            this.prcoessExecutionOfCode({
-                Name: 'create_db',
-                OnSuccess: onSuccess,
-                OnError: onError,
-                Query: dataBase
-            });
-            return this;
-        };
-        /**
-         * drop dataBase
-         *
-         * @param {Function} onSuccess
-         * @param {Function} [onError=null]
-         * @memberof Instance
-         */
-        Instance.prototype.dropDb = function (onSuccess, onError) {
-            if (onError === void 0) { onError = null; }
-            this.prcoessExecutionOfCode({
-                Name: 'drop_db',
-                OnSuccess: onSuccess,
-                OnError: onError
-            });
-            return this;
-        };
-        /**
-         * select data from table
-         *
-         * @param {IQuery} query
-         * @param {Function} [onSuccess=null]
-         * @param {Function} [onError=null]
-         *
-         * @memberOf Main
-         */
-        Instance.prototype.select = function (query, onSuccess, onError) {
-            if (onSuccess === void 0) { onSuccess = null; }
-            if (onError === void 0) { onError = null; }
-            var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
-            query.OnSuccess = null;
-            query.OnError = null;
-            this.prcoessExecutionOfCode({
-                Name: 'select',
-                Query: query,
-                OnSuccess: OnSuccess,
-                OnError: OnError
-            });
-            return this;
-        };
-        /**
-         * get no of result from table
-         *
-         * @param {ICount} query
-         * @param {Function} [onSuccess=null]
-         * @param {Function} [onError=null]
-         * @memberof Instance
-         */
-        Instance.prototype.count = function (query, onSuccess, onError) {
-            if (onSuccess === void 0) { onSuccess = null; }
-            if (onError === void 0) { onError = null; }
-            var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
-            query.OnSuccess = null;
-            query.OnError = null;
-            this.prcoessExecutionOfCode({
-                Name: 'count',
-                Query: query,
-                OnSuccess: OnSuccess,
-                OnError: OnError
-            });
-            return this;
-        };
-        /**
-         * insert data into table
-         *
-         * @param {IInsert} query
-         * @param {Function} [onSuccess=null]
-         * @param {Function} [onError=null]
-         * @memberof Instance
-         */
-        Instance.prototype.insert = function (query, onSuccess, onError) {
-            if (onSuccess === void 0) { onSuccess = null; }
-            if (onError === void 0) { onError = null; }
-            var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
-            query.OnSuccess = null;
-            query.OnError = null;
-            this.prcoessExecutionOfCode({
-                Name: 'insert',
-                Query: query,
-                OnSuccess: OnSuccess,
-                OnError: OnError
-            });
-            return this;
-        };
-        /**
-         * update data into table
-         *
-         * @param {IUpdate} query
-         * @param {Function} [onSuccess=null]
-         * @param {Function} [onError=null]
-         * @memberof Instance
-         */
-        Instance.prototype.update = function (query, onSuccess, onError) {
-            if (onSuccess === void 0) { onSuccess = null; }
-            if (onError === void 0) { onError = null; }
-            var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
-            query.OnSuccess = null;
-            query.OnError = null;
-            this.prcoessExecutionOfCode({
-                Name: 'update',
-                Query: query,
-                OnSuccess: OnSuccess,
-                OnError: OnError
-            });
-            return this;
-        };
-        /**
-         * delete data from table
-         *
-         * @param {IDelete} query
-         * @param {Function} [onSuccess=null]
-         * @param {Function} onError
-         * @memberof Instance
-         */
-        Instance.prototype.delete = function (query, onSuccess, onError) {
-            if (onSuccess === void 0) { onSuccess = null; }
-            if (onError === void 0) { onError = null; }
-            var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
-            query.OnSuccess = null;
-            query.OnError = null;
-            this.prcoessExecutionOfCode({
-                Name: 'delete',
-                Query: query,
-                OnSuccess: OnSuccess,
-                OnError: OnError
-            });
-            return this;
-        };
-        /**
-         * delete all data from table
-         *
-         * @param {string} tableName
-         * @param {Function} [onSuccess=null]
-         * @param {Function} [onError=null]
-         * @memberof Instance
-         */
-        Instance.prototype.clear = function (tableName, onSuccess, onError) {
-            if (onSuccess === void 0) { onSuccess = null; }
-            if (onError === void 0) { onError = null; }
-            this.prcoessExecutionOfCode({
-                Name: 'clear',
-                Query: tableName,
-                OnSuccess: onSuccess,
-                OnError: onerror
-            });
-            return this;
-        };
         return Instance;
     }(JsStore.CodeExecutionHelper));
     JsStore.Instance = Instance;
 })(JsStore || (JsStore = {}));
-if (!self.alert) {
+if (self && !self.alert) {
     self.onmessage = function (e) {
         if (JsStore.EnableLog) {
             console.log("Request executing from WebWorker, request name: " + e.data.Name);
@@ -3862,4 +3939,4 @@ if (!self.alert) {
     JsStore.WorkerStatus = JsStore.WebWorkerStatus.Registered;
     KeyStore.init();
 }
-//# sourceMappingURL=JsStore-1.2.0.js.map
+//# sourceMappingURL=JsStore-1.2.1.js.map

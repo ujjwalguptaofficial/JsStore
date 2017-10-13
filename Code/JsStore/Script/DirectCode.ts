@@ -1,4 +1,4 @@
-if (!self.alert) {
+if (self && !self.alert) {
     self.onmessage = function (e) {
         if (JsStore.EnableLog) {
             console.log("Request executing from WebWorker, request name: " + e.data.Name);

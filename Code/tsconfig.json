@@ -5,7 +5,7 @@
         "removeComments": false,
         "sourceMap": true,
         "inlineSources": true,
-        "out": "outputfile/JsStore-1.2.0.js",
+        "out": "outputfile/JsStore-1.2.1.js",
         "target": "es5",
         "preserveConstEnums": true,
         "declaration": true

@@ -1,8 +1,4 @@
 module JsStore {
-    export interface IError {
-        Name: string,
-        Message: string
-    }
     export class Utils {
         static getError(errorType: ErrorType, errorDetail: any) {
             var Error: IError = {

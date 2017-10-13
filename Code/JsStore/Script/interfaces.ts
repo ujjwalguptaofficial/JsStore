@@ -106,4 +106,9 @@ module JsStore {
         ReturnedValue: any;
     }
 
+    export interface IError {
+        Name: string,
+        Message: string
+    }
+
 }
