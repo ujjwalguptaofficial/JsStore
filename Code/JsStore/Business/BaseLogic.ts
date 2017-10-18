@@ -239,6 +239,7 @@ module JsStore {
                             case '<=':
                                 this.executeWhereLogic(Column, Value, Key);
                                 break;
+                            case 'Aggregate': break;
                             default: this.executeWhereLogic(Column, Value);
                         }
                     }

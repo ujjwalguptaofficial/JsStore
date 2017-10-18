@@ -226,5 +226,25 @@ module JsStore {
             });
             return this;
         }
+
+        /**
+         * export the result in json file
+         * 
+         * @param {ISelect} qry 
+         * @memberof Instance
+         */
+        exportJson = function (qry: ISelect) {
+            qry['OnSuccess'] = qry['OnError'] = undefined;
+            this.select(qry, function (results) {
+                var Link = document.createElement("a");
+                Link.href = URL.createObjectURL(new Blob([JSON.stringify(results)], {
+                    type: "text/json"
+                }));
+                Link.download = qry.From + ".json";
+                Link.click();
+            }, function (err) {
+                console.error(err);
+            });
+        }
     }
 }

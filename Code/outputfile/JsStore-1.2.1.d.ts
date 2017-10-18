@@ -205,6 +205,14 @@ declare module JsStore {
         OnSuccess: Function;
         OnError: Function;
         Order: IOrder;
+        GroupBy: any;
+        Aggregate: {
+            Max: any;
+            Min: any;
+            Count: any;
+            Sum: any;
+            Avg: any;
+        };
     }
     interface IOrder {
         By: string;
@@ -286,6 +294,13 @@ declare module JsStore {
         Name: string;
         Message: string;
     }
+    interface IAggregate {
+        Max: Array<any>;
+        Min: Array<any>;
+        Sum: Array<any>;
+        Count: Array<any>;
+        Avg: Array<any>;
+    }
 }
 declare module JsStore {
     var EnableLog: boolean, DbVersion: number, Status: JsStoreStatus, TempResults: Array<any>;
@@ -352,6 +367,17 @@ declare module JsStore {
     * @param {string} type
     */
     var getFile: (qry: any, data: any, type?: string) => void;
+}
+declare module JsStore {
+    module Model {
+        class Aggregate implements IAggregate {
+            Max: Array<any>;
+            Min: Array<any>;
+            Sum: Array<any>;
+            Count: Array<any>;
+            Avg: Array<any>;
+        }
+    }
 }
 declare module JsStore {
     module Model {
@@ -606,7 +632,31 @@ declare module JsStore {
 declare module JsStore {
     module Business {
         module Select {
-            class Instance extends Where {
+            class GroupByHelper extends Where {
+                constructor();
+                private executeAggregateGroupBy;
+                private executeSimpleGroupBy;
+            }
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        module Select {
+            class Helper extends GroupByHelper {
+                processOrderBy: () => void;
+                private processAggregateQry;
+                private performAggregateQry;
+                processGroupBy: () => void;
+                constructor();
+            }
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        module Select {
+            class Instance extends Helper {
                 onTransactionCompleted: () => void;
                 private createtransactionForOrLogic;
                 private orQuerySuccess;
@@ -894,5 +944,12 @@ declare module JsStore {
          * @memberof Instance
          */
         bulkInsert: (query: IInsert, onSuccess?: Function, onError?: Function) => any;
+        /**
+         * export the result in json file
+         *
+         * @param {ISelect} qry
+         * @memberof Instance
+         */
+        exportJson: (qry: ISelect) => void;
     }
 }

@@ -1,51 +1,21 @@
 module JsStore {
     export module Business {
         export module Select {
-            export class Instance extends Where {
+            export class Instance extends Helper {
                 public onTransactionCompleted = function () {
-                    var Order = this.Query.Order;
-                    if (Order && this.Results.length > 0 && !this.Sorted && Order.By) {
-                        Order.Type = Order.Type ? Order.Type.toLowerCase() : 'asc';
-                        var That = this, OrderColumn = Order.By,
-                            sortNumberInAsc = function () {
-                                That.Results.sort(function (a, b) {
-                                    return a[OrderColumn] - b[OrderColumn];
-                                });
-                            },
-                            sortNumberInDesc = function () {
-                                That.Results.sort(function (a, b) {
-                                    return b[OrderColumn] - a[OrderColumn];
-                                });
-                            },
-                            sortAlphabetInAsc = function () {
-                                That.Results.sort(function (a, b) {
-                                    return a[OrderColumn].toLowerCase().localeCompare(b[OrderColumn].toLowerCase());
-                                });
-                            },
-                            sortAlphabetInDesc = function () {
-                                That.Results.sort(function (a, b) {
-                                    return b[OrderColumn].toLowerCase().localeCompare(a[OrderColumn].toLowerCase());
-                                });
-                            };
-                        if (typeof this.Results[0][OrderColumn] == 'string') {
-                            if (Order.Type == 'asc') {
-                                sortAlphabetInAsc();
+                    if (this.SendResultFlag) {
+                        this.processOrderBy();
+                        if (this.Query.GroupBy) {
+                            if (this.Query.Aggregate) {
+                                this.executeAggregateGroupBy();
                             }
                             else {
-                                sortAlphabetInDesc();
+                                this.processGroupBy();
                             }
                         }
-                        else if (typeof this.Results[0][OrderColumn] == 'number') {
-                            if (Order.Type == 'asc') {
-                                sortNumberInAsc();
-                            }
-                            else {
-                                sortNumberInDesc();
-                            }
+                        else if (this.Query.Aggregate) {
+                            this.processAggregateQry();
                         }
-                        this.OnSuccess(this.Results);
-                    }
-                    else if (this.SendResultFlag) {
                         this.OnSuccess(this.Results);
                     }
                 }

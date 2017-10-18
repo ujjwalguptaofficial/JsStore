@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.2.1 - 13/10/2017
+/** JsStore.js - v1.2.2 - 15/10/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var KeyStore;
@@ -800,6 +800,23 @@ var JsStore;
 (function (JsStore) {
     var Model;
     (function (Model) {
+        var Aggregate = /** @class */ (function () {
+            function Aggregate() {
+                this.Max = [];
+                this.Min = [];
+                this.Sum = [];
+                this.Count = [];
+                this.Avg = [];
+            }
+            return Aggregate;
+        }());
+        Model.Aggregate = Aggregate;
+    })(Model = JsStore.Model || (JsStore.Model = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Model;
+    (function (Model) {
         var Column = /** @class */ (function () {
             function Column(key, tableName) {
                 if (key.Name != null) {
@@ -1021,6 +1038,7 @@ var JsStore;
                                 case '<=':
                                     this.executeWhereLogic(Column, Value, Key);
                                     break;
+                                case 'Aggregate': break;
                                 default: this.executeWhereLogic(Column, Value);
                             }
                         }
@@ -2514,11 +2532,159 @@ var JsStore;
     (function (Business) {
         var Select;
         (function (Select) {
-            var Instance = /** @class */ (function (_super) {
-                __extends(Instance, _super);
-                function Instance(query, onSuccess, onError) {
+            var GroupByHelper = /** @class */ (function (_super) {
+                __extends(GroupByHelper, _super);
+                function GroupByHelper() {
                     var _this = _super.call(this) || this;
-                    _this.onTransactionCompleted = function () {
+                    _this.executeAggregateGroupBy = function (key) {
+                        if (key === void 0) { key = this.Query.GroupBy; }
+                        var Datas = this.Results, lookupObject = {};
+                        var Results = [];
+                        //free results memory
+                        this.Results = undefined;
+                        for (var i in Datas) {
+                            for (var prop in this.Query.Aggregate) {
+                                switch (prop) {
+                                    case 'Count':
+                                        if (typeof this.Query.Aggregate[prop] == 'string') {
+                                            var Key = this.Query.Aggregate[prop], Value = lookupObject[Datas[i][key]];
+                                            Value = Value ? Value["Count(" + Key + ")"] : 0;
+                                            Value += Datas[i][Key] ? 1 : 0;
+                                            Datas[i]["Count(" + Key + ")"] = Value;
+                                        }
+                                        else if (Array.isArray(this.Query.Aggregate[prop])) {
+                                            for (var item in this.Query.Aggregate[prop]) {
+                                                var Key = this.Query.Aggregate[prop][item], Value = lookupObject[Datas[i]["Count(" + Key + ")"]];
+                                                Value = Value ? Value : 0;
+                                                Value += Datas[i][Key] ? 1 : 0;
+                                                lookupObject[Datas[i]["Count(" + Key + ")"]] = Value;
+                                            }
+                                        }
+                                        break;
+                                    case 'Max':
+                                        var getMax = function (key) {
+                                            var Result = 0;
+                                            for (var i in Datas) {
+                                                Result = Result > Datas[i][Key] ? Result : Datas[i][Key];
+                                            }
+                                            ;
+                                            return Result;
+                                        };
+                                        if (typeof this.Query.Aggregate[prop] == 'string') {
+                                            var Key = this.Query.Aggregate[prop];
+                                            Results["Max(" + Key + ")"] = getMax(Key);
+                                        }
+                                        else if (Array.isArray(this.Query.Aggregate[prop])) {
+                                            for (var item in this.Query.Aggregate[prop]) {
+                                                var Key = this.Query.Aggregate[prop][key];
+                                                Results["Max(" + Key + ")"] = getMax(Key);
+                                            }
+                                        }
+                                        break;
+                                    case 'Min':
+                                        var getMin = function (key) {
+                                            var Result = 0;
+                                            for (var i in Datas) {
+                                                Result = Result < Datas[i][Key] ? Result : Datas[i][Key];
+                                            }
+                                            ;
+                                            return Result;
+                                        };
+                                        if (typeof this.Query.Aggregate[prop] == 'string') {
+                                            var Key = this.Query.Aggregate[prop];
+                                            Results["Min(" + Key + ")"] = getMin(Key);
+                                        }
+                                        else if (Array.isArray(this.Query.Aggregate[prop])) {
+                                            for (var item in this.Query.Aggregate[prop]) {
+                                                var Key = this.Query.Aggregate[prop][key];
+                                                Results["Min(" + Key + ")"] = getMin(Key);
+                                            }
+                                        }
+                                        break;
+                                    case 'Sum':
+                                        var getSum = function (key) {
+                                            var Result = 0;
+                                            for (var i in Datas) {
+                                                Result += Datas[i][Key];
+                                            }
+                                            ;
+                                            return Result;
+                                        };
+                                        if (typeof this.Query.Aggregate[prop] == 'string') {
+                                            var Key = this.Query.Aggregate[prop];
+                                            Results["Sum(" + Key + ")"] = getSum(Key);
+                                        }
+                                        else if (Array.isArray(this.Query.Aggregate[prop])) {
+                                            for (var item in this.Query.Aggregate[prop]) {
+                                                var Key = this.Query.Aggregate[prop][key];
+                                                Results["Sum(" + Key + ")"] = getSum(Key);
+                                            }
+                                        }
+                                        break;
+                                    case 'Avg':
+                                        var getAvg = function (key) {
+                                            var Result = 0;
+                                            for (var i in Datas) {
+                                                Result += Datas[i][Key];
+                                            }
+                                            ;
+                                            return Result / Datas.length;
+                                        };
+                                        if (typeof this.Query.Aggregate[prop] == 'string') {
+                                            var Key = this.Query.Aggregate[prop];
+                                            Results["Avg(" + Key + ")"] = getAvg(Key);
+                                        }
+                                        else if (Array.isArray(this.Query.Aggregate[prop])) {
+                                            for (var item in this.Query.Aggregate[prop]) {
+                                                var Key = this.Query.Aggregate[prop][key];
+                                                Results["Avg(" + Key + ")"] = getAvg(Key);
+                                            }
+                                        }
+                                        break;
+                                }
+                            }
+                            lookupObject[Datas[i][key]] = Datas[i];
+                        }
+                        //free datas memory
+                        Datas = [];
+                        for (i in lookupObject) {
+                            Datas.push(lookupObject[i]);
+                        }
+                        this.Results = Datas;
+                    };
+                    _this.executeSimpleGroupBy = function (key) {
+                        var Datas = this.Results, lookupObject = {};
+                        //free results memory
+                        this.Results = undefined;
+                        for (var i in Datas) {
+                            lookupObject[Datas[i][key]] = Datas[i];
+                        }
+                        //free datas memory
+                        Datas = [];
+                        for (i in lookupObject) {
+                            Datas.push(lookupObject[i]);
+                        }
+                        this.Results = Datas;
+                    };
+                    return _this;
+                }
+                return GroupByHelper;
+            }(Select.Where));
+            Select.GroupByHelper = GroupByHelper;
+        })(Select = Business.Select || (Business.Select = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Select;
+        (function (Select) {
+            var Helper = /** @class */ (function (_super) {
+                __extends(Helper, _super);
+                function Helper() {
+                    var _this = _super.call(this) || this;
+                    _this.processOrderBy = function () {
                         var Order = this.Query.Order;
                         if (Order && this.Results.length > 0 && !this.Sorted && Order.By) {
                             Order.Type = Order.Type ? Order.Type.toLowerCase() : 'asc';
@@ -2555,9 +2721,208 @@ var JsStore;
                                     sortNumberInDesc();
                                 }
                             }
-                            this.OnSuccess(this.Results);
                         }
-                        else if (this.SendResultFlag) {
+                    };
+                    _this.processAggregateQry = function () {
+                        var Datas = this.Results, lookupObject = {};
+                        //free results memory
+                        this.Results = undefined;
+                        var Results = {};
+                        for (var prop in this.Query.Aggregate) {
+                            switch (prop) {
+                                case 'Count':
+                                    var getCount = function (key) {
+                                        var Result = 0;
+                                        for (var i in Datas) {
+                                            Result += Datas[i][key] ? 1 : 0;
+                                        }
+                                        ;
+                                        return Result;
+                                    };
+                                    if (typeof this.Query.Aggregate[prop] == 'string') {
+                                        var Key = this.Query.Aggregate[prop];
+                                        Results["Count(" + Key + ")"] = getCount(Key);
+                                    }
+                                    else if (Array.isArray(this.Query.Aggregate[prop])) {
+                                        for (var key in this.Query.Aggregate[prop]) {
+                                            var Key = this.Query.Aggregate[prop][key];
+                                            Results["Count(" + Key + ")"] = getCount(Key);
+                                        }
+                                    }
+                                    break;
+                                case 'Max':
+                                    var getMax = function (key) {
+                                        var Result = 0;
+                                        for (var i in Datas) {
+                                            Result = Result > Datas[i][Key] ? Result : Datas[i][Key];
+                                        }
+                                        ;
+                                        return Result;
+                                    };
+                                    if (typeof this.Query.Aggregate[prop] == 'string') {
+                                        var Key = this.Query.Aggregate[prop];
+                                        Results["Max(" + Key + ")"] = getMax(Key);
+                                    }
+                                    else if (Array.isArray(this.Query.Aggregate[prop])) {
+                                        for (var key in this.Query.Aggregate[prop]) {
+                                            var Key = this.Query.Aggregate[prop][key];
+                                            Results["Max(" + Key + ")"] = getMax(Key);
+                                        }
+                                    }
+                                    break;
+                                case 'Min':
+                                    var getMin = function (key) {
+                                        var Result = 0;
+                                        for (var i in Datas) {
+                                            Result = Result < Datas[i][Key] ? Result : Datas[i][Key];
+                                        }
+                                        ;
+                                        return Result;
+                                    };
+                                    if (typeof this.Query.Aggregate[prop] == 'string') {
+                                        var Key = this.Query.Aggregate[prop];
+                                        Results["Min(" + Key + ")"] = getMin(Key);
+                                    }
+                                    else if (Array.isArray(this.Query.Aggregate[prop])) {
+                                        for (var key in this.Query.Aggregate[prop]) {
+                                            var Key = this.Query.Aggregate[prop][key];
+                                            Results["Min(" + Key + ")"] = getMin(Key);
+                                        }
+                                    }
+                                    break;
+                                case 'Sum':
+                                    var getSum = function (key) {
+                                        var Result = 0;
+                                        for (var i in Datas) {
+                                            Result += Datas[i][Key];
+                                        }
+                                        ;
+                                        return Result;
+                                    };
+                                    if (typeof this.Query.Aggregate[prop] == 'string') {
+                                        var Key = this.Query.Aggregate[prop];
+                                        Results["Sum(" + Key + ")"] = getSum(Key);
+                                    }
+                                    else if (Array.isArray(this.Query.Aggregate[prop])) {
+                                        for (var key in this.Query.Aggregate[prop]) {
+                                            var Key = this.Query.Aggregate[prop][key];
+                                            Results["Sum(" + Key + ")"] = getSum(Key);
+                                        }
+                                    }
+                                    break;
+                                case 'Avg':
+                                    var getAvg = function (key) {
+                                        var Result = 0;
+                                        for (var i in Datas) {
+                                            Result += Datas[i][Key];
+                                        }
+                                        ;
+                                        return Result / Datas.length;
+                                    };
+                                    if (typeof this.Query.Aggregate[prop] == 'string') {
+                                        var Key = this.Query.Aggregate[prop];
+                                        Results["Avg(" + Key + ")"] = getAvg(Key);
+                                    }
+                                    else if (Array.isArray(this.Query.Aggregate[prop])) {
+                                        for (var key in this.Query.Aggregate[prop]) {
+                                            var Key = this.Query.Aggregate[prop][key];
+                                            Results["Avg(" + Key + ")"] = getAvg(Key);
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
+                        //add results to the first index of result
+                        for (var prop in Results) {
+                            Datas[0][prop] = Results[prop];
+                        }
+                        this.Results = Datas;
+                    };
+                    _this.performAggregateQry = function (key) {
+                        // var FnName = "executeGrpBy",
+                        //     AggrQry = new Model.Aggregate();
+                        // if (this.Query.Count) {
+                        //     AggrQry.Count = this.Query.Count;
+                        //     FnName += "Count";
+                        //     if (this.Query.Max) {
+                        //         AggrQry.Max = this.Query.Max;
+                        //         FnName += "Max";
+                        //     }
+                        //     if (this.Query.Min) {
+                        //         AggrQry.Min = this.Query.Min;
+                        //         FnName += "Min";
+                        //     }
+                        //     if (this.Query.Sum) {
+                        //         AggrQry.Min = this.Query.Sum;
+                        //         FnName += "Sum";
+                        //     }
+                        //     if (this.Query.Avg) {
+                        //         AggrQry.Avg = this.Query.Avg;
+                        //         FnName += "Avg";
+                        //     }
+                        // }
+                        // else if (this.Query.Max) {
+                        //     AggrQry.Max = this.Query.Max;
+                        // }
+                        // else if (this.Query.Min) {
+                        //     AggrQry.Min = this.Query.Min;
+                        // }
+                        // else if (this.Query.Sum) {
+                        //     AggrQry.Min = this.Query.Sum;
+                        // }
+                        // else if (this.Query.Avg) {
+                        //     AggrQry.Avg = this.Query.Avg;
+                        // }
+                        if (this.Query.Aggregate) {
+                        }
+                        else {
+                            this.executeSimpleGroupBy(key);
+                        }
+                    };
+                    _this.processGroupBy = function () {
+                        var GroupBy = this.Query.GroupBy;
+                        if (typeof GroupBy == 'string') {
+                            this.performAggregateQry(GroupBy);
+                        }
+                        else {
+                            var That = this;
+                            GroupBy.forEach(function (item) {
+                                That.performAggregateQry(GroupBy);
+                            });
+                        }
+                    };
+                    return _this;
+                }
+                return Helper;
+            }(Select.GroupByHelper));
+            Select.Helper = Helper;
+        })(Select = Business.Select || (Business.Select = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Select;
+        (function (Select) {
+            var Instance = /** @class */ (function (_super) {
+                __extends(Instance, _super);
+                function Instance(query, onSuccess, onError) {
+                    var _this = _super.call(this) || this;
+                    _this.onTransactionCompleted = function () {
+                        if (this.SendResultFlag) {
+                            this.processOrderBy();
+                            if (this.Query.GroupBy) {
+                                if (this.Query.Aggregate) {
+                                    this.executeAggregateGroupBy();
+                                }
+                                else {
+                                    this.processGroupBy();
+                                }
+                            }
+                            else if (this.Query.Aggregate) {
+                                this.processAggregateQry();
+                            }
                             this.OnSuccess(this.Results);
                         }
                     };
@@ -2645,7 +3010,7 @@ var JsStore;
                     return _this;
                 }
                 return Instance;
-            }(Select.Where));
+            }(Select.Helper));
             Select.Instance = Instance;
         })(Select = Business.Select || (Business.Select = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));
@@ -3911,6 +4276,25 @@ var JsStore;
                     OnError: OnError
                 });
                 return this;
+            };
+            /**
+             * export the result in json file
+             *
+             * @param {ISelect} qry
+             * @memberof Instance
+             */
+            _this.exportJson = function (qry) {
+                qry['OnSuccess'] = qry['OnError'] = undefined;
+                this.select(qry, function (results) {
+                    var Link = document.createElement("a");
+                    Link.href = URL.createObjectURL(new Blob([JSON.stringify(results)], {
+                        type: "text/json"
+                    }));
+                    Link.download = qry.From + ".json";
+                    Link.click();
+                }, function (err) {
+                    console.error(err);
+                });
             };
             if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.Registered) {
                 JsStore.WorkerInstance.terminate();

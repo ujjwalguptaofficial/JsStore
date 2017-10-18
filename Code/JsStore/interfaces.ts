@@ -14,7 +14,15 @@ module JsStore {
         Limit: number,
         OnSuccess: Function,
         OnError: Function,
-        Order: IOrder
+        Order: IOrder,
+        GroupBy: any,
+        Aggregate: {
+            Max: any,
+            Min: any,
+            Count: any,
+            Sum: any,
+            Avg: any
+        }
     }
 
     export interface IOrder {
@@ -111,4 +119,11 @@ module JsStore {
         Message: string
     }
 
+    export interface IAggregate {
+        Max: Array<any>,
+        Min: Array<any>,
+        Sum: Array<any>,
+        Count: Array<any>,
+        Avg: Array<any>
+    }
 }
