@@ -159,60 +159,16 @@ module JsStore {
                     this.Results = Datas;
                 }
 
-                private performAggregateQry = function (key) {
-                    // var FnName = "executeGrpBy",
-                    //     AggrQry = new Model.Aggregate();
-                    // if (this.Query.Count) {
-                    //     AggrQry.Count = this.Query.Count;
-                    //     FnName += "Count";
-                    //     if (this.Query.Max) {
-                    //         AggrQry.Max = this.Query.Max;
-                    //         FnName += "Max";
-                    //     }
-                    //     if (this.Query.Min) {
-                    //         AggrQry.Min = this.Query.Min;
-                    //         FnName += "Min";
-                    //     }
-                    //     if (this.Query.Sum) {
-                    //         AggrQry.Min = this.Query.Sum;
-                    //         FnName += "Sum";
-                    //     }
-                    //     if (this.Query.Avg) {
-                    //         AggrQry.Avg = this.Query.Avg;
-                    //         FnName += "Avg";
-                    //     }
-                    // }
-                    // else if (this.Query.Max) {
-                    //     AggrQry.Max = this.Query.Max;
-                    // }
-                    // else if (this.Query.Min) {
-                    //     AggrQry.Min = this.Query.Min;
-                    // }
-                    // else if (this.Query.Sum) {
-                    //     AggrQry.Min = this.Query.Sum;
-                    // }
-                    // else if (this.Query.Avg) {
-                    //     AggrQry.Avg = this.Query.Avg;
-                    // }
-                    if (this.Query.Aggregate) {
-
-                    }
-                    else {
-                        this.executeSimpleGroupBy(key);
-                    }
-
-                }
-
-                processGroupBy = function () {
+                protected processGroupBy = function () {
                     var GroupBy = this.Query.GroupBy;
+                    this.Query.GroupBy = undefined;
                     if (typeof GroupBy == 'string') {
-                        this.performAggregateQry(GroupBy);
+                        this.executeSimpleGroupBy(GroupBy);
                     }
                     else {
-                        var That = this;
-                        GroupBy.forEach(function (item) {
-                            That.performAggregateQry(GroupBy);
-                        });
+                        for (var column in GroupBy) {
+                            this.executeSimpleGroupBy(GroupBy[column]);
+                        };
                     }
                 }
 

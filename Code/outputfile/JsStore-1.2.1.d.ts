@@ -646,8 +646,7 @@ declare module JsStore {
             class Helper extends GroupByHelper {
                 processOrderBy: () => void;
                 private processAggregateQry;
-                private performAggregateQry;
-                processGroupBy: () => void;
+                protected processGroupBy: () => void;
                 constructor();
             }
         }
