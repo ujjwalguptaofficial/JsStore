@@ -800,23 +800,6 @@ var JsStore;
 (function (JsStore) {
     var Model;
     (function (Model) {
-        var Aggregate = /** @class */ (function () {
-            function Aggregate() {
-                this.Max = [];
-                this.Min = [];
-                this.Sum = [];
-                this.Count = [];
-                this.Avg = [];
-            }
-            return Aggregate;
-        }());
-        Model.Aggregate = Aggregate;
-    })(Model = JsStore.Model || (JsStore.Model = {}));
-})(JsStore || (JsStore = {}));
-var JsStore;
-(function (JsStore) {
-    var Model;
-    (function (Model) {
         var Column = /** @class */ (function () {
             function Column(key, tableName) {
                 if (key.Name != null) {
@@ -2537,20 +2520,19 @@ var JsStore;
                 function GroupByHelper() {
                     var _this = _super.call(this) || this;
                     _this.executeAggregateGroupBy = function () {
-                        var GrpQry = this.Query.GroupBy, Datas = this.Results, lookupObject = {};
+                        var GrpQry = this.Query.GroupBy, Datas = this.Results, LookUpObj = {};
                         //free results memory
                         this.Results = undefined;
                         //assign aggregate and free aggregate memory
                         var AggregateQry = this.Query.Aggregate;
                         this.Query.Aggregate = undefined;
-                        var Index, GrpColumn, Value, AggrColumn;
+                        var Index, ObjKey, Value, AggrColumn;
                         var calculateAggregate = function () {
                             for (var prop in AggregateQry) {
                                 switch (prop) {
                                     case 'Count':
                                         var getCount = function () {
-                                            //var Value = lookupObject[Datas[Index][GrpColumn]];
-                                            Value = lookupObject[GrpColumn];
+                                            Value = LookUpObj[ObjKey];
                                             //get old value
                                             Value = Value ? Value["Count(" + AggrColumn + ")"] : 0;
                                             //add with old value if data exist
@@ -2570,11 +2552,12 @@ var JsStore;
                                         break;
                                     case 'Max':
                                         var getMax = function () {
-                                            Value = lookupObject[Datas[Index][GrpColumn]];
+                                            Value = LookUpObj[ObjKey];
                                             //get old value
                                             Value = Value ? Value["Max(" + AggrColumn + ")"] : 0;
+                                            Datas[Index][AggrColumn] = Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : 0;
                                             //compare between old value and new value
-                                            return Value > Number(Datas[Index][AggrColumn]) ? Value : Datas[Index][AggrColumn];
+                                            return Value > Datas[Index][AggrColumn] ? Value : Datas[Index][AggrColumn];
                                         };
                                         if (typeof AggregateQry[prop] == 'string') {
                                             AggrColumn = AggregateQry[prop];
@@ -2589,11 +2572,12 @@ var JsStore;
                                         break;
                                     case 'Min':
                                         var getMin = function () {
-                                            Value = lookupObject[Datas[Index][GrpColumn]];
+                                            Value = LookUpObj[ObjKey];
                                             //get old value
                                             Value = Value ? Value["Min(" + AggrColumn + ")"] : 0;
+                                            Datas[Index][AggrColumn] = Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : 0;
                                             //compare between old value and new value
-                                            return Value < Number(Datas[Index][AggrColumn]) ? Value : Datas[Index][AggrColumn];
+                                            return Value < Datas[Index][AggrColumn] ? Value : Datas[Index][AggrColumn];
                                         };
                                         if (typeof AggregateQry[prop] == 'string') {
                                             AggrColumn = AggregateQry[prop];
@@ -2608,10 +2592,12 @@ var JsStore;
                                         break;
                                     case 'Sum':
                                         var getSum = function () {
-                                            Value = lookupObject[Datas[Index][GrpColumn]];
+                                            Value = LookUpObj[ObjKey];
                                             //get old value
                                             Value = Value ? Value["Sum(" + AggrColumn + ")"] : 0;
-                                            return Value + Number(Datas[Index][AggrColumn]);
+                                            //add with old value if data exist
+                                            Value += Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : 0;
+                                            return Value;
                                         };
                                         if (typeof AggregateQry[prop] == 'string') {
                                             AggrColumn = AggregateQry[prop];
@@ -2626,10 +2612,12 @@ var JsStore;
                                         break;
                                     case 'Avg':
                                         var getAvg = function () {
-                                            Value = lookupObject[Datas[Index][GrpColumn]];
+                                            Value = LookUpObj[ObjKey];
                                             //get old value
-                                            Value = Value ? Value["Sum(" + AggrColumn + ")"] : 0;
-                                            return (Value + Number(Datas[Index][AggrColumn])) / Datas.length;
+                                            Value = Value ? Value["Avg(" + AggrColumn + ")"] : 0;
+                                            //add with old value if data exist
+                                            Value += Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : 0;
+                                            return Value / Datas.length;
                                         };
                                         if (typeof AggregateQry[prop] == 'string') {
                                             AggrColumn = AggregateQry[prop];
@@ -2646,42 +2634,52 @@ var JsStore;
                             }
                         };
                         if (typeof GrpQry == 'string') {
-                            GrpColumn = GrpQry;
                             for (Index in Datas) {
+                                ObjKey = Datas[Index][GrpQry];
                                 calculateAggregate();
-                                lookupObject[Datas[Index][GrpColumn]] = Datas[Index];
+                                LookUpObj[ObjKey] = Datas[Index];
                             }
                         }
                         else {
-                            var ObjKey;
                             for (Index in Datas) {
                                 ObjKey = "";
                                 for (var column in GrpQry) {
                                     ObjKey += Datas[Index][GrpQry[column]];
                                 }
-                                GrpColumn = ObjKey;
                                 calculateAggregate();
-                                lookupObject[ObjKey] = Datas[Index];
+                                LookUpObj[ObjKey] = Datas[Index];
                             }
                         }
                         //free datas memory
                         Datas = [];
-                        for (var i in lookupObject) {
-                            Datas.push(lookupObject[i]);
+                        for (var i in LookUpObj) {
+                            Datas.push(LookUpObj[i]);
                         }
                         this.Results = Datas;
                     };
-                    _this.executeSimpleGroupBy = function (key) {
-                        var Datas = this.Results, lookupObject = {};
+                    _this.processGroupBy = function (key) {
+                        var GrpQry = this.Query.GroupBy, Datas = this.Results, LookUpObj = {};
                         //free results memory
                         this.Results = undefined;
-                        for (var i in Datas) {
-                            lookupObject[Datas[i][key]] = Datas[i];
+                        if (typeof GrpQry == 'string') {
+                            for (var i in Datas) {
+                                LookUpObj[Datas[i][key]] = Datas[i];
+                            }
+                        }
+                        else {
+                            var ObjKey;
+                            for (var i in Datas) {
+                                ObjKey = "";
+                                for (var column in GrpQry) {
+                                    ObjKey += Datas[i][GrpQry[column]];
+                                }
+                                LookUpObj[ObjKey] = Datas[i];
+                            }
                         }
                         //free datas memory
                         Datas = [];
-                        for (i in lookupObject) {
-                            Datas.push(lookupObject[i]);
+                        for (i in LookUpObj) {
+                            Datas.push(LookUpObj[i]);
                         }
                         this.Results = Datas;
                     };
@@ -2857,19 +2855,6 @@ var JsStore;
                         }
                         this.Results = Datas;
                     };
-                    _this.processGroupBy = function () {
-                        var GroupBy = this.Query.GroupBy;
-                        this.Query.GroupBy = undefined;
-                        if (typeof GroupBy == 'string') {
-                            this.executeSimpleGroupBy(GroupBy);
-                        }
-                        else {
-                            for (var column in GroupBy) {
-                                this.executeSimpleGroupBy(GroupBy[column]);
-                            }
-                            ;
-                        }
-                    };
                     return _this;
                 }
                 return Helper;
@@ -2898,6 +2883,10 @@ var JsStore;
                                 else {
                                     this.processGroupBy();
                                 }
+                                // this.processGroupBy();
+                                // if (this.Query.Aggregate) {
+                                //     this.executeAggregateGroupBy();
+                                // }
                             }
                             else if (this.Query.Aggregate) {
                                 this.processAggregateQry();

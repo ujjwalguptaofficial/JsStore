@@ -40,7 +40,6 @@
         "JsStore/UtilsLogic.ts",
         "JsStore/HelperLogic.ts",
         // Model
-        "JsStore/Model/Aggregate.ts",
         "JsStore/Model/Column.ts",
         "JsStore/Model/Table.ts",
         "JsStore/Model/DataBase.ts",

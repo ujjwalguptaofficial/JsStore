@@ -370,17 +370,6 @@ declare module JsStore {
 }
 declare module JsStore {
     module Model {
-        class Aggregate implements IAggregate {
-            Max: Array<any>;
-            Min: Array<any>;
-            Sum: Array<any>;
-            Count: Array<any>;
-            Avg: Array<any>;
-        }
-    }
-}
-declare module JsStore {
-    module Model {
         interface IColumn {
             Name: string;
             AutoIncrement: boolean;
@@ -635,7 +624,7 @@ declare module JsStore {
             class GroupByHelper extends Where {
                 constructor();
                 private executeAggregateGroupBy;
-                private executeSimpleGroupBy;
+                protected processGroupBy: (key: any) => void;
             }
         }
     }
@@ -646,7 +635,6 @@ declare module JsStore {
             class Helper extends GroupByHelper {
                 processOrderBy: () => void;
                 private processAggregateQry;
-                protected processGroupBy: () => void;
                 constructor();
             }
         }

@@ -159,19 +159,6 @@ module JsStore {
                     this.Results = Datas;
                 }
 
-                protected processGroupBy = function () {
-                    var GroupBy = this.Query.GroupBy;
-                    this.Query.GroupBy = undefined;
-                    if (typeof GroupBy == 'string') {
-                        this.executeSimpleGroupBy(GroupBy);
-                    }
-                    else {
-                        for (var column in GroupBy) {
-                            this.executeSimpleGroupBy(GroupBy[column]);
-                        };
-                    }
-                }
-
                 constructor() {
                     super();
                 }
