@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
     <meta charset="utf-8" />
     <title>JsStore Example</title>
@@ -8,9 +9,9 @@
     <link rel="stylesheet" type="text/css" href="style/bootstrap.css" />
     <script src="scripts/bootstrap.js"></script>
     <link rel="stylesheet" href="style/font-awesome.min.css" />
-    <script src="Scripts/JsStore-1.1.4.min.js "></script>
+    <script src="Scripts/JsStore-1.2.1.min.js "></script>
     <script>
-        var DbConnection;
+        var DbConnection = new JsStore.Instance();
         window.onload = function () {
             initiateDb();
             $('#btnAddStudent').click(function () {
@@ -49,19 +50,15 @@
             var DbName = "Students";
             JsStore.isDbExist(DbName, function (isExist) {
                 if (isExist) {
-                    DbConnection = new JsStore.Instance(DbName);
-                    onDbInitiated();
+                    DbConnection.openDb(DbName);
+                    showTableData();
                 } else {
                     var DataBase = getDatabase();
-                    DbConnection = new JsStore.Instance().createDb(DataBase);
+                    DbConnection.createDb(DataBase);
                     insertStudents();
-                    onDbInitiated();
+                    showTableData();
                 }
             });
-        }
-
-        function onDbInitiated() {
-            showTableData();
         }
 
         function insertStudents() {
@@ -81,10 +78,10 @@
             var TblStudent = {
                 Name: "Student",
                 Columns: [{
-                    Name: "Id",
-                    PrimaryKey: true,
-                    AutoIncrement: true
-                },
+                        Name: "Id",
+                        PrimaryKey: true,
+                        AutoIncrement: true
+                    },
                     {
                         Name: "Name",
                         NotNull: true,
@@ -114,9 +111,6 @@
             return DataBase;
         }
 
-
-
-
         //This function refreshes the table
         function showTableData() {
             DbConnection.select({
@@ -141,11 +135,11 @@
         function getStudents() {
             //Student Array
             var Students = [{
-                Name: 'Alfreds',
-                Gender: 'male',
-                Country: 'Germany',
-                City: 'Berlin'
-            },
+                    Name: 'Alfreds',
+                    Gender: 'male',
+                    Country: 'Germany',
+                    City: 'Berlin'
+                },
                 {
                     Name: 'george',
                     Gender: 'male',
@@ -169,11 +163,13 @@
         }
     </script>
 </head>
+
 <body>
     <div class="row row-centered " style="margin-top:10px; ">
         <div class="col-xs-12 col-sm-10 col-centered ">
             <div style="text-align:center;">
-                <button id="btnAddStudent" class="btn btn-success"><i class="fa fa-plus" aria-hidden="true"></i> Add Student</button>
+                <button id="btnAddStudent" class="btn btn-success">
+                    <i class="fa fa-plus" aria-hidden="true"></i> Add Student</button>
             </div>
             <table id="tblGrid" class="table table-hover ">
                 <caption style="text-align:center;padding:7px 0px 7px 0px;background:#4f4f86;color:white;font-family:cursive;font-size:18px; ">Student's Details</caption>
@@ -193,4 +189,5 @@
     </div>
     <link href="style/main.css " rel="stylesheet " type="text/css " />
 </body>
+
 </html>

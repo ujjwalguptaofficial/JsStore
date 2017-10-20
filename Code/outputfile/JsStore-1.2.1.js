@@ -2613,20 +2613,25 @@ var JsStore;
                                     case 'Avg':
                                         var getAvg = function () {
                                             Value = LookUpObj[ObjKey];
-                                            //get old value
-                                            Value = Value ? Value["Avg(" + AggrColumn + ")"] : 0;
+                                            //get old sum value
+                                            var Sum = Value ? Value["Sum(" + AggrColumn + ")"] : 0;
                                             //add with old value if data exist
-                                            Value += Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : 0;
-                                            return Value / Datas.length;
+                                            Sum += Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : 0;
+                                            Datas[Index]["Sum(" + AggrColumn + ")"] = Sum;
+                                            //get old count value
+                                            Value = Value ? Value["Count(" + AggrColumn + ")"] : 0;
+                                            //add with old value if data exist
+                                            Value += Datas[Index][AggrColumn] ? 1 : 0;
+                                            Datas[Index]["Count(" + AggrColumn + ")"] = Value;
                                         };
                                         if (typeof AggregateQry[prop] == 'string') {
                                             AggrColumn = AggregateQry[prop];
-                                            Datas[Index]["Avg(" + AggrColumn + ")"] = getAvg();
+                                            getAvg();
                                         }
                                         else if (Array.isArray(AggregateQry[prop])) {
                                             for (var item in AggregateQry[prop]) {
                                                 AggrColumn = AggregateQry[prop][item];
-                                                Datas[Index]["Avg(" + AggrColumn + ")"] = getAvg();
+                                                getAvg();
                                             }
                                         }
                                         break;
@@ -2654,6 +2659,42 @@ var JsStore;
                         Datas = [];
                         for (var i in LookUpObj) {
                             Datas.push(LookUpObj[i]);
+                        }
+                        //Checking for avg and if exist then fill the datas;
+                        if (AggregateQry.Avg) {
+                            if (typeof AggregateQry.Avg == 'string') {
+                                for (Index in Datas) {
+                                    var Sum = Datas[Index]["Sum(" + AggregateQry.Avg + ")"], Count = Datas[Index]["Count(" + AggregateQry.Avg + ")"];
+                                    Datas[Index]["Avg(" + AggregateQry.Avg + ")"] = Sum / Count;
+                                    if (AggregateQry.Count !== AggregateQry.Avg) {
+                                        delete Datas[Index]["Count(" + AggregateQry.Avg + ")"];
+                                    }
+                                    if (AggregateQry.Sum !== AggregateQry.Avg) {
+                                        delete Datas[Index]["Sum(" + AggregateQry.Avg + ")"];
+                                    }
+                                }
+                            }
+                            else {
+                                var IsCountTypeString = typeof AggregateQry.Count, IsSumTypeString = typeof AggregateQry.Count;
+                                for (Index in Datas) {
+                                    for (var column in AggregateQry.Avg) {
+                                        var AvgColumn = AggregateQry.Avg[column], Sum = Datas[Index]["Sum(" + AvgColumn + ")"], Count = Datas[Index]["Count(" + AvgColumn + ")"];
+                                        Datas[Index]["Avg(" + AvgColumn + ")"] = Sum / Count;
+                                        if (IsCountTypeString && AggregateQry.Count !== AvgColumn) {
+                                            delete Datas[Index]["Count(" + AvgColumn + ")"];
+                                        }
+                                        else if (AggregateQry.Count.indexOf(AvgColumn) == -1) {
+                                            delete Datas[Index]["Count(" + AvgColumn + ")"];
+                                        }
+                                        if (IsSumTypeString && AggregateQry.Sum !== AvgColumn) {
+                                            delete Datas[Index]["Sum(" + AvgColumn + ")"];
+                                        }
+                                        else if (AggregateQry.Sum.indexOf(AvgColumn) == -1) {
+                                            delete Datas[Index]["Sum(" + AvgColumn + ")"];
+                                        }
+                                    }
+                                }
+                            }
                         }
                         this.Results = Datas;
                     };

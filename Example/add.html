@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
     <meta charset="utf-8" />
     <title>JsStore Example</title>
@@ -8,28 +9,29 @@
     <link rel="stylesheet" type="text/css" href="style/bootstrap.css" />
     <script src="scripts/bootstrap.js"></script>
     <link rel="stylesheet" href="style/font-awesome.min.css" />
-    <script src="Scripts/JsStore-1.1.4.min.js "></script>
+    <script src="Scripts/JsStore-1.2.1.min.js "></script>
     <script>
-        var DbConnection,
+        var DbConnection = new JsStore.Instance(),
             StudentId;
         window.onload = function () {
             initiateDb();
+            getStudent();
         };
 
         function initiateDb() {
             var DbName = "Students";
             JsStore.isDbExist(DbName, function (isExist) {
                 if (isExist) {
-                    DbConnection = new JsStore.Instance(DbName);
-                    onDbInitiated();
+                    DbConnection.openDb(DbName);
                 } else {
                     window.location.href = "index.html";
                 }
             });
         }
 
-        function onDbInitiated() {
+        function getStudent() {
             StudentId = getQsValueByName('id');
+            //check if Query string param exist
             if (StudentId) {
                 DbConnection.select({
                     From: 'Student',
@@ -43,8 +45,7 @@
                         $("input[name='Gender'][value=" + Student.Gender + "]").prop('checked', true);
                         $('#txtCountry').val(Student.Country);
                         $('#txtCity').val(Student.City)
-                    }
-                    else {
+                    } else {
                         alert('Invalid student id');
                     }
 
@@ -55,10 +56,10 @@
         }
 
         function Submit() {
+            //if student exist means we have to update data
             if (StudentId) {
                 updateStudent()
-            }
-            else {
+            } else {
                 addStudent();
             }
         }
@@ -81,7 +82,6 @@
                 if (rowsAffected > 0) {
                     window.location.href = "index.html";
                 }
-
             }, function (error) {
                 alert(error.Message);
             })
@@ -108,6 +108,7 @@
         }
     </script>
 </head>
+
 <body>
     <div class="row row-centered">
         <div class="col-xs-11 col-sm-8 col-centered">
@@ -121,8 +122,10 @@
                 <div class="form-group">
                     <label class="control-label col-sm-3" for="txtLastName">Gender:</label>
                     <div class="col-sm-7">
-                        <label class="radio-inline"><input type="radio" value="male" name="Gender" />Male</label>
-                        <label class="radio-inline"><input type="radio" value="female" name="Gender" />FeMale</label>
+                        <label class="radio-inline">
+                            <input type="radio" value="male" name="Gender" />Male</label>
+                        <label class="radio-inline">
+                            <input type="radio" value="female" name="Gender" />FeMale</label>
                     </div>
                 </div>
                 <div class="form-group">
@@ -140,7 +143,8 @@
                 <div class="form-group">
                     <div class="col-sm-12" style="text-align:center;margin-top:30px;">
                         <button id="btnSubmit" type="button" onclick="Submit();" class="btn btn-primary" style="padding:9px 15px 9px 15px;">
-                            <i class="fa fa-check" aria-hidden="true"></i> <span>Submit</span>
+                            <i class="fa fa-check" aria-hidden="true"></i>
+                            <span>Submit</span>
                         </button>
                         <button id="btnCancel " type="button" class="btn btn-primary " style="padding:9px 15px 9px 15px;margin-left:10px; ">
                             <i class="fa fa-times" aria-hidden="true"></i> Cancel
@@ -163,7 +167,7 @@
             if (!results[2]) return '';
             return decodeURIComponent(results[2].replace(/\+/g, " "));
         }
-
     </script>
 </body>
+
 </html>
