@@ -2588,8 +2588,8 @@ var JsStore;
                                         var getMin = function () {
                                             Value = LookUpObj[ObjKey];
                                             //get old value
-                                            Value = Value ? Value["Min(" + AggrColumn + ")"] : 0;
-                                            Datas[Index][AggrColumn] = Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : 0;
+                                            Value = Value ? Value["Min(" + AggrColumn + ")"] : Infinity;
+                                            Datas[Index][AggrColumn] = Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : Infinity;
                                             //compare between old value and new value
                                             return Value < Datas[Index][AggrColumn] ? Value : Datas[Index][AggrColumn];
                                         };
@@ -2716,13 +2716,13 @@ var JsStore;
                         }
                         this.Results = Datas;
                     };
-                    _this.processGroupBy = function (key) {
+                    _this.processGroupBy = function () {
                         var GrpQry = this.Query.GroupBy, Datas = this.Results, LookUpObj = {};
                         //free results memory
-                        this.Results = undefined;
+                        this.Results = this.Query.GroupBy = undefined;
                         if (typeof GrpQry == 'string') {
                             for (var i in Datas) {
-                                LookUpObj[Datas[i][key]] = Datas[i];
+                                LookUpObj[Datas[i][GrpQry]] = Datas[i];
                             }
                         }
                         else {
@@ -2847,9 +2847,10 @@ var JsStore;
                                     break;
                                 case 'Min':
                                     var getMin = function () {
-                                        var Result = 0;
+                                        var Result = Infinity, Value = Infinity;
                                         for (var i in Datas) {
-                                            Result = Result < Datas[i][Key] ? Result : Datas[i][Key];
+                                            Value = Datas[i][Key] ? Datas[i][Key] : Infinity;
+                                            Result = Result < Value ? Result : Value;
                                         }
                                         ;
                                         return Result;
@@ -4311,7 +4312,10 @@ var JsStore;
                     Link.href = url;
                     Link.download = query.From + ".json";
                     Link.click();
-                }, OnError = query['OnError'];
+                    if (OnSuccessCallBack) {
+                        OnSuccessCallBack();
+                    }
+                }, OnError = query['OnError'], OnSuccessCallBack = query['OnSuccess'];
                 query['OnSuccess'] = query['OnError'] = undefined;
                 this.prcoessExecutionOfCode({
                     Name: 'export_json',

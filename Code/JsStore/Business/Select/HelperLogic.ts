@@ -94,9 +94,10 @@ module JsStore {
                                 break;
                             case 'Min':
                                 var getMin = function () {
-                                    var Result = 0;
+                                    var Result = Infinity, Value = Infinity;
                                     for (var i in Datas) {
-                                        Result = Result < Datas[i][Key] ? Result : Datas[i][Key];
+                                        Value = Datas[i][Key] ? Datas[i][Key] : Infinity;
+                                        Result = Result < Value ? Result : Value;
                                     };
                                     return Result;
                                 }

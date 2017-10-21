@@ -628,7 +628,7 @@ declare module JsStore {
             class GroupByHelper extends Where {
                 constructor();
                 private executeAggregateGroupBy;
-                protected processGroupBy: (key: any) => void;
+                protected processGroupBy: () => void;
             }
         }
     }

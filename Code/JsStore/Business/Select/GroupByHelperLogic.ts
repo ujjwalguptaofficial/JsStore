@@ -64,8 +64,8 @@ module JsStore {
                                     var getMin = function () {
                                         Value = LookUpObj[ObjKey];
                                         //get old value
-                                        Value = Value ? Value["Min(" + AggrColumn + ")"] : 0;
-                                        Datas[Index][AggrColumn] = Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : 0;
+                                        Value = Value ? Value["Min(" + AggrColumn + ")"] : Infinity;
+                                        Datas[Index][AggrColumn] = Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : Infinity;
                                         //compare between old value and new value
                                         return Value < Datas[Index][AggrColumn] ? Value : Datas[Index][AggrColumn];
                                     }
@@ -203,15 +203,15 @@ module JsStore {
                     this.Results = Datas;
                 };
 
-                protected processGroupBy = function (key) {
+                protected processGroupBy = function () {
                     var GrpQry = this.Query.GroupBy,
                         Datas = this.Results,
                         LookUpObj = {};
                     //free results memory
-                    this.Results = undefined;
+                    this.Results = this.Query.GroupBy = undefined;
                     if (typeof GrpQry == 'string') {
                         for (var i in Datas) {
-                            LookUpObj[Datas[i][key]] = Datas[i];
+                            LookUpObj[Datas[i][GrpQry]] = Datas[i];
                         }
                     }
                     else {

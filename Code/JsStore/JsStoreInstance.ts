@@ -239,8 +239,12 @@ module JsStore {
                 Link.href = url;
                 Link.download = query.From + ".json";
                 Link.click();
+                if (OnSuccessCallBack) {
+                    OnSuccessCallBack();
+                }
             },
-                OnError = query['OnError'];
+                OnError = query['OnError'],
+                OnSuccessCallBack = query['OnSuccess'];
             query['OnSuccess'] = query['OnError'] = undefined;
             this.prcoessExecutionOfCode(<IWebWorkerRequest>{
                 Name: 'export_json',
