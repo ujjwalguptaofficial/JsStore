@@ -233,18 +233,22 @@ module JsStore {
          * @param {ISelect} qry 
          * @memberof Instance
          */
-        exportJson = function (qry: ISelect) {
-            qry['OnSuccess'] = qry['OnError'] = undefined;
-            this.select(qry, function (results) {
+        exportJson = function (query: ISelect) {
+            var OnSuccess = function (url) {
                 var Link = document.createElement("a");
-                Link.href = URL.createObjectURL(new Blob([JSON.stringify(results)], {
-                    type: "text/json"
-                }));
-                Link.download = qry.From + ".json";
+                Link.href = url;
+                Link.download = query.From + ".json";
                 Link.click();
-            }, function (err) {
-                console.error(err);
+            },
+                OnError = query['OnError'];
+            query['OnSuccess'] = query['OnError'] = undefined;
+            this.prcoessExecutionOfCode(<IWebWorkerRequest>{
+                Name: 'export_json',
+                Query: query,
+                OnSuccess: OnSuccess,
+                OnError: OnError
             });
+
         }
     }
 }

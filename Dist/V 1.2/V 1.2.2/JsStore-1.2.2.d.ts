@@ -1,4 +1,4 @@
-/** JsStore.js - v1.2.1 - 13/10/2017
+/** JsStore.js - v1.2.2 - 21/10/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 declare module KeyStore {
@@ -208,6 +208,14 @@ declare module JsStore {
         OnSuccess: Function;
         OnError: Function;
         Order: IOrder;
+        GroupBy: any;
+        Aggregate: {
+            Max: any;
+            Min: any;
+            Count: any;
+            Sum: any;
+            Avg: any;
+        };
     }
     interface IOrder {
         By: string;
@@ -288,6 +296,13 @@ declare module JsStore {
     interface IError {
         Name: string;
         Message: string;
+    }
+    interface IAggregate {
+        Max: Array<any>;
+        Min: Array<any>;
+        Sum: Array<any>;
+        Count: Array<any>;
+        Avg: Array<any>;
     }
 }
 declare module JsStore {
@@ -536,6 +551,7 @@ declare module JsStore {
             count: (query: any, onSuccess: Function, onError: Function) => void;
             createDb: (dataBase: Model.IDataBase, onSuccess: Function, onError: Function) => void;
             clear: (tableName: string, onSuccess: Function, onError: Function) => void;
+            exportJson: (query: ISelect, onSuccess: Function, onError: Function) => void;
         }
     }
 }
@@ -609,7 +625,29 @@ declare module JsStore {
 declare module JsStore {
     module Business {
         module Select {
-            class Instance extends Where {
+            class GroupByHelper extends Where {
+                constructor();
+                private executeAggregateGroupBy;
+                protected processGroupBy: (key: any) => void;
+            }
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        module Select {
+            class Helper extends GroupByHelper {
+                processOrderBy: () => void;
+                private processAggregateQry;
+                constructor();
+            }
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        module Select {
+            class Instance extends Helper {
                 onTransactionCompleted: () => void;
                 private createtransactionForOrLogic;
                 private orQuerySuccess;
@@ -897,6 +935,13 @@ declare module JsStore {
          * @memberof Instance
          */
         bulkInsert: (query: IInsert, onSuccess?: Function, onError?: Function) => any;
+        /**
+         * export the result in json file
+         *
+         * @param {ISelect} qry
+         * @memberof Instance
+         */
+        exportJson: (query: ISelect) => void;
     }
 }
 export = JsStore;

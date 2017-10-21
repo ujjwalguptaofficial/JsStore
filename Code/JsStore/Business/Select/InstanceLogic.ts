@@ -12,10 +12,6 @@ module JsStore {
                             else {
                                 this.processGroupBy();
                             }
-                            // this.processGroupBy();
-                            // if (this.Query.Aggregate) {
-                            //     this.executeAggregateGroupBy();
-                            // }
                         }
                         else if (this.Query.Aggregate) {
                             this.processAggregateQry();

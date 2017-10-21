@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.2.2 - 15/10/2017
+/** JsStore.js - v1.2.2 - 21/10/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var KeyStore;
@@ -1693,6 +1693,10 @@ var JsStore;
                         case 'bulk_insert':
                             this.bulkInsert(request.Query, OnSuccess, OnError);
                             break;
+                        case 'export_json':
+                            this.exportJson(request.Query, OnSuccess, OnError);
+                            break;
+                        default: console.error('The Api:-' + request.Name + 'does not support');
                     }
                 };
                 this.openDb = function (dbName, onSuccess, onError) {
@@ -1779,6 +1783,16 @@ var JsStore;
                 };
                 this.clear = function (tableName, onSuccess, onError) {
                     new Business.Clear(tableName, onSuccess, onError);
+                };
+                this.exportJson = function (query, onSuccess, onError) {
+                    this.select(query, function (results) {
+                        var Url = URL.createObjectURL(new Blob([JSON.stringify(results)], {
+                            type: "text/json"
+                        }));
+                        onSuccess(Url);
+                    }, function (err) {
+                        onError(err);
+                    });
                 };
                 this.OnSuccess = onSuccess;
             }
@@ -2680,17 +2694,21 @@ var JsStore;
                                     for (var column in AggregateQry.Avg) {
                                         var AvgColumn = AggregateQry.Avg[column], Sum = Datas[Index]["Sum(" + AvgColumn + ")"], Count = Datas[Index]["Count(" + AvgColumn + ")"];
                                         Datas[Index]["Avg(" + AvgColumn + ")"] = Sum / Count;
-                                        if (IsCountTypeString && AggregateQry.Count !== AvgColumn) {
-                                            delete Datas[Index]["Count(" + AvgColumn + ")"];
+                                        if (IsCountTypeString) {
+                                            if (AggregateQry.Count !== AvgColumn) {
+                                                delete Datas[Index]["Count(" + AvgColumn + ")"];
+                                            }
+                                            else if (AggregateQry.Count.indexOf(AvgColumn) == -1) {
+                                                delete Datas[Index]["Count(" + AvgColumn + ")"];
+                                            }
                                         }
-                                        else if (AggregateQry.Count.indexOf(AvgColumn) == -1) {
-                                            delete Datas[Index]["Count(" + AvgColumn + ")"];
-                                        }
-                                        if (IsSumTypeString && AggregateQry.Sum !== AvgColumn) {
-                                            delete Datas[Index]["Sum(" + AvgColumn + ")"];
-                                        }
-                                        else if (AggregateQry.Sum.indexOf(AvgColumn) == -1) {
-                                            delete Datas[Index]["Sum(" + AvgColumn + ")"];
+                                        if (IsSumTypeString) {
+                                            if (AggregateQry.Sum !== AvgColumn) {
+                                                delete Datas[Index]["Sum(" + AvgColumn + ")"];
+                                            }
+                                            else if (AggregateQry.Sum.indexOf(AvgColumn) == -1) {
+                                                delete Datas[Index]["Sum(" + AvgColumn + ")"];
+                                            }
                                         }
                                     }
                                 }
@@ -2782,34 +2800,33 @@ var JsStore;
                         }
                     };
                     _this.processAggregateQry = function () {
-                        var Datas = this.Results, lookupObject = {};
+                        var Datas = this.Results, Results = {}, Key;
                         //free results memory
                         this.Results = undefined;
-                        var Results = {};
                         for (var prop in this.Query.Aggregate) {
                             switch (prop) {
                                 case 'Count':
-                                    var getCount = function (key) {
+                                    var getCount = function () {
                                         var Result = 0;
                                         for (var i in Datas) {
-                                            Result += Datas[i][key] ? 1 : 0;
+                                            Result += Datas[i][Key] ? 1 : 0;
                                         }
                                         ;
                                         return Result;
                                     };
                                     if (typeof this.Query.Aggregate[prop] == 'string') {
-                                        var Key = this.Query.Aggregate[prop];
-                                        Results["Count(" + Key + ")"] = getCount(Key);
+                                        Key = this.Query.Aggregate[prop];
+                                        Results["Count(" + Key + ")"] = getCount();
                                     }
                                     else if (Array.isArray(this.Query.Aggregate[prop])) {
                                         for (var key in this.Query.Aggregate[prop]) {
-                                            var Key = this.Query.Aggregate[prop][key];
-                                            Results["Count(" + Key + ")"] = getCount(Key);
+                                            Key = this.Query.Aggregate[prop][key];
+                                            Results["Count(" + Key + ")"] = getCount();
                                         }
                                     }
                                     break;
                                 case 'Max':
-                                    var getMax = function (key) {
+                                    var getMax = function () {
                                         var Result = 0;
                                         for (var i in Datas) {
                                             Result = Result > Datas[i][Key] ? Result : Datas[i][Key];
@@ -2818,18 +2835,18 @@ var JsStore;
                                         return Result;
                                     };
                                     if (typeof this.Query.Aggregate[prop] == 'string') {
-                                        var Key = this.Query.Aggregate[prop];
-                                        Results["Max(" + Key + ")"] = getMax(Key);
+                                        Key = this.Query.Aggregate[prop];
+                                        Results["Max(" + Key + ")"] = getMax();
                                     }
                                     else if (Array.isArray(this.Query.Aggregate[prop])) {
                                         for (var key in this.Query.Aggregate[prop]) {
-                                            var Key = this.Query.Aggregate[prop][key];
-                                            Results["Max(" + Key + ")"] = getMax(Key);
+                                            Key = this.Query.Aggregate[prop][key];
+                                            Results["Max(" + Key + ")"] = getMax();
                                         }
                                     }
                                     break;
                                 case 'Min':
-                                    var getMin = function (key) {
+                                    var getMin = function () {
                                         var Result = 0;
                                         for (var i in Datas) {
                                             Result = Result < Datas[i][Key] ? Result : Datas[i][Key];
@@ -2838,18 +2855,18 @@ var JsStore;
                                         return Result;
                                     };
                                     if (typeof this.Query.Aggregate[prop] == 'string') {
-                                        var Key = this.Query.Aggregate[prop];
-                                        Results["Min(" + Key + ")"] = getMin(Key);
+                                        Key = this.Query.Aggregate[prop];
+                                        Results["Min(" + Key + ")"] = getMin();
                                     }
                                     else if (Array.isArray(this.Query.Aggregate[prop])) {
                                         for (var key in this.Query.Aggregate[prop]) {
-                                            var Key = this.Query.Aggregate[prop][key];
-                                            Results["Min(" + Key + ")"] = getMin(Key);
+                                            Key = this.Query.Aggregate[prop][key];
+                                            Results["Min(" + Key + ")"] = getMin();
                                         }
                                     }
                                     break;
                                 case 'Sum':
-                                    var getSum = function (key) {
+                                    var getSum = function () {
                                         var Result = 0;
                                         for (var i in Datas) {
                                             Result += Datas[i][Key];
@@ -2858,18 +2875,18 @@ var JsStore;
                                         return Result;
                                     };
                                     if (typeof this.Query.Aggregate[prop] == 'string') {
-                                        var Key = this.Query.Aggregate[prop];
-                                        Results["Sum(" + Key + ")"] = getSum(Key);
+                                        Key = this.Query.Aggregate[prop];
+                                        Results["Sum(" + Key + ")"] = getSum();
                                     }
                                     else if (Array.isArray(this.Query.Aggregate[prop])) {
                                         for (var key in this.Query.Aggregate[prop]) {
-                                            var Key = this.Query.Aggregate[prop][key];
-                                            Results["Sum(" + Key + ")"] = getSum(Key);
+                                            Key = this.Query.Aggregate[prop][key];
+                                            Results["Sum(" + Key + ")"] = getSum();
                                         }
                                     }
                                     break;
                                 case 'Avg':
-                                    var getAvg = function (key) {
+                                    var getAvg = function () {
                                         var Result = 0;
                                         for (var i in Datas) {
                                             Result += Datas[i][Key];
@@ -2878,13 +2895,13 @@ var JsStore;
                                         return Result / Datas.length;
                                     };
                                     if (typeof this.Query.Aggregate[prop] == 'string') {
-                                        var Key = this.Query.Aggregate[prop];
-                                        Results["Avg(" + Key + ")"] = getAvg(Key);
+                                        Key = this.Query.Aggregate[prop];
+                                        Results["Avg(" + Key + ")"] = getAvg();
                                     }
                                     else if (Array.isArray(this.Query.Aggregate[prop])) {
                                         for (var key in this.Query.Aggregate[prop]) {
-                                            var Key = this.Query.Aggregate[prop][key];
-                                            Results["Avg(" + Key + ")"] = getAvg(Key);
+                                            Key = this.Query.Aggregate[prop][key];
+                                            Results["Avg(" + Key + ")"] = getAvg();
                                         }
                                     }
                                     break;
@@ -2924,10 +2941,6 @@ var JsStore;
                                 else {
                                     this.processGroupBy();
                                 }
-                                // this.processGroupBy();
-                                // if (this.Query.Aggregate) {
-                                //     this.executeAggregateGroupBy();
-                                // }
                             }
                             else if (this.Query.Aggregate) {
                                 this.processAggregateQry();
@@ -4292,17 +4305,19 @@ var JsStore;
              * @param {ISelect} qry
              * @memberof Instance
              */
-            _this.exportJson = function (qry) {
-                qry['OnSuccess'] = qry['OnError'] = undefined;
-                this.select(qry, function (results) {
+            _this.exportJson = function (query) {
+                var OnSuccess = function (url) {
                     var Link = document.createElement("a");
-                    Link.href = URL.createObjectURL(new Blob([JSON.stringify(results)], {
-                        type: "text/json"
-                    }));
-                    Link.download = qry.From + ".json";
+                    Link.href = url;
+                    Link.download = query.From + ".json";
                     Link.click();
-                }, function (err) {
-                    console.error(err);
+                }, OnError = query['OnError'];
+                query['OnSuccess'] = query['OnError'] = undefined;
+                this.prcoessExecutionOfCode({
+                    Name: 'export_json',
+                    Query: query,
+                    OnSuccess: OnSuccess,
+                    OnError: OnError
                 });
             };
             if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.Registered) {
@@ -4332,4 +4347,4 @@ if (self && !self.alert) {
     JsStore.WorkerStatus = JsStore.WebWorkerStatus.Registered;
     KeyStore.init();
 }
-//# sourceMappingURL=JsStore-1.2.1.js.map
+//# sourceMappingURL=JsStore-1.2.2.js.map

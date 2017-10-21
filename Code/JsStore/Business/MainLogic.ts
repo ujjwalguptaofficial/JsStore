@@ -91,6 +91,9 @@ module JsStore {
                         break;
                     case 'bulk_insert': this.bulkInsert(request.Query, OnSuccess, OnError);
                         break;
+                    case 'export_json': this.exportJson(request.Query, OnSuccess, OnError);
+                        break;
+                    default: console.error('The Api:-' + request.Name + 'does not support');
                 }
             }
 
@@ -189,6 +192,17 @@ module JsStore {
 
             public clear = function (tableName: string, onSuccess: Function, onError: Function) {
                 new Clear(tableName, onSuccess, onError);
+            }
+
+            public exportJson = function (query: ISelect, onSuccess: Function, onError: Function) {
+                this.select(query, function (results) {
+                    var Url = URL.createObjectURL(new Blob([JSON.stringify(results)], {
+                        type: "text/json"
+                    }));
+                    onSuccess(Url);
+                }, function (err) {
+                    onError(err);
+                });
             }
         }
     }

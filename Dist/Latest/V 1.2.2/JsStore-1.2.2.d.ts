@@ -1,3 +1,6 @@
+/** JsStore.js - v1.2.2 - 21/10/2017
+ * https://github.com/ujjwalguptaofficial/JsStore
+ * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 declare module KeyStore {
     interface IError {
         Name: string;
@@ -548,6 +551,7 @@ declare module JsStore {
             count: (query: any, onSuccess: Function, onError: Function) => void;
             createDb: (dataBase: Model.IDataBase, onSuccess: Function, onError: Function) => void;
             clear: (tableName: string, onSuccess: Function, onError: Function) => void;
+            exportJson: (query: ISelect, onSuccess: Function, onError: Function) => void;
         }
     }
 }
@@ -937,6 +941,7 @@ declare module JsStore {
          * @param {ISelect} qry
          * @memberof Instance
          */
-        exportJson: (qry: ISelect) => void;
+        exportJson: (query: ISelect) => void;
     }
 }
+export = JsStore;

@@ -48,33 +48,33 @@ module JsStore {
 
                 private processAggregateQry = function () {
                     var Datas = this.Results,
-                        lookupObject = {};
+                        Results = {},
+                        Key;
                     //free results memory
                     this.Results = undefined;
-                    var Results = {};
                     for (var prop in this.Query.Aggregate) {
                         switch (prop) {
                             case 'Count':
-                                var getCount = function (key) {
+                                var getCount = function () {
                                     var Result = 0;
                                     for (var i in Datas) {
-                                        Result += Datas[i][key] ? 1 : 0;
+                                        Result += Datas[i][Key] ? 1 : 0;
                                     };
                                     return Result;
                                 }
                                 if (typeof this.Query.Aggregate[prop] == 'string') {
-                                    var Key = this.Query.Aggregate[prop];
-                                    Results["Count(" + Key + ")"] = getCount(Key);
+                                    Key = this.Query.Aggregate[prop];
+                                    Results["Count(" + Key + ")"] = getCount();
                                 }
                                 else if (Array.isArray(this.Query.Aggregate[prop])) {
                                     for (var key in this.Query.Aggregate[prop]) {
-                                        var Key = this.Query.Aggregate[prop][key];
-                                        Results["Count(" + Key + ")"] = getCount(Key);
+                                        Key = this.Query.Aggregate[prop][key];
+                                        Results["Count(" + Key + ")"] = getCount();
                                     }
                                 }
                                 break;
                             case 'Max':
-                                var getMax = function (key) {
+                                var getMax = function () {
                                     var Result = 0;
                                     for (var i in Datas) {
                                         Result = Result > Datas[i][Key] ? Result : Datas[i][Key];
@@ -82,18 +82,18 @@ module JsStore {
                                     return Result;
                                 }
                                 if (typeof this.Query.Aggregate[prop] == 'string') {
-                                    var Key = this.Query.Aggregate[prop];
-                                    Results["Max(" + Key + ")"] = getMax(Key);
+                                    Key = this.Query.Aggregate[prop];
+                                    Results["Max(" + Key + ")"] = getMax();
                                 }
                                 else if (Array.isArray(this.Query.Aggregate[prop])) {
                                     for (var key in this.Query.Aggregate[prop]) {
-                                        var Key = this.Query.Aggregate[prop][key];
-                                        Results["Max(" + Key + ")"] = getMax(Key);
+                                        Key = this.Query.Aggregate[prop][key];
+                                        Results["Max(" + Key + ")"] = getMax();
                                     }
                                 }
                                 break;
                             case 'Min':
-                                var getMin = function (key) {
+                                var getMin = function () {
                                     var Result = 0;
                                     for (var i in Datas) {
                                         Result = Result < Datas[i][Key] ? Result : Datas[i][Key];
@@ -101,18 +101,18 @@ module JsStore {
                                     return Result;
                                 }
                                 if (typeof this.Query.Aggregate[prop] == 'string') {
-                                    var Key = this.Query.Aggregate[prop];
-                                    Results["Min(" + Key + ")"] = getMin(Key);
+                                    Key = this.Query.Aggregate[prop];
+                                    Results["Min(" + Key + ")"] = getMin();
                                 }
                                 else if (Array.isArray(this.Query.Aggregate[prop])) {
                                     for (var key in this.Query.Aggregate[prop]) {
-                                        var Key = this.Query.Aggregate[prop][key];
-                                        Results["Min(" + Key + ")"] = getMin(Key);
+                                        Key = this.Query.Aggregate[prop][key];
+                                        Results["Min(" + Key + ")"] = getMin();
                                     }
                                 }
                                 break;
                             case 'Sum':
-                                var getSum = function (key) {
+                                var getSum = function () {
                                     var Result = 0;
                                     for (var i in Datas) {
                                         Result += Datas[i][Key];
@@ -120,18 +120,18 @@ module JsStore {
                                     return Result;
                                 }
                                 if (typeof this.Query.Aggregate[prop] == 'string') {
-                                    var Key = this.Query.Aggregate[prop];
-                                    Results["Sum(" + Key + ")"] = getSum(Key);
+                                    Key = this.Query.Aggregate[prop];
+                                    Results["Sum(" + Key + ")"] = getSum();
                                 }
                                 else if (Array.isArray(this.Query.Aggregate[prop])) {
                                     for (var key in this.Query.Aggregate[prop]) {
-                                        var Key = this.Query.Aggregate[prop][key];
-                                        Results["Sum(" + Key + ")"] = getSum(Key);
+                                        Key = this.Query.Aggregate[prop][key];
+                                        Results["Sum(" + Key + ")"] = getSum();
                                     }
                                 }
                                 break;
                             case 'Avg':
-                                var getAvg = function (key) {
+                                var getAvg = function () {
                                     var Result = 0;
                                     for (var i in Datas) {
                                         Result += Datas[i][Key];
@@ -139,13 +139,13 @@ module JsStore {
                                     return Result / Datas.length;
                                 }
                                 if (typeof this.Query.Aggregate[prop] == 'string') {
-                                    var Key = this.Query.Aggregate[prop];
-                                    Results["Avg(" + Key + ")"] = getAvg(Key);
+                                    Key = this.Query.Aggregate[prop];
+                                    Results["Avg(" + Key + ")"] = getAvg();
                                 }
                                 else if (Array.isArray(this.Query.Aggregate[prop])) {
                                     for (var key in this.Query.Aggregate[prop]) {
-                                        var Key = this.Query.Aggregate[prop][key];
-                                        Results["Avg(" + Key + ")"] = getAvg(Key);
+                                        Key = this.Query.Aggregate[prop][key];
+                                        Results["Avg(" + Key + ")"] = getAvg();
                                     }
                                 }
                                 break;

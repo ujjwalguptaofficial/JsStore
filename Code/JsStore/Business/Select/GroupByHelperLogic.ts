@@ -178,17 +178,23 @@ module JsStore {
                                         Sum = Datas[Index]["Sum(" + AvgColumn + ")"],
                                         Count = Datas[Index]["Count(" + AvgColumn + ")"];
                                     Datas[Index]["Avg(" + AvgColumn + ")"] = Sum / Count;
-                                    if (IsCountTypeString && AggregateQry.Count !== AvgColumn) {
-                                        delete Datas[Index]["Count(" + AvgColumn + ")"];
+
+                                    if (IsCountTypeString) {
+                                        if (AggregateQry.Count !== AvgColumn) {
+                                            delete Datas[Index]["Count(" + AvgColumn + ")"];
+                                        }
+                                        else if (AggregateQry.Count.indexOf(AvgColumn) == -1) {
+                                            delete Datas[Index]["Count(" + AvgColumn + ")"];
+                                        }
                                     }
-                                    else if (AggregateQry.Count.indexOf(AvgColumn) == -1) {
-                                        delete Datas[Index]["Count(" + AvgColumn + ")"];
-                                    }
-                                    if (IsSumTypeString && AggregateQry.Sum !== AvgColumn) {
-                                        delete Datas[Index]["Sum(" + AvgColumn + ")"];
-                                    }
-                                    else if (AggregateQry.Sum.indexOf(AvgColumn) == -1) {
-                                        delete Datas[Index]["Sum(" + AvgColumn + ")"];
+
+                                    if (IsSumTypeString) {
+                                        if (AggregateQry.Sum !== AvgColumn) {
+                                            delete Datas[Index]["Sum(" + AvgColumn + ")"];
+                                        }
+                                        else if (AggregateQry.Sum.indexOf(AvgColumn) == -1) {
+                                            delete Datas[Index]["Sum(" + AvgColumn + ")"];
+                                        }
                                     }
                                 }
                             }
