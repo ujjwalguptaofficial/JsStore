@@ -458,6 +458,10 @@ declare module JsStore {
             protected goToWhereLogic: () => void;
             protected getPrimaryKey: (tableName: any) => any;
             private getKeyPath;
+            protected sortNumberInAsc: (values: any) => any;
+            protected sortNumberInDesc: (values: any) => any;
+            protected sortAlphabetInAsc: (values: any) => any;
+            protected sortAlphabetInDesc: (values: any) => any;
         }
     }
 }
@@ -578,7 +582,20 @@ declare module JsStore {
 declare module JsStore {
     module Business {
         module Select {
-            class Like extends NotWhere {
+            class In extends NotWhere {
+                private executeSkipAndLimitForIn;
+                private executeSkipForIn;
+                private executeLimitForIn;
+                private executeSimpleForIn;
+                protected executeInLogic: (column: any, values: any) => void;
+            }
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        module Select {
+            class Like extends In {
                 CompSymbol: Occurence;
                 CompValue: any;
                 Column: any;

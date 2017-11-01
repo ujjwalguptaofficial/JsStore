@@ -55,6 +55,7 @@
         //select
         "JsStore/Business/Select/BaseSelectLogic.ts",
         "JsStore/Business/Select/NotWhereLogic.ts",
+        "JsStore/Business/Select/InLogic.ts",
         "JsStore/Business/Select/LikeLogic.ts",
         "JsStore/Business/Select/WhereLogic.ts",
         "JsStore/Business/Select/JoinLogic.ts",

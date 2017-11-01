@@ -228,9 +228,10 @@ module JsStore {
                                 }
                             }; break;
                             case 'In': {
-                                for (var i = 0; i < Value['In'].length; i++) {
-                                    this.executeWhereLogic(Column, Value['In'][i])
-                                }
+                                // for (var i = 0; i < Value['In'].length; i++) {
+                                //     this.executeWhereLogic(Column, Value['In'][i])
+                                // }
+                                this.executeInLogic(Column, Value['In']);
                             }; break;
                             case '-':
                             case '>':
@@ -265,6 +266,34 @@ module JsStore {
                     ObjectStore = Transaction.objectStore(tableName);
                 return ObjectStore.keyPath;
             }
+
+            protected sortNumberInAsc = function (values) {
+                values.sort(function (a, b) {
+                    return a - b;
+                });
+                return values;
+            }
+
+            protected sortNumberInDesc = function (values) {
+                values.sort(function (a, b) {
+                    return b - a;
+                });
+                return values;
+            }
+
+            protected sortAlphabetInAsc = function (values) {
+                values.sort(function (a, b) {
+                    return a.toLowerCase().localeCompare(b.toLowerCase());
+                });
+                return values;
+            }
+
+            protected sortAlphabetInDesc = function (values) {
+                values.sort(function (a, b) {
+                    return b.toLowerCase().localeCompare(a.toLowerCase());
+                });
+                return values;
+            };
         }
     }
 

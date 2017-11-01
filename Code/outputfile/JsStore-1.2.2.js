@@ -1008,9 +1008,10 @@ var JsStore;
                                     break;
                                 case 'In':
                                     {
-                                        for (var i = 0; i < Value['In'].length; i++) {
-                                            this.executeWhereLogic(Column, Value['In'][i]);
-                                        }
+                                        // for (var i = 0; i < Value['In'].length; i++) {
+                                        //     this.executeWhereLogic(Column, Value['In'][i])
+                                        // }
+                                        this.executeInLogic(Column, Value['In']);
                                     }
                                     ;
                                     break;
@@ -1043,6 +1044,30 @@ var JsStore;
                 this.getKeyPath = function (tableName) {
                     var Transaction = Business.DbConnection.transaction([tableName], "readonly"), ObjectStore = Transaction.objectStore(tableName);
                     return ObjectStore.keyPath;
+                };
+                this.sortNumberInAsc = function (values) {
+                    values.sort(function (a, b) {
+                        return a - b;
+                    });
+                    return values;
+                };
+                this.sortNumberInDesc = function (values) {
+                    values.sort(function (a, b) {
+                        return b - a;
+                    });
+                    return values;
+                };
+                this.sortAlphabetInAsc = function (values) {
+                    values.sort(function (a, b) {
+                        return a.toLowerCase().localeCompare(b.toLowerCase());
+                    });
+                    return values;
+                };
+                this.sortAlphabetInDesc = function (values) {
+                    values.sort(function (a, b) {
+                        return b.toLowerCase().localeCompare(a.toLowerCase());
+                    });
+                    return values;
                 };
             }
             /**
@@ -1941,6 +1966,283 @@ var JsStore;
     (function (Business) {
         var Select;
         (function (Select) {
+            var In = /** @class */ (function (_super) {
+                __extends(In, _super);
+                function In() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.executeSkipAndLimitForIn = function (column, values) {
+                        var Cursor, Skip = this.SkipRecord, That = this, skipOrPush = function (value) {
+                            if (Skip == 0) {
+                                That.Results.push(value);
+                            }
+                            else {
+                                --Skip;
+                            }
+                        };
+                        if (That.CheckFlag) {
+                            this.CursorOpenRequest.onsuccess = function (e) {
+                                Cursor = e.target.result;
+                                if (That.Results.length != That.LimitRecord && Cursor) {
+                                    if (That.filterOnOccurence(Cursor.value) &&
+                                        That.checkForWhereConditionMatch(Cursor.value)) {
+                                        skipOrPush(Cursor.value);
+                                    }
+                                    Cursor.continue();
+                                }
+                            };
+                        }
+                        else {
+                            this.CursorOpenRequest.onsuccess = function (e) {
+                                Cursor = e.target.result;
+                                if (That.Results.length != That.LimitRecord && Cursor) {
+                                    if (That.filterOnOccurence(Cursor.value)) {
+                                        skipOrPush(Cursor.value);
+                                    }
+                                    Cursor.continue();
+                                }
+                            };
+                        }
+                    };
+                    _this.executeSkipForIn = function (column, values) {
+                        var Cursor, Skip = this.SkipRecord, That = this, Index = 0, ValueVisited = {}, skipOrPush = function (value) {
+                            if (Skip == 0) {
+                                That.Results.push(value);
+                            }
+                            else {
+                                --Skip;
+                            }
+                        };
+                        if (That.CheckFlag) {
+                            this.CursorOpenRequest.onsuccess = function (e) {
+                                Cursor = e.target.result;
+                                if (Cursor) {
+                                    var isEqual = function () {
+                                        if (Cursor.value[column] == values[Index]) {
+                                            ValueVisited[values[Index]] = true;
+                                            if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                                skipOrPush((Cursor.value));
+                                            }
+                                            return true;
+                                        }
+                                        return false;
+                                    };
+                                    if (isEqual()) {
+                                        Cursor.continue();
+                                    }
+                                    else {
+                                        if (ValueVisited[values[Index]]) {
+                                            ++Index;
+                                        }
+                                        if (isEqual()) {
+                                            Cursor.continue();
+                                        }
+                                        else {
+                                            Cursor.continue(values[Index]);
+                                        }
+                                    }
+                                }
+                            };
+                        }
+                        else {
+                            this.CursorOpenRequest.onsuccess = function (e) {
+                                Cursor = e.target.result;
+                                if (Cursor) {
+                                    var isEqual = function () {
+                                        if (Cursor.value[column] == values[Index]) {
+                                            ValueVisited[values[Index]] = true;
+                                            skipOrPush((Cursor.value));
+                                            return true;
+                                        }
+                                        return false;
+                                    };
+                                    if (isEqual()) {
+                                        Cursor.continue();
+                                    }
+                                    else {
+                                        if (ValueVisited[values[Index]]) {
+                                            ++Index;
+                                        }
+                                        if (isEqual()) {
+                                            Cursor.continue();
+                                        }
+                                        else {
+                                            Cursor.continue(values[Index]);
+                                        }
+                                    }
+                                }
+                            };
+                        }
+                    };
+                    _this.executeLimitForIn = function (column, values) {
+                        var Cursor, That = this, Index = 0, ValueVisited = {};
+                        if (That.CheckFlag) {
+                            this.CursorOpenRequest.onsuccess = function (e) {
+                                Cursor = e.target.result;
+                                if (Cursor) {
+                                    var isEqual = function () {
+                                        if (Cursor.value[column] == values[Index]) {
+                                            ValueVisited[values[Index]] = true;
+                                            if (That.Results.length != That.LimitRecord &&
+                                                That.checkForWhereConditionMatch(Cursor.value)) {
+                                                That.Results.push(Cursor.value);
+                                            }
+                                            return true;
+                                        }
+                                        return false;
+                                    };
+                                    if (isEqual()) {
+                                        Cursor.continue();
+                                    }
+                                    else {
+                                        if (ValueVisited[values[Index]]) {
+                                            ++Index;
+                                        }
+                                        if (isEqual()) {
+                                            Cursor.continue();
+                                        }
+                                        else {
+                                            Cursor.continue(values[Index]);
+                                        }
+                                    }
+                                }
+                            };
+                        }
+                        else {
+                            this.CursorOpenRequest.onsuccess = function (e) {
+                                Cursor = e.target.result;
+                                if (Cursor) {
+                                    var isEqual = function () {
+                                        if (Cursor.value[column] == values[Index]) {
+                                            ValueVisited[values[Index]] = true;
+                                            if (That.Results.length != That.LimitRecord) {
+                                                That.Results.push(Cursor.value);
+                                            }
+                                            return true;
+                                        }
+                                        return false;
+                                    };
+                                    if (isEqual()) {
+                                        Cursor.continue();
+                                    }
+                                    else {
+                                        if (ValueVisited[values[Index]]) {
+                                            ++Index;
+                                        }
+                                        if (isEqual()) {
+                                            Cursor.continue();
+                                        }
+                                        else {
+                                            Cursor.continue(values[Index]);
+                                        }
+                                    }
+                                }
+                            };
+                        }
+                    };
+                    _this.executeSimpleForIn = function (column, values) {
+                        var Cursor, That = this, Index = 0, ValueVisited = {};
+                        if (That.CheckFlag) {
+                            this.CursorOpenRequest.onsuccess = function (e) {
+                                Cursor = e.target.result;
+                                if (Cursor) {
+                                    var isEqual = function () {
+                                        if (Cursor.value[column] == values[Index]) {
+                                            ValueVisited[values[Index]] = true;
+                                            if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                                That.Results.push(Cursor.value);
+                                            }
+                                            return true;
+                                        }
+                                        return false;
+                                    };
+                                    if (isEqual()) {
+                                        Cursor.continue();
+                                    }
+                                    else {
+                                        if (ValueVisited[values[Index]]) {
+                                            ++Index;
+                                        }
+                                        if (isEqual()) {
+                                            Cursor.continue();
+                                        }
+                                        else {
+                                            Cursor.continue(values[Index]);
+                                        }
+                                    }
+                                }
+                            };
+                        }
+                        else {
+                            this.CursorOpenRequest.onsuccess = function (e) {
+                                Cursor = e.target.result;
+                                if (Cursor) {
+                                    var isEqual = function () {
+                                        if (Cursor.value[column] == values[Index]) {
+                                            ValueVisited[values[Index]] = true;
+                                            That.Results.push(Cursor.value);
+                                            return true;
+                                        }
+                                        return false;
+                                    };
+                                    if (isEqual()) {
+                                        Cursor.continue();
+                                    }
+                                    else {
+                                        if (ValueVisited[values[Index]]) {
+                                            ++Index;
+                                            if (isEqual()) {
+                                                Cursor.continue();
+                                            }
+                                        }
+                                        else {
+                                            ValueVisited[values[Index]] = true;
+                                            Cursor.continue(values[Index]);
+                                        }
+                                    }
+                                }
+                            };
+                        }
+                    };
+                    _this.executeInLogic = function (column, values) {
+                        var That = this;
+                        if (typeof values[0] == 'string') {
+                            values = this.sortAlphabetInAsc(values);
+                        }
+                        else if (typeof values[0] == 'number') {
+                            values = this.sortNumberInAsc(values);
+                        }
+                        this.CursorOpenRequest = this.ObjectStore.index(column).openCursor();
+                        this.CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                        if (this.SkipRecord && this.LimitRecord) {
+                            this.executeSkipAndLimitForIn(column, values);
+                        }
+                        else if (this.SkipRecord) {
+                            this.executeSkipForIn(column, values);
+                        }
+                        else if (this.LimitRecord) {
+                            this.executeLimitForIn(column, values);
+                        }
+                        else {
+                            this.executeSimpleForIn(column, values);
+                        }
+                    };
+                    return _this;
+                }
+                return In;
+            }(Select.NotWhere));
+            Select.In = In;
+        })(Select = Business.Select || (Business.Select = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Select;
+        (function (Select) {
             var Like = /** @class */ (function (_super) {
                 __extends(Like, _super);
                 function Like() {
@@ -2113,7 +2415,7 @@ var JsStore;
                     return _this;
                 }
                 return Like;
-            }(Select.NotWhere));
+            }(Select.In));
             Select.Like = Like;
         })(Select = Business.Select || (Business.Select = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));
