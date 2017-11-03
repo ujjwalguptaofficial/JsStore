@@ -33,7 +33,7 @@ module JsStore {
                                 if (!That.ErrorOccured) {
                                     CursorOpenRequest = this.ObjectStore.index(column).count(IDBKeyRange.only(values[i]));
                                     CursorOpenRequest.onsuccess = function (e) {
-                                        That.ResultCount += CursorOpenRequest.result;
+                                        That.ResultCount += (<any>e).target.result;
                                     }
                                     CursorOpenRequest.onerror = function (e) {
                                         That.ErrorOccured = true;

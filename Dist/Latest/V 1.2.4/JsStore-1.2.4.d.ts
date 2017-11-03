@@ -1,4 +1,4 @@
-/** JsStore.js - v1.2.2 - 21/10/2017
+/** JsStore.js - v1.2.4 - 03/11/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 declare module KeyStore {
@@ -363,13 +363,6 @@ declare module JsStore {
     *
     */
     var disableLog: () => void;
-    /**
-    * get the results in file by file type
-    *
-    * @param {*} qry
-    * @param {string} type
-    */
-    var getFile: (qry: any, data: any, type?: string) => void;
 }
 declare module JsStore {
     module Model {
@@ -461,6 +454,10 @@ declare module JsStore {
             protected goToWhereLogic: () => void;
             protected getPrimaryKey: (tableName: any) => any;
             private getKeyPath;
+            protected sortNumberInAsc: (values: any) => any;
+            protected sortNumberInDesc: (values: any) => any;
+            protected sortAlphabetInAsc: (values: any) => any;
+            protected sortAlphabetInDesc: (values: any) => any;
         }
     }
 }
@@ -581,7 +578,20 @@ declare module JsStore {
 declare module JsStore {
     module Business {
         module Select {
-            class Like extends NotWhere {
+            class In extends NotWhere {
+                private executeSkipAndLimitForIn;
+                private executeSkipForIn;
+                private executeLimitForIn;
+                private executeSimpleForIn;
+                protected executeInLogic: (column: any, values: any) => void;
+            }
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        module Select {
+            class Like extends In {
                 CompSymbol: Occurence;
                 CompValue: any;
                 Column: any;
@@ -681,7 +691,16 @@ declare module JsStore {
 declare module JsStore {
     module Business {
         module Count {
-            class Like extends NotWhere {
+            class In extends NotWhere {
+                private executeInLogic;
+            }
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        module Count {
+            class Like extends In {
                 CompSymbol: Occurence;
                 CompValue: any;
                 Column: any;
@@ -733,7 +752,16 @@ declare module JsStore {
 declare module JsStore {
     module Business {
         module Update {
-            class Like extends NotWhere {
+            class In extends NotWhere {
+                private executeInLogic;
+            }
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        module Update {
+            class Like extends In {
                 CompSymbol: Occurence;
                 CompValue: any;
                 Column: any;
@@ -787,7 +815,16 @@ declare module JsStore {
 declare module JsStore {
     module Business {
         module Delete {
-            class Like extends NotWhere {
+            class In extends NotWhere {
+                private executeInLogic;
+            }
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        module Delete {
+            class Like extends In {
                 CompSymbol: Occurence;
                 CompValue: any;
                 Column: any;

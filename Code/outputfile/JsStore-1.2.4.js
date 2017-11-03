@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.2.2 - 21/10/2017
+/** JsStore.js - v1.2.4 - 03/11/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var KeyStore;
@@ -3342,7 +3342,7 @@ var JsStore;
                                     if (!That.ErrorOccured) {
                                         CursorOpenRequest = this.ObjectStore.index(column).count(IDBKeyRange.only(values[i]));
                                         CursorOpenRequest.onsuccess = function (e) {
-                                            That.ResultCount += CursorOpenRequest.result;
+                                            That.ResultCount += e.target.result;
                                         };
                                         CursorOpenRequest.onerror = function (e) {
                                             That.ErrorOccured = true;
@@ -4761,4 +4761,4 @@ if (self && !self.alert) {
     JsStore.WorkerStatus = JsStore.WebWorkerStatus.Registered;
     KeyStore.init();
 }
-//# sourceMappingURL=JsStore-1.2.2.js.map
+//# sourceMappingURL=JsStore-1.2.4.js.map
