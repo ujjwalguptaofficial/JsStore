@@ -760,41 +760,6 @@ var JsStore;
             });
         }
     };
-    /**
-    * get the results in file by file type
-    *
-    * @param {*} qry
-    * @param {string} type
-    */
-    JsStore.getFile = function (qry, data, type) {
-        if (type === void 0) { type = null; }
-        var downloadJson = function (qry) {
-            // var Result = [];
-            // var Table = document.querySelector('#divResultSQL table tbody');
-            // for (var i = 1, rowLength = Table.rows.length; i < rowLength; i++) {
-            //     var Obj = {};
-            //     for (var j = 0, colLength = Table.rows[i].cells.length; j < colLength; j++) {
-            //         if (j == 1 || j == 4) {
-            //             Obj[Table.rows[0].cells[j].innerText] = Table.rows[i].cells[j].innerText;
-            //         } else {
-            //             Obj[Table.rows[0].cells[j].innerText] = Number(Table.rows[i].cells[j].innerText);
-            //         }
-            //     }
-            //     Result.push(Obj);
-            // }
-            // var a = document.createElement("a");
-            // var file = new Blob([JSON.stringify(Result)], {
-            //     type: "text/json"
-            // });
-            // a.href = URL.createObjectURL(file);
-            // a.download = fileName + ".json";
-            // a.click();        
-        };
-        switch (type.toLowerCase()) {
-            case 'csv':
-            default: downloadJson(qry);
-        }
-    };
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
@@ -3344,6 +3309,86 @@ var JsStore;
     (function (Business) {
         var Count;
         (function (Count) {
+            var In = /** @class */ (function (_super) {
+                __extends(In, _super);
+                function In() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.executeInLogic = function (column, values) {
+                        var Cursor, That = this, CursorOpenRequest;
+                        if (That.CheckFlag) {
+                            for (var i = 0, length = values.length; i < length; i++) {
+                                if (!That.ErrorOccured) {
+                                    CursorOpenRequest = this.ObjectStore.index(column).
+                                        openCursor(IDBKeyRange.only(values[i]));
+                                    CursorOpenRequest.onsuccess = function (e) {
+                                        Cursor = e.target.result;
+                                        if (Cursor) {
+                                            if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                                ++That.ResultCount;
+                                            }
+                                            Cursor.continue();
+                                        }
+                                    };
+                                    CursorOpenRequest.onerror = function (e) {
+                                        That.ErrorOccured = true;
+                                        That.onErrorOccured(e);
+                                    };
+                                }
+                            }
+                        }
+                        else {
+                            if (this.ObjectStore.count) {
+                                for (var i = 0, length = values.length; i < length; i++) {
+                                    if (!That.ErrorOccured) {
+                                        CursorOpenRequest = this.ObjectStore.index(column).count(IDBKeyRange.only(values[i]));
+                                        CursorOpenRequest.onsuccess = function (e) {
+                                            That.ResultCount += CursorOpenRequest.result;
+                                        };
+                                        CursorOpenRequest.onerror = function (e) {
+                                            That.ErrorOccured = true;
+                                            That.onErrorOccured(e);
+                                        };
+                                    }
+                                }
+                            }
+                            else {
+                                for (var i = 0, length = values.length; i < length; i++) {
+                                    if (!That.ErrorOccured) {
+                                        CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                        CursorOpenRequest.onsuccess = function (e) {
+                                            Cursor = e.target.result;
+                                            if (Cursor) {
+                                                ++That.ResultCount;
+                                                Cursor.continue();
+                                            }
+                                        };
+                                        CursorOpenRequest.onerror = function (e) {
+                                            That.ErrorOccured = true;
+                                            That.onErrorOccured(e);
+                                        };
+                                    }
+                                }
+                            }
+                        }
+                        CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                    };
+                    return _this;
+                }
+                return In;
+            }(Count.NotWhere));
+            Count.In = In;
+        })(Count = Business.Count || (Business.Count = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Count;
+        (function (Count) {
             var Like = /** @class */ (function (_super) {
                 __extends(Like, _super);
                 function Like() {
@@ -3409,7 +3454,7 @@ var JsStore;
                     return _this;
                 }
                 return Like;
-            }(Count.NotWhere));
+            }(Count.In));
             Count.Like = Like;
         })(Count = Business.Count || (Business.Count = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));
@@ -3620,6 +3665,71 @@ var JsStore;
     (function (Business) {
         var Update;
         (function (Update) {
+            var In = /** @class */ (function (_super) {
+                __extends(In, _super);
+                function In() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.executeInLogic = function (column, values) {
+                        var Cursor, That = this, CursorOpenRequest;
+                        if (That.CheckFlag) {
+                            for (var i = 0, length = values.length; i < length; i++) {
+                                if (!That.ErrorOccured) {
+                                    CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    CursorOpenRequest.onsuccess = function (e) {
+                                        Cursor = e.target.result;
+                                        if (Cursor) {
+                                            if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                                Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
+                                                ++That.RowAffected;
+                                            }
+                                            Cursor.continue();
+                                        }
+                                    };
+                                    CursorOpenRequest.onerror = function (e) {
+                                        That.ErrorOccured = true;
+                                        That.onErrorOccured(e);
+                                    };
+                                }
+                            }
+                        }
+                        else {
+                            for (var i = 0, length = values.length; i < length; i++) {
+                                if (!That.ErrorOccured) {
+                                    CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    CursorOpenRequest.onsuccess = function (e) {
+                                        Cursor = e.target.result;
+                                        if (Cursor) {
+                                            Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
+                                            ++That.RowAffected;
+                                            Cursor.continue();
+                                        }
+                                    };
+                                    CursorOpenRequest.onerror = function (e) {
+                                        That.ErrorOccured = true;
+                                        That.onErrorOccured(e);
+                                    };
+                                }
+                            }
+                        }
+                        CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                    };
+                    return _this;
+                }
+                return In;
+            }(Update.NotWhere));
+            Update.In = In;
+        })(Update = Business.Update || (Business.Update = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Update;
+        (function (Update) {
             var Like = /** @class */ (function (_super) {
                 __extends(Like, _super);
                 function Like() {
@@ -3687,7 +3797,7 @@ var JsStore;
                     return _this;
                 }
                 return Like;
-            }(Update.NotWhere));
+            }(Update.In));
             Update.Like = Like;
         })(Update = Business.Update || (Business.Update = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));
@@ -3946,6 +4056,71 @@ var JsStore;
     (function (Business) {
         var Delete;
         (function (Delete) {
+            var In = /** @class */ (function (_super) {
+                __extends(In, _super);
+                function In() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.executeInLogic = function (column, values) {
+                        var Cursor, That = this, CursorOpenRequest;
+                        if (That.CheckFlag) {
+                            for (var i = 0, length = values.length; i < length; i++) {
+                                if (!That.ErrorOccured) {
+                                    CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    CursorOpenRequest.onsuccess = function (e) {
+                                        Cursor = e.target.result;
+                                        if (Cursor) {
+                                            if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                                Cursor.delete();
+                                                ++That.RowAffected;
+                                            }
+                                            Cursor.continue();
+                                        }
+                                    };
+                                    CursorOpenRequest.onerror = function (e) {
+                                        That.ErrorOccured = true;
+                                        That.onErrorOccured(e);
+                                    };
+                                }
+                            }
+                        }
+                        else {
+                            for (var i = 0, length = values.length; i < length; i++) {
+                                if (!That.ErrorOccured) {
+                                    CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    CursorOpenRequest.onsuccess = function (e) {
+                                        Cursor = e.target.result;
+                                        if (Cursor) {
+                                            Cursor.delete();
+                                            ++That.RowAffected;
+                                            Cursor.continue();
+                                        }
+                                    };
+                                    CursorOpenRequest.onerror = function (e) {
+                                        That.ErrorOccured = true;
+                                        That.onErrorOccured(e);
+                                    };
+                                }
+                            }
+                        }
+                        CursorOpenRequest.onerror = function (e) {
+                            That.ErrorOccured = true;
+                            That.onErrorOccured(e);
+                        };
+                    };
+                    return _this;
+                }
+                return In;
+            }(Delete.NotWhere));
+            Delete.In = In;
+        })(Delete = Business.Delete || (Business.Delete = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Delete;
+        (function (Delete) {
             var Like = /** @class */ (function (_super) {
                 __extends(Like, _super);
                 function Like() {
@@ -4013,7 +4188,7 @@ var JsStore;
                     return _this;
                 }
                 return Like;
-            }(Delete.NotWhere));
+            }(Delete.In));
             Delete.Like = Like;
         })(Delete = Business.Delete || (Business.Delete = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));

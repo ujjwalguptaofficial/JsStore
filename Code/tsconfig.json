@@ -65,18 +65,21 @@
         //count
         "JsStore/Business/Count/BaseCountLogic.ts",
         "JsStore/Business/Count/NotWhereLogic.ts",
+        "JsStore/Business/Count/InLogic.ts",
         "JsStore/Business/Count/LikeLogic.ts",
         "JsStore/Business/Count/WhereLogic.ts",
         "JsStore/Business/Count/InstanceLogic.ts",
         //update
         "JsStore/Business/Update/BaseUpdateLogic.ts",
         "JsStore/Business/Update/NotWhereLogic.ts",
+        "JsStore/Business/Update/InLogic.ts",
         "JsStore/Business/Update/LikeLogic.ts",
         "JsStore/Business/Update/WhereLogic.ts",
         "JsStore/Business/Update/InstanceLogic.ts",
         //delete
         "JsStore/Business/Delete/BaseDeleteLogic.ts",
         "JsStore/Business/Delete/NotWhereLogic.ts",
+        "JsStore/Business/Delete/InLogic.ts",
         "JsStore/Business/Delete/LikeLogic.ts",
         "JsStore/Business/Delete/WhereLogic.ts",
         "JsStore/Business/Delete/InstanceLogic.ts",

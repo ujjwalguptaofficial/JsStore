@@ -360,13 +360,6 @@ declare module JsStore {
     *
     */
     var disableLog: () => void;
-    /**
-    * get the results in file by file type
-    *
-    * @param {*} qry
-    * @param {string} type
-    */
-    var getFile: (qry: any, data: any, type?: string) => void;
 }
 declare module JsStore {
     module Model {
@@ -695,7 +688,16 @@ declare module JsStore {
 declare module JsStore {
     module Business {
         module Count {
-            class Like extends NotWhere {
+            class In extends NotWhere {
+                private executeInLogic;
+            }
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        module Count {
+            class Like extends In {
                 CompSymbol: Occurence;
                 CompValue: any;
                 Column: any;
@@ -747,7 +749,16 @@ declare module JsStore {
 declare module JsStore {
     module Business {
         module Update {
-            class Like extends NotWhere {
+            class In extends NotWhere {
+                private executeInLogic;
+            }
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        module Update {
+            class Like extends In {
                 CompSymbol: Occurence;
                 CompValue: any;
                 Column: any;
@@ -801,7 +812,16 @@ declare module JsStore {
 declare module JsStore {
     module Business {
         module Delete {
-            class Like extends NotWhere {
+            class In extends NotWhere {
+                private executeInLogic;
+            }
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        module Delete {
+            class Like extends In {
                 CompSymbol: Occurence;
                 CompValue: any;
                 Column: any;

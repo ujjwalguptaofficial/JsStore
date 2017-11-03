@@ -1,7 +1,7 @@
 module JsStore {
     export module Business {
         export module Update {
-            export class Like extends NotWhere {
+            export class Like extends In {
                 CompSymbol: Occurence;
                 CompValue;
                 Column;
