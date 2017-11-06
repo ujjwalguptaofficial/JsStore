@@ -188,6 +188,16 @@ declare module JsStore {
         NotStarted = "not_started",
         UnableToStart = "unable_to_start",
     }
+    enum WhereQryOption {
+        In = "In",
+        Like = "Like",
+        Or = "Or",
+    }
+    enum DataType {
+        String = "string",
+        Object = "object",
+        Array = "array",
+    }
 }
 declare module JsStore {
     interface DbInfo {
@@ -213,6 +223,7 @@ declare module JsStore {
             Sum: any;
             Avg: any;
         };
+        Casing: false;
     }
     interface IOrder {
         By: string;
@@ -420,7 +431,25 @@ declare module JsStore {
 }
 declare module JsStore {
     module Business {
-        class Base {
+        class BaseHelper {
+            protected getTable: (tableName: string) => Table;
+            protected getKeyRange: (value: any, op: any) => IDBKeyRange;
+            protected getObjectSecondKey: (value: any) => string;
+            protected getPrimaryKey: (tableName: any) => any;
+            private getKeyPath;
+            protected sortNumberInAsc: (values: any) => any;
+            protected sortNumberInDesc: (values: any) => any;
+            protected sortAlphabetInAsc: (values: any) => any;
+            protected sortAlphabetInDesc: (values: any) => any;
+            protected replaceAt: (word: any, index: any, replacement: any) => any;
+            private getCombination(word);
+            protected getAllCombinationOfWord(word: any, isArray: any): any[];
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        class Base extends BaseHelper {
             Error: IError;
             ErrorOccured: boolean;
             ErrorCount: number;
@@ -445,16 +474,8 @@ declare module JsStore {
             * @memberOf SelectLogic
             */
             protected checkForWhereConditionMatch(rowValue: any): boolean;
-            protected getTable: (tableName: string) => Table;
-            protected getKeyRange: (value: any, op: any) => IDBKeyRange;
-            protected getObjectSecondKey: (value: any) => string;
             protected goToWhereLogic: () => void;
-            protected getPrimaryKey: (tableName: any) => any;
-            private getKeyPath;
-            protected sortNumberInAsc: (values: any) => any;
-            protected sortNumberInDesc: (values: any) => any;
-            protected sortAlphabetInAsc: (values: any) => any;
-            protected sortAlphabetInDesc: (values: any) => any;
+            protected makeQryInCaseSensitive: (qry: any) => any;
         }
     }
 }

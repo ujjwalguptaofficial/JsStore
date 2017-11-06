@@ -1,6 +1,6 @@
 module JsStore {
     export module Business {
-        export class Base {
+        export class Base extends BaseHelper {
             Error: IError;
             ErrorOccured: boolean = false;
             ErrorCount = 0;
@@ -166,47 +166,11 @@ module JsStore {
                 return Status;
             }
 
-            protected getTable = function (tableName: string) {
-                var CurrentTable: Table,
-                    That = this;
-                ActiveDataBase.Tables.every(function (table) {
-                    if (table.Name == tableName) {
-                        CurrentTable = table;
-                        return false;
-                    }
-                    return true;
-                });
-                return CurrentTable;
-            }
-
-            protected getKeyRange = function (value, op) {
-                var KeyRange: IDBKeyRange;
-                switch (op) {
-                    case '-': KeyRange = IDBKeyRange.bound(value.Low, value.High, false, false); break;
-                    case '>': KeyRange = IDBKeyRange.lowerBound(value, true); break;
-                    case '>=': KeyRange = IDBKeyRange.lowerBound(value); break;
-                    case '<': KeyRange = IDBKeyRange.upperBound(value, true); break;
-                    case '<=': KeyRange = IDBKeyRange.upperBound(value); break;
-                    default: KeyRange = IDBKeyRange.only(value); break;
-                }
-                return KeyRange;
-
-            }
-
-            protected getObjectSecondKey = function (value) {
-                var IsSecond = false;
-                for (var key in value) {
-                    if (IsSecond) {
-                        return key;
-                    }
-                    else {
-                        IsSecond = true;
-                    }
-                }
-            }
-
             protected goToWhereLogic = function () {
                 var Column = getObjectFirstKey(this.Query.Where);
+                if (!this.Query.Casing) {
+                    this.Query.Where = this.makeQryInCaseSensitive(this.Query.Where);
+                }
                 if (this.ObjectStore.indexNames.contains(Column)) {
                     var Value = this.Query.Where[Column];
                     if (typeof Value == 'object') {
@@ -227,12 +191,9 @@ module JsStore {
                                     this.executeLikeLogic(Column, FilterValue[0], Occurence.First);
                                 }
                             }; break;
-                            case 'In': {
-                                // for (var i = 0; i < Value['In'].length; i++) {
-                                //     this.executeWhereLogic(Column, Value['In'][i])
-                                // }
+                            case 'In':
                                 this.executeInLogic(Column, Value['In']);
-                            }; break;
+                                break;
                             case '-':
                             case '>':
                             case '<':
@@ -256,44 +217,28 @@ module JsStore {
                 }
             }
 
-            protected getPrimaryKey = function (tableName) {
-                var PrimaryKey = this.getTable(tableName).PrimaryKey
-                return PrimaryKey ? PrimaryKey : this.getKeyPath();
-            };
-
-            private getKeyPath = function (tableName) {
-                var Transaction: IDBTransaction = DbConnection.transaction([tableName], "readonly"),
-                    ObjectStore = Transaction.objectStore(tableName);
-                return ObjectStore.keyPath;
+            protected makeQryInCaseSensitive = function (qry) {
+                var Results = [],
+                    Qry;
+                for (var item in qry) {
+                    Qry = qry[item];
+                    switch (item) {
+                        case WhereQryOption.In:
+                            for (var value in Qry) {
+                                Results = Results.concat(this.getAllCombinationOfWord(Qry['In'], true));
+                            }
+                            break;
+                        case WhereQryOption.Like: break;
+                        default:
+                            Results = Results.concat(this.getAllCombinationOfWord(Qry));
+                    }
+                    qry[item] = {
+                        In: Results
+                    }
+                    Results = [];
+                }
+                return qry;
             }
-
-            protected sortNumberInAsc = function (values) {
-                values.sort(function (a, b) {
-                    return a - b;
-                });
-                return values;
-            }
-
-            protected sortNumberInDesc = function (values) {
-                values.sort(function (a, b) {
-                    return b - a;
-                });
-                return values;
-            }
-
-            protected sortAlphabetInAsc = function (values) {
-                values.sort(function (a, b) {
-                    return a.toLowerCase().localeCompare(b.toLowerCase());
-                });
-                return values;
-            }
-
-            protected sortAlphabetInDesc = function (values) {
-                values.sort(function (a, b) {
-                    return b.toLowerCase().localeCompare(a.toLowerCase());
-                });
-                return values;
-            };
         }
     }
 

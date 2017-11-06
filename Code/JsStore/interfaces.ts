@@ -22,7 +22,8 @@ module JsStore {
             Count: any,
             Sum: any,
             Avg: any
-        }
+        },
+        Casing: false
     }
 
     export interface IOrder {
@@ -126,4 +127,6 @@ module JsStore {
         Count: Array<any>,
         Avg: Array<any>
     }
+
+   
 }

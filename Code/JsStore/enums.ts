@@ -35,4 +35,16 @@ module JsStore {
         NotStarted = "not_started",
         UnableToStart = "unable_to_start"
     }
+
+    export enum WhereQryOption {
+        In = "In",
+        Like = "Like",
+        Or = "Or"
+    }
+
+    export enum DataType {
+        String = "string",
+        Object = "object",
+        Array = "array"
+    }
 }
