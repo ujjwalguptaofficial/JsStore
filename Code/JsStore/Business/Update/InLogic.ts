@@ -5,11 +5,12 @@ module JsStore {
                 private executeInLogic = function (column, values) {
                     var Cursor: IDBCursorWithValue,
                         That = this,
+                        ColumnStore = this.ObjectStore.index(column),
                         CursorOpenRequest;
                     if (That.CheckFlag) {
                         for (var i = 0, length = values.length; i < length; i++) {
                             if (!That.ErrorOccured) {
-                                CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = (<any>e).target.result;
                                     if (Cursor) {
@@ -30,7 +31,7 @@ module JsStore {
                     else {
                         for (var i = 0, length = values.length; i < length; i++) {
                             if (!That.ErrorOccured) {
-                                CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = (<any>e).target.result;
                                     if (Cursor) {

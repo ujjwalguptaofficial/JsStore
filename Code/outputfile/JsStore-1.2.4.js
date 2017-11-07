@@ -954,9 +954,6 @@ var JsStore;
                     });
                     return values;
                 };
-                this.replaceAt = function (word, index, replacement) {
-                    return word.substr(0, index) + replacement + word.substr(index + replacement.length);
-                };
             }
             BaseHelper.prototype.getCombination = function (word) {
                 var Results = [], doAndPushCombination = function (word, chars, index) {
@@ -2012,7 +2009,7 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeSkipAndLimitForIn = function (column, values) {
-                        var Cursor, Skip = this.SkipRecord, That = this, skipOrPush = function (value) {
+                        var Cursor, Skip = this.SkipRecord, That = this, ColumnStore = this.ObjectStore.index(column), skipOrPush = function (value) {
                             if (Skip == 0) {
                                 That.Results.push(value);
                             }
@@ -2023,7 +2020,7 @@ var JsStore;
                         if (That.CheckFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
-                                    this.CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
                                         if (That.Results.length != That.LimitRecord && Cursor) {
@@ -2043,7 +2040,7 @@ var JsStore;
                         else {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
-                                    this.CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
                                         if (That.Results.length != That.LimitRecord && Cursor) {
@@ -2060,7 +2057,7 @@ var JsStore;
                         }
                     };
                     _this.executeSkipForIn = function (column, values) {
-                        var Cursor, Skip = this.SkipRecord, That = this, skipOrPush = function (value) {
+                        var Cursor, Skip = this.SkipRecord, That = this, ColumnStore = this.ObjectStore.index(column), skipOrPush = function (value) {
                             if (Skip == 0) {
                                 That.Results.push(value);
                             }
@@ -2071,7 +2068,7 @@ var JsStore;
                         if (That.CheckFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
-                                    this.CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
                                         if (Cursor) {
@@ -2091,7 +2088,7 @@ var JsStore;
                         else {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
-                                    this.CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
                                         if (Cursor) {
@@ -2108,11 +2105,11 @@ var JsStore;
                         }
                     };
                     _this.executeLimitForIn = function (column, values) {
-                        var Cursor, That = this;
+                        var Cursor, That = this, ColumnStore = this.ObjectStore.index(column);
                         if (That.CheckFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
-                                    this.CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
                                         if (Cursor && That.Results.length != That.LimitRecord) {
@@ -2132,7 +2129,7 @@ var JsStore;
                         else {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
-                                    this.CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
                                         if (Cursor && That.Results.length != That.LimitRecord) {
@@ -2149,11 +2146,11 @@ var JsStore;
                         }
                     };
                     _this.executeSimpleForIn = function (column, values) {
-                        var Cursor, That = this;
+                        var Cursor, That = this, ColumnStore = this.ObjectStore.index(column);
                         if (That.CheckFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
-                                    this.CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
                                         if (Cursor) {
@@ -2173,7 +2170,7 @@ var JsStore;
                         else {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
-                                    this.CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
                                         if (Cursor) {
@@ -3391,12 +3388,11 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeInLogic = function (column, values) {
-                        var Cursor, That = this, CursorOpenRequest;
+                        var Cursor, That = this, ColumnStore = this.ObjectStore.index(column), CursorOpenRequest;
                         if (That.CheckFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
-                                    CursorOpenRequest = this.ObjectStore.index(column).
-                                        openCursor(IDBKeyRange.only(values[i]));
+                                    CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
                                         if (Cursor) {
@@ -3417,7 +3413,7 @@ var JsStore;
                             if (this.ObjectStore.count) {
                                 for (var i = 0, length = values.length; i < length; i++) {
                                     if (!That.ErrorOccured) {
-                                        CursorOpenRequest = this.ObjectStore.index(column).count(IDBKeyRange.only(values[i]));
+                                        CursorOpenRequest = ColumnStore.count(IDBKeyRange.only(values[i]));
                                         CursorOpenRequest.onsuccess = function (e) {
                                             That.ResultCount += e.target.result;
                                         };
@@ -3431,7 +3427,7 @@ var JsStore;
                             else {
                                 for (var i = 0, length = values.length; i < length; i++) {
                                     if (!That.ErrorOccured) {
-                                        CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                        CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                         CursorOpenRequest.onsuccess = function (e) {
                                             Cursor = e.target.result;
                                             if (Cursor) {
@@ -3747,11 +3743,11 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeInLogic = function (column, values) {
-                        var Cursor, That = this, CursorOpenRequest;
+                        var Cursor, That = this, ColumnStore = this.ObjectStore.index(column), CursorOpenRequest;
                         if (That.CheckFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
-                                    CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
                                         if (Cursor) {
@@ -3772,7 +3768,7 @@ var JsStore;
                         else {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
-                                    CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
                                         if (Cursor) {
@@ -4138,7 +4134,7 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeInLogic = function (column, values) {
-                        var Cursor, That = this, CursorOpenRequest;
+                        var Cursor, That = this, ColumnStore = this.ObjectStore.index(column), CursorOpenRequest;
                         if (That.CheckFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {

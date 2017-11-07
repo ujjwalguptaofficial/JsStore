@@ -5,6 +5,7 @@ module JsStore {
                 private executeInLogic = function (column, values) {
                     var Cursor: IDBCursorWithValue,
                         That = this,
+                        ColumnStore = this.ObjectStore.index(column),
                         CursorOpenRequest;
                     if (That.CheckFlag) {
                         for (var i = 0, length = values.length; i < length; i++) {

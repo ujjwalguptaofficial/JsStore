@@ -441,7 +441,6 @@ declare module JsStore {
             protected sortNumberInDesc: (values: any) => any;
             protected sortAlphabetInAsc: (values: any) => any;
             protected sortAlphabetInDesc: (values: any) => any;
-            protected replaceAt: (word: any, index: any, replacement: any) => any;
             private getCombination(word);
             protected getAllCombinationOfWord(word: any, isArray: any): any[];
         }
