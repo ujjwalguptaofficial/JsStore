@@ -495,25 +495,19 @@ declare module JsStore {
 }
 declare module JsStore {
     module Business {
-        class Insert extends Base {
+        class InsertHelper extends Base {
             ValuesAffected: any[];
             Query: IInsert;
-            ValuesIndex: number;
-            Table: Model.ITable;
             onTransactionCompleted: () => void;
-            private checkAndModifyValues;
+            protected checkModifyInsertValues: (table: any, values: any) => void;
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        class Insert extends InsertHelper {
             private insertData;
             constructor(query: IInsert, onSuccess: Function, onError: Function);
-            /**
-             * check the value based on defined schema and modify or create the value
-             *
-             * @private
-             * @param {any} value
-             * @param {string} tableName
-             *
-             * @memberof InsertLogic
-             */
-            private checkAndModifyValue(value, callBack);
         }
     }
 }

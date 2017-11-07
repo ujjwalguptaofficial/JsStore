@@ -1395,75 +1395,137 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var Insert = /** @class */ (function (_super) {
-            __extends(Insert, _super);
-            function Insert(query, onSuccess, onError) {
-                var _this = _super.call(this) || this;
+        var InsertHelper = /** @class */ (function (_super) {
+            __extends(InsertHelper, _super);
+            function InsertHelper() {
+                var _this = _super !== null && _super.apply(this, arguments) || this;
                 _this.ValuesAffected = [];
-                _this.ValuesIndex = 0;
                 _this.onTransactionCompleted = function () {
                     this.OnSuccess(this.Query.Return ? this.ValuesAffected : this.RowAffected);
                 };
-                _this.checkAndModifyValues = function (callBack) {
-                    var That = this, checkInternal = function (value) {
-                        if (value) {
-                            That.checkAndModifyValue(value, function () {
+                _this.checkModifyInsertValues = function (table, values) {
+                    var That = this, ValueIndex = 0, Value, TableName = table.Name, checkDatas = function () {
+                        Value = values[ValueIndex++];
+                        checkInternal();
+                    }, checkInternal = function () {
+                        if (Value) {
+                            checkAndModifyValue();
+                        }
+                        else {
+                            That.insertData(values);
+                        }
+                    }, checkAndModifyValue = function () {
+                        var Index = 0, checkAndModifyColumn = function (column) {
+                            if (column) {
+                                var onValidationError = function (error, details) {
+                                    That.ErrorOccured = true;
+                                    That.Error = JsStore.Utils.getError(error, details);
+                                }, CheckNotNullAndDataType = function () {
+                                    //check not null schema
+                                    if (column.NotNull && JsStore.isNull(Value[column.Name])) {
+                                        onValidationError(JsStore.ErrorType.NullValue, { ColumnName: column.Name });
+                                    }
+                                    else if (column.DataType && typeof Value[column.Name] != column.DataType) {
+                                        onValidationError(JsStore.ErrorType.BadDataType, { ColumnName: column.Name });
+                                    }
+                                    checkAndModifyColumn(table.Columns[Index++]);
+                                };
                                 if (!That.ErrorOccured) {
-                                    checkInternal(That.Query.Values[That.ValuesIndex++]);
+                                    //check auto increment scheme
+                                    if (column.AutoIncrement) {
+                                        KeyStore.get("JsStore_" + Business.ActiveDataBase.Name + "_" + TableName + "_" + column.Name + "_Value", function (columnValue) {
+                                            Value[column.Name] = ++columnValue;
+                                            KeyStore.set("JsStore_" + Business.ActiveDataBase.Name + "_" + TableName + "_" + column.Name + "_Value", columnValue);
+                                            CheckNotNullAndDataType();
+                                        });
+                                    }
+                                    else if (column.Default && Value[column.Name] == null) {
+                                        Value[column.Name] = column.Default;
+                                        CheckNotNullAndDataType();
+                                    }
+                                    else {
+                                        CheckNotNullAndDataType();
+                                    }
                                 }
                                 else {
                                     That.onErrorOccured(That.Error, true);
                                 }
-                            });
-                        }
-                        else {
-                            That.ValuesIndex = 0;
-                            callBack();
-                        }
-                    };
-                    checkInternal(this.Query.Values[this.ValuesIndex++]);
-                };
-                _this.insertData = function () {
-                    var That = this, IsReturn = this.Query.Return, insertDataintoTable = function (value) {
-                        if (value) {
-                            var AddResult = That.ObjectStore.add(value);
-                            AddResult.onerror = function (e) {
-                                That.onErrorOccured(e);
-                            };
-                            if (IsReturn) {
-                                AddResult.onsuccess = function (e) {
-                                    That.ValuesAffected.push(value);
-                                };
                             }
                             else {
+                                checkDatas();
+                            }
+                        };
+                        checkAndModifyColumn(table.Columns[Index++]);
+                    };
+                    checkDatas();
+                };
+                return _this;
+            }
+            return InsertHelper;
+        }(Business.Base));
+        Business.InsertHelper = InsertHelper;
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Insert = /** @class */ (function (_super) {
+            __extends(Insert, _super);
+            function Insert(query, onSuccess, onError) {
+                var _this = _super.call(this) || this;
+                _this.insertData = function (values) {
+                    var That = this, ValueIndex = 0, IsReturn = this.Query.Return, insertDataintoTable;
+                    if (IsReturn) {
+                        insertDataintoTable = function (value) {
+                            if (value) {
+                                var AddResult = ObjectStore.add(value);
+                                AddResult.onerror = function (e) {
+                                    That.onErrorOccured(e);
+                                };
                                 AddResult.onsuccess = function (e) {
-                                    ++That.RowAffected;
+                                    That.ValuesAffected.push(value);
+                                    insertDataintoTable(values[ValueIndex++]);
                                 };
                             }
-                            insertDataintoTable(That.Query.Values[That.ValuesIndex++]);
-                        }
-                    };
+                        };
+                    }
+                    else {
+                        insertDataintoTable = function (value) {
+                            if (value) {
+                                var AddResult = ObjectStore.add(value);
+                                AddResult.onerror = function (e) {
+                                    That.onErrorOccured(e);
+                                };
+                                AddResult.onsuccess = function (e) {
+                                    ++That.RowAffected;
+                                    insertDataintoTable(values[ValueIndex++]);
+                                };
+                            }
+                        };
+                    }
                     That.Transaction = Business.DbConnection.transaction([That.Query.Into], "readwrite");
-                    That.ObjectStore = That.Transaction.objectStore(That.Query.Into);
+                    var ObjectStore = That.Transaction.objectStore(That.Query.Into);
                     That.Transaction.oncomplete = function (e) {
                         That.onTransactionCompleted();
                     };
-                    insertDataintoTable(this.Query.Values[That.ValuesIndex++]);
+                    insertDataintoTable(values[ValueIndex++]);
                 };
                 try {
                     _this.Query = query;
                     _this.OnSuccess = onSuccess;
                     _this.OnError = onError;
-                    var That = _this;
-                    _this.Table = _this.getTable(query.Into);
-                    if (_this.Table) {
+                    var Table = _this.getTable(query.Into);
+                    if (Table) {
                         if (_this.Query.SkipDataCheck) {
-                            That.insertData();
+                            _this.insertData(_this.Query.Values);
+                            //remove values
+                            _this.Query.Values = undefined;
                         }
                         else {
-                            _this.checkAndModifyValues(function () {
-                                That.insertData();
-                            });
+                            _this.checkModifyInsertValues(Table, _this.Query.Values);
+                            //remove values
+                            _this.Query.Values = undefined;
                         }
                     }
                     else {
@@ -1476,60 +1538,8 @@ var JsStore;
                 }
                 return _this;
             }
-            /**
-             * check the value based on defined schema and modify or create the value
-             *
-             * @private
-             * @param {any} value
-             * @param {string} tableName
-             *
-             * @memberof InsertLogic
-             */
-            Insert.prototype.checkAndModifyValue = function (value, callBack) {
-                var That = this, TableName = this.Table.Name, Index = 0, checkAndModifyInternal = function (column) {
-                    if (column) {
-                        var onValidationError = function (error, details) {
-                            That.ErrorOccured = true;
-                            That.Error = JsStore.Utils.getError(error, details);
-                        }, CheckNotNullAndDataType = function () {
-                            //check not null schema
-                            if (column.NotNull && JsStore.isNull(value[column.Name])) {
-                                onValidationError(JsStore.ErrorType.NullValue, { ColumnName: column.Name });
-                            }
-                            else if (column.DataType && typeof value[column.Name] != column.DataType) {
-                                onValidationError(JsStore.ErrorType.BadDataType, { ColumnName: column.Name });
-                            }
-                            checkAndModifyInternal(That.Table.Columns[Index++]);
-                        };
-                        if (!That.ErrorOccured) {
-                            //check auto increment scheme
-                            if (column.AutoIncrement) {
-                                KeyStore.get("JsStore_" + Business.ActiveDataBase.Name + "_" + TableName + "_" + column.Name + "_Value", function (columnValue) {
-                                    value[column.Name] = ++columnValue;
-                                    KeyStore.set("JsStore_" + Business.ActiveDataBase.Name + "_" + TableName + "_" + column.Name + "_Value", columnValue);
-                                    CheckNotNullAndDataType();
-                                });
-                            }
-                            else if (column.Default && value[column.Name] == null) {
-                                value[column.Name] = column.Default;
-                                CheckNotNullAndDataType();
-                            }
-                            else {
-                                CheckNotNullAndDataType();
-                            }
-                        }
-                        else {
-                            callBack();
-                        }
-                    }
-                    else {
-                        callBack();
-                    }
-                };
-                checkAndModifyInternal(That.Table.Columns[Index++]);
-            };
             return Insert;
-        }(Business.Base));
+        }(Business.InsertHelper));
         Business.Insert = Insert;
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));

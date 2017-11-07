@@ -48,6 +48,7 @@
         "JsStore/Business/BaseLogic.ts",
         "JsStore/Business/CreateDbLogic.ts",
         "JsStore/Business/DropDbLogic.ts",
+        "JsStore/Business/InsertHelperLogic.ts",
         "JsStore/Business/InsertLogic.ts",
         "JsStore/Business/BulkInsertLogic.ts",
         "JsStore/Business/OpenDbLogic.ts",
