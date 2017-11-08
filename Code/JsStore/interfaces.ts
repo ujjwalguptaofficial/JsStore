@@ -23,7 +23,7 @@ module JsStore {
             Sum: any,
             Avg: any
         },
-        Casing: false
+        IgnoreCase: boolean
     }
 
     export interface IOrder {
@@ -33,6 +33,7 @@ module JsStore {
 
     export interface ICount {
         From: any,
+        IgnoreCase: boolean,
         Where: any,
         OnSuccess: Function,
         OnError: Function
@@ -40,6 +41,7 @@ module JsStore {
 
     export interface IDelete {
         From: string,
+        IgnoreCase: boolean,
         Where: any,
         OnSuccess: Function,
         OnError: Function
@@ -47,6 +49,7 @@ module JsStore {
 
     export interface IUpdate {
         In: string,
+        IgnoreCase: boolean,
         Set: any,
         Where: any,
         OnSuccess: Function,
@@ -128,5 +131,5 @@ module JsStore {
         Avg: Array<any>
     }
 
-   
+
 }

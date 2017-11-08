@@ -1,3 +1,6 @@
+/** JsStore.js - v1.2.5 - 08/11/2017
+ * https://github.com/ujjwalguptaofficial/JsStore
+ * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 declare module KeyStore {
     interface IError {
         Name: string;
@@ -223,7 +226,7 @@ declare module JsStore {
             Sum: any;
             Avg: any;
         };
-        Casing: false;
+        IgnoreCase: boolean;
     }
     interface IOrder {
         By: string;
@@ -231,18 +234,21 @@ declare module JsStore {
     }
     interface ICount {
         From: any;
+        IgnoreCase: boolean;
         Where: any;
         OnSuccess: Function;
         OnError: Function;
     }
     interface IDelete {
         From: string;
+        IgnoreCase: boolean;
         Where: any;
         OnSuccess: Function;
         OnError: Function;
     }
     interface IUpdate {
         In: string;
+        IgnoreCase: boolean;
         Set: any;
         Where: any;
         OnSuccess: Function;
@@ -992,3 +998,4 @@ declare module JsStore {
         exportJson: (query: ISelect) => void;
     }
 }
+export = JsStore;

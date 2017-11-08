@@ -168,7 +168,7 @@ module JsStore {
 
             protected goToWhereLogic = function () {
                 var Column = getObjectFirstKey(this.Query.Where);
-                if (!this.Query.Casing) {
+                if (this.Query.IgnoreCase === true) {
                     this.Query.Where = this.makeQryInCaseSensitive(this.Query.Where);
                 }
                 if (this.ObjectStore.indexNames.contains(Column)) {

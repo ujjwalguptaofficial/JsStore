@@ -86,7 +86,6 @@ module JsStore {
                     this.OnError = onError;
                     this.SkipRecord = this.Query.Skip;
                     this.LimitRecord = this.Query.Limit;
-                    this.Query.Casing = this.Query.Casing ? this.Query.Casing : true;
                     try {
                         this.Transaction = DbConnection.transaction([query.From], "readonly");
                         this.Transaction.oncomplete = function (e) {

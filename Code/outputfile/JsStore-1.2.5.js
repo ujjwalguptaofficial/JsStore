@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.2.4 - 03/11/2017
+/** JsStore.js - v1.2.5 - 08/11/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var KeyStore;
@@ -1034,7 +1034,7 @@ var JsStore;
                 };
                 _this.goToWhereLogic = function () {
                     var Column = JsStore.getObjectFirstKey(this.Query.Where);
-                    if (!this.Query.Casing) {
+                    if (this.Query.IgnoreCase === true) {
                         this.Query.Where = this.makeQryInCaseSensitive(this.Query.Where);
                     }
                     if (this.ObjectStore.indexNames.contains(Column)) {
@@ -3293,7 +3293,6 @@ var JsStore;
                     _this.OnError = onError;
                     _this.SkipRecord = _this.Query.Skip;
                     _this.LimitRecord = _this.Query.Limit;
-                    _this.Query.Casing = _this.Query.Casing ? _this.Query.Casing : true;
                     try {
                         _this.Transaction = Business.DbConnection.transaction([query.From], "readonly");
                         _this.Transaction.oncomplete = function (e) {
@@ -4844,4 +4843,4 @@ if (self && !self.alert) {
     JsStore.WorkerStatus = JsStore.WebWorkerStatus.Registered;
     KeyStore.init();
 }
-//# sourceMappingURL=JsStore-1.2.4.js.map
+//# sourceMappingURL=JsStore-1.2.5.js.map

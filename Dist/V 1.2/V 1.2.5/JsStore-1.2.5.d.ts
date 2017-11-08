@@ -1,4 +1,4 @@
-/** JsStore.js - v1.2.4 - 03/11/2017
+/** JsStore.js - v1.2.5 - 08/11/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 declare module KeyStore {
@@ -191,6 +191,16 @@ declare module JsStore {
         NotStarted = "not_started",
         UnableToStart = "unable_to_start",
     }
+    enum WhereQryOption {
+        In = "In",
+        Like = "Like",
+        Or = "Or",
+    }
+    enum DataType {
+        String = "string",
+        Object = "object",
+        Array = "array",
+    }
 }
 declare module JsStore {
     interface DbInfo {
@@ -216,6 +226,7 @@ declare module JsStore {
             Sum: any;
             Avg: any;
         };
+        IgnoreCase: boolean;
     }
     interface IOrder {
         By: string;
@@ -223,18 +234,21 @@ declare module JsStore {
     }
     interface ICount {
         From: any;
+        IgnoreCase: boolean;
         Where: any;
         OnSuccess: Function;
         OnError: Function;
     }
     interface IDelete {
         From: string;
+        IgnoreCase: boolean;
         Where: any;
         OnSuccess: Function;
         OnError: Function;
     }
     interface IUpdate {
         In: string;
+        IgnoreCase: boolean;
         Set: any;
         Where: any;
         OnSuccess: Function;
@@ -423,7 +437,24 @@ declare module JsStore {
 }
 declare module JsStore {
     module Business {
-        class Base {
+        class BaseHelper {
+            protected getTable: (tableName: string) => Table;
+            protected getKeyRange: (value: any, op: any) => IDBKeyRange;
+            protected getObjectSecondKey: (value: any) => string;
+            protected getPrimaryKey: (tableName: any) => any;
+            private getKeyPath;
+            protected sortNumberInAsc: (values: any) => any;
+            protected sortNumberInDesc: (values: any) => any;
+            protected sortAlphabetInAsc: (values: any) => any;
+            protected sortAlphabetInDesc: (values: any) => any;
+            private getCombination(word);
+            protected getAllCombinationOfWord(word: any, isArray: any): any[];
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        class Base extends BaseHelper {
             Error: IError;
             ErrorOccured: boolean;
             ErrorCount: number;
@@ -448,16 +479,8 @@ declare module JsStore {
             * @memberOf SelectLogic
             */
             protected checkForWhereConditionMatch(rowValue: any): boolean;
-            protected getTable: (tableName: string) => Table;
-            protected getKeyRange: (value: any, op: any) => IDBKeyRange;
-            protected getObjectSecondKey: (value: any) => string;
             protected goToWhereLogic: () => void;
-            protected getPrimaryKey: (tableName: any) => any;
-            private getKeyPath;
-            protected sortNumberInAsc: (values: any) => any;
-            protected sortNumberInDesc: (values: any) => any;
-            protected sortAlphabetInAsc: (values: any) => any;
-            protected sortAlphabetInDesc: (values: any) => any;
+            protected makeQryInCaseSensitive: (qry: any) => any;
         }
     }
 }
@@ -478,25 +501,19 @@ declare module JsStore {
 }
 declare module JsStore {
     module Business {
-        class Insert extends Base {
+        class InsertHelper extends Base {
             ValuesAffected: any[];
             Query: IInsert;
-            ValuesIndex: number;
-            Table: Model.ITable;
             onTransactionCompleted: () => void;
-            private checkAndModifyValues;
+            protected checkModifyInsertValues: (table: any, values: any) => void;
+        }
+    }
+}
+declare module JsStore {
+    module Business {
+        class Insert extends InsertHelper {
             private insertData;
             constructor(query: IInsert, onSuccess: Function, onError: Function);
-            /**
-             * check the value based on defined schema and modify or create the value
-             *
-             * @private
-             * @param {any} value
-             * @param {string} tableName
-             *
-             * @memberof InsertLogic
-             */
-            private checkAndModifyValue(value, callBack);
         }
     }
 }
