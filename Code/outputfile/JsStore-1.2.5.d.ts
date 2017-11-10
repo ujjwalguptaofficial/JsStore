@@ -317,7 +317,7 @@ declare module JsStore {
     }
 }
 declare module JsStore {
-    var EnableLog: boolean, DbVersion: number, Status: JsStoreStatus, TempResults: Array<any>;
+    var EnableLog: boolean, EnablePromise: boolean, DbVersion: number, Status: JsStoreStatus, TempResults: Array<any>;
     var throwError: (error: any) => never;
     var getObjectFirstKey: (value: any) => string;
 }
@@ -875,7 +875,8 @@ declare module JsStore {
     class CodeExecutionHelper {
         RequestQueue: Array<IWebWorkerRequest>;
         IsCodeExecuting: boolean;
-        protected prcoessExecutionOfCode: (request: IWebWorkerRequest) => void;
+        protected pushApi: (request: IWebWorkerRequest) => any;
+        private prcoessExecutionOfCode;
         private executeCode;
         private executeCodeDirect;
         private executeCodeUsingWorker;
@@ -890,6 +891,7 @@ import Model = JsStore.Model;
 import DataBase = Model.DataBase;
 import Column = Model.Column;
 import Table = Model.Table;
+declare var Promise: any;
 declare module JsStore {
     class Instance extends CodeExecutionHelper {
         constructor(dbName?: any);

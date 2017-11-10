@@ -2,6 +2,8 @@ import Model = JsStore.Model;
 import DataBase = Model.DataBase;
 import Column = Model.Column;
 import Table = Model.Table;
+declare var Promise: any;
+
 module JsStore {
     export class Instance extends CodeExecutionHelper {
         constructor(dbName = null) {
@@ -29,13 +31,12 @@ module JsStore {
          * @memberof Instance
          */
         openDb = function (dbName: string, onSuccess: Function = null, onError: Function = null) {
-            this.prcoessExecutionOfCode(<IWebWorkerRequest>{
+            return this.pushApi(<IWebWorkerRequest>{
                 Name: 'open_db',
                 Query: dbName,
                 OnSuccess: onSuccess,
                 OnError: onError,
             });
-            return this;
         }
 
         /**
@@ -48,13 +49,12 @@ module JsStore {
          * @memberof Instance
          */
         createDb = function (dataBase: Model.IDataBase, onSuccess: Function = null, onError: Function = null) {
-            this.prcoessExecutionOfCode(<IWebWorkerRequest>{
+            return this.pushApi(<IWebWorkerRequest>{
                 Name: 'create_db',
                 OnSuccess: onSuccess,
                 OnError: onError,
                 Query: dataBase
             });
-            return this;
         }
 
 
@@ -66,12 +66,11 @@ module JsStore {
          * @memberof Instance
          */
         dropDb = function (onSuccess: Function, onError: Function = null) {
-            this.prcoessExecutionOfCode(<IWebWorkerRequest>{
+            return this.pushApi(<IWebWorkerRequest>{
                 Name: 'drop_db',
                 OnSuccess: onSuccess,
                 OnError: onError
             });
-            return this;
         }
 
         /**
@@ -84,17 +83,15 @@ module JsStore {
          * @memberOf Main
          */
         select = function (query: ISelect, onSuccess: Function = null, onError: Function = null) {
-            var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
-                OnError = query.OnError ? query.OnError : onError;
-            query.OnSuccess = null;
-            query.OnError = null;
-            this.prcoessExecutionOfCode(<IWebWorkerRequest>{
+            onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+            onSuccess = query.OnError ? query.OnError : onError;
+            query.OnSuccess = query.OnError = null;
+            return this.pushApi(<IWebWorkerRequest>{
                 Name: 'select',
                 Query: query,
-                OnSuccess: OnSuccess,
-                OnError: OnError
+                OnSuccess: onSuccess,
+                OnError: onSuccess
             });
-            return this;
         }
 
         /**
@@ -106,17 +103,15 @@ module JsStore {
          * @memberof Instance
          */
         count = function (query: ICount, onSuccess: Function = null, onError: Function = null) {
-            var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
-                OnError = query.OnError ? query.OnError : onError;
-            query.OnSuccess = null;
-            query.OnError = null;
-            this.prcoessExecutionOfCode(<IWebWorkerRequest>{
+            onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+            onError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = query.OnError = null;
+            return this.pushApi(<IWebWorkerRequest>{
                 Name: 'count',
                 Query: query,
-                OnSuccess: OnSuccess,
-                OnError: OnError
+                OnSuccess: onSuccess,
+                OnError: onError
             });
-            return this;
         }
 
 
@@ -129,17 +124,15 @@ module JsStore {
          * @memberof Instance
          */
         insert = function (query: IInsert, onSuccess: Function = null, onError: Function = null) {
-            var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
-                OnError = query.OnError ? query.OnError : onError;
-            query.OnSuccess = null;
-            query.OnError = null;
-            this.prcoessExecutionOfCode(<IWebWorkerRequest>{
+            onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+            onError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = query.OnError = null;
+            return this.pushApi(<IWebWorkerRequest>{
                 Name: 'insert',
                 Query: query,
-                OnSuccess: OnSuccess,
-                OnError: OnError
+                OnSuccess: onSuccess,
+                OnError: onError
             });
-            return this;
         }
 
         /**
@@ -151,17 +144,15 @@ module JsStore {
          * @memberof Instance
          */
         update = function (query: IUpdate, onSuccess: Function = null, onError: Function = null) {
-            var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
-                OnError = query.OnError ? query.OnError : onError;
-            query.OnSuccess = null;
-            query.OnError = null;
-            this.prcoessExecutionOfCode(<IWebWorkerRequest>{
+            onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+            onError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = query.OnError = null;
+            return this.pushApi(<IWebWorkerRequest>{
                 Name: 'update',
                 Query: query,
-                OnSuccess: OnSuccess,
-                OnError: OnError
+                OnSuccess: onSuccess,
+                OnError: onError
             });
-            return this;
         }
 
         /**
@@ -173,17 +164,15 @@ module JsStore {
          * @memberof Instance
          */
         delete = function (query: IDelete, onSuccess: Function = null, onError: Function = null) {
-            var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
-                OnError = query.OnError ? query.OnError : onError;
-            query.OnSuccess = null;
-            query.OnError = null;
-            this.prcoessExecutionOfCode(<IWebWorkerRequest>{
+            onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+            onError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = query.OnError = null;
+            return this.pushApi(<IWebWorkerRequest>{
                 Name: 'delete',
                 Query: query,
-                OnSuccess: OnSuccess,
-                OnError: OnError
+                OnSuccess: onSuccess,
+                OnError: onError
             });
-            return this;
         }
 
         /**
@@ -195,13 +184,12 @@ module JsStore {
          * @memberof Instance
          */
         clear = function (tableName: string, onSuccess: Function = null, onError: Function = null) {
-            this.prcoessExecutionOfCode(<IWebWorkerRequest>{
+            return this.prcoessExecutionOfCode(<IWebWorkerRequest>{
                 Name: 'clear',
                 Query: tableName,
                 OnSuccess: onSuccess,
                 OnError: onerror
             });
-            return this;
         }
 
         /**
@@ -214,17 +202,15 @@ module JsStore {
          * @memberof Instance
          */
         bulkInsert = function (query: IInsert, onSuccess: Function = null, onError: Function = null) {
-            var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess,
-                OnError = query.OnError ? query.OnError : onError;
-            query.OnSuccess = null;
-            query.OnError = null;
-            this.prcoessExecutionOfCode(<IWebWorkerRequest>{
+            onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+            onError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = query.OnError = null;
+            return this.pushApi(<IWebWorkerRequest>{
                 Name: 'bulk_insert',
                 Query: query,
-                OnSuccess: OnSuccess,
-                OnError: OnError
+                OnSuccess: onSuccess,
+                OnError: onError
             });
-            return this;
         }
 
         /**
@@ -246,12 +232,12 @@ module JsStore {
                 OnError = query['OnError'],
                 OnSuccessCallBack = query['OnSuccess'];
             query['OnSuccess'] = query['OnError'] = undefined;
-            this.prcoessExecutionOfCode(<IWebWorkerRequest>{
+            this.pushApi(<IWebWorkerRequest>{
                 Name: 'export_json',
                 Query: query,
                 OnSuccess: OnSuccess,
                 OnError: OnError
-            });
+            }, OnSuccess);
 
         }
     }

@@ -4,7 +4,27 @@ module JsStore {
     export class CodeExecutionHelper {
         RequestQueue: Array<IWebWorkerRequest> = [];
         IsCodeExecuting = false;
-        protected prcoessExecutionOfCode = function (request: IWebWorkerRequest) {
+
+        protected pushApi = function (request: IWebWorkerRequest) {
+            if (EnablePromise) {
+                var That = this;
+                return new Promise(function (resolve, reject) {
+                    request.OnSuccess = function (result) {
+                        resolve(result);
+                    };
+                    request.OnError = function (error) {
+                        reject(error);
+                    };
+                    That.prcoessExecutionOfCode(request);
+                });
+            }
+            else {
+                this.prcoessExecutionOfCode(request);
+                return this;
+            }
+        }
+
+        private prcoessExecutionOfCode = function (request: IWebWorkerRequest) {
             if (Status.ConStatus == ConnectionStatus.NotStarted) {
                 switch (request.Name) {
                     case 'create_db':
