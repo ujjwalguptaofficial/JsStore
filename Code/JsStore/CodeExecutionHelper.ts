@@ -5,8 +5,8 @@ module JsStore {
         RequestQueue: Array<IWebWorkerRequest> = [];
         IsCodeExecuting = false;
 
-        protected pushApi = function (request: IWebWorkerRequest) {
-            if (EnablePromise) {
+        protected pushApi = function (request: IWebWorkerRequest, usePromise: boolean) {
+            if (usePromise === true) {
                 var That = this;
                 return new Promise(function (resolve, reject) {
                     request.OnSuccess = function (result) {

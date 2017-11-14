@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.2.5 - 08/11/2017
+/** JsStore.js - v1.2.6 - 14/11/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var KeyStore;
@@ -561,7 +561,7 @@ var JsStore;
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
-    JsStore.EnableLog = false, JsStore.EnablePromise = false, JsStore.DbVersion = 0, JsStore.Status = {
+    JsStore.EnableLog = false, JsStore.DbVersion = 0, JsStore.Status = {
         ConStatus: JsStore.ConnectionStatus.NotStarted,
         LastError: ""
     }, JsStore.TempResults = [];
@@ -4418,8 +4418,8 @@ var JsStore;
         function CodeExecutionHelper() {
             this.RequestQueue = [];
             this.IsCodeExecuting = false;
-            this.pushApi = function (request) {
-                if (JsStore.EnablePromise) {
+            this.pushApi = function (request, usePromise) {
+                if (usePromise === true) {
                     var That = this;
                     return new Promise(function (resolve, reject) {
                         request.OnSuccess = function (result) {
@@ -4618,7 +4618,7 @@ var JsStore;
                     Query: dbName,
                     OnSuccess: onSuccess,
                     OnError: onError,
-                });
+                }, false);
             };
             /**
              * creates DataBase
@@ -4637,7 +4637,7 @@ var JsStore;
                     OnSuccess: onSuccess,
                     OnError: onError,
                     Query: dataBase
-                });
+                }, false);
             };
             /**
              * drop dataBase
@@ -4648,11 +4648,12 @@ var JsStore;
              */
             _this.dropDb = function (onSuccess, onError) {
                 if (onError === void 0) { onError = null; }
+                var UsePromise = onSuccess ? false : true;
                 return this.pushApi({
                     Name: 'drop_db',
                     OnSuccess: onSuccess,
                     OnError: onError
-                });
+                }, UsePromise);
             };
             /**
              * select data from table
@@ -4669,12 +4670,13 @@ var JsStore;
                 onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
                 onSuccess = query.OnError ? query.OnError : onError;
                 query.OnSuccess = query.OnError = null;
+                var UsePromise = onSuccess ? false : true;
                 return this.pushApi({
                     Name: 'select',
                     Query: query,
                     OnSuccess: onSuccess,
                     OnError: onSuccess
-                });
+                }, UsePromise);
             };
             /**
              * get no of result from table
@@ -4690,12 +4692,13 @@ var JsStore;
                 onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
                 onError = query.OnError ? query.OnError : onError;
                 query.OnSuccess = query.OnError = null;
+                var UsePromise = onSuccess ? false : true;
                 return this.pushApi({
                     Name: 'count',
                     Query: query,
                     OnSuccess: onSuccess,
                     OnError: onError
-                });
+                }, UsePromise);
             };
             /**
              * insert data into table
@@ -4711,12 +4714,13 @@ var JsStore;
                 onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
                 onError = query.OnError ? query.OnError : onError;
                 query.OnSuccess = query.OnError = null;
+                var UsePromise = onSuccess ? false : true;
                 return this.pushApi({
                     Name: 'insert',
                     Query: query,
                     OnSuccess: onSuccess,
                     OnError: onError
-                });
+                }, UsePromise);
             };
             /**
              * update data into table
@@ -4732,12 +4736,13 @@ var JsStore;
                 onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
                 onError = query.OnError ? query.OnError : onError;
                 query.OnSuccess = query.OnError = null;
+                var UsePromise = onSuccess ? false : true;
                 return this.pushApi({
                     Name: 'update',
                     Query: query,
                     OnSuccess: onSuccess,
                     OnError: onError
-                });
+                }, UsePromise);
             };
             /**
              * delete data from table
@@ -4753,12 +4758,13 @@ var JsStore;
                 onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
                 onError = query.OnError ? query.OnError : onError;
                 query.OnSuccess = query.OnError = null;
+                var UsePromise = onSuccess ? false : true;
                 return this.pushApi({
                     Name: 'delete',
                     Query: query,
                     OnSuccess: onSuccess,
                     OnError: onError
-                });
+                }, UsePromise);
             };
             /**
              * delete all data from table
@@ -4771,12 +4777,13 @@ var JsStore;
             _this.clear = function (tableName, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
+                var UsePromise = onSuccess ? false : true;
                 return this.prcoessExecutionOfCode({
                     Name: 'clear',
                     Query: tableName,
                     OnSuccess: onSuccess,
                     OnError: onerror
-                });
+                }, UsePromise);
             };
             /**
              * insert bulk amount of data
@@ -4792,13 +4799,14 @@ var JsStore;
                 if (onError === void 0) { onError = null; }
                 onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
                 onError = query.OnError ? query.OnError : onError;
+                var UsePromise = onSuccess ? false : true;
                 query.OnSuccess = query.OnError = null;
                 return this.pushApi({
                     Name: 'bulk_insert',
                     Query: query,
                     OnSuccess: onSuccess,
                     OnError: onError
-                });
+                }, UsePromise);
             };
             /**
              * export the result in json file
@@ -4817,12 +4825,30 @@ var JsStore;
                     }
                 }, OnError = query['OnError'], OnSuccessCallBack = query['OnSuccess'];
                 query['OnSuccess'] = query['OnError'] = undefined;
-                this.pushApi({
-                    Name: 'export_json',
-                    Query: query,
-                    OnSuccess: OnSuccess,
-                    OnError: OnError
-                });
+                var UsePromise = OnSuccessCallBack ? false : true;
+                if (UsePromise) {
+                    return new Promise(function (resolve, reject) {
+                        this.pushApi({
+                            Name: 'export_json',
+                            Query: query,
+                            OnSuccess: OnSuccess,
+                            OnError: OnError
+                        }, UsePromise).then(function (url) {
+                            OnSuccess(url);
+                            resolve();
+                        }).catch(function (err) {
+                            reject(err);
+                        });
+                    });
+                }
+                else {
+                    this.pushApi({
+                        Name: 'export_json',
+                        Query: query,
+                        OnSuccess: OnSuccess,
+                        OnError: OnError
+                    }, UsePromise);
+                }
             };
             if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.Registered) {
                 JsStore.WorkerInstance.terminate();
@@ -4851,4 +4877,4 @@ if (self && !self.alert) {
     JsStore.WorkerStatus = JsStore.WebWorkerStatus.Registered;
     KeyStore.init();
 }
-//# sourceMappingURL=JsStore-1.2.5.js.map
+//# sourceMappingURL=JsStore-1.2.6.js.map

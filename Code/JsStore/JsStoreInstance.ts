@@ -36,7 +36,7 @@ module JsStore {
                 Query: dbName,
                 OnSuccess: onSuccess,
                 OnError: onError,
-            });
+            }, false);
         }
 
         /**
@@ -54,7 +54,7 @@ module JsStore {
                 OnSuccess: onSuccess,
                 OnError: onError,
                 Query: dataBase
-            });
+            }, false);
         }
 
 
@@ -66,11 +66,12 @@ module JsStore {
          * @memberof Instance
          */
         dropDb = function (onSuccess: Function, onError: Function = null) {
+            var UsePromise = onSuccess ? false : true;
             return this.pushApi(<IWebWorkerRequest>{
                 Name: 'drop_db',
                 OnSuccess: onSuccess,
                 OnError: onError
-            });
+            }, UsePromise);
         }
 
         /**
@@ -86,12 +87,13 @@ module JsStore {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onSuccess = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
+            var UsePromise = onSuccess ? false : true;
             return this.pushApi(<IWebWorkerRequest>{
                 Name: 'select',
                 Query: query,
                 OnSuccess: onSuccess,
                 OnError: onSuccess
-            });
+            }, UsePromise);
         }
 
         /**
@@ -106,12 +108,13 @@ module JsStore {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
+            var UsePromise = onSuccess ? false : true;
             return this.pushApi(<IWebWorkerRequest>{
                 Name: 'count',
                 Query: query,
                 OnSuccess: onSuccess,
                 OnError: onError
-            });
+            }, UsePromise);
         }
 
 
@@ -127,12 +130,13 @@ module JsStore {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
+            var UsePromise = onSuccess ? false : true;
             return this.pushApi(<IWebWorkerRequest>{
                 Name: 'insert',
                 Query: query,
                 OnSuccess: onSuccess,
                 OnError: onError
-            });
+            }, UsePromise);
         }
 
         /**
@@ -147,12 +151,13 @@ module JsStore {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
+            var UsePromise = onSuccess ? false : true;
             return this.pushApi(<IWebWorkerRequest>{
                 Name: 'update',
                 Query: query,
                 OnSuccess: onSuccess,
                 OnError: onError
-            });
+            }, UsePromise);
         }
 
         /**
@@ -167,12 +172,13 @@ module JsStore {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
+            var UsePromise = onSuccess ? false : true;
             return this.pushApi(<IWebWorkerRequest>{
                 Name: 'delete',
                 Query: query,
                 OnSuccess: onSuccess,
                 OnError: onError
-            });
+            }, UsePromise);
         }
 
         /**
@@ -184,12 +190,13 @@ module JsStore {
          * @memberof Instance
          */
         clear = function (tableName: string, onSuccess: Function = null, onError: Function = null) {
+            var UsePromise = onSuccess ? false : true;
             return this.prcoessExecutionOfCode(<IWebWorkerRequest>{
                 Name: 'clear',
                 Query: tableName,
                 OnSuccess: onSuccess,
                 OnError: onerror
-            });
+            }, UsePromise);
         }
 
         /**
@@ -204,13 +211,14 @@ module JsStore {
         bulkInsert = function (query: IInsert, onSuccess: Function = null, onError: Function = null) {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
+            var UsePromise = onSuccess ? false : true;
             query.OnSuccess = query.OnError = null;
             return this.pushApi(<IWebWorkerRequest>{
                 Name: 'bulk_insert',
                 Query: query,
                 OnSuccess: onSuccess,
                 OnError: onError
-            });
+            }, UsePromise);
         }
 
         /**
@@ -232,12 +240,30 @@ module JsStore {
                 OnError = query['OnError'],
                 OnSuccessCallBack = query['OnSuccess'];
             query['OnSuccess'] = query['OnError'] = undefined;
-            this.pushApi(<IWebWorkerRequest>{
-                Name: 'export_json',
-                Query: query,
-                OnSuccess: OnSuccess,
-                OnError: OnError
-            }, OnSuccess);
+            var UsePromise = OnSuccessCallBack ? false : true;
+            if (UsePromise) {
+                return new Promise(function (resolve, reject) {
+                    this.pushApi(<IWebWorkerRequest>{
+                        Name: 'export_json',
+                        Query: query,
+                        OnSuccess: OnSuccess,
+                        OnError: OnError
+                    }, UsePromise).then(function (url) {
+                        OnSuccess(url);
+                        resolve();
+                    }).catch(function (err) {
+                        reject(err);
+                    });
+                });
+            }
+            else {
+                this.pushApi(<IWebWorkerRequest>{
+                    Name: 'export_json',
+                    Query: query,
+                    OnSuccess: OnSuccess,
+                    OnError: OnError
+                }, UsePromise);
+            }
 
         }
     }

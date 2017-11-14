@@ -1,3 +1,6 @@
+/** JsStore.js - v1.2.6 - 14/11/2017
+ * https://github.com/ujjwalguptaofficial/JsStore
+ * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 declare module KeyStore {
     interface IError {
         Name: string;
@@ -317,7 +320,7 @@ declare module JsStore {
     }
 }
 declare module JsStore {
-    var EnableLog: boolean, EnablePromise: boolean, DbVersion: number, Status: JsStoreStatus, TempResults: Array<any>;
+    var EnableLog: boolean, DbVersion: number, Status: JsStoreStatus, TempResults: Array<any>;
     var throwError: (error: any) => never;
     var getObjectFirstKey: (value: any) => string;
 }
@@ -875,7 +878,7 @@ declare module JsStore {
     class CodeExecutionHelper {
         RequestQueue: Array<IWebWorkerRequest>;
         IsCodeExecuting: boolean;
-        protected pushApi: (request: IWebWorkerRequest) => any;
+        protected pushApi: (request: IWebWorkerRequest, usePromise: boolean) => any;
         private prcoessExecutionOfCode;
         private executeCode;
         private executeCodeDirect;
@@ -994,6 +997,7 @@ declare module JsStore {
          * @param {ISelect} qry
          * @memberof Instance
          */
-        exportJson: (query: ISelect) => void;
+        exportJson: (query: ISelect) => any;
     }
 }
+export = JsStore;

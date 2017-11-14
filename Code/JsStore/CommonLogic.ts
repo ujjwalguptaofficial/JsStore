@@ -1,6 +1,5 @@
 module JsStore {
     export var EnableLog = false,
-        EnablePromise = false,
         DbVersion: number = 0,
         Status: JsStoreStatus = <JsStoreStatus>{
             ConStatus: ConnectionStatus.NotStarted,
