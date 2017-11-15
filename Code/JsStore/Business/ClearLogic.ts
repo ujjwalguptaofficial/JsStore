@@ -11,7 +11,7 @@ module JsStore {
                     var CurrentTable = That.getTable(tableName);
                     CurrentTable.Columns.forEach(function (column: Column) {
                         if (column.AutoIncrement) {
-                            KeyStore.remove("JsStore_" + ActiveDataBase.Name + "_" + tableName + "_" + column.Name + "_Value");
+                            KeyStore.set("JsStore_" + ActiveDataBase.Name + "_" + tableName + "_" + column.Name + "_Value", 0);
                         }
                     });
                     if (onSuccess != null) {

@@ -8,31 +8,53 @@ module JsStore {
     * @param {Function} errCallBack 
     */
     export var isDbExist = function (dbInfo: DbInfo, callback: Function, errCallBack: Function = null) {
+        var UsePromise = callback ? false : true;
         if (Status.ConStatus != ConnectionStatus.UnableToStart) {
             var DbName;
-            if (typeof dbInfo == 'string') {
-                getDbVersion(dbInfo, function (dbVersion) {
-                    callback(Boolean(dbVersion));
-                });
+            if (UsePromise) {
+                return new Promise(function (resolve, reject) {
+                    if (typeof dbInfo == 'string') {
+                        getDbVersion(dbInfo, function (dbVersion) {
+                            resolve(Boolean(dbVersion));
+                        });
+                    }
+                    else {
+                        getDbVersion(dbInfo.DbName, function (dbVersion) {
+                            resolve(dbInfo.Table.Version <= dbVersion)
+                        });
+                    }
+                })
             }
             else {
-                getDbVersion(dbInfo.DbName, function (dbVersion) {
-                    callback(dbInfo.Table.Version <= dbVersion)
-                });
+                if (typeof dbInfo == 'string') {
+                    getDbVersion(dbInfo, function (dbVersion) {
+                        callback(Boolean(dbVersion));
+                    });
+                }
+                else {
+                    getDbVersion(dbInfo.DbName, function (dbVersion) {
+                        callback(dbInfo.Table.Version <= dbVersion)
+                    });
+                }
             }
         }
         else {
-            if (errCallBack) {
-                var Error = <IError>{
-                    Name: Status.LastError,
-                    Message: ''
-                };
-                switch (Error.Name) {
-                    case ErrorType.IndexedDbBlocked:
-                        Error.Message = "IndexedDB is blocked"; break;
-                    case ErrorType.IndexedDbUndefined:
-                        Error.Message = "IndexedDB is not supported"; break;
-                }
+            var Error = <IError>{
+                Name: Status.LastError,
+                Message: ''
+            };
+            switch (Error.Name) {
+                case ErrorType.IndexedDbBlocked:
+                    Error.Message = "IndexedDB is blocked"; break;
+                case ErrorType.IndexedDbUndefined:
+                    Error.Message = "IndexedDB is not supported"; break;
+            }
+            if (UsePromise) {
+                return new Promise(function (resolve, reject) {
+                    reject(Error);
+                });
+            }
+            else if (errCallBack) {
                 errCallBack(Error);
             }
         }

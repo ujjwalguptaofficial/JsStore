@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.2.6 - 14/11/2017
+/** JsStore.js - v1.2.5 - 08/11/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var KeyStore;
@@ -4418,24 +4418,6 @@ var JsStore;
         function CodeExecutionHelper() {
             this.RequestQueue = [];
             this.IsCodeExecuting = false;
-            this.pushApi = function (request, usePromise) {
-                if (usePromise === true) {
-                    var That = this;
-                    return new Promise(function (resolve, reject) {
-                        request.OnSuccess = function (result) {
-                            resolve(result);
-                        };
-                        request.OnError = function (error) {
-                            reject(error);
-                        };
-                        That.prcoessExecutionOfCode(request);
-                    });
-                }
-                else {
-                    this.prcoessExecutionOfCode(request);
-                    return this;
-                }
-            };
             this.prcoessExecutionOfCode = function (request) {
                 if (JsStore.Status.ConStatus == JsStore.ConnectionStatus.NotStarted) {
                     switch (request.Name) {
@@ -4613,12 +4595,13 @@ var JsStore;
             _this.openDb = function (dbName, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                return this.pushApi({
+                this.prcoessExecutionOfCode({
                     Name: 'open_db',
                     Query: dbName,
                     OnSuccess: onSuccess,
                     OnError: onError,
-                }, false);
+                });
+                return this;
             };
             /**
              * creates DataBase
@@ -4632,12 +4615,13 @@ var JsStore;
             _this.createDb = function (dataBase, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                return this.pushApi({
+                this.prcoessExecutionOfCode({
                     Name: 'create_db',
                     OnSuccess: onSuccess,
                     OnError: onError,
                     Query: dataBase
-                }, false);
+                });
+                return this;
             };
             /**
              * drop dataBase
@@ -4648,12 +4632,12 @@ var JsStore;
              */
             _this.dropDb = function (onSuccess, onError) {
                 if (onError === void 0) { onError = null; }
-                var UsePromise = onSuccess ? false : true;
-                return this.pushApi({
+                this.prcoessExecutionOfCode({
                     Name: 'drop_db',
                     OnSuccess: onSuccess,
                     OnError: onError
-                }, UsePromise);
+                });
+                return this;
             };
             /**
              * select data from table
@@ -4667,16 +4651,16 @@ var JsStore;
             _this.select = function (query, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
-                onSuccess = query.OnError ? query.OnError : onError;
-                query.OnSuccess = query.OnError = null;
-                var UsePromise = onSuccess ? false : true;
-                return this.pushApi({
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = null;
+                query.OnError = null;
+                this.prcoessExecutionOfCode({
                     Name: 'select',
                     Query: query,
-                    OnSuccess: onSuccess,
-                    OnError: onSuccess
-                }, UsePromise);
+                    OnSuccess: OnSuccess,
+                    OnError: OnError
+                });
+                return this;
             };
             /**
              * get no of result from table
@@ -4689,16 +4673,16 @@ var JsStore;
             _this.count = function (query, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
-                onError = query.OnError ? query.OnError : onError;
-                query.OnSuccess = query.OnError = null;
-                var UsePromise = onSuccess ? false : true;
-                return this.pushApi({
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = null;
+                query.OnError = null;
+                this.prcoessExecutionOfCode({
                     Name: 'count',
                     Query: query,
-                    OnSuccess: onSuccess,
-                    OnError: onError
-                }, UsePromise);
+                    OnSuccess: OnSuccess,
+                    OnError: OnError
+                });
+                return this;
             };
             /**
              * insert data into table
@@ -4711,16 +4695,16 @@ var JsStore;
             _this.insert = function (query, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
-                onError = query.OnError ? query.OnError : onError;
-                query.OnSuccess = query.OnError = null;
-                var UsePromise = onSuccess ? false : true;
-                return this.pushApi({
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = null;
+                query.OnError = null;
+                this.prcoessExecutionOfCode({
                     Name: 'insert',
                     Query: query,
-                    OnSuccess: onSuccess,
-                    OnError: onError
-                }, UsePromise);
+                    OnSuccess: OnSuccess,
+                    OnError: OnError
+                });
+                return this;
             };
             /**
              * update data into table
@@ -4733,16 +4717,16 @@ var JsStore;
             _this.update = function (query, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
-                onError = query.OnError ? query.OnError : onError;
-                query.OnSuccess = query.OnError = null;
-                var UsePromise = onSuccess ? false : true;
-                return this.pushApi({
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = null;
+                query.OnError = null;
+                this.prcoessExecutionOfCode({
                     Name: 'update',
                     Query: query,
-                    OnSuccess: onSuccess,
-                    OnError: onError
-                }, UsePromise);
+                    OnSuccess: OnSuccess,
+                    OnError: OnError
+                });
+                return this;
             };
             /**
              * delete data from table
@@ -4755,16 +4739,16 @@ var JsStore;
             _this.delete = function (query, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
-                onError = query.OnError ? query.OnError : onError;
-                query.OnSuccess = query.OnError = null;
-                var UsePromise = onSuccess ? false : true;
-                return this.pushApi({
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = null;
+                query.OnError = null;
+                this.prcoessExecutionOfCode({
                     Name: 'delete',
                     Query: query,
-                    OnSuccess: onSuccess,
-                    OnError: onError
-                }, UsePromise);
+                    OnSuccess: OnSuccess,
+                    OnError: OnError
+                });
+                return this;
             };
             /**
              * delete all data from table
@@ -4777,13 +4761,13 @@ var JsStore;
             _this.clear = function (tableName, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                var UsePromise = onSuccess ? false : true;
-                return this.prcoessExecutionOfCode({
+                this.prcoessExecutionOfCode({
                     Name: 'clear',
                     Query: tableName,
                     OnSuccess: onSuccess,
                     OnError: onerror
-                }, UsePromise);
+                });
+                return this;
             };
             /**
              * insert bulk amount of data
@@ -4797,16 +4781,16 @@ var JsStore;
             _this.bulkInsert = function (query, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
-                onError = query.OnError ? query.OnError : onError;
-                var UsePromise = onSuccess ? false : true;
-                query.OnSuccess = query.OnError = null;
-                return this.pushApi({
+                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = null;
+                query.OnError = null;
+                this.prcoessExecutionOfCode({
                     Name: 'bulk_insert',
                     Query: query,
-                    OnSuccess: onSuccess,
-                    OnError: onError
-                }, UsePromise);
+                    OnSuccess: OnSuccess,
+                    OnError: OnError
+                });
+                return this;
             };
             /**
              * export the result in json file
@@ -4825,30 +4809,12 @@ var JsStore;
                     }
                 }, OnError = query['OnError'], OnSuccessCallBack = query['OnSuccess'];
                 query['OnSuccess'] = query['OnError'] = undefined;
-                var UsePromise = OnSuccessCallBack ? false : true;
-                if (UsePromise) {
-                    return new Promise(function (resolve, reject) {
-                        this.pushApi({
-                            Name: 'export_json',
-                            Query: query,
-                            OnSuccess: OnSuccess,
-                            OnError: OnError
-                        }, UsePromise).then(function (url) {
-                            OnSuccess(url);
-                            resolve();
-                        }).catch(function (err) {
-                            reject(err);
-                        });
-                    });
-                }
-                else {
-                    this.pushApi({
-                        Name: 'export_json',
-                        Query: query,
-                        OnSuccess: OnSuccess,
-                        OnError: OnError
-                    }, UsePromise);
-                }
+                this.prcoessExecutionOfCode({
+                    Name: 'export_json',
+                    Query: query,
+                    OnSuccess: OnSuccess,
+                    OnError: OnError
+                });
             };
             if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.Registered) {
                 JsStore.WorkerInstance.terminate();
@@ -4877,4 +4843,4 @@ if (self && !self.alert) {
     JsStore.WorkerStatus = JsStore.WebWorkerStatus.Registered;
     KeyStore.init();
 }
-//# sourceMappingURL=JsStore-1.2.6.js.map
+//# sourceMappingURL=JsStore-1.2.5.js.map

@@ -1,4 +1,4 @@
-/** JsStore.js - v1.2.6 - 14/11/2017
+/** JsStore.js - v1.2.5 - 08/11/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 declare module KeyStore {
@@ -878,8 +878,7 @@ declare module JsStore {
     class CodeExecutionHelper {
         RequestQueue: Array<IWebWorkerRequest>;
         IsCodeExecuting: boolean;
-        protected pushApi: (request: IWebWorkerRequest, usePromise: boolean) => any;
-        private prcoessExecutionOfCode;
+        protected prcoessExecutionOfCode: (request: IWebWorkerRequest) => void;
         private executeCode;
         private executeCodeDirect;
         private executeCodeUsingWorker;
@@ -894,7 +893,6 @@ import Model = JsStore.Model;
 import DataBase = Model.DataBase;
 import Column = Model.Column;
 import Table = Model.Table;
-declare var Promise: any;
 declare module JsStore {
     class Instance extends CodeExecutionHelper {
         constructor(dbName?: any);
@@ -997,7 +995,7 @@ declare module JsStore {
          * @param {ISelect} qry
          * @memberof Instance
          */
-        exportJson: (query: ISelect) => any;
+        exportJson: (query: ISelect) => void;
     }
 }
 export = JsStore;

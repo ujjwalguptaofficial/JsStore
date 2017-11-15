@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.2.6 - 14/11/2017
+/** JsStore.js - v1.2.7 - 14/11/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var KeyStore;
@@ -669,33 +669,55 @@ var JsStore;
     */
     JsStore.isDbExist = function (dbInfo, callback, errCallBack) {
         if (errCallBack === void 0) { errCallBack = null; }
+        var UsePromise = callback ? false : true;
         if (JsStore.Status.ConStatus != JsStore.ConnectionStatus.UnableToStart) {
             var DbName;
-            if (typeof dbInfo == 'string') {
-                JsStore.getDbVersion(dbInfo, function (dbVersion) {
-                    callback(Boolean(dbVersion));
+            if (UsePromise) {
+                return new Promise(function (resolve, reject) {
+                    if (typeof dbInfo == 'string') {
+                        JsStore.getDbVersion(dbInfo, function (dbVersion) {
+                            resolve(Boolean(dbVersion));
+                        });
+                    }
+                    else {
+                        JsStore.getDbVersion(dbInfo.DbName, function (dbVersion) {
+                            resolve(dbInfo.Table.Version <= dbVersion);
+                        });
+                    }
                 });
             }
             else {
-                JsStore.getDbVersion(dbInfo.DbName, function (dbVersion) {
-                    callback(dbInfo.Table.Version <= dbVersion);
-                });
+                if (typeof dbInfo == 'string') {
+                    JsStore.getDbVersion(dbInfo, function (dbVersion) {
+                        callback(Boolean(dbVersion));
+                    });
+                }
+                else {
+                    JsStore.getDbVersion(dbInfo.DbName, function (dbVersion) {
+                        callback(dbInfo.Table.Version <= dbVersion);
+                    });
+                }
             }
         }
         else {
-            if (errCallBack) {
-                var Error = {
-                    Name: JsStore.Status.LastError,
-                    Message: ''
-                };
-                switch (Error.Name) {
-                    case JsStore.ErrorType.IndexedDbBlocked:
-                        Error.Message = "IndexedDB is blocked";
-                        break;
-                    case JsStore.ErrorType.IndexedDbUndefined:
-                        Error.Message = "IndexedDB is not supported";
-                        break;
-                }
+            var Error = {
+                Name: JsStore.Status.LastError,
+                Message: ''
+            };
+            switch (Error.Name) {
+                case JsStore.ErrorType.IndexedDbBlocked:
+                    Error.Message = "IndexedDB is blocked";
+                    break;
+                case JsStore.ErrorType.IndexedDbUndefined:
+                    Error.Message = "IndexedDB is not supported";
+                    break;
+            }
+            if (UsePromise) {
+                return new Promise(function (resolve, reject) {
+                    reject(Error);
+                });
+            }
+            else if (errCallBack) {
                 errCallBack(Error);
             }
         }
@@ -1651,7 +1673,7 @@ var JsStore;
                     var CurrentTable = That.getTable(tableName);
                     CurrentTable.Columns.forEach(function (column) {
                         if (column.AutoIncrement) {
-                            KeyStore.remove("JsStore_" + Business.ActiveDataBase.Name + "_" + tableName + "_" + column.Name + "_Value");
+                            KeyStore.set("JsStore_" + Business.ActiveDataBase.Name + "_" + tableName + "_" + column.Name + "_Value", 0);
                         }
                     });
                     if (onSuccess != null) {
@@ -4668,14 +4690,14 @@ var JsStore;
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
                 onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
-                onSuccess = query.OnError ? query.OnError : onError;
+                onError = query.OnError ? query.OnError : onError;
                 query.OnSuccess = query.OnError = null;
                 var UsePromise = onSuccess ? false : true;
                 return this.pushApi({
                     Name: 'select',
                     Query: query,
                     OnSuccess: onSuccess,
-                    OnError: onSuccess
+                    OnError: onError
                 }, UsePromise);
             };
             /**
@@ -4778,7 +4800,7 @@ var JsStore;
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
                 var UsePromise = onSuccess ? false : true;
-                return this.prcoessExecutionOfCode({
+                return this.pushApi({
                     Name: 'clear',
                     Query: tableName,
                     OnSuccess: onSuccess,
@@ -4877,4 +4899,4 @@ if (self && !self.alert) {
     JsStore.WorkerStatus = JsStore.WebWorkerStatus.Registered;
     KeyStore.init();
 }
-//# sourceMappingURL=JsStore-1.2.6.js.map
+//# sourceMappingURL=JsStore-1.2.7.js.map

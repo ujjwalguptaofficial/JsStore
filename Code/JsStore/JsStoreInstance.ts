@@ -85,14 +85,14 @@ module JsStore {
          */
         select = function (query: ISelect, onSuccess: Function = null, onError: Function = null) {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
-            onSuccess = query.OnError ? query.OnError : onError;
+            onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
             var UsePromise = onSuccess ? false : true;
             return this.pushApi(<IWebWorkerRequest>{
                 Name: 'select',
                 Query: query,
                 OnSuccess: onSuccess,
-                OnError: onSuccess
+                OnError: onError
             }, UsePromise);
         }
 
@@ -191,7 +191,7 @@ module JsStore {
          */
         clear = function (tableName: string, onSuccess: Function = null, onError: Function = null) {
             var UsePromise = onSuccess ? false : true;
-            return this.prcoessExecutionOfCode(<IWebWorkerRequest>{
+            return this.pushApi(<IWebWorkerRequest>{
                 Name: 'clear',
                 Query: tableName,
                 OnSuccess: onSuccess,
