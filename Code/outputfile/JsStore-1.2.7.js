@@ -574,6 +574,16 @@ var JsStore;
         }
         return null;
     };
+    JsStore.log = function (msg) {
+        if (JsStore.EnableLog) {
+            console.log(msg);
+        }
+    };
+    JsStore.logError = function (msg) {
+        if (JsStore.EnableLog) {
+            console.error(msg);
+        }
+    };
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
@@ -1037,9 +1047,7 @@ var JsStore;
                             else {
                                 this.OnError(e);
                             }
-                            if (JsStore.EnableLog) {
-                                console.error(Error);
-                            }
+                            JsStore.logError(Error);
                         }
                     }
                 };
@@ -1108,23 +1116,30 @@ var JsStore;
                     }
                 };
                 _this.makeQryInCaseSensitive = function (qry) {
-                    var Results = [], Qry;
-                    for (var item in qry) {
-                        Qry = qry[item];
-                        switch (item) {
-                            case JsStore.WhereQryOption.In:
-                                for (var value in Qry) {
-                                    Results = Results.concat(this.getAllCombinationOfWord(Qry['In'], true));
+                    var Results = [], ColumnValue, KeyValue;
+                    for (var column in qry) {
+                        ColumnValue = qry[column];
+                        if (typeof ColumnValue == 'object') {
+                            for (var key in ColumnValue) {
+                                KeyValue = ColumnValue[key];
+                                switch (key) {
+                                    case JsStore.WhereQryOption.In:
+                                        Results = Results.concat(this.getAllCombinationOfWord(KeyValue, true));
+                                        break;
+                                    case JsStore.WhereQryOption.Like:
+                                        break;
+                                    default:
+                                        Results = Results.concat(this.getAllCombinationOfWord(KeyValue));
                                 }
-                                break;
-                            case JsStore.WhereQryOption.Like: break;
-                            default:
-                                Results = Results.concat(this.getAllCombinationOfWord(Qry));
+                            }
+                            qry[column]['In'] = Results;
                         }
-                        qry[item] = {
-                            In: Results
-                        };
-                        Results = [];
+                        else {
+                            Results = Results.concat(this.getAllCombinationOfWord(ColumnValue));
+                            qry[column] = {
+                                In: Results
+                            };
+                        }
                     }
                     return qry;
                 };
@@ -1700,9 +1715,7 @@ var JsStore;
             function Main(onSuccess) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 this.checkConnectionAndExecuteLogic = function (request) {
-                    if (JsStore.EnableLog) {
-                        console.log('checking connection and executing request:' + request.Name);
-                    }
+                    JsStore.log('checking connection and executing request:' + request.Name);
                     switch (request.Name) {
                         case 'create_db':
                         case 'open_db':
@@ -4479,9 +4492,7 @@ var JsStore;
                         this.executeCode();
                     }
                 }
-                if (JsStore.EnableLog) {
-                    console.log("request pushed: " + request.Name);
-                }
+                JsStore.log("request pushed: " + request.Name);
             };
             this.executeCode = function () {
                 if (!this.IsCodeExecuting && this.RequestQueue.length > 0) {
@@ -4490,9 +4501,7 @@ var JsStore;
                         Name: FirstRequest.Name,
                         Query: FirstRequest.Query
                     };
-                    if (JsStore.EnableLog) {
-                        console.log("request executing : " + FirstRequest.Name);
-                    }
+                    JsStore.log("request executing : " + FirstRequest.Name);
                     if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.Registered) {
                         this.executeCodeUsingWorker(Request);
                     }
@@ -4514,9 +4523,7 @@ var JsStore;
                 var FinishedRequest = this.RequestQueue.shift();
                 this.IsCodeExecuting = false;
                 if (FinishedRequest) {
-                    if (JsStore.EnableLog) {
-                        console.log("request finished : " + FinishedRequest.Name);
-                    }
+                    JsStore.log("request finished : " + FinishedRequest.Name);
                     if (message.ErrorOccured) {
                         if (FinishedRequest.OnError) {
                             FinishedRequest.OnError(message.ErrorDetails);
@@ -4890,11 +4897,9 @@ var JsStore;
 })(JsStore || (JsStore = {}));
 if (self && !self.alert) {
     self.onmessage = function (e) {
-        if (JsStore.EnableLog) {
-            console.log("Request executing from WebWorker, request name: " + e.data.Name);
-        }
-        var Request = e.data, IndexDbObject = new JsStore.Business.Main();
-        IndexDbObject.checkConnectionAndExecuteLogic(Request);
+        JsStore.log("Request executing from WebWorker, request name: " + e.data.Name);
+        var Request = e.data, BusinessMain = new JsStore.Business.Main();
+        BusinessMain.checkConnectionAndExecuteLogic(Request);
     };
     JsStore.WorkerStatus = JsStore.WebWorkerStatus.Registered;
     KeyStore.init();

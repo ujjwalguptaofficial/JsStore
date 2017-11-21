@@ -17,4 +17,16 @@ module JsStore {
         }
         return null;
     }
+
+    export var log = function (msg) {
+        if (EnableLog) {
+            console.log(msg);
+        }
+    }
+
+    export var logError = function (msg) {
+        if (EnableLog) {
+            console.error(msg);
+        }
+    }
 }

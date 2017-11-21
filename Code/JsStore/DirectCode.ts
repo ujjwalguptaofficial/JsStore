@@ -1,11 +1,9 @@
 if (self && !self.alert) {
     self.onmessage = function (e) {
-        if (JsStore.EnableLog) {
-            console.log("Request executing from WebWorker, request name: " + e.data.Name);
-        }
+        JsStore.log("Request executing from WebWorker, request name: " + e.data.Name);
         var Request = e.data,
-        IndexDbObject = new JsStore.Business.Main();
-        IndexDbObject.checkConnectionAndExecuteLogic(Request);
+            BusinessMain = new JsStore.Business.Main();
+        BusinessMain.checkConnectionAndExecuteLogic(Request);
     };
     JsStore.WorkerStatus = JsStore.WebWorkerStatus.Registered;
     KeyStore.init();

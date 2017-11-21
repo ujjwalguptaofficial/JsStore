@@ -12,9 +12,7 @@ module JsStore {
             }
 
             public checkConnectionAndExecuteLogic = function (request: IWebWorkerRequest) {
-                if (EnableLog) {
-                    console.log('checking connection and executing request:' + request.Name);
-                }
+                log('checking connection and executing request:' + request.Name);
                 switch (request.Name) {
                     case 'create_db':
                     case 'open_db':

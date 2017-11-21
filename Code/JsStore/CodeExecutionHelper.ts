@@ -44,10 +44,7 @@ module JsStore {
                     this.executeCode();
                 }
             }
-            if (EnableLog) {
-                console.log("request pushed: " + request.Name);
-            }
-
+            log("request pushed: " + request.Name);
         }
 
         private executeCode = function () {
@@ -58,9 +55,7 @@ module JsStore {
                         Name: FirstRequest.Name,
                         Query: FirstRequest.Query
                     }
-                if (EnableLog) {
-                    console.log("request executing : " + FirstRequest.Name)
-                }
+                log("request executing : " + FirstRequest.Name);
                 if (WorkerStatus == WebWorkerStatus.Registered) {
                     this.executeCodeUsingWorker(Request);
                 } else {
@@ -84,9 +79,7 @@ module JsStore {
             var FinishedRequest: IWebWorkerRequest = this.RequestQueue.shift();
             this.IsCodeExecuting = false;
             if (FinishedRequest) {
-                if (EnableLog) {
-                    console.log("request finished : " + FinishedRequest.Name);
-                }
+                log("request finished : " + FinishedRequest.Name);
                 if (message.ErrorOccured) {
                     if (FinishedRequest.OnError) {
                         FinishedRequest.OnError(message.ErrorDetails);

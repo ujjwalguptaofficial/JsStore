@@ -1,6 +1,3 @@
-/** JsStore.js - v1.2.7 - 14/11/2017
- * https://github.com/ujjwalguptaofficial/JsStore
- * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 declare module KeyStore {
     interface IError {
         Name: string;
@@ -323,6 +320,8 @@ declare module JsStore {
     var EnableLog: boolean, DbVersion: number, Status: JsStoreStatus, TempResults: Array<any>;
     var throwError: (error: any) => never;
     var getObjectFirstKey: (value: any) => string;
+    var log: (msg: any) => void;
+    var logError: (msg: any) => void;
 }
 declare module JsStore {
     class Utils {

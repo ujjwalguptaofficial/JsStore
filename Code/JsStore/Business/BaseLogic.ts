@@ -26,9 +26,7 @@ module JsStore {
                         else {
                             this.OnError(e);
                         }
-                        if (EnableLog) {
-                            console.error(Error);
-                        }
+                        logError(Error);
                     }
                 }
             }
@@ -219,24 +217,34 @@ module JsStore {
 
             protected makeQryInCaseSensitive = function (qry) {
                 var Results = [],
-                    Qry;
-                for (var item in qry) {
-                    Qry = qry[item];
-                    switch (item) {
-                        case WhereQryOption.In:
-                            for (var value in Qry) {
-                                Results = Results.concat(this.getAllCombinationOfWord(Qry['In'], true));
+                    ColumnValue,
+                    KeyValue;
+                for (var column in qry) {
+                    ColumnValue = qry[column];
+                    if (typeof ColumnValue == 'object') {
+                        for (var key in ColumnValue) {
+                            KeyValue = ColumnValue[key]
+                            switch (key) {
+                                case WhereQryOption.In:
+                                    Results = Results.concat(this.getAllCombinationOfWord(KeyValue, true));
+                                    break;
+                                case WhereQryOption.Like:
+                                    break;
+                                default:
+                                    Results = Results.concat(this.getAllCombinationOfWord(KeyValue));
                             }
-                            break;
-                        case WhereQryOption.Like: break;
-                        default:
-                            Results = Results.concat(this.getAllCombinationOfWord(Qry));
+                        }
+                        qry[column]['In'] = Results;
                     }
-                    qry[item] = {
-                        In: Results
+                    else {
+                        Results = Results.concat(this.getAllCombinationOfWord(ColumnValue));
+                        qry[column] = {
+                            In: Results
+                        }
                     }
-                    Results = [];
+
                 }
+
                 return qry;
             }
         }

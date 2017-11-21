@@ -2,7 +2,6 @@ module JsStore {
     export module Business {
         export module Select {
             export class In extends NotWhere {
-
                 private executeSkipAndLimitForIn = function (column, values) {
                     var Cursor: IDBCursorWithValue,
                         Skip = this.SkipRecord,
