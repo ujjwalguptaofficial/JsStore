@@ -7,16 +7,16 @@ module JsStore {
                 Column;
                 CompValueLength: Number;
                 private filterOnOccurence = function (value) {
-                    var Found = false,
-                        Value = value[this.Column].toLowerCase();
+                    var Found = false;
+                    value = value.toLowerCase();
                     switch (this.CompSymbol) {
-                        case Occurence.Any: if (Value.indexOf(this.CompValue) >= 0) {
+                        case Occurence.Any: if (value.indexOf(this.CompValue) >= 0) {
                             Found = true;
                         }; break;
-                        case Occurence.First: if (Value.indexOf(this.CompValue) == 0) {
+                        case Occurence.First: if (value.indexOf(this.CompValue) == 0) {
                             Found = true;
                         }; break;
-                        default: if (Value.lastIndexOf(this.CompValue) == Value.length - this.CompValueLength) {
+                        default: if (value.lastIndexOf(this.CompValue) == value.length - this.CompValueLength) {
                             Found = true;
                         };
                     }
@@ -39,7 +39,7 @@ module JsStore {
                         this.CursorOpenRequest.onsuccess = function (e) {
                             Cursor = (<any>e).target.result;
                             if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.value) &&
+                                if (That.filterOnOccurence(Cursor.key) &&
                                     That.checkForWhereConditionMatch(Cursor.value)) {
                                     Cursor.update(updateValue(That.Query.Set, Cursor.value));
                                     ++That.RowAffected;
@@ -53,7 +53,7 @@ module JsStore {
                         this.CursorOpenRequest.onsuccess = function (e) {
                             Cursor = (<any>e).target.result;
                             if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.value)) {
+                                if (That.filterOnOccurence(Cursor.key)) {
                                     Cursor.update(updateValue(That.Query.Set, Cursor.value));
                                     ++That.RowAffected;
                                 }

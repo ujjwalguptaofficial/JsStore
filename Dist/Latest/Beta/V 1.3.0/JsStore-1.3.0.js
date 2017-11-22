@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.2.7 - 14/11/2017
+/** JsStore.js - v1.3.0 - 22/11/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var KeyStore;
@@ -574,6 +574,16 @@ var JsStore;
         }
         return null;
     };
+    JsStore.log = function (msg) {
+        if (JsStore.EnableLog) {
+            console.log(msg);
+        }
+    };
+    JsStore.logError = function (msg) {
+        if (JsStore.EnableLog) {
+            console.error(msg);
+        }
+    };
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
@@ -1037,9 +1047,7 @@ var JsStore;
                             else {
                                 this.OnError(e);
                             }
-                            if (JsStore.EnableLog) {
-                                console.error(Error);
-                            }
+                            JsStore.logError(Error);
                         }
                     }
                 };
@@ -1108,23 +1116,30 @@ var JsStore;
                     }
                 };
                 _this.makeQryInCaseSensitive = function (qry) {
-                    var Results = [], Qry;
-                    for (var item in qry) {
-                        Qry = qry[item];
-                        switch (item) {
-                            case JsStore.WhereQryOption.In:
-                                for (var value in Qry) {
-                                    Results = Results.concat(this.getAllCombinationOfWord(Qry['In'], true));
+                    var Results = [], ColumnValue, KeyValue;
+                    for (var column in qry) {
+                        ColumnValue = qry[column];
+                        if (typeof ColumnValue == 'object') {
+                            for (var key in ColumnValue) {
+                                KeyValue = ColumnValue[key];
+                                switch (key) {
+                                    case JsStore.WhereQryOption.In:
+                                        Results = Results.concat(this.getAllCombinationOfWord(KeyValue, true));
+                                        break;
+                                    case JsStore.WhereQryOption.Like:
+                                        break;
+                                    default:
+                                        Results = Results.concat(this.getAllCombinationOfWord(KeyValue));
                                 }
-                                break;
-                            case JsStore.WhereQryOption.Like: break;
-                            default:
-                                Results = Results.concat(this.getAllCombinationOfWord(Qry));
+                            }
+                            qry[column]['In'] = Results;
                         }
-                        qry[item] = {
-                            In: Results
-                        };
-                        Results = [];
+                        else {
+                            Results = Results.concat(this.getAllCombinationOfWord(ColumnValue));
+                            qry[column] = {
+                                In: Results
+                            };
+                        }
                     }
                     return qry;
                 };
@@ -1700,9 +1715,7 @@ var JsStore;
             function Main(onSuccess) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 this.checkConnectionAndExecuteLogic = function (request) {
-                    if (JsStore.EnableLog) {
-                        console.log('checking connection and executing request:' + request.Name);
-                    }
+                    JsStore.log('checking connection and executing request:' + request.Name);
                     switch (request.Name) {
                         case 'create_db':
                         case 'open_db':
@@ -2251,22 +2264,23 @@ var JsStore;
                 function Like() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.filterOnOccurence = function (value) {
-                        var Found = false, Value = value[this.Column].toLowerCase();
+                        var Found = false;
+                        value = value.toLowerCase();
                         switch (this.CompSymbol) {
                             case JsStore.Occurence.Any:
-                                if (Value.indexOf(this.CompValue) >= 0) {
+                                if (value.indexOf(this.CompValue) >= 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             case JsStore.Occurence.First:
-                                if (Value.indexOf(this.CompValue) == 0) {
+                                if (value.indexOf(this.CompValue) == 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             default:
-                                if (Value.lastIndexOf(this.CompValue) == Value.length - this.CompValueLength) {
+                                if (value.lastIndexOf(this.CompValue) == value.length - this.CompValueLength) {
                                     Found = true;
                                 }
                                 ;
@@ -2286,7 +2300,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (That.Results.length != That.LimitRecord && Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
+                                    if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         skipOrPush(Cursor.value);
                                     }
@@ -2298,7 +2312,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (That.Results.length != That.LimitRecord && Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.key)) {
                                         skipOrPush(Cursor.value);
                                     }
                                     Cursor.continue();
@@ -2319,7 +2333,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
+                                    if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         skipOrPush((Cursor.value));
                                     }
@@ -2331,7 +2345,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.key)) {
                                         skipOrPush((Cursor.value));
                                     }
                                     Cursor.continue();
@@ -2345,7 +2359,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (That.Results.length != That.LimitRecord && Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
+                                    if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         That.Results.push(Cursor.value);
                                     }
@@ -2357,7 +2371,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (That.Results.length != That.LimitRecord && Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.key)) {
                                         That.Results.push(Cursor.value);
                                     }
                                     Cursor.continue();
@@ -2371,7 +2385,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
+                                    if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         That.Results.push(Cursor.value);
                                     }
@@ -2383,7 +2397,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.key)) {
                                         That.Results.push(Cursor.value);
                                     }
                                     Cursor.continue();
@@ -3498,22 +3512,23 @@ var JsStore;
                 function Like() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.filterOnOccurence = function (value) {
-                        var Found = false, Value = value[this.Column].toLowerCase();
+                        var Found = false;
+                        value = value.toLowerCase();
                         switch (this.CompSymbol) {
                             case JsStore.Occurence.Any:
-                                if (Value.indexOf(this.CompValue) >= 0) {
+                                if (value.indexOf(this.CompValue) >= 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             case JsStore.Occurence.First:
-                                if (Value.indexOf(this.CompValue) == 0) {
+                                if (value.indexOf(this.CompValue) == 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             default:
-                                if (Value.lastIndexOf(this.CompValue) == Value.length - this.CompValueLength) {
+                                if (value.lastIndexOf(this.CompValue) == value.length - this.CompValueLength) {
                                     Found = true;
                                 }
                                 ;
@@ -3535,7 +3550,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
+                                    if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         ++That.ResultCount;
                                     }
@@ -3547,7 +3562,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.key)) {
                                         ++That.ResultCount;
                                     }
                                     Cursor.continue();
@@ -3839,22 +3854,23 @@ var JsStore;
                 function Like() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.filterOnOccurence = function (value) {
-                        var Found = false, Value = value[this.Column].toLowerCase();
+                        var Found = false;
+                        value = value.toLowerCase();
                         switch (this.CompSymbol) {
                             case JsStore.Occurence.Any:
-                                if (Value.indexOf(this.CompValue) >= 0) {
+                                if (value.indexOf(this.CompValue) >= 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             case JsStore.Occurence.First:
-                                if (Value.indexOf(this.CompValue) == 0) {
+                                if (value.indexOf(this.CompValue) == 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             default:
-                                if (Value.lastIndexOf(this.CompValue) == Value.length - this.CompValueLength) {
+                                if (value.lastIndexOf(this.CompValue) == value.length - this.CompValueLength) {
                                     Found = true;
                                 }
                                 ;
@@ -3876,7 +3892,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
+                                    if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
                                         ++That.RowAffected;
@@ -3889,7 +3905,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.key)) {
                                         Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
                                         ++That.RowAffected;
                                     }
@@ -4230,22 +4246,23 @@ var JsStore;
                 function Like() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.filterOnOccurence = function (value) {
-                        var Found = false, Value = value[this.Column].toLowerCase();
+                        var Found = false;
+                        value = value.toLowerCase();
                         switch (this.CompSymbol) {
                             case JsStore.Occurence.Any:
-                                if (Value.indexOf(this.CompValue) >= 0) {
+                                if (value.indexOf(this.CompValue) >= 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             case JsStore.Occurence.First:
-                                if (Value.indexOf(this.CompValue) == 0) {
+                                if (value.indexOf(this.CompValue) == 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             default:
-                                if (Value.lastIndexOf(this.CompValue) == Value.length - this.CompValueLength) {
+                                if (value.lastIndexOf(this.CompValue) == value.length - this.CompValueLength) {
                                     Found = true;
                                 }
                                 ;
@@ -4267,7 +4284,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
+                                    if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         Cursor.delete();
                                         ++That.RowAffected;
@@ -4280,7 +4297,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.key)) {
                                         Cursor.delete();
                                         ++That.RowAffected;
                                     }
@@ -4479,9 +4496,7 @@ var JsStore;
                         this.executeCode();
                     }
                 }
-                if (JsStore.EnableLog) {
-                    console.log("request pushed: " + request.Name);
-                }
+                JsStore.log("request pushed: " + request.Name);
             };
             this.executeCode = function () {
                 if (!this.IsCodeExecuting && this.RequestQueue.length > 0) {
@@ -4490,9 +4505,7 @@ var JsStore;
                         Name: FirstRequest.Name,
                         Query: FirstRequest.Query
                     };
-                    if (JsStore.EnableLog) {
-                        console.log("request executing : " + FirstRequest.Name);
-                    }
+                    JsStore.log("request executing : " + FirstRequest.Name);
                     if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.Registered) {
                         this.executeCodeUsingWorker(Request);
                     }
@@ -4514,9 +4527,7 @@ var JsStore;
                 var FinishedRequest = this.RequestQueue.shift();
                 this.IsCodeExecuting = false;
                 if (FinishedRequest) {
-                    if (JsStore.EnableLog) {
-                        console.log("request finished : " + FinishedRequest.Name);
-                    }
+                    JsStore.log("request finished : " + FinishedRequest.Name);
                     if (message.ErrorOccured) {
                         if (FinishedRequest.OnError) {
                             FinishedRequest.OnError(message.ErrorDetails);
@@ -4890,13 +4901,11 @@ var JsStore;
 })(JsStore || (JsStore = {}));
 if (self && !self.alert) {
     self.onmessage = function (e) {
-        if (JsStore.EnableLog) {
-            console.log("Request executing from WebWorker, request name: " + e.data.Name);
-        }
-        var Request = e.data, IndexDbObject = new JsStore.Business.Main();
-        IndexDbObject.checkConnectionAndExecuteLogic(Request);
+        JsStore.log("Request executing from WebWorker, request name: " + e.data.Name);
+        var Request = e.data, BusinessMain = new JsStore.Business.Main();
+        BusinessMain.checkConnectionAndExecuteLogic(Request);
     };
     JsStore.WorkerStatus = JsStore.WebWorkerStatus.Registered;
     KeyStore.init();
 }
-//# sourceMappingURL=JsStore-1.2.7.js.map
+//# sourceMappingURL=JsStore-1.3.0.js.map
