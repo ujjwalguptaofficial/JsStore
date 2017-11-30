@@ -5,6 +5,17 @@ module JsStore {
                 public onTransactionCompleted = function () {
                     if (this.SendResultFlag) {
                         this.processOrderBy();
+                        if (this.Query.Distinct) {
+                            var GroupBy = [];
+                            var Result = this.Results[0];
+                            for (var key in Result) {
+                                GroupBy.push(key);
+                            }
+                            var PrimaryKey = this.getPrimaryKey(this.Query.From),
+                                Index = GroupBy.indexOf(PrimaryKey);
+                            GroupBy.splice(Index, 1);
+                            this.Query.GroupBy = GroupBy.length > 0 ? GroupBy : null;
+                        }
                         if (this.Query.GroupBy) {
                             if (this.Query.Aggregate) {
                                 this.executeAggregateGroupBy();

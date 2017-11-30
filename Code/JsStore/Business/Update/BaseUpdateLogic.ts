@@ -1,7 +1,6 @@
 module JsStore {
     export module Business {
         export module Update {
-
             export var updateValue = function (suppliedValue, storedValue) {
                 for (var key in suppliedValue) {
                     if (typeof suppliedValue[key] != 'object') {

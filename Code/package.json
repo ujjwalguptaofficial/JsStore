@@ -1,0 +1,27 @@
+{
+  "name": "jsstore",
+  "version": "1.3.1",
+  "description": "JsStore is Sql Like IndexedDb Wrapper. It provides simple api to store, retrieve, delete, remove, and for other advanced Database functionalities.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc && uglifyjs output/jsstore.js --compress sequences=true,dead_code=true,conditionals=true,booleans=true,unused=true,if_return=true,join_vars=true,drop_console=true --source-map --mangle --output output/jsstore.min.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ujjwalguptaofficial/JsStore.git"
+  },
+  "keywords": [
+    "jsstore",
+    "indexeddb",
+    "sql",
+    "library",
+    "wrapper"
+  ],
+  "author": "Ujjwal Gupta",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ujjwalguptaofficial/JsStore/issues"
+  },
+  "homepage": "https://github.com/ujjwalguptaofficial/JsStore#readme"
+}

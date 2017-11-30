@@ -1,3 +1,7 @@
+/** 
+ * @license :JsStore.js - v1.3.1 - 30/11/2017
+ * https://github.com/ujjwalguptaofficial/JsStore
+ * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 declare module KeyStore {
     interface IError {
         Name: string;
@@ -224,6 +228,7 @@ declare module JsStore {
             Avg: any;
         };
         IgnoreCase: boolean;
+        Distinct: boolean;
     }
     interface IOrder {
         By: string;
@@ -999,3 +1004,4 @@ declare module JsStore {
         exportJson: (query: ISelect) => any;
     }
 }
+export = JsStore;

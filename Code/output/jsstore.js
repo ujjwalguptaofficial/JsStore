@@ -8,7 +8,8 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.2.5 - 08/11/2017
+/**
+ * @license :JsStore.js - v1.3.1 - 30/11/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var KeyStore;
@@ -574,6 +575,16 @@ var JsStore;
         }
         return null;
     };
+    JsStore.log = function (msg) {
+        if (JsStore.EnableLog) {
+            console.log(msg);
+        }
+    };
+    JsStore.logError = function (msg) {
+        if (JsStore.EnableLog) {
+            console.error(msg);
+        }
+    };
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
@@ -669,33 +680,55 @@ var JsStore;
     */
     JsStore.isDbExist = function (dbInfo, callback, errCallBack) {
         if (errCallBack === void 0) { errCallBack = null; }
+        var UsePromise = callback ? false : true;
         if (JsStore.Status.ConStatus != JsStore.ConnectionStatus.UnableToStart) {
             var DbName;
-            if (typeof dbInfo == 'string') {
-                JsStore.getDbVersion(dbInfo, function (dbVersion) {
-                    callback(Boolean(dbVersion));
+            if (UsePromise) {
+                return new Promise(function (resolve, reject) {
+                    if (typeof dbInfo == 'string') {
+                        JsStore.getDbVersion(dbInfo, function (dbVersion) {
+                            resolve(Boolean(dbVersion));
+                        });
+                    }
+                    else {
+                        JsStore.getDbVersion(dbInfo.DbName, function (dbVersion) {
+                            resolve(dbInfo.Table.Version <= dbVersion);
+                        });
+                    }
                 });
             }
             else {
-                JsStore.getDbVersion(dbInfo.DbName, function (dbVersion) {
-                    callback(dbInfo.Table.Version <= dbVersion);
-                });
+                if (typeof dbInfo == 'string') {
+                    JsStore.getDbVersion(dbInfo, function (dbVersion) {
+                        callback(Boolean(dbVersion));
+                    });
+                }
+                else {
+                    JsStore.getDbVersion(dbInfo.DbName, function (dbVersion) {
+                        callback(dbInfo.Table.Version <= dbVersion);
+                    });
+                }
             }
         }
         else {
-            if (errCallBack) {
-                var Error = {
-                    Name: JsStore.Status.LastError,
-                    Message: ''
-                };
-                switch (Error.Name) {
-                    case JsStore.ErrorType.IndexedDbBlocked:
-                        Error.Message = "IndexedDB is blocked";
-                        break;
-                    case JsStore.ErrorType.IndexedDbUndefined:
-                        Error.Message = "IndexedDB is not supported";
-                        break;
-                }
+            var Error = {
+                Name: JsStore.Status.LastError,
+                Message: ''
+            };
+            switch (Error.Name) {
+                case JsStore.ErrorType.IndexedDbBlocked:
+                    Error.Message = "IndexedDB is blocked";
+                    break;
+                case JsStore.ErrorType.IndexedDbUndefined:
+                    Error.Message = "IndexedDB is not supported";
+                    break;
+            }
+            if (UsePromise) {
+                return new Promise(function (resolve, reject) {
+                    reject(Error);
+                });
+            }
+            else if (errCallBack) {
                 errCallBack(Error);
             }
         }
@@ -1015,9 +1048,7 @@ var JsStore;
                             else {
                                 this.OnError(e);
                             }
-                            if (JsStore.EnableLog) {
-                                console.error(Error);
-                            }
+                            JsStore.logError(Error);
                         }
                     }
                 };
@@ -1086,23 +1117,30 @@ var JsStore;
                     }
                 };
                 _this.makeQryInCaseSensitive = function (qry) {
-                    var Results = [], Qry;
-                    for (var item in qry) {
-                        Qry = qry[item];
-                        switch (item) {
-                            case JsStore.WhereQryOption.In:
-                                for (var value in Qry) {
-                                    Results = Results.concat(this.getAllCombinationOfWord(Qry['In'], true));
+                    var Results = [], ColumnValue, KeyValue;
+                    for (var column in qry) {
+                        ColumnValue = qry[column];
+                        if (typeof ColumnValue == 'object') {
+                            for (var key in ColumnValue) {
+                                KeyValue = ColumnValue[key];
+                                switch (key) {
+                                    case JsStore.WhereQryOption.In:
+                                        Results = Results.concat(this.getAllCombinationOfWord(KeyValue, true));
+                                        break;
+                                    case JsStore.WhereQryOption.Like:
+                                        break;
+                                    default:
+                                        Results = Results.concat(this.getAllCombinationOfWord(KeyValue));
                                 }
-                                break;
-                            case JsStore.WhereQryOption.Like: break;
-                            default:
-                                Results = Results.concat(this.getAllCombinationOfWord(Qry));
+                            }
+                            qry[column]['In'] = Results;
                         }
-                        qry[item] = {
-                            In: Results
-                        };
-                        Results = [];
+                        else {
+                            Results = Results.concat(this.getAllCombinationOfWord(ColumnValue));
+                            qry[column] = {
+                                In: Results
+                            };
+                        }
                     }
                     return qry;
                 };
@@ -1651,7 +1689,7 @@ var JsStore;
                     var CurrentTable = That.getTable(tableName);
                     CurrentTable.Columns.forEach(function (column) {
                         if (column.AutoIncrement) {
-                            KeyStore.remove("JsStore_" + Business.ActiveDataBase.Name + "_" + tableName + "_" + column.Name + "_Value");
+                            KeyStore.set("JsStore_" + Business.ActiveDataBase.Name + "_" + tableName + "_" + column.Name + "_Value", 0);
                         }
                     });
                     if (onSuccess != null) {
@@ -1678,9 +1716,7 @@ var JsStore;
             function Main(onSuccess) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 this.checkConnectionAndExecuteLogic = function (request) {
-                    if (JsStore.EnableLog) {
-                        console.log('checking connection and executing request:' + request.Name);
-                    }
+                    JsStore.log('checking connection and executing request:' + request.Name);
                     switch (request.Name) {
                         case 'create_db':
                         case 'open_db':
@@ -2229,22 +2265,23 @@ var JsStore;
                 function Like() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.filterOnOccurence = function (value) {
-                        var Found = false, Value = value[this.Column].toLowerCase();
+                        var Found = false;
+                        value = value.toLowerCase();
                         switch (this.CompSymbol) {
                             case JsStore.Occurence.Any:
-                                if (Value.indexOf(this.CompValue) >= 0) {
+                                if (value.indexOf(this.CompValue) >= 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             case JsStore.Occurence.First:
-                                if (Value.indexOf(this.CompValue) == 0) {
+                                if (value.indexOf(this.CompValue) == 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             default:
-                                if (Value.lastIndexOf(this.CompValue) == Value.length - this.CompValueLength) {
+                                if (value.lastIndexOf(this.CompValue) == value.length - this.CompValueLength) {
                                     Found = true;
                                 }
                                 ;
@@ -2264,7 +2301,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (That.Results.length != That.LimitRecord && Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
+                                    if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         skipOrPush(Cursor.value);
                                     }
@@ -2276,7 +2313,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (That.Results.length != That.LimitRecord && Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.key)) {
                                         skipOrPush(Cursor.value);
                                     }
                                     Cursor.continue();
@@ -2297,7 +2334,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
+                                    if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         skipOrPush((Cursor.value));
                                     }
@@ -2309,7 +2346,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.key)) {
                                         skipOrPush((Cursor.value));
                                     }
                                     Cursor.continue();
@@ -2323,7 +2360,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (That.Results.length != That.LimitRecord && Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
+                                    if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         That.Results.push(Cursor.value);
                                     }
@@ -2335,7 +2372,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (That.Results.length != That.LimitRecord && Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.key)) {
                                         That.Results.push(Cursor.value);
                                     }
                                     Cursor.continue();
@@ -2349,7 +2386,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
+                                    if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         That.Results.push(Cursor.value);
                                     }
@@ -2361,7 +2398,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.key)) {
                                         That.Results.push(Cursor.value);
                                     }
                                     Cursor.continue();
@@ -3218,6 +3255,16 @@ var JsStore;
                     _this.onTransactionCompleted = function () {
                         if (this.SendResultFlag) {
                             this.processOrderBy();
+                            if (this.Query.Distinct) {
+                                var GroupBy = [];
+                                var Result = this.Results[0];
+                                for (var key in Result) {
+                                    GroupBy.push(key);
+                                }
+                                var PrimaryKey = this.getPrimaryKey(this.Query.From), Index = GroupBy.indexOf(PrimaryKey);
+                                GroupBy.splice(Index, 1);
+                                this.Query.GroupBy = GroupBy.length > 0 ? GroupBy : null;
+                            }
                             if (this.Query.GroupBy) {
                                 if (this.Query.Aggregate) {
                                     this.executeAggregateGroupBy();
@@ -3476,22 +3523,23 @@ var JsStore;
                 function Like() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.filterOnOccurence = function (value) {
-                        var Found = false, Value = value[this.Column].toLowerCase();
+                        var Found = false;
+                        value = value.toLowerCase();
                         switch (this.CompSymbol) {
                             case JsStore.Occurence.Any:
-                                if (Value.indexOf(this.CompValue) >= 0) {
+                                if (value.indexOf(this.CompValue) >= 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             case JsStore.Occurence.First:
-                                if (Value.indexOf(this.CompValue) == 0) {
+                                if (value.indexOf(this.CompValue) == 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             default:
-                                if (Value.lastIndexOf(this.CompValue) == Value.length - this.CompValueLength) {
+                                if (value.lastIndexOf(this.CompValue) == value.length - this.CompValueLength) {
                                     Found = true;
                                 }
                                 ;
@@ -3513,7 +3561,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
+                                    if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         ++That.ResultCount;
                                     }
@@ -3525,7 +3573,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.key)) {
                                         ++That.ResultCount;
                                     }
                                     Cursor.continue();
@@ -3817,22 +3865,23 @@ var JsStore;
                 function Like() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.filterOnOccurence = function (value) {
-                        var Found = false, Value = value[this.Column].toLowerCase();
+                        var Found = false;
+                        value = value.toLowerCase();
                         switch (this.CompSymbol) {
                             case JsStore.Occurence.Any:
-                                if (Value.indexOf(this.CompValue) >= 0) {
+                                if (value.indexOf(this.CompValue) >= 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             case JsStore.Occurence.First:
-                                if (Value.indexOf(this.CompValue) == 0) {
+                                if (value.indexOf(this.CompValue) == 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             default:
-                                if (Value.lastIndexOf(this.CompValue) == Value.length - this.CompValueLength) {
+                                if (value.lastIndexOf(this.CompValue) == value.length - this.CompValueLength) {
                                     Found = true;
                                 }
                                 ;
@@ -3854,7 +3903,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
+                                    if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
                                         ++That.RowAffected;
@@ -3867,7 +3916,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.key)) {
                                         Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
                                         ++That.RowAffected;
                                     }
@@ -4208,22 +4257,23 @@ var JsStore;
                 function Like() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.filterOnOccurence = function (value) {
-                        var Found = false, Value = value[this.Column].toLowerCase();
+                        var Found = false;
+                        value = value.toLowerCase();
                         switch (this.CompSymbol) {
                             case JsStore.Occurence.Any:
-                                if (Value.indexOf(this.CompValue) >= 0) {
+                                if (value.indexOf(this.CompValue) >= 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             case JsStore.Occurence.First:
-                                if (Value.indexOf(this.CompValue) == 0) {
+                                if (value.indexOf(this.CompValue) == 0) {
                                     Found = true;
                                 }
                                 ;
                                 break;
                             default:
-                                if (Value.lastIndexOf(this.CompValue) == Value.length - this.CompValueLength) {
+                                if (value.lastIndexOf(this.CompValue) == value.length - this.CompValueLength) {
                                     Found = true;
                                 }
                                 ;
@@ -4245,7 +4295,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value) &&
+                                    if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         Cursor.delete();
                                         ++That.RowAffected;
@@ -4258,7 +4308,7 @@ var JsStore;
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.value)) {
+                                    if (That.filterOnOccurence(Cursor.key)) {
                                         Cursor.delete();
                                         ++That.RowAffected;
                                     }
@@ -4418,6 +4468,24 @@ var JsStore;
         function CodeExecutionHelper() {
             this.RequestQueue = [];
             this.IsCodeExecuting = false;
+            this.pushApi = function (request, usePromise) {
+                if (usePromise === true) {
+                    var That = this;
+                    return new Promise(function (resolve, reject) {
+                        request.OnSuccess = function (result) {
+                            resolve(result);
+                        };
+                        request.OnError = function (error) {
+                            reject(error);
+                        };
+                        That.prcoessExecutionOfCode(request);
+                    });
+                }
+                else {
+                    this.prcoessExecutionOfCode(request);
+                    return this;
+                }
+            };
             this.prcoessExecutionOfCode = function (request) {
                 if (JsStore.Status.ConStatus == JsStore.ConnectionStatus.NotStarted) {
                     switch (request.Name) {
@@ -4439,9 +4507,7 @@ var JsStore;
                         this.executeCode();
                     }
                 }
-                if (JsStore.EnableLog) {
-                    console.log("request pushed: " + request.Name);
-                }
+                JsStore.log("request pushed: " + request.Name);
             };
             this.executeCode = function () {
                 if (!this.IsCodeExecuting && this.RequestQueue.length > 0) {
@@ -4450,9 +4516,7 @@ var JsStore;
                         Name: FirstRequest.Name,
                         Query: FirstRequest.Query
                     };
-                    if (JsStore.EnableLog) {
-                        console.log("request executing : " + FirstRequest.Name);
-                    }
+                    JsStore.log("request executing : " + FirstRequest.Name);
                     if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.Registered) {
                         this.executeCodeUsingWorker(Request);
                     }
@@ -4474,9 +4538,7 @@ var JsStore;
                 var FinishedRequest = this.RequestQueue.shift();
                 this.IsCodeExecuting = false;
                 if (FinishedRequest) {
-                    if (JsStore.EnableLog) {
-                        console.log("request finished : " + FinishedRequest.Name);
-                    }
+                    JsStore.log("request finished : " + FinishedRequest.Name);
                     if (message.ErrorOccured) {
                         if (FinishedRequest.OnError) {
                             FinishedRequest.OnError(message.ErrorDetails);
@@ -4595,13 +4657,12 @@ var JsStore;
             _this.openDb = function (dbName, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                this.prcoessExecutionOfCode({
+                return this.pushApi({
                     Name: 'open_db',
                     Query: dbName,
                     OnSuccess: onSuccess,
                     OnError: onError,
-                });
-                return this;
+                }, false);
             };
             /**
              * creates DataBase
@@ -4615,13 +4676,12 @@ var JsStore;
             _this.createDb = function (dataBase, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                this.prcoessExecutionOfCode({
+                return this.pushApi({
                     Name: 'create_db',
                     OnSuccess: onSuccess,
                     OnError: onError,
                     Query: dataBase
-                });
-                return this;
+                }, false);
             };
             /**
              * drop dataBase
@@ -4632,12 +4692,12 @@ var JsStore;
              */
             _this.dropDb = function (onSuccess, onError) {
                 if (onError === void 0) { onError = null; }
-                this.prcoessExecutionOfCode({
+                var UsePromise = onSuccess ? false : true;
+                return this.pushApi({
                     Name: 'drop_db',
                     OnSuccess: onSuccess,
                     OnError: onError
-                });
-                return this;
+                }, UsePromise);
             };
             /**
              * select data from table
@@ -4651,16 +4711,16 @@ var JsStore;
             _this.select = function (query, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
-                query.OnSuccess = null;
-                query.OnError = null;
-                this.prcoessExecutionOfCode({
+                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+                onError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = query.OnError = null;
+                var UsePromise = onSuccess ? false : true;
+                return this.pushApi({
                     Name: 'select',
                     Query: query,
-                    OnSuccess: OnSuccess,
-                    OnError: OnError
-                });
-                return this;
+                    OnSuccess: onSuccess,
+                    OnError: onError
+                }, UsePromise);
             };
             /**
              * get no of result from table
@@ -4673,16 +4733,16 @@ var JsStore;
             _this.count = function (query, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
-                query.OnSuccess = null;
-                query.OnError = null;
-                this.prcoessExecutionOfCode({
+                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+                onError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = query.OnError = null;
+                var UsePromise = onSuccess ? false : true;
+                return this.pushApi({
                     Name: 'count',
                     Query: query,
-                    OnSuccess: OnSuccess,
-                    OnError: OnError
-                });
-                return this;
+                    OnSuccess: onSuccess,
+                    OnError: onError
+                }, UsePromise);
             };
             /**
              * insert data into table
@@ -4695,16 +4755,16 @@ var JsStore;
             _this.insert = function (query, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
-                query.OnSuccess = null;
-                query.OnError = null;
-                this.prcoessExecutionOfCode({
+                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+                onError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = query.OnError = null;
+                var UsePromise = onSuccess ? false : true;
+                return this.pushApi({
                     Name: 'insert',
                     Query: query,
-                    OnSuccess: OnSuccess,
-                    OnError: OnError
-                });
-                return this;
+                    OnSuccess: onSuccess,
+                    OnError: onError
+                }, UsePromise);
             };
             /**
              * update data into table
@@ -4717,16 +4777,16 @@ var JsStore;
             _this.update = function (query, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
-                query.OnSuccess = null;
-                query.OnError = null;
-                this.prcoessExecutionOfCode({
+                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+                onError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = query.OnError = null;
+                var UsePromise = onSuccess ? false : true;
+                return this.pushApi({
                     Name: 'update',
                     Query: query,
-                    OnSuccess: OnSuccess,
-                    OnError: OnError
-                });
-                return this;
+                    OnSuccess: onSuccess,
+                    OnError: onError
+                }, UsePromise);
             };
             /**
              * delete data from table
@@ -4739,16 +4799,16 @@ var JsStore;
             _this.delete = function (query, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
-                query.OnSuccess = null;
-                query.OnError = null;
-                this.prcoessExecutionOfCode({
+                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+                onError = query.OnError ? query.OnError : onError;
+                query.OnSuccess = query.OnError = null;
+                var UsePromise = onSuccess ? false : true;
+                return this.pushApi({
                     Name: 'delete',
                     Query: query,
-                    OnSuccess: OnSuccess,
-                    OnError: OnError
-                });
-                return this;
+                    OnSuccess: onSuccess,
+                    OnError: onError
+                }, UsePromise);
             };
             /**
              * delete all data from table
@@ -4761,13 +4821,13 @@ var JsStore;
             _this.clear = function (tableName, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                this.prcoessExecutionOfCode({
+                var UsePromise = onSuccess ? false : true;
+                return this.pushApi({
                     Name: 'clear',
                     Query: tableName,
                     OnSuccess: onSuccess,
                     OnError: onerror
-                });
-                return this;
+                }, UsePromise);
             };
             /**
              * insert bulk amount of data
@@ -4781,16 +4841,16 @@ var JsStore;
             _this.bulkInsert = function (query, onSuccess, onError) {
                 if (onSuccess === void 0) { onSuccess = null; }
                 if (onError === void 0) { onError = null; }
-                var OnSuccess = query.OnSuccess ? query.OnSuccess : onSuccess, OnError = query.OnError ? query.OnError : onError;
-                query.OnSuccess = null;
-                query.OnError = null;
-                this.prcoessExecutionOfCode({
+                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+                onError = query.OnError ? query.OnError : onError;
+                var UsePromise = onSuccess ? false : true;
+                query.OnSuccess = query.OnError = null;
+                return this.pushApi({
                     Name: 'bulk_insert',
                     Query: query,
-                    OnSuccess: OnSuccess,
-                    OnError: OnError
-                });
-                return this;
+                    OnSuccess: onSuccess,
+                    OnError: onError
+                }, UsePromise);
             };
             /**
              * export the result in json file
@@ -4809,12 +4869,30 @@ var JsStore;
                     }
                 }, OnError = query['OnError'], OnSuccessCallBack = query['OnSuccess'];
                 query['OnSuccess'] = query['OnError'] = undefined;
-                this.prcoessExecutionOfCode({
-                    Name: 'export_json',
-                    Query: query,
-                    OnSuccess: OnSuccess,
-                    OnError: OnError
-                });
+                var UsePromise = OnSuccessCallBack ? false : true;
+                if (UsePromise) {
+                    return new Promise(function (resolve, reject) {
+                        this.pushApi({
+                            Name: 'export_json',
+                            Query: query,
+                            OnSuccess: OnSuccess,
+                            OnError: OnError
+                        }, UsePromise).then(function (url) {
+                            OnSuccess(url);
+                            resolve();
+                        }).catch(function (err) {
+                            reject(err);
+                        });
+                    });
+                }
+                else {
+                    this.pushApi({
+                        Name: 'export_json',
+                        Query: query,
+                        OnSuccess: OnSuccess,
+                        OnError: OnError
+                    }, UsePromise);
+                }
             };
             if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.Registered) {
                 JsStore.WorkerInstance.terminate();
@@ -4834,13 +4912,11 @@ var JsStore;
 })(JsStore || (JsStore = {}));
 if (self && !self.alert) {
     self.onmessage = function (e) {
-        if (JsStore.EnableLog) {
-            console.log("Request executing from WebWorker, request name: " + e.data.Name);
-        }
-        var Request = e.data, IndexDbObject = new JsStore.Business.Main();
-        IndexDbObject.checkConnectionAndExecuteLogic(Request);
+        JsStore.log("Request executing from WebWorker, request name: " + e.data.Name);
+        var Request = e.data, BusinessMain = new JsStore.Business.Main();
+        BusinessMain.checkConnectionAndExecuteLogic(Request);
     };
     JsStore.WorkerStatus = JsStore.WebWorkerStatus.Registered;
     KeyStore.init();
 }
-//# sourceMappingURL=JsStore-1.2.5.js.map
+//# sourceMappingURL=jsstore.js.map

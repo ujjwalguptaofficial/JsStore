@@ -23,7 +23,8 @@ module JsStore {
             Sum: any,
             Avg: any
         },
-        IgnoreCase: boolean
+        IgnoreCase: boolean,
+        Distinct: boolean
     }
 
     export interface IOrder {
