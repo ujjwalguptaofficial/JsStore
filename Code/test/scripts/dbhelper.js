@@ -2,7 +2,7 @@ var Con = new JsStore.Instance();
 // JsStore.enableLog();
 
 function initDb() {
-    console.log('init db called');
+    console.log('initiate database');
     JsStore.isDbExist('Demo', function (exist) {
             console.log('db exist :' + exist);
             if (exist) {
