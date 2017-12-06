@@ -112,6 +112,117 @@ describe('Test Select Api', function () {
         })
     });
 
+    it('select with in', function (done) {
+        Con.select({
+            From: 'Customers',
+            Where: {
+                Country: {
+                    In: ['Germany', 'France', 'UK']
+                }
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('array').length(29);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
+    it('select with operator - >', function (done) {
+        Con.select({
+            From: 'Products',
+            Where: {
+                Price: {
+                    ">": 20
+                }
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('array').length(37);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
+    it('select with operator - >=', function (done) {
+        Con.select({
+            From: 'Products',
+            Where: {
+                Price: {
+                    ">=": 20
+                }
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('array').length(38);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
+    it('select with operator - <', function (done) {
+        Con.select({
+            From: 'Products',
+            Where: {
+                Price: {
+                    "<": 20
+                }
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('array').length(39);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
+    it('select with operator - <=', function (done) {
+        Con.select({
+            From: 'Products',
+            Where: {
+                Price: {
+                    "<=": 20
+                }
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('array').length(40);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
+    it('select with operator - between', function (done) {
+        Con.select({
+            From: 'Products',
+            Where: {
+                Price: {
+                    "-": {
+                        Low: 10,
+                        High: 20
+                    }
+                }
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('array').length(29);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
     it('select with like', function (done) {
         Con.select({
             From: 'Customers',
