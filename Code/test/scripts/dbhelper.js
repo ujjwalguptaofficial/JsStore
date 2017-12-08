@@ -10,8 +10,9 @@ function initDb() {
             } else {
                 Con.createDb(DataBase, function () {
                     console.log('Database created');
+                    onDbInit();
                 });
-                insertIntoDb();
+                // insertIntoDb();
             }
         },
         function (err) {

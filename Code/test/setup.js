@@ -5,6 +5,9 @@ window.onload = function () {
 
 function onDbInit() {
     console.log('mocha test starting');
+    // mocha.setup({
+    //     timeout: 5000
+    // });
     // runTestForSelect();
     window.__karma__.start();
     // ShouldStartTest = true;

@@ -3,12 +3,23 @@ module.exports = function (config) {
     config.set({
         basePath: '',
         frameworks: ['mocha', 'chai'],
+        client: {
+            mocha: {
+                timeout: 6000 // 6 seconds - upped from 2 seconds
+            }
+        },
         files: [
             'scripts/jquery-3.2.1.min.js',
             // 'scripts/jsstore.js',
             '../output/jsstore.js',
             'scripts/dbhelper.js',
-            'cases/**/*.js',
+            'cases/insert/*.js',
+            'cases/promise/*.js',
+            'cases/count/*.js',
+            'cases/select/*.js',
+            'cases/update/*.js',
+            'cases/delete/*.js',
+            'cases/helper/*.js',
             {
                 pattern: 'static/*.json',
                 included: false,
