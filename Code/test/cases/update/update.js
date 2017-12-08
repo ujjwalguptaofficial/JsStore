@@ -320,7 +320,6 @@ describe('Test update Api', function () {
         })
     });
 
-
     it('select with operator - between', function (done) {
         Con.select({
             From: 'Products',
