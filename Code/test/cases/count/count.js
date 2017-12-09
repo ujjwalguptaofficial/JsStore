@@ -1,15 +1,16 @@
 describe('Test count Api', function () {
-    it('count all', function (done) {
+    it('count all - using promise', function (done) {
         Con.count({
-            From: 'Customers',
-            OnSuccess: function (results) {
-                expect(results).to.be.an('number').to.equal(93);
-                done();
-            },
-            OnError: function (err) {
-                done(err);
-            }
+            From: 'Customers'
+        }).
+        then(function (results) {
+            expect(results).to.be.an('number').to.equal(93);
+            done();
+        }).
+        catch(function (err) {
+            done(err);
         })
+
     });
 
     it('count with where', function (done) {

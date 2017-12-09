@@ -14,7 +14,6 @@ module.exports = function (config) {
             '../output/jsstore.js',
             'scripts/dbhelper.js',
             'cases/insert/*.js',
-            'cases/promise/*.js',
             'cases/count/*.js',
             'cases/select/*.js',
             'cases/update/*.js',

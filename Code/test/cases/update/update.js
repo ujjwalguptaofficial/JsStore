@@ -1,6 +1,6 @@
 describe('Test update Api', function () {
 
-    it('update with where', function (done) {
+    it('update with where - using promise', function (done) {
         Con.update({
             In: "Customers",
             Set: {
@@ -9,14 +9,14 @@ describe('Test update Api', function () {
             },
             Where: {
                 CustomerID: 1
-            },
-            OnSuccess: function (results) {
-                expect(results).to.be.an('number').to.equal(1);
-                done();
-            },
-            OnError: function (err) {
-                done(err);
             }
+        }).
+        then(function (results) {
+            expect(results).to.be.an('number').to.equal(1);
+            done();
+        }).
+        catch(function (err) {
+            done(err);
         })
     });
 

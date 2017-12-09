@@ -14,6 +14,38 @@ describe('Test insert', function () {
         });
     });
 
+    it('insert Orders using without promise', function (done) {
+        $.getJSON("static/Orders.json", function (results) {
+            Con.insert({
+                Into: 'Orders',
+                Values: results,
+                OnSuccess: function (results) {
+                    expect(results).to.be.an('number').to.equal(196);
+                    done();
+                },
+                OnError: function (err) {
+                    done(err);
+                }
+            });
+        });
+    });
+    
+    it('insert Shippers using without promise', function (done) {
+        $.getJSON("static/Shippers.json", function (results) {
+            Con.insert({
+                Into: 'Shippers',
+                Values: results,
+                OnSuccess: function (results) {
+                    expect(results).to.be.an('number').to.equal(3);
+                    done();
+                },
+                OnError: function (err) {
+                    done(err);
+                }
+            });
+        });
+    });
+    
     it('insert products - using Skip Data', function (done) {
         $.getJSON("static/Products.json", function (results) {
             Con.insert({

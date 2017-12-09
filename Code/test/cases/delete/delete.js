@@ -377,7 +377,7 @@ describe('Test delete Api', function () {
         })
     });
 
-    it('delete all', function (done) {
+    it('delete all - using promise', function (done) {
         var Count;
         Con.count({
             From: 'Customers',
@@ -389,14 +389,15 @@ describe('Test delete Api', function () {
             }
         });
         Con.delete({
-            From: 'Customers',
-            OnSuccess: function (results) {
-                expect(results).to.be.an('number').to.equal(Count);
-                done();
-            },
-            OnError: function (err) {
-                done(err);
-            }
-        })
+            From: 'Customers'
+        }).
+        then(function (results) {
+            expect(results).to.be.an('number').to.equal(Count);
+            done();
+        }).
+        catch(function (err) {
+            done(err);
+        });
+
     });
 });

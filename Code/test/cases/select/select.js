@@ -1,15 +1,16 @@
 describe('Test Select Api', function () {
     it('select all', function (done) {
         Con.select({
-            From: 'Customers',
-            OnSuccess: function (results) {
-                expect(results).to.be.an('array').length(93);
-                done();
-            },
-            OnError: function (err) {
-                done(err);
-            }
+            From: 'Customers'
+        }).
+        then(function (results) {
+            expect(results).to.be.an('array').length(93);
+            done();
+        }).
+        catch(function (err) {
+            done(err);
         })
+
     });
 
     it('select with skip', function (done) {
