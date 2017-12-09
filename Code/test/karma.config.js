@@ -19,6 +19,7 @@ module.exports = function (config) {
             'cases/update/*.js',
             'cases/delete/*.js',
             'cases/helper/*.js',
+            'cases/clear/*.js',
             {
                 pattern: 'static/*.json',
                 included: false,
