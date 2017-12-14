@@ -7,7 +7,7 @@ module JsStore {
     * @param {Function} callback 
     * @param {Function} errCallBack 
     */
-    export var isDbExist = function (dbInfo: DbInfo, callback: Function, errCallBack: Function = null) {
+    export var isDbExist = function (dbInfo: DbInfo, callback: Function = null, errCallBack: Function = null) {
         var UsePromise = callback ? false : true;
         if (Status.ConStatus != ConnectionStatus.UnableToStart) {
             var DbName;
@@ -27,13 +27,13 @@ module JsStore {
             }
             else {
                 if (typeof dbInfo == 'string') {
-                    getDbVersion(dbInfo, function (dbVersion) {
-                        callback(Boolean(dbVersion));
+                    getDbVersion.call(this, dbInfo, function (dbVersion) {
+                        callback.call(this, Boolean(dbVersion));
                     });
                 }
                 else {
-                    getDbVersion(dbInfo.DbName, function (dbVersion) {
-                        callback(dbInfo.Table.Version <= dbVersion)
+                    getDbVersion.call(this, dbInfo.DbName, function (dbVersion) {
+                        callback.call(this, dbInfo.Table.Version <= dbVersion)
                     });
                 }
             }
@@ -67,8 +67,9 @@ module JsStore {
     * @param {Function} callback 
     */
     export var getDbVersion = function (dbName: string, callback: Function) {
+        var That = this;
         KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
-            callback(Number(dbVersion));
+            callback.call(That, Number(dbVersion));
         });
     }
 

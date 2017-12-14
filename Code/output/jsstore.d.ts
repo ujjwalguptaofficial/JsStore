@@ -345,7 +345,7 @@ declare module JsStore {
     * @param {Function} callback
     * @param {Function} errCallBack
     */
-    var isDbExist: (dbInfo: DbInfo, callback: Function, errCallBack?: Function) => any;
+    var isDbExist: (dbInfo: DbInfo, callback?: Function, errCallBack?: Function) => any;
     /**
     * get Db Version
     *
