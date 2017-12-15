@@ -10,7 +10,6 @@ module.exports = function (config) {
         },
         files: [
             'scripts/jquery-3.2.1.min.js',
-            // 'scripts/jsstore.js',
             '../output/jsstore.js',
             'scripts/dbhelper.js',
             'cases/insert/*.js',

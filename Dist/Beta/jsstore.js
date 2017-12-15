@@ -9,7 +9,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /**
- * @license :JsStore.js - v1.3.1 - 30/11/2017
+ * @license :JsStore.js - v1.3.2 - 15/12/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var KeyStore;
@@ -679,6 +679,7 @@ var JsStore;
     * @param {Function} errCallBack
     */
     JsStore.isDbExist = function (dbInfo, callback, errCallBack) {
+        if (callback === void 0) { callback = null; }
         if (errCallBack === void 0) { errCallBack = null; }
         var UsePromise = callback ? false : true;
         if (JsStore.Status.ConStatus != JsStore.ConnectionStatus.UnableToStart) {
@@ -699,13 +700,13 @@ var JsStore;
             }
             else {
                 if (typeof dbInfo == 'string') {
-                    JsStore.getDbVersion(dbInfo, function (dbVersion) {
-                        callback(Boolean(dbVersion));
+                    JsStore.getDbVersion.call(this, dbInfo, function (dbVersion) {
+                        callback.call(this, Boolean(dbVersion));
                     });
                 }
                 else {
-                    JsStore.getDbVersion(dbInfo.DbName, function (dbVersion) {
-                        callback(dbInfo.Table.Version <= dbVersion);
+                    JsStore.getDbVersion.call(this, dbInfo.DbName, function (dbVersion) {
+                        callback.call(this, dbInfo.Table.Version <= dbVersion);
                     });
                 }
             }
@@ -740,8 +741,9 @@ var JsStore;
     * @param {Function} callback
     */
     JsStore.getDbVersion = function (dbName, callback) {
+        var That = this;
         KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
-            callback(Number(dbVersion));
+            callback.call(That, Number(dbVersion));
         });
     };
     /**

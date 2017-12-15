@@ -1,4 +1,5 @@
-/** JsStore.js - v1.2.5 - 08/11/2017
+/** 
+ * @license :JsStore.js - v1.3.2 - 15/12/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 declare module KeyStore {
@@ -227,6 +228,7 @@ declare module JsStore {
             Avg: any;
         };
         IgnoreCase: boolean;
+        Distinct: boolean;
     }
     interface IOrder {
         By: string;
@@ -323,6 +325,8 @@ declare module JsStore {
     var EnableLog: boolean, DbVersion: number, Status: JsStoreStatus, TempResults: Array<any>;
     var throwError: (error: any) => never;
     var getObjectFirstKey: (value: any) => string;
+    var log: (msg: any) => void;
+    var logError: (msg: any) => void;
 }
 declare module JsStore {
     class Utils {
@@ -345,7 +349,7 @@ declare module JsStore {
     * @param {Function} callback
     * @param {Function} errCallBack
     */
-    var isDbExist: (dbInfo: DbInfo, callback: Function, errCallBack?: Function) => void;
+    var isDbExist: (dbInfo: DbInfo, callback?: Function, errCallBack?: Function) => any;
     /**
     * get Db Version
     *
@@ -878,7 +882,8 @@ declare module JsStore {
     class CodeExecutionHelper {
         RequestQueue: Array<IWebWorkerRequest>;
         IsCodeExecuting: boolean;
-        protected prcoessExecutionOfCode: (request: IWebWorkerRequest) => void;
+        protected pushApi: (request: IWebWorkerRequest, usePromise: boolean) => any;
+        private prcoessExecutionOfCode;
         private executeCode;
         private executeCodeDirect;
         private executeCodeUsingWorker;
@@ -893,6 +898,7 @@ import Model = JsStore.Model;
 import DataBase = Model.DataBase;
 import Column = Model.Column;
 import Table = Model.Table;
+declare var Promise: any;
 declare module JsStore {
     class Instance extends CodeExecutionHelper {
         constructor(dbName?: any);
@@ -995,7 +1001,7 @@ declare module JsStore {
          * @param {ISelect} qry
          * @memberof Instance
          */
-        exportJson: (query: ISelect) => void;
+        exportJson: (query: ISelect) => any;
     }
 }
 export = JsStore;
