@@ -388,6 +388,7 @@ declare module JsStore {
             NotNull: boolean;
             DataType: string;
             Default: any;
+            MultiEntry: boolean;
         }
         class Column implements IColumn {
             Name: string;
@@ -397,6 +398,7 @@ declare module JsStore {
             NotNull: boolean;
             DataType: string;
             Default: any;
+            MultiEntry: boolean;
             constructor(key: IColumn, tableName: string);
         }
     }

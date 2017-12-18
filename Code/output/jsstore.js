@@ -826,6 +826,7 @@ var JsStore;
                 this.NotNull = key.NotNull != null ? key.NotNull : false;
                 this.DataType = key.DataType != null ? key.DataType : (key.AutoIncrement ? 'number' : null);
                 this.Default = key.Default;
+                this.MultiEntry = key.MultiEntry;
             }
             return Column;
         }());
@@ -1350,12 +1351,11 @@ var JsStore;
                                 keyPath: item.PrimaryKey
                             });
                             item.Columns.forEach(function (column) {
-                                if (column.PrimaryKey) {
-                                    Store.createIndex(column.Name, column.Name, { unique: true });
+                                var Options = column.PrimaryKey ? { unique: true } : { unique: column.Unique };
+                                if (column.MultiEntry) {
+                                    Options['multiEntry'] = true;
                                 }
-                                else {
-                                    Store.createIndex(column.Name, column.Name, { unique: column.Unique });
-                                }
+                                Store.createIndex(column.Name, column.Name, Options);
                                 if (column.AutoIncrement) {
                                     KeyStore.set("JsStore_" + Business.ActiveDataBase.Name + "_" + item.Name + "_" + column.Name + "_Value", 0);
                                 }

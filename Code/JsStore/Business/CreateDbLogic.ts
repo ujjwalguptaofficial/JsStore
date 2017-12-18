@@ -66,13 +66,11 @@ module JsStore {
                                 keyPath: item.PrimaryKey
                             });
                             item.Columns.forEach(function (column: Column) {
-                                if (column.PrimaryKey) {
-                                    Store.createIndex(column.Name, column.Name, { unique: true });
+                                var Options = column.PrimaryKey ? { unique: true } : { unique: column.Unique };
+                                if (column.MultiEntry) {
+                                    Options['multiEntry'] = true;
                                 }
-                                else {
-                                    Store.createIndex(column.Name, column.Name, { unique: column.Unique });
-                                }
-
+                                Store.createIndex(column.Name, column.Name, Options);
                                 if (column.AutoIncrement) {
                                     KeyStore.set("JsStore_" + ActiveDataBase.Name + "_" + item.Name + "_" + column.Name + "_Value", 0);
                                 }

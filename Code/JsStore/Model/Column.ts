@@ -9,6 +9,7 @@ module JsStore {
             NotNull: boolean;
             DataType: string;
             Default: any;
+            MultiEntry: boolean
         }
 
         export class Column implements IColumn {
@@ -19,6 +20,7 @@ module JsStore {
             NotNull: boolean;
             DataType: string;
             Default: any;
+            MultiEntry: boolean
 
             constructor(key: IColumn, tableName: string) {
                 if (key.Name != null) {
@@ -33,6 +35,7 @@ module JsStore {
                 this.NotNull = key.NotNull != null ? key.NotNull : false;
                 this.DataType = key.DataType != null ? key.DataType : (key.AutoIncrement ? 'number' : null);
                 this.Default = key.Default;
+                this.MultiEntry = key.MultiEntry;
             }
 
         }
