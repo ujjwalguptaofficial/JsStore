@@ -1,4 +1,4 @@
-module KeyStore {
+namespace KeyStore {
 
     export interface ISelect {
         From: any,

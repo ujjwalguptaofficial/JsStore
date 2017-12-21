@@ -1,5 +1,5 @@
-module JsStore {
-    export module Business {
+namespace JsStore {
+    export namespace Business {
         export class Base extends BaseHelper {
             Error: IError;
             ErrorOccured: boolean = false;

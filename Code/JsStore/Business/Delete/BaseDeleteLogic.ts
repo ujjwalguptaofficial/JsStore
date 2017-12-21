@@ -1,6 +1,6 @@
-module JsStore {
-    export module Business {
-        export module Delete {
+namespace JsStore {
+    export namespace Business {
+        export namespace Delete {
             export class BaseDelete extends Base {
                 CheckFlag = false;
             }

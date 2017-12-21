@@ -1,6 +1,6 @@
-module JsStore {
-    export module Business {
-        export module Update {
+namespace JsStore {
+    export namespace Business {
+        export namespace Update {
             export class Like extends In {
                 CompSymbol: Occurence;
                 CompValue;

@@ -1,32 +1,32 @@
-module JsStore {
-    export var EnableLog = false,
-        DbVersion: number = 0,
-        Status: JsStoreStatus = <JsStoreStatus>{
+namespace JsStore {
+    export var enable_log = false,
+        db_version: number = 0,
+        status: JsStoreStatus = {
             ConStatus: ConnectionStatus.NotStarted,
             LastError: ""
-        },
-        TempResults: Array<any> = [];
+        } as JsStoreStatus,
+        temp_results: any[] = [];
 
     export var throwError = function (error) {
         throw error;
-    }
+    };
 
     export var getObjectFirstKey = function (value) {
         for (var key in value) {
             return key;
         }
         return null;
-    }
+    };
 
     export var log = function (msg) {
-        if (EnableLog) {
+        if (enable_log) {
             console.log(msg);
         }
-    }
+    };
 
     export var logError = function (msg) {
-        if (EnableLog) {
+        if (enable_log) {
             console.error(msg);
         }
-    }
+    };
 }

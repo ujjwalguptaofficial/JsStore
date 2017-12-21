@@ -1,5 +1,5 @@
-module KeyStore {
-    export module Business {
+namespace KeyStore {
+    export namespace Business {
         export var DbConnection,
             Status: KeyStoreStatus = <KeyStoreStatus>{
                 ConStatus: ConnectionStatus.NotStarted,

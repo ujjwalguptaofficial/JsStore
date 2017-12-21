@@ -1,6 +1,6 @@
-module JsStore {
-    export module Business {
-        export module Select {
+namespace JsStore {
+    export namespace Business {
+        export namespace Select {
             export class Join extends BaseSelect {
                 Query: ISelectJoin;
                 QueryStack: Array<ITableJoin> = [];

@@ -1,5 +1,5 @@
-module KeyStore {
-    export module Business {
+namespace KeyStore {
+    export namespace Business {
         export class Set extends Base {
 
             private setData = function (value) {

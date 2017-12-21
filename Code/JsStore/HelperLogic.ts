@@ -1,19 +1,22 @@
-module JsStore {
-
+namespace JsStore {
     /**
-    * checks whether db exist or not
-    * 
-    * @param {DbInfo} dbInfo 
-    * @param {Function} callback 
-    * @param {Function} errCallBack 
-    */
-    export var isDbExist = function (dbInfo: DbInfo, callback: Function = null, errCallBack: Function = null) {
-        var UsePromise = callback ? false : true;
-        if (Status.ConStatus != ConnectionStatus.UnableToStart) {
-            var DbName;
-            if (UsePromise) {
+     * checks whether db exist or not
+     * 
+     * @param {DbInfo} dbInfo 
+     * @param {() => void} [callback=null] 
+     * @param {() => void} [errCallBack=null] 
+     * @returns 
+     */
+    var isDbExist = function (
+        dbInfo: IDbInfo,
+        callback: (isExist: boolean) => void = null,
+        errCallBack: (err: IError) => void = null
+    ) {
+        var use_promise = callback ? false : true;
+        if (status.ConStatus !== ConnectionStatus.UnableToStart) {
+            if (use_promise) {
                 return new Promise(function (resolve, reject) {
-                    if (typeof dbInfo == 'string') {
+                    if (typeof dbInfo === 'string') {
                         getDbVersion(dbInfo, function (dbVersion) {
                             resolve(Boolean(dbVersion));
                         });
@@ -23,10 +26,10 @@ module JsStore {
                             resolve(dbInfo.Table.Version <= dbVersion)
                         });
                     }
-                })
+                });
             }
             else {
-                if (typeof dbInfo == 'string') {
+                if (typeof dbInfo === 'string') {
                     getDbVersion.call(this, dbInfo, function (dbVersion) {
                         callback.call(this, Boolean(dbVersion));
                     });
@@ -39,102 +42,102 @@ module JsStore {
             }
         }
         else {
-            var Error = <IError>{
-                Name: Status.LastError,
+            var error = {
+                Name: status.LastError,
                 Message: ''
-            };
-            switch (Error.Name) {
+            } as IError;
+            switch (error.Name) {
                 case ErrorType.IndexedDbBlocked:
-                    Error.Message = "IndexedDB is blocked"; break;
+                    error.Message = "IndexedDB is blocked"; break;
                 case ErrorType.IndexedDbUndefined:
-                    Error.Message = "IndexedDB is not supported"; break;
+                    error.Message = "IndexedDB is not supported"; break;
             }
-            if (UsePromise) {
+            if (use_promise) {
                 return new Promise(function (resolve, reject) {
-                    reject(Error);
+                    reject(error);
                 });
             }
             else if (errCallBack) {
-                errCallBack(Error);
+                errCallBack(error);
             }
         }
-    }
+    };
 
     /**
-    * get Db Version
-    * 
-    * @param {string} dbName 
-    * @param {Function} callback 
-    */
-    export var getDbVersion = function (dbName: string, callback: Function) {
-        var That = this;
+     * get Db Version
+     * 
+     * @param {string} dbName 
+     * @param {(version: number) => void} callback 
+     */
+    var getDbVersion = function (dbName: string, callback: (version: number) => void) {
+        var that = this;
         KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
-            callback.call(That, Number(dbVersion));
+            callback.call(that, Number(dbVersion));
         });
-    }
+    };
 
     /**
-    * get Database Schema
-    * 
-    * @param {string} dbName 
-    * @param {Function} callback 
-    */
-    export var getDbSchema = function (dbName: string, callback: Function) {
+     * get Database Schema
+     * 
+     * @param {string} dbName 
+     * @param {(any) => void} callback 
+     */
+    var getDbSchema = function (dbName: string, callback: (any) => void) {
         if (callback) {
             KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
                 callback(result);
             });
         }
-    }
+    };
 
     /**
-    * check value null or not
-    * 
-    * @param {any} value 
-    * @returns 
-    */
-    export var isNull = function (value) {
+     * check for null value
+     * 
+     * @param {any} value 
+     * @returns 
+     */
+    var isNull = function (value) {
         if (value == null) {
             return true;
         } else {
             switch (typeof value) {
-                case 'string': return value.length == 0;
+                case 'string': return value.length === 0;
                 case 'number': return isNaN(value);
             }
         }
         return false;
-    }
+    };
 
     /**
-    * Enable log
-    * 
-    */
-    export var enableLog = function () {
-        EnableLog = true;
-        if (WorkerInstance) {
-            WorkerInstance.postMessage(<IWebWorkerRequest>{
+     * Enable log
+     * 
+     */
+    var enableLog = function () {
+        enable_log = true;
+        if (worker_instance) {
+            worker_instance.postMessage({
                 Name: 'change_log_status',
                 Query: {
-                    logging: EnableLog
+                    logging: enable_log
                 }
-            });
+            } as IWebWorkerRequest);
         }
-    }
+    };
 
     /**
-    * disable log
-    * 
-    */
-    export var disableLog = function () {
-        EnableLog = false;
-        if (WorkerInstance) {
-            WorkerInstance.postMessage(<IWebWorkerRequest>{
+     * disable log
+     * 
+     */
+    var disableLog = function () {
+        enable_log = false;
+        if (worker_instance) {
+            worker_instance.postMessage({
                 Name: 'change_log_status',
                 Query: {
-                    logging: EnableLog
+                    logging: enable_log
                 }
-            });
+            } as IWebWorkerRequest);
         }
-    }
+    };
 
 }

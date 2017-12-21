@@ -1,21 +1,20 @@
 
-module JsStore {
-    export module Model {
+namespace JsStore {
+    export namespace Model {
         export interface IDataBase {
             Name: string;
-            Tables: Array<ITable>;
+            Tables: ITable[];
         }
 
-        export class DataBase implements IDataBase {
-            Name: string;
-            Tables: Array<Table> = [];
+        export class DataBase {
+            _name: string;
+            _tables: Table[] = [];
 
             constructor(dataBase: IDataBase) {
-                var That = this;
-                this.Name = dataBase.Name;
+                this._name = dataBase.Name;
                 dataBase.Tables.forEach(function (item) {
-                    That.Tables.push(new Table(item, That.Name));
-                })
+                    this._tables.push(new Table(item, this.Name));
+                }, this);
             }
         }
     }

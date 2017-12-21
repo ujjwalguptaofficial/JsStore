@@ -1,6 +1,6 @@
-module JsStore {
-    export module Business {
-        export module Select {
+namespace JsStore {
+    export namespace Business {
+        export namespace Select {
             export class Instance extends Helper {
                 public onTransactionCompleted = function () {
                     if (this.SendResultFlag) {

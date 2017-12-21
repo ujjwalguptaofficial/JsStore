@@ -1,6 +1,6 @@
-module JsStore {
-    export module Business {
-        export module Count {
+namespace JsStore {
+    export namespace Business {
+        export namespace Count {
             export class NotWhere extends BaseCount {
 
                 protected executeWhereUndefinedLogic = function () {

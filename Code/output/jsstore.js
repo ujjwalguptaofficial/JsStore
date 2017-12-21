@@ -681,12 +681,12 @@ var JsStore;
     JsStore.isDbExist = function (dbInfo, callback, errCallBack) {
         if (callback === void 0) { callback = null; }
         if (errCallBack === void 0) { errCallBack = null; }
-        var UsePromise = callback ? false : true;
-        if (JsStore.Status.ConStatus != JsStore.ConnectionStatus.UnableToStart) {
-            var DbName;
-            if (UsePromise) {
+        var use_promise = callback ? false : true;
+        if (JsStore.Status.ConStatus !== JsStore.ConnectionStatus.UnableToStart) {
+            // var DbName;
+            if (use_promise) {
                 return new Promise(function (resolve, reject) {
-                    if (typeof dbInfo == 'string') {
+                    if (typeof dbInfo === 'string') {
                         JsStore.getDbVersion(dbInfo, function (dbVersion) {
                             resolve(Boolean(dbVersion));
                         });
@@ -724,7 +724,7 @@ var JsStore;
                     Error.Message = "IndexedDB is not supported";
                     break;
             }
-            if (UsePromise) {
+            if (use_promise) {
                 return new Promise(function (resolve, reject) {
                     reject(Error);
                 });

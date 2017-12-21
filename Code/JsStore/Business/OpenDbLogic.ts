@@ -1,5 +1,5 @@
-module JsStore {
-    export module Business {
+namespace JsStore {
+    export namespace Business {
         export class OpenDb {
             constructor(dbVersion, onSuccess: Function, onError: Function) {
                 if (ActiveDataBase.Name.length > 0) {

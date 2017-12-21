@@ -1,4 +1,4 @@
-module JsStore {
+namespace JsStore {
     export enum ErrorType {
         UndefinedColumn = "undefined_column",
         UndefinedValue = "undefined_value",

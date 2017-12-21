@@ -1,5 +1,5 @@
-module KeyStore {
-    export module Business {
+namespace KeyStore {
+    export namespace Business {
         export class Get extends Base {
             Query: ISelect;
 

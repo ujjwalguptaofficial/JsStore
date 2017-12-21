@@ -1,5 +1,5 @@
-module JsStore {
-    export module Business {
+namespace JsStore {
+    export namespace Business {
         export class CreateDb {
             constructor(dbVersion, onSuccess: Function, onError: Function) {
                 var That = this,

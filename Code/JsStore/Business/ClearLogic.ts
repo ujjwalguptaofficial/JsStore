@@ -1,5 +1,5 @@
-module JsStore {
-    export module Business {
+namespace JsStore {
+    export namespace Business {
         export class Clear extends Base {
             constructor(tableName: string, onSuccess: Function, onError: Function) {
                 super();

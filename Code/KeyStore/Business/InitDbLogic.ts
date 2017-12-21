@@ -1,5 +1,5 @@
-module KeyStore {
-    export module Business {
+namespace KeyStore {
+    export namespace Business {
         export class InitDb {
             constructor(dbName: string, tableName: string, onSuccess: Function, onError: Function) {
                 var That = this,
@@ -7,10 +7,10 @@ module KeyStore {
 
                 DbRequest.onerror = function (event) {
                     if ((event as any).target.error.name == 'InvalidStateError') {
-                        JsStore.Status = {
+                        JsStore.status = {
                             ConStatus: JsStore.ConnectionStatus.UnableToStart,
                             LastError: JsStore.ErrorType.IndexedDbBlocked,
-                        }
+                        };
                     }
                     if (onError != null) {
                         onError((event as any).target.error);

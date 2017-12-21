@@ -1,38 +1,30 @@
-module JsStore {
-    export module Business {
-        export module Count {
+namespace JsStore {
+    export namespace Business {
+        export namespace Count {
             export class Instance extends Where {
-
-                public onTransactionCompleted = function () {
-                    if (this.SendResultFlag) {
-                        this.OnSuccess(this.ResultCount);
-                    }
-                }
-
-                constructor(query: ICount, onSuccess: Function, onError: Function) {
+                constructor(query: ICount, onSuccess: (noOfRecord: number) => void, onError: (error: IError) => void) {
                     super();
-                    var That = this;
                     this.Query = query;
                     this.OnSuccess = onSuccess;
                     this.OnError = onError;
                     try {
                         var createTransaction = function () {
-                            That.Transaction = DbConnection.transaction([query.From], "readonly");
-                            That.ObjectStore = That.Transaction.objectStore(query.From);
-                            That.Transaction.oncomplete = function (e) {
-                                That.onTransactionCompleted();
+                            this.Transaction = db_connection.transaction([query.From], "readonly");
+                            this.ObjectStore = this.Transaction.objectStore(query.From);
+                            this.Transaction.oncomplete = function (e) {
+                                this.onTransactionCompleted();
                             };
-                            (<any>That.Transaction).ontimeout = That.onTransactionTimeout;
-                        }
-                        if (query.Where != undefined) {
+                            this.Transaction.ontimeout = this.onTransactionTimeout;
+                        };
+                        if (query.Where !== undefined) {
                             if (query.Where.Or) {
-                                new Select.Instance(query as ISelect, function (results) {
-                                    That.ResultCount = results.length;
-                                    That.onTransactionCompleted()
+                                var select_object = new Select.Instance(query as any, function (results) {
+                                    this.ResultCount = results.length;
+                                    this.onTransactionCompleted();
                                 }, this.OnError);
                             }
                             else {
-                                createTransaction();
+                                createTransaction.call(this);
                                 this.goToWhereLogic();
                             }
                         }
@@ -46,6 +38,11 @@ module JsStore {
                     }
                 }
 
+                public onTransactionCompleted = function () {
+                    if (this.SendResultFlag) {
+                        this.OnSuccess(this.ResultCount);
+                    }
+                }
             }
         }
 

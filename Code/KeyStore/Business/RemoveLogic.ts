@@ -1,5 +1,5 @@
-module KeyStore {
-    export module Business {
+namespace KeyStore {
+    export namespace Business {
         export class Remove extends Base {
             Query: IDelete;
             RowAffected: number = 0;

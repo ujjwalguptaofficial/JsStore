@@ -1,5 +1,5 @@
-module JsStore {
-    export module Business {
+namespace JsStore {
+    export namespace Business {
         export class BaseHelper {
 
             protected getTable = function (tableName: string) {

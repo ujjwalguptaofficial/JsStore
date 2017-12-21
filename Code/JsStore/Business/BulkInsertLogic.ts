@@ -1,5 +1,5 @@
-module JsStore {
-    export module Business {
+namespace JsStore {
+    export namespace Business {
         export class BulkInsert extends Base {
             ValuesAffected = [];
             Query: IInsert;

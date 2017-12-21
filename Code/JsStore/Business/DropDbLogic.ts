@@ -1,5 +1,5 @@
-module JsStore {
-    export module Business {
+namespace JsStore {
+    export namespace Business {
         export class DropDb {
             constructor(name: string, onSuccess: Function, onError: Function) {
                 var That = this;

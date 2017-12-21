@@ -1,6 +1,6 @@
-module JsStore {
-    export module Business {
-        export module Delete {
+namespace JsStore {
+    export namespace Business {
+        export namespace Delete {
             export class Instance extends Where {
 
                 private onTransactionCompleted = function () {

@@ -1,69 +1,65 @@
 
-module JsStore {
+namespace JsStore {
 
-    export module Model {
+    export namespace Model {
 
         export interface ITable {
             Name: string;
-            Columns: Array<IColumn>;
+            Columns: IColumn[];
             Version: number;
         }
 
-        export class Table implements ITable {
-            Name: string = "";
-            Columns: Array<Column> = [];
-            Version: number;
-            //internal Members
-            RequireDelete: boolean = false;
-            RequireCreation: boolean = false;
-            PrimaryKey: string = "";
+        export class Table {
+            _name: string = "";
+            _columns: IColumn[];
+            _version: number;
+
+            // internal Members
+            _requireDelete: boolean = false;
+            _requireCreation: boolean = false;
+            _primaryKey: string = "";
 
             constructor(table: ITable, dbName: string) {
-                this.Name = table.Name;
-                this.Version = table.Version == undefined ? 1 : table.Version;
-                var That = this;
+                this._name = table.Name;
+                this._version = table.Version == null ? 1 : table.Version;
                 table.Columns.forEach(function (item) {
-                    That.Columns.push(new Column(item, table.Name));
-                })
+                    this.Columns.push(new Column(item, table.Name));
+                }, this);
 
                 this.setRequireDelete(dbName);
                 this.setDbVersion(dbName);
                 this.setPrimaryKey(dbName);
             }
 
-            //private methods
-
             private setPrimaryKey(dbName) {
-                var That = this;
-                this.Columns.forEach(function (item) {
+                this._columns.forEach(function (item) {
                     if (item.PrimaryKey) {
-                        That.PrimaryKey = item.Name;
+                        this.PrimaryKey = item.Name;
                     }
-                })
+                }, this);
 
             }
 
             private setRequireDelete(dbName: string) {
-                var That = this;
-                KeyStore.get("JsStore_" + dbName + "_" + this.Name + "_Version", function (tableVersion) {
+                var that = this;
+                KeyStore.get("JsStore_" + dbName + "_" + this._name + "_Version", function (tableVersion) {
                     if (tableVersion == null) {
-                        That.RequireCreation = true;
+                        that._requireCreation = true;
                     }
-                    //mark only table which has version greater than store version
-                    else if (tableVersion < That.Version) {
-                        That.RequireDelete = true;
+                    // mark only table which has version greater than store version
+                    else if (tableVersion < that._version) {
+                        that._requireDelete = true;
                     }
                 });
             }
 
             private setDbVersion(dbName: string) {
-                var That = this;
-                DbVersion = DbVersion > That.Version ? DbVersion : That.Version;
-                //setting db version
-                KeyStore.set('JsStore_' + dbName + '_Db_Version', DbVersion)
-                    //setting table version
-                    .set("JsStore_" + dbName + "_" + That.Name + "_Version", DbVersion);
-                That.Version = DbVersion;
+                db_version = db_version > this._version ? db_version : this._version;
+                // setting db version
+                KeyStore.set('JsStore_' + dbName + '_Db_Version', db_version)
+                    // setting table version
+                    .set("JsStore_" + dbName + "_" + this._name + "_Version", db_version);
+                this._version = db_version;
             }
 
         }

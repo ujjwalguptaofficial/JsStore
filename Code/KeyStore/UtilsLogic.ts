@@ -1,4 +1,4 @@
-module KeyStore {
+namespace KeyStore {
     export interface IError {
         Name: string,
         Value: string
@@ -21,10 +21,10 @@ module KeyStore {
                 (self as any).postMessage('message:WorkerFailed');
             }
             else {
-                JsStore.Status = {
+                JsStore.status = {
                     ConStatus: JsStore.ConnectionStatus.UnableToStart,
                     LastError: JsStore.ErrorType.IndexedDbUndefined
-                }
+                };
             }
         }
     }

@@ -1,5 +1,5 @@
-module JsStore {
-    export module Business {
+namespace JsStore {
+    export namespace Business {
         export class Insert extends InsertHelper {
             private insertData = function (values) {
                 var That = this,

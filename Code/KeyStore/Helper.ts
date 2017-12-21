@@ -1,4 +1,4 @@
-module KeyStore {
+namespace KeyStore {
     export var prcoessExecutionOfCode = function (request: IWebWorkerRequest) {
         RequestQueue.push(request);
         if (RequestQueue.length == 1) {

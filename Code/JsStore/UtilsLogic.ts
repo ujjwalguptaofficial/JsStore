@@ -1,4 +1,4 @@
-module JsStore {
+namespace JsStore {
     export class Utils {
         static getError(errorType: ErrorType, errorDetail: any) {
             var Error: IError = {

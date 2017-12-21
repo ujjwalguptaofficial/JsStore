@@ -1,14 +1,14 @@
 
-module JsStore {
-    export module Business {
-        export var DbConnection,
-            ActiveDataBase: DataBase;
-
+namespace JsStore {
+    export namespace Business {
+        export var db_connection,
+            active_db: DataBase;
 
         export class Main {
-            OnSuccess: Function;
+            _onSuccess: () => void;
+
             constructor(onSuccess = null) {
-                this.OnSuccess = onSuccess;
+                this._onSuccess = onSuccess;
             }
 
             public checkConnectionAndExecuteLogic = function (request: IWebWorkerRequest) {
@@ -24,16 +24,16 @@ module JsStore {
                         switch (Status.ConStatus) {
                             case ConnectionStatus.Connected: {
                                 this.executeLogic(request);
-                            }; break;
+                            } break;
                             case ConnectionStatus.Closed: {
-                                var That = this;
-                                this.openDb(ActiveDataBase.Name, function () {
-                                    That.checkConnectionAndExecuteLogic(request);
+                                var that = this;
+                                this.openDb(active_db.Name, function () {
+                                    that.checkConnectionAndExecuteLogic(request);
                                 });
-                            }; break;
+                            } break;
                         }
                 }
-            }
+            };
 
             private changeLogStatus = function (request) {
                 if (request.Query['logging'] === true) {
@@ -42,7 +42,7 @@ module JsStore {
                 else {
                     EnableLog = false;
                 }
-            }
+            };
 
             private returnResult = function (result) {
                 if (this.OnSuccess) {
@@ -51,157 +51,160 @@ module JsStore {
                 else {
                     (self as any).postMessage(result);
                 }
-            }
+            };
 
             private executeLogic = function (request: IWebWorkerRequest) {
-                var That = this,
-                    OnSuccess = function (results) {
-                        That.returnResult(<IWebWorkerResult>{
+                var that = this,
+                    onSuccess = function (results) {
+                        that.returnResult({
                             ReturnedValue: results
-                        });
+                        } as IWebWorkerResult);
                     },
-                    OnError = function (err) {
-                        That.returnResult(<IWebWorkerResult>{
+                    onError = function (err) {
+                        that.returnResult({
                             ErrorOccured: true,
                             ErrorDetails: err
-                        });
-                    }
+                        } as IWebWorkerResult);
+                    };
 
                 switch (request.Name) {
                     case 'select':
-                        this.select(request.Query, OnSuccess, OnError);
+                        this.select(request.Query, onSuccess, onError);
                         break;
-                    case 'insert': this.insert(request.Query, OnSuccess, OnError);
+                    case 'insert': this.insert(request.Query, onSuccess, onError);
                         break;
-                    case 'update': this.update(request.Query, OnSuccess, OnError);
+                    case 'update': this.update(request.Query, onSuccess, onError);
                         break;
-                    case 'delete': this.delete(request.Query, OnSuccess, OnError);
+                    case 'delete': this.delete(request.Query, onSuccess, onError);
                         break;
-                    case 'open_db': this.openDb(request.Query, OnSuccess, OnError);
+                    case 'open_db': this.openDb(request.Query, onSuccess, onError);
                         break;
-                    case 'create_db': this.createDb(request.Query, OnSuccess, OnError);
+                    case 'create_db': this.createDb(request.Query, onSuccess, onError);
                         break;
-                    case 'clear': this.clear(request.Query, OnSuccess, OnError);
+                    case 'clear': this.clear(request.Query, onSuccess, onError);
                         break;
-                    case 'drop_db': this.dropDb(OnSuccess, OnError);
+                    case 'drop_db': this.dropDb(onSuccess, onError);
                         break;
-                    case 'count': this.count(request.Query, OnSuccess, OnError);
+                    case 'count': this.count(request.Query, onSuccess, onError);
                         break;
-                    case 'bulk_insert': this.bulkInsert(request.Query, OnSuccess, OnError);
+                    case 'bulk_insert': this.bulkInsert(request.Query, onSuccess, onError);
                         break;
-                    case 'export_json': this.exportJson(request.Query, OnSuccess, OnError);
+                    case 'export_json': this.exportJson(request.Query, onSuccess, onError);
                         break;
                     default: console.error('The Api:-' + request.Name + 'does not support');
                 }
-            }
+            };
 
-            openDb = function (dbName, onSuccess: Function, onError: Function) {
+            private openDb = function (dbName, onSuccess: () => void, onError: (err: IError) => void) {
                 KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
                     if (dbVersion != null) {
                         KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
-                            ActiveDataBase = result;
-                            new OpenDb(dbVersion, onSuccess, onError);
+                            active_db = result;
+                            var open_db_object = new OpenDb(dbVersion, onSuccess, onError);
                         });
                     }
                     else {
-                        var Error = Utils.getError(ErrorType.DbNotExist, { DbName: dbName });
-                        throw Error;
+                        var error = Utils.getError(ErrorType.DbNotExist, { DbName: dbName });
+                        throw error;
                     }
                 });
-            }
+            };
 
-            public closeDb = function () {
-                if (Status.ConStatus == ConnectionStatus.Connected) {
-                    DbConnection.close();
+            private closeDb = function () {
+                if (Status.ConStatus === ConnectionStatus.Connected) {
+                    db_connection.close();
                 }
-            }
+            };
 
-            public dropDb = function (onSuccess: Function, onError: Function) {
-                new DropDb(ActiveDataBase.Name, onSuccess, onError);
-            }
+            private dropDb = function (onSuccess: () => void, onError: (err: IError) => void) {
+                var drop_db_object = new DropDb(active_db.Name, onSuccess, onError);
+            };
 
-            public update = function (query: IUpdate, onSuccess: Function, onError: Function) {
-                new Update.Instance(query, onSuccess, onError);
-            }
+            private update = function (query: IUpdate, onSuccess: () => void, onError: (err: IError) => void) {
+                var update_db_object = new Update.Instance(query, onSuccess, onError);
+            };
 
-            public insert = function (query: IInsert, onSuccess: Function, onError: Function) {
+            private insert = function (query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
                 if (!Array.isArray(query.Values)) {
                     throwError("Value should be array :- supplied value is not array");
                 }
                 else {
-                    new Insert(query, onSuccess, onError);
+                    var insert_object = new Insert(query, onSuccess, onError);
                 }
-            }
+            };
 
-            public bulkInsert = function (query: IInsert, onSuccess: Function, onError: Function) {
+            private bulkInsert = function (query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
                 if (!Array.isArray(query.Values)) {
                     throwError("Value should be array :- supplied value is not array");
                 }
                 else {
-                    new BulkInsert(query, onSuccess, onError);
+                    var bulk_insert_object = new BulkInsert(query, onSuccess, onError);
                 }
-            }
+            };
 
-            public delete = function (query: IDelete, onSuccess: Function, onError: Function) {
-                new Delete.Instance(query, onSuccess, onError);
-            }
+            private delete = function (query: IDelete, onSuccess: () => void, onError: (err: IError) => void) {
+                var delete_object = new Delete.Instance(query, onSuccess, onError);
+            };
 
-            public select = function (query, onSuccess: Function, onError: Function) {
+            private select = function (query, onSuccess: () => void, onError: (err: IError) => void) {
                 if (typeof query.From === 'object') {
-                    new Select.Join(<ISelectJoin>query, onSuccess, onError);
+                    var select_join_object = new Select.Join(query as ISelectJoin, onSuccess, onError);
                 }
                 else {
-                    new Select.Instance(query, onSuccess, onError);
+                    var select_object = new Select.Instance(query, onSuccess, onError);
                 }
-            }
+            };
 
-            public count = function (query, onSuccess: Function, onError: Function) {
+            private count = function (query, onSuccess: () => void, onError: (err: IError) => void) {
                 if (typeof query.From === 'object') {
                     query['Count'] = true;
-                    new Select.Join(query, onSuccess, onError);
+                    var select_join_object = new Select.Join(query, onSuccess, onError);
                 }
                 else {
-                    new Count.Instance(query, onSuccess, onError);
+                    var count_object = new Count.Instance(query, onSuccess, onError);
                 }
-            }
+            };
 
-            public createDb = function (dataBase: Model.IDataBase, onSuccess: Function, onError: Function) {
-                var That = this;
+            private createDb = function (
+                dataBase: Model.IDataBase, onSuccess: () => void, onError: (err: IError) => void) {
+                var that = this;
                 KeyStore.get("JsStore_" + dataBase.Name + "_Db_Version", function (version) {
-                    DbVersion = version;
-                    ActiveDataBase = new Model.DataBase(dataBase);
+                    db_version = version;
+                    active_db = new Model.DataBase(dataBase);
                     var createDbInternal = function () {
                         setTimeout(function () {
-                            var LastTable = (<Model.ITable>ActiveDataBase.Tables[ActiveDataBase.Tables.length - 1]);
-                            KeyStore.get("JsStore_" + ActiveDataBase.Name + "_" + LastTable.Name + "_Version", function (version) {
-                                if (version == LastTable.Version) {
-                                    new CreateDb(DbVersion, onSuccess, onError)
-                                }
-                                else {
-                                    createDbInternal();
-                                }
-                            });
+                            var last_table = (active_db.Tables[active_db.Tables.length - 1] as Model.ITable);
+                            KeyStore.get("JsStore_" + active_db.Name + "_" + last_table.Name + "_Version",
+                                function (table_version) {
+                                    if (table_version === last_table.Version) {
+                                        var create_db_object = new CreateDb(db_version, onSuccess, onError);
+                                    }
+                                    else {
+                                        createDbInternal();
+                                    }
+                                });
                         }, 200);
-                    }
+                    };
                     createDbInternal();
                 });
 
-            }
+            };
 
-            public clear = function (tableName: string, onSuccess: Function, onError: Function) {
-                new Clear(tableName, onSuccess, onError);
-            }
+            private clear = function (tableName: string, onSuccess: () => void, onError: (err: IError) => void) {
+                var clear_object = new Clear(tableName, onSuccess, onError);
+            };
 
-            public exportJson = function (query: ISelect, onSuccess: Function, onError: Function) {
+            private exportJson = function (
+                query: ISelect, onSuccess: (url: string) => void, onError: (err: IError) => void) {
                 this.select(query, function (results) {
-                    var Url = URL.createObjectURL(new Blob([JSON.stringify(results)], {
+                    var url = URL.createObjectURL(new Blob([JSON.stringify(results)], {
                         type: "text/json"
                     }));
-                    onSuccess(Url);
+                    onSuccess(url);
                 }, function (err) {
                     onError(err);
                 });
-            }
+            };
         }
     }
 }

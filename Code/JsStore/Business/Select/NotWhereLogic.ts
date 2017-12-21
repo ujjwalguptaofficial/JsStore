@@ -1,6 +1,6 @@
-module JsStore {
-    export module Business {
-        export module Select {
+namespace JsStore {
+    export namespace Business {
+        export namespace Select {
             export class NotWhere extends BaseSelect {
                 protected executeWhereUndefinedLogic = function () {
                     var Cursor: IDBCursorWithValue,
