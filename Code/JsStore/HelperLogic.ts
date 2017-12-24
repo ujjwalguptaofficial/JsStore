@@ -96,7 +96,7 @@ namespace JsStore {
      * @param {any} value 
      * @returns 
      */
-    var isNull = function (value) {
+    export var isNull = function (value) {
         if (value == null) {
             return true;
         } else {

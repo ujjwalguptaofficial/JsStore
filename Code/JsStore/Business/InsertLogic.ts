@@ -1,47 +1,6 @@
 namespace JsStore {
     export namespace Business {
         export class Insert extends InsertHelper {
-            private insertData = function (values) {
-                var That = this,
-                    ValueIndex = 0,
-                    IsReturn = this.Query.Return,
-                    insertDataintoTable: Function;
-                if (IsReturn) {
-                    insertDataintoTable = function (value) {
-                        if (value) {
-                            var AddResult = ObjectStore.add(value);
-                            AddResult.onerror = function (e) {
-                                That.onErrorOccured(e);
-                            }
-                            AddResult.onsuccess = function (e) {
-                                That.ValuesAffected.push(value);
-                                insertDataintoTable(values[ValueIndex++]);
-                            }
-                        }
-                    }
-                }
-                else {
-                    insertDataintoTable = function (value) {
-                        if (value) {
-                            var AddResult = ObjectStore.add(value);
-                            AddResult.onerror = function (e) {
-                                That.onErrorOccured(e);
-                            }
-                            AddResult.onsuccess = function (e) {
-                                ++That.RowAffected;
-                                insertDataintoTable(values[ValueIndex++]);
-                            }
-
-                        }
-                    }
-                }
-                That.Transaction = DbConnection.transaction([That.Query.Into], "readwrite");
-                var ObjectStore = That.Transaction.objectStore(That.Query.Into);
-                That.Transaction.oncomplete = function (e) {
-                    That.onTransactionCompleted();
-                }
-                insertDataintoTable(values[ValueIndex++]);
-            }
 
             constructor(query: IInsert, onSuccess: Function, onError: Function) {
                 super();
@@ -71,6 +30,48 @@ namespace JsStore {
                     this.onExceptionOccured(ex, { TableName: query.Into });
                 }
             }
+
+            private insertData = function (values) {
+                var That = this,
+                    ValueIndex = 0,
+                    IsReturn = this.Query.Return,
+                    insertDataintoTable: Function;
+                if (IsReturn) {
+                    insertDataintoTable = function (value) {
+                        if (value) {
+                            var AddResult = object_store.add(value);
+                            AddResult.onerror = function (e) {
+                                That.onErrorOccured(e);
+                            }
+                            AddResult.onsuccess = function (e) {
+                                That.ValuesAffected.push(value);
+                                insertDataintoTable(values[ValueIndex++]);
+                            }
+                        }
+                    }
+                }
+                else {
+                    insertDataintoTable = function (value) {
+                        if (value) {
+                            var AddResult = object_store.add(value);
+                            AddResult.onerror = function (e) {
+                                That.onErrorOccured(e);
+                            }
+                            AddResult.onsuccess = function (e) {
+                                ++That.RowAffected;
+                                insertDataintoTable(values[ValueIndex++]);
+                            }
+
+                        }
+                    }
+                }
+                That.Transaction = db_connection.transaction([That.Query.Into], "readwrite");
+                var object_store = That.Transaction.objectStore(That.Query.Into);
+                That.Transaction.oncomplete = function (e) {
+                    That.onTransactionCompleted();
+                };
+                insertDataintoTable(values[ValueIndex++]);
+            };
         }
     }
 }

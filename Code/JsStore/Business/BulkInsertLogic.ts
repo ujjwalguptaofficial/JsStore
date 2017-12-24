@@ -4,22 +4,7 @@ namespace JsStore {
             ValuesAffected = [];
             Query: IInsert;
             ValuesIndex = 0;
-            Table: Model.ITable;
-            public onTransactionCompleted = function () {
-                this.OnSuccess(this.Query.Return ? this.ValuesAffected : this.RowAffected);
-            }
-
-            private bulkinsertData = function () {
-                var That = this;
-                this.Transaction = DbConnection.transaction([this.Query.Into], "readwrite");
-                this.ObjectStore = this.Transaction.objectStore(this.Query.Into);
-                this.Transaction.oncomplete = function (e) {
-                    That.OnSuccess();
-                }
-                this.Query.Values.forEach(function (value) {
-                    That.ObjectStore.add(value);
-                });
-            }
+            Table: Model.Table;
 
             constructor(query: IInsert, onSuccess: Function, onError: Function) {
                 super();
@@ -41,6 +26,24 @@ namespace JsStore {
                     this.onExceptionOccured(ex, { TableName: query.Into });
                 }
             }
+
+            public onTransactionCompleted = function () {
+                this.OnSuccess(this.Query.Return ? this.ValuesAffected : this.RowAffected);
+            }
+
+            private bulkinsertData = function () {
+                var That = this;
+                this.Transaction = db_connection.transaction([this.Query.Into], "readwrite");
+                this.ObjectStore = this.Transaction.objectStore(this.Query.Into);
+                this.Transaction.oncomplete = function (e) {
+                    That.OnSuccess();
+                }
+                this.Query.Values.forEach(function (value) {
+                    That.ObjectStore.add(value);
+                });
+            }
+
+
         }
     }
 }

@@ -42,6 +42,7 @@
         "JsStore/CommonLogic.ts",
         "JsStore/UtilsLogic.ts",
         "JsStore/HelperLogic.ts",
+        "JsStore/Error.ts",
         // Model
         "JsStore/Model/Column.ts",
         "JsStore/Model/Table.ts",

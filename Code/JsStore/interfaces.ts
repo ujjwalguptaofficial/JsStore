@@ -4,7 +4,29 @@ namespace JsStore {
         Table: {
             Name: string,
             Version: number
-        }
+        };
+    }
+
+    export interface IDataBaseOption {
+        Name: string;
+        Tables: ITableOption[];
+    }
+
+    export interface ITableOption {
+        Name: string;
+        Columns: IColumnOption[];
+        Version: number;
+    }
+
+    export interface IColumnOption {
+        Name: string;
+        AutoIncrement: boolean;
+        PrimaryKey: boolean;
+        Unique: boolean;
+        NotNull: boolean;
+        DataType: string;
+        Default: any;
+        MultiEntry: boolean;
     }
 
     export interface ISelect {

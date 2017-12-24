@@ -10,14 +10,14 @@ namespace JsStore {
 
                 protected removeDuplicates = function () {
                     var Datas = this.Results;
-                    //free results memory
+                    // free results memory
                     this.Results = undefined;
                     var Key = this.getPrimaryKey(this.Query.From);
                     var lookupObject = {};
                     for (var i in Datas) {
                         lookupObject[Datas[i][Key]] = Datas[i];
                     }
-                    //free datas memory
+                    // free datas memory
                     Datas = [];
                     for (i in lookupObject) {
                         Datas.push(lookupObject[i]);

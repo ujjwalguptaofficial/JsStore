@@ -1,32 +1,34 @@
 namespace JsStore {
     export namespace Business {
         export class Clear extends Base {
-            constructor(tableName: string, onSuccess: Function, onError: Function) {
+            constructor(tableName: string, onSuccess: () => void, onError: (err: IError) => void) {
                 super();
-                var That = this,
-                    ObjectStore: IDBObjectStore = DbConnection.transaction([tableName], "readwrite").objectStore(tableName)
-                    , ClearRequest = ObjectStore.clear();
+                var that = this,
+                    object_store: IDBObjectStore =
+                        db_connection.transaction([tableName], "readwrite").objectStore(tableName)
+                    , clear_request = object_store.clear();
 
-                ClearRequest.onsuccess = function (e) {
-                    var CurrentTable = That.getTable(tableName);
-                    CurrentTable.Columns.forEach(function (column: Column) {
-                        if (column.AutoIncrement) {
-                            KeyStore.set("JsStore_" + ActiveDataBase.Name + "_" + tableName + "_" + column.Name + "_Value", 0);
+                clear_request.onsuccess = function (e) {
+                    var current_table = that.getTable(tableName);
+                    current_table._columns.forEach(function (column: Column) {
+                        if (column._autoIncrement) {
+                            KeyStore.set(
+                                "JsStore_" + active_db._name + "_" + tableName + "_" + column._name + "_Value",
+                                0
+                            );
                         }
                     });
                     if (onSuccess != null) {
                         onSuccess();
                     }
-                }
+                };
 
-                ClearRequest.onerror = function (e) {
+                clear_request.onerror = function (e) {
                     if (onError != null) {
-                        onError();
+                        onError(e as any);
                     }
-                }
+                };
             }
         }
     }
 }
-
-

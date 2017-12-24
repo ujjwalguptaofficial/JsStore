@@ -47,11 +47,13 @@ namespace JsStore {
                                     if (!That.ErrorOccured) {
                                         //check auto increment scheme
                                         if (column.AutoIncrement) {
-                                            KeyStore.get("JsStore_" + ActiveDataBase.Name + "_" + TableName + "_" + column.Name + "_Value", function (columnValue: number) {
-                                                Value[column.Name] = ++columnValue;
-                                                KeyStore.set("JsStore_" + ActiveDataBase.Name + "_" + TableName + "_" + column.Name + "_Value", columnValue);
-                                                CheckNotNullAndDataType();
-                                            });
+                                            KeyStore.get(
+                                                "JsStore_" + active_db._name + "_" + TableName + "_" + column.Name + "_Value",
+                                                function (columnValue: number) {
+                                                    Value[column.Name] = ++columnValue;
+                                                    KeyStore.set("JsStore_" + active_db._name + "_" + TableName + "_" + column.Name + "_Value", columnValue);
+                                                    CheckNotNullAndDataType();
+                                                });
                                         }
                                         else if (column.Default && Value[column.Name] == null) { //check Default Schema
                                             Value[column.Name] = column.Default;
@@ -70,9 +72,9 @@ namespace JsStore {
                                 }
                             }
                         checkAndModifyColumn(table.Columns[Index++]);
-                    }
+                    };
                 checkDatas();
-            }
+            };
         }
     }
 }

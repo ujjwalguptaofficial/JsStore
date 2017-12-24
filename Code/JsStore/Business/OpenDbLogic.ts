@@ -1,38 +1,39 @@
 namespace JsStore {
     export namespace Business {
         export class OpenDb {
-            constructor(dbVersion, onSuccess: Function, onError: Function) {
-                if (ActiveDataBase.Name.length > 0) {
-                    var DbRequest = indexedDB.open(ActiveDataBase.Name, dbVersion),
-                        That = this;
-                    DbRequest.onerror = function (event) {
+            constructor(dbVersion, onSuccess: () => void, onError: (err: IError) => void) {
+                if (active_db._name.length > 0) {
+                    var db_request = indexedDB.open(active_db._name, dbVersion),
+                        that = this;
+
+                    db_request.onerror = function (event) {
                         if (onError != null) {
                             onError((event as any).target.error);
                         }
                     };
 
-                    DbRequest.onsuccess = function (event) {
-                        Status.ConStatus = ConnectionStatus.Connected;
-                        DbConnection = DbRequest.result;
-                        DbConnection.onclose = function () {
-                            Status.ConStatus = ConnectionStatus.Closed;
-                            Status.LastError = "Connection Closed, trying to reconnect";
-                        }
+                    db_request.onsuccess = function (event) {
+                        status.ConStatus = ConnectionStatus.Connected;
+                        db_connection = db_request.result;
+                        db_connection.onclose = function () {
+                            status.ConStatus = ConnectionStatus.Closed;
+                            status.LastError = "Connection Closed, trying to reconnect";
+                        };
 
-                        DbConnection.onversionchange = function (e) {
+                        db_connection.onversionchange = function (e) {
                             if (e.newVersion === null) { // An attempt is made to delete the db
                                 e.target.close(); // Manually close our connection to the db
                             }
                         };
 
-                        DbConnection.onerror = function (e) {
-                            Status.LastError = "Error occured in connection :" + e.target.result;
-                        }
+                        db_connection.onerror = function (e) {
+                            status.LastError = "Error occured in connection :" + e.target.result;
+                        };
 
-                        DbConnection.onabort = function (e) {
-                            Status.ConStatus = ConnectionStatus.Closed;
-                            Status.LastError = "Connection Aborted";
-                        }
+                        db_connection.onabort = function (e) {
+                            status.ConStatus = ConnectionStatus.Closed;
+                            status.LastError = "Connection Aborted";
+                        };
 
                         if (onSuccess != null) {
                             onSuccess();
@@ -40,8 +41,8 @@ namespace JsStore {
                     };
                 }
                 else {
-                    var Error = "Database name is not supplied.";
-                    throwError(Error);
+                    var error = "Database name is not supplied.";
+                    throwError(error);
                 }
             }
         }

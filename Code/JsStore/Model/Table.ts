@@ -1,17 +1,8 @@
-
 namespace JsStore {
-
     export namespace Model {
-
-        export interface ITable {
-            Name: string;
-            Columns: IColumn[];
-            Version: number;
-        }
-
         export class Table {
-            _name: string = "";
-            _columns: IColumn[];
+            _name: string;
+            _columns: Column[];
             _version: number;
 
             // internal Members
@@ -19,7 +10,7 @@ namespace JsStore {
             _requireCreation: boolean = false;
             _primaryKey: string = "";
 
-            constructor(table: ITable, dbName: string) {
+            constructor(table: ITableOption, dbName: string) {
                 this._name = table.Name;
                 this._version = table.Version == null ? 1 : table.Version;
                 table.Columns.forEach(function (item) {
@@ -33,9 +24,7 @@ namespace JsStore {
 
             private setPrimaryKey(dbName) {
                 this._columns.forEach(function (item) {
-                    if (item.PrimaryKey) {
-                        this.PrimaryKey = item.Name;
-                    }
+                    this._primaryKey = item._primaryKey ? item._name : "";
                 }, this);
 
             }

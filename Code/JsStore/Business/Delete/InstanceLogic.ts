@@ -11,7 +11,7 @@ namespace JsStore {
                     var That = this;
                     this.Query = query;
                     try {
-                        this.Transaction = DbConnection.transaction([query.From], "readwrite");
+                        this.Transaction = db_connection.transaction([query.From], "readwrite");
                         this.Transaction.oncomplete = function (e) {
                             That.onTransactionCompleted();
                         };
@@ -56,7 +56,7 @@ namespace JsStore {
                         this.Query = query;
                         this.OnSuccess = onSuccess;
                         this.OnError = onError;
-                        this.Transaction = DbConnection.transaction([query.From], "readwrite");
+                        this.Transaction = db_connection.transaction([query.From], "readwrite");
                         this.ObjectStore = this.Transaction.objectStore(query.From);
                         this.Transaction.oncomplete = function () {
                             That.onTransactionCompleted();

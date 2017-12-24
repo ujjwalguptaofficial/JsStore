@@ -2,6 +2,37 @@ namespace JsStore {
     export namespace Business {
         export namespace Select {
             export class Instance extends Helper {
+
+                constructor(query: ISelect, onSuccess: Function, onError: Function) {
+                    super();
+                    var That = this;
+                    this.Query = query;
+                    this.OnSuccess = onSuccess;
+                    this.OnError = onError;
+                    this.SkipRecord = this.Query.Skip;
+                    this.LimitRecord = this.Query.Limit;
+                    try {
+                        this.Transaction = db_connection.transaction([query.From], "readonly");
+                        this.Transaction.oncomplete = function (e) {
+                            That.onTransactionCompleted();
+                        };
+                        (<any>this.Transaction).ontimeout = That.onTransactionCompleted;
+                        this.ObjectStore = this.Transaction.objectStore(query.From);
+                        if (query.Where) {
+                            if (query.Where.Or) {
+                                this.executeOrLogic();
+                            }
+                            this.goToWhereLogic();
+                        }
+                        else {
+                            this.executeWhereUndefinedLogic();
+                        }
+                    }
+                    catch (ex) {
+                        this.onExceptionOccured(ex, { TableName: query.From });
+                    }
+                }
+
                 public onTransactionCompleted = function () {
                     if (this.SendResultFlag) {
                         this.processOrderBy();
@@ -29,32 +60,32 @@ namespace JsStore {
                         }
                         this.OnSuccess(this.Results);
                     }
-                }
+                };
 
                 private createtransactionForOrLogic = function (query) {
                     var That = this;
                     this.Query = query;
                     try {
-                        this.Transaction = DbConnection.transaction([query.From], "readonly");
+                        this.Transaction = db_connection.transaction([query.From], "readonly");
                         this.Transaction.oncomplete = function (e) {
                             That.onTransactionCompleted();
                         };
-                        (<any>this.Transaction).ontimeout = That.onTransactionCompleted;
+                        this.Transaction.ontimeout = That.onTransactionCompleted;
                         this.ObjectStore = this.Transaction.objectStore(query.From);
                         this.goToWhereLogic();
                     }
                     catch (ex) {
                         this.onExceptionOccured(ex, { TableName: query.From });
                     }
-                }
+                };
 
                 private orQuerySuccess = function () {
                     this.Results = (this as any).OrInfo.Results;
-                    //free var memory
+                    // free var memory
                     (this as any).OrInfo.Results = undefined;
                     this.removeDuplicates();
                     (this as any).OrInfo.OnSucess(this.Results);
-                }
+                };
 
                 private executeOrLogic = function () {
                     (this as any).OrInfo = {
@@ -62,10 +93,10 @@ namespace JsStore {
                         OnSucess: this.OnSuccess,
                         Results: []
                     };
-                    (this as any).TmpQry = <ISelect>{
+                    (this as any).TmpQry = {
                         From: this.Query.From,
                         Where: {}
-                    };
+                    } as ISelect;
                     var onSuccess = function () {
                         (this as any).OrInfo.Results = (this as any).OrInfo.Results.concat(this.Results);
                         if (!this.Query.Limit || (this.Query.Limit > (this as any).OrInfo.Results.length)) {
@@ -83,42 +114,11 @@ namespace JsStore {
                         else {
                             this.orQuerySuccess();
                         }
-                    }
-                    //free or memory
+                    };
+                    // free or memory
                     this.Query.Where.Or = undefined;
                     this.OnSuccess = onSuccess;
-                }
-
-                constructor(query: ISelect, onSuccess: Function, onError: Function) {
-                    super();
-                    var That = this;
-                    this.Query = query;
-                    this.OnSuccess = onSuccess;
-                    this.OnError = onError;
-                    this.SkipRecord = this.Query.Skip;
-                    this.LimitRecord = this.Query.Limit;
-                    try {
-                        this.Transaction = DbConnection.transaction([query.From], "readonly");
-                        this.Transaction.oncomplete = function (e) {
-                            That.onTransactionCompleted();
-                        };
-                        (<any>this.Transaction).ontimeout = That.onTransactionCompleted;
-                        this.ObjectStore = this.Transaction.objectStore(query.From);
-                        if (query.Where) {
-                            if (query.Where.Or) {
-                                this.executeOrLogic();
-                            }
-                            this.goToWhereLogic();
-                        }
-                        else {
-                            this.executeWhereUndefinedLogic();
-                        }
-                    }
-                    catch (ex) {
-                        this.onExceptionOccured(ex, { TableName: query.From });
-                    }
-                }
-
+                };
             }
         }
     }

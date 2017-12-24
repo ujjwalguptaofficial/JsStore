@@ -1,100 +1,105 @@
 namespace JsStore {
     export namespace Business {
         export class CreateDb {
-            constructor(dbVersion, onSuccess: Function, onError: Function) {
-                var That = this,
-                    DbCreatedList = [],
-                    DbRequest = indexedDB.open(ActiveDataBase.Name, dbVersion);
+            constructor(dbVersion, onSuccess: (listOf) => void, onError: (err: IError) => void) {
+                var that = this,
+                    table_created_list = [],
+                    db_request = indexedDB.open(active_db._name, dbVersion);
 
-                DbRequest.onerror = function (event) {
+                db_request.onerror = function (event) {
                     if (onError != null) {
                         onError((event as any).target.error);
                     }
                 };
 
-                DbRequest.onsuccess = function (event) {
-                    Status.ConStatus = ConnectionStatus.Connected;
-                    DbConnection = DbRequest.result;
-                    DbConnection.onclose = function () {
-                        Status.ConStatus = ConnectionStatus.Closed;
-                        Status.LastError = "Connection Closed";
-                    }
+                db_request.onsuccess = function (event) {
+                    status.ConStatus = ConnectionStatus.Connected;
+                    db_connection = db_request.result;
+                    db_connection.onclose = function () {
+                        status.ConStatus = ConnectionStatus.Closed;
+                        status.LastError = "Connection Closed";
+                    };
 
-                    DbConnection.onversionchange = function (e) {
+                    db_connection.onversionchange = function (e) {
                         if (e.newVersion === null) { // An attempt is made to delete the db
                             e.target.close(); // Manually close our connection to the db
                         }
                     };
 
-                    DbConnection.onerror = function (e) {
-                        Status.LastError = "Error occured in connection :" + e.target.result;
-                    }
+                    db_connection.onerror = function (e) {
+                        status.LastError = "Error occured in connection :" + e.target.result;
+                    };
 
-                    DbConnection.onabort = function (e) {
-                        Status.ConStatus = ConnectionStatus.Closed;
-                        Status.LastError = "Connection aborted";
-                    }
+                    db_connection.onabort = function (e) {
+                        status.ConStatus = ConnectionStatus.Closed;
+                        status.LastError = "Connection aborted";
+                    };
 
                     if (onSuccess != null) {
-                        onSuccess(DbCreatedList);
+                        onSuccess(table_created_list);
                     }
-                    //save dbSchema in keystore
-                    KeyStore.set("JsStore_" + ActiveDataBase.Name + "_Schema", ActiveDataBase);
+                    // save dbSchema in keystore
+                    KeyStore.set("JsStore_" + active_db._name + "_Schema", active_db);
                 };
 
-                DbRequest.onupgradeneeded = function (event) {
-                    var db = (<any>event).target.result;
-                    ActiveDataBase.Tables.forEach(function (item) {
-                        if (item.RequireDelete) {
+                db_request.onupgradeneeded = function (event) {
+                    var db = (event as any).target.result;
+                    active_db._tables.forEach(function (item) {
+                        if (item._requireDelete) {
                             // Delete the old datastore.    
-                            if (db.objectStoreNames.contains(item.Name)) {
-                                db.deleteObjectStore(item.Name);
+                            if (db.objectStoreNames.contains(item._name)) {
+                                db.deleteObjectStore(item._name);
                             }
                             createObjectStore(db, item);
                         }
-                        else if (item.RequireCreation) {
+                        else if (item._requireDelete) {
                             createObjectStore(db, item);
                         }
-                    })
+                    });
+                };
 
-                }
-
-                var createObjectStore = function (dbConnection, item: Table) {
+                var createObjectStore = function (db_connection, item: Table) {
                     try {
-                        if (item.PrimaryKey.length > 0) {
-                            var Store = dbConnection.createObjectStore(item.Name, {
-                                keyPath: item.PrimaryKey
+                        if (item._primaryKey.length > 0) {
+                            var store = db_connection.createObjectStore(item._name, {
+                                keyPath: item._primaryKey
                             });
-                            item.Columns.forEach(function (column: Column) {
-                                var Options = column.PrimaryKey ? { unique: true } : { unique: column.Unique };
-                                if (column.MultiEntry) {
-                                    Options['multiEntry'] = true;
+                            item._columns.forEach(function (column: Column) {
+                                var options = column._primaryKey ? { unique: true } : { unique: column._unique };
+                                if (column._multiEntry) {
+                                    options['multiEntry'] = true;
                                 }
-                                Store.createIndex(column.Name, column.Name, Options);
-                                if (column.AutoIncrement) {
-                                    KeyStore.set("JsStore_" + ActiveDataBase.Name + "_" + item.Name + "_" + column.Name + "_Value", 0);
+                                store.createIndex(column._name, column._name, options);
+                                if (column._autoIncrement) {
+                                    KeyStore.set(
+                                        "JsStore_" + active_db._name + "_" + item._name + "_" + column._name + "_Value",
+                                        0
+                                    );
                                 }
-                            })
+                            });
                         }
                         else {
-                            var Store = dbConnection.createObjectStore(item.Name, {
+                            var store = db_connection.createObjectStore(item._name, {
                                 autoIncrement: true
                             });
-                            item.Columns.forEach(function (column: Column) {
-                                Store.createIndex(column.Name, column.Name, { unique: column.Unique });
-                                if (column.AutoIncrement) {
-                                    KeyStore.set("JsStore_" + ActiveDataBase.Name + "_" + item.Name + "_" + column.Name + "_Value", 0);
+                            item._columns.forEach(function (column: Column) {
+                                store.createIndex(column._name, column._name, { unique: column._unique });
+                                if (column._autoIncrement) {
+                                    KeyStore.set(
+                                        "JsStore_" + active_db._name + "_" + item._name + "_" + column._name + "_Value",
+                                        0
+                                    );
                                 }
-                            })
+                            });
                         }
-                        DbCreatedList.push(item.Name);
-                        //setting the table version
-                        KeyStore.set("JsStore_" + ActiveDataBase.Name + "_" + item.Name + "_Version", item.Version);
+                        table_created_list.push(item._name);
+                        // setting the table version
+                        KeyStore.set("JsStore_" + active_db._name + "_" + item._name + "_Version", item._version);
                     }
                     catch (e) {
                         console.error(e);
                     }
-                }
+                };
             }
         }
     }

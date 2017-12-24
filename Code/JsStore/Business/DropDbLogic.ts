@@ -3,7 +3,7 @@ namespace JsStore {
         export class DropDb {
             constructor(name: string, onSuccess: Function, onError: Function) {
                 var That = this;
-                DbConnection.close();
+                db_connection.close();
                 setTimeout(function () {
                     That.deleteDb(name, onSuccess, onError);
                 }, 100);
@@ -14,28 +14,30 @@ namespace JsStore {
                 DbDropRequest.onblocked = function () {
                     if (onError != null) {
                         onError("database is blocked, cant be deleted right now.");
-                    };
+                    }
                 };
                 DbDropRequest.onerror = function (e) {
                     if (onError != null) {
                         onError((event as any).target.error);
                     }
-                }
+                };
                 DbDropRequest.onsuccess = function () {
-                    Status.ConStatus = ConnectionStatus.Closed;
-                    KeyStore.remove('JsStore_' + ActiveDataBase.Name + '_Db_Version');
-                    ActiveDataBase.Tables.forEach(function (table: Model.Table) {
-                        KeyStore.remove("JsStore_" + ActiveDataBase.Name + "_" + table.Name + "_Version");
-                        table.Columns.forEach(function (column: Column) {
-                            if (column.AutoIncrement) {
-                                KeyStore.remove("JsStore_" + ActiveDataBase.Name + "_" + table.Name + "_" + column.Name + "_Value");
+                    status.ConStatus = ConnectionStatus.Closed;
+                    KeyStore.remove('JsStore_' + active_db._name + '_Db_Version');
+                    active_db._tables.forEach(function (table: Model.Table) {
+                        KeyStore.remove("JsStore_" + active_db._name + "_" + table._name + "_Version");
+                        table._columns.forEach(function (column: Column) {
+                            if (column._autoIncrement) {
+                                KeyStore.remove(
+                                    "JsStore_" + active_db._name + "_" + table._name + "_" + column._name + "_Value"
+                                );
                             }
                         });
                     });
-                    KeyStore.remove("JsStore_" + ActiveDataBase.Name + "_Schema");
+                    KeyStore.remove("JsStore_" + active_db._name + "_Schema");
                     onSuccess();
-                }
-            }
+                };
+            };
         }
     }
 }

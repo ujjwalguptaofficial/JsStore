@@ -48,7 +48,7 @@ namespace JsStore {
          * @memberof Instance
          */
         createDb = function (
-            dataBase: Model.IDataBase, onSuccess: (dbSchema: any) => void, onError: (err: IError) => void) {
+            dataBase: IDataBaseOption, onSuccess: (dbSchema: any) => void, onError: (err: IError) => void) {
             return this.pushApi({
                 Name: 'create_db',
                 OnSuccess: onSuccess,

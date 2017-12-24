@@ -21,13 +21,13 @@ namespace JsStore {
                     case 'change_log_status':
                         this.changeLogStatus(request);
                     default:
-                        switch (Status.ConStatus) {
+                        switch (status.ConStatus) {
                             case ConnectionStatus.Connected: {
                                 this.executeLogic(request);
                             } break;
                             case ConnectionStatus.Closed: {
                                 var that = this;
-                                this.openDb(active_db.Name, function () {
+                                this.openDb(active_db._name, function () {
                                     that.checkConnectionAndExecuteLogic(request);
                                 });
                             } break;
@@ -37,10 +37,10 @@ namespace JsStore {
 
             private changeLogStatus = function (request) {
                 if (request.Query['logging'] === true) {
-                    EnableLog = true;
+                    enable_log = true;
                 }
                 else {
-                    EnableLog = false;
+                    enable_log = false;
                 }
             };
 
@@ -111,13 +111,13 @@ namespace JsStore {
             };
 
             private closeDb = function () {
-                if (Status.ConStatus === ConnectionStatus.Connected) {
+                if (status.ConStatus === ConnectionStatus.Connected) {
                     db_connection.close();
                 }
             };
 
             private dropDb = function (onSuccess: () => void, onError: (err: IError) => void) {
-                var drop_db_object = new DropDb(active_db.Name, onSuccess, onError);
+                var drop_db_object = new DropDb(active_db._name, onSuccess, onError);
             };
 
             private update = function (query: IUpdate, onSuccess: () => void, onError: (err: IError) => void) {
@@ -166,17 +166,17 @@ namespace JsStore {
             };
 
             private createDb = function (
-                dataBase: Model.IDataBase, onSuccess: () => void, onError: (err: IError) => void) {
+                dataBase: IDataBaseOption, onSuccess: () => void, onError: (err: IError) => void) {
                 var that = this;
                 KeyStore.get("JsStore_" + dataBase.Name + "_Db_Version", function (version) {
                     db_version = version;
                     active_db = new Model.DataBase(dataBase);
                     var createDbInternal = function () {
                         setTimeout(function () {
-                            var last_table = (active_db.Tables[active_db.Tables.length - 1] as Model.ITable);
-                            KeyStore.get("JsStore_" + active_db.Name + "_" + last_table.Name + "_Version",
-                                function (table_version) {
-                                    if (table_version === last_table.Version) {
+                            var last_table = (active_db._tables[active_db._tables.length - 1]);
+                            KeyStore.get("JsStore_" + active_db._name + "_" + last_table._name + "_Version",
+                                function (tableVersion) {
+                                    if (tableVersion === last_table._version) {
                                         var create_db_object = new CreateDb(db_version, onSuccess, onError);
                                     }
                                     else {

@@ -1,17 +1,6 @@
 namespace JsStore {
     export namespace Model {
-
-        export interface IColumn {
-            Name: string;
-            AutoIncrement: boolean;
-            PrimaryKey: boolean;
-            Unique: boolean;
-            NotNull: boolean;
-            DataType: string;
-            Default: any;
-            MultiEntry: boolean;
-        }
-
+        
         export class Column {
             _name: string;
             _autoIncrement: boolean;
@@ -22,7 +11,7 @@ namespace JsStore {
             _default: any;
             _multiEntry: boolean;
 
-            constructor(key: IColumn, tableName: string) {
+            constructor(key: IColumnOption, tableName: string) {
                 if (key.Name != null) {
                     this._name = key.Name;
                 }
