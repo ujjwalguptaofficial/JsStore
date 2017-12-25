@@ -21,13 +21,13 @@ namespace JsStore {
         First = 'f',
         Last = 'l',
         Any = 'a'
-    };
+    }
 
     export enum WebWorkerStatus {
         Registered = "registerd",
         Failed = "failed",
         NotStarted = "not_started"
-    };
+    }
 
     export enum ConnectionStatus {
         Connected = "connected",

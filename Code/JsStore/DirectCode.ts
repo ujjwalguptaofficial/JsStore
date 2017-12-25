@@ -1,9 +1,9 @@
 if (self && !self.alert) {
     self.onmessage = function (e) {
         JsStore.log("Request executing from WebWorker, request name: " + e.data.Name);
-        var Request = e.data,
-            BusinessMain = new JsStore.Business.Main();
-        BusinessMain.checkConnectionAndExecuteLogic(Request);
+        var request = e.data,
+            business_main = new JsStore.Business.Main();
+        business_main.checkConnectionAndExecuteLogic(request);
     };
     JsStore.worker_status = JsStore.WebWorkerStatus.Registered;
     KeyStore.init();

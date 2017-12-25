@@ -48,14 +48,11 @@ namespace JsStore {
                 };
 
                 private createtransactionForOrLogic = function (query) {
-                    var that = this;
                     this._query = query;
                     try {
                         this._transaction = db_connection.transaction([query.In], "readwrite");
-                        this._transaction.oncomplete = function (e) {
-                            that.onTransactionCompleted();
-                        };
-                        this._transaction.ontimeout = this.onTransactionCompleted;
+                        this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                        this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
                         this._objectStore = this._transaction.objectStore(query.In);
                         this.goToWhereLogic();
                     }
@@ -65,38 +62,36 @@ namespace JsStore {
                 };
 
                 private executeOrLogic = function () {
-                    var that = this,
-                        select_object = new Select.Instance({
-                            From: this._query.In,
-                            Where: this._query.Where
-                        } as ISelect, function (results: any[]) {
-                            var key = that.getPrimaryKey(that._query.In),
-                                in_query = [],
-                                where_qry = {};
-                            results.forEach(function (value) {
-                                in_query.push(value[key]);
-                            });
-                            where_qry[key] = { In: in_query };
-                            that.createtransactionForOrLogic({
-                                In: that._query.In,
-                                Where: where_qry,
-                                Set: that._query.Set
-                            });
-                        }, this.OnError);
+                    var select_object = new Select.Instance({
+                        From: this._query.In,
+                        Where: this._query.Where
+                    } as ISelect, function (results: any[]) {
+                        var key = this.getPrimaryKey(this._query.In),
+                            in_query = [],
+                            where_qry = {};
+                        results.forEach(function (value) {
+                            in_query.push(value[key]);
+                        });
+                        where_qry[key] = { In: in_query };
+                        this.createtransactionForOrLogic({
+                            In: this._query.In,
+                            Where: where_qry,
+                            Set: this._query.Set
+                        });
+                    }.bind(this), this.OnError);
                 };
 
                 private checkSchema(suppliedValue, tableName: string) {
                     if (suppliedValue) {
-                        var current_table: Table = this.getTable(tableName),
-                            that = this;
+                        var current_table: Table = this.getTable(tableName);
                         if (current_table) {
                             var onValidationError = function (err: ErrorType, details: any) {
-                                that._errorOccured = true;
-                                that._error = Utils.getError(err, details);
-                            };
+                                this._errorOccured = true;
+                                this._error = Utils.getError(err, details);
+                            }.bind(this);
                             // loop through table column and find data is valid
                             current_table._columns.every(function (column: Model.Column) {
-                                if (!that._errorOccured) {
+                                if (!this._errorOccured) {
                                     if (column._name in suppliedValue) {
                                         var executeCheck = function (value) {
                                             // check not null schema
@@ -135,7 +130,7 @@ namespace JsStore {
                                 else {
                                     return false;
                                 }
-                            });
+                            }, this);
                         }
                         else {
                             var error = Utils.getError(ErrorType.TableNotExist, { TableName: tableName });

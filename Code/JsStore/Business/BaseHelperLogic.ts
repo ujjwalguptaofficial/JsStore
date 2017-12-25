@@ -83,7 +83,7 @@ namespace JsStore {
                 if (isArray) {
                     var results = [];
                     for (var i = 0, length = word.length; i < length; i++) {
-                        results = results.concat(this.getCombination(word[i]))
+                        results = results.concat(this.getCombination(word[i]));
                     }
                     return results;
                 }

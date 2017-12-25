@@ -26,10 +26,9 @@ namespace JsStore {
                                 this.executeLogic(request);
                             } break;
                             case ConnectionStatus.Closed: {
-                                var that = this;
                                 this.openDb(active_db._name, function () {
-                                    that.checkConnectionAndExecuteLogic(request);
-                                });
+                                    this.checkConnectionAndExecuteLogic(request);
+                                }.bind(this));
                             } break;
                         }
                 }
@@ -54,18 +53,17 @@ namespace JsStore {
             };
 
             private executeLogic = function (request: IWebWorkerRequest) {
-                var that = this,
-                    onSuccess = function (results) {
-                        that.returnResult({
-                            ReturnedValue: results
-                        } as IWebWorkerResult);
-                    },
+                var onSuccess = function (results) {
+                    this.returnResult({
+                        ReturnedValue: results
+                    } as IWebWorkerResult);
+                }.bind(this),
                     onError = function (err) {
-                        that.returnResult({
+                        this.returnResult({
                             ErrorOccured: true,
                             ErrorDetails: err
                         } as IWebWorkerResult);
-                    };
+                    }.bind(this);
 
                 switch (request.Name) {
                     case 'select':
@@ -169,7 +167,6 @@ namespace JsStore {
 
             private createDb = function (
                 dataBase: IDataBaseOption, onSuccess: () => void, onError: (err: IError) => void) {
-                var that = this;
                 KeyStore.get("JsStore_" + dataBase.Name + "_Db_Version", function (version) {
                     db_version = version;
                     active_db = new Model.DataBase(dataBase);

@@ -41,10 +41,10 @@ namespace JsStore {
                             add_result.onerror = this.onErrorOccured.bind(this);
                             add_result.onsuccess = function (e) {
                                 this.ValuesAffected.push(value);
-                                insertDataintoTable.call(this, values[value_index++]);
+                                insertDataintoTable(values[value_index++]);
                             }.bind(this);
                         }
-                    };
+                    }.bind(this);
                 }
                 else {
                     insertDataintoTable = function (value) {
@@ -53,15 +53,15 @@ namespace JsStore {
                             add_result.onerror = this.onErrorOccured.bind(this);
                             add_result.onsuccess = function (e) {
                                 ++this._rowAffected;
-                                insertDataintoTable.call(this, values[value_index++]);
+                                insertDataintoTable(values[value_index++]);
                             }.bind(this);
                         }
-                    };
+                    }.bind(this);
                 }
                 this._transaction = db_connection.transaction([this._query.Into], "readwrite");
                 var object_store = this._transaction.objectStore(this._query.Into);
                 this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                insertDataintoTable.call(this, values[value_index++]);
+                insertDataintoTable(values[value_index++]);
             };
         }
     }

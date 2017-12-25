@@ -2,66 +2,65 @@ namespace JsStore {
     export namespace Business {
         export namespace Update {
             export class Like extends In {
-                CompSymbol: Occurence;
-                CompValue;
-                Column;
-                CompValueLength: Number;
-                private filterOnOccurence = function (value) {
-                    var Found = false;
-                    value = value.toLowerCase();
-                    switch (this.CompSymbol) {
-                        case Occurence.Any: if (value.indexOf(this.CompValue) >= 0) {
-                            Found = true;
-                        }; break;
-                        case Occurence.First: if (value.indexOf(this.CompValue) == 0) {
-                            Found = true;
-                        }; break;
-                        default: if (value.lastIndexOf(this.CompValue) == value.length - this.CompValueLength) {
-                            Found = true;
-                        };
-                    }
-                    return Found;
-                }
+                _compSymbol: Occurence;
+                _compValue;
+                _compValueLength: number;
 
                 protected executeLikeLogic = function (column, value, symbol: Occurence) {
-                    var Cursor: IDBCursorWithValue,
-                        That = this;
-                    this.CompValue = (<string>value).toLowerCase();
-                    this.CompValueLength = this.CompValue.length;
-                    this.CompSymbol = symbol;
-                    this.Column = column;
-                    this.CursorOpenRequest = this._objectStore.index(column).openCursor();
-                    this.CursorOpenRequest.onerror = function (e) {
-                        That._errorOccured = true;
-                        That.onErrorOccured(e);
-                    }
-                    if (That._checkFlag) {
-                        this.CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = (<any>e).target.result;
-                            if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.key) &&
-                                    That.checkForWhereConditionMatch(Cursor.value)) {
-                                    Cursor.update(updateValue(That._query.Set, Cursor.value));
-                                    ++That._rowAffected;
+                    var cursor: IDBCursorWithValue;
+                    this._compValue = (value as string).toLowerCase();
+                    this._compValueLength = this._compValue.length;
+                    this._compSymbol = symbol;
+                    var cursor_open_request = this._objectStore.index(column).openCursor();
+                    cursor_open_request.onerror = function (e) {
+                        this._errorOccured = true;
+                        this.onErrorOccured(e);
+                    }.bind(this);
+
+                    if (this._checkFlag) {
+                        cursor_open_request.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (cursor) {
+                                if (this.filterOnOccurence(cursor.key) &&
+                                    this.checkForWhereConditionMatch(cursor.value)) {
+                                    cursor.update(updateValue(this._query.Set, cursor.value));
+                                    ++this._rowAffected;
                                 }
-                                Cursor.continue();
+                                cursor.continue();
                             }
 
-                        }
+                        }.bind(this);
                     }
                     else {
-                        this.CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = (<any>e).target.result;
-                            if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.key)) {
-                                    Cursor.update(updateValue(That._query.Set, Cursor.value));
-                                    ++That._rowAffected;
+                        cursor_open_request.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (cursor) {
+                                if (this.filterOnOccurence(cursor.key)) {
+                                    cursor.update(updateValue(this._query.Set, cursor.value));
+                                    ++this._rowAffected;
                                 }
-                                Cursor.continue();
+                                cursor.continue();
                             }
+                        }.bind(this);
+                    }
+                };
+
+                private filterOnOccurence = function (value) {
+                    var found = false;
+                    value = value.toLowerCase();
+                    switch (this._compSymbol) {
+                        case Occurence.Any: if (value.indexOf(this._compValue) >= 0) {
+                            found = true;
+                        } break;
+                        case Occurence.First: if (value.indexOf(this._compValue) === 0) {
+                            found = true;
+                        } break;
+                        default: if (value.lastIndexOf(this._compValue) === value.length - this._compValueLength) {
+                            found = true;
                         }
                     }
-                }
+                    return found;
+                };
             }
         }
     }

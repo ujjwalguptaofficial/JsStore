@@ -533,14 +533,12 @@ var JsStore;
         Occurence["Last"] = "l";
         Occurence["Any"] = "a";
     })(Occurence = JsStore.Occurence || (JsStore.Occurence = {}));
-    ;
     var WebWorkerStatus;
     (function (WebWorkerStatus) {
         WebWorkerStatus["Registered"] = "registerd";
         WebWorkerStatus["Failed"] = "failed";
         WebWorkerStatus["NotStarted"] = "not_started";
     })(WebWorkerStatus = JsStore.WebWorkerStatus || (JsStore.WebWorkerStatus = {}));
-    ;
     var ConnectionStatus;
     (function (ConnectionStatus) {
         ConnectionStatus["Connected"] = "connected";
@@ -593,53 +591,54 @@ var JsStore;
         function Utils() {
         }
         Utils.getError = function (errorType, errorDetail) {
-            var Error = {
+            var error = {
                 Name: errorType,
                 Message: ''
             };
             switch (errorType) {
                 case JsStore.ErrorType.NotArray:
-                    Error.Message = "Supplied value is not an array";
+                    error.Message = "Supplied value is not an array";
                     break;
                 case JsStore.ErrorType.UndefinedColumn:
-                    Error.Message = "Column is undefined in Where";
+                    error.Message = "Column is undefined in Where";
                     break;
                 case JsStore.ErrorType.UndefinedValue:
-                    Error.Message = "Value is undefined in Where";
+                    error.Message = "Value is undefined in Where";
                     break;
                 case JsStore.ErrorType.UndefinedColumnName:
-                    Error.Message = "Column name is undefined";
+                    error.Message = "Column name is undefined";
                     break;
                 case JsStore.ErrorType.UndefinedColumnValue:
-                    Error.Message = "Column value is undefined";
+                    error.Message = "Column value is undefined";
                     break;
                 case JsStore.ErrorType.NoValueSupplied:
-                    Error.Message = "No value supplied";
+                    error.Message = "No value supplied";
                     break;
                 case JsStore.ErrorType.InvalidOp:
-                    Error.Message = "Invalid Op Value '" + errorDetail['Op'] + "'";
+                    error.Message = "Invalid Op Value '" + errorDetail['Op'] + "'";
                     break;
                 case JsStore.ErrorType.ColumnNotExist:
-                    Error.Message = "Column '" + errorDetail['ColumnName'] + "' does not exist";
+                    error.Message = "Column '" + errorDetail['ColumnName'] + "' does not exist";
                     break;
                 case JsStore.ErrorType.NullValue:
-                    Error.Message = "Null value is not allowed for column '" + errorDetail['ColumnName'] + "'";
+                    error.Message = "Null value is not allowed for column '" + errorDetail['ColumnName'] + "'";
                     break;
                 case JsStore.ErrorType.BadDataType:
-                    Error.Message = "Supplied value for column '" + errorDetail['ColumnName'] + "' does not have valid type";
+                    error.Message = "Supplied value for column '" + errorDetail['ColumnName'] +
+                        "' does not have valid type";
                     break;
                 case JsStore.ErrorType.NextJoinNotExist:
-                    Error.Message = "Next join details not supplied";
+                    error.Message = "Next join details not supplied";
                     break;
                 case JsStore.ErrorType.TableNotExist:
-                    Error.Message = "Table '" + errorDetail['TableName'] + "' does not exist";
+                    error.Message = "Table '" + errorDetail['TableName'] + "' does not exist";
                     break;
                 case JsStore.ErrorType.DbNotExist:
-                    Error.Message = "Database '" + errorDetail['DbName'] + "' does not exist";
+                    error.Message = "Database '" + errorDetail['DbName'] + "' does not exist";
                     break;
                 default: console.error('the error type is not defined');
             }
-            return Error;
+            return error;
         };
         Utils.convertObjectintoLowerCase = function (obj) {
             var keys = Object.keys(obj);
@@ -657,10 +656,13 @@ var JsStore;
          * @memberOf MainLogic
          */
         Utils.setDbType = function () {
-            self.indexedDB = self.indexedDB || self.mozIndexedDB || self.webkitIndexedDB || self.msIndexedDB;
+            self.indexedDB = self.indexedDB || self.mozIndexedDB ||
+                self.webkitIndexedDB || self.msIndexedDB;
             if (indexedDB) {
-                self.IDBTransaction = self.IDBTransaction || self.webkitIDBTransaction || self.msIDBTransaction;
-                self.IDBKeyRange = self.IDBKeyRange || self.webkitIDBKeyRange || self.msIDBKeyRange;
+                self.IDBTransaction = self.IDBTransaction || self.webkitIDBTransaction ||
+                    self.msIDBTransaction;
+                self.IDBKeyRange = self.IDBKeyRange || self.webkitIDBKeyRange ||
+                    self.msIDBKeyRange;
             }
             else {
                 JsStore.throwError('Your browser doesnot support IndexedDb');
@@ -1335,7 +1337,7 @@ var JsStore;
     (function (Business) {
         var CreateDb = /** @class */ (function () {
             function CreateDb(dbVersion, onSuccess, onError) {
-                var that = this, table_created_list = [], db_request = indexedDB.open(Business.active_db._name, dbVersion);
+                var table_created_list = [], db_request = indexedDB.open(Business.active_db._name, dbVersion);
                 db_request.onerror = function (event) {
                     if (onError != null) {
                         onError(event.target.error);
@@ -1430,18 +1432,18 @@ var JsStore;
         var DropDb = /** @class */ (function () {
             function DropDb(name, onSuccess, onError) {
                 this.deleteDb = function (name, onSuccess, onError) {
-                    var DbDropRequest = indexedDB.deleteDatabase(name);
-                    DbDropRequest.onblocked = function () {
+                    var db_drop_request = indexedDB.deleteDatabase(name);
+                    db_drop_request.onblocked = function () {
                         if (onError != null) {
                             onError("database is blocked, cant be deleted right now.");
                         }
                     };
-                    DbDropRequest.onerror = function (e) {
+                    db_drop_request.onerror = function (e) {
                         if (onError != null) {
                             onError(event.target.error);
                         }
                     };
-                    DbDropRequest.onsuccess = function () {
+                    db_drop_request.onsuccess = function () {
                         JsStore.status.ConStatus = JsStore.ConnectionStatus.Closed;
                         KeyStore.remove('JsStore_' + Business.active_db._name + '_Db_Version');
                         Business.active_db._tables.forEach(function (table) {
@@ -1456,11 +1458,10 @@ var JsStore;
                         onSuccess();
                     };
                 };
-                var That = this;
                 Business.db_connection.close();
                 setTimeout(function () {
-                    That.deleteDb(name, onSuccess, onError);
-                }, 100);
+                    this.deleteDb(name, onSuccess, onError);
+                }.bind(this), 100);
             }
             return DropDb;
         }());
@@ -1480,21 +1481,21 @@ var JsStore;
                     this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
                 };
                 _this.checkModifyInsertValues = function (table, values) {
-                    var that = this, value_index = 0, value, table_name = table._name, checkDatas = function () {
+                    var value_index = 0, value, table_name = table._name, checkDatas = function () {
                         value = values[value_index++];
                         checkInternal();
-                    }, checkInternal = function () {
+                    }.bind(this), checkInternal = function () {
                         if (value) {
                             checkAndModifyValue();
                         }
                         else {
-                            that.insertData(values);
+                            this.insertData(values);
                         }
-                    };
+                    }.bind(this);
                     var checkAndModifyValue = function () {
                         var index = 0, onValidationError = function (error, details) {
-                            that._errorOccured = true;
-                            that.Error = JsStore.Utils.getError(error, details);
+                            this._errorOccured = true;
+                            this.Error = JsStore.Utils.getError(error, details);
                         };
                         var checkAndModifyColumn = function (column) {
                             var checkNotNullAndDataType = function () {
@@ -1515,7 +1516,7 @@ var JsStore;
                                 });
                             };
                             if (column) {
-                                if (!that._errorOccured) {
+                                if (!this._errorOccured) {
                                     // check auto increment scheme
                                     if (column._autoIncrement) {
                                         saveAutoIncrementValue();
@@ -1529,7 +1530,7 @@ var JsStore;
                                     }
                                 }
                                 else {
-                                    that.onErrorOccured(that.Error, true);
+                                    this.onErrorOccured(this.Error, true);
                                 }
                             }
                             else {
@@ -1537,7 +1538,7 @@ var JsStore;
                             }
                         };
                         checkAndModifyColumn(table._columns[index++]);
-                    };
+                    }.bind(this);
                     checkDatas();
                 };
                 return _this;
@@ -1564,10 +1565,10 @@ var JsStore;
                                 add_result.onerror = this.onErrorOccured.bind(this);
                                 add_result.onsuccess = function (e) {
                                     this.ValuesAffected.push(value);
-                                    insertDataintoTable.call(this, values[value_index++]);
+                                    insertDataintoTable(values[value_index++]);
                                 }.bind(this);
                             }
-                        };
+                        }.bind(this);
                     }
                     else {
                         insertDataintoTable = function (value) {
@@ -1576,15 +1577,15 @@ var JsStore;
                                 add_result.onerror = this.onErrorOccured.bind(this);
                                 add_result.onsuccess = function (e) {
                                     ++this._rowAffected;
-                                    insertDataintoTable.call(this, values[value_index++]);
+                                    insertDataintoTable(values[value_index++]);
                                 }.bind(this);
                             }
-                        };
+                        }.bind(this);
                     }
                     this._transaction = Business.db_connection.transaction([this._query.Into], "readwrite");
                     var object_store = this._transaction.objectStore(this._query.Into);
                     this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                    insertDataintoTable.call(this, values[value_index++]);
+                    insertDataintoTable(values[value_index++]);
                 };
                 try {
                     _this._query = query;
@@ -1626,34 +1627,26 @@ var JsStore;
             __extends(BulkInsert, _super);
             function BulkInsert(query, onSuccess, onError) {
                 var _this = _super.call(this) || this;
-                _this.ValuesAffected = [];
-                _this.ValuesIndex = 0;
-                _this.onTransactionCompleted = function () {
-                    this._onSuccess(this._query.Return ? this.ValuesAffected : this._rowAffected);
-                };
                 _this.bulkinsertData = function () {
-                    var That = this;
                     this._transaction = Business.db_connection.transaction([this._query.Into], "readwrite");
                     this._objectStore = this._transaction.objectStore(this._query.Into);
                     this._transaction.oncomplete = function (e) {
-                        That._onSuccess();
-                    };
+                        this._onSuccess();
+                    }.bind(this);
                     this._query.Values.forEach(function (value) {
-                        That._objectStore.add(value);
-                    });
+                        this._objectStore.add(value);
+                    }, this);
                 };
                 try {
                     _this._query = query;
                     _this._onSuccess = onSuccess;
                     _this._onError = onError;
-                    var That = _this;
-                    _this.Table = _this.getTable(query.Into);
-                    if (_this.Table) {
+                    if (_this.getTable(query.Into)) {
                         _this.bulkinsertData();
                     }
                     else {
-                        var Error = JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, { TableName: query.Into });
-                        JsStore.throwError(Error);
+                        var error = JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, { TableName: query.Into });
+                        JsStore.throwError(error);
                     }
                 }
                 catch (ex) {
@@ -1721,9 +1714,9 @@ var JsStore;
             __extends(Clear, _super);
             function Clear(tableName, onSuccess, onError) {
                 var _this = _super.call(this) || this;
-                var that = _this, object_store = Business.db_connection.transaction([tableName], "readwrite").objectStore(tableName), clear_request = object_store.clear();
+                var object_store = Business.db_connection.transaction([tableName], "readwrite").objectStore(tableName), clear_request = object_store.clear();
                 clear_request.onsuccess = function (e) {
-                    var current_table = that.getTable(tableName);
+                    var current_table = this.getTable(tableName);
                     current_table._columns.forEach(function (column) {
                         if (column._autoIncrement) {
                             KeyStore.set("JsStore_" + Business.active_db._name + "_" + tableName + "_" + column._name + "_Value", 0);
@@ -1732,7 +1725,7 @@ var JsStore;
                     if (onSuccess != null) {
                         onSuccess();
                     }
-                };
+                }.bind(_this);
                 clear_request.onerror = function (e) {
                     if (onError != null) {
                         onError(e);
@@ -1770,10 +1763,9 @@ var JsStore;
                                     break;
                                 case JsStore.ConnectionStatus.Closed:
                                     {
-                                        var that = this;
                                         this.openDb(Business.active_db._name, function () {
-                                            that.checkConnectionAndExecuteLogic(request);
-                                        });
+                                            this.checkConnectionAndExecuteLogic(request);
+                                        }.bind(this));
                                     }
                                     break;
                             }
@@ -1796,16 +1788,16 @@ var JsStore;
                     }
                 };
                 this.executeLogic = function (request) {
-                    var that = this, onSuccess = function (results) {
-                        that.returnResult({
+                    var onSuccess = function (results) {
+                        this.returnResult({
                             ReturnedValue: results
                         });
-                    }, onError = function (err) {
-                        that.returnResult({
+                    }.bind(this), onError = function (err) {
+                        this.returnResult({
                             ErrorOccured: true,
                             ErrorDetails: err
                         });
-                    };
+                    }.bind(this);
                     switch (request.Name) {
                         case 'select':
                             this.select(request.Query, onSuccess, onError);
@@ -1907,7 +1899,6 @@ var JsStore;
                     }
                 };
                 this.createDb = function (dataBase, onSuccess, onError) {
-                    var that = this;
                     KeyStore.get("JsStore_" + dataBase.Name + "_Db_Version", function (version) {
                         JsStore.db_version = version;
                         Business.active_db = new JsStore.Model.DataBase(dataBase);
@@ -2296,7 +2287,6 @@ var JsStore;
                         this._compValue = value.toLowerCase();
                         this._compValueLength = this._compValue.length;
                         this._compSymbol = symbol;
-                        this._column = column;
                         this._cursorOpenRequest = this._objectStore.index(column).openCursor();
                         this._cursorOpenRequest.onerror = function (e) {
                             this._errorOccured = true;
@@ -2804,20 +2794,20 @@ var JsStore;
                     _this._onError = onError;
                     _this._query = query;
                     var table_list = []; // used to open the multiple object store
-                    var convertQueryIntoStack = function (query) {
-                        if (query.hasOwnProperty('Table1')) {
-                            query.Table2['JoinType'] = query.Join === undefined ?
-                                'inner' : query.Join.toLowerCase();
-                            this._queryStack.push(query.Table2);
+                    var convertQueryIntoStack = function (qry) {
+                        if (qry.hasOwnProperty('Table1')) {
+                            qry.Table2['JoinType'] = qry.Join === undefined ?
+                                'inner' : qry.Join.toLowerCase();
+                            this._queryStack.push(qry.Table2);
                             if (this._queryStack.length % 2 === 0) {
-                                this._queryStack[this._queryStack.length - 1].NextJoin = query.NextJoin;
+                                this._queryStack[this._queryStack.length - 1].NextJoin = qry.NextJoin;
                             }
-                            table_list.push(query.Table2.Table);
-                            return convertQueryIntoStack(query.Table1);
+                            table_list.push(qry.Table2.Table);
+                            return convertQueryIntoStack(qry.Table1);
                         }
                         else {
-                            this._queryStack.push(query);
-                            table_list.push(query.Table);
+                            this._queryStack.push(qry);
+                            table_list.push(qry.Table);
                             return;
                         }
                     }.bind(_this);
@@ -2841,7 +2831,7 @@ var JsStore;
                 }
                 Join.prototype.startExecutionJoinLogic = function () {
                     var join_query;
-                    if (this._currentQueryStackIndex >= 1 && this._currentQueryStackIndex % 2 == 1) {
+                    if (this._currentQueryStackIndex >= 1 && this._currentQueryStackIndex % 2 === 1) {
                         join_query = {
                             Table: this._queryStack[this._currentQueryStackIndex].NextJoin.Table,
                             Column: this._queryStack[this._currentQueryStackIndex].NextJoin.Column
@@ -2878,118 +2868,146 @@ var JsStore;
                 __extends(GroupByHelper, _super);
                 function GroupByHelper() {
                     var _this = _super.call(this) || this;
+                    _this.processGroupBy = function () {
+                        var grp_qry = this._query.GroupBy, datas = this._results, look_up_obj = {};
+                        // free results memory
+                        this._results = this._query.GroupBy = undefined;
+                        if (typeof grp_qry === 'string') {
+                            for (var i in datas) {
+                                look_up_obj[datas[i][grp_qry]] = datas[i];
+                            }
+                        }
+                        else {
+                            var obj_key;
+                            for (var i in datas) {
+                                obj_key = "";
+                                for (var column in grp_qry) {
+                                    obj_key += datas[i][grp_qry[column]];
+                                }
+                                look_up_obj[obj_key] = datas[i];
+                            }
+                        }
+                        // free datas memory
+                        datas = [];
+                        for (i in look_up_obj) {
+                            datas.push(look_up_obj[i]);
+                        }
+                        this._results = datas;
+                    };
                     _this.executeAggregateGroupBy = function () {
-                        var GrpQry = this._query.GroupBy, Datas = this._results, LookUpObj = {};
-                        //free results memory
-                        this._results = undefined;
-                        //assign aggregate and free aggregate memory
-                        var AggregateQry = this._query.Aggregate;
+                        var grp_qry = this._query.GroupBy, datas = this._results, look_up_obj = {}, 
+                        // assign aggregate and free aggregate memory
+                        aggregate_qry = this._query.Aggregate;
                         this._query.Aggregate = undefined;
-                        var Index, ObjKey, Value, AggrColumn;
+                        // free results memory
+                        this._results = undefined;
+                        var index, obj_Key, value, aggr_column;
                         var calculateAggregate = function () {
-                            for (var prop in AggregateQry) {
+                            for (var prop in aggregate_qry) {
                                 switch (prop) {
                                     case 'Count':
                                         var getCount = function () {
-                                            Value = LookUpObj[ObjKey];
-                                            //get old value
-                                            Value = Value ? Value["Count(" + AggrColumn + ")"] : 0;
-                                            //add with old value if data exist
-                                            Value += Datas[Index][AggrColumn] ? 1 : 0;
-                                            return Value;
+                                            value = look_up_obj[obj_Key];
+                                            // get old value
+                                            value = value ? value["Count(" + aggr_column + ")"] : 0;
+                                            // add with old value if data exist
+                                            value += datas[index][aggr_column] ? 1 : 0;
+                                            return value;
                                         };
-                                        if (typeof AggregateQry[prop] == 'string') {
-                                            AggrColumn = AggregateQry[prop];
-                                            Datas[Index]["Count(" + AggrColumn + ")"] = getCount();
+                                        if (typeof aggregate_qry[prop] === 'string') {
+                                            aggr_column = aggregate_qry[prop];
+                                            datas[index]["Count(" + aggr_column + ")"] = getCount();
                                         }
-                                        else if (Array.isArray(AggregateQry[prop])) {
-                                            for (var item in AggregateQry[prop]) {
-                                                AggrColumn = AggregateQry[prop][item];
-                                                Datas[Index]["Count(" + AggrColumn + ")"] = getCount();
+                                        else if (Array.isArray(aggregate_qry[prop])) {
+                                            for (var item in aggregate_qry[prop]) {
+                                                aggr_column = aggregate_qry[prop][item];
+                                                datas[index]["Count(" + aggr_column + ")"] = getCount();
                                             }
                                         }
                                         break;
                                     case 'Max':
                                         var getMax = function () {
-                                            Value = LookUpObj[ObjKey];
-                                            //get old value
-                                            Value = Value ? Value["Max(" + AggrColumn + ")"] : 0;
-                                            Datas[Index][AggrColumn] = Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : 0;
-                                            //compare between old value and new value
-                                            return Value > Datas[Index][AggrColumn] ? Value : Datas[Index][AggrColumn];
+                                            value = look_up_obj[obj_Key];
+                                            // get old value
+                                            value = value ? value["Max(" + aggr_column + ")"] : 0;
+                                            datas[index][aggr_column] = datas[index][aggr_column] ?
+                                                datas[index][aggr_column] : 0;
+                                            // compare between old value and new value
+                                            return value > datas[index][aggr_column] ? value : datas[index][aggr_column];
                                         };
-                                        if (typeof AggregateQry[prop] == 'string') {
-                                            AggrColumn = AggregateQry[prop];
-                                            Datas[Index]["Max(" + AggrColumn + ")"] = getMax();
+                                        if (typeof aggregate_qry[prop] === 'string') {
+                                            aggr_column = aggregate_qry[prop];
+                                            datas[index]["Max(" + aggr_column + ")"] = getMax();
                                         }
-                                        else if (Array.isArray(AggregateQry[prop])) {
-                                            for (var item in AggregateQry[prop]) {
-                                                AggrColumn = AggregateQry[prop][item];
-                                                Datas[Index]["Max(" + AggrColumn + ")"] = getMax();
+                                        else if (Array.isArray(aggregate_qry[prop])) {
+                                            for (var item in aggregate_qry[prop]) {
+                                                aggr_column = aggregate_qry[prop][item];
+                                                datas[index]["Max(" + aggr_column + ")"] = getMax();
                                             }
                                         }
                                         break;
                                     case 'Min':
                                         var getMin = function () {
-                                            Value = LookUpObj[ObjKey];
-                                            //get old value
-                                            Value = Value ? Value["Min(" + AggrColumn + ")"] : Infinity;
-                                            Datas[Index][AggrColumn] = Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : Infinity;
-                                            //compare between old value and new value
-                                            return Value < Datas[Index][AggrColumn] ? Value : Datas[Index][AggrColumn];
+                                            value = look_up_obj[obj_Key];
+                                            // get old value
+                                            value = value ? value["Min(" + aggr_column + ")"] : Infinity;
+                                            datas[index][aggr_column] = datas[index][aggr_column] ?
+                                                datas[index][aggr_column] : Infinity;
+                                            // compare between old value and new value
+                                            return value < datas[index][aggr_column] ? value : datas[index][aggr_column];
                                         };
-                                        if (typeof AggregateQry[prop] == 'string') {
-                                            AggrColumn = AggregateQry[prop];
-                                            Datas[Index]["Min(" + AggrColumn + ")"] = getMin();
+                                        if (typeof aggregate_qry[prop] === 'string') {
+                                            aggr_column = aggregate_qry[prop];
+                                            datas[index]["Min(" + aggr_column + ")"] = getMin();
                                         }
-                                        else if (Array.isArray(AggregateQry[prop])) {
-                                            for (var item in AggregateQry[prop]) {
-                                                AggrColumn = AggregateQry[prop][item];
-                                                Datas[Index]["Min(" + AggrColumn + ")"] = getMin();
+                                        else if (Array.isArray(aggregate_qry[prop])) {
+                                            for (var item in aggregate_qry[prop]) {
+                                                aggr_column = aggregate_qry[prop][item];
+                                                datas[index]["Min(" + aggr_column + ")"] = getMin();
                                             }
                                         }
                                         break;
                                     case 'Sum':
                                         var getSum = function () {
-                                            Value = LookUpObj[ObjKey];
-                                            //get old value
-                                            Value = Value ? Value["Sum(" + AggrColumn + ")"] : 0;
-                                            //add with old value if data exist
-                                            Value += Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : 0;
-                                            return Value;
+                                            value = look_up_obj[obj_Key];
+                                            // get old value
+                                            value = value ? value["Sum(" + aggr_column + ")"] : 0;
+                                            // add with old value if data exist
+                                            value += datas[index][aggr_column] ? datas[index][aggr_column] : 0;
+                                            return value;
                                         };
-                                        if (typeof AggregateQry[prop] == 'string') {
-                                            AggrColumn = AggregateQry[prop];
-                                            Datas[Index]["Sum(" + AggrColumn + ")"] = getSum();
+                                        if (typeof aggregate_qry[prop] === 'string') {
+                                            aggr_column = aggregate_qry[prop];
+                                            datas[index]["Sum(" + aggr_column + ")"] = getSum();
                                         }
-                                        else if (Array.isArray(AggregateQry[prop])) {
-                                            for (var item in AggregateQry[prop]) {
-                                                AggrColumn = AggregateQry[prop][item];
-                                                Datas[Index]["Sum(" + AggrColumn + ")"] = getSum();
+                                        else if (Array.isArray(aggregate_qry[prop])) {
+                                            for (var item in aggregate_qry[prop]) {
+                                                aggr_column = aggregate_qry[prop][item];
+                                                datas[index]["Sum(" + aggr_column + ")"] = getSum();
                                             }
                                         }
                                         break;
                                     case 'Avg':
                                         var getAvg = function () {
-                                            Value = LookUpObj[ObjKey];
-                                            //get old sum value
-                                            var Sum = Value ? Value["Sum(" + AggrColumn + ")"] : 0;
-                                            //add with old value if data exist
-                                            Sum += Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : 0;
-                                            Datas[Index]["Sum(" + AggrColumn + ")"] = Sum;
-                                            //get old count value
-                                            Value = Value ? Value["Count(" + AggrColumn + ")"] : 0;
-                                            //add with old value if data exist
-                                            Value += Datas[Index][AggrColumn] ? 1 : 0;
-                                            Datas[Index]["Count(" + AggrColumn + ")"] = Value;
+                                            value = look_up_obj[obj_Key];
+                                            // get old sum value
+                                            var sum = value ? value["Sum(" + aggr_column + ")"] : 0;
+                                            // add with old value if data exist
+                                            sum += datas[index][aggr_column] ? datas[index][aggr_column] : 0;
+                                            datas[index]["Sum(" + aggr_column + ")"] = sum;
+                                            // get old count value
+                                            value = value ? value["Count(" + aggr_column + ")"] : 0;
+                                            // add with old value if data exist
+                                            value += datas[index][aggr_column] ? 1 : 0;
+                                            datas[index]["Count(" + aggr_column + ")"] = value;
                                         };
-                                        if (typeof AggregateQry[prop] == 'string') {
-                                            AggrColumn = AggregateQry[prop];
+                                        if (typeof aggregate_qry[prop] === 'string') {
+                                            aggr_column = aggregate_qry[prop];
                                             getAvg();
                                         }
-                                        else if (Array.isArray(AggregateQry[prop])) {
-                                            for (var item in AggregateQry[prop]) {
-                                                AggrColumn = AggregateQry[prop][item];
+                                        else if (Array.isArray(aggregate_qry[prop])) {
+                                            for (var item in aggregate_qry[prop]) {
+                                                aggr_column = aggregate_qry[prop][item];
                                                 getAvg();
                                             }
                                         }
@@ -2997,95 +3015,69 @@ var JsStore;
                                 }
                             }
                         };
-                        if (typeof GrpQry == 'string') {
-                            for (Index in Datas) {
-                                ObjKey = Datas[Index][GrpQry];
+                        if (typeof grp_qry === 'string') {
+                            for (index in datas) {
+                                obj_Key = datas[index][grp_qry];
                                 calculateAggregate();
-                                LookUpObj[ObjKey] = Datas[Index];
+                                look_up_obj[obj_Key] = datas[index];
                             }
                         }
                         else {
-                            for (Index in Datas) {
-                                ObjKey = "";
-                                for (var column in GrpQry) {
-                                    ObjKey += Datas[Index][GrpQry[column]];
+                            for (index in datas) {
+                                obj_Key = "";
+                                for (var column in grp_qry) {
+                                    obj_Key += datas[index][grp_qry[column]];
                                 }
                                 calculateAggregate();
-                                LookUpObj[ObjKey] = Datas[Index];
+                                look_up_obj[obj_Key] = datas[index];
                             }
                         }
-                        //free datas memory
-                        Datas = [];
-                        for (var i in LookUpObj) {
-                            Datas.push(LookUpObj[i]);
+                        // free datas memory
+                        datas = [];
+                        for (var i in look_up_obj) {
+                            datas.push(look_up_obj[i]);
                         }
-                        //Checking for avg and if exist then fill the datas;
-                        if (AggregateQry.Avg) {
-                            if (typeof AggregateQry.Avg == 'string') {
-                                for (Index in Datas) {
-                                    var Sum = Datas[Index]["Sum(" + AggregateQry.Avg + ")"], Count = Datas[Index]["Count(" + AggregateQry.Avg + ")"];
-                                    Datas[Index]["Avg(" + AggregateQry.Avg + ")"] = Sum / Count;
-                                    if (AggregateQry.Count !== AggregateQry.Avg) {
-                                        delete Datas[Index]["Count(" + AggregateQry.Avg + ")"];
+                        // Checking for avg and if exist then fill the datas;
+                        if (aggregate_qry.Avg) {
+                            if (typeof aggregate_qry.Avg === 'string') {
+                                for (index in datas) {
+                                    var sum = datas[index]["Sum(" + aggregate_qry.Avg + ")"], count = datas[index]["Count(" + aggregate_qry.Avg + ")"];
+                                    datas[index]["Avg(" + aggregate_qry.Avg + ")"] = sum / count;
+                                    if (aggregate_qry.Count !== aggregate_qry.Avg) {
+                                        delete datas[index]["Count(" + aggregate_qry.Avg + ")"];
                                     }
-                                    if (AggregateQry.Sum !== AggregateQry.Avg) {
-                                        delete Datas[Index]["Sum(" + AggregateQry.Avg + ")"];
+                                    if (aggregate_qry.Sum !== aggregate_qry.Avg) {
+                                        delete datas[index]["Sum(" + aggregate_qry.Avg + ")"];
                                     }
                                 }
                             }
                             else {
-                                var IsCountTypeString = typeof AggregateQry.Count, IsSumTypeString = typeof AggregateQry.Count;
-                                for (Index in Datas) {
-                                    for (var column in AggregateQry.Avg) {
-                                        var AvgColumn = AggregateQry.Avg[column], Sum = Datas[Index]["Sum(" + AvgColumn + ")"], Count = Datas[Index]["Count(" + AvgColumn + ")"];
-                                        Datas[Index]["Avg(" + AvgColumn + ")"] = Sum / Count;
-                                        if (IsCountTypeString) {
-                                            if (AggregateQry.Count !== AvgColumn) {
-                                                delete Datas[Index]["Count(" + AvgColumn + ")"];
+                                var is_count_type_string = typeof aggregate_qry.Count, is_sum_type_string = typeof aggregate_qry.Count;
+                                for (index in datas) {
+                                    for (var column in aggregate_qry.Avg) {
+                                        var avg_column = aggregate_qry.Avg[column], sum = datas[index]["Sum(" + avg_column + ")"], count = datas[index]["Count(" + avg_column + ")"];
+                                        datas[index]["Avg(" + avg_column + ")"] = sum / count;
+                                        if (is_count_type_string) {
+                                            if (aggregate_qry.Count !== avg_column) {
+                                                delete datas[index]["Count(" + avg_column + ")"];
                                             }
-                                            else if (AggregateQry.Count.indexOf(AvgColumn) == -1) {
-                                                delete Datas[Index]["Count(" + AvgColumn + ")"];
+                                            else if (aggregate_qry.Count.indexOf(avg_column) === -1) {
+                                                delete datas[index]["Count(" + avg_column + ")"];
                                             }
                                         }
-                                        if (IsSumTypeString) {
-                                            if (AggregateQry.Sum !== AvgColumn) {
-                                                delete Datas[Index]["Sum(" + AvgColumn + ")"];
+                                        if (is_sum_type_string) {
+                                            if (aggregate_qry.Sum !== avg_column) {
+                                                delete datas[index]["Sum(" + avg_column + ")"];
                                             }
-                                            else if (AggregateQry.Sum.indexOf(AvgColumn) == -1) {
-                                                delete Datas[Index]["Sum(" + AvgColumn + ")"];
+                                            else if (aggregate_qry.Sum.indexOf(avg_column) === -1) {
+                                                delete datas[index]["Sum(" + avg_column + ")"];
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                        this._results = Datas;
-                    };
-                    _this.processGroupBy = function () {
-                        var GrpQry = this._query.GroupBy, Datas = this._results, LookUpObj = {};
-                        //free results memory
-                        this._results = this._query.GroupBy = undefined;
-                        if (typeof GrpQry == 'string') {
-                            for (var i in Datas) {
-                                LookUpObj[Datas[i][GrpQry]] = Datas[i];
-                            }
-                        }
-                        else {
-                            var ObjKey;
-                            for (var i in Datas) {
-                                ObjKey = "";
-                                for (var column in GrpQry) {
-                                    ObjKey += Datas[i][GrpQry[column]];
-                                }
-                                LookUpObj[ObjKey] = Datas[i];
-                            }
-                        }
-                        //free datas memory
-                        Datas = [];
-                        for (i in LookUpObj) {
-                            Datas.push(LookUpObj[i]);
-                        }
-                        this._results = Datas;
+                        this._results = datas;
                     };
                     return _this;
                 }
@@ -3218,7 +3210,7 @@ var JsStore;
                                         }
                                         return result;
                                     };
-                                    if (typeof this._query.Aggregate[prop] == 'string') {
+                                    if (typeof this._query.Aggregate[prop] === 'string') {
                                         column_to_aggregate = this._query.Aggregate[prop];
                                         results["Sum(" + column_to_aggregate + ")"] = getSum();
                                     }
@@ -3237,7 +3229,7 @@ var JsStore;
                                         }
                                         return result / datas.length;
                                     };
-                                    if (typeof this._query.Aggregate[prop] == 'string') {
+                                    if (typeof this._query.Aggregate[prop] === 'string') {
                                         column_to_aggregate = this._query.Aggregate[prop];
                                         results["Avg(" + column_to_aggregate + ")"] = getAvg();
                                     }
@@ -3530,7 +3522,6 @@ var JsStore;
                         this._compValue = value.toLowerCase();
                         this._compValueLength = this._compValue.length;
                         this._compSymbol = symbol;
-                        this._column = column;
                         this.CursorOpenRequest = this._objectStore.index(column).openCursor();
                         this.CursorOpenRequest.onerror = function (e) {
                             this._errorOccured = true;
@@ -3705,7 +3696,7 @@ var JsStore;
         (function (Update) {
             Update.updateValue = function (suppliedValue, storedValue) {
                 for (var key in suppliedValue) {
-                    if (typeof suppliedValue[key] != 'object') {
+                    if (typeof suppliedValue[key] !== 'object') {
                         storedValue[key] = suppliedValue[key];
                     }
                     else {
@@ -3755,19 +3746,19 @@ var JsStore;
                 function NotWhere() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeWhereUndefinedLogic = function () {
-                        var Cursor, That = this, CursorOpenRequest = this._objectStore.openCursor();
-                        CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = e.target.result;
-                            if (Cursor) {
-                                Cursor.update(Update.updateValue(That._query.Set, Cursor.value));
-                                ++That._rowAffected;
-                                Cursor.continue();
+                        var cursor, cursor_request = this._objectStore.openCursor();
+                        cursor_request.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (cursor) {
+                                cursor.update(Update.updateValue(this._query.Set, cursor.value));
+                                ++this._rowAffected;
+                                cursor.continue();
                             }
-                        };
-                        CursorOpenRequest.onerror = function (e) {
-                            That._errorOccured = true;
-                            That.onErrorOccured(e);
-                        };
+                        }.bind(this);
+                        cursor_request.onerror = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                     };
                     return _this;
                 }
@@ -3788,51 +3779,43 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeInLogic = function (column, values) {
-                        var Cursor, That = this, ColumnStore = this._objectStore.index(column), CursorOpenRequest;
-                        if (That._checkFlag) {
+                        var cursor, column_store = this._objectStore.index(column), cursor_request;
+                        if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That._errorOccured) {
-                                    CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
-                                    CursorOpenRequest.onsuccess = function (e) {
-                                        Cursor = e.target.result;
-                                        if (Cursor) {
-                                            if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                                Cursor.update(Update.updateValue(That._query.Set, Cursor.value));
-                                                ++That._rowAffected;
+                                if (!this._errorOccured) {
+                                    cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
+                                    cursor_request.onsuccess = function (e) {
+                                        cursor = e.target.result;
+                                        if (cursor) {
+                                            if (this.checkForWhereConditionMatch(cursor.value)) {
+                                                cursor.update(Update.updateValue(this._query.Set, cursor.value));
+                                                ++this._rowAffected;
                                             }
-                                            Cursor.continue();
+                                            cursor.continue();
                                         }
-                                    };
-                                    CursorOpenRequest.onerror = function (e) {
-                                        That._errorOccured = true;
-                                        That.onErrorOccured(e);
-                                    };
+                                    }.bind(this);
                                 }
                             }
                         }
                         else {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That._errorOccured) {
-                                    CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
-                                    CursorOpenRequest.onsuccess = function (e) {
-                                        Cursor = e.target.result;
-                                        if (Cursor) {
-                                            Cursor.update(Update.updateValue(That._query.Set, Cursor.value));
-                                            ++That._rowAffected;
-                                            Cursor.continue();
+                                if (!this._errorOccured) {
+                                    cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
+                                    cursor_request.onsuccess = function (e) {
+                                        cursor = e.target.result;
+                                        if (cursor) {
+                                            cursor.update(Update.updateValue(this._query.Set, cursor.value));
+                                            ++this._rowAffected;
+                                            cursor.continue();
                                         }
-                                    };
-                                    CursorOpenRequest.onerror = function (e) {
-                                        That._errorOccured = true;
-                                        That.onErrorOccured(e);
-                                    };
+                                    }.bind(this);
                                 }
                             }
                         }
-                        CursorOpenRequest.onerror = function (e) {
-                            That._errorOccured = true;
-                            That.onErrorOccured(e);
-                        };
+                        cursor_request.onerror = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                     };
                     return _this;
                 }
@@ -3852,66 +3835,61 @@ var JsStore;
                 __extends(Like, _super);
                 function Like() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
-                    _this.filterOnOccurence = function (value) {
-                        var Found = false;
-                        value = value.toLowerCase();
-                        switch (this.CompSymbol) {
-                            case JsStore.Occurence.Any:
-                                if (value.indexOf(this.CompValue) >= 0) {
-                                    Found = true;
-                                }
-                                ;
-                                break;
-                            case JsStore.Occurence.First:
-                                if (value.indexOf(this.CompValue) == 0) {
-                                    Found = true;
-                                }
-                                ;
-                                break;
-                            default:
-                                if (value.lastIndexOf(this.CompValue) == value.length - this.CompValueLength) {
-                                    Found = true;
-                                }
-                                ;
-                        }
-                        return Found;
-                    };
                     _this.executeLikeLogic = function (column, value, symbol) {
-                        var Cursor, That = this;
-                        this.CompValue = value.toLowerCase();
-                        this.CompValueLength = this.CompValue.length;
-                        this.CompSymbol = symbol;
-                        this.Column = column;
-                        this.CursorOpenRequest = this._objectStore.index(column).openCursor();
-                        this.CursorOpenRequest.onerror = function (e) {
-                            That._errorOccured = true;
-                            That.onErrorOccured(e);
-                        };
-                        if (That._checkFlag) {
-                            this.CursorOpenRequest.onsuccess = function (e) {
-                                Cursor = e.target.result;
-                                if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.key) &&
-                                        That.checkForWhereConditionMatch(Cursor.value)) {
-                                        Cursor.update(Update.updateValue(That._query.Set, Cursor.value));
-                                        ++That._rowAffected;
+                        var cursor;
+                        this._compValue = value.toLowerCase();
+                        this._compValueLength = this._compValue.length;
+                        this._compSymbol = symbol;
+                        var cursor_open_request = this._objectStore.index(column).openCursor();
+                        cursor_open_request.onerror = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
+                        if (this._checkFlag) {
+                            cursor_open_request.onsuccess = function (e) {
+                                cursor = e.target.result;
+                                if (cursor) {
+                                    if (this.filterOnOccurence(cursor.key) &&
+                                        this.checkForWhereConditionMatch(cursor.value)) {
+                                        cursor.update(Update.updateValue(this._query.Set, cursor.value));
+                                        ++this._rowAffected;
                                     }
-                                    Cursor.continue();
+                                    cursor.continue();
                                 }
-                            };
+                            }.bind(this);
                         }
                         else {
-                            this.CursorOpenRequest.onsuccess = function (e) {
-                                Cursor = e.target.result;
-                                if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.key)) {
-                                        Cursor.update(Update.updateValue(That._query.Set, Cursor.value));
-                                        ++That._rowAffected;
+                            cursor_open_request.onsuccess = function (e) {
+                                cursor = e.target.result;
+                                if (cursor) {
+                                    if (this.filterOnOccurence(cursor.key)) {
+                                        cursor.update(Update.updateValue(this._query.Set, cursor.value));
+                                        ++this._rowAffected;
                                     }
-                                    Cursor.continue();
+                                    cursor.continue();
                                 }
-                            };
+                            }.bind(this);
                         }
+                    };
+                    _this.filterOnOccurence = function (value) {
+                        var found = false;
+                        value = value.toLowerCase();
+                        switch (this._compSymbol) {
+                            case JsStore.Occurence.Any:
+                                if (value.indexOf(this._compValue) >= 0) {
+                                    found = true;
+                                }
+                                break;
+                            case JsStore.Occurence.First:
+                                if (value.indexOf(this._compValue) === 0) {
+                                    found = true;
+                                }
+                                break;
+                            default: if (value.lastIndexOf(this._compValue) === value.length - this._compValueLength) {
+                                found = true;
+                            }
+                        }
+                        return found;
                     };
                     return _this;
                 }
@@ -3932,35 +3910,35 @@ var JsStore;
                 function Where() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeWhereLogic = function (column, value, op) {
-                        var Cursor, That = this, CursorOpenRequest;
+                        var cursor, cursor_request;
                         value = op ? value[op] : value;
-                        CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
-                        if (That._checkFlag) {
-                            CursorOpenRequest.onsuccess = function (e) {
-                                Cursor = e.target.result;
-                                if (Cursor) {
-                                    if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                        Cursor.update(Update.updateValue(That._query.Set, Cursor.value));
-                                        ++That._rowAffected;
+                        cursor_request = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
+                        if (this._checkFlag) {
+                            cursor_request.onsuccess = function (e) {
+                                cursor = e.target.result;
+                                if (cursor) {
+                                    if (this.checkForWhereConditionMatch(cursor.value)) {
+                                        cursor.update(Update.updateValue(this._query.Set, cursor.value));
+                                        ++this._rowAffected;
                                     }
-                                    Cursor.continue();
+                                    cursor.continue();
                                 }
-                            };
+                            }.bind(this);
                         }
                         else {
-                            CursorOpenRequest.onsuccess = function (e) {
-                                Cursor = e.target.result;
-                                if (Cursor) {
-                                    Cursor.update(Update.updateValue(That._query.Set, Cursor.value));
-                                    ++That._rowAffected;
-                                    Cursor.continue();
+                            cursor_request.onsuccess = function (e) {
+                                cursor = e.target.result;
+                                if (cursor) {
+                                    cursor.update(Update.updateValue(this._query.Set, cursor.value));
+                                    ++this._rowAffected;
+                                    cursor.continue();
                                 }
-                            };
+                            }.bind(this);
                         }
-                        CursorOpenRequest.onerror = function (e) {
-                            That._errorOccured = true;
-                            That.onErrorOccured(e);
-                        };
+                        cursor_request.onerror = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                     };
                     return _this;
                 }
@@ -3984,14 +3962,11 @@ var JsStore;
                         this._onSuccess(this._rowAffected);
                     };
                     _this.createtransactionForOrLogic = function (query) {
-                        var that = this;
                         this._query = query;
                         try {
                             this._transaction = Business.db_connection.transaction([query.In], "readwrite");
-                            this._transaction.oncomplete = function (e) {
-                                that.onTransactionCompleted();
-                            };
-                            this._transaction.ontimeout = this.onTransactionCompleted;
+                            this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                            this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
                             this._objectStore = this._transaction.objectStore(query.In);
                             this.goToWhereLogic();
                         }
@@ -4000,21 +3975,21 @@ var JsStore;
                         }
                     };
                     _this.executeOrLogic = function () {
-                        var that = this, select_object = new Business.Select.Instance({
+                        var select_object = new Business.Select.Instance({
                             From: this._query.In,
                             Where: this._query.Where
                         }, function (results) {
-                            var key = that.getPrimaryKey(that._query.In), in_query = [], where_qry = {};
+                            var key = this.getPrimaryKey(this._query.In), in_query = [], where_qry = {};
                             results.forEach(function (value) {
                                 in_query.push(value[key]);
                             });
                             where_qry[key] = { In: in_query };
-                            that.createtransactionForOrLogic({
-                                In: that._query.In,
+                            this.createtransactionForOrLogic({
+                                In: this._query.In,
                                 Where: where_qry,
-                                Set: that._query.Set
+                                Set: this._query.Set
                             });
-                        }, this.OnError);
+                        }.bind(this), this.OnError);
                     };
                     try {
                         _this._onSuccess = onSuccess;
@@ -4056,15 +4031,15 @@ var JsStore;
                 }
                 Instance.prototype.checkSchema = function (suppliedValue, tableName) {
                     if (suppliedValue) {
-                        var current_table = this.getTable(tableName), that = this;
+                        var current_table = this.getTable(tableName);
                         if (current_table) {
                             var onValidationError = function (err, details) {
-                                that._errorOccured = true;
-                                that._error = JsStore.Utils.getError(err, details);
-                            };
+                                this._errorOccured = true;
+                                this._error = JsStore.Utils.getError(err, details);
+                            }.bind(this);
                             // loop through table column and find data is valid
                             current_table._columns.every(function (column) {
-                                if (!that._errorOccured) {
+                                if (!this._errorOccured) {
                                     if (column._name in suppliedValue) {
                                         var executeCheck = function (value) {
                                             // check not null schema
@@ -4097,7 +4072,7 @@ var JsStore;
                                 else {
                                     return false;
                                 }
-                            });
+                            }, this);
                         }
                         else {
                             var error = JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, { TableName: tableName });
@@ -4144,19 +4119,19 @@ var JsStore;
                 function NotWhere() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeWhereUndefinedLogic = function () {
-                        var Cursor, That = this, CursorOpenRequest = this._objectStore.openCursor();
-                        CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = e.target.result;
-                            if (Cursor) {
-                                Cursor.delete();
-                                ++That._rowAffected;
-                                Cursor.continue();
+                        var cursor, cursor_request = this._objectStore.openCursor();
+                        cursor_request.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (cursor) {
+                                cursor.delete();
+                                ++this._rowAffected;
+                                cursor.continue();
                             }
-                        };
-                        CursorOpenRequest.onerror = function (e) {
-                            That._errorOccured = true;
-                            That.onErrorOccured(e);
-                        };
+                        }.bind(this);
+                        cursor_request.onerror = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                     };
                     return _this;
                 }
@@ -4177,51 +4152,45 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeInLogic = function (column, values) {
-                        var Cursor, That = this, ColumnStore = this._objectStore.index(column), CursorOpenRequest;
-                        if (That._checkFlag) {
+                        var cursor, cursor_request;
+                        if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That._errorOccured) {
-                                    CursorOpenRequest = this._objectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
-                                    CursorOpenRequest.onsuccess = function (e) {
-                                        Cursor = e.target.result;
-                                        if (Cursor) {
-                                            if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                                Cursor.delete();
-                                                ++That._rowAffected;
+                                if (!this._errorOccured) {
+                                    cursor_request = this._objectStore.index(column).
+                                        openCursor(IDBKeyRange.only(values[i]));
+                                    cursor_request.onsuccess = function (e) {
+                                        cursor = e.target.result;
+                                        if (cursor) {
+                                            if (this.checkForWhereConditionMatch(cursor.value)) {
+                                                cursor.delete();
+                                                ++this._rowAffected;
                                             }
-                                            Cursor.continue();
+                                            cursor.continue();
                                         }
-                                    };
-                                    CursorOpenRequest.onerror = function (e) {
-                                        That._errorOccured = true;
-                                        That.onErrorOccured(e);
-                                    };
+                                    }.bind(this);
                                 }
                             }
                         }
                         else {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That._errorOccured) {
-                                    CursorOpenRequest = this._objectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
-                                    CursorOpenRequest.onsuccess = function (e) {
-                                        Cursor = e.target.result;
-                                        if (Cursor) {
-                                            Cursor.delete();
-                                            ++That._rowAffected;
-                                            Cursor.continue();
+                                if (!this._errorOccured) {
+                                    cursor_request = this._objectStore.index(column).
+                                        openCursor(IDBKeyRange.only(values[i]));
+                                    cursor_request.onsuccess = function (e) {
+                                        cursor = e.target.result;
+                                        if (cursor) {
+                                            cursor.delete();
+                                            ++this._rowAffected;
+                                            cursor.continue();
                                         }
-                                    };
-                                    CursorOpenRequest.onerror = function (e) {
-                                        That._errorOccured = true;
-                                        That.onErrorOccured(e);
-                                    };
+                                    }.bind(this);
                                 }
                             }
                         }
-                        CursorOpenRequest.onerror = function (e) {
-                            That._errorOccured = true;
-                            That.onErrorOccured(e);
-                        };
+                        cursor_request.onerror = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                     };
                     return _this;
                 }
@@ -4241,66 +4210,61 @@ var JsStore;
                 __extends(Like, _super);
                 function Like() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
-                    _this.filterOnOccurence = function (value) {
-                        var Found = false;
-                        value = value.toLowerCase();
-                        switch (this.CompSymbol) {
-                            case JsStore.Occurence.Any:
-                                if (value.indexOf(this.CompValue) >= 0) {
-                                    Found = true;
-                                }
-                                ;
-                                break;
-                            case JsStore.Occurence.First:
-                                if (value.indexOf(this.CompValue) == 0) {
-                                    Found = true;
-                                }
-                                ;
-                                break;
-                            default:
-                                if (value.lastIndexOf(this.CompValue) == value.length - this.CompValueLength) {
-                                    Found = true;
-                                }
-                                ;
-                        }
-                        return Found;
-                    };
                     _this.executeLikeLogic = function (column, value, symbol) {
-                        var That = this, Cursor;
-                        this.CompValue = value.toLowerCase();
-                        this.CompValueLength = this.CompValue.length;
-                        this.CompSymbol = symbol;
-                        this.Column = column;
-                        this.CursorOpenRequest = this._objectStore.index(column).openCursor();
-                        this.CursorOpenRequest.onerror = function (e) {
-                            That._errorOccured = true;
-                            That.onErrorOccured(e);
-                        };
-                        if (That._checkFlag) {
-                            this.CursorOpenRequest.onsuccess = function (e) {
-                                Cursor = e.target.result;
-                                if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.key) &&
-                                        That.checkForWhereConditionMatch(Cursor.value)) {
-                                        Cursor.delete();
-                                        ++That._rowAffected;
+                        var cursor;
+                        this._compValue = value.toLowerCase();
+                        this._compValueLength = this._compValue.length;
+                        this._compSymbol = symbol;
+                        this.cursor_request = this._objectStore.index(column).openCursor();
+                        this.cursor_request.onerror = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
+                        if (this._checkFlag) {
+                            this.cursor_request.onsuccess = function (e) {
+                                cursor = e.target.result;
+                                if (cursor) {
+                                    if (this.filterOnOccurence(cursor.key) &&
+                                        this.checkForWhereConditionMatch(cursor.value)) {
+                                        cursor.delete();
+                                        ++this._rowAffected;
                                     }
-                                    Cursor.continue();
+                                    cursor.continue();
                                 }
-                            };
+                            }.bind(this);
                         }
                         else {
-                            this.CursorOpenRequest.onsuccess = function (e) {
-                                Cursor = e.target.result;
-                                if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.key)) {
-                                        Cursor.delete();
-                                        ++That._rowAffected;
+                            this.cursor_request.onsuccess = function (e) {
+                                cursor = e.target.result;
+                                if (cursor) {
+                                    if (this.filterOnOccurence(cursor.key)) {
+                                        cursor.delete();
+                                        ++this._rowAffected;
                                     }
-                                    Cursor.continue();
+                                    cursor.continue();
                                 }
-                            };
+                            }.bind(this);
                         }
+                    };
+                    _this.filterOnOccurence = function (value) {
+                        var found = false;
+                        value = value.toLowerCase();
+                        switch (this._compSymbol) {
+                            case JsStore.Occurence.Any:
+                                if (value.indexOf(this._compValue) >= 0) {
+                                    found = true;
+                                }
+                                break;
+                            case JsStore.Occurence.First:
+                                if (value.indexOf(this._compValue) === 0) {
+                                    found = true;
+                                }
+                                break;
+                            default: if (value.lastIndexOf(this._compValue) === value.length - this._compValueLength) {
+                                found = true;
+                            }
+                        }
+                        return found;
                     };
                     return _this;
                 }
@@ -4321,35 +4285,35 @@ var JsStore;
                 function Where() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeWhereLogic = function (column, value, op) {
-                        var Cursor, That = this, CursorOpenRequest;
+                        var cursor, cursor_request;
                         value = op ? value[op] : value;
-                        CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
-                        if (That._checkFlag) {
-                            CursorOpenRequest.onsuccess = function (e) {
-                                Cursor = e.target.result;
-                                if (Cursor) {
-                                    if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                        Cursor.delete();
-                                        ++That._rowAffected;
+                        cursor_request = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
+                        if (this._checkFlag) {
+                            cursor_request.onsuccess = function (e) {
+                                cursor = e.target.result;
+                                if (cursor) {
+                                    if (this.checkForWhereConditionMatch(cursor.value)) {
+                                        cursor.delete();
+                                        ++this._rowAffected;
                                     }
-                                    Cursor.continue();
+                                    cursor.continue();
                                 }
-                            };
+                            }.bind(this);
                         }
                         else {
-                            CursorOpenRequest.onsuccess = function (e) {
-                                Cursor = e.target.result;
-                                if (Cursor) {
-                                    Cursor.delete();
-                                    ++That._rowAffected;
-                                    Cursor.continue();
+                            cursor_request.onsuccess = function (e) {
+                                cursor = e.target.result;
+                                if (cursor) {
+                                    cursor.delete();
+                                    ++this._rowAffected;
+                                    cursor.continue();
                                 }
-                            };
+                            }.bind(this);
                         }
-                        CursorOpenRequest.onerror = function (e) {
-                            That._errorOccured = true;
-                            That.onErrorOccured(e);
-                        };
+                        cursor_request.onerror = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                     };
                     return _this;
                 }
@@ -4373,14 +4337,11 @@ var JsStore;
                         this._onSuccess(this._rowAffected);
                     };
                     _this.createtransactionForOrLogic = function (query) {
-                        var That = this;
                         this._query = query;
                         try {
                             this._transaction = Business.db_connection.transaction([query.From], "readwrite");
-                            this._transaction.oncomplete = function (e) {
-                                That.onTransactionCompleted();
-                            };
-                            (this._transaction).ontimeout = That.onTransactionCompleted;
+                            this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                            (this._transaction).ontimeout = this.onTransactionTimeout.bind(this);
                             this._objectStore = this._transaction.objectStore(query.From);
                             this.goToWhereLogic();
                         }
@@ -4398,10 +4359,10 @@ var JsStore;
                             Where: {}
                         };
                         var onSuccess = function () {
-                            var Key = JsStore.getObjectFirstKey(this.OrInfo.OrQuery);
-                            if (Key != null) {
-                                this.TmpQry['Where'][Key] = this.OrInfo.OrQuery[Key];
-                                delete this.OrInfo.OrQuery[Key];
+                            var key = JsStore.getObjectFirstKey(this.OrInfo.OrQuery);
+                            if (key != null) {
+                                this.TmpQry['Where'][key] = this.OrInfo.OrQuery[key];
+                                delete this.OrInfo.OrQuery[key];
                                 this.createtransactionForOrLogic(this.TmpQry);
                             }
                             else {
@@ -4413,18 +4374,13 @@ var JsStore;
                         this._onSuccess = onSuccess;
                     };
                     try {
-                        var That = _this;
                         _this._query = query;
                         _this._onSuccess = onSuccess;
                         _this._onError = onError;
                         _this._transaction = Business.db_connection.transaction([query.From], "readwrite");
                         _this._objectStore = _this._transaction.objectStore(query.From);
-                        _this._transaction.oncomplete = function () {
-                            That.onTransactionCompleted();
-                        };
-                        _this._transaction.onerror = function (e) {
-                            That.onErrorOccured(e);
-                        };
+                        _this._transaction.oncomplete = _this.onTransactionCompleted.bind(_this);
+                        _this._transaction.onerror = _this.onErrorOccured.bind(_this);
                         if (query.Where) {
                             if (query.Where.Or) {
                                 _this.executeOrLogic();
@@ -4455,7 +4411,6 @@ var JsStore;
             this._isCodeExecuting = false;
             this.pushApi = function (request, usePromise) {
                 if (usePromise === true) {
-                    var that = this;
                     return new Promise(function (resolve, reject) {
                         request.OnSuccess = function (result) {
                             resolve(result);
@@ -4463,8 +4418,8 @@ var JsStore;
                         request.OnError = function (error) {
                             reject(error);
                         };
-                        that.prcoessExecutionOfCode(request);
-                    });
+                        this.prcoessExecutionOfCode(request);
+                    }.bind(this));
                 }
                 else {
                     this.prcoessExecutionOfCode(request);
@@ -4472,16 +4427,15 @@ var JsStore;
                 }
             };
             this.createWorker = function () {
-                var that = this;
                 try {
                     if (Worker) {
                         var script_url = this.getScriptUrl();
                         if (script_url && script_url.length > 0) {
                             JsStore.worker_instance = new Worker(script_url);
                             JsStore.worker_instance.onmessage = function (msg) {
-                                that.onMessageFromWorker(msg);
-                            };
-                            that.executeCodeUsingWorker({
+                                this.onMessageFromWorker(msg);
+                            }.bind(this);
+                            this.executeCodeUsingWorker({
                                 Name: 'change_log_status',
                                 Query: {
                                     logging: JsStore.enable_log
@@ -4492,20 +4446,20 @@ var JsStore;
                                     JsStore.worker_status = JsStore.WebWorkerStatus.Registered;
                                 }
                                 if (JsStore.status.ConStatus === JsStore.ConnectionStatus.Connected) {
-                                    that.executeCode();
+                                    this.executeCode();
                                 }
-                            }, 100);
+                            }.bind(this), 100);
                         }
                         else {
-                            that.onWorkerFailed();
+                            this.onWorkerFailed();
                         }
                     }
                     else {
-                        that.onWorkerFailed();
+                        this.onWorkerFailed();
                     }
                 }
                 catch (ex) {
-                    that.onWorkerFailed();
+                    this.onWorkerFailed();
                 }
             };
             this.prcoessExecutionOfCode = function (request) {
@@ -4547,10 +4501,9 @@ var JsStore;
                 }
             };
             this.executeCodeDirect = function (request) {
-                var that = this;
                 new JsStore.Business.Main(function (results) {
-                    that.processFinishedRequest(results);
-                }).checkConnectionAndExecuteLogic(request);
+                    this.processFinishedRequest(results);
+                }.bind(this)).checkConnectionAndExecuteLogic(request);
             };
             this.executeCodeUsingWorker = function (request) {
                 JsStore.worker_instance.postMessage(request);
@@ -4581,12 +4534,11 @@ var JsStore;
                 }
             };
             this.onMessageFromWorker = function (msg) {
-                var that = this;
                 if (typeof msg.data === 'string') {
                     var datas = msg.data.split(':')[1];
                     switch (datas) {
                         case 'WorkerFailed':
-                            that.onWorkerFailed();
+                            this.onWorkerFailed();
                             break;
                     }
                 }
@@ -4874,8 +4826,8 @@ var JsStore;
 if (self && !self.alert) {
     self.onmessage = function (e) {
         JsStore.log("Request executing from WebWorker, request name: " + e.data.Name);
-        var Request = e.data, BusinessMain = new JsStore.Business.Main();
-        BusinessMain.checkConnectionAndExecuteLogic(Request);
+        var request = e.data, business_main = new JsStore.Business.Main();
+        business_main.checkConnectionAndExecuteLogic(request);
     };
     JsStore.worker_status = JsStore.WebWorkerStatus.Registered;
     KeyStore.init();

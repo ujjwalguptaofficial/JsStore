@@ -3,56 +3,48 @@ namespace JsStore {
         export namespace Update {
             export class In extends NotWhere {
                 private executeInLogic = function (column, values) {
-                    var Cursor: IDBCursorWithValue,
-                        That = this,
-                        ColumnStore = this._objectStore.index(column),
-                        CursorOpenRequest;
-                    if (That._checkFlag) {
+                    var cursor: IDBCursorWithValue,
+                        column_store = this._objectStore.index(column),
+                        cursor_request;
+                    if (this._checkFlag) {
                         for (var i = 0, length = values.length; i < length; i++) {
-                            if (!That._errorOccured) {
-                                CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
-                                CursorOpenRequest.onsuccess = function (e) {
-                                    Cursor = (<any>e).target.result;
-                                    if (Cursor) {
-                                        if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                            Cursor.update(updateValue(That._query.Set, Cursor.value));
-                                            ++That._rowAffected;
+                            if (!this._errorOccured) {
+                                cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
+                                cursor_request.onsuccess = function (e) {
+                                    cursor = e.target.result;
+                                    if (cursor) {
+                                        if (this.checkForWhereConditionMatch(cursor.value)) {
+                                            cursor.update(updateValue(this._query.Set, cursor.value));
+                                            ++this._rowAffected;
                                         }
-                                        Cursor.continue();
+                                        cursor.continue();
                                     }
-                                }
-                                CursorOpenRequest.onerror = function (e) {
-                                    That._errorOccured = true;
-                                    That.onErrorOccured(e);
-                                }
+                                }.bind(this);
+
                             }
                         }
                     }
                     else {
                         for (var i = 0, length = values.length; i < length; i++) {
-                            if (!That._errorOccured) {
-                                CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
-                                CursorOpenRequest.onsuccess = function (e) {
-                                    Cursor = (<any>e).target.result;
-                                    if (Cursor) {
-                                        Cursor.update(updateValue(That._query.Set, Cursor.value));
-                                        ++That._rowAffected;
-                                        Cursor.continue();
+                            if (!this._errorOccured) {
+                                cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
+                                cursor_request.onsuccess = function (e) {
+                                    cursor = e.target.result;
+                                    if (cursor) {
+                                        cursor.update(updateValue(this._query.Set, cursor.value));
+                                        ++this._rowAffected;
+                                        cursor.continue();
                                     }
-                                }
-                                CursorOpenRequest.onerror = function (e) {
-                                    That._errorOccured = true;
-                                    That.onErrorOccured(e);
-                                }
+                                }.bind(this);
                             }
                         }
                     }
 
-                    CursorOpenRequest.onerror = function (e) {
-                        That._errorOccured = true;
-                        That.onErrorOccured(e);
-                    }
-                }
+                    cursor_request.onerror = function (e) {
+                        this._errorOccured = true;
+                        this.onErrorOccured(e);
+                    }.bind(this);
+                };
             }
         }
     }

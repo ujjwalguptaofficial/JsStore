@@ -2,25 +2,19 @@ namespace JsStore {
     export namespace Business {
         export namespace Delete {
             export class Instance extends Where {
-
                 constructor(
                     query: IDelete, onSuccess: (recordDeleted: number) => void,
                     onError: (err: IError) => void
                 ) {
                     super();
                     try {
-                        var That = this;
                         this._query = query;
                         this._onSuccess = onSuccess;
                         this._onError = onError;
                         this._transaction = db_connection.transaction([query.From], "readwrite");
                         this._objectStore = this._transaction.objectStore(query.From);
-                        this._transaction.oncomplete = function () {
-                            That.onTransactionCompleted();
-                        };
-                        this._transaction.onerror = function (e) {
-                            That.onErrorOccured(e);
-                        };
+                        this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                        this._transaction.onerror = this.onErrorOccured.bind(this);
 
                         if (query.Where) {
                             if (query.Where.Or) {
@@ -43,14 +37,11 @@ namespace JsStore {
                 };
 
                 private createtransactionForOrLogic = function (query) {
-                    var That = this;
                     this._query = query;
                     try {
                         this._transaction = db_connection.transaction([query.From], "readwrite");
-                        this._transaction.oncomplete = function (e) {
-                            That.onTransactionCompleted();
-                        };
-                        (this._transaction).ontimeout = That.onTransactionCompleted;
+                        this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                        (this._transaction).ontimeout = this.onTransactionTimeout.bind(this);
                         this._objectStore = this._transaction.objectStore(query.From);
                         this.goToWhereLogic();
                     }
@@ -64,15 +55,15 @@ namespace JsStore {
                         OrQuery: this._query.Where.Or,
                         OnSucess: this._onSuccess
                     };
-                    (this as any).TmpQry = <ISelect>{
+                    (this as any).TmpQry = {
                         From: this._query.From,
                         Where: {}
-                    };
+                    } as ISelect;
                     var onSuccess = function () {
-                        var Key = getObjectFirstKey((this as any).OrInfo.OrQuery);
-                        if (Key != null) {
-                            (this as any).TmpQry['Where'][Key] = (this as any).OrInfo.OrQuery[Key];
-                            delete (this as any).OrInfo.OrQuery[Key];
+                        var key = getObjectFirstKey((this as any).OrInfo.OrQuery);
+                        if (key != null) {
+                            (this as any).TmpQry['Where'][key] = (this as any).OrInfo.OrQuery[key];
+                            delete (this as any).OrInfo.OrQuery[key];
                             this.createtransactionForOrLogic((this as any).TmpQry);
                         }
                         else {

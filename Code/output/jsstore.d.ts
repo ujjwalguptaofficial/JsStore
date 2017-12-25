@@ -468,7 +468,6 @@ declare namespace JsStore {
             _objectStore: IDBObjectStore;
             _query: any;
             _sendResultFlag: boolean;
-            _checkFlag: boolean;
             protected onErrorOccured: (e: any, customError?: boolean) => void;
             protected onTransactionTimeout: (e: any) => void;
             protected onExceptionOccured: (ex: DOMException, info: any) => void;
@@ -496,8 +495,8 @@ declare namespace JsStore {
 declare namespace JsStore {
     namespace Business {
         class DropDb {
-            constructor(name: string, onSuccess: Function, onError: Function);
-            deleteDb: (name: string, onSuccess: Function, onError: Function) => void;
+            constructor(name: string, onSuccess: () => void, onError: (err: IError) => void);
+            deleteDb: (name: string, onSuccess: () => void, onError: (err: any) => void) => void;
         }
     }
 }
@@ -522,12 +521,8 @@ declare namespace JsStore {
 declare namespace JsStore {
     namespace Business {
         class BulkInsert extends Base {
-            ValuesAffected: any[];
             _query: IInsert;
-            ValuesIndex: number;
-            Table: Model.Table;
             constructor(query: IInsert, onSuccess: () => void, onError: (err: IError) => void);
-            onTransactionCompleted: () => void;
             private bulkinsertData;
         }
     }
@@ -617,8 +612,7 @@ declare namespace JsStore {
             class Like extends In {
                 _compSymbol: Occurence;
                 _compValue: any;
-                _column: any;
-                _compValueLength: Number;
+                _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
                 private filterOnOccurence;
                 private executeSkipAndLimit;
@@ -664,8 +658,8 @@ declare namespace JsStore {
         namespace Select {
             class GroupByHelper extends Where {
                 constructor();
-                private executeAggregateGroupBy;
                 protected processGroupBy: () => void;
+                private executeAggregateGroupBy;
             }
         }
     }
@@ -730,7 +724,6 @@ declare namespace JsStore {
             class Like extends In {
                 _compSymbol: Occurence;
                 _compValue: any;
-                _column: any;
                 _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
                 private filterOnOccurence;
@@ -789,12 +782,11 @@ declare namespace JsStore {
     namespace Business {
         namespace Update {
             class Like extends In {
-                CompSymbol: Occurence;
-                CompValue: any;
-                Column: any;
-                CompValueLength: Number;
-                private filterOnOccurence;
+                _compSymbol: Occurence;
+                _compValue: any;
+                _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
+                private filterOnOccurence;
             }
         }
     }
@@ -852,12 +844,11 @@ declare namespace JsStore {
     namespace Business {
         namespace Delete {
             class Like extends In {
-                CompSymbol: Occurence;
-                CompValue: any;
-                Column: any;
-                CompValueLength: Number;
-                private filterOnOccurence;
+                _compSymbol: Occurence;
+                _compValue: any;
+                _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
+                private filterOnOccurence;
             }
         }
     }
@@ -883,6 +874,7 @@ declare namespace JsStore {
         }
     }
 }
+declare var Promise: any;
 declare namespace JsStore {
     var worker_status: WebWorkerStatus, worker_instance: Worker;
     class CodeExecutionHelper {
@@ -904,7 +896,6 @@ import Model = JsStore.Model;
 import DataBase = Model.DataBase;
 import Column = Model.Column;
 import Table = Model.Table;
-declare var Promise: any;
 declare namespace JsStore {
     class Instance extends CodeExecutionHelper {
         constructor(dbName?: any);

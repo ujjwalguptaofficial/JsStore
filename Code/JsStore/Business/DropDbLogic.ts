@@ -1,27 +1,26 @@
 namespace JsStore {
     export namespace Business {
         export class DropDb {
-            constructor(name: string, onSuccess: Function, onError: Function) {
-                var That = this;
+            constructor(name: string, onSuccess: () => void, onError: (err: IError) => void) {
                 db_connection.close();
                 setTimeout(function () {
-                    That.deleteDb(name, onSuccess, onError);
-                }, 100);
+                    this.deleteDb(name, onSuccess, onError);
+                }.bind(this), 100);
             }
 
-            deleteDb = function (name: string, onSuccess: Function, onError: Function) {
-                var DbDropRequest = indexedDB.deleteDatabase(name);
-                DbDropRequest.onblocked = function () {
+            deleteDb = function (name: string, onSuccess: () => void, onError: (err: any) => void) {
+                var db_drop_request = indexedDB.deleteDatabase(name);
+                db_drop_request.onblocked = function () {
                     if (onError != null) {
                         onError("database is blocked, cant be deleted right now.");
                     }
                 };
-                DbDropRequest.onerror = function (e) {
+                db_drop_request.onerror = function (e) {
                     if (onError != null) {
                         onError((event as any).target.error);
                     }
                 };
-                DbDropRequest.onsuccess = function () {
+                db_drop_request.onsuccess = function () {
                     status.ConStatus = ConnectionStatus.Closed;
                     KeyStore.remove('JsStore_' + active_db._name + '_Db_Version');
                     active_db._tables.forEach(function (table: Model.Table) {

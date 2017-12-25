@@ -9,27 +9,26 @@ namespace JsStore {
             };
 
             protected checkModifyInsertValues = function (table: Table, values) {
-                var that = this,
-                    value_index = 0,
+                var value_index = 0,
                     value,
                     table_name = table._name,
                     checkDatas = function () {
                         value = values[value_index++];
                         checkInternal();
-                    },
+                    }.bind(this),
                     checkInternal = function () {
                         if (value) {
                             checkAndModifyValue();
                         }
                         else {
-                            that.insertData(values);
+                            this.insertData(values);
                         }
-                    };
+                    }.bind(this);
                 var checkAndModifyValue = function () {
                     var index = 0,
                         onValidationError = function (error: ErrorType, details: any) {
-                            that._errorOccured = true;
-                            that.Error = Utils.getError(error, details);
+                            this._errorOccured = true;
+                            this.Error = Utils.getError(error, details);
                         };
                     var checkAndModifyColumn = function (column: Column) {
                         var checkNotNullAndDataType = function () {
@@ -58,7 +57,7 @@ namespace JsStore {
                         };
 
                         if (column) {
-                            if (!that._errorOccured) {
+                            if (!this._errorOccured) {
                                 // check auto increment scheme
                                 if (column._autoIncrement) {
                                     saveAutoIncrementValue();
@@ -73,7 +72,7 @@ namespace JsStore {
                                 }
                             }
                             else {
-                                that.onErrorOccured(that.Error, true);
+                                this.onErrorOccured(this.Error, true);
                             }
                         }
                         else {
@@ -81,7 +80,7 @@ namespace JsStore {
                         }
                     };
                     checkAndModifyColumn(table._columns[index++]);
-                };
+                }.bind(this);
                 checkDatas();
             };
         }

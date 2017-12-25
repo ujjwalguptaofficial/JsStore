@@ -1,3 +1,4 @@
+declare var Promise: any;
 namespace JsStore {
     export var worker_status: WebWorkerStatus = WebWorkerStatus.NotStarted,
         worker_instance: Worker;
@@ -7,7 +8,6 @@ namespace JsStore {
 
         protected pushApi = function (request: IWebWorkerRequest, usePromise: boolean) {
             if (usePromise === true) {
-                var that = this;
                 return new Promise(function (resolve, reject) {
                     request.OnSuccess = function (result) {
                         resolve(result);
@@ -15,8 +15,8 @@ namespace JsStore {
                     request.OnError = function (error) {
                         reject(error);
                     };
-                    that.prcoessExecutionOfCode(request);
-                });
+                    this.prcoessExecutionOfCode(request);
+                }.bind(this));
             }
             else {
                 this.prcoessExecutionOfCode(request);
@@ -25,16 +25,15 @@ namespace JsStore {
         };
 
         protected createWorker = function () {
-            var that: CodeExecutionHelper = this;
             try {
                 if (Worker) {
                     var script_url = this.getScriptUrl();
                     if (script_url && script_url.length > 0) {
                         worker_instance = new Worker(script_url);
                         worker_instance.onmessage = function (msg) {
-                            that.onMessageFromWorker(msg);
-                        };
-                        that.executeCodeUsingWorker({
+                            this.onMessageFromWorker(msg);
+                        }.bind(this);
+                        this.executeCodeUsingWorker({
                             Name: 'change_log_status',
                             Query: {
                                 logging: enable_log
@@ -45,21 +44,21 @@ namespace JsStore {
                                 worker_status = WebWorkerStatus.Registered;
                             }
                             if (status.ConStatus === ConnectionStatus.Connected) {
-                                that.executeCode();
+                                this.executeCode();
                             }
-                        }, 100);
+                        }.bind(this), 100);
                     }
                     else {
-                        that.onWorkerFailed();
+                        this.onWorkerFailed();
                     }
 
                 }
                 else {
-                    that.onWorkerFailed();
+                    this.onWorkerFailed();
                 }
             }
             catch (ex) {
-                that.onWorkerFailed();
+                this.onWorkerFailed();
             }
         };
 
@@ -101,13 +100,12 @@ namespace JsStore {
                     this.executeCodeDirect(request);
                 }
             }
-        }
+        };
 
         private executeCodeDirect = function (request: IWebWorkerRequest) {
-            var that = this;
             new Business.Main(function (results) {
-                that.processFinishedRequest(results);
-            }).checkConnectionAndExecuteLogic(request);
+                this.processFinishedRequest(results);
+            }.bind(this)).checkConnectionAndExecuteLogic(request);
         };
 
         private executeCodeUsingWorker = function (request: IWebWorkerRequest) {
@@ -131,7 +129,7 @@ namespace JsStore {
                 }
                 this.executeCode();
             }
-        }
+        };
 
         private onWorkerFailed = function () {
             console.warn('JsStore is not runing in web worker');
@@ -157,11 +155,10 @@ namespace JsStore {
         }
 
         private onMessageFromWorker = function (msg) {
-            var that = this;
             if (typeof msg.data === 'string') {
                 var datas = msg.data.split(':')[1];
                 switch (datas) {
-                    case 'WorkerFailed': that.onWorkerFailed();
+                    case 'WorkerFailed': this.onWorkerFailed();
                         break;
                 }
             }

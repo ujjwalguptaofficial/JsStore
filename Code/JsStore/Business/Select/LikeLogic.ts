@@ -4,14 +4,12 @@ namespace JsStore {
             export class Like extends In {
                 _compSymbol: Occurence;
                 _compValue;
-                _column;
-                _compValueLength: Number;
+                _compValueLength: number;
 
                 protected executeLikeLogic = function (column, value, symbol: Occurence) {
                     this._compValue = (value as string).toLowerCase();
                     this._compValueLength = this._compValue.length;
                     this._compSymbol = symbol;
-                    this._column = column;
                     this._cursorOpenRequest = this._objectStore.index(column).openCursor();
                     this._cursorOpenRequest.onerror = function (e) {
                         this._errorOccured = true;

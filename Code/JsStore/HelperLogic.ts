@@ -23,7 +23,7 @@ namespace JsStore {
                     }
                     else {
                         getDbVersion(dbInfo.DbName, function (dbVersion) {
-                            resolve(dbInfo.Table.Version <= dbVersion)
+                            resolve(dbInfo.Table.Version <= dbVersion);
                         });
                     }
                 });
@@ -36,7 +36,7 @@ namespace JsStore {
                 }
                 else {
                     getDbVersion.call(this, dbInfo.DbName, function (dbVersion) {
-                        callback.call(this, dbInfo.Table.Version <= dbVersion)
+                        callback.call(this, dbInfo.Table.Version <= dbVersion);
                     });
                 }
             }

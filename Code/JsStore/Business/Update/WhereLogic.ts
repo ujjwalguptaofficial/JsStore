@@ -3,39 +3,38 @@ namespace JsStore {
         export namespace Update {
             export class Where extends Like {
                 private executeWhereLogic = function (column, value, op) {
-                    var Cursor: IDBCursorWithValue,
-                        That = this,
-                        CursorOpenRequest;
+                    var cursor: IDBCursorWithValue,
+                        cursor_request;
                     value = op ? value[op] : value;
-                    CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
-                    if (That._checkFlag) {
-                        CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = (<any>e).target.result;
-                            if (Cursor) {
-                                if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                    Cursor.update(updateValue(That._query.Set, Cursor.value));
-                                    ++That._rowAffected;
+                    cursor_request = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
+                    if (this._checkFlag) {
+                        cursor_request.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (cursor) {
+                                if (this.checkForWhereConditionMatch(cursor.value)) {
+                                    cursor.update(updateValue(this._query.Set, cursor.value));
+                                    ++this._rowAffected;
                                 }
-                                Cursor.continue();
+                                cursor.continue();
                             }
-                        }
+                        }.bind(this);
                     }
                     else {
-                        CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = (<any>e).target.result;
-                            if (Cursor) {
-                                Cursor.update(updateValue(That._query.Set, Cursor.value));
-                                ++That._rowAffected;
-                                Cursor.continue();
+                        cursor_request.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (cursor) {
+                                cursor.update(updateValue(this._query.Set, cursor.value));
+                                ++this._rowAffected;
+                                cursor.continue();
                             }
-                        }
+                        }.bind(this);
                     }
 
-                    CursorOpenRequest.onerror = function (e) {
-                        That._errorOccured = true;
-                        That.onErrorOccured(e);
-                    }
-                }
+                    cursor_request.onerror = function (e) {
+                        this._errorOccured = true;
+                        this.onErrorOccured(e);
+                    }.bind(this);
+                };
             }
         }
     }

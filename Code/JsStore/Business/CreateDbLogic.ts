@@ -2,8 +2,7 @@ namespace JsStore {
     export namespace Business {
         export class CreateDb {
             constructor(dbVersion, onSuccess: (listOf) => void, onError: (err: IError) => void) {
-                var that = this,
-                    table_created_list = [],
+                var table_created_list = [],
                     db_request = indexedDB.open(active_db._name, dbVersion);
 
                 db_request.onerror = function (event) {

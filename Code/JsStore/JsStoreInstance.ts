@@ -2,7 +2,6 @@ import Model = JsStore.Model;
 import DataBase = Model.DataBase;
 import Column = Model.Column;
 import Table = Model.Table;
-declare var Promise: any;
 
 namespace JsStore {
     export class Instance extends CodeExecutionHelper {
@@ -197,7 +196,7 @@ namespace JsStore {
                 OnSuccess: onSuccess,
                 OnError: onError
             } as IWebWorkerRequest, use_promise);
-        }
+        };
 
         /**
          * insert bulk amount of data
@@ -265,6 +264,6 @@ namespace JsStore {
                 } as IWebWorkerRequest, use_promise);
             }
 
-        }
+        };
     }
 }

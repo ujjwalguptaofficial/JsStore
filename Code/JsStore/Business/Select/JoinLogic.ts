@@ -13,20 +13,20 @@ namespace JsStore {
                     this._query = query;
                     var table_list = []; // used to open the multiple object store
 
-                    var convertQueryIntoStack = function (query) {
-                        if (query.hasOwnProperty('Table1')) {
-                            query.Table2['JoinType'] = (query as IJoin).Join === undefined ?
-                                'inner' : (query as IJoin).Join.toLowerCase();
-                            this._queryStack.push(query.Table2);
+                    var convertQueryIntoStack = function (qry) {
+                        if (qry.hasOwnProperty('Table1')) {
+                            qry.Table2['JoinType'] = (qry as IJoin).Join === undefined ?
+                                'inner' : (qry as IJoin).Join.toLowerCase();
+                            this._queryStack.push(qry.Table2);
                             if (this._queryStack.length % 2 === 0) {
-                                this._queryStack[this._queryStack.length - 1].NextJoin = query.NextJoin;
+                                this._queryStack[this._queryStack.length - 1].NextJoin = qry.NextJoin;
                             }
-                            table_list.push(query.Table2.Table);
-                            return convertQueryIntoStack(query.Table1);
+                            table_list.push(qry.Table2.Table);
+                            return convertQueryIntoStack(qry.Table1);
                         }
                         else {
-                            this._queryStack.push(query);
-                            table_list.push(query.Table);
+                            this._queryStack.push(qry);
+                            table_list.push(qry.Table);
                             return;
                         }
                     }.bind(this);
@@ -254,7 +254,7 @@ namespace JsStore {
 
                 private startExecutionJoinLogic() {
                     var join_query;
-                    if (this._currentQueryStackIndex >= 1 && this._currentQueryStackIndex % 2 == 1) {
+                    if (this._currentQueryStackIndex >= 1 && this._currentQueryStackIndex % 2 === 1) {
                         join_query = {
                             Table: this._queryStack[this._currentQueryStackIndex].NextJoin.Table,
                             Column: this._queryStack[this._currentQueryStackIndex].NextJoin.Column

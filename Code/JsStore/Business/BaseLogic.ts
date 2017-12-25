@@ -11,7 +11,6 @@ namespace JsStore {
             _objectStore: IDBObjectStore;
             _query;
             _sendResultFlag: boolean = true;
-            _checkFlag: boolean;
 
             protected onErrorOccured = function (e, customError = false) {
                 ++this._errorCount;

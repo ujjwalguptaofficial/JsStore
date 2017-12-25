@@ -6,230 +6,233 @@ namespace JsStore {
                     super();
                 }
 
+                protected processGroupBy = function () {
+                    var grp_qry = this._query.GroupBy,
+                        datas = this._results,
+                        look_up_obj = {};
+                    // free results memory
+                    this._results = this._query.GroupBy = undefined;
+                    if (typeof grp_qry === 'string') {
+                        for (var i in datas) {
+                            look_up_obj[datas[i][grp_qry]] = datas[i];
+                        }
+                    }
+                    else {
+                        var obj_key;
+                        for (var i in datas) {
+                            obj_key = "";
+                            for (var column in grp_qry) {
+                                obj_key += datas[i][grp_qry[column]];
+                            }
+                            look_up_obj[obj_key] = datas[i];
+                        }
+                    }
+                    // free datas memory
+                    datas = [];
+                    for (i in look_up_obj) {
+                        datas.push(look_up_obj[i]);
+                    }
+                    this._results = datas;
+                };
+
                 private executeAggregateGroupBy = function () {
-                    var GrpQry = this._query.GroupBy,
-                        Datas = this._results,
-                        LookUpObj = {};
-                    //free results memory
-                    this._results = undefined;
-                    //assign aggregate and free aggregate memory
-                    var AggregateQry = this._query.Aggregate;
+                    var grp_qry = this._query.GroupBy,
+                        datas = this._results,
+                        look_up_obj = {},
+                        // assign aggregate and free aggregate memory
+                        aggregate_qry = this._query.Aggregate;
                     this._query.Aggregate = undefined;
-                    var Index, ObjKey, Value, AggrColumn;
+                    // free results memory
+                    this._results = undefined;
+
+                    var index, obj_Key, value, aggr_column;
                     var calculateAggregate = function () {
-                        for (var prop in AggregateQry) {
+                        for (var prop in aggregate_qry) {
                             switch (prop) {
                                 case 'Count':
                                     var getCount = function () {
-                                        Value = LookUpObj[ObjKey];
-                                        //get old value
-                                        Value = Value ? Value["Count(" + AggrColumn + ")"] : 0;
-                                        //add with old value if data exist
-                                        Value += Datas[Index][AggrColumn] ? 1 : 0;
-                                        return Value;
+                                        value = look_up_obj[obj_Key];
+                                        // get old value
+                                        value = value ? value["Count(" + aggr_column + ")"] : 0;
+                                        // add with old value if data exist
+                                        value += datas[index][aggr_column] ? 1 : 0;
+                                        return value;
+                                    };
+                                    if (typeof aggregate_qry[prop] === 'string') {
+                                        aggr_column = aggregate_qry[prop];
+                                        datas[index]["Count(" + aggr_column + ")"] = getCount();
                                     }
-                                    if (typeof AggregateQry[prop] == 'string') {
-                                        AggrColumn = AggregateQry[prop];
-                                        Datas[Index]["Count(" + AggrColumn + ")"] = getCount();
-                                    }
-                                    else if (Array.isArray(AggregateQry[prop])) {
-                                        for (var item in AggregateQry[prop]) {
-                                            AggrColumn = AggregateQry[prop][item];
-                                            Datas[Index]["Count(" + AggrColumn + ")"] = getCount();
+                                    else if (Array.isArray(aggregate_qry[prop])) {
+                                        for (var item in aggregate_qry[prop]) {
+                                            aggr_column = aggregate_qry[prop][item];
+                                            datas[index]["Count(" + aggr_column + ")"] = getCount();
                                         }
                                     }
                                     break;
                                 case 'Max':
                                     var getMax = function () {
-                                        Value = LookUpObj[ObjKey];
-                                        //get old value
-                                        Value = Value ? Value["Max(" + AggrColumn + ")"] : 0;
-                                        Datas[Index][AggrColumn] = Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : 0;
-                                        //compare between old value and new value
-                                        return Value > Datas[Index][AggrColumn] ? Value : Datas[Index][AggrColumn];
-                                    }
+                                        value = look_up_obj[obj_Key];
+                                        // get old value
+                                        value = value ? value["Max(" + aggr_column + ")"] : 0;
+                                        datas[index][aggr_column] = datas[index][aggr_column] ?
+                                            datas[index][aggr_column] : 0;
+                                        // compare between old value and new value
+                                        return value > datas[index][aggr_column] ? value : datas[index][aggr_column];
+                                    };
 
-                                    if (typeof AggregateQry[prop] == 'string') {
-                                        AggrColumn = AggregateQry[prop];
-                                        Datas[Index]["Max(" + AggrColumn + ")"] = getMax();
+                                    if (typeof aggregate_qry[prop] === 'string') {
+                                        aggr_column = aggregate_qry[prop];
+                                        datas[index]["Max(" + aggr_column + ")"] = getMax();
                                     }
-                                    else if (Array.isArray(AggregateQry[prop])) {
-                                        for (var item in AggregateQry[prop]) {
-                                            AggrColumn = AggregateQry[prop][item];
-                                            Datas[Index]["Max(" + AggrColumn + ")"] = getMax();
+                                    else if (Array.isArray(aggregate_qry[prop])) {
+                                        for (var item in aggregate_qry[prop]) {
+                                            aggr_column = aggregate_qry[prop][item];
+                                            datas[index]["Max(" + aggr_column + ")"] = getMax();
                                         }
                                     }
                                     break;
                                 case 'Min':
                                     var getMin = function () {
-                                        Value = LookUpObj[ObjKey];
-                                        //get old value
-                                        Value = Value ? Value["Min(" + AggrColumn + ")"] : Infinity;
-                                        Datas[Index][AggrColumn] = Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : Infinity;
-                                        //compare between old value and new value
-                                        return Value < Datas[Index][AggrColumn] ? Value : Datas[Index][AggrColumn];
-                                    }
+                                        value = look_up_obj[obj_Key];
+                                        // get old value
+                                        value = value ? value["Min(" + aggr_column + ")"] : Infinity;
+                                        datas[index][aggr_column] = datas[index][aggr_column] ?
+                                            datas[index][aggr_column] : Infinity;
+                                        // compare between old value and new value
+                                        return value < datas[index][aggr_column] ? value : datas[index][aggr_column];
+                                    };
 
-                                    if (typeof AggregateQry[prop] == 'string') {
-                                        AggrColumn = AggregateQry[prop];
-                                        Datas[Index]["Min(" + AggrColumn + ")"] = getMin();
+                                    if (typeof aggregate_qry[prop] === 'string') {
+                                        aggr_column = aggregate_qry[prop];
+                                        datas[index]["Min(" + aggr_column + ")"] = getMin();
                                     }
-                                    else if (Array.isArray(AggregateQry[prop])) {
-                                        for (var item in AggregateQry[prop]) {
-                                            AggrColumn = AggregateQry[prop][item];
-                                            Datas[Index]["Min(" + AggrColumn + ")"] = getMin();
+                                    else if (Array.isArray(aggregate_qry[prop])) {
+                                        for (var item in aggregate_qry[prop]) {
+                                            aggr_column = aggregate_qry[prop][item];
+                                            datas[index]["Min(" + aggr_column + ")"] = getMin();
                                         }
                                     }
                                     break;
                                 case 'Sum':
                                     var getSum = function () {
-                                        Value = LookUpObj[ObjKey];
-                                        //get old value
-                                        Value = Value ? Value["Sum(" + AggrColumn + ")"] : 0;
-                                        //add with old value if data exist
-                                        Value += Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : 0;
-                                        return Value;
+                                        value = look_up_obj[obj_Key];
+                                        // get old value
+                                        value = value ? value["Sum(" + aggr_column + ")"] : 0;
+                                        // add with old value if data exist
+                                        value += datas[index][aggr_column] ? datas[index][aggr_column] : 0;
+                                        return value;
+                                    };
+                                    if (typeof aggregate_qry[prop] === 'string') {
+                                        aggr_column = aggregate_qry[prop];
+                                        datas[index]["Sum(" + aggr_column + ")"] = getSum();
                                     }
-                                    if (typeof AggregateQry[prop] == 'string') {
-                                        AggrColumn = AggregateQry[prop];
-                                        Datas[Index]["Sum(" + AggrColumn + ")"] = getSum();
-                                    }
-                                    else if (Array.isArray(AggregateQry[prop])) {
-                                        for (var item in AggregateQry[prop]) {
-                                            AggrColumn = AggregateQry[prop][item];
-                                            Datas[Index]["Sum(" + AggrColumn + ")"] = getSum();
+                                    else if (Array.isArray(aggregate_qry[prop])) {
+                                        for (var item in aggregate_qry[prop]) {
+                                            aggr_column = aggregate_qry[prop][item];
+                                            datas[index]["Sum(" + aggr_column + ")"] = getSum();
                                         }
                                     }
                                     break;
                                 case 'Avg':
                                     var getAvg = function () {
-                                        Value = LookUpObj[ObjKey];
-                                        //get old sum value
-                                        var Sum = Value ? Value["Sum(" + AggrColumn + ")"] : 0;
-                                        //add with old value if data exist
-                                        Sum += Datas[Index][AggrColumn] ? Datas[Index][AggrColumn] : 0;
-                                        Datas[Index]["Sum(" + AggrColumn + ")"] = Sum;
-                                        //get old count value
-                                        Value = Value ? Value["Count(" + AggrColumn + ")"] : 0;
-                                        //add with old value if data exist
-                                        Value += Datas[Index][AggrColumn] ? 1 : 0;
-                                        Datas[Index]["Count(" + AggrColumn + ")"] = Value;
-                                    }
+                                        value = look_up_obj[obj_Key];
+                                        // get old sum value
+                                        var sum = value ? value["Sum(" + aggr_column + ")"] : 0;
+                                        // add with old value if data exist
+                                        sum += datas[index][aggr_column] ? datas[index][aggr_column] : 0;
+                                        datas[index]["Sum(" + aggr_column + ")"] = sum;
+                                        // get old count value
+                                        value = value ? value["Count(" + aggr_column + ")"] : 0;
+                                        // add with old value if data exist
+                                        value += datas[index][aggr_column] ? 1 : 0;
+                                        datas[index]["Count(" + aggr_column + ")"] = value;
+                                    };
 
-                                    if (typeof AggregateQry[prop] == 'string') {
-                                        AggrColumn = AggregateQry[prop];
+                                    if (typeof aggregate_qry[prop] === 'string') {
+                                        aggr_column = aggregate_qry[prop];
                                         getAvg();
                                     }
-                                    else if (Array.isArray(AggregateQry[prop])) {
-                                        for (var item in AggregateQry[prop]) {
-                                            AggrColumn = AggregateQry[prop][item];
+                                    else if (Array.isArray(aggregate_qry[prop])) {
+                                        for (var item in aggregate_qry[prop]) {
+                                            aggr_column = aggregate_qry[prop][item];
                                             getAvg();
                                         }
                                     }
                                     break;
                             }
                         }
-                    }
+                    };
 
-                    if (typeof GrpQry == 'string') {
-                        for (Index in Datas) {
-                            ObjKey = Datas[Index][GrpQry];
+                    if (typeof grp_qry === 'string') {
+                        for (index in datas) {
+                            obj_Key = datas[index][grp_qry];
                             calculateAggregate();
-                            LookUpObj[ObjKey] = Datas[Index];
+                            look_up_obj[obj_Key] = datas[index];
                         }
                     }
                     else {
-                        for (Index in Datas) {
-                            ObjKey = "";
-                            for (var column in GrpQry) {
-                                ObjKey += Datas[Index][GrpQry[column]];
+                        for (index in datas) {
+                            obj_Key = "";
+                            for (var column in grp_qry) {
+                                obj_Key += datas[index][grp_qry[column]];
                             }
                             calculateAggregate();
-                            LookUpObj[ObjKey] = Datas[Index];
+                            look_up_obj[obj_Key] = datas[index];
                         }
 
                     }
-                    //free datas memory
-                    Datas = [];
-                    for (var i in LookUpObj) {
-                        Datas.push(LookUpObj[i]);
+                    // free datas memory
+                    datas = [];
+                    for (var i in look_up_obj) {
+                        datas.push(look_up_obj[i]);
                     }
-                    //Checking for avg and if exist then fill the datas;
-                    if (AggregateQry.Avg) {
-                        if (typeof AggregateQry.Avg == 'string') {
-                            for (Index in Datas) {
-                                var Sum = Datas[Index]["Sum(" + AggregateQry.Avg + ")"],
-                                    Count = Datas[Index]["Count(" + AggregateQry.Avg + ")"];
-                                Datas[Index]["Avg(" + AggregateQry.Avg + ")"] = Sum / Count;
-                                if (AggregateQry.Count !== AggregateQry.Avg) {
-                                    delete Datas[Index]["Count(" + AggregateQry.Avg + ")"];
+                    // Checking for avg and if exist then fill the datas;
+                    if (aggregate_qry.Avg) {
+                        if (typeof aggregate_qry.Avg === 'string') {
+                            for (index in datas) {
+                                var sum = datas[index]["Sum(" + aggregate_qry.Avg + ")"],
+                                    count = datas[index]["Count(" + aggregate_qry.Avg + ")"];
+                                datas[index]["Avg(" + aggregate_qry.Avg + ")"] = sum / count;
+                                if (aggregate_qry.Count !== aggregate_qry.Avg) {
+                                    delete datas[index]["Count(" + aggregate_qry.Avg + ")"];
                                 }
-                                if (AggregateQry.Sum !== AggregateQry.Avg) {
-                                    delete Datas[Index]["Sum(" + AggregateQry.Avg + ")"];
+                                if (aggregate_qry.Sum !== aggregate_qry.Avg) {
+                                    delete datas[index]["Sum(" + aggregate_qry.Avg + ")"];
                                 }
                             }
                         }
                         else {
-                            var IsCountTypeString = typeof AggregateQry.Count,
-                                IsSumTypeString = typeof AggregateQry.Count;
-                            for (Index in Datas) {
-                                for (var column in AggregateQry.Avg) {
-                                    var AvgColumn = AggregateQry.Avg[column],
-                                        Sum = Datas[Index]["Sum(" + AvgColumn + ")"],
-                                        Count = Datas[Index]["Count(" + AvgColumn + ")"];
-                                    Datas[Index]["Avg(" + AvgColumn + ")"] = Sum / Count;
+                            var is_count_type_string = typeof aggregate_qry.Count,
+                                is_sum_type_string = typeof aggregate_qry.Count;
+                            for (index in datas) {
+                                for (var column in aggregate_qry.Avg) {
+                                    var avg_column = aggregate_qry.Avg[column],
+                                        sum = datas[index]["Sum(" + avg_column + ")"],
+                                        count = datas[index]["Count(" + avg_column + ")"];
+                                    datas[index]["Avg(" + avg_column + ")"] = sum / count;
 
-                                    if (IsCountTypeString) {
-                                        if (AggregateQry.Count !== AvgColumn) {
-                                            delete Datas[Index]["Count(" + AvgColumn + ")"];
+                                    if (is_count_type_string) {
+                                        if (aggregate_qry.Count !== avg_column) {
+                                            delete datas[index]["Count(" + avg_column + ")"];
                                         }
-                                        else if (AggregateQry.Count.indexOf(AvgColumn) == -1) {
-                                            delete Datas[Index]["Count(" + AvgColumn + ")"];
+                                        else if (aggregate_qry.Count.indexOf(avg_column) === -1) {
+                                            delete datas[index]["Count(" + avg_column + ")"];
                                         }
                                     }
 
-                                    if (IsSumTypeString) {
-                                        if (AggregateQry.Sum !== AvgColumn) {
-                                            delete Datas[Index]["Sum(" + AvgColumn + ")"];
+                                    if (is_sum_type_string) {
+                                        if (aggregate_qry.Sum !== avg_column) {
+                                            delete datas[index]["Sum(" + avg_column + ")"];
                                         }
-                                        else if (AggregateQry.Sum.indexOf(AvgColumn) == -1) {
-                                            delete Datas[Index]["Sum(" + AvgColumn + ")"];
+                                        else if (aggregate_qry.Sum.indexOf(avg_column) === -1) {
+                                            delete datas[index]["Sum(" + avg_column + ")"];
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                    this._results = Datas;
-                };
-
-                protected processGroupBy = function () {
-                    var GrpQry = this._query.GroupBy,
-                        Datas = this._results,
-                        LookUpObj = {};
-                    //free results memory
-                    this._results = this._query.GroupBy = undefined;
-                    if (typeof GrpQry == 'string') {
-                        for (var i in Datas) {
-                            LookUpObj[Datas[i][GrpQry]] = Datas[i];
-                        }
-                    }
-                    else {
-                        var ObjKey;
-                        for (var i in Datas) {
-                            ObjKey = "";
-                            for (var column in GrpQry) {
-                                ObjKey += Datas[i][GrpQry[column]];
-                            }
-                            LookUpObj[ObjKey] = Datas[i];
-                        }
-                    }
-                    //free datas memory
-                    Datas = [];
-                    for (i in LookUpObj) {
-                        Datas.push(LookUpObj[i]);
-                    }
-                    this._results = Datas;
+                    this._results = datas;
                 };
             }
         }

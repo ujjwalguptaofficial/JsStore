@@ -3,7 +3,7 @@ namespace JsStore {
         export namespace Update {
             export var updateValue = function (suppliedValue, storedValue) {
                 for (var key in suppliedValue) {
-                    if (typeof suppliedValue[key] != 'object') {
+                    if (typeof suppliedValue[key] !== 'object') {
                         storedValue[key] = suppliedValue[key];
                     }
                     else {
@@ -20,7 +20,7 @@ namespace JsStore {
                     }
                 }
                 return storedValue;
-            }
+            };
         }
 
         export class BaseUpdate extends Base {

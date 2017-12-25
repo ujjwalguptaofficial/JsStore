@@ -127,7 +127,7 @@ namespace JsStore {
                                     }
                                     return result;
                                 };
-                                if (typeof this._query.Aggregate[prop] == 'string') {
+                                if (typeof this._query.Aggregate[prop] === 'string') {
                                     column_to_aggregate = this._query.Aggregate[prop];
                                     results["Sum(" + column_to_aggregate + ")"] = getSum();
                                 }
@@ -146,7 +146,7 @@ namespace JsStore {
                                     }
                                     return result / datas.length;
                                 };
-                                if (typeof this._query.Aggregate[prop] == 'string') {
+                                if (typeof this._query.Aggregate[prop] === 'string') {
                                     column_to_aggregate = this._query.Aggregate[prop];
                                     results["Avg(" + column_to_aggregate + ")"] = getAvg();
                                 }

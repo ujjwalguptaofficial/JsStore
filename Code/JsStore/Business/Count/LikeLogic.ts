@@ -4,7 +4,6 @@ namespace JsStore {
             export class Like extends In {
                 _compSymbol: Occurence;
                 _compValue;
-                _column;
                 _compValueLength: number;
 
                 protected executeLikeLogic = function (column, value, symbol: Occurence) {
@@ -12,7 +11,6 @@ namespace JsStore {
                     this._compValue = (value as string).toLowerCase();
                     this._compValueLength = this._compValue.length;
                     this._compSymbol = symbol;
-                    this._column = column;
                     this.CursorOpenRequest = this._objectStore.index(column).openCursor();
                     this.CursorOpenRequest.onerror = function (e) {
                         this._errorOccured = true;
