@@ -2,8 +2,8 @@ namespace JsStore {
     export var worker_status: WebWorkerStatus = WebWorkerStatus.NotStarted,
         worker_instance: Worker;
     export class CodeExecutionHelper {
-        _requestQueue: IWebWorkerRequest[] = [];
-        _isCodeExecuting = false;
+        private _requestQueue: IWebWorkerRequest[] = [];
+        private _isCodeExecuting = false;
 
         protected pushApi = function (request: IWebWorkerRequest, usePromise: boolean) {
             if (usePromise === true) {
@@ -78,18 +78,18 @@ namespace JsStore {
                 }
             }
             else {
-                this.RequestQueue.push(request);
-                if (this.RequestQueue.length === 1 && worker_status !== WebWorkerStatus.NotStarted) {
+                this._requestQueue.push(request);
+                if (this._requestQueue.length === 1 && worker_status !== WebWorkerStatus.NotStarted) {
                     this.executeCode();
                 }
             }
             log("request pushed: " + request.Name);
-        }
+        };
 
         private executeCode = function () {
-            if (!this.IsCodeExecuting && this.RequestQueue.length > 0) {
-                this.IsCodeExecuting = true;
-                var first_request = this.RequestQueue[0],
+            if (!this._isCodeExecuting && this._requestQueue.length > 0) {
+                this._isCodeExecuting = true;
+                var first_request = this._requestQueue[0],
                     request = {
                         Name: first_request.Name,
                         Query: first_request.Query
@@ -116,7 +116,7 @@ namespace JsStore {
 
         private processFinishedRequest = function (message: IWebWorkerResult) {
             var finished_request: IWebWorkerRequest = this._requestQueue.shift();
-            this.IsCodeExecuting = false;
+            this._isCodeExecuting = false;
             if (finished_request) {
                 log("request finished : " + finished_request.Name);
                 if (message.ErrorOccured) {
@@ -126,12 +126,7 @@ namespace JsStore {
                 }
                 else {
                     if (finished_request.OnSuccess) {
-                        if (message.ReturnedValue != null) {
-                            finished_request.OnSuccess(message.ReturnedValue);
-                        }
-                        else {
-                            finished_request.OnSuccess();
-                        }
+                        finished_request.OnSuccess(message.ReturnedValue);
                     }
                 }
                 this.executeCode();

@@ -2,7 +2,7 @@ namespace JsStore {
     export namespace Model {
         export class Table {
             _name: string;
-            _columns: Column[];
+            _columns: Column[] = [];
             _version: number;
 
             // internal Members
@@ -14,7 +14,7 @@ namespace JsStore {
                 this._name = table.Name;
                 this._version = table.Version == null ? 1 : table.Version;
                 table.Columns.forEach(function (item) {
-                    this.Columns.push(new Column(item, table.Name));
+                    this._columns.push(new Column(item, table.Name));
                 }, this);
 
                 this.setRequireDelete(dbName);
@@ -23,8 +23,9 @@ namespace JsStore {
             }
 
             private setPrimaryKey(dbName) {
-                this._columns.forEach(function (item) {
+                this._columns.every(function (item) {
                     this._primaryKey = item._primaryKey ? item._name : "";
+                    return !item._primaryKey;
                 }, this);
 
             }
@@ -43,7 +44,7 @@ namespace JsStore {
             }
 
             private setDbVersion(dbName: string) {
-                db_version = db_version > this._version ? db_version : this._version;
+                var db_version = db_version > this._version ? db_version : this._version;
                 // setting db version
                 KeyStore.set('JsStore_' + dbName + '_Db_Version', db_version)
                     // setting table version
@@ -54,4 +55,3 @@ namespace JsStore {
         }
     }
 }
-

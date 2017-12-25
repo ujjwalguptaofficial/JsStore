@@ -1,10 +1,10 @@
 namespace JsStore {
     export var enable_log = false,
         db_version: number = 0,
-        status: JsStoreStatus = {
+        status: IJsStoreStatus = {
             ConStatus: ConnectionStatus.NotStarted,
             LastError: ""
-        } as JsStoreStatus,
+        } as IJsStoreStatus,
         temp_results: any[] = [];
 
     export var throwError = function (error) {

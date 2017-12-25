@@ -6,7 +6,7 @@ namespace JsStore {
             ValuesIndex = 0;
             Table: Model.Table;
 
-            constructor(query: IInsert, onSuccess: Function, onError: Function) {
+            constructor(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
                 super();
                 try {
                     this.Query = query;

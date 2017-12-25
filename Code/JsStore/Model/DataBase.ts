@@ -8,7 +8,7 @@ namespace JsStore {
             constructor(dataBase: IDataBaseOption) {
                 this._name = dataBase.Name;
                 dataBase.Tables.forEach(function (item) {
-                    this._tables.push(new Table(item, this.Name));
+                    this._tables.push(new Table(item, this._name));
                 }, this);
             }
         }

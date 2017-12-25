@@ -245,7 +245,7 @@ namespace JsStore {
 
                 }
 
-                constructor(query: ISelectJoin, onSuccess: Function, onError: Function) {
+                constructor(query: ISelectJoin, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
                     super();
                     this.OnSuccess = onSuccess;
                     this.OnError = onError;

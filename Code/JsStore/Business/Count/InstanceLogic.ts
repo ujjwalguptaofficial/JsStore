@@ -11,17 +11,15 @@ namespace JsStore {
                         var createTransaction = function () {
                             this.Transaction = db_connection.transaction([query.From], "readonly");
                             this.ObjectStore = this.Transaction.objectStore(query.From);
-                            this.Transaction.oncomplete = function (e) {
-                                this.onTransactionCompleted();
-                            };
-                            this.Transaction.ontimeout = this.onTransactionTimeout;
+                            this.Transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                            this.Transaction.ontimeout = this.onTransactionTimeout.bind(this);
                         };
                         if (query.Where !== undefined) {
                             if (query.Where.Or) {
                                 var select_object = new Select.Instance(query as any, function (results) {
                                     this.ResultCount = results.length;
                                     this.onTransactionCompleted();
-                                }, this.OnError);
+                                }.bind(this), this.OnError);
                             }
                             else {
                                 createTransaction.call(this);
@@ -29,12 +27,12 @@ namespace JsStore {
                             }
                         }
                         else {
-                            createTransaction();
+                            createTransaction.call(this);
                             this.executeWhereUndefinedLogic();
                         }
                     }
                     catch (ex) {
-                        this.onExceptionOccured(ex, { TableName: query.From })
+                        this.onExceptionOccured(ex, { TableName: query.From });
                     }
                 }
 
@@ -42,7 +40,7 @@ namespace JsStore {
                     if (this.SendResultFlag) {
                         this.OnSuccess(this.ResultCount);
                     }
-                }
+                };
             }
         }
 

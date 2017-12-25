@@ -49,7 +49,7 @@ namespace JsStore {
                     this.OnSuccess = onSuccess;
                 }
 
-                constructor(query: IDelete, onSuccess: Function, onError: Function) {
+                constructor(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void) {
                     super();
                     try {
                         var That = this;

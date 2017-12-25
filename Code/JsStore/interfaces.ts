@@ -104,35 +104,35 @@ namespace JsStore {
     }
 
     export interface ISelectJoin {
-        From: IJoin, //IJoin
-        Count: boolean,
-        Skip: number,
-        Limit: number,
-        OnSuccess: Function,
-        OnError: Function
+        From: IJoin; // IJoin
+        Count: boolean;
+        Skip: number;
+        Limit: number;
+        OnSuccess: (results) => void;
+        OnError: (err: IError) => void;
     }
 
     export interface IJoin {
-        Table1: ITableJoin,
-        Join: string, //inner,left,right,outer
-        Table2: ITableJoin
+        Table1: ITableJoin;
+        Join: string; // inner,left,right,outer
+        Table2: ITableJoin;
     }
 
     export interface INextJoin {
-        Table: string,
-        Column: string
+        Table: string;
+        Column: string;
     }
 
-    export interface JsStoreStatus {
-        ConStatus: ConnectionStatus,
-        LastError: string
+    export interface IJsStoreStatus {
+        ConStatus: ConnectionStatus;
+        LastError: string;
     }
 
     export interface IWebWorkerRequest {
-        Name: string,
-        Query: any,
-        OnSuccess: Function,
-        OnError: Function
+        Name: string;
+        Query: any;
+        OnSuccess: (results) => void;
+        OnError: (err: IError) => void;
     }
 
     export interface IWebWorkerResult {
@@ -142,17 +142,15 @@ namespace JsStore {
     }
 
     export interface IError {
-        Name: string,
-        Message: string
+        Name: string;
+        Message: string;
     }
 
     export interface IAggregate {
-        Max: Array<any>,
-        Min: Array<any>,
-        Sum: Array<any>,
-        Count: Array<any>,
-        Avg: Array<any>
+        Max: any[];
+        Min: any[];
+        Sum: any[];
+        Count: any[];
+        Avg: any[];
     }
-
-
 }

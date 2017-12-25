@@ -9,9 +9,10 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /**
- * @license :JsStore.js - v1.3.2 - 15/12/2017
+ * @license :JsStore.js - v1.3.3 - 15/12/2017
  * https://github.com/ujjwalguptaofficial/JsStore
- * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
+ * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
+ */ 
 var KeyStore;
 (function (KeyStore) {
     var Utils = /** @class */ (function () {
@@ -679,7 +680,7 @@ var JsStore;
      * @param {() => void} [errCallBack=null]
      * @returns
      */
-    var isDbExist = function (dbInfo, callback, errCallBack) {
+    JsStore.isDbExist = function (dbInfo, callback, errCallBack) {
         if (callback === void 0) { callback = null; }
         if (errCallBack === void 0) { errCallBack = null; }
         var use_promise = callback ? false : true;
@@ -687,12 +688,12 @@ var JsStore;
             if (use_promise) {
                 return new Promise(function (resolve, reject) {
                     if (typeof dbInfo === 'string') {
-                        getDbVersion(dbInfo, function (dbVersion) {
+                        JsStore.getDbVersion(dbInfo, function (dbVersion) {
                             resolve(Boolean(dbVersion));
                         });
                     }
                     else {
-                        getDbVersion(dbInfo.DbName, function (dbVersion) {
+                        JsStore.getDbVersion(dbInfo.DbName, function (dbVersion) {
                             resolve(dbInfo.Table.Version <= dbVersion);
                         });
                     }
@@ -700,12 +701,12 @@ var JsStore;
             }
             else {
                 if (typeof dbInfo === 'string') {
-                    getDbVersion.call(this, dbInfo, function (dbVersion) {
+                    JsStore.getDbVersion.call(this, dbInfo, function (dbVersion) {
                         callback.call(this, Boolean(dbVersion));
                     });
                 }
                 else {
-                    getDbVersion.call(this, dbInfo.DbName, function (dbVersion) {
+                    JsStore.getDbVersion.call(this, dbInfo.DbName, function (dbVersion) {
                         callback.call(this, dbInfo.Table.Version <= dbVersion);
                     });
                 }
@@ -740,7 +741,7 @@ var JsStore;
      * @param {string} dbName
      * @param {(version: number) => void} callback
      */
-    var getDbVersion = function (dbName, callback) {
+    JsStore.getDbVersion = function (dbName, callback) {
         var that = this;
         KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
             callback.call(that, Number(dbVersion));
@@ -752,10 +753,17 @@ var JsStore;
      * @param {string} dbName
      * @param {(any) => void} callback
      */
-    var getDbSchema = function (dbName, callback) {
+    JsStore.getDbSchema = function (dbName, callback) {
         if (callback) {
             KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
-                callback(result);
+                if (result._name) {
+                    callback(result);
+                }
+                else {
+                    var db_schema = new JsStore.Model.DataBase(result);
+                    KeyStore.set("JsStore_" + dbName + "_Schema", db_schema);
+                    callback(db_schema);
+                }
             });
         }
     };
@@ -781,7 +789,7 @@ var JsStore;
      * Enable log
      *
      */
-    var enableLog = function () {
+    JsStore.enableLog = function () {
         JsStore.enable_log = true;
         if (JsStore.worker_instance) {
             JsStore.worker_instance.postMessage({
@@ -796,7 +804,7 @@ var JsStore;
      * disable log
      *
      */
-    var disableLog = function () {
+    JsStore.disableLog = function () {
         JsStore.enable_log = false;
         if (JsStore.worker_instance) {
             JsStore.worker_instance.postMessage({
@@ -888,6 +896,7 @@ var JsStore;
     (function (Model) {
         var Table = /** @class */ (function () {
             function Table(table, dbName) {
+                this._columns = [];
                 // internal Members
                 this._requireDelete = false;
                 this._requireCreation = false;
@@ -895,15 +904,16 @@ var JsStore;
                 this._name = table.Name;
                 this._version = table.Version == null ? 1 : table.Version;
                 table.Columns.forEach(function (item) {
-                    this.Columns.push(new Model.Column(item, table.Name));
+                    this._columns.push(new Model.Column(item, table.Name));
                 }, this);
                 this.setRequireDelete(dbName);
                 this.setDbVersion(dbName);
                 this.setPrimaryKey(dbName);
             }
             Table.prototype.setPrimaryKey = function (dbName) {
-                this._columns.forEach(function (item) {
+                this._columns.every(function (item) {
                     this._primaryKey = item._primaryKey ? item._name : "";
+                    return !item._primaryKey;
                 }, this);
             };
             Table.prototype.setRequireDelete = function (dbName) {
@@ -918,11 +928,11 @@ var JsStore;
                 });
             };
             Table.prototype.setDbVersion = function (dbName) {
-                JsStore.db_version = JsStore.db_version > this._version ? JsStore.db_version : this._version;
+                var db_version = db_version > this._version ? db_version : this._version;
                 // setting db version
-                KeyStore.set('JsStore_' + dbName + '_Db_Version', JsStore.db_version)
-                    .set("JsStore_" + dbName + "_" + this._name + "_Version", JsStore.db_version);
-                this._version = JsStore.db_version;
+                KeyStore.set('JsStore_' + dbName + '_Db_Version', db_version)
+                    .set("JsStore_" + dbName + "_" + this._name + "_Version", db_version);
+                this._version = db_version;
             };
             return Table;
         }());
@@ -938,7 +948,7 @@ var JsStore;
                 this._tables = [];
                 this._name = dataBase.Name;
                 dataBase.Tables.forEach(function (item) {
-                    this._tables.push(new Model.Table(item, this.Name));
+                    this._tables.push(new Model.Table(item, this._name));
                 }, this);
             }
             return DataBase;
@@ -999,8 +1009,8 @@ var JsStore;
                     }
                 };
                 this.getPrimaryKey = function (tableName) {
-                    var PrimaryKey = this.getTable(tableName).PrimaryKey;
-                    return PrimaryKey ? PrimaryKey : this.getKeyPath();
+                    var primary_key = this.getTable(tableName)._primaryKey;
+                    return primary_key ? primary_key : this.getKeyPath(tableName);
                 };
                 this.getKeyPath = function (tableName) {
                     var transaction = Business.db_connection.transaction([tableName], "readonly"), object_store = transaction.objectStore(tableName);
@@ -1379,7 +1389,7 @@ var JsStore;
                             }
                             createObjectStore(db, item);
                         }
-                        else if (item._requireDelete) {
+                        else if (item._requireCreation) {
                             createObjectStore(db, item);
                         }
                     });
@@ -1478,63 +1488,68 @@ var JsStore;
             __extends(InsertHelper, _super);
             function InsertHelper() {
                 var _this = _super !== null && _super.apply(this, arguments) || this;
-                _this.ValuesAffected = [];
+                _this._valuesAffected = [];
                 _this.onTransactionCompleted = function () {
-                    this.OnSuccess(this.Query.Return ? this.ValuesAffected : this.RowAffected);
+                    this.OnSuccess(this._query.Return ? this._valuesAffected : this.RowAffected);
                 };
                 _this.checkModifyInsertValues = function (table, values) {
-                    var That = this, ValueIndex = 0, Value, TableName = table.Name, checkDatas = function () {
-                        Value = values[ValueIndex++];
+                    var that = this, value_index = 0, value, table_name = table._name, checkDatas = function () {
+                        value = values[value_index++];
                         checkInternal();
                     }, checkInternal = function () {
-                        if (Value) {
+                        if (value) {
                             checkAndModifyValue();
                         }
                         else {
-                            That.insertData(values);
+                            that.insertData(values);
                         }
-                    }, checkAndModifyValue = function () {
-                        var Index = 0, checkAndModifyColumn = function (column) {
+                    };
+                    var checkAndModifyValue = function () {
+                        var index = 0, onValidationError = function (error, details) {
+                            that.ErrorOccured = true;
+                            that.Error = JsStore.Utils.getError(error, details);
+                        };
+                        var checkAndModifyColumn = function (column) {
+                            var checkNotNullAndDataType = function () {
+                                // check not null schema
+                                if (column._notNull && JsStore.isNull(value[column._name])) {
+                                    onValidationError(JsStore.ErrorType.NullValue, { ColumnName: column._name });
+                                }
+                                else if (column._dataType && typeof value[column._name] !== column._dataType) {
+                                    onValidationError(JsStore.ErrorType.BadDataType, { ColumnName: column._name });
+                                }
+                                checkAndModifyColumn(table._columns[index++]);
+                            };
+                            var saveAutoIncrementValue = function () {
+                                KeyStore.get("JsStore_" + Business.active_db._name + "_" + table_name + "_" + column._name + "_Value", function (columnValue) {
+                                    value[column._name] = ++columnValue;
+                                    KeyStore.set("JsStore_" + Business.active_db._name + "_" + table_name + "_" + column._name + "_Value", columnValue);
+                                    checkNotNullAndDataType();
+                                });
+                            };
                             if (column) {
-                                var onValidationError = function (error, details) {
-                                    That.ErrorOccured = true;
-                                    That.Error = JsStore.Utils.getError(error, details);
-                                }, CheckNotNullAndDataType = function () {
-                                    //check not null schema
-                                    if (column.NotNull && JsStore.isNull(Value[column.Name])) {
-                                        onValidationError(JsStore.ErrorType.NullValue, { ColumnName: column.Name });
+                                if (!that.ErrorOccured) {
+                                    // check auto increment scheme
+                                    if (column._autoIncrement) {
+                                        saveAutoIncrementValue();
                                     }
-                                    else if (column.DataType && typeof Value[column.Name] != column.DataType) {
-                                        onValidationError(JsStore.ErrorType.BadDataType, { ColumnName: column.Name });
-                                    }
-                                    checkAndModifyColumn(table.Columns[Index++]);
-                                };
-                                if (!That.ErrorOccured) {
-                                    //check auto increment scheme
-                                    if (column.AutoIncrement) {
-                                        KeyStore.get("JsStore_" + Business.active_db._name + "_" + TableName + "_" + column.Name + "_Value", function (columnValue) {
-                                            Value[column.Name] = ++columnValue;
-                                            KeyStore.set("JsStore_" + Business.active_db._name + "_" + TableName + "_" + column.Name + "_Value", columnValue);
-                                            CheckNotNullAndDataType();
-                                        });
-                                    }
-                                    else if (column.Default && Value[column.Name] == null) {
-                                        Value[column.Name] = column.Default;
-                                        CheckNotNullAndDataType();
+                                    else if (column._default && JsStore.isNull(value[column._name])) {
+                                        value[column._name] = column._default;
+                                        checkNotNullAndDataType();
                                     }
                                     else {
-                                        CheckNotNullAndDataType();
+                                        checkNotNullAndDataType();
                                     }
                                 }
                                 else {
-                                    That.onErrorOccured(That.Error, true);
+                                    that.onErrorOccured(that.Error, true);
                                 }
                             }
                             else {
                                 checkDatas();
                             }
                         };
-                        checkAndModifyColumn(table.Columns[Index++]);
+                        checkAndModifyColumn(table._columns[index++]);
                     };
                     checkDatas();
                 };
@@ -1554,61 +1569,55 @@ var JsStore;
             function Insert(query, onSuccess, onError) {
                 var _this = _super.call(this) || this;
                 _this.insertData = function (values) {
-                    var That = this, ValueIndex = 0, IsReturn = this.Query.Return, insertDataintoTable;
-                    if (IsReturn) {
+                    var value_index = 0, is_return = this._query.Return, insertDataintoTable;
+                    if (is_return) {
                         insertDataintoTable = function (value) {
                             if (value) {
-                                var AddResult = object_store.add(value);
-                                AddResult.onerror = function (e) {
-                                    That.onErrorOccured(e);
-                                };
-                                AddResult.onsuccess = function (e) {
-                                    That.ValuesAffected.push(value);
-                                    insertDataintoTable(values[ValueIndex++]);
-                                };
+                                var add_result = object_store.add(value);
+                                add_result.onerror = this.onErrorOccured.bind(this);
+                                add_result.onsuccess = function (e) {
+                                    this.ValuesAffected.push(value);
+                                    insertDataintoTable.call(this, values[value_index++]);
+                                }.bind(this);
                             }
                         };
                     }
                     else {
                         insertDataintoTable = function (value) {
                             if (value) {
-                                var AddResult = object_store.add(value);
-                                AddResult.onerror = function (e) {
-                                    That.onErrorOccured(e);
-                                };
-                                AddResult.onsuccess = function (e) {
-                                    ++That.RowAffected;
-                                    insertDataintoTable(values[ValueIndex++]);
-                                };
+                                var add_result = object_store.add(value);
+                                add_result.onerror = this.onErrorOccured.bind(this);
+                                add_result.onsuccess = function (e) {
+                                    ++this.RowAffected;
+                                    insertDataintoTable.call(this, values[value_index++]);
+                                }.bind(this);
                             }
                         };
                     }
-                    That.Transaction = Business.db_connection.transaction([That.Query.Into], "readwrite");
-                    var object_store = That.Transaction.objectStore(That.Query.Into);
-                    That.Transaction.oncomplete = function (e) {
-                        That.onTransactionCompleted();
-                    };
-                    insertDataintoTable(values[ValueIndex++]);
+                    this.Transaction = Business.db_connection.transaction([this._query.Into], "readwrite");
+                    var object_store = this.Transaction.objectStore(this._query.Into);
+                    this.Transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                    insertDataintoTable.call(this, values[value_index++]);
                 };
                 try {
-                    _this.Query = query;
+                    _this._query = query;
                     _this.OnSuccess = onSuccess;
                     _this.OnError = onError;
-                    var Table = _this.getTable(query.Into);
-                    if (Table) {
-                        if (_this.Query.SkipDataCheck) {
-                            _this.insertData(_this.Query.Values);
-                            //remove values
-                            _this.Query.Values = undefined;
+                    var table = _this.getTable(query.Into);
+                    if (table) {
+                        if (_this._query.SkipDataCheck) {
+                            _this.insertData(_this._query.Values);
+                            // remove values
+                            _this._query.Values = undefined;
                         }
                         else {
-                            _this.checkModifyInsertValues(Table, _this.Query.Values);
-                            //remove values
-                            _this.Query.Values = undefined;
+                            _this.checkModifyInsertValues(table, _this._query.Values);
+                            // remove values
+                            _this._query.Values = undefined;
                         }
                     }
                     else {
-                        var Error = JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, { TableName: query.Into });
+                        var error = JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, { TableName: query.Into });
                         JsStore.throwError(Error);
                     }
                 }
@@ -1792,8 +1801,8 @@ var JsStore;
                     }
                 };
                 this.returnResult = function (result) {
-                    if (this.OnSuccess) {
-                        this.OnSuccess(result);
+                    if (this._onSuccess) {
+                        this._onSuccess(result);
                     }
                     else {
                         self.postMessage(result);
@@ -1848,9 +1857,11 @@ var JsStore;
                     }
                 };
                 this.openDb = function (dbName, onSuccess, onError) {
-                    KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
+                    // KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
+                    JsStore.getDbVersion(dbName, function (dbVersion) {
                         if (dbVersion != null) {
-                            KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
+                            // KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
+                            JsStore.getDbSchema(dbName, function (result) {
                                 Business.active_db = result;
                                 var open_db_object = new Business.OpenDb(dbVersion, onSuccess, onError);
                             });
@@ -3714,17 +3725,15 @@ var JsStore;
                         var createTransaction = function () {
                             this.Transaction = Business.db_connection.transaction([query.From], "readonly");
                             this.ObjectStore = this.Transaction.objectStore(query.From);
-                            this.Transaction.oncomplete = function (e) {
-                                this.onTransactionCompleted();
-                            };
-                            this.Transaction.ontimeout = this.onTransactionTimeout;
+                            this.Transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                            this.Transaction.ontimeout = this.onTransactionTimeout.bind(this);
                         };
                         if (query.Where !== undefined) {
                             if (query.Where.Or) {
                                 var select_object = new Business.Select.Instance(query, function (results) {
                                     this.ResultCount = results.length;
                                     this.onTransactionCompleted();
-                                }, _this.OnError);
+                                }.bind(_this), _this.OnError);
                             }
                             else {
                                 createTransaction.call(_this);
@@ -3732,7 +3741,7 @@ var JsStore;
                             }
                         }
                         else {
-                            createTransaction();
+                            createTransaction.call(_this);
                             _this.executeWhereUndefinedLogic();
                         }
                     }
@@ -4573,17 +4582,17 @@ var JsStore;
                     }
                 }
                 else {
-                    this.RequestQueue.push(request);
-                    if (this.RequestQueue.length === 1 && JsStore.worker_status !== JsStore.WebWorkerStatus.NotStarted) {
+                    this._requestQueue.push(request);
+                    if (this._requestQueue.length === 1 && JsStore.worker_status !== JsStore.WebWorkerStatus.NotStarted) {
                         this.executeCode();
                     }
                 }
                 JsStore.log("request pushed: " + request.Name);
             };
             this.executeCode = function () {
-                if (!this.IsCodeExecuting && this.RequestQueue.length > 0) {
-                    this.IsCodeExecuting = true;
-                    var first_request = this.RequestQueue[0], request = {
+                if (!this._isCodeExecuting && this._requestQueue.length > 0) {
+                    this._isCodeExecuting = true;
+                    var first_request = this._requestQueue[0], request = {
                         Name: first_request.Name,
                         Query: first_request.Query
                     };
@@ -4607,7 +4616,7 @@ var JsStore;
             };
             this.processFinishedRequest = function (message) {
                 var finished_request = this._requestQueue.shift();
-                this.IsCodeExecuting = false;
+                this._isCodeExecuting = false;
                 if (finished_request) {
                     JsStore.log("request finished : " + finished_request.Name);
                     if (message.ErrorOccured) {
@@ -4617,12 +4626,7 @@ var JsStore;
                     }
                     else {
                         if (finished_request.OnSuccess) {
-                            if (message.ReturnedValue != null) {
-                                finished_request.OnSuccess(message.ReturnedValue);
-                            }
-                            else {
-                                finished_request.OnSuccess();
-                            }
+                            finished_request.OnSuccess(message.ReturnedValue);
                         }
                     }
                     this.executeCode();
@@ -4844,7 +4848,7 @@ var JsStore;
                     Name: 'clear',
                     Query: tableName,
                     OnSuccess: onSuccess,
-                    OnError: onerror
+                    OnError: onError
                 }, use_promise);
             };
             /**

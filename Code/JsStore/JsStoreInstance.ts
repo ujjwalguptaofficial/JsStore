@@ -55,8 +55,7 @@ namespace JsStore {
                 OnError: onError,
                 Query: dataBase
             } as IWebWorkerRequest, false);
-        }
-
+        };
 
         /**
          * drop dataBase
@@ -190,14 +189,13 @@ namespace JsStore {
          * @param {Function} [onError=null] 
          * @memberof Instance
          */
-        clear = function
-        (tableName: string, onSuccess: () => void, onError: (err: IError) => void) {
+        clear = function (tableName: string, onSuccess: () => void, onError: (err: IError) => void) {
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'clear',
                 Query: tableName,
                 OnSuccess: onSuccess,
-                OnError: onerror
+                OnError: onError
             } as IWebWorkerRequest, use_promise);
         }
 

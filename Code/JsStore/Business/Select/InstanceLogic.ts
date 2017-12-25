@@ -3,7 +3,7 @@ namespace JsStore {
         export namespace Select {
             export class Instance extends Helper {
 
-                constructor(query: ISelect, onSuccess: Function, onError: Function) {
+                constructor(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
                     super();
                     var That = this;
                     this.Query = query;

@@ -6,7 +6,7 @@ namespace JsStore {
             ErrorCount = 0;
             RowAffected = 0;
             OnSuccess: Function;
-            OnError: Function;
+            OnError: (err: IError) => void;
             Transaction: IDBTransaction;
             ObjectStore: IDBObjectStore;
             Query;

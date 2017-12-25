@@ -52,7 +52,7 @@ namespace JsStore {
                             }
                             createObjectStore(db, item);
                         }
-                        else if (item._requireDelete) {
+                        else if (item._requireCreation) {
                             createObjectStore(db, item);
                         }
                     });

@@ -41,8 +41,8 @@ namespace JsStore {
             };
 
             protected getPrimaryKey = function (tableName) {
-                var PrimaryKey = this.getTable(tableName).PrimaryKey
-                return PrimaryKey ? PrimaryKey : this.getKeyPath();
+                var primary_key = (this.getTable(tableName) as Table)._primaryKey;
+                return primary_key ? primary_key : this.getKeyPath(tableName);
             };
 
             protected getKeyPath = function (tableName) {

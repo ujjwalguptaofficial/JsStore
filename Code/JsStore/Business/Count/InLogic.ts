@@ -19,11 +19,11 @@ namespace JsStore {
                                         }
                                         Cursor.continue();
                                     }
-                                }
+                                };
                                 CursorOpenRequest.onerror = function (e) {
                                     That.ErrorOccured = true;
                                     That.onErrorOccured(e);
-                                }
+                                };
                             }
                         }
                     }
@@ -34,11 +34,11 @@ namespace JsStore {
                                     CursorOpenRequest = ColumnStore.count(IDBKeyRange.only(values[i]));
                                     CursorOpenRequest.onsuccess = function (e) {
                                         That.ResultCount += (<any>e).target.result;
-                                    }
+                                    };
                                     CursorOpenRequest.onerror = function (e) {
                                         That.ErrorOccured = true;
                                         That.onErrorOccured(e);
-                                    }
+                                    };
                                 }
                             }
                         }
@@ -52,11 +52,11 @@ namespace JsStore {
                                             ++That.ResultCount;
                                             Cursor.continue();
                                         }
-                                    }
+                                    };
                                     CursorOpenRequest.onerror = function (e) {
                                         That.ErrorOccured = true;
                                         That.onErrorOccured(e);
-                                    }
+                                    };
                                 }
                             }
                         }
@@ -65,7 +65,7 @@ namespace JsStore {
                     CursorOpenRequest.onerror = function (e) {
                         That.ErrorOccured = true;
                         That.onErrorOccured(e);
-                    }
+                    };
                 }
             }
         }

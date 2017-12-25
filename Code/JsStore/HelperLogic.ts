@@ -7,7 +7,7 @@ namespace JsStore {
      * @param {() => void} [errCallBack=null] 
      * @returns 
      */
-    var isDbExist = function (
+    export var isDbExist = function (
         dbInfo: IDbInfo,
         callback: (isExist: boolean) => void = null,
         errCallBack: (err: IError) => void = null
@@ -69,7 +69,7 @@ namespace JsStore {
      * @param {string} dbName 
      * @param {(version: number) => void} callback 
      */
-    var getDbVersion = function (dbName: string, callback: (version: number) => void) {
+    export var getDbVersion = function (dbName: string, callback: (version: number) => void) {
         var that = this;
         KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
             callback.call(that, Number(dbVersion));
@@ -82,10 +82,17 @@ namespace JsStore {
      * @param {string} dbName 
      * @param {(any) => void} callback 
      */
-    var getDbSchema = function (dbName: string, callback: (any) => void) {
+    export var getDbSchema = function (dbName: string, callback: (any) => void) {
         if (callback) {
             KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
-                callback(result);
+                if (result._name) {
+                    callback(result);
+                }
+                else {
+                    var db_schema = new Model.DataBase(result);
+                    KeyStore.set("JsStore_" + dbName + "_Schema", db_schema);
+                    callback(db_schema);
+                }
             });
         }
     };
@@ -112,7 +119,7 @@ namespace JsStore {
      * Enable log
      * 
      */
-    var enableLog = function () {
+    export var enableLog = function () {
         enable_log = true;
         if (worker_instance) {
             worker_instance.postMessage({
@@ -128,7 +135,7 @@ namespace JsStore {
      * disable log
      * 
      */
-    var disableLog = function () {
+    export var disableLog = function () {
         enable_log = false;
         if (worker_instance) {
             worker_instance.postMessage({

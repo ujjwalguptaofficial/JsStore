@@ -1,28 +1,27 @@
 namespace JsStore {
     export namespace Business {
         export class Insert extends InsertHelper {
-
-            constructor(query: IInsert, onSuccess: Function, onError: Function) {
+            constructor(query: IInsert, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void) {
                 super();
                 try {
-                    this.Query = query;
+                    this._query = query;
                     this.OnSuccess = onSuccess;
                     this.OnError = onError;
-                    var Table = this.getTable(query.Into);
-                    if (Table) {
-                        if (this.Query.SkipDataCheck) {
-                            this.insertData(this.Query.Values);
-                            //remove values
-                            this.Query.Values = undefined;
+                    var table = this.getTable(query.Into);
+                    if (table) {
+                        if (this._query.SkipDataCheck) {
+                            this.insertData(this._query.Values);
+                            // remove values
+                            this._query.Values = undefined;
                         }
                         else {
-                            this.checkModifyInsertValues(Table, this.Query.Values);
-                            //remove values
-                            this.Query.Values = undefined;
+                            this.checkModifyInsertValues(table, this._query.Values);
+                            // remove values
+                            this._query.Values = undefined;
                         }
                     }
                     else {
-                        var Error = Utils.getError(ErrorType.TableNotExist, { TableName: query.Into })
+                        var error = Utils.getError(ErrorType.TableNotExist, { TableName: query.Into });
                         throwError(Error);
                     }
                 }
@@ -32,45 +31,37 @@ namespace JsStore {
             }
 
             private insertData = function (values) {
-                var That = this,
-                    ValueIndex = 0,
-                    IsReturn = this.Query.Return,
-                    insertDataintoTable: Function;
-                if (IsReturn) {
+                var value_index = 0,
+                    is_return = this._query.Return,
+                    insertDataintoTable: (values: any[]) => void;
+                if (is_return) {
                     insertDataintoTable = function (value) {
                         if (value) {
-                            var AddResult = object_store.add(value);
-                            AddResult.onerror = function (e) {
-                                That.onErrorOccured(e);
-                            }
-                            AddResult.onsuccess = function (e) {
-                                That.ValuesAffected.push(value);
-                                insertDataintoTable(values[ValueIndex++]);
-                            }
+                            var add_result = object_store.add(value);
+                            add_result.onerror = this.onErrorOccured.bind(this);
+                            add_result.onsuccess = function (e) {
+                                this.ValuesAffected.push(value);
+                                insertDataintoTable.call(this, values[value_index++]);
+                            }.bind(this);
                         }
-                    }
+                    };
                 }
                 else {
                     insertDataintoTable = function (value) {
                         if (value) {
-                            var AddResult = object_store.add(value);
-                            AddResult.onerror = function (e) {
-                                That.onErrorOccured(e);
-                            }
-                            AddResult.onsuccess = function (e) {
-                                ++That.RowAffected;
-                                insertDataintoTable(values[ValueIndex++]);
-                            }
-
+                            var add_result = object_store.add(value);
+                            add_result.onerror = this.onErrorOccured.bind(this);
+                            add_result.onsuccess = function (e) {
+                                ++this.RowAffected;
+                                insertDataintoTable.call(this, values[value_index++]);
+                            }.bind(this);
                         }
-                    }
+                    };
                 }
-                That.Transaction = db_connection.transaction([That.Query.Into], "readwrite");
-                var object_store = That.Transaction.objectStore(That.Query.Into);
-                That.Transaction.oncomplete = function (e) {
-                    That.onTransactionCompleted();
-                };
-                insertDataintoTable(values[ValueIndex++]);
+                this.Transaction = db_connection.transaction([this._query.Into], "readwrite");
+                var object_store = this.Transaction.objectStore(this._query.Into);
+                this.Transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                insertDataintoTable.call(this, values[value_index++]);
             };
         }
     }

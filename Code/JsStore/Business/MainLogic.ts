@@ -45,8 +45,8 @@ namespace JsStore {
             };
 
             private returnResult = function (result) {
-                if (this.OnSuccess) {
-                    this.OnSuccess(result);
+                if (this._onSuccess) {
+                    this._onSuccess(result);
                 }
                 else {
                     (self as any).postMessage(result);
@@ -96,9 +96,11 @@ namespace JsStore {
             };
 
             private openDb = function (dbName, onSuccess: () => void, onError: (err: IError) => void) {
-                KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
+                // KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
+                getDbVersion(dbName, function (dbVersion) {
                     if (dbVersion != null) {
-                        KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
+                        // KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
+                        getDbSchema(dbName, function (result) {
                             active_db = result;
                             var open_db_object = new OpenDb(dbVersion, onSuccess, onError);
                         });

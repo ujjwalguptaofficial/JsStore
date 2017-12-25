@@ -1,78 +1,87 @@
 namespace JsStore {
     export namespace Business {
         export class InsertHelper extends Base {
-            ValuesAffected = [];
-            Query: IInsert;
+            _valuesAffected = [];
+            _query: IInsert;
 
             public onTransactionCompleted = function () {
-                this.OnSuccess(this.Query.Return ? this.ValuesAffected : this.RowAffected);
-            }
+                this.OnSuccess(this._query.Return ? this._valuesAffected : this.RowAffected);
+            };
 
-            protected checkModifyInsertValues = function (table, values) {
-                var That = this,
-                    ValueIndex = 0,
-                    Value,
-                    TableName = table.Name,
+            protected checkModifyInsertValues = function (table: Table, values) {
+                var that = this,
+                    value_index = 0,
+                    value,
+                    table_name = table._name,
                     checkDatas = function () {
-                        Value = values[ValueIndex++];
+                        value = values[value_index++];
                         checkInternal();
                     },
                     checkInternal = function () {
-                        if (Value) {
+                        if (value) {
                             checkAndModifyValue();
                         }
                         else {
-                            That.insertData(values);
+                            that.insertData(values);
                         }
-                    },
-                    checkAndModifyValue = function () {
-                        var Index = 0,
-                            checkAndModifyColumn = function (column) {
-                                if (column) {
-                                    var onValidationError = function (error: ErrorType, details: any) {
-                                        That.ErrorOccured = true;
-                                        That.Error = Utils.getError(error, details);
-                                    },
-                                        CheckNotNullAndDataType = function () {
-                                            //check not null schema
-                                            if (column.NotNull && isNull(Value[column.Name])) {
-                                                onValidationError(ErrorType.NullValue, { ColumnName: column.Name });
-                                            }
-                                            //check datatype
-                                            else if (column.DataType && typeof Value[column.Name] != column.DataType) {
-                                                onValidationError(ErrorType.BadDataType, { ColumnName: column.Name });
-                                            }
-                                            checkAndModifyColumn(table.Columns[Index++]);
-                                        };
-                                    if (!That.ErrorOccured) {
-                                        //check auto increment scheme
-                                        if (column.AutoIncrement) {
-                                            KeyStore.get(
-                                                "JsStore_" + active_db._name + "_" + TableName + "_" + column.Name + "_Value",
-                                                function (columnValue: number) {
-                                                    Value[column.Name] = ++columnValue;
-                                                    KeyStore.set("JsStore_" + active_db._name + "_" + TableName + "_" + column.Name + "_Value", columnValue);
-                                                    CheckNotNullAndDataType();
-                                                });
-                                        }
-                                        else if (column.Default && Value[column.Name] == null) { //check Default Schema
-                                            Value[column.Name] = column.Default;
-                                            CheckNotNullAndDataType();
-                                        }
-                                        else {
-                                            CheckNotNullAndDataType();
-                                        }
-                                    }
-                                    else {
-                                        That.onErrorOccured(That.Error, true);
-                                    }
+                    };
+                var checkAndModifyValue = function () {
+                    var index = 0,
+                        onValidationError = function (error: ErrorType, details: any) {
+                            that.ErrorOccured = true;
+                            that.Error = Utils.getError(error, details);
+                        };
+                    var checkAndModifyColumn = function (column: Column) {
+                        var checkNotNullAndDataType = function () {
+                            // check not null schema
+                            if (column._notNull && isNull(value[column._name])) {
+                                onValidationError(ErrorType.NullValue, { ColumnName: column._name });
+                            }
+                            // check datatype
+                            else if (column._dataType && typeof value[column._name] !== column._dataType) {
+                                onValidationError(ErrorType.BadDataType, { ColumnName: column._name });
+                            }
+                            checkAndModifyColumn(table._columns[index++]);
+                        };
+                        var saveAutoIncrementValue = function () {
+                            KeyStore.get(
+                                "JsStore_" + active_db._name + "_" + table_name + "_" + column._name + "_Value",
+                                function (columnValue: number) {
+                                    value[column._name] = ++columnValue;
+                                    KeyStore.set(
+                                        "JsStore_" + active_db._name + "_" + table_name + "_" + column._name + "_Value",
+                                        columnValue
+                                    );
+                                    checkNotNullAndDataType();
+                                }
+                            );
+                        };
+
+                        if (column) {
+                            if (!that.ErrorOccured) {
+                                // check auto increment scheme
+                                if (column._autoIncrement) {
+                                    saveAutoIncrementValue();
+                                }
+                                // check Default Schema
+                                else if (column._default && isNull(value[column._name])) {
+                                    value[column._name] = column._default;
+                                    checkNotNullAndDataType();
                                 }
                                 else {
-                                    checkDatas();
+                                    checkNotNullAndDataType();
                                 }
                             }
-                        checkAndModifyColumn(table.Columns[Index++]);
+                            else {
+                                that.onErrorOccured(that.Error, true);
+                            }
+                        }
+                        else {
+                            checkDatas();
+                        }
                     };
+                    checkAndModifyColumn(table._columns[index++]);
+                };
                 checkDatas();
             };
         }

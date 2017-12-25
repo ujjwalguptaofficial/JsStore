@@ -297,8 +297,8 @@ declare namespace JsStore {
         Count: boolean;
         Skip: number;
         Limit: number;
-        OnSuccess: Function;
-        OnError: Function;
+        OnSuccess: (results) => void;
+        OnError: (err: IError) => void;
     }
     interface IJoin {
         Table1: ITableJoin;
@@ -309,15 +309,15 @@ declare namespace JsStore {
         Table: string;
         Column: string;
     }
-    interface JsStoreStatus {
+    interface IJsStoreStatus {
         ConStatus: ConnectionStatus;
         LastError: string;
     }
     interface IWebWorkerRequest {
         Name: string;
         Query: any;
-        OnSuccess: Function;
-        OnError: Function;
+        OnSuccess: (results) => void;
+        OnError: (err: IError) => void;
     }
     interface IWebWorkerResult {
         ErrorOccured: boolean;
@@ -329,15 +329,15 @@ declare namespace JsStore {
         Message: string;
     }
     interface IAggregate {
-        Max: Array<any>;
-        Min: Array<any>;
-        Sum: Array<any>;
-        Count: Array<any>;
-        Avg: Array<any>;
+        Max: any[];
+        Min: any[];
+        Sum: any[];
+        Count: any[];
+        Avg: any[];
     }
 }
 declare namespace JsStore {
-    var enable_log: boolean, db_version: number, status: JsStoreStatus, temp_results: any[];
+    var enable_log: boolean, db_version: number, status: IJsStoreStatus, temp_results: any[];
     var throwError: (error: any) => never;
     var getObjectFirstKey: (value: any) => string;
     var log: (msg: any) => void;
@@ -358,12 +358,45 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     /**
+     * checks whether db exist or not
+     *
+     * @param {DbInfo} dbInfo
+     * @param {() => void} [callback=null]
+     * @param {() => void} [errCallBack=null]
+     * @returns
+     */
+    var isDbExist: (dbInfo: IDbInfo, callback?: (isExist: boolean) => void, errCallBack?: (err: IError) => void) => any;
+    /**
+     * get Db Version
+     *
+     * @param {string} dbName
+     * @param {(version: number) => void} callback
+     */
+    var getDbVersion: (dbName: string, callback: (version: number) => void) => void;
+    /**
+     * get Database Schema
+     *
+     * @param {string} dbName
+     * @param {(any) => void} callback
+     */
+    var getDbSchema: (dbName: string, callback: (any: any) => void) => void;
+    /**
      * check for null value
      *
      * @param {any} value
      * @returns
      */
     var isNull: (value: any) => boolean;
+    /**
+     * Enable log
+     *
+     */
+    var enableLog: () => void;
+    /**
+     * disable log
+     *
+     */
+    var disableLog: () => void;
 }
 declare namespace JsStore {
     namespace Model {
@@ -430,7 +463,7 @@ declare namespace JsStore {
             ErrorCount: number;
             RowAffected: number;
             OnSuccess: Function;
-            OnError: Function;
+            OnError: (err: IError) => void;
             Transaction: IDBTransaction;
             ObjectStore: IDBObjectStore;
             Query: any;
@@ -472,17 +505,17 @@ declare namespace JsStore {
 declare namespace JsStore {
     namespace Business {
         class InsertHelper extends Base {
-            ValuesAffected: any[];
-            Query: IInsert;
+            _valuesAffected: any[];
+            _query: IInsert;
             onTransactionCompleted: () => void;
-            protected checkModifyInsertValues: (table: any, values: any) => void;
+            protected checkModifyInsertValues: (table: Table, values: any) => void;
         }
     }
 }
 declare namespace JsStore {
     namespace Business {
         class Insert extends InsertHelper {
-            constructor(query: IInsert, onSuccess: Function, onError: Function);
+            constructor(query: IInsert, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void);
             private insertData;
         }
     }
@@ -494,7 +527,7 @@ declare namespace JsStore {
             Query: IInsert;
             ValuesIndex: number;
             Table: Model.Table;
-            constructor(query: IInsert, onSuccess: Function, onError: Function);
+            constructor(query: IInsert, onSuccess: () => void, onError: (err: IError) => void);
             onTransactionCompleted: () => void;
             private bulkinsertData;
         }
@@ -614,7 +647,7 @@ declare namespace JsStore {
                 private executeRightJoin;
                 private executeWhereUndefinedLogicForJoin;
                 private startExecutionJoinLogic();
-                constructor(query: ISelectJoin, onSuccess: Function, onError: Function);
+                constructor(query: ISelectJoin, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
             }
         }
     }
@@ -645,7 +678,7 @@ declare namespace JsStore {
     namespace Business {
         namespace Select {
             class Instance extends Helper {
-                constructor(query: ISelect, onSuccess: Function, onError: Function);
+                constructor(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
                 onTransactionCompleted: () => void;
                 private createtransactionForOrLogic;
                 private orQuerySuccess;
@@ -838,7 +871,7 @@ declare namespace JsStore {
                 private onTransactionCompleted;
                 private createtransactionForOrLogic;
                 private executeOrLogic;
-                constructor(query: IDelete, onSuccess: Function, onError: Function);
+                constructor(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void);
             }
         }
     }
@@ -846,8 +879,8 @@ declare namespace JsStore {
 declare namespace JsStore {
     var worker_status: WebWorkerStatus, worker_instance: Worker;
     class CodeExecutionHelper {
-        _requestQueue: IWebWorkerRequest[];
-        _isCodeExecuting: boolean;
+        private _requestQueue;
+        private _isCodeExecuting;
         protected pushApi: (request: IWebWorkerRequest, usePromise: boolean) => any;
         protected createWorker: () => void;
         private prcoessExecutionOfCode;
