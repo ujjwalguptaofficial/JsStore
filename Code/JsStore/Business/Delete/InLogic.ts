@@ -5,18 +5,18 @@ namespace JsStore {
                 private executeInLogic = function (column, values) {
                     var Cursor: IDBCursorWithValue,
                         That = this,
-                        ColumnStore = this.ObjectStore.index(column),
+                        ColumnStore = this._objectStore.index(column),
                         CursorOpenRequest;
-                    if (That.CheckFlag) {
+                    if (That._checkFlag) {
                         for (var i = 0, length = values.length; i < length; i++) {
                             if (!That.ErrorOccured) {
-                                CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                CursorOpenRequest = this._objectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = (<any>e).target.result;
                                     if (Cursor) {
                                         if (That.checkForWhereConditionMatch(Cursor.value)) {
                                             Cursor.delete();
-                                            ++That.RowAffected;
+                                            ++That._rowAffected;
                                         }
                                         Cursor.continue();
                                     }
@@ -31,12 +31,12 @@ namespace JsStore {
                     else {
                         for (var i = 0, length = values.length; i < length; i++) {
                             if (!That.ErrorOccured) {
-                                CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                CursorOpenRequest = this._objectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = (<any>e).target.result;
                                     if (Cursor) {
                                         Cursor.delete();
-                                        ++That.RowAffected;
+                                        ++That._rowAffected;
                                         Cursor.continue();
                                     }
                                 }

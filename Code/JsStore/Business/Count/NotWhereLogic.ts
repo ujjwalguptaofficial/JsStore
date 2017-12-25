@@ -5,10 +5,10 @@ namespace JsStore {
 
                 protected executeWhereUndefinedLogic = function () {
                     var That = this;
-                    if (this.ObjectStore.count) {
-                        var CountRequest = this.ObjectStore.count();
+                    if (this._objectStore.count) {
+                        var CountRequest = this._objectStore.count();
                         CountRequest.onsuccess = function () {
-                            That.ResultCount = CountRequest.result;
+                            That._resultCount = CountRequest.result;
                         }
                         CountRequest.onerror = function (e) {
                             That.ErrorOccured = true;
@@ -17,11 +17,11 @@ namespace JsStore {
                     }
                     else {
                         var Cursor,
-                            CursorOpenRequest = this.ObjectStore.openCursor();
+                            CursorOpenRequest = this._objectStore.openCursor();
                         CursorOpenRequest.onsuccess = function (e) {
                             Cursor = (<any>e).target.result;
                             if (Cursor) {
-                                ++That.ResultCount;
+                                ++That._resultCount;
                                 (Cursor as any).continue();
                             }
 

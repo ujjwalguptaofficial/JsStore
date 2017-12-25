@@ -2,27 +2,27 @@ namespace JsStore {
     export namespace Business {
         export namespace Select {
             export class BaseSelect extends Base {
-                Results = [];
-                Sorted: boolean = false;
-                SkipRecord;
-                LimitRecord;
-                CheckFlag = false;
+                _results = [];
+                _sorted: boolean = false;
+                _skipRecord;
+                _limitRecord;
+                _checkFlag = false;
 
                 protected removeDuplicates = function () {
-                    var Datas = this.Results;
+                    var datas = this._results;
                     // free results memory
-                    this.Results = undefined;
-                    var Key = this.getPrimaryKey(this.Query.From);
+                    this._results = undefined;
+                    var key = this.getPrimaryKey(this._query.From);
                     var lookupObject = {};
-                    for (var i in Datas) {
-                        lookupObject[Datas[i][Key]] = Datas[i];
+                    for (var i in datas) {
+                        lookupObject[datas[i][key]] = datas[i];
                     }
                     // free datas memory
-                    Datas = [];
+                    datas = [];
                     for (i in lookupObject) {
-                        Datas.push(lookupObject[i]);
+                        datas.push(lookupObject[i]);
                     }
-                    this.Results = Datas;
+                    this._results = datas;
                 };
             }
         }

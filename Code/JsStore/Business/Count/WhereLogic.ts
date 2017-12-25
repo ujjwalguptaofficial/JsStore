@@ -5,14 +5,14 @@ namespace JsStore {
                 private executeWhereLogic = function (column, value, op) {
                     var That = this;
                     value = op ? value[op] : value;
-                    if (That.CheckFlag) {
+                    if (That._checkFlag) {
                         var Cursor: IDBCursorWithValue,
-                            CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
+                            CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
                         CursorOpenRequest.onsuccess = function (e) {
                             Cursor = (<any>e).target.result;
                             if (Cursor) {
                                 if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                    ++That.ResultCount;
+                                    ++That._resultCount;
                                 }
                                 Cursor.continue();
                             }
@@ -25,10 +25,10 @@ namespace JsStore {
 
                     }
                     else {
-                        if (this.ObjectStore.count) {
-                            var CountRequest = this.ObjectStore.index(column).count(this.getKeyRange(value, op));
+                        if (this._objectStore.count) {
+                            var CountRequest = this._objectStore.index(column).count(this.getKeyRange(value, op));
                             CountRequest.onsuccess = function () {
-                                That.ResultCount = CountRequest.result;
+                                That._resultCount = CountRequest.result;
                             }
                             CountRequest.onerror = function (e) {
                                 That.ErrorOccured = true;
@@ -37,11 +37,11 @@ namespace JsStore {
                         }
                         else {
                             var Cursor: IDBCursorWithValue,
-                                CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
+                                CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
                             CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = (<any>e).target.result;
                                 if (Cursor) {
-                                    ++That.ResultCount;
+                                    ++That._resultCount;
                                     Cursor.continue();
                                 }
                             }

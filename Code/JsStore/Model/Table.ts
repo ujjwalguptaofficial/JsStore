@@ -31,16 +31,15 @@ namespace JsStore {
             }
 
             private setRequireDelete(dbName: string) {
-                var that = this;
                 KeyStore.get("JsStore_" + dbName + "_" + this._name + "_Version", function (tableVersion) {
                     if (tableVersion == null) {
-                        that._requireCreation = true;
+                        this._requireCreation = true;
                     }
                     // mark only table which has version greater than store version
-                    else if (tableVersion < that._version) {
-                        that._requireDelete = true;
+                    else if (tableVersion < this._version) {
+                        this._requireDelete = true;
                     }
-                });
+                }.bind(this));
             }
 
             private setDbVersion(dbName: string) {

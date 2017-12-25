@@ -5,19 +5,19 @@ namespace JsStore {
                 constructor(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void) {
                     super();
                     try {
-                        this.OnSuccess = onSuccess;
-                        this.OnError = onError;
+                        this._onSuccess = onSuccess;
+                        this._onError = onError;
                         this.checkSchema(query.Set, query.In);
-                        if (!this.ErrorOccured) {
-                            this.Query = query;
+                        if (!this._errorOccured) {
+                            this._query = query;
                             var that = this;
                             var createTransaction = function () {
-                                that.Transaction = db_connection.transaction([query.In], "readwrite");
-                                that.ObjectStore = that.Transaction.objectStore(query.In);
-                                that.Transaction.oncomplete = function (e) {
+                                that._transaction = db_connection.transaction([query.In], "readwrite");
+                                that._objectStore = that._transaction.objectStore(query.In);
+                                that._transaction.oncomplete = function (e) {
                                     that.onTransactionCompleted();
                                 };
-                                (that.Transaction as any).ontimeout = that.onTransactionTimeout;
+                                (that._transaction as any).ontimeout = that.onTransactionTimeout;
                             };
 
                             if (query.Where) {
@@ -35,7 +35,7 @@ namespace JsStore {
                             }
                         }
                         else {
-                            this.onErrorOccured(this.Error, true);
+                            this.onErrorOccured(this._error, true);
                         }
                     }
                     catch (ex) {
@@ -44,19 +44,19 @@ namespace JsStore {
                 }
 
                 protected onTransactionCompleted = function () {
-                    this.OnSuccess(this.RowAffected);
+                    this._onSuccess(this._rowAffected);
                 };
 
                 private createtransactionForOrLogic = function (query) {
                     var that = this;
-                    this.Query = query;
+                    this._query = query;
                     try {
-                        this.Transaction = db_connection.transaction([query.In], "readwrite");
-                        this.Transaction.oncomplete = function (e) {
+                        this._transaction = db_connection.transaction([query.In], "readwrite");
+                        this._transaction.oncomplete = function (e) {
                             that.onTransactionCompleted();
                         };
-                        this.Transaction.ontimeout = this.onTransactionCompleted;
-                        this.ObjectStore = this.Transaction.objectStore(query.In);
+                        this._transaction.ontimeout = this.onTransactionCompleted;
+                        this._objectStore = this._transaction.objectStore(query.In);
                         this.goToWhereLogic();
                     }
                     catch (ex) {
@@ -67,10 +67,10 @@ namespace JsStore {
                 private executeOrLogic = function () {
                     var that = this,
                         select_object = new Select.Instance({
-                            From: this.Query.In,
-                            Where: this.Query.Where
+                            From: this._query.In,
+                            Where: this._query.Where
                         } as ISelect, function (results: any[]) {
-                            var key = that.getPrimaryKey(that.Query.In),
+                            var key = that.getPrimaryKey(that._query.In),
                                 in_query = [],
                                 where_qry = {};
                             results.forEach(function (value) {
@@ -78,27 +78,25 @@ namespace JsStore {
                             });
                             where_qry[key] = { In: in_query };
                             that.createtransactionForOrLogic({
-                                In: that.Query.In,
+                                In: that._query.In,
                                 Where: where_qry,
-                                Set: that.Query.Set
+                                Set: that._query.Set
                             });
                         }, this.OnError);
                 };
-
-
 
                 private checkSchema(suppliedValue, tableName: string) {
                     if (suppliedValue) {
                         var current_table: Table = this.getTable(tableName),
                             that = this;
                         if (current_table) {
-                            var onValidationError = function (error: ErrorType, details: any) {
-                                that.ErrorOccured = true;
-                                that.Error = Utils.getError(error, details);
+                            var onValidationError = function (err: ErrorType, details: any) {
+                                that._errorOccured = true;
+                                that._error = Utils.getError(err, details);
                             };
                             // loop through table column and find data is valid
                             current_table._columns.every(function (column: Model.Column) {
-                                if (!that.ErrorOccured) {
+                                if (!that._errorOccured) {
                                     if (column._name in suppliedValue) {
                                         var executeCheck = function (value) {
                                             // check not null schema
@@ -145,7 +143,7 @@ namespace JsStore {
                         }
                     }
                     else {
-                        this.ErrorOccured = true;
+                        this._errorOccured = true;
                     }
                 }
             }

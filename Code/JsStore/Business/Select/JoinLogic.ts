@@ -2,38 +2,82 @@ namespace JsStore {
     export namespace Business {
         export namespace Select {
             export class Join extends BaseSelect {
-                Query: ISelectJoin;
-                QueryStack: Array<ITableJoin> = [];
-                CurrentQueryStackIndex = 0;
+                _query: ISelectJoin;
+                _queryStack: ITableJoin[] = [];
+                _currentQueryStackIndex = 0;
+                constructor(query: ISelectJoin, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
+                    super();
+                    this._onSuccess = onSuccess;
+                    this._onError = onError;
+                    this._query = query;
+                    var That = this,
+                        TableList = []; // used to open the multiple object store
 
-                private onTransactionCompleted = function (e) {
-                    if (this.OnSuccess != null && (this.QueryStack.length == this.CurrentQueryStackIndex + 1)) {
-                        if (this.Query['Count']) {
-                            this.OnSuccess(this.Results.length);
+                    var convertQueryIntoStack = function (query) {
+                        if (query.hasOwnProperty('Table1')) {
+                            query.Table2['JoinType'] = (<IJoin>query).Join == undefined ?
+                                'inner' : (<IJoin>query).Join.toLowerCase();
+                            That._queryStack.push(query.Table2);
+                            if (That._queryStack.length % 2 == 0) {
+                                That._queryStack[That._queryStack.length - 1].NextJoin = query.NextJoin;
+                            }
+                            TableList.push(query.Table2.Table);
+                            return convertQueryIntoStack(query.Table1);
                         }
                         else {
-                            if (this.Query['Skip'] && this.Query['Limit']) {
-                                this.Results.splice(0, this.Query['Skip']);
-                                this.Results.splice(this.Query['Limit'] - 1, this.Results.length);
-                            }
-                            else if (this.Query['Skip']) {
-                                this.Results.splice(0, this.Query['Skip']);
-                            }
-                            else if (this.Query['Limit']) {
-                                this.Results.splice(this.Query['Limit'] - 1, this.Results.length);
-                            }
-                            this.OnSuccess(this.Results);
+                            That._queryStack.push(query);
+                            TableList.push(query.Table);
+                            return;
                         }
-
+                    };
+                    convertQueryIntoStack(query.From);
+                    this._queryStack.reverse();
+                    //get the data for first table
+                    if (!this._errorOccured) {
+                        new Select.Instance(<ISelect>{
+                            From: this._queryStack[0].Table,
+                            Where: this._queryStack[0].Where
+                        }, function (results) {
+                            var TableName = That._queryStack[0].Table;
+                            results.forEach(function (item, index) {
+                                That._results[index] = {};
+                                That._results[index][TableName] = item;
+                            });
+                            That.startExecutionJoinLogic();
+                        }, function (error) {
+                            That.onErrorOccured(error);
+                        });
                     }
                 }
 
+                private onTransactionCompleted = function (e) {
+                    if (this._onSuccess != null && (this._queryStack.length === this._currentQueryStackIndex + 1)) {
+                        if (this._query['Count']) {
+                            this._onSuccess(this._results.length);
+                        }
+                        else {
+                            if (this._query['Skip'] && this._query['Limit']) {
+                                this._results.splice(0, this._query['Skip']);
+                                this._results.splice(this._query['Limit'] - 1, this._results.length);
+                            }
+                            else if (this._query['Skip']) {
+                                this._results.splice(0, this._query['Skip']);
+                            }
+                            else if (this._query['Limit']) {
+                                this._results.splice(this._query['Limit'] - 1, this._results.length);
+                            }
+                            this._onSuccess(this._results);
+                        }
+
+                    }
+                };
+
                 private executeWhereJoinLogic = function (joinQuery: ITableJoin, query: ITableJoin) {
                     var That = this,
-                        Results = [],
+                        _results = [],
                         JoinIndex = 0,
                         Column = query.Column,
-                        TmpResults = That.Results,
+                        TmpResults = That._results,
                         Item,
                         ResultLength = TmpResults.length;
 
@@ -53,9 +97,9 @@ namespace JsStore {
                                 //}
                             }
                         });
-                        That.Results = Results;
+                        That._results = _results;
                         //check if further execution needed
-                        if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
+                        if (That._queryStack.length > That._currentQueryStackIndex + 1) {
                             That.startExecutionJoinLogic();
                         }
                         else {
@@ -67,24 +111,24 @@ namespace JsStore {
                     });
 
                     var doJoin = function (value1, value2, itemIndex) {
-                        Results[JoinIndex] = {};
+                        _results[JoinIndex] = {};
                         if (value1 == value2[query.Column]) {
-                            Results[JoinIndex][query.Table] = value2;
+                            _results[JoinIndex][query.Table] = value2;
                             //copy other relative data into current result
-                            for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
+                            for (var j = 0; j < That._currentQueryStackIndex; j++) {
+                                _results[JoinIndex][That._queryStack[j].Table] = TmpResults[itemIndex][That._queryStack[j].Table];
                             }
                             ++JoinIndex;
                         }
                         else if (query.JoinType == 'left') {
                             //left join
-                            Results[JoinIndex] = {};
-                            Results[JoinIndex][query.Table] = null;
+                            _results[JoinIndex] = {};
+                            _results[JoinIndex][query.Table] = null;
                             //copy other relative data into current result
-                            for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
+                            for (var j = 0; j < That._currentQueryStackIndex; j++) {
+                                _results[JoinIndex][That._queryStack[j].Table] = TmpResults[itemIndex][That._queryStack[j].Table];
                             }
-                            //Results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
+                            //_results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
                             ++JoinIndex;
                         }
                     }
@@ -93,18 +137,18 @@ namespace JsStore {
 
                 private executeRightJoin = function (joinQuery: ITableJoin, query: ITableJoin) {
                     var That = this,
-                        Results = [],
+                        _results = [],
                         JoinIndex = 0,
                         Column = query.Column,
-                        TmpResults = That.Results,
+                        TmpResults = That._results,
                         Item,
                         ResultLength = TmpResults.length,
                         ItemIndex = 0,
                         Where = {},
                         onExecutionFinished = function () {
-                            That.Results = Results;
+                            That._results = _results;
                             //check if further execution needed
-                            if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
+                            if (That._queryStack.length > That._currentQueryStackIndex + 1) {
                                 That.startExecutionJoinLogic();
                             }
                             else {
@@ -120,17 +164,17 @@ namespace JsStore {
                                         break;
                                     }
                                 }
-                                Results[index] = {};
-                                Results[index][query.Table] = item;
+                                _results[index] = {};
+                                _results[index][query.Table] = item;
                                 if (ValueFound) {
                                     ValueFound = false;
-                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                        Results[index][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
+                                    for (var j = 0; j < That._currentQueryStackIndex; j++) {
+                                        _results[index][That._queryStack[j].Table] = TmpResults[ItemIndex][That._queryStack[j].Table];
                                     }
                                 }
                                 else {
-                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                        Results[index][That.QueryStack[j].Table] = null;
+                                    for (var j = 0; j < That._currentQueryStackIndex; j++) {
+                                        _results[index][That._queryStack[j].Table] = null;
                                     }
                                 }
                             });
@@ -149,21 +193,22 @@ namespace JsStore {
                             });
                         };
                     executeLogic();
-                }
+                };
+
                 private executeWhereUndefinedLogicForJoin = function (joinQuery: ITableJoin, query: ITableJoin) {
                     var That = this,
-                        Results = [],
+                        _results = [],
                         JoinIndex = 0,
                         Column = query.Column,
-                        TmpResults = That.Results,
+                        TmpResults = That._results,
                         Item,
                         ResultLength = TmpResults.length,
                         ItemIndex = 0,
                         Where = {},
                         onExecutionFinished = function () {
-                            That.Results = Results;
+                            That._results = _results;
                             //check if further execution needed
-                            if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
+                            if (That._queryStack.length > That._currentQueryStackIndex + 1) {
                                 That.startExecutionJoinLogic();
                             }
                             else {
@@ -173,24 +218,24 @@ namespace JsStore {
                         doJoin = function (results) {
                             if (results.length > 0) {
                                 results.forEach(function (value) {
-                                    Results[JoinIndex] = {};
-                                    Results[JoinIndex][query.Table] = value;
+                                    _results[JoinIndex] = {};
+                                    _results[JoinIndex][query.Table] = value;
                                     //copy other relative data into current result
-                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                        Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
+                                    for (var j = 0; j < That._currentQueryStackIndex; j++) {
+                                        _results[JoinIndex][That._queryStack[j].Table] = TmpResults[ItemIndex][That._queryStack[j].Table];
                                     }
                                     ++JoinIndex;
                                 });
                             }
                             else if (query.JoinType == 'left') {
                                 //left join
-                                Results[JoinIndex] = {};
-                                Results[JoinIndex][query.Table] = null;
+                                _results[JoinIndex] = {};
+                                _results[JoinIndex][query.Table] = null;
                                 //copy other relative data into current result
-                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                    Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
+                                for (var j = 0; j < That._currentQueryStackIndex; j++) {
+                                    _results[JoinIndex][That._queryStack[j].Table] = TmpResults[ItemIndex][That._queryStack[j].Table];
                                 }
-                                //Results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
+                                //_results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
                                 ++JoinIndex;
                             }
                         },
@@ -217,77 +262,35 @@ namespace JsStore {
                             }
                         };
                     executeLogic();
-                }
+                };
 
                 private startExecutionJoinLogic() {
                     var JoinQuery;
-                    if (this.CurrentQueryStackIndex >= 1 && this.CurrentQueryStackIndex % 2 == 1) {
+                    if (this._currentQueryStackIndex >= 1 && this._currentQueryStackIndex % 2 == 1) {
                         JoinQuery = <ITableJoin>{
-                            Table: this.QueryStack[this.CurrentQueryStackIndex].NextJoin.Table,
-                            Column: this.QueryStack[this.CurrentQueryStackIndex].NextJoin.Column
+                            Table: this._queryStack[this._currentQueryStackIndex].NextJoin.Table,
+                            Column: this._queryStack[this._currentQueryStackIndex].NextJoin.Column
                         }
-                        this.CurrentQueryStackIndex++;
+                        this._currentQueryStackIndex++;
                     }
                     else {
-                        JoinQuery = this.QueryStack[this.CurrentQueryStackIndex++];
+                        JoinQuery = this._queryStack[this._currentQueryStackIndex++];
                     }
 
-                    var Query = this.QueryStack[this.CurrentQueryStackIndex];
-                    if (Query.JoinType == 'right') {
-                        this.executeRightJoin(JoinQuery, Query);
+                    var _query = this._queryStack[this._currentQueryStackIndex];
+                    if (_query.JoinType == 'right') {
+                        this.executeRightJoin(JoinQuery, _query);
                     }
-                    else if (Query.Where) {
-                        this.executeWhereJoinLogic(JoinQuery, Query);
+                    else if (_query.Where) {
+                        this.executeWhereJoinLogic(JoinQuery, _query);
                     }
                     else {
-                        this.executeWhereUndefinedLogicForJoin(JoinQuery, Query);
+                        this.executeWhereUndefinedLogicForJoin(JoinQuery, _query);
                     }
 
                 }
 
-                constructor(query: ISelectJoin, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
-                    super();
-                    this.OnSuccess = onSuccess;
-                    this.OnError = onError;
-                    this.Query = query;
-                    var That = this,
-                        TableList = []; // used to open the multiple object store
 
-                    var convertQueryIntoStack = function (query) {
-                        if (query.hasOwnProperty('Table1')) {
-                            query.Table2['JoinType'] = (<IJoin>query).Join == undefined ? 'inner' : (<IJoin>query).Join.toLowerCase();
-                            That.QueryStack.push(query.Table2);
-                            if (That.QueryStack.length % 2 == 0) {
-                                That.QueryStack[That.QueryStack.length - 1].NextJoin = query.NextJoin;
-                            }
-                            TableList.push(query.Table2.Table);
-                            return convertQueryIntoStack(query.Table1);
-                        }
-                        else {
-                            That.QueryStack.push(query);
-                            TableList.push(query.Table);
-                            return;
-                        }
-                    };
-                    convertQueryIntoStack(query.From);
-                    this.QueryStack.reverse();
-                    //get the data for first table
-                    if (!this.ErrorOccured) {
-                        new Select.Instance(<ISelect>{
-                            From: this.QueryStack[0].Table,
-                            Where: this.QueryStack[0].Where
-                        }, function (results) {
-                            var TableName = That.QueryStack[0].Table;
-                            results.forEach(function (item, index) {
-                                That.Results[index] = {};
-                                That.Results[index][TableName] = item;
-                            });
-                            That.startExecutionJoinLogic();
-                        }, function (error) {
-                            That.onErrorOccured(error);
-                        });
-                    }
-                }
 
 
             }

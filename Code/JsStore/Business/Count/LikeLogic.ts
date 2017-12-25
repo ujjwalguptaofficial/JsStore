@@ -31,18 +31,18 @@ namespace JsStore {
                     this.CompValueLength = this.CompValue.length;
                     this.CompSymbol = symbol;
                     this.Column = column;
-                    this.CursorOpenRequest = this.ObjectStore.index(column).openCursor();
+                    this.CursorOpenRequest = this._objectStore.index(column).openCursor();
                     this.CursorOpenRequest.onerror = function (e) {
                         That.ErrorOccured = true;
                         That.onErrorOccured(e);
                     }
-                    if (That.CheckFlag) {
+                    if (That._checkFlag) {
                         this.CursorOpenRequest.onsuccess = function (e) {
                             Cursor = (<any>e).target.result;
                             if (Cursor) {
                                 if (That.filterOnOccurence(Cursor.key) &&
                                     That.checkForWhereConditionMatch(Cursor.value)) {
-                                    ++That.ResultCount;
+                                    ++That._resultCount;
                                 }
                                 Cursor.continue();
                             }
@@ -53,7 +53,7 @@ namespace JsStore {
                             Cursor = (<any>e).target.result;
                             if (Cursor) {
                                 if (That.filterOnOccurence(Cursor.key)) {
-                                    ++That.ResultCount;
+                                    ++That._resultCount;
                                 }
                                 Cursor.continue();
                             }

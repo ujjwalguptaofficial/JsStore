@@ -11,13 +11,13 @@ namespace JsStore {
                             CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = (<any>e).target.result;
                                 if (Cursor) {
-                                    if (RecordSkipped && That.Results.length != That.LimitRecord) {
-                                        That.Results.push(Cursor.value);
+                                    if (RecordSkipped && That._results.length != That._limitRecord) {
+                                        That._results.push(Cursor.value);
                                         Cursor.continue();
                                     }
                                     else {
                                         RecordSkipped = true;
-                                        Cursor.advance(That.SkipRecord);
+                                        Cursor.advance(That._skipRecord);
                                     }
                                 }
                             }
@@ -28,12 +28,12 @@ namespace JsStore {
                                 Cursor = (<any>e).target.result;
                                 if (Cursor) {
                                     if (RecordSkipped) {
-                                        That.Results.push(Cursor.value);
+                                        That._results.push(Cursor.value);
                                         Cursor.continue();
                                     }
                                     else {
                                         RecordSkipped = true;
-                                        Cursor.advance(That.SkipRecord);
+                                        Cursor.advance(That._skipRecord);
                                     }
                                 }
                             }
@@ -42,7 +42,7 @@ namespace JsStore {
                             CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = (<any>e).target.result;
                                 if (Cursor) {
-                                    That.Results.push(Cursor.value);
+                                    That._results.push(Cursor.value);
                                     (Cursor as any).continue();
                                 }
 
@@ -51,35 +51,37 @@ namespace JsStore {
                         executeLimit = function () {
                             CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = (<any>e).target.result;
-                                if (Cursor && That.Results.length != That.LimitRecord) {
-                                    That.Results.push(Cursor.value);
+                                if (Cursor && That._results.length != That._limitRecord) {
+                                    That._results.push(Cursor.value);
                                     Cursor.continue();
                                 }
                             }
                         };
 
-                    if (this.Query.Order && this.Query.Order.By) {
-                        if (That.ObjectStore.indexNames.contains(this.Query.Order.By)) {
-                            var OrderType = this.Query.Order.Type && this.Query.Order.Type.toLowerCase() == 'desc' ? 'prev' : 'next';
-                            this.Sorted = true;
-                            CursorOpenRequest = this.ObjectStore.index(That.Query.Order.By).openCursor(null, OrderType);
+                    if (this._query.Order && this._query.Order.By) {
+                        if (That._objectStore.indexNames.contains(this._query.Order.By)) {
+                            var OrderType = this._query.Order.Type &&
+                                this._query.Order.Type.toLowerCase() === 'desc' ? 'prev' : 'next';
+                            this._sorted = true;
+                            CursorOpenRequest = this._objectStore.index(That._query.Order.By).
+                                openCursor(null, OrderType);
                         }
                         else {
-                            var Error = Utils.getError(ErrorType.ColumnNotExist, { ColumnName: this.Query.Order.By });
+                            var Error = Utils.getError(ErrorType.ColumnNotExist, { ColumnName: this._query.Order.By });
                             throwError(Error);
                         }
                     }
                     else {
-                        CursorOpenRequest = this.ObjectStore.openCursor();
+                        CursorOpenRequest = this._objectStore.openCursor();
                     }
 
-                    if (this.SkipRecord && this.LimitRecord) {
+                    if (this._skipRecord && this._limitRecord) {
                         executeSkipAndLimit();
                     }
-                    else if (this.SkipRecord) {
+                    else if (this._skipRecord) {
                         executeSkip();
                     }
-                    else if (this.LimitRecord) {
+                    else if (this._limitRecord) {
                         executeLimit();
                     }
                     else {
@@ -89,7 +91,7 @@ namespace JsStore {
                     CursorOpenRequest.onerror = function (e) {
                         That.ErrorOccured = true;
                         That.onErrorOccured(e);
-                    }
+                    };
 
                 }
 

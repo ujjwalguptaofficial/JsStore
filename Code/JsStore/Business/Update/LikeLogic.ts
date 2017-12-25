@@ -30,19 +30,19 @@ namespace JsStore {
                     this.CompValueLength = this.CompValue.length;
                     this.CompSymbol = symbol;
                     this.Column = column;
-                    this.CursorOpenRequest = this.ObjectStore.index(column).openCursor();
+                    this.CursorOpenRequest = this._objectStore.index(column).openCursor();
                     this.CursorOpenRequest.onerror = function (e) {
                         That.ErrorOccured = true;
                         That.onErrorOccured(e);
                     }
-                    if (That.CheckFlag) {
+                    if (That._checkFlag) {
                         this.CursorOpenRequest.onsuccess = function (e) {
                             Cursor = (<any>e).target.result;
                             if (Cursor) {
                                 if (That.filterOnOccurence(Cursor.key) &&
                                     That.checkForWhereConditionMatch(Cursor.value)) {
-                                    Cursor.update(updateValue(That.Query.Set, Cursor.value));
-                                    ++That.RowAffected;
+                                    Cursor.update(updateValue(That._query.Set, Cursor.value));
+                                    ++That._rowAffected;
                                 }
                                 Cursor.continue();
                             }
@@ -54,8 +54,8 @@ namespace JsStore {
                             Cursor = (<any>e).target.result;
                             if (Cursor) {
                                 if (That.filterOnOccurence(Cursor.key)) {
-                                    Cursor.update(updateValue(That.Query.Set, Cursor.value));
-                                    ++That.RowAffected;
+                                    Cursor.update(updateValue(That._query.Set, Cursor.value));
+                                    ++That._rowAffected;
                                 }
                                 Cursor.continue();
                             }

@@ -7,14 +7,14 @@ namespace JsStore {
                         That = this,
                         CursorOpenRequest;
                     value = op ? value[op] : value;
-                    CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
-                    if (That.CheckFlag) {
+                    CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
+                    if (That._checkFlag) {
                         CursorOpenRequest.onsuccess = function (e) {
                             Cursor = (<any>e).target.result;
                             if (Cursor) {
                                 if (That.checkForWhereConditionMatch(Cursor.value)) {
                                     Cursor.delete();
-                                    ++That.RowAffected;
+                                    ++That._rowAffected;
                                 }
                                 Cursor.continue();
                             }
@@ -25,7 +25,7 @@ namespace JsStore {
                             Cursor = (<any>e).target.result;
                             if (Cursor) {
                                 Cursor.delete();
-                                ++That.RowAffected;
+                                ++That._rowAffected;
                                 Cursor.continue();
                             }
                         }

@@ -6,12 +6,12 @@ namespace JsStore {
                 protected executeWhereUndefinedLogic = function () {
                     var Cursor,
                         That = this,
-                        CursorOpenRequest = this.ObjectStore.openCursor();
+                        CursorOpenRequest = this._objectStore.openCursor();
                     CursorOpenRequest.onsuccess = function (e) {
                         Cursor = (<any>e).target.result;
                         if (Cursor) {
                             Cursor.delete();
-                            ++That.RowAffected;
+                            ++That._rowAffected;
                             (Cursor as any).continue();
                         }
 

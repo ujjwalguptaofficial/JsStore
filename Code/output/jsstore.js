@@ -742,10 +742,9 @@ var JsStore;
      * @param {(version: number) => void} callback
      */
     JsStore.getDbVersion = function (dbName, callback) {
-        var that = this;
         KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
-            callback.call(that, Number(dbVersion));
-        });
+            callback.call(this, Number(dbVersion));
+        }.bind(this));
     };
     /**
      * get Database Schema
@@ -917,15 +916,14 @@ var JsStore;
                 }, this);
             };
             Table.prototype.setRequireDelete = function (dbName) {
-                var that = this;
                 KeyStore.get("JsStore_" + dbName + "_" + this._name + "_Version", function (tableVersion) {
                     if (tableVersion == null) {
-                        that._requireCreation = true;
+                        this._requireCreation = true;
                     }
-                    else if (tableVersion < that._version) {
-                        that._requireDelete = true;
+                    else if (tableVersion < this._version) {
+                        this._requireDelete = true;
                     }
-                });
+                }.bind(this));
             };
             Table.prototype.setDbVersion = function (dbName) {
                 var db_version = db_version > this._version ? db_version : this._version;
@@ -1082,21 +1080,21 @@ var JsStore;
             __extends(Base, _super);
             function Base() {
                 var _this = _super !== null && _super.apply(this, arguments) || this;
-                _this.ErrorOccured = false;
-                _this.ErrorCount = 0;
-                _this.RowAffected = 0;
-                _this.SendResultFlag = true;
+                _this._errorOccured = false;
+                _this._errorCount = 0;
+                _this._rowAffected = 0;
+                _this._sendResultFlag = true;
                 _this.onErrorOccured = function (e, customError) {
                     if (customError === void 0) { customError = false; }
-                    ++this.ErrorCount;
-                    if (this.ErrorCount == 1) {
+                    ++this._errorCount;
+                    if (this._errorCount === 1) {
                         if (this.OnError != null) {
                             if (!customError) {
-                                var Error = {
+                                var error = {
                                     Name: e.target.error.name,
                                     Message: e.target.error.message
                                 };
-                                this.OnError(Error);
+                                this.OnError(error);
                             }
                             else {
                                 this.OnError(e);
@@ -1111,87 +1109,87 @@ var JsStore;
                 _this.onExceptionOccured = function (ex, info) {
                     switch (ex.name) {
                         case 'NotFoundError':
-                            var Error = JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, info);
-                            JsStore.throwError(Error);
+                            var error = JsStore.Utils.getError(JsStore.ErrorType.TableNotExist, info);
+                            JsStore.throwError(error);
                         default: console.error(ex);
                     }
                 };
                 _this.goToWhereLogic = function () {
-                    var Column = JsStore.getObjectFirstKey(this.Query.Where);
-                    if (this.Query.IgnoreCase === true) {
-                        this.Query.Where = this.makeQryInCaseSensitive(this.Query.Where);
+                    var column = JsStore.getObjectFirstKey(this._query.Where);
+                    if (this._query.IgnoreCase === true) {
+                        this._query.Where = this.makeQryInCaseSensitive(this._query.Where);
                     }
-                    if (this.ObjectStore.indexNames.contains(Column)) {
-                        var Value = this.Query.Where[Column];
-                        if (typeof Value == 'object') {
-                            this.CheckFlag = Boolean(Object.keys(Value).length > 1 || Object.keys(this.Query.Where).length > 1);
-                            var Key = JsStore.getObjectFirstKey(Value);
-                            switch (Key) {
+                    if (this._objectStore.indexNames.contains(column)) {
+                        var value = this._query.Where[column];
+                        if (typeof value === 'object') {
+                            this._checkFlag = Boolean(Object.keys(value).length > 1 ||
+                                Object.keys(this._query.Where).length > 1);
+                            var key = JsStore.getObjectFirstKey(value);
+                            switch (key) {
                                 case 'Like':
                                     {
-                                        var FilterValue = Value.Like.split('%');
-                                        if (FilterValue[1]) {
-                                            if (FilterValue.length > 2) {
-                                                this.executeLikeLogic(Column, FilterValue[1], JsStore.Occurence.Any);
+                                        var filter_value = value.Like.split('%');
+                                        if (filter_value[1]) {
+                                            if (filter_value.length > 2) {
+                                                this.executeLikeLogic(column, filter_value[1], JsStore.Occurence.Any);
                                             }
                                             else {
-                                                this.executeLikeLogic(Column, FilterValue[1], JsStore.Occurence.Last);
+                                                this.executeLikeLogic(column, filter_value[1], JsStore.Occurence.Last);
                                             }
                                         }
                                         else {
-                                            this.executeLikeLogic(Column, FilterValue[0], JsStore.Occurence.First);
+                                            this.executeLikeLogic(column, filter_value[0], JsStore.Occurence.First);
                                         }
                                     }
-                                    ;
                                     break;
                                 case 'In':
-                                    this.executeInLogic(Column, Value['In']);
+                                    this.executeInLogic(column, value['In']);
                                     break;
                                 case '-':
                                 case '>':
                                 case '<':
                                 case '>=':
                                 case '<=':
-                                    this.executeWhereLogic(Column, Value, Key);
+                                    this.executeWhereLogic(column, value, key);
                                     break;
                                 case 'Aggregate': break;
-                                default: this.executeWhereLogic(Column, Value);
+                                default: this.executeWhereLogic(column, value);
                             }
                         }
                         else {
-                            this.CheckFlag = Boolean(Object.keys(this.Query.Where).length > 1);
-                            this.executeWhereLogic(Column, Value);
+                            this._checkFlag = Boolean(Object.keys(this._query.Where).length > 1);
+                            this.executeWhereLogic(column, value);
                         }
                     }
                     else {
                         this.ErrorOccured = true;
-                        this.Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, { ColumnName: Column });
+                        this.Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, { ColumnName: column });
                         JsStore.throwError(this.Error);
                     }
                 };
                 _this.makeQryInCaseSensitive = function (qry) {
-                    var Results = [], ColumnValue, KeyValue;
+                    var results = [], column_value, key_value;
                     for (var column in qry) {
-                        ColumnValue = qry[column];
-                        if (typeof ColumnValue == 'object') {
-                            for (var key in ColumnValue) {
-                                KeyValue = ColumnValue[key];
+                        column_value = qry[column];
+                        if (typeof column_value === 'object') {
+                            for (var key in column_value) {
+                                key_value = column_value[key];
                                 switch (key) {
                                     case JsStore.WhereQryOption.In:
-                                        Results = Results.concat(this.getAllCombinationOfWord(KeyValue, true));
+                                        results = results.concat(this.getAllCombinationOfWord(key_value, true));
                                         break;
                                     case JsStore.WhereQryOption.Like:
                                         break;
                                     default:
-                                        Results = Results.concat(this.getAllCombinationOfWord(KeyValue));
+                                        results = results.concat(this.getAllCombinationOfWord(key_value));
                                 }
                             }
-                            qry[column]['In'] = Results;
+                            qry[column]['In'] = results;
                         }
                         else {
-                            Results = Results.concat(this.getAllCombinationOfWord(ColumnValue));
+                            results = results.concat(this.getAllCombinationOfWord(column_value));
                             qry[column] = {
-                                In: Results
+                                In: results
                             };
                         }
                     }
@@ -1200,121 +1198,110 @@ var JsStore;
                 return _this;
             }
             /**
-            * For matching the different column value existance
-            *
-            * @private
-            * @param {any} where
-            * @param {any} value
-            * @returns
-            *
-            * @memberOf SelectLogic
-            */
+             * For matching the different column value existance
+             *
+             * @protected
+             * @param {any} rowValue
+             * @returns
+             * @memberof Base
+             */
             Base.prototype.checkForWhereConditionMatch = function (rowValue) {
-                var Where = this.Query.Where, Status = true;
+                var where = this._query.Where, status = true;
                 var checkIn = function (column, value) {
-                    var Values = Where[column].In;
-                    for (var i = 0, length = Values.length; i < length; i++) {
-                        if (Values[i] == value) {
-                            Status = true;
+                    var values = where[column].In;
+                    for (var i = 0, length = values.length; i < length; i++) {
+                        if (values[i] === value) {
+                            status = true;
                             break;
                         }
                         else {
-                            Status = false;
+                            status = false;
                         }
                     }
-                    ;
                 }, checkLike = function (column, value) {
-                    var Values = Where[column].Like.split('%'), CompSymbol, CompValue, SymbolIndex;
-                    if (Values[1]) {
-                        CompValue = Values[1];
-                        CompSymbol = Values.length > 2 ? JsStore.Occurence.Any : JsStore.Occurence.Last;
+                    var values = where[column].Like.split('%'), comp_symbol, comp_value, symbol_index;
+                    if (values[1]) {
+                        comp_value = values[1];
+                        comp_symbol = values.length > 2 ? JsStore.Occurence.Any : JsStore.Occurence.Last;
                     }
                     else {
-                        CompValue = Values[0];
-                        CompSymbol = JsStore.Occurence.First;
+                        comp_value = values[0];
+                        comp_symbol = JsStore.Occurence.First;
                     }
                     value = value.toLowerCase();
-                    switch (CompSymbol) {
+                    switch (comp_symbol) {
                         case JsStore.Occurence.Any:
-                            SymbolIndex = value.indexOf(CompValue.toLowerCase());
-                            if (SymbolIndex < 0) {
-                                Status = false;
+                            symbol_index = value.indexOf(comp_value.toLowerCase());
+                            if (symbol_index < 0) {
+                                status = false;
                             }
-                            ;
                             break;
                         case JsStore.Occurence.First:
-                            SymbolIndex = value.indexOf(CompValue.toLowerCase());
-                            if (SymbolIndex > 0 || SymbolIndex < 0) {
-                                Status = false;
+                            symbol_index = value.indexOf(comp_value.toLowerCase());
+                            if (symbol_index > 0 || symbol_index < 0) {
+                                status = false;
                             }
-                            ;
                             break;
                         default:
-                            SymbolIndex = value.lastIndexOf(CompValue.toLowerCase());
-                            if (SymbolIndex < value.length - CompValue.length) {
-                                Status = false;
+                            symbol_index = value.lastIndexOf(comp_value.toLowerCase());
+                            if (symbol_index < value.length - comp_value.length) {
+                                status = false;
                             }
-                            ;
                     }
                 }, checkComparisionOp = function (column, value, symbol) {
-                    var CompareValue = Where[column][symbol];
+                    var compare_value = where[column][symbol];
                     switch (symbol) {
-                        //greater than
+                        // greater than
                         case '>':
-                            if (value <= CompareValue) {
-                                Status = false;
+                            if (value <= compare_value) {
+                                status = false;
                             }
-                            ;
                             break;
-                        //less than
+                        // less than
                         case '<':
-                            if (value >= CompareValue) {
-                                Status = false;
+                            if (value >= compare_value) {
+                                status = false;
                             }
-                            ;
                             break;
-                        //less than equal
+                        // less than equal
                         case '<=':
-                            if (value > CompareValue) {
-                                Status = false;
+                            if (value > compare_value) {
+                                status = false;
                             }
-                            ;
                             break;
-                        //greather than equal
+                        // greather than equal
                         case '>=':
-                            if (value < CompareValue) {
-                                Status = false;
+                            if (value < compare_value) {
+                                status = false;
                             }
-                            ;
                             break;
-                        //between
+                        // between
                         case '-':
-                            if (value < CompareValue.Low || value > CompareValue.High) {
-                                Status = false;
+                            if (value < compare_value.Low || value > compare_value.High) {
+                                status = false;
                             }
-                            ;
                             break;
                     }
                 };
-                for (var Column in Where) {
-                    var ColumnValue = Where[Column];
-                    if (Status) {
-                        if (typeof ColumnValue == 'object') {
-                            for (var key in ColumnValue) {
-                                if (Status) {
+                for (var column in where) {
+                    var column_value = where[column];
+                    if (status) {
+                        if (typeof column_value === 'object') {
+                            for (var key in column_value) {
+                                if (status) {
                                     switch (key) {
                                         case 'In':
-                                            checkIn(Column, rowValue[Column]);
+                                            checkIn(column, rowValue[column]);
                                             break;
                                         case 'Like':
-                                            checkLike(Column, rowValue[Column]);
+                                            checkLike(column, rowValue[column]);
                                             break;
                                         case '-':
                                         case '>':
                                         case '<':
                                         case '>=':
                                         case '<=':
-                                            checkComparisionOp(Column, rowValue[Column], key);
+                                            checkComparisionOp(column, rowValue[column], key);
                                             break;
                                     }
                                 }
@@ -1324,9 +1311,9 @@ var JsStore;
                             }
                         }
                         else {
-                            var CompareValue = rowValue[Column];
-                            if (ColumnValue != CompareValue) {
-                                Status = false;
+                            var compare_value = rowValue[column];
+                            if (column_value !== compare_value) {
+                                status = false;
                                 break;
                             }
                         }
@@ -1335,7 +1322,7 @@ var JsStore;
                         break;
                     }
                 }
-                return Status;
+                return status;
             };
             return Base;
         }(Business.BaseHelper));
@@ -1490,7 +1477,7 @@ var JsStore;
                 var _this = _super !== null && _super.apply(this, arguments) || this;
                 _this._valuesAffected = [];
                 _this.onTransactionCompleted = function () {
-                    this.OnSuccess(this._query.Return ? this._valuesAffected : this.RowAffected);
+                    this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
                 };
                 _this.checkModifyInsertValues = function (table, values) {
                     var that = this, value_index = 0, value, table_name = table._name, checkDatas = function () {
@@ -1588,21 +1575,21 @@ var JsStore;
                                 var add_result = object_store.add(value);
                                 add_result.onerror = this.onErrorOccured.bind(this);
                                 add_result.onsuccess = function (e) {
-                                    ++this.RowAffected;
+                                    ++this._rowAffected;
                                     insertDataintoTable.call(this, values[value_index++]);
                                 }.bind(this);
                             }
                         };
                     }
-                    this.Transaction = Business.db_connection.transaction([this._query.Into], "readwrite");
-                    var object_store = this.Transaction.objectStore(this._query.Into);
-                    this.Transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                    this._transaction = Business.db_connection.transaction([this._query.Into], "readwrite");
+                    var object_store = this._transaction.objectStore(this._query.Into);
+                    this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
                     insertDataintoTable.call(this, values[value_index++]);
                 };
                 try {
                     _this._query = query;
-                    _this.OnSuccess = onSuccess;
-                    _this.OnError = onError;
+                    _this._onSuccess = onSuccess;
+                    _this._onError = onError;
                     var table = _this.getTable(query.Into);
                     if (table) {
                         if (_this._query.SkipDataCheck) {
@@ -1642,23 +1629,23 @@ var JsStore;
                 _this.ValuesAffected = [];
                 _this.ValuesIndex = 0;
                 _this.onTransactionCompleted = function () {
-                    this.OnSuccess(this.Query.Return ? this.ValuesAffected : this.RowAffected);
+                    this._onSuccess(this._query.Return ? this.ValuesAffected : this._rowAffected);
                 };
                 _this.bulkinsertData = function () {
                     var That = this;
-                    this.Transaction = Business.db_connection.transaction([this.Query.Into], "readwrite");
-                    this.ObjectStore = this.Transaction.objectStore(this.Query.Into);
-                    this.Transaction.oncomplete = function (e) {
-                        That.OnSuccess();
+                    this._transaction = Business.db_connection.transaction([this._query.Into], "readwrite");
+                    this._objectStore = this._transaction.objectStore(this._query.Into);
+                    this._transaction.oncomplete = function (e) {
+                        That._onSuccess();
                     };
-                    this.Query.Values.forEach(function (value) {
-                        That.ObjectStore.add(value);
+                    this._query.Values.forEach(function (value) {
+                        That._objectStore.add(value);
                     });
                 };
                 try {
-                    _this.Query = query;
-                    _this.OnSuccess = onSuccess;
-                    _this.OnError = onError;
+                    _this._query = query;
+                    _this._onSuccess = onSuccess;
+                    _this._onError = onError;
                     var That = _this;
                     _this.Table = _this.getTable(query.Into);
                     if (_this.Table) {
@@ -1793,7 +1780,7 @@ var JsStore;
                     }
                 };
                 this.changeLogStatus = function (request) {
-                    if (request.Query['logging'] === true) {
+                    if (request._query['logging'] === true) {
                         JsStore.enable_log = true;
                     }
                     else {
@@ -1970,24 +1957,24 @@ var JsStore;
                 __extends(BaseSelect, _super);
                 function BaseSelect() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
-                    _this.Results = [];
-                    _this.Sorted = false;
-                    _this.CheckFlag = false;
+                    _this._results = [];
+                    _this._sorted = false;
+                    _this._checkFlag = false;
                     _this.removeDuplicates = function () {
-                        var Datas = this.Results;
+                        var datas = this._results;
                         // free results memory
-                        this.Results = undefined;
-                        var Key = this.getPrimaryKey(this.Query.From);
+                        this._results = undefined;
+                        var key = this.getPrimaryKey(this._query.From);
                         var lookupObject = {};
-                        for (var i in Datas) {
-                            lookupObject[Datas[i][Key]] = Datas[i];
+                        for (var i in datas) {
+                            lookupObject[datas[i][key]] = datas[i];
                         }
                         // free datas memory
-                        Datas = [];
+                        datas = [];
                         for (i in lookupObject) {
-                            Datas.push(lookupObject[i]);
+                            datas.push(lookupObject[i]);
                         }
-                        this.Results = Datas;
+                        this._results = datas;
                     };
                     return _this;
                 }
@@ -2013,13 +2000,13 @@ var JsStore;
                             CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    if (RecordSkipped && That.Results.length != That.LimitRecord) {
-                                        That.Results.push(Cursor.value);
+                                    if (RecordSkipped && That._results.length != That._limitRecord) {
+                                        That._results.push(Cursor.value);
                                         Cursor.continue();
                                     }
                                     else {
                                         RecordSkipped = true;
-                                        Cursor.advance(That.SkipRecord);
+                                        Cursor.advance(That._skipRecord);
                                     }
                                 }
                             };
@@ -2029,12 +2016,12 @@ var JsStore;
                                 Cursor = e.target.result;
                                 if (Cursor) {
                                     if (RecordSkipped) {
-                                        That.Results.push(Cursor.value);
+                                        That._results.push(Cursor.value);
                                         Cursor.continue();
                                     }
                                     else {
                                         RecordSkipped = true;
-                                        Cursor.advance(That.SkipRecord);
+                                        Cursor.advance(That._skipRecord);
                                     }
                                 }
                             };
@@ -2042,40 +2029,42 @@ var JsStore;
                             CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    That.Results.push(Cursor.value);
+                                    That._results.push(Cursor.value);
                                     Cursor.continue();
                                 }
                             };
                         }, executeLimit = function () {
                             CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
-                                if (Cursor && That.Results.length != That.LimitRecord) {
-                                    That.Results.push(Cursor.value);
+                                if (Cursor && That._results.length != That._limitRecord) {
+                                    That._results.push(Cursor.value);
                                     Cursor.continue();
                                 }
                             };
                         };
-                        if (this.Query.Order && this.Query.Order.By) {
-                            if (That.ObjectStore.indexNames.contains(this.Query.Order.By)) {
-                                var OrderType = this.Query.Order.Type && this.Query.Order.Type.toLowerCase() == 'desc' ? 'prev' : 'next';
-                                this.Sorted = true;
-                                CursorOpenRequest = this.ObjectStore.index(That.Query.Order.By).openCursor(null, OrderType);
+                        if (this._query.Order && this._query.Order.By) {
+                            if (That._objectStore.indexNames.contains(this._query.Order.By)) {
+                                var OrderType = this._query.Order.Type &&
+                                    this._query.Order.Type.toLowerCase() === 'desc' ? 'prev' : 'next';
+                                this._sorted = true;
+                                CursorOpenRequest = this._objectStore.index(That._query.Order.By).
+                                    openCursor(null, OrderType);
                             }
                             else {
-                                var Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, { ColumnName: this.Query.Order.By });
+                                var Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, { ColumnName: this._query.Order.By });
                                 JsStore.throwError(Error);
                             }
                         }
                         else {
-                            CursorOpenRequest = this.ObjectStore.openCursor();
+                            CursorOpenRequest = this._objectStore.openCursor();
                         }
-                        if (this.SkipRecord && this.LimitRecord) {
+                        if (this._skipRecord && this._limitRecord) {
                             executeSkipAndLimit();
                         }
-                        else if (this.SkipRecord) {
+                        else if (this._skipRecord) {
                             executeSkip();
                         }
-                        else if (this.LimitRecord) {
+                        else if (this._limitRecord) {
                             executeLimit();
                         }
                         else {
@@ -2105,21 +2094,21 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeSkipAndLimitForIn = function (column, values) {
-                        var Cursor, Skip = this.SkipRecord, That = this, ColumnStore = this.ObjectStore.index(column), skipOrPush = function (value) {
+                        var Cursor, Skip = this._skipRecord, That = this, ColumnStore = this._objectStore.index(column), skipOrPush = function (value) {
                             if (Skip == 0) {
-                                That.Results.push(value);
+                                That._results.push(value);
                             }
                             else {
                                 --Skip;
                             }
                         };
-                        if (That.CheckFlag) {
+                        if (That._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
                                     this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
-                                        if (That.Results.length != That.LimitRecord && Cursor) {
+                                        if (That._results.length != That._limitRecord && Cursor) {
                                             if (That.checkForWhereConditionMatch(Cursor.value)) {
                                                 skipOrPush(Cursor.value);
                                             }
@@ -2139,7 +2128,7 @@ var JsStore;
                                     this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
-                                        if (That.Results.length != That.LimitRecord && Cursor) {
+                                        if (That._results.length != That._limitRecord && Cursor) {
                                             skipOrPush(Cursor.value);
                                             Cursor.continue();
                                         }
@@ -2153,15 +2142,15 @@ var JsStore;
                         }
                     };
                     _this.executeSkipForIn = function (column, values) {
-                        var Cursor, Skip = this.SkipRecord, That = this, ColumnStore = this.ObjectStore.index(column), skipOrPush = function (value) {
+                        var Cursor, Skip = this._skipRecord, That = this, ColumnStore = this._objectStore.index(column), skipOrPush = function (value) {
                             if (Skip == 0) {
-                                That.Results.push(value);
+                                That._results.push(value);
                             }
                             else {
                                 --Skip;
                             }
                         };
-                        if (That.CheckFlag) {
+                        if (That._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
                                     this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
@@ -2201,16 +2190,16 @@ var JsStore;
                         }
                     };
                     _this.executeLimitForIn = function (column, values) {
-                        var Cursor, That = this, ColumnStore = this.ObjectStore.index(column);
-                        if (That.CheckFlag) {
+                        var Cursor, That = this, ColumnStore = this._objectStore.index(column);
+                        if (That._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
                                     this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
-                                        if (Cursor && That.Results.length != That.LimitRecord) {
+                                        if (Cursor && That._results.length != That._limitRecord) {
                                             if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                                That.Results.push(Cursor.value);
+                                                That._results.push(Cursor.value);
                                             }
                                             Cursor.continue();
                                         }
@@ -2228,8 +2217,8 @@ var JsStore;
                                     this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
-                                        if (Cursor && That.Results.length != That.LimitRecord) {
-                                            That.Results.push(Cursor.value);
+                                        if (Cursor && That._results.length != That._limitRecord) {
+                                            That._results.push(Cursor.value);
                                             Cursor.continue();
                                         }
                                     };
@@ -2242,8 +2231,8 @@ var JsStore;
                         }
                     };
                     _this.executeSimpleForIn = function (column, values) {
-                        var Cursor, That = this, ColumnStore = this.ObjectStore.index(column);
-                        if (That.CheckFlag) {
+                        var Cursor, That = this, ColumnStore = this._objectStore.index(column);
+                        if (That._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
                                     this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
@@ -2251,7 +2240,7 @@ var JsStore;
                                         Cursor = e.target.result;
                                         if (Cursor) {
                                             if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                                That.Results.push(Cursor.value);
+                                                That._results.push(Cursor.value);
                                             }
                                             Cursor.continue();
                                         }
@@ -2270,7 +2259,7 @@ var JsStore;
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
                                         if (Cursor) {
-                                            That.Results.push(Cursor.value);
+                                            That._results.push(Cursor.value);
                                             Cursor.continue();
                                         }
                                     };
@@ -2283,13 +2272,13 @@ var JsStore;
                         }
                     };
                     _this.executeInLogic = function (column, values) {
-                        if (this.SkipRecord && this.LimitRecord) {
+                        if (this._skipRecord && this._limitRecord) {
                             this.executeSkipAndLimitForIn(column, values);
                         }
-                        else if (this.SkipRecord) {
+                        else if (this._skipRecord) {
                             this.executeSkipForIn(column, values);
                         }
-                        else if (this.LimitRecord) {
+                        else if (this._limitRecord) {
                             this.executeLimitForIn(column, values);
                         }
                         else {
@@ -2339,18 +2328,18 @@ var JsStore;
                         return Found;
                     };
                     _this.executeSkipAndLimit = function () {
-                        var Cursor, Skip = this.SkipRecord, That = this, skipOrPush = function (value) {
+                        var Cursor, Skip = this._skipRecord, That = this, skipOrPush = function (value) {
                             if (Skip == 0) {
-                                That.Results.push(value);
+                                That._results.push(value);
                             }
                             else {
                                 --Skip;
                             }
                         };
-                        if (That.CheckFlag) {
+                        if (That._checkFlag) {
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
-                                if (That.Results.length != That.LimitRecord && Cursor) {
+                                if (That._results.length != That._limitRecord && Cursor) {
                                     if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         skipOrPush(Cursor.value);
@@ -2362,7 +2351,7 @@ var JsStore;
                         else {
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
-                                if (That.Results.length != That.LimitRecord && Cursor) {
+                                if (That._results.length != That._limitRecord && Cursor) {
                                     if (That.filterOnOccurence(Cursor.key)) {
                                         skipOrPush(Cursor.value);
                                     }
@@ -2372,15 +2361,15 @@ var JsStore;
                         }
                     };
                     _this.executeSkip = function () {
-                        var Cursor, Skip = this.SkipRecord, That = this, skipOrPush = function (value) {
+                        var Cursor, Skip = this._skipRecord, That = this, skipOrPush = function (value) {
                             if (Skip == 0) {
-                                That.Results.push(value);
+                                That._results.push(value);
                             }
                             else {
                                 --Skip;
                             }
                         };
-                        if (That.CheckFlag) {
+                        if (That._checkFlag) {
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
@@ -2406,13 +2395,13 @@ var JsStore;
                     };
                     _this.executeLimit = function () {
                         var Cursor, That = this;
-                        if (That.CheckFlag) {
+                        if (That._checkFlag) {
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
-                                if (That.Results.length != That.LimitRecord && Cursor) {
+                                if (That._results.length != That._limitRecord && Cursor) {
                                     if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
-                                        That.Results.push(Cursor.value);
+                                        That._results.push(Cursor.value);
                                     }
                                     Cursor.continue();
                                 }
@@ -2421,9 +2410,9 @@ var JsStore;
                         else {
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
-                                if (That.Results.length != That.LimitRecord && Cursor) {
+                                if (That._results.length != That._limitRecord && Cursor) {
                                     if (That.filterOnOccurence(Cursor.key)) {
-                                        That.Results.push(Cursor.value);
+                                        That._results.push(Cursor.value);
                                     }
                                     Cursor.continue();
                                 }
@@ -2432,13 +2421,13 @@ var JsStore;
                     };
                     _this.executeSimple = function () {
                         var Cursor, That = this;
-                        if (That.CheckFlag) {
+                        if (That._checkFlag) {
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
                                     if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
-                                        That.Results.push(Cursor.value);
+                                        That._results.push(Cursor.value);
                                     }
                                     Cursor.continue();
                                 }
@@ -2449,7 +2438,7 @@ var JsStore;
                                 Cursor = e.target.result;
                                 if (Cursor) {
                                     if (That.filterOnOccurence(Cursor.key)) {
-                                        That.Results.push(Cursor.value);
+                                        That._results.push(Cursor.value);
                                     }
                                     Cursor.continue();
                                 }
@@ -2462,18 +2451,18 @@ var JsStore;
                         this.CompValueLength = this.CompValue.length;
                         this.CompSymbol = symbol;
                         this.Column = column;
-                        this.CursorOpenRequest = this.ObjectStore.index(column).openCursor();
+                        this.CursorOpenRequest = this._objectStore.index(column).openCursor();
                         this.CursorOpenRequest.onerror = function (e) {
                             That.ErrorOccured = true;
                             That.onErrorOccured(e);
                         };
-                        if (this.SkipRecord && this.LimitRecord) {
+                        if (this._skipRecord && this._limitRecord) {
                             this.executeSkipAndLimit();
                         }
-                        else if (this.SkipRecord) {
+                        else if (this._skipRecord) {
                             this.executeSkip();
                         }
-                        else if (this.LimitRecord) {
+                        else if (this._limitRecord) {
                             this.executeLimit();
                         }
                         else {
@@ -2501,19 +2490,19 @@ var JsStore;
                     _this.executeWhereLogic = function (column, value, op) {
                         var That = this, CursorOpenRequest, Cursor, executeSkipAndLimit = function () {
                             var RecordSkipped = false;
-                            if (That.CheckFlag) {
+                            if (That._checkFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = e.target.result;
                                     if (Cursor) {
-                                        if (RecordSkipped && That.Results.length != That.LimitRecord) {
+                                        if (RecordSkipped && That._results.length != That._limitRecord) {
                                             if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                                That.Results.push(Cursor.value);
+                                                That._results.push(Cursor.value);
                                             }
                                             Cursor.continue();
                                         }
                                         else {
                                             RecordSkipped = true;
-                                            Cursor.advance(That.SkipRecord);
+                                            Cursor.advance(That._skipRecord);
                                         }
                                     }
                                 };
@@ -2522,32 +2511,32 @@ var JsStore;
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = e.target.result;
                                     if (Cursor) {
-                                        if (RecordSkipped && That.Results.length != That.LimitRecord) {
-                                            That.Results.push(Cursor.value);
+                                        if (RecordSkipped && That._results.length != That._limitRecord) {
+                                            That._results.push(Cursor.value);
                                             Cursor.continue();
                                         }
                                         else {
                                             RecordSkipped = true;
-                                            Cursor.advance(That.SkipRecord);
+                                            Cursor.advance(That._skipRecord);
                                         }
                                     }
                                 };
                             }
                         }, executeSkip = function () {
                             var RecordSkipped = false;
-                            if (That.CheckFlag) {
+                            if (That._checkFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = e.target.result;
                                     if (Cursor) {
                                         if (RecordSkipped) {
                                             if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                                That.Results.push(Cursor.value);
+                                                That._results.push(Cursor.value);
                                             }
                                             Cursor.continue();
                                         }
                                         else {
                                             RecordSkipped = true;
-                                            Cursor.advance(That.SkipRecord);
+                                            Cursor.advance(That._skipRecord);
                                         }
                                     }
                                 };
@@ -2557,22 +2546,22 @@ var JsStore;
                                     Cursor = e.target.result;
                                     if (Cursor) {
                                         if (RecordSkipped) {
-                                            That.Results.push(Cursor.value);
+                                            That._results.push(Cursor.value);
                                             Cursor.continue();
                                         }
                                         else {
                                             RecordSkipped = true;
-                                            Cursor.advance(That.SkipRecord);
+                                            Cursor.advance(That._skipRecord);
                                         }
                                     }
                                 };
                             }
                         }, executeLimit = function () {
-                            if (That.CheckFlag) {
+                            if (That._checkFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = e.target.result;
-                                    if (Cursor && That.Results.length != That.LimitRecord && That.checkForWhereConditionMatch(Cursor.value)) {
-                                        That.Results.push(Cursor.value);
+                                    if (Cursor && That._results.length != That._limitRecord && That.checkForWhereConditionMatch(Cursor.value)) {
+                                        That._results.push(Cursor.value);
                                         Cursor.continue();
                                     }
                                 };
@@ -2580,19 +2569,19 @@ var JsStore;
                             else {
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = e.target.result;
-                                    if (Cursor && That.Results.length != That.LimitRecord) {
-                                        That.Results.push(Cursor.value);
+                                    if (Cursor && That._results.length != That._limitRecord) {
+                                        That._results.push(Cursor.value);
                                         Cursor.continue();
                                     }
                                 };
                             }
                         }, executeSimple = function () {
-                            if (That.CheckFlag) {
+                            if (That._checkFlag) {
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = e.target.result;
                                     if (Cursor) {
                                         if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                            That.Results.push(Cursor.value);
+                                            That._results.push(Cursor.value);
                                         }
                                         Cursor.continue();
                                     }
@@ -2602,25 +2591,25 @@ var JsStore;
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = e.target.result;
                                     if (Cursor) {
-                                        That.Results.push(Cursor.value);
+                                        That._results.push(Cursor.value);
                                         Cursor.continue();
                                     }
                                 };
                             }
                         };
                         value = op ? value[op] : value;
-                        CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
+                        CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
                         CursorOpenRequest.onerror = function (e) {
                             That.ErrorOccured = true;
                             That.onErrorOccured(e);
                         };
-                        if (this.SkipRecord && this.LimitRecord) {
+                        if (this._skipRecord && this._limitRecord) {
                             executeSkipAndLimit();
                         }
-                        else if (this.SkipRecord) {
+                        else if (this._skipRecord) {
                             executeSkip();
                         }
-                        else if (this.LimitRecord) {
+                        else if (this._limitRecord) {
                             executeLimit();
                         }
                         else {
@@ -2645,30 +2634,30 @@ var JsStore;
                 __extends(Join, _super);
                 function Join(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
-                    _this.QueryStack = [];
-                    _this.CurrentQueryStackIndex = 0;
+                    _this._queryStack = [];
+                    _this._currentQueryStackIndex = 0;
                     _this.onTransactionCompleted = function (e) {
-                        if (this.OnSuccess != null && (this.QueryStack.length == this.CurrentQueryStackIndex + 1)) {
-                            if (this.Query['Count']) {
-                                this.OnSuccess(this.Results.length);
+                        if (this._onSuccess != null && (this._queryStack.length === this._currentQueryStackIndex + 1)) {
+                            if (this._query['Count']) {
+                                this._onSuccess(this._results.length);
                             }
                             else {
-                                if (this.Query['Skip'] && this.Query['Limit']) {
-                                    this.Results.splice(0, this.Query['Skip']);
-                                    this.Results.splice(this.Query['Limit'] - 1, this.Results.length);
+                                if (this._query['Skip'] && this._query['Limit']) {
+                                    this._results.splice(0, this._query['Skip']);
+                                    this._results.splice(this._query['Limit'] - 1, this._results.length);
                                 }
-                                else if (this.Query['Skip']) {
-                                    this.Results.splice(0, this.Query['Skip']);
+                                else if (this._query['Skip']) {
+                                    this._results.splice(0, this._query['Skip']);
                                 }
-                                else if (this.Query['Limit']) {
-                                    this.Results.splice(this.Query['Limit'] - 1, this.Results.length);
+                                else if (this._query['Limit']) {
+                                    this._results.splice(this._query['Limit'] - 1, this._results.length);
                                 }
-                                this.OnSuccess(this.Results);
+                                this._onSuccess(this._results);
                             }
                         }
                     };
                     _this.executeWhereJoinLogic = function (joinQuery, query) {
-                        var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length;
+                        var That = this, _results = [], JoinIndex = 0, Column = query.Column, TmpResults = That._results, Item, ResultLength = TmpResults.length;
                         //get the data from query table
                         new Select.Instance({
                             From: query.Table,
@@ -2685,9 +2674,9 @@ var JsStore;
                                     //}
                                 }
                             });
-                            That.Results = Results;
+                            That._results = _results;
                             //check if further execution needed
-                            if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
+                            if (That._queryStack.length > That._currentQueryStackIndex + 1) {
                                 That.startExecutionJoinLogic();
                             }
                             else {
@@ -2697,33 +2686,33 @@ var JsStore;
                             That.onErrorOccured(error);
                         });
                         var doJoin = function (value1, value2, itemIndex) {
-                            Results[JoinIndex] = {};
+                            _results[JoinIndex] = {};
                             if (value1 == value2[query.Column]) {
-                                Results[JoinIndex][query.Table] = value2;
+                                _results[JoinIndex][query.Table] = value2;
                                 //copy other relative data into current result
-                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                    Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
+                                for (var j = 0; j < That._currentQueryStackIndex; j++) {
+                                    _results[JoinIndex][That._queryStack[j].Table] = TmpResults[itemIndex][That._queryStack[j].Table];
                                 }
                                 ++JoinIndex;
                             }
                             else if (query.JoinType == 'left') {
                                 //left join
-                                Results[JoinIndex] = {};
-                                Results[JoinIndex][query.Table] = null;
+                                _results[JoinIndex] = {};
+                                _results[JoinIndex][query.Table] = null;
                                 //copy other relative data into current result
-                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                    Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
+                                for (var j = 0; j < That._currentQueryStackIndex; j++) {
+                                    _results[JoinIndex][That._queryStack[j].Table] = TmpResults[itemIndex][That._queryStack[j].Table];
                                 }
-                                //Results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
+                                //_results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
                                 ++JoinIndex;
                             }
                         };
                     };
                     _this.executeRightJoin = function (joinQuery, query) {
-                        var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length, ItemIndex = 0, Where = {}, onExecutionFinished = function () {
-                            That.Results = Results;
+                        var That = this, _results = [], JoinIndex = 0, Column = query.Column, TmpResults = That._results, Item, ResultLength = TmpResults.length, ItemIndex = 0, Where = {}, onExecutionFinished = function () {
+                            That._results = _results;
                             //check if further execution needed
-                            if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
+                            if (That._queryStack.length > That._currentQueryStackIndex + 1) {
                                 That.startExecutionJoinLogic();
                             }
                             else {
@@ -2738,17 +2727,17 @@ var JsStore;
                                         break;
                                     }
                                 }
-                                Results[index] = {};
-                                Results[index][query.Table] = item;
+                                _results[index] = {};
+                                _results[index][query.Table] = item;
                                 if (ValueFound) {
                                     ValueFound = false;
-                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                        Results[index][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
+                                    for (var j = 0; j < That._currentQueryStackIndex; j++) {
+                                        _results[index][That._queryStack[j].Table] = TmpResults[ItemIndex][That._queryStack[j].Table];
                                     }
                                 }
                                 else {
-                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                        Results[index][That.QueryStack[j].Table] = null;
+                                    for (var j = 0; j < That._currentQueryStackIndex; j++) {
+                                        _results[index][That._queryStack[j].Table] = null;
                                     }
                                 }
                             });
@@ -2768,10 +2757,10 @@ var JsStore;
                         executeLogic();
                     };
                     _this.executeWhereUndefinedLogicForJoin = function (joinQuery, query) {
-                        var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length, ItemIndex = 0, Where = {}, onExecutionFinished = function () {
-                            That.Results = Results;
+                        var That = this, _results = [], JoinIndex = 0, Column = query.Column, TmpResults = That._results, Item, ResultLength = TmpResults.length, ItemIndex = 0, Where = {}, onExecutionFinished = function () {
+                            That._results = _results;
                             //check if further execution needed
-                            if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
+                            if (That._queryStack.length > That._currentQueryStackIndex + 1) {
                                 That.startExecutionJoinLogic();
                             }
                             else {
@@ -2780,24 +2769,24 @@ var JsStore;
                         }, doJoin = function (results) {
                             if (results.length > 0) {
                                 results.forEach(function (value) {
-                                    Results[JoinIndex] = {};
-                                    Results[JoinIndex][query.Table] = value;
+                                    _results[JoinIndex] = {};
+                                    _results[JoinIndex][query.Table] = value;
                                     //copy other relative data into current result
-                                    for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                        Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
+                                    for (var j = 0; j < That._currentQueryStackIndex; j++) {
+                                        _results[JoinIndex][That._queryStack[j].Table] = TmpResults[ItemIndex][That._queryStack[j].Table];
                                     }
                                     ++JoinIndex;
                                 });
                             }
                             else if (query.JoinType == 'left') {
                                 //left join
-                                Results[JoinIndex] = {};
-                                Results[JoinIndex][query.Table] = null;
+                                _results[JoinIndex] = {};
+                                _results[JoinIndex][query.Table] = null;
                                 //copy other relative data into current result
-                                for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
-                                    Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
+                                for (var j = 0; j < That._currentQueryStackIndex; j++) {
+                                    _results[JoinIndex][That._queryStack[j].Table] = TmpResults[ItemIndex][That._queryStack[j].Table];
                                 }
-                                //Results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
+                                //_results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
                                 ++JoinIndex;
                             }
                         }, executeLogic = function () {
@@ -2824,38 +2813,39 @@ var JsStore;
                         };
                         executeLogic();
                     };
-                    _this.OnSuccess = onSuccess;
-                    _this.OnError = onError;
-                    _this.Query = query;
+                    _this._onSuccess = onSuccess;
+                    _this._onError = onError;
+                    _this._query = query;
                     var That = _this, TableList = []; // used to open the multiple object store
                     var convertQueryIntoStack = function (query) {
                         if (query.hasOwnProperty('Table1')) {
-                            query.Table2['JoinType'] = query.Join == undefined ? 'inner' : query.Join.toLowerCase();
-                            That.QueryStack.push(query.Table2);
-                            if (That.QueryStack.length % 2 == 0) {
-                                That.QueryStack[That.QueryStack.length - 1].NextJoin = query.NextJoin;
+                            query.Table2['JoinType'] = query.Join == undefined ?
+                                'inner' : query.Join.toLowerCase();
+                            That._queryStack.push(query.Table2);
+                            if (That._queryStack.length % 2 == 0) {
+                                That._queryStack[That._queryStack.length - 1].NextJoin = query.NextJoin;
                             }
                             TableList.push(query.Table2.Table);
                             return convertQueryIntoStack(query.Table1);
                         }
                         else {
-                            That.QueryStack.push(query);
+                            That._queryStack.push(query);
                             TableList.push(query.Table);
                             return;
                         }
                     };
                     convertQueryIntoStack(query.From);
-                    _this.QueryStack.reverse();
+                    _this._queryStack.reverse();
                     //get the data for first table
-                    if (!_this.ErrorOccured) {
+                    if (!_this._errorOccured) {
                         new Select.Instance({
-                            From: _this.QueryStack[0].Table,
-                            Where: _this.QueryStack[0].Where
+                            From: _this._queryStack[0].Table,
+                            Where: _this._queryStack[0].Where
                         }, function (results) {
-                            var TableName = That.QueryStack[0].Table;
+                            var TableName = That._queryStack[0].Table;
                             results.forEach(function (item, index) {
-                                That.Results[index] = {};
-                                That.Results[index][TableName] = item;
+                                That._results[index] = {};
+                                That._results[index][TableName] = item;
                             });
                             That.startExecutionJoinLogic();
                         }, function (error) {
@@ -2866,25 +2856,25 @@ var JsStore;
                 }
                 Join.prototype.startExecutionJoinLogic = function () {
                     var JoinQuery;
-                    if (this.CurrentQueryStackIndex >= 1 && this.CurrentQueryStackIndex % 2 == 1) {
+                    if (this._currentQueryStackIndex >= 1 && this._currentQueryStackIndex % 2 == 1) {
                         JoinQuery = {
-                            Table: this.QueryStack[this.CurrentQueryStackIndex].NextJoin.Table,
-                            Column: this.QueryStack[this.CurrentQueryStackIndex].NextJoin.Column
+                            Table: this._queryStack[this._currentQueryStackIndex].NextJoin.Table,
+                            Column: this._queryStack[this._currentQueryStackIndex].NextJoin.Column
                         };
-                        this.CurrentQueryStackIndex++;
+                        this._currentQueryStackIndex++;
                     }
                     else {
-                        JoinQuery = this.QueryStack[this.CurrentQueryStackIndex++];
+                        JoinQuery = this._queryStack[this._currentQueryStackIndex++];
                     }
-                    var Query = this.QueryStack[this.CurrentQueryStackIndex];
-                    if (Query.JoinType == 'right') {
-                        this.executeRightJoin(JoinQuery, Query);
+                    var _query = this._queryStack[this._currentQueryStackIndex];
+                    if (_query.JoinType == 'right') {
+                        this.executeRightJoin(JoinQuery, _query);
                     }
-                    else if (Query.Where) {
-                        this.executeWhereJoinLogic(JoinQuery, Query);
+                    else if (_query.Where) {
+                        this.executeWhereJoinLogic(JoinQuery, _query);
                     }
                     else {
-                        this.executeWhereUndefinedLogicForJoin(JoinQuery, Query);
+                        this.executeWhereUndefinedLogicForJoin(JoinQuery, _query);
                     }
                 };
                 return Join;
@@ -2904,12 +2894,12 @@ var JsStore;
                 function GroupByHelper() {
                     var _this = _super.call(this) || this;
                     _this.executeAggregateGroupBy = function () {
-                        var GrpQry = this.Query.GroupBy, Datas = this.Results, LookUpObj = {};
+                        var GrpQry = this._query.GroupBy, Datas = this._results, LookUpObj = {};
                         //free results memory
-                        this.Results = undefined;
+                        this._results = undefined;
                         //assign aggregate and free aggregate memory
-                        var AggregateQry = this.Query.Aggregate;
-                        this.Query.Aggregate = undefined;
+                        var AggregateQry = this._query.Aggregate;
+                        this._query.Aggregate = undefined;
                         var Index, ObjKey, Value, AggrColumn;
                         var calculateAggregate = function () {
                             for (var prop in AggregateQry) {
@@ -3084,12 +3074,12 @@ var JsStore;
                                 }
                             }
                         }
-                        this.Results = Datas;
+                        this._results = Datas;
                     };
                     _this.processGroupBy = function () {
-                        var GrpQry = this.Query.GroupBy, Datas = this.Results, LookUpObj = {};
+                        var GrpQry = this._query.GroupBy, Datas = this._results, LookUpObj = {};
                         //free results memory
-                        this.Results = this.Query.GroupBy = undefined;
+                        this._results = this._query.GroupBy = undefined;
                         if (typeof GrpQry == 'string') {
                             for (var i in Datas) {
                                 LookUpObj[Datas[i][GrpQry]] = Datas[i];
@@ -3110,7 +3100,7 @@ var JsStore;
                         for (i in LookUpObj) {
                             Datas.push(LookUpObj[i]);
                         }
-                        this.Results = Datas;
+                        this._results = Datas;
                     };
                     return _this;
                 }
@@ -3131,27 +3121,27 @@ var JsStore;
                 function Helper() {
                     var _this = _super.call(this) || this;
                     _this.processOrderBy = function () {
-                        var Order = this.Query.Order;
-                        if (Order && this.Results.length > 0 && !this.Sorted && Order.By) {
+                        var Order = this._query.Order;
+                        if (Order && this._results.length > 0 && !this._sorted && Order.By) {
                             Order.Type = Order.Type ? Order.Type.toLowerCase() : 'asc';
                             var That = this, OrderColumn = Order.By, sortNumberInAsc = function () {
-                                That.Results.sort(function (a, b) {
+                                That._results.sort(function (a, b) {
                                     return a[OrderColumn] - b[OrderColumn];
                                 });
                             }, sortNumberInDesc = function () {
-                                That.Results.sort(function (a, b) {
+                                That._results.sort(function (a, b) {
                                     return b[OrderColumn] - a[OrderColumn];
                                 });
                             }, sortAlphabetInAsc = function () {
-                                That.Results.sort(function (a, b) {
+                                That._results.sort(function (a, b) {
                                     return a[OrderColumn].toLowerCase().localeCompare(b[OrderColumn].toLowerCase());
                                 });
                             }, sortAlphabetInDesc = function () {
-                                That.Results.sort(function (a, b) {
+                                That._results.sort(function (a, b) {
                                     return b[OrderColumn].toLowerCase().localeCompare(a[OrderColumn].toLowerCase());
                                 });
                             };
-                            if (typeof this.Results[0][OrderColumn] == 'string') {
+                            if (typeof this._results[0][OrderColumn] == 'string') {
                                 if (Order.Type == 'asc') {
                                     sortAlphabetInAsc();
                                 }
@@ -3159,7 +3149,7 @@ var JsStore;
                                     sortAlphabetInDesc();
                                 }
                             }
-                            else if (typeof this.Results[0][OrderColumn] == 'number') {
+                            else if (typeof this._results[0][OrderColumn] == 'number') {
                                 if (Order.Type == 'asc') {
                                     sortNumberInAsc();
                                 }
@@ -3170,10 +3160,10 @@ var JsStore;
                         }
                     };
                     _this.processAggregateQry = function () {
-                        var Datas = this.Results, Results = {}, Key;
+                        var Datas = this._results, _results = {}, Key;
                         //free results memory
-                        this.Results = undefined;
-                        for (var prop in this.Query.Aggregate) {
+                        this._results = undefined;
+                        for (var prop in this._query.Aggregate) {
                             switch (prop) {
                                 case 'Count':
                                     var getCount = function () {
@@ -3184,14 +3174,14 @@ var JsStore;
                                         ;
                                         return Result;
                                     };
-                                    if (typeof this.Query.Aggregate[prop] == 'string') {
-                                        Key = this.Query.Aggregate[prop];
-                                        Results["Count(" + Key + ")"] = getCount();
+                                    if (typeof this._query.Aggregate[prop] == 'string') {
+                                        Key = this._query.Aggregate[prop];
+                                        _results["Count(" + Key + ")"] = getCount();
                                     }
-                                    else if (Array.isArray(this.Query.Aggregate[prop])) {
-                                        for (var key in this.Query.Aggregate[prop]) {
-                                            Key = this.Query.Aggregate[prop][key];
-                                            Results["Count(" + Key + ")"] = getCount();
+                                    else if (Array.isArray(this._query.Aggregate[prop])) {
+                                        for (var key in this._query.Aggregate[prop]) {
+                                            Key = this._query.Aggregate[prop][key];
+                                            _results["Count(" + Key + ")"] = getCount();
                                         }
                                     }
                                     break;
@@ -3204,14 +3194,14 @@ var JsStore;
                                         ;
                                         return Result;
                                     };
-                                    if (typeof this.Query.Aggregate[prop] == 'string') {
-                                        Key = this.Query.Aggregate[prop];
-                                        Results["Max(" + Key + ")"] = getMax();
+                                    if (typeof this._query.Aggregate[prop] == 'string') {
+                                        Key = this._query.Aggregate[prop];
+                                        _results["Max(" + Key + ")"] = getMax();
                                     }
-                                    else if (Array.isArray(this.Query.Aggregate[prop])) {
-                                        for (var key in this.Query.Aggregate[prop]) {
-                                            Key = this.Query.Aggregate[prop][key];
-                                            Results["Max(" + Key + ")"] = getMax();
+                                    else if (Array.isArray(this._query.Aggregate[prop])) {
+                                        for (var key in this._query.Aggregate[prop]) {
+                                            Key = this._query.Aggregate[prop][key];
+                                            _results["Max(" + Key + ")"] = getMax();
                                         }
                                     }
                                     break;
@@ -3225,14 +3215,14 @@ var JsStore;
                                         ;
                                         return Result;
                                     };
-                                    if (typeof this.Query.Aggregate[prop] == 'string') {
-                                        Key = this.Query.Aggregate[prop];
-                                        Results["Min(" + Key + ")"] = getMin();
+                                    if (typeof this._query.Aggregate[prop] == 'string') {
+                                        Key = this._query.Aggregate[prop];
+                                        _results["Min(" + Key + ")"] = getMin();
                                     }
-                                    else if (Array.isArray(this.Query.Aggregate[prop])) {
-                                        for (var key in this.Query.Aggregate[prop]) {
-                                            Key = this.Query.Aggregate[prop][key];
-                                            Results["Min(" + Key + ")"] = getMin();
+                                    else if (Array.isArray(this._query.Aggregate[prop])) {
+                                        for (var key in this._query.Aggregate[prop]) {
+                                            Key = this._query.Aggregate[prop][key];
+                                            _results["Min(" + Key + ")"] = getMin();
                                         }
                                     }
                                     break;
@@ -3245,14 +3235,14 @@ var JsStore;
                                         ;
                                         return Result;
                                     };
-                                    if (typeof this.Query.Aggregate[prop] == 'string') {
-                                        Key = this.Query.Aggregate[prop];
-                                        Results["Sum(" + Key + ")"] = getSum();
+                                    if (typeof this._query.Aggregate[prop] == 'string') {
+                                        Key = this._query.Aggregate[prop];
+                                        _results["Sum(" + Key + ")"] = getSum();
                                     }
-                                    else if (Array.isArray(this.Query.Aggregate[prop])) {
-                                        for (var key in this.Query.Aggregate[prop]) {
-                                            Key = this.Query.Aggregate[prop][key];
-                                            Results["Sum(" + Key + ")"] = getSum();
+                                    else if (Array.isArray(this._query.Aggregate[prop])) {
+                                        for (var key in this._query.Aggregate[prop]) {
+                                            Key = this._query.Aggregate[prop][key];
+                                            _results["Sum(" + Key + ")"] = getSum();
                                         }
                                     }
                                     break;
@@ -3265,24 +3255,24 @@ var JsStore;
                                         ;
                                         return Result / Datas.length;
                                     };
-                                    if (typeof this.Query.Aggregate[prop] == 'string') {
-                                        Key = this.Query.Aggregate[prop];
-                                        Results["Avg(" + Key + ")"] = getAvg();
+                                    if (typeof this._query.Aggregate[prop] == 'string') {
+                                        Key = this._query.Aggregate[prop];
+                                        _results["Avg(" + Key + ")"] = getAvg();
                                     }
-                                    else if (Array.isArray(this.Query.Aggregate[prop])) {
-                                        for (var key in this.Query.Aggregate[prop]) {
-                                            Key = this.Query.Aggregate[prop][key];
-                                            Results["Avg(" + Key + ")"] = getAvg();
+                                    else if (Array.isArray(this._query.Aggregate[prop])) {
+                                        for (var key in this._query.Aggregate[prop]) {
+                                            Key = this._query.Aggregate[prop][key];
+                                            _results["Avg(" + Key + ")"] = getAvg();
                                         }
                                     }
                                     break;
                             }
                         }
                         //add results to the first index of result
-                        for (var prop in Results) {
-                            Datas[0][prop] = Results[prop];
+                        for (var prop in _results) {
+                            Datas[0][prop] = _results[prop];
                         }
-                        this.Results = Datas;
+                        this._results = Datas;
                     };
                     return _this;
                 }
@@ -3303,42 +3293,42 @@ var JsStore;
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
                     _this.onTransactionCompleted = function () {
-                        if (this.SendResultFlag) {
+                        if (this._sendResultFlag) {
                             this.processOrderBy();
-                            if (this.Query.Distinct) {
+                            if (this._query.Distinct) {
                                 var GroupBy = [];
-                                var Result = this.Results[0];
+                                var Result = this._results[0];
                                 for (var key in Result) {
                                     GroupBy.push(key);
                                 }
-                                var PrimaryKey = this.getPrimaryKey(this.Query.From), Index = GroupBy.indexOf(PrimaryKey);
+                                var PrimaryKey = this.getPrimaryKey(this._query.From), Index = GroupBy.indexOf(PrimaryKey);
                                 GroupBy.splice(Index, 1);
-                                this.Query.GroupBy = GroupBy.length > 0 ? GroupBy : null;
+                                this._query.GroupBy = GroupBy.length > 0 ? GroupBy : null;
                             }
-                            if (this.Query.GroupBy) {
-                                if (this.Query.Aggregate) {
+                            if (this._query.GroupBy) {
+                                if (this._query.Aggregate) {
                                     this.executeAggregateGroupBy();
                                 }
                                 else {
                                     this.processGroupBy();
                                 }
                             }
-                            else if (this.Query.Aggregate) {
+                            else if (this._query.Aggregate) {
                                 this.processAggregateQry();
                             }
-                            this.OnSuccess(this.Results);
+                            this._onSuccess(this._results);
                         }
                     };
                     _this.createtransactionForOrLogic = function (query) {
                         var That = this;
-                        this.Query = query;
+                        this._query = query;
                         try {
-                            this.Transaction = Business.db_connection.transaction([query.From], "readonly");
-                            this.Transaction.oncomplete = function (e) {
+                            this._transaction = Business.db_connection.transaction([query.From], "readonly");
+                            this._transaction.oncomplete = function (e) {
                                 That.onTransactionCompleted();
                             };
-                            this.Transaction.ontimeout = That.onTransactionCompleted;
-                            this.ObjectStore = this.Transaction.objectStore(query.From);
+                            this._transaction.ontimeout = That.onTransactionCompleted;
+                            this._objectStore = this._transaction.objectStore(query.From);
                             this.goToWhereLogic();
                         }
                         catch (ex) {
@@ -3346,26 +3336,26 @@ var JsStore;
                         }
                     };
                     _this.orQuerySuccess = function () {
-                        this.Results = this.OrInfo.Results;
+                        this._results = this.OrInfo._results;
                         // free var memory
-                        this.OrInfo.Results = undefined;
+                        this.OrInfo._results = undefined;
                         this.removeDuplicates();
-                        this.OrInfo.OnSucess(this.Results);
+                        this.OrInfo.OnSucess(this._results);
                     };
                     _this.executeOrLogic = function () {
                         this.OrInfo = {
-                            OrQuery: this.Query.Where.Or,
-                            OnSucess: this.OnSuccess,
-                            Results: []
+                            OrQuery: this._query.Where.Or,
+                            OnSucess: this._onSuccess,
+                            _results: []
                         };
                         this.TmpQry = {
-                            From: this.Query.From,
+                            From: this._query.From,
                             Where: {}
                         };
                         var onSuccess = function () {
-                            this.OrInfo.Results = this.OrInfo.Results.concat(this.Results);
-                            if (!this.Query.Limit || (this.Query.Limit > this.OrInfo.Results.length)) {
-                                this.Results = [];
+                            this.OrInfo._results = this.OrInfo._results.concat(this._results);
+                            if (!this._query.Limit || (this._query.Limit > this.OrInfo._results.length)) {
+                                this._results = [];
                                 var Key = JsStore.getObjectFirstKey(this.OrInfo.OrQuery);
                                 if (Key != null) {
                                     this.TmpQry['Where'][Key] = this.OrInfo.OrQuery[Key];
@@ -3381,22 +3371,22 @@ var JsStore;
                             }
                         };
                         // free or memory
-                        this.Query.Where.Or = undefined;
-                        this.OnSuccess = onSuccess;
+                        this._query.Where.Or = undefined;
+                        this._onSuccess = onSuccess;
                     };
                     var That = _this;
-                    _this.Query = query;
-                    _this.OnSuccess = onSuccess;
-                    _this.OnError = onError;
-                    _this.SkipRecord = _this.Query.Skip;
-                    _this.LimitRecord = _this.Query.Limit;
+                    _this._query = query;
+                    _this._onSuccess = onSuccess;
+                    _this._onError = onError;
+                    _this._skipRecord = _this._query.Skip;
+                    _this._limitRecord = _this._query.Limit;
                     try {
-                        _this.Transaction = Business.db_connection.transaction([query.From], "readonly");
-                        _this.Transaction.oncomplete = function (e) {
+                        _this._transaction = Business.db_connection.transaction([query.From], "readonly");
+                        _this._transaction.oncomplete = function (e) {
                             That.onTransactionCompleted();
                         };
-                        _this.Transaction.ontimeout = That.onTransactionCompleted;
-                        _this.ObjectStore = _this.Transaction.objectStore(query.From);
+                        _this._transaction.ontimeout = That.onTransactionCompleted;
+                        _this._objectStore = _this._transaction.objectStore(query.From);
                         if (query.Where) {
                             if (query.Where.Or) {
                                 _this.executeOrLogic();
@@ -3428,8 +3418,8 @@ var JsStore;
                 __extends(BaseCount, _super);
                 function BaseCount() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
-                    _this.ResultCount = 0;
-                    _this.CheckFlag = false;
+                    _this._resultCount = 0;
+                    _this._checkFlag = false;
                     return _this;
                 }
                 return BaseCount;
@@ -3450,10 +3440,10 @@ var JsStore;
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeWhereUndefinedLogic = function () {
                         var That = this;
-                        if (this.ObjectStore.count) {
-                            var CountRequest = this.ObjectStore.count();
+                        if (this._objectStore.count) {
+                            var CountRequest = this._objectStore.count();
                             CountRequest.onsuccess = function () {
-                                That.ResultCount = CountRequest.result;
+                                That._resultCount = CountRequest.result;
                             };
                             CountRequest.onerror = function (e) {
                                 That.ErrorOccured = true;
@@ -3461,11 +3451,11 @@ var JsStore;
                             };
                         }
                         else {
-                            var Cursor, CursorOpenRequest = this.ObjectStore.openCursor();
+                            var Cursor, CursorOpenRequest = this._objectStore.openCursor();
                             CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    ++That.ResultCount;
+                                    ++That._resultCount;
                                     Cursor.continue();
                                 }
                             };
@@ -3494,8 +3484,8 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeInLogic = function (column, values) {
-                        var Cursor, That = this, ColumnStore = this.ObjectStore.index(column), CursorOpenRequest;
-                        if (That.CheckFlag) {
+                        var Cursor, That = this, ColumnStore = this._objectStore.index(column), CursorOpenRequest;
+                        if (That._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
                                     CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
@@ -3503,7 +3493,7 @@ var JsStore;
                                         Cursor = e.target.result;
                                         if (Cursor) {
                                             if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                                ++That.ResultCount;
+                                                ++That._resultCount;
                                             }
                                             Cursor.continue();
                                         }
@@ -3516,12 +3506,12 @@ var JsStore;
                             }
                         }
                         else {
-                            if (this.ObjectStore.count) {
+                            if (this._objectStore.count) {
                                 for (var i = 0, length = values.length; i < length; i++) {
                                     if (!That.ErrorOccured) {
                                         CursorOpenRequest = ColumnStore.count(IDBKeyRange.only(values[i]));
                                         CursorOpenRequest.onsuccess = function (e) {
-                                            That.ResultCount += e.target.result;
+                                            That._resultCount += e.target.result;
                                         };
                                         CursorOpenRequest.onerror = function (e) {
                                             That.ErrorOccured = true;
@@ -3537,7 +3527,7 @@ var JsStore;
                                         CursorOpenRequest.onsuccess = function (e) {
                                             Cursor = e.target.result;
                                             if (Cursor) {
-                                                ++That.ResultCount;
+                                                ++That._resultCount;
                                                 Cursor.continue();
                                             }
                                         };
@@ -3602,18 +3592,18 @@ var JsStore;
                         this.CompValueLength = this.CompValue.length;
                         this.CompSymbol = symbol;
                         this.Column = column;
-                        this.CursorOpenRequest = this.ObjectStore.index(column).openCursor();
+                        this.CursorOpenRequest = this._objectStore.index(column).openCursor();
                         this.CursorOpenRequest.onerror = function (e) {
                             That.ErrorOccured = true;
                             That.onErrorOccured(e);
                         };
-                        if (That.CheckFlag) {
+                        if (That._checkFlag) {
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
                                     if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
-                                        ++That.ResultCount;
+                                        ++That._resultCount;
                                     }
                                     Cursor.continue();
                                 }
@@ -3624,7 +3614,7 @@ var JsStore;
                                 Cursor = e.target.result;
                                 if (Cursor) {
                                     if (That.filterOnOccurence(Cursor.key)) {
-                                        ++That.ResultCount;
+                                        ++That._resultCount;
                                     }
                                     Cursor.continue();
                                 }
@@ -3652,13 +3642,13 @@ var JsStore;
                     _this.executeWhereLogic = function (column, value, op) {
                         var That = this;
                         value = op ? value[op] : value;
-                        if (That.CheckFlag) {
-                            var Cursor, CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
+                        if (That._checkFlag) {
+                            var Cursor, CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
                             CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
                                     if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                        ++That.ResultCount;
+                                        ++That._resultCount;
                                     }
                                     Cursor.continue();
                                 }
@@ -3669,10 +3659,10 @@ var JsStore;
                             };
                         }
                         else {
-                            if (this.ObjectStore.count) {
-                                var CountRequest = this.ObjectStore.index(column).count(this.getKeyRange(value, op));
+                            if (this._objectStore.count) {
+                                var CountRequest = this._objectStore.index(column).count(this.getKeyRange(value, op));
                                 CountRequest.onsuccess = function () {
-                                    That.ResultCount = CountRequest.result;
+                                    That._resultCount = CountRequest.result;
                                 };
                                 CountRequest.onerror = function (e) {
                                     That.ErrorOccured = true;
@@ -3680,11 +3670,11 @@ var JsStore;
                                 };
                             }
                             else {
-                                var Cursor, CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
+                                var Cursor, CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
                                 CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = e.target.result;
                                     if (Cursor) {
-                                        ++That.ResultCount;
+                                        ++That._resultCount;
                                         Cursor.continue();
                                     }
                                 };
@@ -3714,26 +3704,26 @@ var JsStore;
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
                     _this.onTransactionCompleted = function () {
-                        if (this.SendResultFlag) {
-                            this.OnSuccess(this.ResultCount);
+                        if (this._sendResultFlag) {
+                            this._onSuccess(this._resultCount);
                         }
                     };
-                    _this.Query = query;
-                    _this.OnSuccess = onSuccess;
-                    _this.OnError = onError;
+                    _this._query = query;
+                    _this._onSuccess = onSuccess;
+                    _this._onError = onError;
                     try {
                         var createTransaction = function () {
-                            this.Transaction = Business.db_connection.transaction([query.From], "readonly");
-                            this.ObjectStore = this.Transaction.objectStore(query.From);
-                            this.Transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                            this.Transaction.ontimeout = this.onTransactionTimeout.bind(this);
+                            this._transaction = Business.db_connection.transaction([query.From], "readonly");
+                            this._objectStore = this._transaction.objectStore(query.From);
+                            this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                            this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
                         };
                         if (query.Where !== undefined) {
                             if (query.Where.Or) {
                                 var select_object = new Business.Select.Instance(query, function (results) {
-                                    this.ResultCount = results.length;
+                                    this._resultCount = results.length;
                                     this.onTransactionCompleted();
-                                }.bind(_this), _this.OnError);
+                                }.bind(_this), _this._onError);
                             }
                             else {
                                 createTransaction.call(_this);
@@ -3795,7 +3785,7 @@ var JsStore;
             __extends(BaseUpdate, _super);
             function BaseUpdate() {
                 var _this = _super !== null && _super.apply(this, arguments) || this;
-                _this.CheckFlag = false;
+                _this._checkFlag = false;
                 return _this;
             }
             return BaseUpdate;
@@ -3814,12 +3804,12 @@ var JsStore;
                 function NotWhere() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeWhereUndefinedLogic = function () {
-                        var Cursor, That = this, CursorOpenRequest = this.ObjectStore.openCursor();
+                        var Cursor, That = this, CursorOpenRequest = this._objectStore.openCursor();
                         CursorOpenRequest.onsuccess = function (e) {
                             Cursor = e.target.result;
                             if (Cursor) {
-                                Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
-                                ++That.RowAffected;
+                                Cursor.update(Update.updateValue(That._query.Set, Cursor.value));
+                                ++That._rowAffected;
                                 Cursor.continue();
                             }
                         };
@@ -3847,8 +3837,8 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeInLogic = function (column, values) {
-                        var Cursor, That = this, ColumnStore = this.ObjectStore.index(column), CursorOpenRequest;
-                        if (That.CheckFlag) {
+                        var Cursor, That = this, ColumnStore = this._objectStore.index(column), CursorOpenRequest;
+                        if (That._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
                                     CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
@@ -3856,8 +3846,8 @@ var JsStore;
                                         Cursor = e.target.result;
                                         if (Cursor) {
                                             if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                                Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
-                                                ++That.RowAffected;
+                                                Cursor.update(Update.updateValue(That._query.Set, Cursor.value));
+                                                ++That._rowAffected;
                                             }
                                             Cursor.continue();
                                         }
@@ -3876,8 +3866,8 @@ var JsStore;
                                     CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
                                         if (Cursor) {
-                                            Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
-                                            ++That.RowAffected;
+                                            Cursor.update(Update.updateValue(That._query.Set, Cursor.value));
+                                            ++That._rowAffected;
                                             Cursor.continue();
                                         }
                                     };
@@ -3941,19 +3931,19 @@ var JsStore;
                         this.CompValueLength = this.CompValue.length;
                         this.CompSymbol = symbol;
                         this.Column = column;
-                        this.CursorOpenRequest = this.ObjectStore.index(column).openCursor();
+                        this.CursorOpenRequest = this._objectStore.index(column).openCursor();
                         this.CursorOpenRequest.onerror = function (e) {
                             That.ErrorOccured = true;
                             That.onErrorOccured(e);
                         };
-                        if (That.CheckFlag) {
+                        if (That._checkFlag) {
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
                                     if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
-                                        Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
-                                        ++That.RowAffected;
+                                        Cursor.update(Update.updateValue(That._query.Set, Cursor.value));
+                                        ++That._rowAffected;
                                     }
                                     Cursor.continue();
                                 }
@@ -3964,8 +3954,8 @@ var JsStore;
                                 Cursor = e.target.result;
                                 if (Cursor) {
                                     if (That.filterOnOccurence(Cursor.key)) {
-                                        Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
-                                        ++That.RowAffected;
+                                        Cursor.update(Update.updateValue(That._query.Set, Cursor.value));
+                                        ++That._rowAffected;
                                     }
                                     Cursor.continue();
                                 }
@@ -3993,14 +3983,14 @@ var JsStore;
                     _this.executeWhereLogic = function (column, value, op) {
                         var Cursor, That = this, CursorOpenRequest;
                         value = op ? value[op] : value;
-                        CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
-                        if (That.CheckFlag) {
+                        CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
+                        if (That._checkFlag) {
                             CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
                                     if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                        Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
-                                        ++That.RowAffected;
+                                        Cursor.update(Update.updateValue(That._query.Set, Cursor.value));
+                                        ++That._rowAffected;
                                     }
                                     Cursor.continue();
                                 }
@@ -4010,8 +4000,8 @@ var JsStore;
                             CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
-                                    Cursor.update(Update.updateValue(That.Query.Set, Cursor.value));
-                                    ++That.RowAffected;
+                                    Cursor.update(Update.updateValue(That._query.Set, Cursor.value));
+                                    ++That._rowAffected;
                                     Cursor.continue();
                                 }
                             };
@@ -4040,18 +4030,18 @@ var JsStore;
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
                     _this.onTransactionCompleted = function () {
-                        this.OnSuccess(this.RowAffected);
+                        this._onSuccess(this._rowAffected);
                     };
                     _this.createtransactionForOrLogic = function (query) {
                         var that = this;
-                        this.Query = query;
+                        this._query = query;
                         try {
-                            this.Transaction = Business.db_connection.transaction([query.In], "readwrite");
-                            this.Transaction.oncomplete = function (e) {
+                            this._transaction = Business.db_connection.transaction([query.In], "readwrite");
+                            this._transaction.oncomplete = function (e) {
                                 that.onTransactionCompleted();
                             };
-                            this.Transaction.ontimeout = this.onTransactionCompleted;
-                            this.ObjectStore = this.Transaction.objectStore(query.In);
+                            this._transaction.ontimeout = this.onTransactionCompleted;
+                            this._objectStore = this._transaction.objectStore(query.In);
                             this.goToWhereLogic();
                         }
                         catch (ex) {
@@ -4060,35 +4050,35 @@ var JsStore;
                     };
                     _this.executeOrLogic = function () {
                         var that = this, select_object = new Business.Select.Instance({
-                            From: this.Query.In,
-                            Where: this.Query.Where
+                            From: this._query.In,
+                            Where: this._query.Where
                         }, function (results) {
-                            var key = that.getPrimaryKey(that.Query.In), in_query = [], where_qry = {};
+                            var key = that.getPrimaryKey(that._query.In), in_query = [], where_qry = {};
                             results.forEach(function (value) {
                                 in_query.push(value[key]);
                             });
                             where_qry[key] = { In: in_query };
                             that.createtransactionForOrLogic({
-                                In: that.Query.In,
+                                In: that._query.In,
                                 Where: where_qry,
-                                Set: that.Query.Set
+                                Set: that._query.Set
                             });
                         }, this.OnError);
                     };
                     try {
-                        _this.OnSuccess = onSuccess;
-                        _this.OnError = onError;
+                        _this._onSuccess = onSuccess;
+                        _this._onError = onError;
                         _this.checkSchema(query.Set, query.In);
-                        if (!_this.ErrorOccured) {
-                            _this.Query = query;
+                        if (!_this._errorOccured) {
+                            _this._query = query;
                             var that = _this;
                             var createTransaction = function () {
-                                that.Transaction = Business.db_connection.transaction([query.In], "readwrite");
-                                that.ObjectStore = that.Transaction.objectStore(query.In);
-                                that.Transaction.oncomplete = function (e) {
+                                that._transaction = Business.db_connection.transaction([query.In], "readwrite");
+                                that._objectStore = that._transaction.objectStore(query.In);
+                                that._transaction.oncomplete = function (e) {
                                     that.onTransactionCompleted();
                                 };
-                                that.Transaction.ontimeout = that.onTransactionTimeout;
+                                that._transaction.ontimeout = that.onTransactionTimeout;
                             };
                             if (query.Where) {
                                 if (query.Where.Or) {
@@ -4105,7 +4095,7 @@ var JsStore;
                             }
                         }
                         else {
-                            _this.onErrorOccured(_this.Error, true);
+                            _this.onErrorOccured(_this._error, true);
                         }
                     }
                     catch (ex) {
@@ -4117,13 +4107,13 @@ var JsStore;
                     if (suppliedValue) {
                         var current_table = this.getTable(tableName), that = this;
                         if (current_table) {
-                            var onValidationError = function (error, details) {
-                                that.ErrorOccured = true;
-                                that.Error = JsStore.Utils.getError(error, details);
+                            var onValidationError = function (err, details) {
+                                that._errorOccured = true;
+                                that._error = JsStore.Utils.getError(err, details);
                             };
                             // loop through table column and find data is valid
                             current_table._columns.every(function (column) {
-                                if (!that.ErrorOccured) {
+                                if (!that._errorOccured) {
                                     if (column._name in suppliedValue) {
                                         var executeCheck = function (value) {
                                             // check not null schema
@@ -4164,7 +4154,7 @@ var JsStore;
                         }
                     }
                     else {
-                        this.ErrorOccured = true;
+                        this._errorOccured = true;
                     }
                 };
                 return Instance;
@@ -4183,7 +4173,7 @@ var JsStore;
                 __extends(BaseDelete, _super);
                 function BaseDelete() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
-                    _this.CheckFlag = false;
+                    _this._checkFlag = false;
                     return _this;
                 }
                 return BaseDelete;
@@ -4203,12 +4193,12 @@ var JsStore;
                 function NotWhere() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeWhereUndefinedLogic = function () {
-                        var Cursor, That = this, CursorOpenRequest = this.ObjectStore.openCursor();
+                        var Cursor, That = this, CursorOpenRequest = this._objectStore.openCursor();
                         CursorOpenRequest.onsuccess = function (e) {
                             Cursor = e.target.result;
                             if (Cursor) {
                                 Cursor.delete();
-                                ++That.RowAffected;
+                                ++That._rowAffected;
                                 Cursor.continue();
                             }
                         };
@@ -4236,17 +4226,17 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeInLogic = function (column, values) {
-                        var Cursor, That = this, ColumnStore = this.ObjectStore.index(column), CursorOpenRequest;
-                        if (That.CheckFlag) {
+                        var Cursor, That = this, ColumnStore = this._objectStore.index(column), CursorOpenRequest;
+                        if (That._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
-                                    CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    CursorOpenRequest = this._objectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
                                     CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
                                         if (Cursor) {
                                             if (That.checkForWhereConditionMatch(Cursor.value)) {
                                                 Cursor.delete();
-                                                ++That.RowAffected;
+                                                ++That._rowAffected;
                                             }
                                             Cursor.continue();
                                         }
@@ -4261,12 +4251,12 @@ var JsStore;
                         else {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!That.ErrorOccured) {
-                                    CursorOpenRequest = this.ObjectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
+                                    CursorOpenRequest = this._objectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
                                     CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
                                         if (Cursor) {
                                             Cursor.delete();
-                                            ++That.RowAffected;
+                                            ++That._rowAffected;
                                             Cursor.continue();
                                         }
                                     };
@@ -4330,19 +4320,19 @@ var JsStore;
                         this.CompValueLength = this.CompValue.length;
                         this.CompSymbol = symbol;
                         this.Column = column;
-                        this.CursorOpenRequest = this.ObjectStore.index(column).openCursor();
+                        this.CursorOpenRequest = this._objectStore.index(column).openCursor();
                         this.CursorOpenRequest.onerror = function (e) {
                             That.ErrorOccured = true;
                             That.onErrorOccured(e);
                         };
-                        if (That.CheckFlag) {
+                        if (That._checkFlag) {
                             this.CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
                                     if (That.filterOnOccurence(Cursor.key) &&
                                         That.checkForWhereConditionMatch(Cursor.value)) {
                                         Cursor.delete();
-                                        ++That.RowAffected;
+                                        ++That._rowAffected;
                                     }
                                     Cursor.continue();
                                 }
@@ -4354,7 +4344,7 @@ var JsStore;
                                 if (Cursor) {
                                     if (That.filterOnOccurence(Cursor.key)) {
                                         Cursor.delete();
-                                        ++That.RowAffected;
+                                        ++That._rowAffected;
                                     }
                                     Cursor.continue();
                                 }
@@ -4382,14 +4372,14 @@ var JsStore;
                     _this.executeWhereLogic = function (column, value, op) {
                         var Cursor, That = this, CursorOpenRequest;
                         value = op ? value[op] : value;
-                        CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
-                        if (That.CheckFlag) {
+                        CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
+                        if (That._checkFlag) {
                             CursorOpenRequest.onsuccess = function (e) {
                                 Cursor = e.target.result;
                                 if (Cursor) {
                                     if (That.checkForWhereConditionMatch(Cursor.value)) {
                                         Cursor.delete();
-                                        ++That.RowAffected;
+                                        ++That._rowAffected;
                                     }
                                     Cursor.continue();
                                 }
@@ -4400,7 +4390,7 @@ var JsStore;
                                 Cursor = e.target.result;
                                 if (Cursor) {
                                     Cursor.delete();
-                                    ++That.RowAffected;
+                                    ++That._rowAffected;
                                     Cursor.continue();
                                 }
                             };
@@ -4429,18 +4419,18 @@ var JsStore;
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
                     _this.onTransactionCompleted = function () {
-                        this.OnSuccess(this.RowAffected);
+                        this._onSuccess(this._rowAffected);
                     };
                     _this.createtransactionForOrLogic = function (query) {
                         var That = this;
-                        this.Query = query;
+                        this._query = query;
                         try {
-                            this.Transaction = Business.db_connection.transaction([query.From], "readwrite");
-                            this.Transaction.oncomplete = function (e) {
+                            this._transaction = Business.db_connection.transaction([query.From], "readwrite");
+                            this._transaction.oncomplete = function (e) {
                                 That.onTransactionCompleted();
                             };
-                            this.Transaction.ontimeout = That.onTransactionCompleted;
-                            this.ObjectStore = this.Transaction.objectStore(query.From);
+                            (this._transaction).ontimeout = That.onTransactionCompleted;
+                            this._objectStore = this._transaction.objectStore(query.From);
                             this.goToWhereLogic();
                         }
                         catch (ex) {
@@ -4449,11 +4439,11 @@ var JsStore;
                     };
                     _this.executeOrLogic = function () {
                         this.OrInfo = {
-                            OrQuery: this.Query.Where.Or,
-                            OnSucess: this.OnSuccess
+                            OrQuery: this._query.Where.Or,
+                            OnSucess: this._onSuccess
                         };
                         this.TmpQry = {
-                            From: this.Query.From,
+                            From: this._query.From,
                             Where: {}
                         };
                         var onSuccess = function () {
@@ -4464,24 +4454,24 @@ var JsStore;
                                 this.createtransactionForOrLogic(this.TmpQry);
                             }
                             else {
-                                this.OrInfo.OnSucess(this.RowAffected);
+                                this.OrInfo.OnSucess(this._rowAffected);
                             }
                         };
-                        //free or memory
-                        this.Query.Where.Or = undefined;
-                        this.OnSuccess = onSuccess;
+                        // free or memory
+                        this._query.Where.Or = undefined;
+                        this._onSuccess = onSuccess;
                     };
                     try {
                         var That = _this;
-                        _this.Query = query;
-                        _this.OnSuccess = onSuccess;
-                        _this.OnError = onError;
-                        _this.Transaction = Business.db_connection.transaction([query.From], "readwrite");
-                        _this.ObjectStore = _this.Transaction.objectStore(query.From);
-                        _this.Transaction.oncomplete = function () {
+                        _this._query = query;
+                        _this._onSuccess = onSuccess;
+                        _this._onError = onError;
+                        _this._transaction = Business.db_connection.transaction([query.From], "readwrite");
+                        _this._objectStore = _this._transaction.objectStore(query.From);
+                        _this._transaction.oncomplete = function () {
                             That.onTransactionCompleted();
                         };
-                        _this.Transaction.onerror = function (e) {
+                        _this._transaction.onerror = function (e) {
                             That.onErrorOccured(e);
                         };
                         if (query.Where) {

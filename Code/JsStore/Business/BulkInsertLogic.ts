@@ -2,16 +2,16 @@ namespace JsStore {
     export namespace Business {
         export class BulkInsert extends Base {
             ValuesAffected = [];
-            Query: IInsert;
+            _query: IInsert;
             ValuesIndex = 0;
             Table: Model.Table;
 
             constructor(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
                 super();
                 try {
-                    this.Query = query;
-                    this.OnSuccess = onSuccess;
-                    this.OnError = onError;
+                    this._query = query;
+                    this._onSuccess = onSuccess;
+                    this._onError = onError;
                     var That = this;
                     this.Table = this.getTable(query.Into);
                     if (this.Table) {
@@ -28,22 +28,20 @@ namespace JsStore {
             }
 
             public onTransactionCompleted = function () {
-                this.OnSuccess(this.Query.Return ? this.ValuesAffected : this.RowAffected);
+                this._onSuccess(this._query.Return ? this.ValuesAffected : this._rowAffected);
             }
 
             private bulkinsertData = function () {
                 var That = this;
-                this.Transaction = db_connection.transaction([this.Query.Into], "readwrite");
-                this.ObjectStore = this.Transaction.objectStore(this.Query.Into);
-                this.Transaction.oncomplete = function (e) {
-                    That.OnSuccess();
+                this._transaction = db_connection.transaction([this._query.Into], "readwrite");
+                this._objectStore = this._transaction.objectStore(this._query.Into);
+                this._transaction.oncomplete = function (e) {
+                    That._onSuccess();
                 }
-                this.Query.Values.forEach(function (value) {
-                    That.ObjectStore.add(value);
+                this._query.Values.forEach(function (value) {
+                    That._objectStore.add(value);
                 });
             }
-
-
         }
     }
 }

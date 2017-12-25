@@ -1,27 +1,28 @@
 namespace JsStore {
     export namespace Business {
         export class Base extends BaseHelper {
-            Error: IError;
-            ErrorOccured: boolean = false;
-            ErrorCount = 0;
-            RowAffected = 0;
-            OnSuccess: Function;
-            OnError: (err: IError) => void;
-            Transaction: IDBTransaction;
-            ObjectStore: IDBObjectStore;
-            Query;
-            SendResultFlag: Boolean = true;
-
+            _error: IError;
+            _errorOccured: boolean = false;
+            _errorCount = 0;
+            _rowAffected = 0;
+            _onSuccess: (result?) => void;
+            _onError: (err: IError) => void;
+            _transaction: IDBTransaction;
+            _objectStore: IDBObjectStore;
+            _query;
+            _sendResultFlag: boolean = true;
+            _checkFlag: boolean;
+            
             protected onErrorOccured = function (e, customError = false) {
-                ++this.ErrorCount;
-                if (this.ErrorCount == 1) {
+                ++this._errorCount;
+                if (this._errorCount === 1) {
                     if (this.OnError != null) {
                         if (!customError) {
-                            var Error = <IError>{
+                            var error = {
                                 Name: (e as any).target.error.name,
                                 Message: (e as any).target.error.message
-                            }
-                            this.OnError(Error);
+                            } as IError;
+                            this.OnError(error);
                         }
                         else {
                             this.OnError(e);
@@ -29,119 +30,117 @@ namespace JsStore {
                         logError(Error);
                     }
                 }
-            }
+            };
 
             protected onTransactionTimeout = function (e) {
                 console.log('transaction timed out');
-            }
+            };
 
             protected onExceptionOccured = function (ex: DOMException, info) {
                 switch (ex.name) {
                     case 'NotFoundError':
-                        var Error = Utils.getError(ErrorType.TableNotExist, info);
-                        throwError(Error);
+                        var error = Utils.getError(ErrorType.TableNotExist, info);
+                        throwError(error);
                     default: console.error(ex);
                 }
-            }
+            };
 
             /**
-            * For matching the different column value existance
-            * 
-            * @private
-            * @param {any} where 
-            * @param {any} value 
-            * @returns 
-            * 
-            * @memberOf SelectLogic
-            */
+             * For matching the different column value existance
+             * 
+             * @protected
+             * @param {any} rowValue 
+             * @returns 
+             * @memberof Base
+             */
             protected checkForWhereConditionMatch(rowValue) {
-                var Where = this.Query.Where,
-                    Status = true;
+                var where = this._query.Where,
+                    status = true;
                 var checkIn = function (column, value) {
-                    var Values = Where[column].In;
-                    for (var i = 0, length = Values.length; i < length; i++) {
-                        if (Values[i] == value) {
-                            Status = true;
+                    var values = where[column].In;
+                    for (var i = 0, length = values.length; i < length; i++) {
+                        if (values[i] === value) {
+                            status = true;
                             break;
                         }
                         else {
-                            Status = false;
+                            status = false;
                         }
-                    };
+                    }
                 },
                     checkLike = function (column, value) {
-                        var Values = Where[column].Like.split('%'),
-                            CompSymbol: Occurence,
-                            CompValue,
-                            SymbolIndex;
-                        if (Values[1]) {
-                            CompValue = Values[1];
-                            CompSymbol = Values.length > 2 ? Occurence.Any : Occurence.Last;
+                        var values = where[column].Like.split('%'),
+                            comp_symbol: Occurence,
+                            comp_value,
+                            symbol_index;
+                        if (values[1]) {
+                            comp_value = values[1];
+                            comp_symbol = values.length > 2 ? Occurence.Any : Occurence.Last;
                         }
                         else {
-                            CompValue = Values[0];
-                            CompSymbol = Occurence.First;
+                            comp_value = values[0];
+                            comp_symbol = Occurence.First;
                         }
                         value = value.toLowerCase();
 
-                        switch (CompSymbol) {
+                        switch (comp_symbol) {
                             case Occurence.Any:
-                                SymbolIndex = value.indexOf(CompValue.toLowerCase());
-                                if (SymbolIndex < 0) {
-                                    Status = false;
-                                }; break;
+                                symbol_index = value.indexOf(comp_value.toLowerCase());
+                                if (symbol_index < 0) {
+                                    status = false;
+                                } break;
                             case Occurence.First:
-                                SymbolIndex = value.indexOf(CompValue.toLowerCase());
-                                if (SymbolIndex > 0 || SymbolIndex < 0) {
-                                    Status = false;
-                                }; break;
+                                symbol_index = value.indexOf(comp_value.toLowerCase());
+                                if (symbol_index > 0 || symbol_index < 0) {
+                                    status = false;
+                                } break;
                             default:
-                                SymbolIndex = value.lastIndexOf(CompValue.toLowerCase());
-                                if (SymbolIndex < value.length - CompValue.length) {
-                                    Status = false;
-                                };
+                                symbol_index = value.lastIndexOf(comp_value.toLowerCase());
+                                if (symbol_index < value.length - comp_value.length) {
+                                    status = false;
+                                }
                         }
                     },
                     checkComparisionOp = function (column, value, symbol) {
-                        var CompareValue = Where[column][symbol];
+                        var compare_value = where[column][symbol];
                         switch (symbol) {
-                            //greater than
-                            case '>': if (value <= CompareValue) {
-                                Status = false;
-                            }; break;
-                            //less than
-                            case '<': if (value >= CompareValue) {
-                                Status = false;
-                            }; break;
-                            //less than equal
-                            case '<=': if (value > CompareValue) {
-                                Status = false;
-                            }; break;
-                            //greather than equal
-                            case '>=': if (value < CompareValue) {
-                                Status = false;
-                            }; break;
-                            //between
-                            case '-': if (value < CompareValue.Low || value > CompareValue.High) {
-                                Status = false;
-                            }; break;
+                            // greater than
+                            case '>': if (value <= compare_value) {
+                                status = false;
+                            } break;
+                            // less than
+                            case '<': if (value >= compare_value) {
+                                status = false;
+                            } break;
+                            // less than equal
+                            case '<=': if (value > compare_value) {
+                                status = false;
+                            } break;
+                            // greather than equal
+                            case '>=': if (value < compare_value) {
+                                status = false;
+                            } break;
+                            // between
+                            case '-': if (value < compare_value.Low || value > compare_value.High) {
+                                status = false;
+                            } break;
                         }
                     };
-                for (var Column in Where) {
-                    var ColumnValue = Where[Column];
-                    if (Status) {
-                        if (typeof ColumnValue == 'object') {
-                            for (var key in ColumnValue) {
-                                if (Status) {
+                for (var column in where) {
+                    var column_value = where[column];
+                    if (status) {
+                        if (typeof column_value === 'object') {
+                            for (var key in column_value) {
+                                if (status) {
                                     switch (key) {
-                                        case 'In': checkIn(Column, rowValue[Column]); break;
-                                        case 'Like': checkLike(Column, rowValue[Column]); break;
+                                        case 'In': checkIn(column, rowValue[column]); break;
+                                        case 'Like': checkLike(column, rowValue[column]); break;
                                         case '-':
                                         case '>':
                                         case '<':
                                         case '>=':
                                         case '<=':
-                                            checkComparisionOp(Column, rowValue[Column], key); break;
+                                            checkComparisionOp(column, rowValue[column], key); break;
                                     }
                                 }
                                 else {
@@ -150,9 +149,9 @@ namespace JsStore {
                             }
                         }
                         else {
-                            var CompareValue = rowValue[Column];
-                            if (ColumnValue != CompareValue) {
-                                Status = false;
+                            var compare_value = rowValue[column];
+                            if (column_value !== compare_value) {
+                                status = false;
                                 break;
                             }
                         }
@@ -161,93 +160,93 @@ namespace JsStore {
                         break;
                     }
                 }
-                return Status;
+                return status;
             }
 
             protected goToWhereLogic = function () {
-                var Column = getObjectFirstKey(this.Query.Where);
-                if (this.Query.IgnoreCase === true) {
-                    this.Query.Where = this.makeQryInCaseSensitive(this.Query.Where);
+                var column = getObjectFirstKey(this._query.Where);
+                if (this._query.IgnoreCase === true) {
+                    this._query.Where = this.makeQryInCaseSensitive(this._query.Where);
                 }
-                if (this.ObjectStore.indexNames.contains(Column)) {
-                    var Value = this.Query.Where[Column];
-                    if (typeof Value == 'object') {
-                        this.CheckFlag = Boolean(Object.keys(Value).length > 1 || Object.keys(this.Query.Where).length > 1);
-                        var Key = getObjectFirstKey(Value);
-                        switch (Key) {
+                if (this._objectStore.indexNames.contains(column)) {
+                    var value = this._query.Where[column];
+                    if (typeof value === 'object') {
+                        this._checkFlag = Boolean(
+                            Object.keys(value).length > 1 ||
+                            Object.keys(this._query.Where).length > 1
+                        );
+                        var key = getObjectFirstKey(value);
+                        switch (key) {
                             case 'Like': {
-                                var FilterValue = Value.Like.split('%');
-                                if (FilterValue[1]) {
-                                    if (FilterValue.length > 2) {
-                                        this.executeLikeLogic(Column, FilterValue[1], Occurence.Any);
+                                var filter_value = value.Like.split('%');
+                                if (filter_value[1]) {
+                                    if (filter_value.length > 2) {
+                                        this.executeLikeLogic(column, filter_value[1], Occurence.Any);
                                     }
                                     else {
-                                        this.executeLikeLogic(Column, FilterValue[1], Occurence.Last);
+                                        this.executeLikeLogic(column, filter_value[1], Occurence.Last);
                                     }
                                 }
                                 else {
-                                    this.executeLikeLogic(Column, FilterValue[0], Occurence.First);
+                                    this.executeLikeLogic(column, filter_value[0], Occurence.First);
                                 }
-                            }; break;
+                            } break;
                             case 'In':
-                                this.executeInLogic(Column, Value['In']);
+                                this.executeInLogic(column, value['In']);
                                 break;
                             case '-':
                             case '>':
                             case '<':
                             case '>=':
                             case '<=':
-                                this.executeWhereLogic(Column, Value, Key);
+                                this.executeWhereLogic(column, value, key);
                                 break;
                             case 'Aggregate': break;
-                            default: this.executeWhereLogic(Column, Value);
+                            default: this.executeWhereLogic(column, value);
                         }
                     }
                     else {
-                        this.CheckFlag = Boolean(Object.keys(this.Query.Where).length > 1);
-                        this.executeWhereLogic(Column, Value);
+                        this._checkFlag = Boolean(Object.keys(this._query.Where).length > 1);
+                        this.executeWhereLogic(column, value);
                     }
                 }
                 else {
                     this.ErrorOccured = true;
-                    this.Error = Utils.getError(ErrorType.ColumnNotExist, { ColumnName: Column });
+                    this.Error = Utils.getError(ErrorType.ColumnNotExist, { ColumnName: column });
                     throwError(this.Error);
                 }
-            }
+            };
 
             protected makeQryInCaseSensitive = function (qry) {
-                var Results = [],
-                    ColumnValue,
-                    KeyValue;
+                var results = [],
+                    column_value,
+                    key_value;
                 for (var column in qry) {
-                    ColumnValue = qry[column];
-                    if (typeof ColumnValue == 'object') {
-                        for (var key in ColumnValue) {
-                            KeyValue = ColumnValue[key]
+                    column_value = qry[column];
+                    if (typeof column_value === 'object') {
+                        for (var key in column_value) {
+                            key_value = column_value[key];
                             switch (key) {
                                 case WhereQryOption.In:
-                                    Results = Results.concat(this.getAllCombinationOfWord(KeyValue, true));
+                                    results = results.concat(this.getAllCombinationOfWord(key_value, true));
                                     break;
                                 case WhereQryOption.Like:
                                     break;
                                 default:
-                                    Results = Results.concat(this.getAllCombinationOfWord(KeyValue));
+                                    results = results.concat(this.getAllCombinationOfWord(key_value));
                             }
                         }
-                        qry[column]['In'] = Results;
+                        qry[column]['In'] = results;
                     }
                     else {
-                        Results = Results.concat(this.getAllCombinationOfWord(ColumnValue));
+                        results = results.concat(this.getAllCombinationOfWord(column_value));
                         qry[column] = {
-                            In: Results
-                        }
+                            In: results
+                        };
                     }
-
                 }
-
                 return qry;
-            }
+            };
         }
     }
-
 }

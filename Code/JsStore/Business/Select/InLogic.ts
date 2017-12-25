@@ -4,24 +4,24 @@ namespace JsStore {
             export class In extends NotWhere {
                 private executeSkipAndLimitForIn = function (column, values) {
                     var Cursor: IDBCursorWithValue,
-                        Skip = this.SkipRecord,
+                        Skip = this._skipRecord,
                         That = this,
-                        ColumnStore = this.ObjectStore.index(column),
+                        ColumnStore = this._objectStore.index(column),
                         skipOrPush = function (value) {
                             if (Skip == 0) {
-                                That.Results.push(value);
+                                That._results.push(value);
                             }
                             else {
                                 --Skip;
                             }
                         };
-                    if (That.CheckFlag) {
+                    if (That._checkFlag) {
                         for (var i = 0, length = values.length; i < length; i++) {
                             if (!That.ErrorOccured) {
                                 this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                 this.CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = (<any>e).target.result;
-                                    if (That.Results.length != That.LimitRecord && Cursor) {
+                                    if (That._results.length != That._limitRecord && Cursor) {
                                         if (That.checkForWhereConditionMatch(Cursor.value)) {
                                             skipOrPush(Cursor.value);
                                         }
@@ -41,7 +41,7 @@ namespace JsStore {
                                 this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                 this.CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = (<any>e).target.result;
-                                    if (That.Results.length != That.LimitRecord && Cursor) {
+                                    if (That._results.length != That._limitRecord && Cursor) {
                                         skipOrPush(Cursor.value);
                                         Cursor.continue();
                                     }
@@ -57,18 +57,18 @@ namespace JsStore {
 
                 private executeSkipForIn = function (column, values) {
                     var Cursor: IDBCursorWithValue,
-                        Skip = this.SkipRecord,
+                        Skip = this._skipRecord,
                         That = this,
-                        ColumnStore = this.ObjectStore.index(column),
+                        ColumnStore = this._objectStore.index(column),
                         skipOrPush = function (value) {
                             if (Skip == 0) {
-                                That.Results.push(value);
+                                That._results.push(value);
                             }
                             else {
                                 --Skip;
                             }
                         };
-                    if (That.CheckFlag) {
+                    if (That._checkFlag) {
                         for (var i = 0, length = values.length; i < length; i++) {
                             if (!That.ErrorOccured) {
                                 this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
@@ -112,16 +112,16 @@ namespace JsStore {
                 private executeLimitForIn = function (column, values) {
                     var Cursor: IDBCursorWithValue,
                         That = this,
-                        ColumnStore = this.ObjectStore.index(column);
-                    if (That.CheckFlag) {
+                        ColumnStore = this._objectStore.index(column);
+                    if (That._checkFlag) {
                         for (var i = 0, length = values.length; i < length; i++) {
                             if (!That.ErrorOccured) {
                                 this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                 this.CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = (<any>e).target.result;
-                                    if (Cursor && That.Results.length != That.LimitRecord) {
+                                    if (Cursor && That._results.length != That._limitRecord) {
                                         if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                            That.Results.push(Cursor.value);
+                                            That._results.push(Cursor.value);
                                         }
                                         Cursor.continue();
                                     }
@@ -139,8 +139,8 @@ namespace JsStore {
                                 this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                 this.CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = (<any>e).target.result;
-                                    if (Cursor && That.Results.length != That.LimitRecord) {
-                                        That.Results.push(Cursor.value);
+                                    if (Cursor && That._results.length != That._limitRecord) {
+                                        That._results.push(Cursor.value);
                                         Cursor.continue();
                                     }
                                 }
@@ -157,8 +157,8 @@ namespace JsStore {
                 private executeSimpleForIn = function (column, values) {
                     var Cursor: IDBCursorWithValue,
                         That = this,
-                        ColumnStore = this.ObjectStore.index(column);
-                    if (That.CheckFlag) {
+                        ColumnStore = this._objectStore.index(column);
+                    if (That._checkFlag) {
                         for (var i = 0, length = values.length; i < length; i++) {
                             if (!That.ErrorOccured) {
                                 this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
@@ -166,7 +166,7 @@ namespace JsStore {
                                     Cursor = (<any>e).target.result;
                                     if (Cursor) {
                                         if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                            That.Results.push(Cursor.value);
+                                            That._results.push(Cursor.value);
                                         }
                                         Cursor.continue();
                                     }
@@ -185,7 +185,7 @@ namespace JsStore {
                                 this.CursorOpenRequest.onsuccess = function (e) {
                                     Cursor = (<any>e).target.result;
                                     if (Cursor) {
-                                        That.Results.push(Cursor.value);
+                                        That._results.push(Cursor.value);
                                         Cursor.continue();
                                     }
                                 }
@@ -200,13 +200,13 @@ namespace JsStore {
                 }
 
                 protected executeInLogic = function (column, values) {
-                    if (this.SkipRecord && this.LimitRecord) {
+                    if (this._skipRecord && this._limitRecord) {
                         this.executeSkipAndLimitForIn(column, values);
                     }
-                    else if (this.SkipRecord) {
+                    else if (this._skipRecord) {
                         this.executeSkipForIn(column, values);
                     }
-                    else if (this.LimitRecord) {
+                    else if (this._limitRecord) {
                         this.executeLimitForIn(column, values);
                     }
                     else {

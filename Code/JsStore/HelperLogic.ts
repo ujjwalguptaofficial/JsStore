@@ -70,10 +70,9 @@ namespace JsStore {
      * @param {(version: number) => void} callback 
      */
     export var getDbVersion = function (dbName: string, callback: (version: number) => void) {
-        var that = this;
         KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
-            callback.call(that, Number(dbVersion));
-        });
+            callback.call(this, Number(dbVersion));
+        }.bind(this));
     };
 
     /**

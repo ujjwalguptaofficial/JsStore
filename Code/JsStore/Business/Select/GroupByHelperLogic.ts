@@ -7,14 +7,14 @@ namespace JsStore {
                 }
 
                 private executeAggregateGroupBy = function () {
-                    var GrpQry = this.Query.GroupBy,
-                        Datas = this.Results,
+                    var GrpQry = this._query.GroupBy,
+                        Datas = this._results,
                         LookUpObj = {};
                     //free results memory
-                    this.Results = undefined;
+                    this._results = undefined;
                     //assign aggregate and free aggregate memory
-                    var AggregateQry = this.Query.Aggregate;
-                    this.Query.Aggregate = undefined;
+                    var AggregateQry = this._query.Aggregate;
+                    this._query.Aggregate = undefined;
                     var Index, ObjKey, Value, AggrColumn;
                     var calculateAggregate = function () {
                         for (var prop in AggregateQry) {
@@ -200,15 +200,15 @@ namespace JsStore {
                             }
                         }
                     }
-                    this.Results = Datas;
+                    this._results = Datas;
                 };
 
                 protected processGroupBy = function () {
-                    var GrpQry = this.Query.GroupBy,
-                        Datas = this.Results,
+                    var GrpQry = this._query.GroupBy,
+                        Datas = this._results,
                         LookUpObj = {};
                     //free results memory
-                    this.Results = this.Query.GroupBy = undefined;
+                    this._results = this._query.GroupBy = undefined;
                     if (typeof GrpQry == 'string') {
                         for (var i in Datas) {
                             LookUpObj[Datas[i][GrpQry]] = Datas[i];
@@ -229,7 +229,7 @@ namespace JsStore {
                     for (i in LookUpObj) {
                         Datas.push(LookUpObj[i]);
                     }
-                    this.Results = Datas;
+                    this._results = Datas;
                 };
             }
         }

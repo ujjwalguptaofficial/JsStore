@@ -25,20 +25,20 @@ namespace JsStore {
 
                 private executeSkipAndLimit = function () {
                     var Cursor: IDBCursorWithValue,
-                        Skip = this.SkipRecord,
+                        Skip = this._skipRecord,
                         That = this,
                         skipOrPush = function (value) {
                             if (Skip == 0) {
-                                That.Results.push(value);
+                                That._results.push(value);
                             }
                             else {
                                 --Skip;
                             }
                         };
-                    if (That.CheckFlag) {
+                    if (That._checkFlag) {
                         this.CursorOpenRequest.onsuccess = function (e) {
                             Cursor = (<any>e).target.result;
-                            if (That.Results.length != That.LimitRecord && Cursor) {
+                            if (That._results.length != That._limitRecord && Cursor) {
                                 if (That.filterOnOccurence(Cursor.key) &&
                                     That.checkForWhereConditionMatch(Cursor.value)) {
                                     skipOrPush(Cursor.value);
@@ -50,7 +50,7 @@ namespace JsStore {
                     else {
                         this.CursorOpenRequest.onsuccess = function (e) {
                             Cursor = (<any>e).target.result;
-                            if (That.Results.length != That.LimitRecord && Cursor) {
+                            if (That._results.length != That._limitRecord && Cursor) {
                                 if (That.filterOnOccurence(Cursor.key)) {
                                     skipOrPush(Cursor.value);
                                 }
@@ -62,17 +62,17 @@ namespace JsStore {
 
                 private executeSkip = function () {
                     var Cursor: IDBCursorWithValue,
-                        Skip = this.SkipRecord,
+                        Skip = this._skipRecord,
                         That = this,
                         skipOrPush = function (value) {
                             if (Skip == 0) {
-                                That.Results.push(value);
+                                That._results.push(value);
                             }
                             else {
                                 --Skip;
                             }
                         };
-                    if (That.CheckFlag) {
+                    if (That._checkFlag) {
                         this.CursorOpenRequest.onsuccess = function (e) {
                             Cursor = (<any>e).target.result;
                             if (Cursor) {
@@ -100,13 +100,13 @@ namespace JsStore {
                 private executeLimit = function () {
                     var Cursor: IDBCursorWithValue,
                         That = this;
-                    if (That.CheckFlag) {
+                    if (That._checkFlag) {
                         this.CursorOpenRequest.onsuccess = function (e) {
                             Cursor = (<any>e).target.result;
-                            if (That.Results.length != That.LimitRecord && Cursor) {
+                            if (That._results.length != That._limitRecord && Cursor) {
                                 if (That.filterOnOccurence(Cursor.key) &&
                                     That.checkForWhereConditionMatch(Cursor.value)) {
-                                    That.Results.push(Cursor.value);
+                                    That._results.push(Cursor.value);
                                 }
                                 Cursor.continue();
                             }
@@ -115,9 +115,9 @@ namespace JsStore {
                     else {
                         this.CursorOpenRequest.onsuccess = function (e) {
                             Cursor = (<any>e).target.result;
-                            if (That.Results.length != That.LimitRecord && Cursor) {
+                            if (That._results.length != That._limitRecord && Cursor) {
                                 if (That.filterOnOccurence(Cursor.key)) {
-                                    That.Results.push(Cursor.value);
+                                    That._results.push(Cursor.value);
                                 }
                                 Cursor.continue();
                             }
@@ -128,13 +128,13 @@ namespace JsStore {
                 private executeSimple = function () {
                     var Cursor: IDBCursorWithValue,
                         That = this;
-                    if (That.CheckFlag) {
+                    if (That._checkFlag) {
                         this.CursorOpenRequest.onsuccess = function (e) {
                             Cursor = (<any>e).target.result;
                             if (Cursor) {
                                 if (That.filterOnOccurence(Cursor.key) &&
                                     That.checkForWhereConditionMatch(Cursor.value)) {
-                                    That.Results.push(Cursor.value);
+                                    That._results.push(Cursor.value);
                                 }
                                 Cursor.continue();
                             }
@@ -145,7 +145,7 @@ namespace JsStore {
                             Cursor = (<any>e).target.result;
                             if (Cursor) {
                                 if (That.filterOnOccurence(Cursor.key)) {
-                                    That.Results.push(Cursor.value);
+                                    That._results.push(Cursor.value);
                                 }
                                 Cursor.continue();
                             }
@@ -159,18 +159,18 @@ namespace JsStore {
                     this.CompValueLength = this.CompValue.length;
                     this.CompSymbol = symbol;
                     this.Column = column;
-                    this.CursorOpenRequest = this.ObjectStore.index(column).openCursor();
+                    this.CursorOpenRequest = this._objectStore.index(column).openCursor();
                     this.CursorOpenRequest.onerror = function (e) {
                         That.ErrorOccured = true;
                         That.onErrorOccured(e);
                     }
-                    if (this.SkipRecord && this.LimitRecord) {
+                    if (this._skipRecord && this._limitRecord) {
                         this.executeSkipAndLimit();
                     }
-                    else if (this.SkipRecord) {
+                    else if (this._skipRecord) {
                         this.executeSkip();
                     }
-                    else if (this.LimitRecord) {
+                    else if (this._limitRecord) {
                         this.executeLimit();
                     }
                     else {

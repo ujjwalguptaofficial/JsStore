@@ -36,7 +36,7 @@ namespace JsStore {
             };
 
             private changeLogStatus = function (request) {
-                if (request.Query['logging'] === true) {
+                if (request._query['logging'] === true) {
                     enable_log = true;
                 }
                 else {

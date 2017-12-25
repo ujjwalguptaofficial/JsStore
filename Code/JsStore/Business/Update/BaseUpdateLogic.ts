@@ -24,7 +24,7 @@ namespace JsStore {
         }
 
         export class BaseUpdate extends Base {
-            CheckFlag = false;
+            _checkFlag = false;
         }
     }
 }

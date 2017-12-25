@@ -5,8 +5,8 @@ namespace JsStore {
                 super();
                 try {
                     this._query = query;
-                    this.OnSuccess = onSuccess;
-                    this.OnError = onError;
+                    this._onSuccess = onSuccess;
+                    this._onError = onError;
                     var table = this.getTable(query.Into);
                     if (table) {
                         if (this._query.SkipDataCheck) {
@@ -52,15 +52,15 @@ namespace JsStore {
                             var add_result = object_store.add(value);
                             add_result.onerror = this.onErrorOccured.bind(this);
                             add_result.onsuccess = function (e) {
-                                ++this.RowAffected;
+                                ++this._rowAffected;
                                 insertDataintoTable.call(this, values[value_index++]);
                             }.bind(this);
                         }
                     };
                 }
-                this.Transaction = db_connection.transaction([this._query.Into], "readwrite");
-                var object_store = this.Transaction.objectStore(this._query.Into);
-                this.Transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                this._transaction = db_connection.transaction([this._query.Into], "readwrite");
+                var object_store = this._transaction.objectStore(this._query.Into);
+                this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
                 insertDataintoTable.call(this, values[value_index++]);
             };
         }

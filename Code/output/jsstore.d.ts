@@ -458,29 +458,28 @@ declare namespace JsStore {
 declare namespace JsStore {
     namespace Business {
         class Base extends BaseHelper {
-            Error: IError;
-            ErrorOccured: boolean;
-            ErrorCount: number;
-            RowAffected: number;
-            OnSuccess: Function;
-            OnError: (err: IError) => void;
-            Transaction: IDBTransaction;
-            ObjectStore: IDBObjectStore;
-            Query: any;
-            SendResultFlag: Boolean;
+            _error: IError;
+            _errorOccured: boolean;
+            _errorCount: number;
+            _rowAffected: number;
+            _onSuccess: (result?) => void;
+            _onError: (err: IError) => void;
+            _transaction: IDBTransaction;
+            _objectStore: IDBObjectStore;
+            _query: any;
+            _sendResultFlag: boolean;
+            _checkFlag: boolean;
             protected onErrorOccured: (e: any, customError?: boolean) => void;
             protected onTransactionTimeout: (e: any) => void;
             protected onExceptionOccured: (ex: DOMException, info: any) => void;
             /**
-            * For matching the different column value existance
-            *
-            * @private
-            * @param {any} where
-            * @param {any} value
-            * @returns
-            *
-            * @memberOf SelectLogic
-            */
+             * For matching the different column value existance
+             *
+             * @protected
+             * @param {any} rowValue
+             * @returns
+             * @memberof Base
+             */
             protected checkForWhereConditionMatch(rowValue: any): boolean;
             protected goToWhereLogic: () => void;
             protected makeQryInCaseSensitive: (qry: any) => any;
@@ -524,7 +523,7 @@ declare namespace JsStore {
     namespace Business {
         class BulkInsert extends Base {
             ValuesAffected: any[];
-            Query: IInsert;
+            _query: IInsert;
             ValuesIndex: number;
             Table: Model.Table;
             constructor(query: IInsert, onSuccess: () => void, onError: (err: IError) => void);
@@ -576,11 +575,11 @@ declare namespace JsStore {
     namespace Business {
         namespace Select {
             class BaseSelect extends Base {
-                Results: any[];
-                Sorted: boolean;
-                SkipRecord: any;
-                LimitRecord: any;
-                CheckFlag: boolean;
+                _results: any[];
+                _sorted: boolean;
+                _skipRecord: any;
+                _limitRecord: any;
+                _checkFlag: boolean;
                 protected removeDuplicates: () => void;
             }
         }
@@ -639,15 +638,15 @@ declare namespace JsStore {
     namespace Business {
         namespace Select {
             class Join extends BaseSelect {
-                Query: ISelectJoin;
-                QueryStack: Array<ITableJoin>;
-                CurrentQueryStackIndex: number;
+                _query: ISelectJoin;
+                _queryStack: ITableJoin[];
+                _currentQueryStackIndex: number;
+                constructor(query: ISelectJoin, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
                 private onTransactionCompleted;
                 private executeWhereJoinLogic;
                 private executeRightJoin;
                 private executeWhereUndefinedLogicForJoin;
                 private startExecutionJoinLogic();
-                constructor(query: ISelectJoin, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
             }
         }
     }
@@ -691,10 +690,10 @@ declare namespace JsStore {
     namespace Business {
         namespace Count {
             class BaseCount extends Base {
-                ResultCount: number;
-                SkipRecord: any;
-                LimitRecord: any;
-                CheckFlag: boolean;
+                _resultCount: number;
+                _skipRecord: any;
+                _limitRecord: any;
+                _checkFlag: boolean;
             }
         }
     }
@@ -756,7 +755,7 @@ declare namespace JsStore {
             var updateValue: (suppliedValue: any, storedValue: any) => any;
         }
         class BaseUpdate extends Base {
-            CheckFlag: boolean;
+            _checkFlag: boolean;
         }
     }
 }
@@ -818,7 +817,7 @@ declare namespace JsStore {
     namespace Business {
         namespace Delete {
             class BaseDelete extends Base {
-                CheckFlag: boolean;
+                _checkFlag: boolean;
             }
         }
     }
@@ -868,10 +867,10 @@ declare namespace JsStore {
     namespace Business {
         namespace Delete {
             class Instance extends Where {
+                constructor(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void);
                 private onTransactionCompleted;
                 private createtransactionForOrLogic;
                 private executeOrLogic;
-                constructor(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void);
             }
         }
     }

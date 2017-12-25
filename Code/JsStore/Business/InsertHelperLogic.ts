@@ -5,7 +5,7 @@ namespace JsStore {
             _query: IInsert;
 
             public onTransactionCompleted = function () {
-                this.OnSuccess(this._query.Return ? this._valuesAffected : this.RowAffected);
+                this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
             };
 
             protected checkModifyInsertValues = function (table: Table, values) {

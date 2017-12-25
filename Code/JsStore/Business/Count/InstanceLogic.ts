@@ -4,22 +4,22 @@ namespace JsStore {
             export class Instance extends Where {
                 constructor(query: ICount, onSuccess: (noOfRecord: number) => void, onError: (error: IError) => void) {
                     super();
-                    this.Query = query;
-                    this.OnSuccess = onSuccess;
-                    this.OnError = onError;
+                    this._query = query;
+                    this._onSuccess = onSuccess;
+                    this._onError = onError;
                     try {
                         var createTransaction = function () {
-                            this.Transaction = db_connection.transaction([query.From], "readonly");
-                            this.ObjectStore = this.Transaction.objectStore(query.From);
-                            this.Transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                            this.Transaction.ontimeout = this.onTransactionTimeout.bind(this);
+                            this._transaction = db_connection.transaction([query.From], "readonly");
+                            this._objectStore = this._transaction.objectStore(query.From);
+                            this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                            this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
                         };
                         if (query.Where !== undefined) {
                             if (query.Where.Or) {
                                 var select_object = new Select.Instance(query as any, function (results) {
-                                    this.ResultCount = results.length;
+                                    this._resultCount = results.length;
                                     this.onTransactionCompleted();
-                                }.bind(this), this.OnError);
+                                }.bind(this), this._onError);
                             }
                             else {
                                 createTransaction.call(this);
@@ -37,8 +37,8 @@ namespace JsStore {
                 }
 
                 public onTransactionCompleted = function () {
-                    if (this.SendResultFlag) {
-                        this.OnSuccess(this.ResultCount);
+                    if (this._sendResultFlag) {
+                        this._onSuccess(this._resultCount);
                     }
                 };
             }
