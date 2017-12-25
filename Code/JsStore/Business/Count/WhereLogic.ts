@@ -3,56 +3,44 @@ namespace JsStore {
         export namespace Count {
             export class Where extends Like {
                 private executeWhereLogic = function (column, value, op) {
-                    var That = this;
                     value = op ? value[op] : value;
-                    if (That._checkFlag) {
-                        var Cursor: IDBCursorWithValue,
-                            CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
-                        CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = (<any>e).target.result;
-                            if (Cursor) {
-                                if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                    ++That._resultCount;
+                    var cursor_request,
+                        cursor: IDBCursorWithValue;
+                    if (this._checkFlag) {
+                        cursor_request = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
+                        cursor_request.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (cursor) {
+                                if (this.checkForWhereConditionMatch(cursor.value)) {
+                                    ++this._resultCount;
                                 }
-                                Cursor.continue();
+                                cursor.continue();
                             }
-                        }
-
-                        CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
-                            That.onErrorOccured(e);
-                        }
-
+                        }.bind(this);
                     }
                     else {
                         if (this._objectStore.count) {
-                            var CountRequest = this._objectStore.index(column).count(this.getKeyRange(value, op));
-                            CountRequest.onsuccess = function () {
-                                That._resultCount = CountRequest.result;
-                            }
-                            CountRequest.onerror = function (e) {
-                                That.ErrorOccured = true;
-                                That.onErrorOccured(e);
-                            }
+                            cursor_request = this._objectStore.index(column).count(this.getKeyRange(value, op));
+                            cursor_request.onsuccess = function () {
+                                this._resultCount = cursor_request.result;
+                            }.bind(this);
                         }
                         else {
-                            var Cursor: IDBCursorWithValue,
-                                CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
-                            CursorOpenRequest.onsuccess = function (e) {
-                                Cursor = (<any>e).target.result;
-                                if (Cursor) {
-                                    ++That._resultCount;
-                                    Cursor.continue();
+                            cursor_request = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
+                            cursor_request.onsuccess = function (e) {
+                                cursor = e.target.result;
+                                if (cursor) {
+                                    ++this._resultCount;
+                                    cursor.continue();
                                 }
-                            }
-
-                            CursorOpenRequest.onerror = function (e) {
-                                That.ErrorOccured = true;
-                                That.onErrorOccured(e);
-                            }
+                            }.bind(this);
                         }
                     }
-                }
+                    cursor_request.onerror = function (e) {
+                        this._errorOccured = true;
+                        this.onErrorOccured(e);
+                    }.bind(this);
+                };
             }
         }
     }

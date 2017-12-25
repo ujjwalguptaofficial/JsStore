@@ -161,7 +161,7 @@ namespace JsStore {
                     this.Column = column;
                     this.CursorOpenRequest = this._objectStore.index(column).openCursor();
                     this.CursorOpenRequest.onerror = function (e) {
-                        That.ErrorOccured = true;
+                        That._errorOccured = true;
                         That.onErrorOccured(e);
                     }
                     if (this._skipRecord && this._limitRecord) {

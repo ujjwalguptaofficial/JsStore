@@ -28,7 +28,7 @@ namespace JsStore {
                 var checkAndModifyValue = function () {
                     var index = 0,
                         onValidationError = function (error: ErrorType, details: any) {
-                            that.ErrorOccured = true;
+                            that._errorOccured = true;
                             that.Error = Utils.getError(error, details);
                         };
                     var checkAndModifyColumn = function (column: Column) {
@@ -58,7 +58,7 @@ namespace JsStore {
                         };
 
                         if (column) {
-                            if (!that.ErrorOccured) {
+                            if (!that._errorOccured) {
                                 // check auto increment scheme
                                 if (column._autoIncrement) {
                                     saveAutoIncrementValue();

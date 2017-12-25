@@ -2,40 +2,34 @@ namespace JsStore {
     export namespace Business {
         export namespace Count {
             export class NotWhere extends BaseCount {
-
                 protected executeWhereUndefinedLogic = function () {
-                    var That = this;
                     if (this._objectStore.count) {
-                        var CountRequest = this._objectStore.count();
-                        CountRequest.onsuccess = function () {
-                            That._resultCount = CountRequest.result;
-                        }
-                        CountRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
-                            That.onErrorOccured(e);
-                        }
+                        var count_request = this._objectStore.count();
+                        count_request.onsuccess = function () {
+                            this._resultCount = count_request.result;
+                        }.bind(this);
+                        count_request.onerror = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                     }
                     else {
-                        var Cursor,
-                            CursorOpenRequest = this._objectStore.openCursor();
-                        CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = (<any>e).target.result;
-                            if (Cursor) {
-                                ++That._resultCount;
-                                (Cursor as any).continue();
+                        var cursor,
+                            cursor_request = this._objectStore.openCursor();
+                        cursor_request.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (cursor) {
+                                ++this._resultCount;
+                                (cursor as any).continue();
                             }
-
-                        }
-
-                        CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
-                            That.onErrorOccured(e);
-                        }
+                        }.bind(this);
+                        cursor_request.onerror = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                     }
-                }
-
+                };
             }
         }
-
     }
 }

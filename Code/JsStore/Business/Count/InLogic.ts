@@ -3,70 +3,57 @@ namespace JsStore {
         export namespace Count {
             export class In extends NotWhere {
                 private executeInLogic = function (column, values) {
-                    var Cursor: IDBCursorWithValue,
-                        That = this,
-                        ColumnStore = this._objectStore.index(column),
-                        CursorOpenRequest;
-                    if (That._checkFlag) {
+                    var cursor: IDBCursorWithValue,
+                        column_store = this._objectStore.index(column),
+                        cursor_request;
+                    if (this._checkFlag) {
                         for (var i = 0, length = values.length; i < length; i++) {
-                            if (!That.ErrorOccured) {
-                                CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
-                                CursorOpenRequest.onsuccess = function (e) {
-                                    Cursor = (<any>e).target.result;
-                                    if (Cursor) {
-                                        if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                            ++That._resultCount;
+                            if (!this._errorOccured) {
+                                cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
+                                cursor_request.onsuccess = function (e) {
+                                    cursor = e.target.result;
+                                    if (cursor) {
+                                        if (this.checkForWhereConditionMatch(cursor.value)) {
+                                            ++this._resultCount;
                                         }
-                                        Cursor.continue();
+                                        cursor.continue();
                                     }
-                                };
-                                CursorOpenRequest.onerror = function (e) {
-                                    That.ErrorOccured = true;
-                                    That.onErrorOccured(e);
-                                };
+                                }.bind(this);
                             }
                         }
                     }
                     else {
                         if (this._objectStore.count) {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That.ErrorOccured) {
-                                    CursorOpenRequest = ColumnStore.count(IDBKeyRange.only(values[i]));
-                                    CursorOpenRequest.onsuccess = function (e) {
-                                        That._resultCount += (<any>e).target.result;
-                                    };
-                                    CursorOpenRequest.onerror = function (e) {
-                                        That.ErrorOccured = true;
-                                        That.onErrorOccured(e);
-                                    };
+                                if (!this._errorOccured) {
+                                    cursor_request = column_store.count(IDBKeyRange.only(values[i]));
+                                    cursor_request.onsuccess = function (e) {
+                                        this._resultCount += e.target.result;
+                                    }.bind(this);
                                 }
                             }
                         }
                         else {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That.ErrorOccured) {
-                                    CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
-                                    CursorOpenRequest.onsuccess = function (e) {
-                                        Cursor = (<any>e).target.result;
-                                        if (Cursor) {
-                                            ++That._resultCount;
-                                            Cursor.continue();
+                                if (!this._errorOccured) {
+                                    cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
+                                    cursor_request.onsuccess = function (e) {
+                                        cursor = e.target.result;
+                                        if (cursor) {
+                                            ++this._resultCount;
+                                            cursor.continue();
                                         }
-                                    };
-                                    CursorOpenRequest.onerror = function (e) {
-                                        That.ErrorOccured = true;
-                                        That.onErrorOccured(e);
-                                    };
+                                    }.bind(this);
                                 }
                             }
                         }
                     }
 
-                    CursorOpenRequest.onerror = function (e) {
-                        That.ErrorOccured = true;
-                        That.onErrorOccured(e);
-                    };
-                }
+                    cursor_request.onerror = function (e) {
+                        this._errorOccured = true;
+                        this.onErrorOccured(e);
+                    }.bind(this);
+                };
             }
         }
     }

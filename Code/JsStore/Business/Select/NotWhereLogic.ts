@@ -89,7 +89,7 @@ namespace JsStore {
                     }
 
                     CursorOpenRequest.onerror = function (e) {
-                        That.ErrorOccured = true;
+                        That._errorOccured = true;
                         That.onErrorOccured(e);
                     };
 

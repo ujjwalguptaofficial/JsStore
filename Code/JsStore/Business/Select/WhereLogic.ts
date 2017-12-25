@@ -124,7 +124,7 @@ namespace JsStore {
                     CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
 
                     CursorOpenRequest.onerror = function (e) {
-                        That.ErrorOccured = true;
+                        That._errorOccured = true;
                         That.onErrorOccured(e);
                     }
 

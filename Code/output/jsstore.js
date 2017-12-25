@@ -1162,7 +1162,7 @@ var JsStore;
                         }
                     }
                     else {
-                        this.ErrorOccured = true;
+                        this._errorOccured = true;
                         this.Error = JsStore.Utils.getError(JsStore.ErrorType.ColumnNotExist, { ColumnName: column });
                         JsStore.throwError(this.Error);
                     }
@@ -1493,7 +1493,7 @@ var JsStore;
                     };
                     var checkAndModifyValue = function () {
                         var index = 0, onValidationError = function (error, details) {
-                            that.ErrorOccured = true;
+                            that._errorOccured = true;
                             that.Error = JsStore.Utils.getError(error, details);
                         };
                         var checkAndModifyColumn = function (column) {
@@ -1515,7 +1515,7 @@ var JsStore;
                                 });
                             };
                             if (column) {
-                                if (!that.ErrorOccured) {
+                                if (!that._errorOccured) {
                                     // check auto increment scheme
                                     if (column._autoIncrement) {
                                         saveAutoIncrementValue();
@@ -2071,7 +2071,7 @@ var JsStore;
                             executeSimple();
                         }
                         CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
+                            That._errorOccured = true;
                             That.onErrorOccured(e);
                         };
                     };
@@ -2104,7 +2104,7 @@ var JsStore;
                         };
                         if (That._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That.ErrorOccured) {
+                                if (!That._errorOccured) {
                                     this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
@@ -2116,7 +2116,7 @@ var JsStore;
                                         }
                                     };
                                     this.CursorOpenRequest.onerror = function (e) {
-                                        That.ErrorOccured = true;
+                                        That._errorOccured = true;
                                         That.onErrorOccured(e);
                                     };
                                 }
@@ -2124,7 +2124,7 @@ var JsStore;
                         }
                         else {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That.ErrorOccured) {
+                                if (!That._errorOccured) {
                                     this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
@@ -2134,7 +2134,7 @@ var JsStore;
                                         }
                                     };
                                     this.CursorOpenRequest.onerror = function (e) {
-                                        That.ErrorOccured = true;
+                                        That._errorOccured = true;
                                         That.onErrorOccured(e);
                                     };
                                 }
@@ -2152,7 +2152,7 @@ var JsStore;
                         };
                         if (That._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That.ErrorOccured) {
+                                if (!That._errorOccured) {
                                     this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
@@ -2164,7 +2164,7 @@ var JsStore;
                                         }
                                     };
                                     this.CursorOpenRequest.onerror = function (e) {
-                                        That.ErrorOccured = true;
+                                        That._errorOccured = true;
                                         That.onErrorOccured(e);
                                     };
                                 }
@@ -2172,7 +2172,7 @@ var JsStore;
                         }
                         else {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That.ErrorOccured) {
+                                if (!That._errorOccured) {
                                     this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
@@ -2182,7 +2182,7 @@ var JsStore;
                                         }
                                     };
                                     this.CursorOpenRequest.onerror = function (e) {
-                                        That.ErrorOccured = true;
+                                        That._errorOccured = true;
                                         That.onErrorOccured(e);
                                     };
                                 }
@@ -2193,7 +2193,7 @@ var JsStore;
                         var Cursor, That = this, ColumnStore = this._objectStore.index(column);
                         if (That._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That.ErrorOccured) {
+                                if (!That._errorOccured) {
                                     this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
@@ -2205,7 +2205,7 @@ var JsStore;
                                         }
                                     };
                                     this.CursorOpenRequest.onerror = function (e) {
-                                        That.ErrorOccured = true;
+                                        That._errorOccured = true;
                                         That.onErrorOccured(e);
                                     };
                                 }
@@ -2213,7 +2213,7 @@ var JsStore;
                         }
                         else {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That.ErrorOccured) {
+                                if (!That._errorOccured) {
                                     this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
@@ -2223,7 +2223,7 @@ var JsStore;
                                         }
                                     };
                                     this.CursorOpenRequest.onerror = function (e) {
-                                        That.ErrorOccured = true;
+                                        That._errorOccured = true;
                                         That.onErrorOccured(e);
                                     };
                                 }
@@ -2234,7 +2234,7 @@ var JsStore;
                         var Cursor, That = this, ColumnStore = this._objectStore.index(column);
                         if (That._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That.ErrorOccured) {
+                                if (!That._errorOccured) {
                                     this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
@@ -2246,7 +2246,7 @@ var JsStore;
                                         }
                                     };
                                     this.CursorOpenRequest.onerror = function (e) {
-                                        That.ErrorOccured = true;
+                                        That._errorOccured = true;
                                         That.onErrorOccured(e);
                                     };
                                 }
@@ -2254,7 +2254,7 @@ var JsStore;
                         }
                         else {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That.ErrorOccured) {
+                                if (!That._errorOccured) {
                                     this.CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     this.CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
@@ -2264,7 +2264,7 @@ var JsStore;
                                         }
                                     };
                                     this.CursorOpenRequest.onerror = function (e) {
-                                        That.ErrorOccured = true;
+                                        That._errorOccured = true;
                                         That.onErrorOccured(e);
                                     };
                                 }
@@ -2453,7 +2453,7 @@ var JsStore;
                         this.Column = column;
                         this.CursorOpenRequest = this._objectStore.index(column).openCursor();
                         this.CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
+                            That._errorOccured = true;
                             That.onErrorOccured(e);
                         };
                         if (this._skipRecord && this._limitRecord) {
@@ -2600,7 +2600,7 @@ var JsStore;
                         value = op ? value[op] : value;
                         CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
                         CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
+                            That._errorOccured = true;
                             That.onErrorOccured(e);
                         };
                         if (this._skipRecord && this._limitRecord) {
@@ -2750,7 +2750,7 @@ var JsStore;
                                 doRightJoin(results);
                                 onExecutionFinished();
                             }, function (error) {
-                                That.ErrorOccured = true;
+                                That._errorOccured = true;
                                 That.onErrorOccured(error);
                             });
                         };
@@ -2791,7 +2791,7 @@ var JsStore;
                             }
                         }, executeLogic = function () {
                             if (ItemIndex < ResultLength) {
-                                if (!That.ErrorOccured) {
+                                if (!That._errorOccured) {
                                     Where[query.Column] = TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column];
                                     new Select.Instance({
                                         From: query.Table,
@@ -2802,7 +2802,7 @@ var JsStore;
                                         ++ItemIndex;
                                         executeLogic();
                                     }, function (error) {
-                                        That.ErrorOccured = true;
+                                        That._errorOccured = true;
                                         That.onErrorOccured(error);
                                     });
                                 }
@@ -3439,30 +3439,29 @@ var JsStore;
                 function NotWhere() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeWhereUndefinedLogic = function () {
-                        var That = this;
                         if (this._objectStore.count) {
-                            var CountRequest = this._objectStore.count();
-                            CountRequest.onsuccess = function () {
-                                That._resultCount = CountRequest.result;
-                            };
-                            CountRequest.onerror = function (e) {
-                                That.ErrorOccured = true;
-                                That.onErrorOccured(e);
-                            };
+                            var count_request = this._objectStore.count();
+                            count_request.onsuccess = function () {
+                                this._resultCount = count_request.result;
+                            }.bind(this);
+                            count_request.onerror = function (e) {
+                                this._errorOccured = true;
+                                this.onErrorOccured(e);
+                            }.bind(this);
                         }
                         else {
-                            var Cursor, CursorOpenRequest = this._objectStore.openCursor();
-                            CursorOpenRequest.onsuccess = function (e) {
-                                Cursor = e.target.result;
-                                if (Cursor) {
-                                    ++That._resultCount;
-                                    Cursor.continue();
+                            var cursor, cursor_request = this._objectStore.openCursor();
+                            cursor_request.onsuccess = function (e) {
+                                cursor = e.target.result;
+                                if (cursor) {
+                                    ++this._resultCount;
+                                    cursor.continue();
                                 }
-                            };
-                            CursorOpenRequest.onerror = function (e) {
-                                That.ErrorOccured = true;
-                                That.onErrorOccured(e);
-                            };
+                            }.bind(this);
+                            cursor_request.onerror = function (e) {
+                                this._errorOccured = true;
+                                this.onErrorOccured(e);
+                            }.bind(this);
                         }
                     };
                     return _this;
@@ -3484,65 +3483,53 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeInLogic = function (column, values) {
-                        var Cursor, That = this, ColumnStore = this._objectStore.index(column), CursorOpenRequest;
-                        if (That._checkFlag) {
+                        var cursor, column_store = this._objectStore.index(column), cursor_request;
+                        if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That.ErrorOccured) {
-                                    CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
-                                    CursorOpenRequest.onsuccess = function (e) {
-                                        Cursor = e.target.result;
-                                        if (Cursor) {
-                                            if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                                ++That._resultCount;
+                                if (!this._errorOccured) {
+                                    cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
+                                    cursor_request.onsuccess = function (e) {
+                                        cursor = e.target.result;
+                                        if (cursor) {
+                                            if (this.checkForWhereConditionMatch(cursor.value)) {
+                                                ++this._resultCount;
                                             }
-                                            Cursor.continue();
+                                            cursor.continue();
                                         }
-                                    };
-                                    CursorOpenRequest.onerror = function (e) {
-                                        That.ErrorOccured = true;
-                                        That.onErrorOccured(e);
-                                    };
+                                    }.bind(this);
                                 }
                             }
                         }
                         else {
                             if (this._objectStore.count) {
                                 for (var i = 0, length = values.length; i < length; i++) {
-                                    if (!That.ErrorOccured) {
-                                        CursorOpenRequest = ColumnStore.count(IDBKeyRange.only(values[i]));
-                                        CursorOpenRequest.onsuccess = function (e) {
-                                            That._resultCount += e.target.result;
-                                        };
-                                        CursorOpenRequest.onerror = function (e) {
-                                            That.ErrorOccured = true;
-                                            That.onErrorOccured(e);
-                                        };
+                                    if (!this._errorOccured) {
+                                        cursor_request = column_store.count(IDBKeyRange.only(values[i]));
+                                        cursor_request.onsuccess = function (e) {
+                                            this._resultCount += e.target.result;
+                                        }.bind(this);
                                     }
                                 }
                             }
                             else {
                                 for (var i = 0, length = values.length; i < length; i++) {
-                                    if (!That.ErrorOccured) {
-                                        CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
-                                        CursorOpenRequest.onsuccess = function (e) {
-                                            Cursor = e.target.result;
-                                            if (Cursor) {
-                                                ++That._resultCount;
-                                                Cursor.continue();
+                                    if (!this._errorOccured) {
+                                        cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
+                                        cursor_request.onsuccess = function (e) {
+                                            cursor = e.target.result;
+                                            if (cursor) {
+                                                ++this._resultCount;
+                                                cursor.continue();
                                             }
-                                        };
-                                        CursorOpenRequest.onerror = function (e) {
-                                            That.ErrorOccured = true;
-                                            That.onErrorOccured(e);
-                                        };
+                                        }.bind(this);
                                     }
                                 }
                             }
                         }
-                        CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
-                            That.onErrorOccured(e);
-                        };
+                        cursor_request.onerror = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                     };
                     return _this;
                 }
@@ -3562,64 +3549,60 @@ var JsStore;
                 __extends(Like, _super);
                 function Like() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
-                    _this.filterOnOccurence = function (value) {
-                        var Found = false;
-                        value = value.toLowerCase();
-                        switch (this.CompSymbol) {
-                            case JsStore.Occurence.Any:
-                                if (value.indexOf(this.CompValue) >= 0) {
-                                    Found = true;
-                                }
-                                ;
-                                break;
-                            case JsStore.Occurence.First:
-                                if (value.indexOf(this.CompValue) == 0) {
-                                    Found = true;
-                                }
-                                ;
-                                break;
-                            default:
-                                if (value.lastIndexOf(this.CompValue) == value.length - this.CompValueLength) {
-                                    Found = true;
-                                }
-                                ;
-                        }
-                        return Found;
-                    };
                     _this.executeLikeLogic = function (column, value, symbol) {
-                        var Cursor, That = this;
-                        this.CompValue = value.toLowerCase();
-                        this.CompValueLength = this.CompValue.length;
-                        this.CompSymbol = symbol;
-                        this.Column = column;
+                        var cursor;
+                        this._compValue = value.toLowerCase();
+                        this._compValueLength = this._compValue.length;
+                        this._compSymbol = symbol;
+                        this._column = column;
                         this.CursorOpenRequest = this._objectStore.index(column).openCursor();
                         this.CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
-                            That.onErrorOccured(e);
-                        };
-                        if (That._checkFlag) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
+                        if (this._checkFlag) {
                             this.CursorOpenRequest.onsuccess = function (e) {
-                                Cursor = e.target.result;
-                                if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.key) &&
-                                        That.checkForWhereConditionMatch(Cursor.value)) {
-                                        ++That._resultCount;
+                                cursor = e.target.result;
+                                if (cursor) {
+                                    if (this.filterOnOccurence(cursor.key) &&
+                                        this.checkForWhereConditionMatch(cursor.value)) {
+                                        ++this._resultCount;
                                     }
-                                    Cursor.continue();
+                                    cursor.continue();
                                 }
-                            };
+                            }.bind(this);
                         }
                         else {
                             this.CursorOpenRequest.onsuccess = function (e) {
-                                Cursor = e.target.result;
-                                if (Cursor) {
-                                    if (That.filterOnOccurence(Cursor.key)) {
-                                        ++That._resultCount;
+                                cursor = e.target.result;
+                                if (cursor) {
+                                    if (this.filterOnOccurence(cursor.key)) {
+                                        ++this._resultCount;
                                     }
-                                    Cursor.continue();
+                                    cursor.continue();
                                 }
-                            };
+                            }.bind(this);
                         }
+                    };
+                    _this.filterOnOccurence = function (value) {
+                        var found = false;
+                        value = value.toLowerCase();
+                        switch (this._compSymbol) {
+                            case JsStore.Occurence.Any:
+                                if (value.indexOf(this._compValue) >= 0) {
+                                    found = true;
+                                }
+                                break;
+                            case JsStore.Occurence.First:
+                                if (value.indexOf(this._compValue) === 0) {
+                                    found = true;
+                                }
+                                break;
+                            default: if (value.lastIndexOf(this._compValue) === value.length - this.CompValueLength) {
+                                found = true;
+                            }
+                        }
+                        return found;
                     };
                     return _this;
                 }
@@ -3640,50 +3623,42 @@ var JsStore;
                 function Where() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeWhereLogic = function (column, value, op) {
-                        var That = this;
                         value = op ? value[op] : value;
-                        if (That._checkFlag) {
-                            var Cursor, CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
-                            CursorOpenRequest.onsuccess = function (e) {
-                                Cursor = e.target.result;
-                                if (Cursor) {
-                                    if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                        ++That._resultCount;
+                        var cursor_request, cursor;
+                        if (this._checkFlag) {
+                            cursor_request = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
+                            cursor_request.onsuccess = function (e) {
+                                cursor = e.target.result;
+                                if (cursor) {
+                                    if (this.checkForWhereConditionMatch(cursor.value)) {
+                                        ++this._resultCount;
                                     }
-                                    Cursor.continue();
+                                    cursor.continue();
                                 }
-                            };
-                            CursorOpenRequest.onerror = function (e) {
-                                That.ErrorOccured = true;
-                                That.onErrorOccured(e);
-                            };
+                            }.bind(this);
                         }
                         else {
                             if (this._objectStore.count) {
-                                var CountRequest = this._objectStore.index(column).count(this.getKeyRange(value, op));
-                                CountRequest.onsuccess = function () {
-                                    That._resultCount = CountRequest.result;
-                                };
-                                CountRequest.onerror = function (e) {
-                                    That.ErrorOccured = true;
-                                    That.onErrorOccured(e);
-                                };
+                                cursor_request = this._objectStore.index(column).count(this.getKeyRange(value, op));
+                                cursor_request.onsuccess = function () {
+                                    this._resultCount = cursor_request.result;
+                                }.bind(this);
                             }
                             else {
-                                var Cursor, CursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
-                                CursorOpenRequest.onsuccess = function (e) {
-                                    Cursor = e.target.result;
-                                    if (Cursor) {
-                                        ++That._resultCount;
-                                        Cursor.continue();
+                                cursor_request = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
+                                cursor_request.onsuccess = function (e) {
+                                    cursor = e.target.result;
+                                    if (cursor) {
+                                        ++this._resultCount;
+                                        cursor.continue();
                                     }
-                                };
-                                CursorOpenRequest.onerror = function (e) {
-                                    That.ErrorOccured = true;
-                                    That.onErrorOccured(e);
-                                };
+                                }.bind(this);
                             }
                         }
+                        cursor_request.onerror = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                     };
                     return _this;
                 }
@@ -3814,7 +3789,7 @@ var JsStore;
                             }
                         };
                         CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
+                            That._errorOccured = true;
                             That.onErrorOccured(e);
                         };
                     };
@@ -3840,7 +3815,7 @@ var JsStore;
                         var Cursor, That = this, ColumnStore = this._objectStore.index(column), CursorOpenRequest;
                         if (That._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That.ErrorOccured) {
+                                if (!That._errorOccured) {
                                     CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
@@ -3853,7 +3828,7 @@ var JsStore;
                                         }
                                     };
                                     CursorOpenRequest.onerror = function (e) {
-                                        That.ErrorOccured = true;
+                                        That._errorOccured = true;
                                         That.onErrorOccured(e);
                                     };
                                 }
@@ -3861,7 +3836,7 @@ var JsStore;
                         }
                         else {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That.ErrorOccured) {
+                                if (!That._errorOccured) {
                                     CursorOpenRequest = ColumnStore.openCursor(IDBKeyRange.only(values[i]));
                                     CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
@@ -3872,14 +3847,14 @@ var JsStore;
                                         }
                                     };
                                     CursorOpenRequest.onerror = function (e) {
-                                        That.ErrorOccured = true;
+                                        That._errorOccured = true;
                                         That.onErrorOccured(e);
                                     };
                                 }
                             }
                         }
                         CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
+                            That._errorOccured = true;
                             That.onErrorOccured(e);
                         };
                     };
@@ -3933,7 +3908,7 @@ var JsStore;
                         this.Column = column;
                         this.CursorOpenRequest = this._objectStore.index(column).openCursor();
                         this.CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
+                            That._errorOccured = true;
                             That.onErrorOccured(e);
                         };
                         if (That._checkFlag) {
@@ -4007,7 +3982,7 @@ var JsStore;
                             };
                         }
                         CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
+                            That._errorOccured = true;
                             That.onErrorOccured(e);
                         };
                     };
@@ -4203,7 +4178,7 @@ var JsStore;
                             }
                         };
                         CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
+                            That._errorOccured = true;
                             That.onErrorOccured(e);
                         };
                     };
@@ -4229,7 +4204,7 @@ var JsStore;
                         var Cursor, That = this, ColumnStore = this._objectStore.index(column), CursorOpenRequest;
                         if (That._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That.ErrorOccured) {
+                                if (!That._errorOccured) {
                                     CursorOpenRequest = this._objectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
                                     CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
@@ -4242,7 +4217,7 @@ var JsStore;
                                         }
                                     };
                                     CursorOpenRequest.onerror = function (e) {
-                                        That.ErrorOccured = true;
+                                        That._errorOccured = true;
                                         That.onErrorOccured(e);
                                     };
                                 }
@@ -4250,7 +4225,7 @@ var JsStore;
                         }
                         else {
                             for (var i = 0, length = values.length; i < length; i++) {
-                                if (!That.ErrorOccured) {
+                                if (!That._errorOccured) {
                                     CursorOpenRequest = this._objectStore.index(column).openCursor(IDBKeyRange.only(values[i]));
                                     CursorOpenRequest.onsuccess = function (e) {
                                         Cursor = e.target.result;
@@ -4261,14 +4236,14 @@ var JsStore;
                                         }
                                     };
                                     CursorOpenRequest.onerror = function (e) {
-                                        That.ErrorOccured = true;
+                                        That._errorOccured = true;
                                         That.onErrorOccured(e);
                                     };
                                 }
                             }
                         }
                         CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
+                            That._errorOccured = true;
                             That.onErrorOccured(e);
                         };
                     };
@@ -4322,7 +4297,7 @@ var JsStore;
                         this.Column = column;
                         this.CursorOpenRequest = this._objectStore.index(column).openCursor();
                         this.CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
+                            That._errorOccured = true;
                             That.onErrorOccured(e);
                         };
                         if (That._checkFlag) {
@@ -4396,7 +4371,7 @@ var JsStore;
                             };
                         }
                         CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
+                            That._errorOccured = true;
                             That.onErrorOccured(e);
                         };
                     };

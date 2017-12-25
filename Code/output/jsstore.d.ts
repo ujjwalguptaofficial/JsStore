@@ -720,12 +720,12 @@ declare namespace JsStore {
     namespace Business {
         namespace Count {
             class Like extends In {
-                CompSymbol: Occurence;
-                CompValue: any;
-                Column: any;
-                CompValueLength: Number;
-                private filterOnOccurence;
+                _compSymbol: Occurence;
+                _compValue: any;
+                _column: any;
+                _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
+                private filterOnOccurence;
             }
         }
     }

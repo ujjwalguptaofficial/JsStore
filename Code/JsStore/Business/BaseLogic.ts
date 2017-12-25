@@ -12,7 +12,7 @@ namespace JsStore {
             _query;
             _sendResultFlag: boolean = true;
             _checkFlag: boolean;
-            
+
             protected onErrorOccured = function (e, customError = false) {
                 ++this._errorCount;
                 if (this._errorCount === 1) {
@@ -211,7 +211,7 @@ namespace JsStore {
                     }
                 }
                 else {
-                    this.ErrorOccured = true;
+                    this._errorOccured = true;
                     this.Error = Utils.getError(ErrorType.ColumnNotExist, { ColumnName: column });
                     throwError(this.Error);
                 }

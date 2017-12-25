@@ -188,7 +188,7 @@ namespace JsStore {
                                 doRightJoin(results);
                                 onExecutionFinished();
                             }, function (error) {
-                                That.ErrorOccured = true;
+                                That._errorOccured = true;
                                 That.onErrorOccured(error);
                             });
                         };
@@ -241,7 +241,7 @@ namespace JsStore {
                         },
                         executeLogic = function () {
                             if (ItemIndex < ResultLength) {
-                                if (!That.ErrorOccured) {
+                                if (!That._errorOccured) {
                                     Where[query.Column] = TmpResults[ItemIndex][joinQuery.Table][joinQuery.Column];
                                     new Select.Instance(<ISelect>{
                                         From: query.Table,
@@ -252,7 +252,7 @@ namespace JsStore {
                                         ++ItemIndex;
                                         executeLogic();
                                     }, function (error) {
-                                        That.ErrorOccured = true;
+                                        That._errorOccured = true;
                                         That.onErrorOccured(error);
                                     });
                                 }
