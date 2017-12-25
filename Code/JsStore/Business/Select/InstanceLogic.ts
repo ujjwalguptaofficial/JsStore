@@ -2,10 +2,8 @@ namespace JsStore {
     export namespace Business {
         export namespace Select {
             export class Instance extends Helper {
-
                 constructor(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
                     super();
-                    var That = this;
                     this._query = query;
                     this._onSuccess = onSuccess;
                     this._onError = onError;
@@ -13,10 +11,8 @@ namespace JsStore {
                     this._limitRecord = this._query.Limit;
                     try {
                         this._transaction = db_connection.transaction([query.From], "readonly");
-                        this._transaction.oncomplete = function (e) {
-                            That.onTransactionCompleted();
-                        };
-                        (this._transaction as any).ontimeout = That.onTransactionCompleted;
+                        this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                        (this._transaction as any).ontimeout = this.onTransactionTimeout.bind(this);
                         this._objectStore = this._transaction.objectStore(query.From);
                         if (query.Where) {
                             if (query.Where.Or) {
@@ -37,15 +33,15 @@ namespace JsStore {
                     if (this._sendResultFlag) {
                         this.processOrderBy();
                         if (this._query.Distinct) {
-                            var GroupBy = [];
-                            var Result = this._results[0];
-                            for (var key in Result) {
-                                GroupBy.push(key);
+                            var group_by = [];
+                            var result = this._results[0];
+                            for (var key in result) {
+                                group_by.push(key);
                             }
-                            var PrimaryKey = this.getPrimaryKey(this._query.From),
-                                Index = GroupBy.indexOf(PrimaryKey);
-                            GroupBy.splice(Index, 1);
-                            this._query.GroupBy = GroupBy.length > 0 ? GroupBy : null;
+                            var primary_key = this.getPrimaryKey(this._query.From),
+                                index = group_by.indexOf(primary_key);
+                            group_by.splice(index, 1);
+                            this._query.GroupBy = group_by.length > 0 ? group_by : null;
                         }
                         if (this._query.GroupBy) {
                             if (this._query.Aggregate) {
@@ -63,14 +59,11 @@ namespace JsStore {
                 };
 
                 private createtransactionForOrLogic = function (query) {
-                    var That = this;
                     this._query = query;
                     try {
                         this._transaction = db_connection.transaction([query.From], "readonly");
-                        this._transaction.oncomplete = function (e) {
-                            That.onTransactionCompleted();
-                        };
-                        this._transaction.ontimeout = That.onTransactionCompleted;
+                        this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                        this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
                         this._objectStore = this._transaction.objectStore(query.From);
                         this.goToWhereLogic();
                     }
@@ -101,10 +94,10 @@ namespace JsStore {
                         (this as any).OrInfo._results = (this as any).OrInfo._results.concat(this._results);
                         if (!this._query.Limit || (this._query.Limit > (this as any).OrInfo._results.length)) {
                             this._results = [];
-                            var Key = getObjectFirstKey((this as any).OrInfo.OrQuery);
-                            if (Key != null) {
-                                (this as any).TmpQry['Where'][Key] = (this as any).OrInfo.OrQuery[Key];
-                                delete (this as any).OrInfo.OrQuery[Key];
+                            var key = getObjectFirstKey((this as any).OrInfo.OrQuery);
+                            if (key != null) {
+                                (this as any).TmpQry['Where'][key] = (this as any).OrInfo.OrQuery[key];
+                                delete (this as any).OrInfo.OrQuery[key];
                                 this.createtransactionForOrLogic((this as any).TmpQry);
                             }
                             else {

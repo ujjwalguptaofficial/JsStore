@@ -2,168 +2,21 @@ namespace JsStore {
     export namespace Business {
         export namespace Select {
             export class Like extends In {
-                CompSymbol: Occurence;
-                CompValue;
-                Column;
-                CompValueLength: Number;
-                private filterOnOccurence = function (value) {
-                    var Found = false;
-                    value = value.toLowerCase();
-                    switch (this.CompSymbol) {
-                        case Occurence.Any: if (value.indexOf(this.CompValue) >= 0) {
-                            Found = true;
-                        }; break;
-                        case Occurence.First: if (value.indexOf(this.CompValue) == 0) {
-                            Found = true;
-                        }; break;
-                        default: if (value.lastIndexOf(this.CompValue) == value.length - this.CompValueLength) {
-                            Found = true;
-                        };
-                    }
-                    return Found;
-                }
-
-                private executeSkipAndLimit = function () {
-                    var Cursor: IDBCursorWithValue,
-                        Skip = this._skipRecord,
-                        That = this,
-                        skipOrPush = function (value) {
-                            if (Skip == 0) {
-                                That._results.push(value);
-                            }
-                            else {
-                                --Skip;
-                            }
-                        };
-                    if (That._checkFlag) {
-                        this.CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = (<any>e).target.result;
-                            if (That._results.length != That._limitRecord && Cursor) {
-                                if (That.filterOnOccurence(Cursor.key) &&
-                                    That.checkForWhereConditionMatch(Cursor.value)) {
-                                    skipOrPush(Cursor.value);
-                                }
-                                Cursor.continue();
-                            }
-                        }
-                    }
-                    else {
-                        this.CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = (<any>e).target.result;
-                            if (That._results.length != That._limitRecord && Cursor) {
-                                if (That.filterOnOccurence(Cursor.key)) {
-                                    skipOrPush(Cursor.value);
-                                }
-                                Cursor.continue();
-                            }
-                        }
-                    }
-                }
-
-                private executeSkip = function () {
-                    var Cursor: IDBCursorWithValue,
-                        Skip = this._skipRecord,
-                        That = this,
-                        skipOrPush = function (value) {
-                            if (Skip == 0) {
-                                That._results.push(value);
-                            }
-                            else {
-                                --Skip;
-                            }
-                        };
-                    if (That._checkFlag) {
-                        this.CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = (<any>e).target.result;
-                            if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.key) &&
-                                    That.checkForWhereConditionMatch(Cursor.value)) {
-                                    skipOrPush((Cursor.value));
-                                }
-                                Cursor.continue();
-                            }
-                        }
-                    }
-                    else {
-                        this.CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = (<any>e).target.result;
-                            if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.key)) {
-                                    skipOrPush((Cursor.value));
-                                }
-                                Cursor.continue();
-                            }
-                        }
-                    }
-                }
-
-                private executeLimit = function () {
-                    var Cursor: IDBCursorWithValue,
-                        That = this;
-                    if (That._checkFlag) {
-                        this.CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = (<any>e).target.result;
-                            if (That._results.length != That._limitRecord && Cursor) {
-                                if (That.filterOnOccurence(Cursor.key) &&
-                                    That.checkForWhereConditionMatch(Cursor.value)) {
-                                    That._results.push(Cursor.value);
-                                }
-                                Cursor.continue();
-                            }
-                        }
-                    }
-                    else {
-                        this.CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = (<any>e).target.result;
-                            if (That._results.length != That._limitRecord && Cursor) {
-                                if (That.filterOnOccurence(Cursor.key)) {
-                                    That._results.push(Cursor.value);
-                                }
-                                Cursor.continue();
-                            }
-                        }
-                    }
-                }
-
-                private executeSimple = function () {
-                    var Cursor: IDBCursorWithValue,
-                        That = this;
-                    if (That._checkFlag) {
-                        this.CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = (<any>e).target.result;
-                            if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.key) &&
-                                    That.checkForWhereConditionMatch(Cursor.value)) {
-                                    That._results.push(Cursor.value);
-                                }
-                                Cursor.continue();
-                            }
-                        }
-                    }
-                    else {
-                        this.CursorOpenRequest.onsuccess = function (e) {
-                            Cursor = (<any>e).target.result;
-                            if (Cursor) {
-                                if (That.filterOnOccurence(Cursor.key)) {
-                                    That._results.push(Cursor.value);
-                                }
-                                Cursor.continue();
-                            }
-                        }
-                    }
-                }
+                _compSymbol: Occurence;
+                _compValue;
+                _column;
+                _compValueLength: Number;
 
                 protected executeLikeLogic = function (column, value, symbol: Occurence) {
-                    var That = this;
-                    this.CompValue = (<string>value).toLowerCase();
-                    this.CompValueLength = this.CompValue.length;
-                    this.CompSymbol = symbol;
-                    this.Column = column;
-                    this.CursorOpenRequest = this._objectStore.index(column).openCursor();
-                    this.CursorOpenRequest.onerror = function (e) {
-                        That._errorOccured = true;
-                        That.onErrorOccured(e);
-                    }
+                    this._compValue = (value as string).toLowerCase();
+                    this._compValueLength = this._compValue.length;
+                    this._compSymbol = symbol;
+                    this._column = column;
+                    this._cursorOpenRequest = this._objectStore.index(column).openCursor();
+                    this._cursorOpenRequest.onerror = function (e) {
+                        this._errorOccured = true;
+                        this.onErrorOccured(e);
+                    }.bind(this);
                     if (this._skipRecord && this._limitRecord) {
                         this.executeSkipAndLimit();
                     }
@@ -176,7 +29,150 @@ namespace JsStore {
                     else {
                         this.executeSimple();
                     }
-                }
+                };
+
+                private filterOnOccurence = function (value) {
+                    var found = false;
+                    value = value.toLowerCase();
+                    switch (this._compSymbol) {
+                        case Occurence.Any: if (value.indexOf(this._compValue) >= 0) {
+                            found = true;
+                        } break;
+                        case Occurence.First: if (value.indexOf(this._compValue) === 0) {
+                            found = true;
+                        } break;
+                        default: if (value.lastIndexOf(this._compValue) === value.length - this._compValueLength) {
+                            found = true;
+                        }
+                    }
+                    return found;
+                };
+
+                private executeSkipAndLimit = function () {
+                    var cursor: IDBCursorWithValue,
+                        skip = this._skipRecord,
+                        skipOrPush = function (value) {
+                            if (skip === 0) {
+                                this._results.push(value);
+                            }
+                            else {
+                                --skip;
+                            }
+                        }.bind(this);
+                    if (this._checkFlag) {
+                        this._cursorOpenRequest.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (this._results.length !== this._limitRecord && cursor) {
+                                if (this.filterOnOccurence(cursor.key) &&
+                                    this.checkForWhereConditionMatch(cursor.value)) {
+                                    skipOrPush(cursor.value);
+                                }
+                                cursor.continue();
+                            }
+                        }.bind(this);
+                    }
+                    else {
+                        this._cursorOpenRequest.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (this._results.length !== this._limitRecord && cursor) {
+                                if (this.filterOnOccurence(cursor.key)) {
+                                    skipOrPush(cursor.value);
+                                }
+                                cursor.continue();
+                            }
+                        }.bind(this);
+                    }
+                };
+
+                private executeSkip = function () {
+                    var cursor: IDBCursorWithValue,
+                        skip = this._skipRecord,
+                        skipOrPush = function (value) {
+                            if (skip === 0) {
+                                this._results.push(value);
+                            }
+                            else {
+                                --skip;
+                            }
+                        }.bind(this);
+                    if (this._checkFlag) {
+                        this._cursorOpenRequest.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (cursor) {
+                                if (this.filterOnOccurence(cursor.key) &&
+                                    this.checkForWhereConditionMatch(cursor.value)) {
+                                    skipOrPush((cursor.value));
+                                }
+                                cursor.continue();
+                            }
+                        }.bind(this);
+                    }
+                    else {
+                        this._cursorOpenRequest.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (cursor) {
+                                if (this.filterOnOccurence(cursor.key)) {
+                                    skipOrPush((cursor.value));
+                                }
+                                cursor.continue();
+                            }
+                        }.bind(this);
+                    }
+                };
+
+                private executeLimit = function () {
+                    var cursor: IDBCursorWithValue;
+                    if (this._checkFlag) {
+                        this._cursorOpenRequest.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (this._results.length !== this._limitRecord && cursor) {
+                                if (this.filterOnOccurence(cursor.key) &&
+                                    this.checkForWhereConditionMatch(cursor.value)) {
+                                    this._results.push(cursor.value);
+                                }
+                                cursor.continue();
+                            }
+                        }.bind(this);
+                    }
+                    else {
+                        this._cursorOpenRequest.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (this._results.length !== this._limitRecord && cursor) {
+                                if (this.filterOnOccurence(cursor.key)) {
+                                    this._results.push(cursor.value);
+                                }
+                                cursor.continue();
+                            }
+                        }.bind(this);
+                    }
+                };
+
+                private executeSimple = function () {
+                    var cursor: IDBCursorWithValue;
+                    if (this._checkFlag) {
+                        this._cursorOpenRequest.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (cursor) {
+                                if (this.filterOnOccurence(cursor.key) &&
+                                    this.checkForWhereConditionMatch(cursor.value)) {
+                                    this._results.push(cursor.value);
+                                }
+                                cursor.continue();
+                            }
+                        }.bind(this);
+                    }
+                    else {
+                        this._cursorOpenRequest.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (cursor) {
+                                if (this.filterOnOccurence(cursor.key)) {
+                                    this._results.push(cursor.value);
+                                }
+                                cursor.continue();
+                            }
+                        }.bind(this);
+                    }
+                };
             }
         }
     }

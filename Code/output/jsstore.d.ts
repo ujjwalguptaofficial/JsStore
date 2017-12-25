@@ -590,6 +590,10 @@ declare namespace JsStore {
         namespace Select {
             class NotWhere extends BaseSelect {
                 protected executeWhereUndefinedLogic: () => void;
+                private executeSkipAndLimitForNoWhere;
+                private executeSkipForNoWhere;
+                private executeSimpleForNotWhere;
+                private executeLimitForNotWhere;
             }
         }
     }
@@ -598,11 +602,11 @@ declare namespace JsStore {
     namespace Business {
         namespace Select {
             class In extends NotWhere {
+                protected executeInLogic: (column: any, values: any) => void;
                 private executeSkipAndLimitForIn;
                 private executeSkipForIn;
                 private executeLimitForIn;
                 private executeSimpleForIn;
-                protected executeInLogic: (column: any, values: any) => void;
             }
         }
     }
@@ -611,16 +615,16 @@ declare namespace JsStore {
     namespace Business {
         namespace Select {
             class Like extends In {
-                CompSymbol: Occurence;
-                CompValue: any;
-                Column: any;
-                CompValueLength: Number;
+                _compSymbol: Occurence;
+                _compValue: any;
+                _column: any;
+                _compValueLength: Number;
+                protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
                 private filterOnOccurence;
                 private executeSkipAndLimit;
                 private executeSkip;
                 private executeLimit;
                 private executeSimple;
-                protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
             }
         }
     }
@@ -629,6 +633,10 @@ declare namespace JsStore {
     namespace Business {
         namespace Select {
             class Where extends Like {
+                private executeSkipAndLimitForWhere;
+                private executeSkipForWhere;
+                private executeLimitForWhere;
+                private executeSimpleForWhere;
                 private executeWhereLogic;
             }
         }
@@ -666,9 +674,9 @@ declare namespace JsStore {
     namespace Business {
         namespace Select {
             class Helper extends GroupByHelper {
+                constructor();
                 processOrderBy: () => void;
                 private processAggregateQry;
-                constructor();
             }
         }
     }
