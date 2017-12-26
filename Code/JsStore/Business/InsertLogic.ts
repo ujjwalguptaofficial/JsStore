@@ -21,8 +21,7 @@ namespace JsStore {
                         }
                     }
                     else {
-                        var error = Utils.getError(ErrorType.TableNotExist, { TableName: query.Into });
-                        throwError(Error);
+                        new Error(Error_Type.TableNotExist, { TableName: query.Into }).throw();
                     }
                 }
                 catch (ex) {

@@ -1,6 +1,6 @@
 declare var Promise: any;
 namespace JsStore {
-    export var worker_status: WebWorkerStatus = WebWorkerStatus.NotStarted,
+    export var worker_status: WebWorker_Status = WebWorker_Status.NotStarted,
         worker_instance: Worker;
     export class CodeExecutionHelper {
         private _requestQueue: IWebWorkerRequest[] = [];
@@ -40,10 +40,10 @@ namespace JsStore {
                             }
                         } as IWebWorkerRequest);
                         setTimeout(function () {
-                            if (worker_status !== WebWorkerStatus.Failed) {
-                                worker_status = WebWorkerStatus.Registered;
+                            if (worker_status !== WebWorker_Status.Failed) {
+                                worker_status = WebWorker_Status.Registered;
                             }
-                            if (status.ConStatus === ConnectionStatus.Connected) {
+                            if (status.ConStatus === Connection_Status.Connected) {
                                 this.executeCode();
                             }
                         }.bind(this), 100);
@@ -63,22 +63,22 @@ namespace JsStore {
         };
 
         private prcoessExecutionOfCode = function (request: IWebWorkerRequest) {
-            if (status.ConStatus === ConnectionStatus.NotStarted) {
+            if (status.ConStatus === Connection_Status.NotStarted) {
                 switch (request.Name) {
                     case 'create_db':
                     case 'open_db':
                         this._requestQueue.splice(0, 0, request);
-                        if (worker_status !== WebWorkerStatus.NotStarted) {
+                        if (worker_status !== WebWorker_Status.NotStarted) {
                             this.executeCode();
                         }
-                        status.ConStatus = ConnectionStatus.Connected;
+                        status.ConStatus = Connection_Status.Connected;
                         break;
                     default: this._requestQueue.push(request);
                 }
             }
             else {
                 this._requestQueue.push(request);
-                if (this._requestQueue.length === 1 && worker_status !== WebWorkerStatus.NotStarted) {
+                if (this._requestQueue.length === 1 && worker_status !== WebWorker_Status.NotStarted) {
                     this.executeCode();
                 }
             }
@@ -94,7 +94,7 @@ namespace JsStore {
                         Query: first_request.Query
                     } as IWebWorkerRequest;
                 log("request executing : " + first_request.Name);
-                if (worker_status === WebWorkerStatus.Registered) {
+                if (worker_status === WebWorker_Status.Registered) {
                     this.executeCodeUsingWorker(request);
                 } else {
                     this.executeCodeDirect(request);
@@ -133,8 +133,8 @@ namespace JsStore {
 
         private onWorkerFailed = function () {
             console.warn('JsStore is not runing in web worker');
-            worker_status = WebWorkerStatus.Failed;
-            if (status.ConStatus === ConnectionStatus.NotStarted) {
+            worker_status = WebWorker_Status.Failed;
+            if (status.ConStatus === Connection_Status.NotStarted) {
                 this.executeCode();
             }
         };

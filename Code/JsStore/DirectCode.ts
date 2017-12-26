@@ -5,6 +5,6 @@ if (self && !self.alert) {
             business_main = new JsStore.Business.Main();
         business_main.checkConnectionAndExecuteLogic(request);
     };
-    JsStore.worker_status = JsStore.WebWorkerStatus.Registered;
+    JsStore.worker_status = JsStore.WebWorker_Status.Registered;
     KeyStore.init();
 }

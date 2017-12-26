@@ -26,19 +26,19 @@ namespace JsStore {
                     }.bind(this);
                 var checkAndModifyValue = function () {
                     var index = 0,
-                        onValidationError = function (error: ErrorType, details: any) {
+                        onValidationError = function (error: Error_Type, details: any) {
                             this._errorOccured = true;
-                            this.Error = Utils.getError(error, details);
+                            this.Error = new Error(error, details);
                         };
                     var checkAndModifyColumn = function (column: Column) {
                         var checkNotNullAndDataType = function () {
                             // check not null schema
                             if (column._notNull && isNull(value[column._name])) {
-                                onValidationError(ErrorType.NullValue, { ColumnName: column._name });
+                                onValidationError(Error_Type.NullValue, { ColumnName: column._name });
                             }
                             // check datatype
                             else if (column._dataType && typeof value[column._name] !== column._dataType) {
-                                onValidationError(ErrorType.BadDataType, { ColumnName: column._name });
+                                onValidationError(Error_Type.BadDataType, { ColumnName: column._name });
                             }
                             checkAndModifyColumn(table._columns[index++]);
                         };

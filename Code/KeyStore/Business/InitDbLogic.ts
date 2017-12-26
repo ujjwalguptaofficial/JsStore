@@ -6,10 +6,10 @@ namespace KeyStore {
                     DbRequest = self.indexedDB.open(dbName, 1);
 
                 DbRequest.onerror = function (event) {
-                    if ((event as any).target.error.name == 'InvalidStateError') {
+                    if ((event as any).target.error.name === 'InvalidStateError') {
                         JsStore.status = {
-                            ConStatus: JsStore.ConnectionStatus.UnableToStart,
-                            LastError: JsStore.ErrorType.IndexedDbBlocked,
+                            ConStatus: JsStore.Connection_Status.UnableToStart,
+                            LastError: JsStore.Error_Type.IndexedDbBlocked,
                         };
                     }
                     if (onError != null) {

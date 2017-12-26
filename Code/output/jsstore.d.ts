@@ -155,34 +155,17 @@ declare namespace KeyStore {
     var remove: (key: string, onSuccess?: Function, onError?: Function) => any;
 }
 declare namespace JsStore {
-    enum ErrorType {
-        UndefinedColumn = "undefined_column",
-        UndefinedValue = "undefined_value",
-        UndefinedColumnName = "undefined_column_name",
-        UndefinedColumnValue = "undefined_column_value",
-        NotArray = "not_array",
-        NoValueSupplied = "no_value_supplied",
-        ColumnNotExist = "column_not_exist",
-        InvalidOp = "invalid_operator",
-        NullValue = "null_value",
-        BadDataType = "bad_data_type",
-        NextJoinNotExist = "next_join_not_exist",
-        TableNotExist = "table_not_exist",
-        DbNotExist = "db_not_exist",
-        IndexedDbUndefined = "indexeddb_undefined",
-        IndexedDbBlocked = "indexeddb_blocked",
-    }
     enum Occurence {
         First = "f",
         Last = "l",
         Any = "a",
     }
-    enum WebWorkerStatus {
+    enum WebWorker_Status {
         Registered = "registerd",
         Failed = "failed",
         NotStarted = "not_started",
     }
-    enum ConnectionStatus {
+    enum Connection_Status {
         Connected = "connected",
         Closed = "closed",
         NotStarted = "not_started",
@@ -310,8 +293,8 @@ declare namespace JsStore {
         Column: string;
     }
     interface IJsStoreStatus {
-        ConStatus: ConnectionStatus;
-        LastError: string;
+        ConStatus: Connection_Status;
+        LastError: Error_Type;
     }
     interface IWebWorkerRequest {
         Name: string;
@@ -323,10 +306,6 @@ declare namespace JsStore {
         ErrorOccured: boolean;
         ErrorDetails: any;
         ReturnedValue: any;
-    }
-    interface IError {
-        Name: string;
-        Message: string;
     }
     interface IAggregate {
         Max: any[];
@@ -345,7 +324,6 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     class Utils {
-        static getError(errorType: ErrorType, errorDetail: any): IError;
         static convertObjectintoLowerCase(obj: any): void;
         /**
          * determine and set the DataBase Type
@@ -397,6 +375,40 @@ declare namespace JsStore {
      *
      */
     var disableLog: () => void;
+}
+declare namespace JsStore {
+    enum Error_Type {
+        UndefinedColumn = "undefined_column",
+        UndefinedValue = "undefined_value",
+        UndefinedColumnName = "undefined_column_name",
+        UndefinedColumnValue = "undefined_column_value",
+        NotArray = "not_array",
+        NoValueSupplied = "no_value_supplied",
+        ColumnNotExist = "column_not_exist",
+        InvalidOp = "invalid_operator",
+        NullValue = "null_value",
+        BadDataType = "bad_data_type",
+        NextJoinNotExist = "next_join_not_exist",
+        TableNotExist = "table_not_exist",
+        DbNotExist = "db_not_exist",
+        IndexedDbUndefined = "indexeddb_undefined",
+        IndexedDbBlocked = "indexeddb_blocked",
+        ConnectionAborted = "connection_aborted",
+        ConnectionClosed = "connection_closed",
+    }
+    interface IError {
+        _type: Error_Type;
+        _message: string;
+    }
+    class Error implements IError {
+        _type: Error_Type;
+        _message: string;
+        _info: any;
+        constructor(type: Error_Type, info?: any);
+        throw: () => never;
+        print: (isWarn?: boolean) => void;
+        private get;
+    }
 }
 declare namespace JsStore {
     namespace Model {
@@ -876,7 +888,7 @@ declare namespace JsStore {
 }
 declare var Promise: any;
 declare namespace JsStore {
-    var worker_status: WebWorkerStatus, worker_instance: Worker;
+    var worker_status: WebWorker_Status, worker_instance: Worker;
     class CodeExecutionHelper {
         private _requestQueue;
         private _isCodeExecuting;

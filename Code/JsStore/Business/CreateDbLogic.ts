@@ -12,11 +12,11 @@ namespace JsStore {
                 };
 
                 db_request.onsuccess = function (event) {
-                    status.ConStatus = ConnectionStatus.Connected;
+                    status.ConStatus = Connection_Status.Connected;
                     db_connection = db_request.result;
                     (db_connection as any).onclose = function () {
-                        status.ConStatus = ConnectionStatus.Closed;
-                        status.LastError = "Connection Closed";
+                        status.ConStatus = Connection_Status.Closed;
+                        status.LastError = Error_Type.ConnectionClosed;
                     };
 
                     db_connection.onversionchange = function (e) {
@@ -26,12 +26,12 @@ namespace JsStore {
                     };
 
                     db_connection.onerror = function (e) {
-                        status.LastError = "Error occured in connection :" + (e.target as any).result;
+                        status.LastError = ("Error occured in connection :" + (e.target as any).result) as any;
                     };
 
                     db_connection.onabort = function (e) {
-                        status.ConStatus = ConnectionStatus.Closed;
-                        status.LastError = "Connection aborted";
+                        status.ConStatus = Connection_Status.Closed;
+                        status.LastError = Error_Type.ConnectionAborted;
                     };
 
                     if (onSuccess != null) {

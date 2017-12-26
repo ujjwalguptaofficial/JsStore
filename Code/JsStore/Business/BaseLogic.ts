@@ -18,8 +18,8 @@ namespace JsStore {
                     if (this.OnError != null) {
                         if (!customError) {
                             var error = {
-                                Message: (e as any).target.error.message,
-                                Name: (e as any).target.error.name
+                                _message: (e as any).target.error.message,
+                                _type: (e as any).target.error.name
                             } as IError;
                             this.OnError(error);
                         }
@@ -38,8 +38,7 @@ namespace JsStore {
             protected onExceptionOccured = function (ex: DOMException, info) {
                 switch (ex.name) {
                     case 'NotFoundError':
-                        var error = Utils.getError(ErrorType.TableNotExist, info);
-                        throwError(error);
+                        var error = new Error(Error_Type.TableNotExist, info).throw();
                     default: console.error(ex);
                 }
             };
@@ -211,8 +210,8 @@ namespace JsStore {
                 }
                 else {
                     this._errorOccured = true;
-                    this.Error = Utils.getError(ErrorType.ColumnNotExist, { ColumnName: column });
-                    throwError(this.Error);
+                    this.Error = new Error(Error_Type.ColumnNotExist, { ColumnName: column });
+                    this.Error.throw();
                 }
             };
 

@@ -85,9 +85,9 @@ namespace JsStore {
                     if (suppliedValue) {
                         var current_table: Table = this.getTable(tableName);
                         if (current_table) {
-                            var onValidationError = function (err: ErrorType, details: any) {
+                            var onValidationError = function (err: Error_Type, details: any) {
                                 this._errorOccured = true;
-                                this._error = Utils.getError(err, details);
+                                this._error = new Error(err, details);
                             }.bind(this);
                             // loop through table column and find data is valid
                             current_table._columns.every(function (column: Model.Column) {
@@ -96,7 +96,9 @@ namespace JsStore {
                                         var executeCheck = function (value) {
                                             // check not null schema
                                             if (column._notNull && isNull(value)) {
-                                                onValidationError(ErrorType.NullValue, { ColumnName: column._name });
+                                                onValidationError(
+                                                    Error_Type.NullValue, { ColumnName: column._name }
+                                                );
                                             }
 
                                             // check datatype
@@ -104,7 +106,7 @@ namespace JsStore {
                                                 var type = typeof value;
                                                 if (type !== column._dataType) {
                                                     if (type !== 'object') {
-                                                        onValidationError(ErrorType.BadDataType,
+                                                        onValidationError(Error_Type.BadDataType,
                                                             { ColumnName: column._name }
                                                         );
                                                     }
@@ -113,7 +115,7 @@ namespace JsStore {
                                                         for (var prop in value) {
                                                             if (allowed_prop.indexOf(prop) < 0) {
                                                                 onValidationError(
-                                                                    ErrorType.BadDataType,
+                                                                    Error_Type.BadDataType,
                                                                     { ColumnName: column._name }
                                                                 );
                                                             }
@@ -133,8 +135,7 @@ namespace JsStore {
                             }, this);
                         }
                         else {
-                            var error = Utils.getError(ErrorType.TableNotExist, { TableName: tableName });
-                            throwError(Error);
+                            new Error(Error_Type.TableNotExist, { TableName: tableName }).throw();
                         }
                     }
                     else {

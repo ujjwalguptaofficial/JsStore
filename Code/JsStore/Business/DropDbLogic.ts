@@ -21,7 +21,7 @@ namespace JsStore {
                     }
                 };
                 db_drop_request.onsuccess = function () {
-                    status.ConStatus = ConnectionStatus.Closed;
+                    status.ConStatus = Connection_Status.Closed;
                     KeyStore.remove('JsStore_' + active_db._name + '_Db_Version');
                     active_db._tables.forEach(function (table: Model.Table) {
                         KeyStore.remove("JsStore_" + active_db._name + "_" + table._name + "_Version");

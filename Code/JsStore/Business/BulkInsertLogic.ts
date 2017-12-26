@@ -12,8 +12,8 @@ namespace JsStore {
                         this.bulkinsertData();
                     }
                     else {
-                        var error = Utils.getError(ErrorType.TableNotExist, { TableName: query.Into });
-                        throwError(error);
+                        var error = new Error(Error_Type.TableNotExist, { TableName: query.Into });
+                        error.throw();
                     }
                 }
                 catch (ex) {

@@ -2,8 +2,8 @@ namespace JsStore {
     export var enable_log = false,
         db_version: number = 0,
         status: IJsStoreStatus = {
-            ConStatus: ConnectionStatus.NotStarted,
-            LastError: ""
+            ConStatus: Connection_Status.NotStarted,
+            LastError: null
         } as IJsStoreStatus,
         temp_results: any[] = [];
 

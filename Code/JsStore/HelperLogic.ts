@@ -13,7 +13,7 @@ namespace JsStore {
         errCallBack: (err: IError) => void = null
     ) {
         var use_promise = callback ? false : true;
-        if (status.ConStatus !== ConnectionStatus.UnableToStart) {
+        if (status.ConStatus !== Connection_Status.UnableToStart) {
             if (use_promise) {
                 return new Promise(function (resolve, reject) {
                     if (typeof dbInfo === 'string') {
@@ -43,14 +43,14 @@ namespace JsStore {
         }
         else {
             var error = {
-                Name: status.LastError,
-                Message: ''
+                _type: status.LastError,
+                _message: null
             } as IError;
-            switch (error.Name) {
-                case ErrorType.IndexedDbBlocked:
-                    error.Message = "IndexedDB is blocked"; break;
-                case ErrorType.IndexedDbUndefined:
-                    error.Message = "IndexedDB is not supported"; break;
+            switch (error._type) {
+                case Error_Type.IndexedDbBlocked:
+                    error._message = "IndexedDB is blocked"; break;
+                case Error_Type.IndexedDbUndefined:
+                    error._message = "IndexedDB is not supported"; break;
             }
             if (use_promise) {
                 return new Promise(function (resolve, reject) {

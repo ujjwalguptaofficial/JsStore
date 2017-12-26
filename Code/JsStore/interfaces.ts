@@ -124,8 +124,8 @@ namespace JsStore {
     }
 
     export interface IJsStoreStatus {
-        ConStatus: ConnectionStatus;
-        LastError: string;
+        ConStatus: Connection_Status;
+        LastError: Error_Type;
     }
 
     export interface IWebWorkerRequest {
@@ -139,11 +139,6 @@ namespace JsStore {
         ErrorOccured: boolean;
         ErrorDetails: any;
         ReturnedValue: any;
-    }
-
-    export interface IError {
-        Name: string;
-        Message: string;
     }
 
     export interface IAggregate {

@@ -7,10 +7,10 @@ namespace JsStore {
     export class Instance extends CodeExecutionHelper {
         constructor(dbName = null) {
             super();
-            if (worker_status === WebWorkerStatus.Registered) {
+            if (worker_status === WebWorker_Status.Registered) {
                 worker_instance.terminate();
             }
-            else if (worker_status === WebWorkerStatus.NotStarted) {
+            else if (worker_status === WebWorker_Status.NotStarted) {
                 KeyStore.init();
             }
             this.createWorker();

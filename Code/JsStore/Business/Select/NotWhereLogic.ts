@@ -12,8 +12,8 @@ namespace JsStore {
                                 openCursor(null, order_type);
                         }
                         else {
-                            var error = Utils.getError(ErrorType.ColumnNotExist, { ColumnName: this._query.Order.By });
-                            throwError(error);
+                            var error = new Error(Error_Type.ColumnNotExist, { ColumnName: this._query.Order.By });
+                            error.throw();
                         }
                     }
                     else {

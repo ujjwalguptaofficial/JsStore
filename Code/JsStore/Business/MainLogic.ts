@@ -22,10 +22,10 @@ namespace JsStore {
                         this.changeLogStatus(request);
                     default:
                         switch (status.ConStatus) {
-                            case ConnectionStatus.Connected: {
+                            case Connection_Status.Connected: {
                                 this.executeLogic(request);
                             } break;
-                            case ConnectionStatus.Closed: {
+                            case Connection_Status.Closed: {
                                 this.openDb(active_db._name, function () {
                                     this.checkConnectionAndExecuteLogic(request);
                                 }.bind(this));
@@ -104,14 +104,14 @@ namespace JsStore {
                         });
                     }
                     else {
-                        var error = Utils.getError(ErrorType.DbNotExist, { DbName: dbName });
-                        throw error;
+                        var error = new Error(Error_Type.DbNotExist, { DbName: dbName });
+                        error.throw();
                     }
                 });
             };
 
             private closeDb = function () {
-                if (status.ConStatus === ConnectionStatus.Connected) {
+                if (status.ConStatus === Connection_Status.Connected) {
                     db_connection.close();
                 }
             };

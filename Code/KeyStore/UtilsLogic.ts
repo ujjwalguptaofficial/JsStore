@@ -22,8 +22,8 @@ namespace KeyStore {
             }
             else {
                 JsStore.status = {
-                    ConStatus: JsStore.ConnectionStatus.UnableToStart,
-                    LastError: JsStore.ErrorType.IndexedDbUndefined
+                    ConStatus: JsStore.Connection_Status.UnableToStart,
+                    LastError: JsStore.Error_Type.IndexedDbUndefined
                 };
             }
         }
