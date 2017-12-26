@@ -125,21 +125,22 @@ namespace JsStore {
                             } break;
                         }
                     };
-                for (var column in where) {
-                    var column_value = where[column];
+                for (var columnValue in where) {
+                    var column_value = where[columnValue];
                     if (status) {
                         if (typeof column_value === 'object') {
                             for (var key in column_value) {
                                 if (status) {
                                     switch (key) {
-                                        case 'In': checkIn(column, rowValue[column]); break;
-                                        case 'Like': checkLike(column, rowValue[column]); break;
+                                        case 'In': checkIn(columnValue, rowValue[columnValue]); break;
+                                        case 'Like': checkLike(columnValue, rowValue[columnValue]); break;
                                         case '-':
                                         case '>':
                                         case '<':
                                         case '>=':
                                         case '<=':
-                                            checkComparisionOp(column, rowValue[column], key); break;
+                                            checkComparisionOp(columnValue, rowValue[columnValue], key);
+                                            break;
                                     }
                                 }
                                 else {
@@ -148,8 +149,7 @@ namespace JsStore {
                             }
                         }
                         else {
-                            var compare_value = rowValue[column];
-                            if (column_value !== compare_value) {
+                            if (column_value !== rowValue[columnValue]) {
                                 status = false;
                                 break;
                             }

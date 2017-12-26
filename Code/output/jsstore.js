@@ -1285,25 +1285,25 @@ var JsStore;
                             break;
                     }
                 };
-                for (var column in where) {
-                    var column_value = where[column];
+                for (var columnValue in where) {
+                    var column_value = where[columnValue];
                     if (status) {
                         if (typeof column_value === 'object') {
                             for (var key in column_value) {
                                 if (status) {
                                     switch (key) {
                                         case 'In':
-                                            checkIn(column, rowValue[column]);
+                                            checkIn(columnValue, rowValue[columnValue]);
                                             break;
                                         case 'Like':
-                                            checkLike(column, rowValue[column]);
+                                            checkLike(columnValue, rowValue[columnValue]);
                                             break;
                                         case '-':
                                         case '>':
                                         case '<':
                                         case '>=':
                                         case '<=':
-                                            checkComparisionOp(column, rowValue[column], key);
+                                            checkComparisionOp(columnValue, rowValue[columnValue], key);
                                             break;
                                     }
                                 }
@@ -1313,8 +1313,7 @@ var JsStore;
                             }
                         }
                         else {
-                            var compare_value = rowValue[column];
-                            if (column_value !== compare_value) {
+                            if (column_value !== rowValue[columnValue]) {
                                 status = false;
                                 break;
                             }
@@ -1405,7 +1404,11 @@ var JsStore;
                                 autoIncrement: true
                             });
                             item._columns.forEach(function (column) {
-                                store.createIndex(column._name, column._name, { unique: column._unique });
+                                var options = { unique: column._unique };
+                                if (column._multiEntry) {
+                                    options['multiEntry'] = true;
+                                }
+                                store.createIndex(column._name, column._name, options);
                                 if (column._autoIncrement) {
                                     KeyStore.set("JsStore_" + Business.active_db._name + "_" + item._name + "_" + column._name + "_Value", 0);
                                 }
@@ -2991,10 +2994,10 @@ var JsStore;
                                         var getAvg = function () {
                                             value = look_up_obj[obj_Key];
                                             // get old sum value
-                                            var sum = value ? value["Sum(" + aggr_column + ")"] : 0;
+                                            var sum_of_column = value ? value["Sum(" + aggr_column + ")"] : 0;
                                             // add with old value if data exist
-                                            sum += datas[index][aggr_column] ? datas[index][aggr_column] : 0;
-                                            datas[index]["Sum(" + aggr_column + ")"] = sum;
+                                            sum_of_column += datas[index][aggr_column] ? datas[index][aggr_column] : 0;
+                                            datas[index]["Sum(" + aggr_column + ")"] = sum_of_column;
                                             // get old count value
                                             value = value ? value["Count(" + aggr_column + ")"] : 0;
                                             // add with old value if data exist
@@ -3041,8 +3044,8 @@ var JsStore;
                         if (aggregate_qry.Avg) {
                             if (typeof aggregate_qry.Avg === 'string') {
                                 for (index in datas) {
-                                    var sum = datas[index]["Sum(" + aggregate_qry.Avg + ")"], count = datas[index]["Count(" + aggregate_qry.Avg + ")"];
-                                    datas[index]["Avg(" + aggregate_qry.Avg + ")"] = sum / count;
+                                    var sum_for_avg = datas[index]["Sum(" + aggregate_qry.Avg + ")"], count_for_avg = datas[index]["Count(" + aggregate_qry.Avg + ")"];
+                                    datas[index]["Avg(" + aggregate_qry.Avg + ")"] = sum_for_avg / count_for_avg;
                                     if (aggregate_qry.Count !== aggregate_qry.Avg) {
                                         delete datas[index]["Count(" + aggregate_qry.Avg + ")"];
                                     }

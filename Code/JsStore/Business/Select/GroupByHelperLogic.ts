@@ -137,10 +137,10 @@ namespace JsStore {
                                     var getAvg = function () {
                                         value = look_up_obj[obj_Key];
                                         // get old sum value
-                                        var sum = value ? value["Sum(" + aggr_column + ")"] : 0;
+                                        var sum_of_column = value ? value["Sum(" + aggr_column + ")"] : 0;
                                         // add with old value if data exist
-                                        sum += datas[index][aggr_column] ? datas[index][aggr_column] : 0;
-                                        datas[index]["Sum(" + aggr_column + ")"] = sum;
+                                        sum_of_column += datas[index][aggr_column] ? datas[index][aggr_column] : 0;
+                                        datas[index]["Sum(" + aggr_column + ")"] = sum_of_column;
                                         // get old count value
                                         value = value ? value["Count(" + aggr_column + ")"] : 0;
                                         // add with old value if data exist
@@ -190,9 +190,9 @@ namespace JsStore {
                     if (aggregate_qry.Avg) {
                         if (typeof aggregate_qry.Avg === 'string') {
                             for (index in datas) {
-                                var sum = datas[index]["Sum(" + aggregate_qry.Avg + ")"],
-                                    count = datas[index]["Count(" + aggregate_qry.Avg + ")"];
-                                datas[index]["Avg(" + aggregate_qry.Avg + ")"] = sum / count;
+                                var sum_for_avg = datas[index]["Sum(" + aggregate_qry.Avg + ")"],
+                                    count_for_avg = datas[index]["Count(" + aggregate_qry.Avg + ")"];
+                                datas[index]["Avg(" + aggregate_qry.Avg + ")"] = sum_for_avg / count_for_avg;
                                 if (aggregate_qry.Count !== aggregate_qry.Avg) {
                                     delete datas[index]["Count(" + aggregate_qry.Avg + ")"];
                                 }

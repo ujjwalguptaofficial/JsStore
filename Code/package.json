@@ -4,7 +4,7 @@
   "description": "JsStore is Sql Like IndexedDb Wrapper. It provides simple api to store, retrieve, delete, remove, and for other advanced Database functionalities.",
   "main": "index.js",
   "scripts": {
-    "pretest": "tsc",
+    "pretest": "tsc && tslint JsStore/**/*.ts",
     "test": "karma start test/karma.config.js",
     "prebuild": "tslint JsStore/**/*.ts",
     "build": "tsc && uglifyjs output/jsstore.js --compress sequences=true,dead_code=true,conditionals=true,booleans=true,unused=true,if_return=true,join_vars=true,drop_console=true --source-map --mangle --output output/jsstore.min.js"

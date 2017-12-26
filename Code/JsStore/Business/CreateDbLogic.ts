@@ -82,7 +82,11 @@ namespace JsStore {
                                 autoIncrement: true
                             });
                             item._columns.forEach(function (column: Column) {
-                                store.createIndex(column._name, column._name, { unique: column._unique });
+                                var options = { unique: column._unique };
+                                if (column._multiEntry) {
+                                    options['multiEntry'] = true;
+                                }
+                                store.createIndex(column._name, column._name, options);
                                 if (column._autoIncrement) {
                                     KeyStore.set(
                                         "JsStore_" + active_db._name + "_" + item._name + "_" + column._name + "_Value",
