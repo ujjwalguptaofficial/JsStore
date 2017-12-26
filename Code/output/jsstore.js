@@ -884,7 +884,7 @@ var JsStore;
                 this._notNull = key.NotNull != null ? key.NotNull : false;
                 this._dataType = key.DataType != null ? key.DataType : (key.AutoIncrement ? 'number' : null);
                 this._default = key.Default;
-                this._multiEntry = key.MultiEntry;
+                this._multiEntry = key.MultiEntry == null ? false : true;
             }
             return Column;
         }());
@@ -928,11 +928,11 @@ var JsStore;
                 }.bind(this));
             };
             Table.prototype.setDbVersion = function (dbName) {
-                var db_version = db_version > this._version ? db_version : this._version;
+                JsStore.db_version = JsStore.db_version > this._version ? JsStore.db_version : this._version;
                 // setting db version
-                KeyStore.set('JsStore_' + dbName + '_Db_Version', db_version)
-                    .set("JsStore_" + dbName + "_" + this._name + "_Version", db_version);
-                this._version = db_version;
+                KeyStore.set('JsStore_' + dbName + '_Db_Version', JsStore.db_version)
+                    .set("JsStore_" + dbName + "_" + this._name + "_Version", JsStore.db_version);
+                this._version = JsStore.db_version;
             };
             return Table;
         }());
@@ -1093,8 +1093,8 @@ var JsStore;
                         if (this.OnError != null) {
                             if (!customError) {
                                 var error = {
-                                    Name: e.target.error.name,
-                                    Message: e.target.error.message
+                                    Message: e.target.error.message,
+                                    Name: e.target.error.name
                                 };
                                 this.OnError(error);
                             }
@@ -1390,9 +1390,7 @@ var JsStore;
                             });
                             item._columns.forEach(function (column) {
                                 var options = column._primaryKey ? { unique: true } : { unique: column._unique };
-                                if (column._multiEntry) {
-                                    options['multiEntry'] = true;
-                                }
+                                options['multiEntry'] = column._multiEntry;
                                 store.createIndex(column._name, column._name, options);
                                 if (column._autoIncrement) {
                                     KeyStore.set("JsStore_" + Business.active_db._name + "_" + item._name + "_" + column._name + "_Value", 0);
@@ -1404,10 +1402,7 @@ var JsStore;
                                 autoIncrement: true
                             });
                             item._columns.forEach(function (column) {
-                                var options = { unique: column._unique };
-                                if (column._multiEntry) {
-                                    options['multiEntry'] = true;
-                                }
+                                var options = { unique: column._unique, multiEntry: column._multiEntry };
                                 store.createIndex(column._name, column._name, options);
                                 if (column._autoIncrement) {
                                     KeyStore.set("JsStore_" + Business.active_db._name + "_" + item._name + "_" + column._name + "_Value", 0);
@@ -1775,7 +1770,7 @@ var JsStore;
                     }
                 };
                 this.changeLogStatus = function (request) {
-                    if (request._query['logging'] === true) {
+                    if (request.Query['logging'] === true) {
                         JsStore.enable_log = true;
                     }
                     else {
@@ -1902,8 +1897,9 @@ var JsStore;
                     }
                 };
                 this.createDb = function (dataBase, onSuccess, onError) {
+                    this.closeDb();
                     KeyStore.get("JsStore_" + dataBase.Name + "_Db_Version", function (version) {
-                        JsStore.db_version = version;
+                        JsStore.db_version = version ? version : 1;
                         Business.active_db = new JsStore.Model.DataBase(dataBase);
                         var createDbInternal = function () {
                             setTimeout(function () {

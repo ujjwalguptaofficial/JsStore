@@ -5,7 +5,7 @@ module.exports = function (config) {
         frameworks: ['mocha', 'chai'],
         client: {
             mocha: {
-                timeout: 6000 // 6 seconds - upped from 2 seconds
+                timeout:20000 // 6 seconds - upped from 2 seconds
             }
         },
         files: [
@@ -19,6 +19,7 @@ module.exports = function (config) {
             'cases/delete/*.js',
             'cases/helper/*.js',
             'cases/clear/*.js',
+            'cases/column_option/*.js',
             {
                 pattern: 'static/*.json',
                 included: false,

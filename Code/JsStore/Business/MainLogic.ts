@@ -1,7 +1,7 @@
 
 namespace JsStore {
     export namespace Business {
-        export var db_connection,
+        export var db_connection: IDBDatabase,
             active_db: DataBase;
 
         export class Main {
@@ -34,8 +34,8 @@ namespace JsStore {
                 }
             };
 
-            private changeLogStatus = function (request) {
-                if (request._query['logging'] === true) {
+            private changeLogStatus = function (request: IWebWorkerRequest) {
+                if (request.Query['logging'] === true) {
                     enable_log = true;
                 }
                 else {
@@ -166,9 +166,11 @@ namespace JsStore {
             };
 
             private createDb = function (
-                dataBase: IDataBaseOption, onSuccess: () => void, onError: (err: IError) => void) {
+                dataBase: IDataBaseOption, onSuccess: () => void, onError: (err: IError) => void
+            ) {
+                this.closeDb();
                 KeyStore.get("JsStore_" + dataBase.Name + "_Db_Version", function (version) {
-                    db_version = version;
+                    db_version = version ? version : 1;
                     active_db = new Model.DataBase(dataBase);
                     var createDbInternal = function () {
                         setTimeout(function () {

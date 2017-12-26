@@ -43,7 +43,7 @@ namespace JsStore {
             }
 
             private setDbVersion(dbName: string) {
-                var db_version = db_version > this._version ? db_version : this._version;
+                db_version = db_version > this._version ? db_version : this._version;
                 // setting db version
                 KeyStore.set('JsStore_' + dbName + '_Db_Version', db_version)
                     // setting table version

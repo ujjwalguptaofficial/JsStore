@@ -15,19 +15,19 @@ namespace JsStore {
                     db_request.onsuccess = function (event) {
                         status.ConStatus = ConnectionStatus.Connected;
                         db_connection = db_request.result;
-                        db_connection.onclose = function () {
+                        (db_connection as any).onclose = function () {
                             status.ConStatus = ConnectionStatus.Closed;
                             status.LastError = "Connection Closed, trying to reconnect";
                         };
 
                         db_connection.onversionchange = function (e) {
                             if (e.newVersion === null) { // An attempt is made to delete the db
-                                e.target.close(); // Manually close our connection to the db
+                                (e.target as any).close(); // Manually close our connection to the db
                             }
                         };
 
                         db_connection.onerror = function (e) {
-                            status.LastError = "Error occured in connection :" + e.target.result;
+                            status.LastError = "Error occured in connection :" + (e.target as any).result;
                         };
 
                         db_connection.onabort = function (e) {

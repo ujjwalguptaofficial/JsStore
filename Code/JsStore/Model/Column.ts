@@ -1,6 +1,6 @@
 namespace JsStore {
     export namespace Model {
-        
+
         export class Column {
             _name: string;
             _autoIncrement: boolean;
@@ -24,7 +24,7 @@ namespace JsStore {
                 this._notNull = key.NotNull != null ? key.NotNull : false;
                 this._dataType = key.DataType != null ? key.DataType : (key.AutoIncrement ? 'number' : null);
                 this._default = key.Default;
-                this._multiEntry = key.MultiEntry;
+                this._multiEntry = key.MultiEntry == null ? false : true;
             }
 
         }

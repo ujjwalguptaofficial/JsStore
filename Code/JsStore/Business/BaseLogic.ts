@@ -18,8 +18,8 @@ namespace JsStore {
                     if (this.OnError != null) {
                         if (!customError) {
                             var error = {
-                                Name: (e as any).target.error.name,
-                                Message: (e as any).target.error.message
+                                Message: (e as any).target.error.message,
+                                Name: (e as any).target.error.name
                             } as IError;
                             this.OnError(error);
                         }

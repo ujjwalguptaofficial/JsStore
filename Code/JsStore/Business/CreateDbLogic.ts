@@ -14,19 +14,19 @@ namespace JsStore {
                 db_request.onsuccess = function (event) {
                     status.ConStatus = ConnectionStatus.Connected;
                     db_connection = db_request.result;
-                    db_connection.onclose = function () {
+                    (db_connection as any).onclose = function () {
                         status.ConStatus = ConnectionStatus.Closed;
                         status.LastError = "Connection Closed";
                     };
 
                     db_connection.onversionchange = function (e) {
                         if (e.newVersion === null) { // An attempt is made to delete the db
-                            e.target.close(); // Manually close our connection to the db
+                            (e.target as any).close(); // Manually close our connection to the db
                         }
                     };
 
                     db_connection.onerror = function (e) {
-                        status.LastError = "Error occured in connection :" + e.target.result;
+                        status.LastError = "Error occured in connection :" + (e.target as any).result;
                     };
 
                     db_connection.onabort = function (e) {
@@ -65,9 +65,7 @@ namespace JsStore {
                             });
                             item._columns.forEach(function (column: Column) {
                                 var options = column._primaryKey ? { unique: true } : { unique: column._unique };
-                                if (column._multiEntry) {
-                                    options['multiEntry'] = true;
-                                }
+                                options['multiEntry'] = column._multiEntry;
                                 store.createIndex(column._name, column._name, options);
                                 if (column._autoIncrement) {
                                     KeyStore.set(
@@ -82,10 +80,7 @@ namespace JsStore {
                                 autoIncrement: true
                             });
                             item._columns.forEach(function (column: Column) {
-                                var options = { unique: column._unique };
-                                if (column._multiEntry) {
-                                    options['multiEntry'] = true;
-                                }
+                                var options = { unique: column._unique, multiEntry: column._multiEntry };
                                 store.createIndex(column._name, column._name, options);
                                 if (column._autoIncrement) {
                                     KeyStore.set(

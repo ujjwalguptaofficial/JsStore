@@ -543,7 +543,7 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     namespace Business {
-        var db_connection: any, active_db: DataBase;
+        var db_connection: IDBDatabase, active_db: DataBase;
         class Main {
             _onSuccess: () => void;
             constructor(onSuccess?: any);
