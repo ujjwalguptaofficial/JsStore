@@ -1,4 +1,5 @@
 namespace KeyStore {
+
     /**
      * Initialize KeyStore
      * 
@@ -6,81 +7,86 @@ namespace KeyStore {
     export var init = function () {
         Utils.setDbType();
         if (indexedDB) {
-            prcoessExecutionOfCode(<IWebWorkerRequest>{
+            prcoessExecutionOfCode({
                 Name: 'create_db',
-                Query: TableName
-            });
+                Query: table_name
+            } as IWebWorkerRequest);
         }
     };
 
     /**
-    * return the value by key
-    * 
-    * @param {string} key 
-    * @param {Function} onSuccess 
-    * @param {Function} [onError=null] 
-    */
-    export var get = function (key: string, onSuccess: Function, onError: Function = null) {
-        var Query = <ISelect>{
-            From: this.TableName,
+     * return the value by key
+     * 
+     * @param {string} key 
+     * @param {(result) => void} onSuccess 
+     * @param {(err: IError) => void} [onError=null] 
+     * @returns 
+     */
+    export var get = function (key: string, onSuccess: (result) => void, onError: (err: IError) => void = null) {
+        var query = {
+            From: table_name,
             Where: {
                 Key: key
             }
-        };
-        prcoessExecutionOfCode(<IWebWorkerRequest>{
+        } as ISelect;
+        prcoessExecutionOfCode({
             Name: 'get',
-            Query: Query,
+            Query: query,
             OnSuccess: onSuccess,
             OnError: onError
-        });
+        } as IWebWorkerRequest);
         return this;
     };
 
     /**
-    * insert or update value
-    * 
-    * @param {any} key 
-    * @param {any} value 
-    * @param {Function} [onSuccess=null] 
-    * @param {Function} [onError=null] 
-    */
-    export var set = function (key, value, onSuccess: Function = null, onError: Function = null) {
-        var Query = <IInsert>{
-            TableName: this.TableName,
+     * insert or update value
+     * 
+     * @param {any} key 
+     * @param {any} value 
+     * @param {(result) => void} [onSuccess] 
+     * @param {(err: IError) => void} [onError] 
+     * @returns 
+     */
+    export var set = function (key, value, onSuccess?: (result) => void, onError?: (err: IError) => void) {
+        var query = {
+            TableName: table_name,
             Set: {
                 Key: key,
                 Value: value
             }
-        }
-        prcoessExecutionOfCode(<IWebWorkerRequest>{
+        } as IInsert;
+        prcoessExecutionOfCode({
             Name: 'set',
-            Query: Query,
+            Query: query,
             OnSuccess: onSuccess,
             OnError: onError
-        });
+        } as IWebWorkerRequest);
         return this;
     };
 
     /**
-    * delete value
-    * 
-    * @param {string} key 
-    * @param {Function} [onSuccess=null] 
-    * @param {Function} [onError=null] 
-    */
-    export var remove = function (key: string, onSuccess: Function = null, onError: Function = null) {
-        var Query = <IDelete>{
-            From: this.TableName,
+     * delete value
+     * 
+     * @param {string} key 
+     * @param {(result) => void} [onSuccess=null] 
+     * @param {(err: IError) => void} [onError=null] 
+     * @returns 
+     */
+    export var remove = function (
+        key: string, onSuccess: (result) => void = null, onError: (err: IError) => void = null
+    ) {
+        var query = {
+            From: table_name,
             Where: {
                 Key: key
             }
-        }
-        prcoessExecutionOfCode(<IWebWorkerRequest>{
+        } as IDelete;
+        prcoessExecutionOfCode({
             Name: 'remove',
-            Query: Query,
+            Query: query,
             OnSuccess: onSuccess,
             OnError: onError
-        });
+        } as IWebWorkerRequest);
         return this;
-    }
+    };
 }

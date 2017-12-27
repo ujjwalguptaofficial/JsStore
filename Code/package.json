@@ -6,7 +6,7 @@
   "scripts": {
     "pretest": "tslint JsStore/**/*.ts && tsc",
     "test": "karma start test/karma.config.js",
-    "prebuild": "tslint JsStore/**/*.ts",
+    "prebuild": "tslint JsStore/**/*.ts && tslint KeyStore/**/*.ts",
     "build": "tsc && uglifyjs output/jsstore.js --compress sequences=true,dead_code=true,conditionals=true,booleans=true,unused=true,if_return=true,join_vars=true,drop_console=true --source-map --mangle --output output/jsstore.min.js"
   },
   "repository": {

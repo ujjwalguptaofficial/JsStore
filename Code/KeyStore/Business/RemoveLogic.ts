@@ -1,57 +1,51 @@
 namespace KeyStore {
     export namespace Business {
         export class Remove extends Base {
-            Query: IDelete;
-            RowAffected: number = 0;
-            private remove = function () {
-                var That = this,
-                    removeData = function (column, value) {
-
-                        var CursorOpenRequest = That.ObjectStore.index(column).openCursor(IDBKeyRange.only(value));
-                        CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
-                            That.onErrorOccured(e);
-                        };
-                        CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                            if (Cursor) {
-                                Cursor.delete();
-                                ++That.RowAffected;
-                                Cursor.continue();
-                            }
-
-                        }
-
-                    }
-
-                for (var Column in this.Query.Where) {
-                    if (!That.ErrorOccured) {
-                        removeData(Column, That.Query.Where[Column]);
-                    }
-                    break;
-                }
-            }
-
-            constructor(query: IDelete, onSuccess: Function, onError: Function) {
+            _query: IDelete;
+            _rowAffected: number = 0;
+            constructor(query: IDelete, onSuccess: (recordRemoved: number) => void, onError: (err: IError) => void) {
                 super();
-                var That = this;
-                this.Query = query;
-                this.OnError = onError;
-                this.Transaction = DbConnection.transaction([query.From], "readwrite");
-                this.ObjectStore = this.Transaction.objectStore(query.From);
+                this._query = query;
+                this._onError = onError;
+                this._transaction = db_connection.transaction([query.From], "readwrite");
+                this._objectStore = this._transaction.objectStore(query.From);
 
-                this.Transaction.oncomplete = function () {
+                this._transaction.oncomplete = function () {
                     if (onSuccess != null) {
-                        onSuccess(That.RowAffected);
+                        onSuccess(this._rowAffected);
                     }
-                }
-                this.Transaction.onerror = function (e) {
-                    That.onErrorOccured(e);
-                }
+                }.bind(this);
 
+                this._transaction.onerror = function (e) {
+                    this.on_errorOccured(e);
+                }.bind(this);
                 this.remove();
             }
 
+            private remove = function () {
+                var removeData = function (column, value) {
+                    var cursor_request = this._objectStore.index(column).openCursor(IDBKeyRange.only(value));
+                    cursor_request.onerror = function (e) {
+                        this._errorOccured = true;
+                        this.on_errorOccured(e);
+                    }.bind(this);
+                    cursor_request.onsuccess = function (e) {
+                        var cursor: IDBCursorWithValue = e.target.result;
+                        if (cursor) {
+                            cursor.delete();
+                            ++this._rowAffected;
+                            cursor.continue();
+                        }
+                    }.bind(this);
+                }.bind(this);
+
+                for (var prop in this._query.Where) {
+                    if (!this._errorOccured) {
+                        removeData(prop, this._query.Where[prop]);
+                    }
+                    break;
+                }
+            };
         }
     }
 }

@@ -2,45 +2,13 @@ namespace KeyStore {
     export namespace Business {
         export class Set extends Base {
 
-            private setData = function (value) {
-                var That: Set = this,
-                    updateIfExistElseInsert = function () {
-                        var CursorOpenRequest = That.ObjectStore.index('Key').openCursor(IDBKeyRange.only(value['Key']));
-                        CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor: IDBCursorWithValue = (<any>e).target.result;
-                            if (Cursor) {
-                                Cursor.value['Value'] = value['Value'];
-                                Cursor.update(Cursor.value);
-                            }
-                            else {
-                                insertData();
-                            }
-                        }
-
-                        CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
-                            That.onErrorOccured(e);
-                        }
-
-                    },
-                    insertData = function () {
-                        var AddResult = That.ObjectStore.add(value);
-                        AddResult.onerror = function (e) {
-                            That.ErrorOccured = true;
-                            That.onErrorOccured(e);
-                        }
-                    }
-                updateIfExistElseInsert();
-            }
-
-            constructor(query: IInsert, onSuccess: Function, onError: Function) {
+            constructor(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
                 super();
                 try {
-                    var That = this;
-                    this.OnError = onError;
-                    this.Transaction = DbConnection.transaction([query.TableName], "readwrite");
-                    this.ObjectStore = this.Transaction.objectStore(query.TableName);
-                    this.Transaction.oncomplete = function (e) {
+                    this._onError = onError;
+                    this._transaction = db_connection.transaction([query.TableName], "readwrite");
+                    this._objectStore = this._transaction.objectStore(query.TableName);
+                    this._transaction.oncomplete = function (e) {
                         if (onSuccess != null) {
                             onSuccess();
                         }
@@ -52,6 +20,35 @@ namespace KeyStore {
                 }
             }
 
+            private setData = function (value) {
+                var updateIfExistElseInsert = function () {
+                    var cursor_request = this._objectStore.index('Key').openCursor(IDBKeyRange.only(value['Key']));
+                    cursor_request.onsuccess = function (e) {
+                        var cursor: IDBCursorWithValue = e.target.result;
+                        if (cursor) {
+                            cursor.value['Value'] = value['Value'];
+                            cursor.update(cursor.value);
+                        }
+                        else {
+                            insertData();
+                        }
+                    }.bind(this);
+
+                    cursor_request.onerror = function (e) {
+                        this._errorOccured = true;
+                        this.on_errorOccured(e);
+                    }.bind(this);
+
+                }.bind(this),
+                    insertData = function () {
+                        var add_result = this._objectStore.add(value);
+                        add_result.onerror = function (e) {
+                            this._errorOccured = true;
+                            this.on_errorOccured(e);
+                        }.bind(this);
+                    }.bind(this);
+                updateIfExistElseInsert();
+            };
         }
     }
 }

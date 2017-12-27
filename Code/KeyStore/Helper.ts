@@ -1,51 +1,45 @@
 namespace KeyStore {
     export var prcoessExecutionOfCode = function (request: IWebWorkerRequest) {
-        RequestQueue.push(request);
-        if (RequestQueue.length == 1) {
+        request_queue.push(request);
+        if (request_queue.length === 1) {
             executeCode();
         }
-    }
+    };
 
     export var executeCode = function () {
-        if (!IsCodeExecuting && RequestQueue.length > 0) {
-            IsCodeExecuting = true;
-            var Request = <IWebWorkerRequest>{
-                Name: RequestQueue[0].Name,
-                Query: RequestQueue[0].Query
-            }
-            executeCodeDirect(Request);
+        if (!is_code_executing && request_queue.length > 0) {
+            is_code_executing = true;
+            var request = {
+                Name: request_queue[0].Name,
+                Query: request_queue[0].Query
+            } as IWebWorkerRequest;
+            executeCodeDirect(request);
         }
-    }
+    };
 
     export var executeCodeDirect = function (request: IWebWorkerRequest) {
-        var That = this;
         new Business.Main(function (results) {
-            That.processFinishedRequest(results);
-        }).checkConnectionAndExecuteLogic(request);
-    }
+            this.processFinishedRequest(results);
+        }.bind(this)).checkConnectionAndExecuteLogic(request);
+    };
 
     export var processFinishedRequest = function (message: IWebWorkerResult) {
-        var FinishedRequest: IWebWorkerRequest = RequestQueue.shift();
-        IsCodeExecuting = false;
+        var finished_request: IWebWorkerRequest = request_queue.shift();
+        is_code_executing = false;
         if (message.ErrorOccured) {
-            if (FinishedRequest.OnError) {
-                FinishedRequest.OnError(message.ErrorDetails);
+            if (finished_request.OnError) {
+                finished_request.OnError(message.ErrorDetails);
             }
             else {
                 console.log(message.ErrorDetails);
             }
         }
         else {
-            if (FinishedRequest.OnSuccess) {
-                if (message.ReturnedValue != null) {
-                    FinishedRequest.OnSuccess(message.ReturnedValue);
-                }
-                else {
-                    FinishedRequest.OnSuccess();
-                }
+            if (finished_request.OnSuccess) {
+                finished_request.OnSuccess(message.ReturnedValue);
             }
         }
         this.executeCode();
-    }
+    };
 
 }

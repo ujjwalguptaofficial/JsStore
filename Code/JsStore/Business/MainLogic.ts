@@ -60,8 +60,8 @@ namespace JsStore {
                 }.bind(this),
                     onError = function (err) {
                         this.returnResult({
-                            ErrorOccured: true,
-                            ErrorDetails: err
+                            ErrorDetails: err,
+                            ErrorOccured: true
                         } as IWebWorkerResult);
                     }.bind(this);
 

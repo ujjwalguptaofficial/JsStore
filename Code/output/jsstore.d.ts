@@ -27,7 +27,7 @@ declare namespace KeyStore {
         Closed = "closed",
         NotStarted = "not_connected",
     }
-    interface KeyStoreStatus {
+    interface IKeyStoreStatus {
         ConStatus: ConnectionStatus;
         LastError: string;
     }
@@ -42,15 +42,15 @@ declare namespace KeyStore {
     interface IWebWorkerRequest {
         Name: string;
         Query: any;
-        OnSuccess: Function;
-        OnError: Function;
+        OnSuccess: (result) => void;
+        OnError: (err: IError) => void;
     }
     interface IWebWorkerResult {
         ErrorOccured: boolean;
         ErrorDetails: any;
         ReturnedValue: any;
     }
-    var RequestQueue: Array<IWebWorkerRequest>, TableName: string, IsCodeExecuting: boolean;
+    var request_queue: IWebWorkerRequest[], table_name: string, is_code_executing: boolean;
 }
 declare namespace KeyStore {
     var prcoessExecutionOfCode: (request: IWebWorkerRequest) => void;
@@ -61,64 +61,64 @@ declare namespace KeyStore {
 declare namespace KeyStore {
     namespace Business {
         class Base {
-            Results: any;
-            OnSuccess: Function;
-            OnError: Function;
-            ErrorOccured: boolean;
-            ErrorCount: number;
-            Transaction: IDBTransaction;
-            ObjectStore: IDBObjectStore;
-            protected onErrorOccured: (e: any) => void;
+            _results: any;
+            _onSuccess: (results) => void;
+            _onError: (err: IError) => void;
+            _errorOccured: boolean;
+            _errorCount: number;
+            _transaction: IDBTransaction;
+            _objectStore: IDBObjectStore;
+            protected on_errorOccured: (e: any) => void;
         }
     }
 }
 declare namespace KeyStore {
     namespace Business {
         class Get extends Base {
-            Query: ISelect;
+            _query: ISelect;
+            constructor(query: ISelect, onSuccess: (result) => void, onError: (err: IError) => void);
             private get;
-            constructor(query: ISelect, onSuccess: Function, onError: Function);
         }
     }
 }
 declare namespace KeyStore {
     namespace Business {
         class Set extends Base {
+            constructor(query: IInsert, onSuccess: () => void, onError: (err: IError) => void);
             private setData;
-            constructor(query: IInsert, onSuccess: Function, onError: Function);
         }
     }
 }
 declare namespace KeyStore {
     namespace Business {
         class Remove extends Base {
-            Query: IDelete;
-            RowAffected: number;
+            _query: IDelete;
+            _rowAffected: number;
+            constructor(query: IDelete, onSuccess: (recordRemoved: number) => void, onError: (err: IError) => void);
             private remove;
-            constructor(query: IDelete, onSuccess: Function, onError: Function);
         }
     }
 }
 declare namespace KeyStore {
     namespace Business {
         class InitDb {
-            constructor(dbName: string, tableName: string, onSuccess: Function, onError: Function);
+            constructor(dbName: string, tableName: string, onSuccess: () => void, onError: (err: IError) => void);
         }
     }
 }
 declare namespace KeyStore {
     namespace Business {
-        var DbConnection: any, Status: KeyStoreStatus;
+        var db_connection: any, status: IKeyStoreStatus;
         class Main {
-            OnSuccess: Function;
+            _onSuccess: () => void;
             constructor(onSuccess?: any);
+            set: (query: IInsert, onSuccess: () => void, onError: (err: IError) => void) => void;
+            remove: (query: IDelete, onSuccess: (result: any) => void, onError: (err: IError) => void) => void;
+            get: (query: ISelect, onSuccess: (result: any) => void, onError: (err: IError) => void) => void;
+            createDb: (tableName: any, onSuccess: () => void, onError: (err: IError) => void) => void;
             checkConnectionAndExecuteLogic: (request: IWebWorkerRequest) => void;
             private returnResult;
             private executeLogic;
-            set: (query: IInsert, onSuccess: Function, onError: Function) => void;
-            remove: (query: IDelete, onSuccess: Function, onError: Function) => void;
-            get: (query: ISelect, onSuccess: Function, onError: Function) => void;
-            createDb: (tableName: any, onSuccess: Function, onError: Function) => void;
         }
     }
 }
@@ -129,30 +129,33 @@ declare namespace KeyStore {
      */
     var init: () => void;
     /**
-    * return the value by key
-    *
-    * @param {string} key
-    * @param {Function} onSuccess
-    * @param {Function} [onError=null]
-    */
-    var get: (key: string, onSuccess: Function, onError?: Function) => any;
+     * return the value by key
+     *
+     * @param {string} key
+     * @param {(result) => void} onSuccess
+     * @param {(err: IError) => void} [onError=null]
+     * @returns
+     */
+    var get: (key: string, onSuccess: (result: any) => void, onError?: (err: IError) => void) => any;
     /**
-    * insert or update value
-    *
-    * @param {any} key
-    * @param {any} value
-    * @param {Function} [onSuccess=null]
-    * @param {Function} [onError=null]
-    */
-    var set: (key: any, value: any, onSuccess?: Function, onError?: Function) => any;
+     * insert or update value
+     *
+     * @param {any} key
+     * @param {any} value
+     * @param {(result) => void} [onSuccess]
+     * @param {(err: IError) => void} [onError]
+     * @returns
+     */
+    var set: (key: any, value: any, onSuccess?: (result: any) => void, onError?: (err: IError) => void) => any;
     /**
-    * delete value
-    *
-    * @param {string} key
-    * @param {Function} [onSuccess=null]
-    * @param {Function} [onError=null]
-    */
-    var remove: (key: string, onSuccess?: Function, onError?: Function) => any;
+     * delete value
+     *
+     * @param {string} key
+     * @param {(result) => void} [onSuccess=null]
+     * @param {(err: IError) => void} [onError=null]
+     * @returns
+     */
+    var remove: (key: string, onSuccess?: (result: any) => void, onError?: (err: IError) => void) => any;
 }
 declare namespace JsStore {
     enum Occurence {

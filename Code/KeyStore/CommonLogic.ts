@@ -1,13 +1,13 @@
 namespace KeyStore {
 
     export interface ISelect {
-        From: any,
-        Where: any
+        From: any;
+        Where: any;
     }
 
     export interface IDelete {
-        From: string,
-        Where: any
+        From: string;
+        Where: any;
     }
 
     export enum ConnectionStatus {
@@ -16,24 +16,24 @@ namespace KeyStore {
         NotStarted = "not_connected"
     }
 
-    export interface KeyStoreStatus {
-        ConStatus: ConnectionStatus,
-        LastError: string
+    export interface IKeyStoreStatus {
+        ConStatus: ConnectionStatus;
+        LastError: string;
     }
 
     export interface IInsert {
-        TableName: string,
+        TableName: string;
         Set: {
             Key: string,
             Value; any
-        }
+        };
     }
 
     export interface IWebWorkerRequest {
-        Name: string,
-        Query: any,
-        OnSuccess: Function,
-        OnError: Function
+        Name: string;
+        Query: any;
+        OnSuccess: (result) => void;
+        OnError: (err: IError) => void;
     }
 
     export interface IWebWorkerResult {
@@ -42,8 +42,8 @@ namespace KeyStore {
         ReturnedValue: any;
     }
 
-    export var RequestQueue: Array<IWebWorkerRequest> = [],
-        TableName = "LocalStore",
-        IsCodeExecuting = false;
+    export var request_queue: IWebWorkerRequest[] = [],
+        table_name = "LocalStore",
+        is_code_executing = false;
 
 }

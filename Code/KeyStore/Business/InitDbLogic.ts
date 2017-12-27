@@ -1,11 +1,9 @@
 namespace KeyStore {
     export namespace Business {
         export class InitDb {
-            constructor(dbName: string, tableName: string, onSuccess: Function, onError: Function) {
-                var That = this,
-                    DbRequest = self.indexedDB.open(dbName, 1);
-
-                DbRequest.onerror = function (event) {
+            constructor(dbName: string, tableName: string, onSuccess: () => void, onError: (err: IError) => void) {
+                var db_request = self.indexedDB.open(dbName, 1);
+                db_request.onerror = function (event) {
                     if ((event as any).target.error.name === 'InvalidStateError') {
                         JsStore.status = {
                             ConStatus: JsStore.Connection_Status.UnableToStart,
@@ -17,41 +15,41 @@ namespace KeyStore {
                     }
                 };
 
-                DbRequest.onsuccess = function (event) {
-                    Status.ConStatus = ConnectionStatus.Connected;
-                    DbConnection = DbRequest.result;
-                    DbConnection.onclose = function () {
-                        Status.ConStatus = ConnectionStatus.Closed;
-                        Status.LastError = "Connection Closed";
-                    }
+                db_request.onsuccess = function (event) {
+                    status.ConStatus = ConnectionStatus.Connected;
+                    db_connection = db_request.result;
+                    db_connection.onclose = function () {
+                        status.ConStatus = ConnectionStatus.Closed;
+                        status.LastError = "Connection Closed";
+                    };
 
-                    DbConnection.onversionchange = function (e) {
+                    db_connection.onversionchange = function (e) {
                         if (e.newVersion === null) { // An attempt is made to delete the db
                             e.target.close(); // Manually close our connection to the db
                         }
                     };
 
-                    DbConnection.onerror = function (e) {
-                        Status.LastError = "Error occured in connection :" + e.target.result;
-                    }
+                    db_connection.onerror = function (e) {
+                        status.LastError = "Error occured in connection :" + e.target.result;
+                    };
 
-                    DbConnection.onabort = function (e) {
-                        Status.ConStatus = ConnectionStatus.Closed;
-                        Status.LastError = "Connection aborted";
-                    }
+                    db_connection.onabort = function (e) {
+                        status.ConStatus = ConnectionStatus.Closed;
+                        status.LastError = "Connection aborted";
+                    };
 
                     if (onSuccess != null) {
                         onSuccess();
                     }
                 };
 
-                DbRequest.onupgradeneeded = function (event) {
-                    var db = (<any>event).target.result,
-                        Column = "Key";
+                db_request.onupgradeneeded = function (event: any) {
+                    var db = event.target.result,
+                        column = "Key";
                     db.createObjectStore(tableName, {
-                        keyPath: Column
-                    }).createIndex(Column, Column, { unique: true });
-                }
+                        keyPath: column
+                    }).createIndex(column, column, { unique: true });
+                };
             }
         }
     }

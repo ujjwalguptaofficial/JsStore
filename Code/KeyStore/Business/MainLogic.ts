@@ -1,87 +1,84 @@
 namespace KeyStore {
     export namespace Business {
-        export var DbConnection,
-            Status: KeyStoreStatus = <KeyStoreStatus>{
+        export var db_connection,
+            status: IKeyStoreStatus = {
                 ConStatus: ConnectionStatus.NotStarted,
                 LastError: ""
-            };
+            } as IKeyStoreStatus;
         export class Main {
-            OnSuccess: Function;
+            _onSuccess: () => void;
             constructor(onSuccess = null) {
-                this.OnSuccess = onSuccess;
+                this._onSuccess = onSuccess;
             }
 
+            public set = function (query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
+                var obj_insert = new Set(query, onSuccess, onError);
+            };
+
+            public remove = function (query: IDelete, onSuccess: (result) => void, onError: (err: IError) => void) {
+                var obj_delete = new Remove(query, onSuccess, onError);
+            };
+
+            public get = function (query: ISelect, onSuccess: (result) => void, onError: (err: IError) => void) {
+                var get_object = new Get(query, onSuccess, onError);
+            };
+
+            public createDb = function (tableName, onSuccess: () => void, onError: (err: IError) => void) {
+                var db_name = "KeyStore";
+                var init_db_object = new InitDb(db_name, tableName, onSuccess, onError);
+            };
+
             public checkConnectionAndExecuteLogic = function (request: IWebWorkerRequest) {
-                if (request.Name == 'create_db' || request.Name == 'open_db') {
+                if (request.Name === 'create_db' || request.Name === 'open_db') {
                     this.executeLogic(request);
                 }
                 else {
-                    if (Status.ConStatus == ConnectionStatus.Connected) {
+                    if (status.ConStatus === ConnectionStatus.Connected) {
                         this.executeLogic(request);
                     }
-                    else if (Status.ConStatus == ConnectionStatus.NotStarted) {
-                        var That = this;
+                    else if (status.ConStatus === ConnectionStatus.NotStarted) {
                         setTimeout(function () {
-                            That.checkConnectionAndExecuteLogic(request);
-                        }, 100);
+                            this.checkConnectionAndExecuteLogic(request);
+                        }.bind(this), 100);
                     }
-                    else if (Status.ConStatus == ConnectionStatus.Closed) {
-                        var That = this;
-                        this.createDb(TableName, function () {
-                            That.checkConnectionAndExecuteLogic(request);
-                        }, 100);
+                    else if (status.ConStatus === ConnectionStatus.Closed) {
+                        this.createDb(table_name, function () {
+                            this.checkConnectionAndExecuteLogic(request);
+                        }.bind(this), 100);
                     }
                 }
-            }
+            };
 
             private returnResult = function (result) {
-                if (this.OnSuccess) {
-                    this.OnSuccess(result);
+                if (this._onSuccess) {
+                    this._onSuccess(result);
                 }
-            }
+            };
 
             private executeLogic = function (request: IWebWorkerRequest) {
-                var That = this,
-                    OnSuccess = function (results) {
-                        That.returnResult(<IWebWorkerResult>{
-                            ReturnedValue: results
-                        });
-                    },
-                    OnError = function (err) {
-                        That.returnResult(<IWebWorkerResult>{
+                var onSuccess = function (results) {
+                    this.returnResult({
+                        ReturnedValue: results
+                    } as IWebWorkerResult);
+                }.bind(this),
+                    onError = function (err) {
+                        this.returnResult({
                             ErrorOccured: true,
                             ErrorDetails: err
-                        });
-                    }
+                        } as IWebWorkerResult);
+                    }.bind(this);
 
                 switch (request.Name) {
                     case 'get':
-                        this.get(request.Query, OnSuccess, OnError);
+                        this.get(request.Query, onSuccess, onError);
                         break;
-                    case 'set': this.set(request.Query, OnSuccess, OnError);
+                    case 'set': this.set(request.Query, onSuccess, onError);
                         break;
-                    case 'remove': this.remove(request.Query, OnSuccess, OnError);
+                    case 'remove': this.remove(request.Query, onSuccess, onError);
                         break;
-                    case 'create_db': this.createDb(request.Query, OnSuccess, OnError); break;
+                    case 'create_db': this.createDb(request.Query, onSuccess, onError); break;
                 }
-            }
-
-            public set = function (query: IInsert, onSuccess: Function, onError: Function) {
-                var ObjInsert = new Set(query, onSuccess, onError);
-            }
-
-            public remove = function (query: IDelete, onSuccess: Function, onError: Function) {
-                var ObjDelete = new Remove(query, onSuccess, onError);
-            }
-
-            public get = function (query: ISelect, onSuccess: Function, onError: Function) {
-                new Get(query, onSuccess, onError);
-            }
-
-            public createDb = function (tableName, onSuccess: Function, onError: Function) {
-                var DbName = "KeyStore";
-                new InitDb(DbName, tableName, onSuccess, onError);
-            }
+            };
         }
     }
 }
