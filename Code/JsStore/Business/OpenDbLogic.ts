@@ -3,8 +3,7 @@ namespace JsStore {
         export class OpenDb {
             constructor(dbVersion, onSuccess: () => void, onError: (err: IError) => void) {
                 if (active_db._name.length > 0) {
-                    var db_request = indexedDB.open(active_db._name, dbVersion),
-                        that = this;
+                    var db_request = indexedDB.open(active_db._name, dbVersion);
 
                     db_request.onerror = function (event) {
                         if (onError != null) {
@@ -38,7 +37,7 @@ namespace JsStore {
                         if (onSuccess != null) {
                             onSuccess();
                         }
-                    };
+                    }.bind(this);
                 }
                 else {
                     var error = "Database name is not supplied.";

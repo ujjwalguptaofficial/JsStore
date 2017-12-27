@@ -1634,7 +1634,7 @@ var JsStore;
         var OpenDb = /** @class */ (function () {
             function OpenDb(dbVersion, onSuccess, onError) {
                 if (Business.active_db._name.length > 0) {
-                    var db_request = indexedDB.open(Business.active_db._name, dbVersion), that = this;
+                    var db_request = indexedDB.open(Business.active_db._name, dbVersion);
                     db_request.onerror = function (event) {
                         if (onError != null) {
                             onError(event.target.error);
@@ -1662,7 +1662,7 @@ var JsStore;
                         if (onSuccess != null) {
                             onSuccess();
                         }
-                    };
+                    }.bind(this);
                 }
                 else {
                     var error = "Database name is not supplied.";
@@ -3957,7 +3957,7 @@ var JsStore;
                                 In: this._query.In,
                                 Where: where_qry,
                                 Set: this._query.Set
-                            });
+                            }).bind(this);
                         }.bind(this), this.OnError);
                     };
                     try {
@@ -3966,15 +3966,12 @@ var JsStore;
                         _this.checkSchema(query.Set, query.In);
                         if (!_this._errorOccured) {
                             _this._query = query;
-                            var that = _this;
                             var createTransaction = function () {
-                                that._transaction = Business.db_connection.transaction([query.In], "readwrite");
-                                that._objectStore = that._transaction.objectStore(query.In);
-                                that._transaction.oncomplete = function (e) {
-                                    that.onTransactionCompleted();
-                                };
-                                that._transaction.ontimeout = that.onTransactionTimeout;
-                            };
+                                this._transaction = Business.db_connection.transaction([query.In], "readwrite");
+                                this._objectStore = this._transaction.objectStore(query.In);
+                                this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                                this._transaction.ontimeout = this.onTransactionTimeout;
+                            }.bind(_this);
                             if (query.Where) {
                                 if (query.Where.Or) {
                                     _this.executeOrLogic();

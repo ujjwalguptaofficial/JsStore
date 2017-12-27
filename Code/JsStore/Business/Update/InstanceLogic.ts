@@ -10,15 +10,12 @@ namespace JsStore {
                         this.checkSchema(query.Set, query.In);
                         if (!this._errorOccured) {
                             this._query = query;
-                            var that = this;
                             var createTransaction = function () {
-                                that._transaction = db_connection.transaction([query.In], "readwrite");
-                                that._objectStore = that._transaction.objectStore(query.In);
-                                that._transaction.oncomplete = function (e) {
-                                    that.onTransactionCompleted();
-                                };
-                                (that._transaction as any).ontimeout = that.onTransactionTimeout;
-                            };
+                                this._transaction = db_connection.transaction([query.In], "readwrite");
+                                this._objectStore = this._transaction.objectStore(query.In);
+                                this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                                (this._transaction as any).ontimeout = this.onTransactionTimeout;
+                            }.bind(this);
 
                             if (query.Where) {
                                 if (query.Where.Or) {
@@ -77,7 +74,7 @@ namespace JsStore {
                             In: this._query.In,
                             Where: where_qry,
                             Set: this._query.Set
-                        });
+                        }).bind(this);
                     }.bind(this), this.OnError);
                 };
 
