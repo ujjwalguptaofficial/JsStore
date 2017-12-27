@@ -40,8 +40,8 @@ namespace JsStore {
                     }.bind(this);
                 }
                 else {
-                    var error = "Database name is not supplied.";
-                    throwError(error);
+                    var error = new Error(Error_Type.UndefinedDbName);
+                    error.throw();
                 }
             }
         }

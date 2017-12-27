@@ -5,7 +5,7 @@ module.exports = function (config) {
         frameworks: ['mocha', 'chai'],
         client: {
             mocha: {
-                timeout:20000 // 6 seconds - upped from 2 seconds
+                timeout: 20000 // 6 seconds - upped from 2 seconds
             }
         },
         files: [
@@ -49,7 +49,8 @@ module.exports = function (config) {
             }
         },
         autoWatch: false,
-        // concurrency: Infinity
+        // concurrency: Infinity,
+        // singleRun: false,
         singleRun: true,
         browserNoActivityTimeout: 120000,
     })

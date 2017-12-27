@@ -15,16 +15,16 @@ namespace JsStore {
             protected onErrorOccured = function (e, customError = false) {
                 ++this._errorCount;
                 if (this._errorCount === 1) {
-                    if (this.OnError != null) {
+                    if (this._onError != null) {
                         if (!customError) {
                             var error = {
                                 _message: (e as any).target.error.message,
                                 _type: (e as any).target.error.name
                             } as IError;
-                            this.OnError(error);
+                            this._onError(error);
                         }
                         else {
-                            this.OnError(e);
+                            this._onError(e);
                         }
                         logError(Error);
                     }
@@ -32,13 +32,15 @@ namespace JsStore {
             };
 
             protected onTransactionTimeout = function (e) {
-                console.log('transaction timed out');
+                console.error('transaction timed out');
             };
 
             protected onExceptionOccured = function (ex: DOMException, info) {
                 switch (ex.name) {
                     case 'NotFoundError':
-                        var error = new Error(Error_Type.TableNotExist, info).throw();
+                        var error = new Error(Error_Type.TableNotExist, info);
+                        this.onErrorOccured(error.get(), true);
+                        break;
                     default: console.error(ex);
                 }
             };

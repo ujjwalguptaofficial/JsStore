@@ -540,9 +540,6 @@ var JsStore;
         ConStatus: JsStore.Connection_Status.NotStarted,
         LastError: null
     }, JsStore.temp_results = [];
-    JsStore.throwError = function (error) {
-        throw error;
-    };
     JsStore.getObjectFirstKey = function (value) {
         for (var key in value) {
             return key;
@@ -572,25 +569,6 @@ var JsStore;
                 var key = keys[n];
                 obj[key.toLowerCase()] = obj[key];
                 delete obj[key];
-            }
-        };
-        /**
-         * determine and set the DataBase Type
-         *
-         *
-         * @memberOf MainLogic
-         */
-        Utils.setDbType = function () {
-            self.indexedDB = self.indexedDB || self.mozIndexedDB ||
-                self.webkitIndexedDB || self.msIndexedDB;
-            if (indexedDB) {
-                self.IDBTransaction = self.IDBTransaction || self.webkitIDBTransaction ||
-                    self.msIDBTransaction;
-                self.IDBKeyRange = self.IDBKeyRange || self.webkitIDBKeyRange ||
-                    self.msIDBKeyRange;
-            }
-            else {
-                JsStore.throwError('Your browser doesnot support IndexedDb');
             }
         };
         return Utils;
@@ -749,6 +727,7 @@ var JsStore;
         Error_Type["UndefinedColumn"] = "undefined_column";
         Error_Type["UndefinedValue"] = "undefined_value";
         Error_Type["UndefinedColumnName"] = "undefined_column_name";
+        Error_Type["UndefinedDbName"] = "undefined_database_name";
         Error_Type["UndefinedColumnValue"] = "undefined_column_value";
         Error_Type["NotArray"] = "not_array";
         Error_Type["NoValueSupplied"] = "no_value_supplied";
@@ -770,70 +749,74 @@ var JsStore;
             this.throw = function () {
                 throw this.get();
             };
-            this.print = function (isWarn) {
-                if (isWarn === void 0) { isWarn = false; }
-                var error_obj = this.get();
-                if (isWarn) {
-                    console.warn(error_obj);
-                }
-                else {
-                    console.error(error_obj);
-                }
+            this.logError = function () {
+                console.error(this.get());
             };
-            this.get = function () {
-                var error_obj = {
-                    _type: this._type,
-                };
+            this.logWarning = function () {
+                console.warn(this.get());
+            };
+            this.getMsg = function () {
+                var err_msg;
                 switch (this._type) {
                     case Error_Type.NotArray:
-                        error_obj._message = "Supplied value is not an array";
+                        err_msg = "Supplied value is not an array";
                         break;
                     case Error_Type.UndefinedColumn:
-                        error_obj._message = "Column is undefined in Where";
+                        err_msg = "Column is undefined in Where";
                         break;
                     case Error_Type.UndefinedValue:
-                        error_obj._message = "Value is undefined in Where";
+                        err_msg = "Value is undefined in Where";
                         break;
                     case Error_Type.UndefinedColumnName:
-                        error_obj._message = "Column name is undefined";
+                        err_msg = "Column name is undefined '" + this._info['TableName'] + "'";
+                        break;
+                    case Error_Type.UndefinedDbName:
+                        err_msg = "Database name is not supplied";
                         break;
                     case Error_Type.UndefinedColumnValue:
-                        error_obj._message = "Column value is undefined";
+                        err_msg = "Column value is undefined";
                         break;
                     case Error_Type.NoValueSupplied:
-                        error_obj._message = "No value supplied";
+                        err_msg = "No value supplied";
                         break;
                     case Error_Type.InvalidOp:
-                        error_obj._message = "Invalid Op Value '" + this._info['Op'] + "'";
+                        err_msg = "Invalid Op Value '" + this._info['Op'] + "'";
                         break;
                     case Error_Type.ColumnNotExist:
-                        error_obj._message = "Column '" + this._info['ColumnName'] + "' does not exist";
+                        err_msg = "Column '" + this._info['ColumnName'] + "' does not exist";
                         break;
                     case Error_Type.NullValue:
-                        error_obj._message = "Null value is not allowed for column '" + this._info['ColumnName'] + "'";
+                        err_msg = "Null value is not allowed for column '" + this._info['ColumnName'] + "'";
                         break;
                     case Error_Type.BadDataType:
-                        error_obj._message = "Supplied value for column '" + this._info['ColumnName'] +
+                        err_msg = "Supplied value for column '" + this._info['ColumnName'] +
                             "' does not have valid type";
                         break;
                     case Error_Type.NextJoinNotExist:
-                        error_obj._message = "Next join details not supplied";
+                        err_msg = "Next join details not supplied";
                         break;
                     case Error_Type.TableNotExist:
-                        error_obj._message = "Table '" + this._info['TableName'] + "' does not exist";
+                        err_msg = "Table '" + this._info['TableName'] + "' does not exist";
                         break;
                     case Error_Type.DbNotExist:
-                        error_obj._message = "Database '" + this._info['DbName'] + "' does not exist";
+                        err_msg = "Database '" + this._info['DbName'] + "' does not exist";
                         break;
                     default:
-                        error_obj._message = this._message;
+                        err_msg = this._message;
                         break;
                 }
-                return error_obj;
+                return err_msg;
             };
             this._type = type;
             this._info = info;
+            this._message = this.getMsg();
         }
+        Error.prototype.get = function () {
+            return {
+                _message: this._message,
+                _type: this._type
+            };
+        };
         return Error;
     }());
     JsStore.Error = Error;
@@ -848,7 +831,8 @@ var JsStore;
                     this._name = key.Name;
                 }
                 else {
-                    JsStore.throwError("Column Name is not defined for table:" + tableName);
+                    var err = new JsStore.Error(JsStore.Error_Type.UndefinedColumnName, { TableName: tableName });
+                    err.throw();
                 }
                 this._autoIncrement = key.AutoIncrement != null ? key.AutoIncrement : false;
                 this._primaryKey = key.PrimaryKey != null ? key.PrimaryKey : false;
@@ -1062,28 +1046,30 @@ var JsStore;
                     if (customError === void 0) { customError = false; }
                     ++this._errorCount;
                     if (this._errorCount === 1) {
-                        if (this.OnError != null) {
+                        if (this._onError != null) {
                             if (!customError) {
                                 var error = {
                                     _message: e.target.error.message,
                                     _type: e.target.error.name
                                 };
-                                this.OnError(error);
+                                this._onError(error);
                             }
                             else {
-                                this.OnError(e);
+                                this._onError(e);
                             }
                             JsStore.logError(JsStore.Error);
                         }
                     }
                 };
                 _this.onTransactionTimeout = function (e) {
-                    console.log('transaction timed out');
+                    console.error('transaction timed out');
                 };
                 _this.onExceptionOccured = function (ex, info) {
                     switch (ex.name) {
                         case 'NotFoundError':
-                            var error = new JsStore.Error(JsStore.Error_Type.TableNotExist, info).throw();
+                            var error = new JsStore.Error(JsStore.Error_Type.TableNotExist, info);
+                            this.onErrorOccured(error.get(), true);
+                            break;
                         default: console.error(ex);
                     }
                 };
@@ -1665,8 +1651,8 @@ var JsStore;
                     }.bind(this);
                 }
                 else {
-                    var error = "Database name is not supplied.";
-                    JsStore.throwError(error);
+                    var error = new JsStore.Error(JsStore.Error_Type.UndefinedDbName);
+                    error.throw();
                 }
             }
             return OpenDb;
@@ -1832,7 +1818,9 @@ var JsStore;
                 };
                 this.insert = function (query, onSuccess, onError) {
                     if (!Array.isArray(query.Values)) {
-                        JsStore.throwError("Value should be array :- supplied value is not array");
+                        var erro_obj = new JsStore.Error(JsStore.Error_Type.NotArray);
+                        erro_obj.logError();
+                        onError(erro_obj.get());
                     }
                     else {
                         var insert_object = new Business.Insert(query, onSuccess, onError);
@@ -1840,7 +1828,9 @@ var JsStore;
                 };
                 this.bulkInsert = function (query, onSuccess, onError) {
                     if (!Array.isArray(query.Values)) {
-                        JsStore.throwError("Value should be array :- supplied value is not array");
+                        var erro_obj = new JsStore.Error(JsStore.Error_Type.NotArray);
+                        erro_obj.logError();
+                        onError(erro_obj.get());
                     }
                     else {
                         var bulk_insert_object = new Business.BulkInsert(query, onSuccess, onError);
@@ -3272,7 +3262,8 @@ var JsStore;
                             this.goToWhereLogic();
                         }
                         catch (ex) {
-                            this.onExceptionOccured(ex, { TableName: query.From });
+                            this._errorOccured = true;
+                            this.onExceptionOccured.call(this, ex, { TableName: query.From });
                         }
                     };
                     _this.orQuerySuccess = function () {
@@ -3335,7 +3326,8 @@ var JsStore;
                         }
                     }
                     catch (ex) {
-                        _this.onExceptionOccured(ex, { TableName: query.From });
+                        _this._errorOccured = true;
+                        _this.onExceptionOccured.call(_this, ex, { TableName: query.From });
                     }
                     return _this;
                 }
@@ -3940,7 +3932,8 @@ var JsStore;
                             this.goToWhereLogic();
                         }
                         catch (ex) {
-                            this.onExceptionOccured(ex, { TableName: query.From });
+                            this._errorOccured = true;
+                            this.onExceptionOccured.call(this, ex, { TableName: query.From });
                         }
                     };
                     _this.executeOrLogic = function () {
@@ -3957,7 +3950,7 @@ var JsStore;
                                 In: this._query.In,
                                 Where: where_qry,
                                 Set: this._query.Set
-                            }).bind(this);
+                            });
                         }.bind(this), this.OnError);
                     };
                     try {
@@ -3991,7 +3984,8 @@ var JsStore;
                         }
                     }
                     catch (ex) {
-                        _this.onExceptionOccured(ex, { TableName: query.In });
+                        _this._errorOccured = true;
+                        _this.onExceptionOccured.call(_this, ex, { TableName: query.In });
                     }
                     return _this;
                 }
@@ -4041,7 +4035,8 @@ var JsStore;
                             }, this);
                         }
                         else {
-                            new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: tableName }).throw();
+                            this._error = new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: tableName }).get();
+                            this._errorOccured = true;
                         }
                     }
                     else {

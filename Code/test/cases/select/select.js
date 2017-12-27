@@ -10,7 +10,21 @@ describe('Test Select Api', function () {
         catch(function (err) {
             done(err);
         })
+    });
 
+    it('wrong table test', function (done) {
+        Con.select({
+            From: 'Customer'
+        }).
+        catch(function (err) {
+            console.log(err);
+            var error = {
+                _type: "table_not_exist",
+                _message: "Table 'Customer' does not exist"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
     });
 
     it('select with skip', function (done) {

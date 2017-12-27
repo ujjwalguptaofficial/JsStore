@@ -126,7 +126,9 @@ namespace JsStore {
 
             private insert = function (query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
                 if (!Array.isArray(query.Values)) {
-                    throwError("Value should be array :- supplied value is not array");
+                    var erro_obj = new Error(Error_Type.NotArray);
+                    erro_obj.logError();
+                    onError(erro_obj.get());
                 }
                 else {
                     var insert_object = new Insert(query, onSuccess, onError);
@@ -135,7 +137,9 @@ namespace JsStore {
 
             private bulkInsert = function (query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
                 if (!Array.isArray(query.Values)) {
-                    throwError("Value should be array :- supplied value is not array");
+                    var erro_obj = new Error(Error_Type.NotArray);
+                    erro_obj.logError();
+                    onError(erro_obj.get());
                 }
                 else {
                     var bulk_insert_object = new BulkInsert(query, onSuccess, onError);

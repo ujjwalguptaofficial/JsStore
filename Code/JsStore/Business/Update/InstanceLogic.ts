@@ -36,7 +36,8 @@ namespace JsStore {
                         }
                     }
                     catch (ex) {
-                        this.onExceptionOccured(ex, { TableName: query.In });
+                        this._errorOccured = true;
+                        this.onExceptionOccured.call(this, ex, { TableName: query.In });
                     }
                 }
 
@@ -54,7 +55,8 @@ namespace JsStore {
                         this.goToWhereLogic();
                     }
                     catch (ex) {
-                        this.onExceptionOccured(ex, { TableName: query.From });
+                        this._errorOccured = true;
+                        this.onExceptionOccured.call(this, ex, { TableName: query.From });
                     }
                 };
 
@@ -74,7 +76,7 @@ namespace JsStore {
                             In: this._query.In,
                             Where: where_qry,
                             Set: this._query.Set
-                        }).bind(this);
+                        });
                     }.bind(this), this.OnError);
                 };
 
@@ -132,7 +134,8 @@ namespace JsStore {
                             }, this);
                         }
                         else {
-                            new Error(Error_Type.TableNotExist, { TableName: tableName }).throw();
+                            this._error = new Error(Error_Type.TableNotExist, { TableName: tableName }).get();
+                            this._errorOccured = true;
                         }
                     }
                     else {

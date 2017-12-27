@@ -25,7 +25,8 @@ namespace JsStore {
                         }
                     }
                     catch (ex) {
-                        this.onExceptionOccured(ex, { TableName: query.From });
+                        this._errorOccured = true;
+                        this.onExceptionOccured.call(this, ex, { TableName: query.From });
                     }
                 }
 
@@ -68,7 +69,8 @@ namespace JsStore {
                         this.goToWhereLogic();
                     }
                     catch (ex) {
-                        this.onExceptionOccured(ex, { TableName: query.From });
+                        this._errorOccured = true;
+                        this.onExceptionOccured.call(this, ex, { TableName: query.From });
                     }
                 };
 

@@ -139,6 +139,7 @@ namespace JsStore {
         ErrorOccured: boolean;
         ErrorDetails: any;
         ReturnedValue: any;
+        ThrowError: boolean;
     }
 
     export interface IAggregate {

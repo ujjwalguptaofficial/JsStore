@@ -1,4 +1,19 @@
 describe('Test insert', function () {
+    it('wrong table test', function (done) {
+        Con.insert({
+            Into: 'Customer'
+        }).
+        catch(function (err) {
+            console.log(err);
+            var error = {
+                _type: "not_array",
+                _message: "Supplied value is not an array"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    });
+
     it('insert customers using promise', function (done) {
         $.getJSON("static/Customers.json", function (results) {
             Con.insert({
@@ -29,7 +44,7 @@ describe('Test insert', function () {
             });
         });
     });
-    
+
     it('insert Shippers using without promise', function (done) {
         $.getJSON("static/Shippers.json", function (results) {
             Con.insert({
@@ -45,7 +60,7 @@ describe('Test insert', function () {
             });
         });
     });
-    
+
     it('insert products - using Skip Data', function (done) {
         $.getJSON("static/Products.json", function (results) {
             Con.insert({
@@ -63,13 +78,13 @@ describe('Test insert', function () {
         });
     });
 
-    it('insert OrderDetails - using bulk insert', function (done) {
-        $.getJSON("static/OrderDetails.json", function (results) {
-            Con.bulkInsert({
-                Into: 'OrderDetails',
+    it('not null test', function (done) {
+        $.getJSON("static/Orders.json", function (results) {
+            Con.insert({
+                Into: 'Orders',
                 Values: results,
                 OnSuccess: function (results) {
-                    expect(results).to.be.an('undefined');
+                    expect(results).to.be.an('number').to.equal(196);
                     done();
                 },
                 OnError: function (err) {
@@ -78,5 +93,4 @@ describe('Test insert', function () {
             });
         });
     });
-
 });

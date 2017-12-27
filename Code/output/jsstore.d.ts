@@ -309,6 +309,7 @@ declare namespace JsStore {
         ErrorOccured: boolean;
         ErrorDetails: any;
         ReturnedValue: any;
+        ThrowError: boolean;
     }
     interface IAggregate {
         Max: any[];
@@ -320,7 +321,6 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     var enable_log: boolean, db_version: number, status: IJsStoreStatus, temp_results: any[];
-    var throwError: (error: any) => never;
     var getObjectFirstKey: (value: any) => string;
     var log: (msg: any) => void;
     var logError: (msg: any) => void;
@@ -328,13 +328,6 @@ declare namespace JsStore {
 declare namespace JsStore {
     class Utils {
         static convertObjectintoLowerCase(obj: any): void;
-        /**
-         * determine and set the DataBase Type
-         *
-         *
-         * @memberOf MainLogic
-         */
-        static setDbType: () => void;
     }
 }
 declare namespace JsStore {
@@ -384,6 +377,7 @@ declare namespace JsStore {
         UndefinedColumn = "undefined_column",
         UndefinedValue = "undefined_value",
         UndefinedColumnName = "undefined_column_name",
+        UndefinedDbName = "undefined_database_name",
         UndefinedColumnValue = "undefined_column_value",
         NotArray = "not_array",
         NoValueSupplied = "no_value_supplied",
@@ -406,11 +400,13 @@ declare namespace JsStore {
     class Error implements IError {
         _type: Error_Type;
         _message: string;
-        _info: any;
+        private _info;
         constructor(type: Error_Type, info?: any);
         throw: () => never;
-        print: (isWarn?: boolean) => void;
-        private get;
+        logError: () => void;
+        logWarning: () => void;
+        get(): IError;
+        private getMsg;
     }
 }
 declare namespace JsStore {

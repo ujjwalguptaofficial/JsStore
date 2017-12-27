@@ -20,6 +20,27 @@ describe('Test update Api', function () {
         })
     });
 
+    it('wrong table test', function (done) {
+        Con.update({
+            In: "Customerss",
+            Set: {
+                ContactName: 'Ujjwal',
+                City: 'Bhubaneswar'
+            },
+            Where: {
+                CustomerID: 1
+            }
+        }).
+        catch(function (err) {
+            var error = {
+                "_message": "Table 'Customerss' does not exist",
+                "_type": "table_not_exist"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    });
+
     it('update with like', function (done) {
         Con.update({
             In: 'Customers',

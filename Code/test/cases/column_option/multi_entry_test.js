@@ -105,6 +105,26 @@ describe('Multi Entry Test', function () {
         })
     });
 
+    it('unique column test', function (done) {
+        var value = {
+            name: "Ray",
+            tags: ["apple", "banana", "beer"]
+        };
+        Con.insert({
+            Into: 'people',
+            Values: [value]
+        }).
+        then(function (results) {
+            expect(results).to.be.an('array').length(1);
+            done();
+        }).
+        catch(function (err) {
+            console.log(err);
+            done();
+        })
+
+    });
+
 });
 
 MultiEntryTest = {

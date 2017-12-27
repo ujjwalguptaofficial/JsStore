@@ -16,7 +16,8 @@ namespace JsStore {
                     this._name = key.Name;
                 }
                 else {
-                    throwError("Column Name is not defined for table:" + tableName);
+                    var err = new Error(Error_Type.UndefinedColumnName, { TableName: tableName });
+                    err.throw();
                 }
                 this._autoIncrement = key.AutoIncrement != null ? key.AutoIncrement : false;
                 this._primaryKey = key.PrimaryKey != null ? key.PrimaryKey : false;
