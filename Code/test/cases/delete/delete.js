@@ -400,4 +400,18 @@ describe('Test delete Api', function () {
         });
 
     });
+
+    it('wrong table test - using promise', function (done) {
+        Con.delete({
+            From: 'Cusdtomers'
+        }).
+        catch(function (err) {
+            var error = {
+                "_message": "Table 'Cusdtomers' does not exist",
+                "_type": "table_not_exist"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        });
+    });
 });

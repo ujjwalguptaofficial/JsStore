@@ -209,4 +209,18 @@ describe('Test count Api', function () {
             }
         })
     });
+
+    it('wrong table test', function (done) {
+        Con.count({
+            From: 'Cusdtomers'
+        }).
+        catch(function (err) {
+            var error = {
+                "_message": "Table 'Cusdtomers' does not exist",
+                "_type": "table_not_exist"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        });
+    });
 });
