@@ -28,8 +28,8 @@ namespace JsStore {
                     var index = 0,
                         onValidationError = function (error: Error_Type, details: any) {
                             this._errorOccured = true;
-                            this.Error = new Error(error, details);
-                        };
+                            this._error = new Error(error, details).get();
+                        }.bind(this);
                     var checkAndModifyColumn = function (column: Column) {
                         var checkNotNullAndDataType = function () {
                             // check not null schema
@@ -72,13 +72,13 @@ namespace JsStore {
                                 }
                             }
                             else {
-                                this.onErrorOccured(this.Error, true);
+                                this.onErrorOccured(this._error, true);
                             }
                         }
                         else {
                             checkDatas();
                         }
-                    };
+                    }.bind(this);
                     checkAndModifyColumn(table._columns[index++]);
                 }.bind(this);
                 checkDatas();

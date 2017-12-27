@@ -78,19 +78,42 @@ describe('Test insert', function () {
         });
     });
 
+    it('insert without values Option', function (done) {
+        Con.insert({
+            Into: 'Customers',
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').to.equal(196);
+                done();
+            },
+            OnError: function (err) {
+                console.log(err);
+                var error = {
+                    _type: "not_array",
+                    _message: "Supplied value is not an array"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            }
+        });
+    });
+
     it('not null test', function (done) {
-        $.getJSON("static/Orders.json", function (results) {
-            Con.insert({
-                Into: 'Orders',
-                Values: results,
-                OnSuccess: function (results) {
-                    expect(results).to.be.an('number').to.equal(196);
-                    done();
-                },
-                OnError: function (err) {
-                    done(err);
-                }
-            });
+        Con.insert({
+            Into: 'Customers',
+            Values: [{}],
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').to.equal(196);
+                done();
+            },
+            OnError: function (err) {
+                console.log(err);
+                var error = {
+                    "_message": "Null value is not allowed for column 'CustomerName'",
+                    "_type": "null_value"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            }
         });
     });
 });

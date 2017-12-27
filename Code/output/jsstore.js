@@ -742,6 +742,7 @@ var JsStore;
         Error_Type["IndexedDbBlocked"] = "indexeddb_blocked";
         Error_Type["ConnectionAborted"] = "connection_aborted";
         Error_Type["ConnectionClosed"] = "connection_closed";
+        Error_Type["NotObject"] = "not_object";
     })(Error_Type = JsStore.Error_Type || (JsStore.Error_Type = {}));
     var Error = /** @class */ (function () {
         function Error(type, info) {
@@ -800,6 +801,9 @@ var JsStore;
                         break;
                     case Error_Type.DbNotExist:
                         err_msg = "Database '" + this._info['DbName'] + "' does not exist";
+                        break;
+                    case Error_Type.NotObject:
+                        err_msg = "supplied value is not object";
                         break;
                     default:
                         err_msg = this._message;
@@ -1450,8 +1454,8 @@ var JsStore;
                     var checkAndModifyValue = function () {
                         var index = 0, onValidationError = function (error, details) {
                             this._errorOccured = true;
-                            this.Error = new JsStore.Error(error, details);
-                        };
+                            this._error = new JsStore.Error(error, details).get();
+                        }.bind(this);
                         var checkAndModifyColumn = function (column) {
                             var checkNotNullAndDataType = function () {
                                 // check not null schema
@@ -1485,13 +1489,13 @@ var JsStore;
                                     }
                                 }
                                 else {
-                                    this.onErrorOccured(this.Error, true);
+                                    this.onErrorOccured(this._error, true);
                                 }
                             }
                             else {
                                 checkDatas();
                             }
-                        };
+                        }.bind(this);
                         checkAndModifyColumn(table._columns[index++]);
                     }.bind(this);
                     checkDatas();
@@ -3990,7 +3994,7 @@ var JsStore;
                     return _this;
                 }
                 Instance.prototype.checkSchema = function (suppliedValue, tableName) {
-                    if (suppliedValue) {
+                    if (typeof suppliedValue === 'object') {
                         var current_table = this.getTable(tableName);
                         if (current_table) {
                             var onValidationError = function (err, details) {
@@ -4040,6 +4044,7 @@ var JsStore;
                         }
                     }
                     else {
+                        this._error = new JsStore.Error(JsStore.Error_Type.NotObject).get();
                         this._errorOccured = true;
                     }
                 };

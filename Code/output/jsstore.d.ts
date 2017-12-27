@@ -392,6 +392,7 @@ declare namespace JsStore {
         IndexedDbBlocked = "indexeddb_blocked",
         ConnectionAborted = "connection_aborted",
         ConnectionClosed = "connection_closed",
+        NotObject = "not_object",
     }
     interface IError {
         _type: Error_Type;

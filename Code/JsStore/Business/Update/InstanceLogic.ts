@@ -81,7 +81,7 @@ namespace JsStore {
                 };
 
                 private checkSchema(suppliedValue, tableName: string) {
-                    if (suppliedValue) {
+                    if (typeof suppliedValue === 'object') {
                         var current_table: Table = this.getTable(tableName);
                         if (current_table) {
                             var onValidationError = function (err: Error_Type, details: any) {
@@ -139,6 +139,7 @@ namespace JsStore {
                         }
                     }
                     else {
+                        this._error = new Error(Error_Type.NotObject).get();
                         this._errorOccured = true;
                     }
                 }

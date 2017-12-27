@@ -41,6 +41,41 @@ describe('Test update Api', function () {
         })
     });
 
+    it('update without Set option', function (done) {
+        Con.update({
+            In: "Customerss",
+            Where: {
+                CustomerID: 1
+            }
+        }).
+        catch(function (err) {
+            var error = {
+                "_message": "supplied value is not object",
+                "_type": "not_object"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    });
+
+    it('update with invalid Set data', function (done) {
+        Con.update({
+            In: "Customers",
+            Where: {
+                CustomerID: 1
+            },
+            Set: 'sss'
+        }).
+        catch(function (err) {
+            var error = {
+                "_message": "supplied value is not object",
+                "_type": "not_object"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    });
+
     it('update with like', function (done) {
         Con.update({
             In: 'Customers',

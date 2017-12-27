@@ -17,7 +17,8 @@ namespace JsStore {
         IndexedDbUndefined = "indexeddb_undefined",
         IndexedDbBlocked = "indexeddb_blocked",
         ConnectionAborted = "connection_aborted",
-        ConnectionClosed = "connection_closed"
+        ConnectionClosed = "connection_closed",
+        NotObject = "not_object"
     }
 
     export interface IError {
@@ -99,6 +100,9 @@ namespace JsStore {
                     break;
                 case Error_Type.DbNotExist:
                     err_msg = "Database '" + this._info['DbName'] + "' does not exist";
+                    break;
+                case Error_Type.NotObject:
+                    err_msg = "supplied value is not object";
                     break;
                 default:
                     err_msg = this._message;
