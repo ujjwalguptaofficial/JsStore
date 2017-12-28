@@ -1439,18 +1439,18 @@ var JsStore;
                 _this.onTransactionCompleted = function () {
                     this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
                 };
-                _this.checkModifyInsertValues = function (table, values) {
-                    var value_index = 0, value, table_name = table._name, checkDatas = function () {
-                        value = values[value_index++];
+                _this.checkModifyInsertValues = function () {
+                    var value_index = 0, value, table_name = this._table._name, checkDatas = function () {
+                        value = this._query.Values[value_index++];
                         if (value) {
                             checkAndModifyValue();
                         }
                         else {
-                            this.insertData(values);
+                            this.insertData();
                         }
                     }.bind(this);
                     var checkAndModifyValue = function () {
-                        var index = 0, onValidationError = function (error, details) {
+                        var column_index = 0, onValidationError = function (error, details) {
                             this._errorOccured = true;
                             this._error = new JsStore.Error(error, details).get();
                         }.bind(this);
@@ -1467,13 +1467,13 @@ var JsStore;
                                     else if (column._dataType && typeof value[column._name] !== column._dataType) {
                                         onValidationError(JsStore.Error_Type.BadDataType, { ColumnName: column._name });
                                     }
-                                    checkAndModifyColumn(table._columns[index++]);
-                                };
+                                    checkAndModifyColumn(this._table._columns[column_index++]);
+                                }.bind(this);
                                 var saveAutoIncrementValue = function () {
-                                    KeyStore.get("JsStore_" + Business.active_db._name + "_" + table_name + "_" + column._name + "_Value", function (columnValue) {
+                                    var auto_increment_key = "JsStore_" + Business.active_db._name + "_" + table_name + "_" + column._name + "_Value";
+                                    KeyStore.get(auto_increment_key, function (columnValue) {
                                         value[column._name] = ++columnValue;
-                                        KeyStore.set("JsStore_" + Business.active_db._name + "_" + table_name + "_" + column._name + "_Value", columnValue);
-                                        checkNotNullAndDataType();
+                                        KeyStore.set(auto_increment_key, columnValue, checkNotNullAndDataType);
                                     });
                                 };
                                 if (column) {
@@ -1494,7 +1494,7 @@ var JsStore;
                                 }
                             }
                         }.bind(this);
-                        checkAndModifyColumn(table._columns[index++]);
+                        checkAndModifyColumn(this._table._columns[column_index++]);
                     }.bind(this);
                     checkDatas();
                 };
@@ -1513,7 +1513,7 @@ var JsStore;
             __extends(Insert, _super);
             function Insert(query, onSuccess, onError) {
                 var _this = _super.call(this) || this;
-                _this.insertData = function (values) {
+                _this.insertData = function () {
                     var value_index = 0, is_return = this._query.Return, insertDataintoTable;
                     if (is_return) {
                         insertDataintoTable = function (value) {
@@ -1522,7 +1522,7 @@ var JsStore;
                                 add_result.onerror = this.onErrorOccured.bind(this);
                                 add_result.onsuccess = function (e) {
                                     this.ValuesAffected.push(value);
-                                    insertDataintoTable(values[value_index++]);
+                                    insertDataintoTable(this._query.Values[value_index++]);
                                 }.bind(this);
                             }
                         }.bind(this);
@@ -1534,7 +1534,7 @@ var JsStore;
                                 add_result.onerror = this.onErrorOccured.bind(this);
                                 add_result.onsuccess = function (e) {
                                     ++this._rowAffected;
-                                    insertDataintoTable(values[value_index++]);
+                                    insertDataintoTable(this._query.Values[value_index++]);
                                 }.bind(this);
                             }
                         }.bind(this);
@@ -1542,23 +1542,19 @@ var JsStore;
                     this._transaction = Business.db_connection.transaction([this._query.Into], "readwrite");
                     var object_store = this._transaction.objectStore(this._query.Into);
                     this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                    insertDataintoTable(values[value_index++]);
+                    insertDataintoTable(this._query.Values[value_index++]);
                 };
                 try {
                     _this._query = query;
                     _this._onSuccess = onSuccess;
                     _this._onError = onError;
-                    var table = _this.getTable(query.Into);
-                    if (table) {
+                    _this._table = _this.getTable(query.Into);
+                    if (_this._table) {
                         if (_this._query.SkipDataCheck) {
-                            _this.insertData(_this._query.Values);
-                            // remove values
-                            _this._query.Values = undefined;
+                            _this.insertData();
                         }
                         else {
-                            _this.checkModifyInsertValues(table, _this._query.Values);
-                            // remove values
-                            _this._query.Values = undefined;
+                            _this.checkModifyInsertValues();
                         }
                     }
                     else {

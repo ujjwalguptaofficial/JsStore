@@ -517,8 +517,9 @@ declare namespace JsStore {
         class InsertHelper extends Base {
             _valuesAffected: any[];
             _query: IInsert;
+            _table: Table;
             onTransactionCompleted: () => void;
-            protected checkModifyInsertValues: (table: Table, values: any) => void;
+            protected checkModifyInsertValues: () => void;
         }
     }
 }

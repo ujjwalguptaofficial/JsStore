@@ -3,22 +3,23 @@ namespace JsStore {
         export class InsertHelper extends Base {
             _valuesAffected = [];
             _query: IInsert;
+            _table: Table;
 
             public onTransactionCompleted = function () {
                 this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
             };
 
-            protected checkModifyInsertValues = function (table: Table, values) {
+            protected checkModifyInsertValues = function () {
                 var value_index = 0,
                     value,
-                    table_name = table._name,
+                    table_name = this._table._name,
                     checkDatas = function () {
-                        value = values[value_index++];
+                        value = this._query.Values[value_index++];
                         if (value) {
                             checkAndModifyValue();
                         }
                         else {
-                            this.insertData(values);
+                            this.insertData();
                         }
                     }.bind(this);
                 var checkAndModifyValue = function () {
@@ -41,18 +42,19 @@ namespace JsStore {
                                 else if (column._dataType && typeof value[column._name] !== column._dataType) {
                                     onValidationError(Error_Type.BadDataType, { ColumnName: column._name });
                                 }
-                                checkAndModifyColumn(table._columns[column_index++]);
-                            };
+                                checkAndModifyColumn(this._table._columns[column_index++]);
+                            }.bind(this);
                             var saveAutoIncrementValue = function () {
+                                var auto_increment_key =
+                                    "JsStore_" + active_db._name + "_" + table_name + "_" + column._name + "_Value";
                                 KeyStore.get(
-                                    "JsStore_" + active_db._name + "_" + table_name + "_" + column._name + "_Value",
+                                    auto_increment_key,
                                     function (columnValue: number) {
                                         value[column._name] = ++columnValue;
                                         KeyStore.set(
-                                            "JsStore_" + active_db._name + "_" + table_name + "_" + column._name + "_Value",
-                                            columnValue
-                                        );
-                                        checkNotNullAndDataType();
+                                            auto_increment_key,
+                                            columnValue,
+                                            checkNotNullAndDataType);
                                     }
                                 );
                             };
@@ -75,7 +77,7 @@ namespace JsStore {
                             }
                         }
                     }.bind(this);
-                    checkAndModifyColumn(table._columns[column_index++]);
+                    checkAndModifyColumn(this._table._columns[column_index++]);
                 }.bind(this);
                 checkDatas();
             };
