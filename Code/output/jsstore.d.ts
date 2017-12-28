@@ -514,19 +514,29 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     namespace Business {
-        class InsertHelper extends Base {
-            _valuesAffected: any[];
-            _query: IInsert;
+        class InsertHelper {
             _table: Table;
-            onTransactionCompleted: () => void;
-            protected checkModifyInsertValues: () => void;
+            _values: any[];
+            _valueIndex: number;
+            _errorOccured: boolean;
+            _error: Error;
+            onFinish: (isError: boolean) => void;
+            constructor(table: Table, values: any[]);
+            checkAndModifyValues: (onFinish: (isError: boolean) => void) => void;
+            private checkRowValue;
+            private checkAndModifyValue;
+            private onValidationError;
         }
     }
 }
 declare namespace JsStore {
     namespace Business {
-        class Insert extends InsertHelper {
+        class Insert extends Base {
+            _valuesAffected: any[];
+            _query: IInsert;
+            _table: Table;
             constructor(query: IInsert, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void);
+            onTransactionCompleted: () => void;
             private insertData;
         }
     }
