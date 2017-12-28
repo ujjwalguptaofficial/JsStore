@@ -14,9 +14,6 @@ namespace JsStore {
                     table_name = table._name,
                     checkDatas = function () {
                         value = values[value_index++];
-                        checkInternal();
-                    }.bind(this),
-                    checkInternal = function () {
                         if (value) {
                             checkAndModifyValue();
                         }
@@ -25,39 +22,41 @@ namespace JsStore {
                         }
                     }.bind(this);
                 var checkAndModifyValue = function () {
-                    var index = 0,
+                    var column_index = 0,
                         onValidationError = function (error: Error_Type, details: any) {
                             this._errorOccured = true;
                             this._error = new Error(error, details).get();
                         }.bind(this);
                     var checkAndModifyColumn = function (column: Column) {
-                        var checkNotNullAndDataType = function () {
-                            // check not null schema
-                            if (column._notNull && isNull(value[column._name])) {
-                                onValidationError(Error_Type.NullValue, { ColumnName: column._name });
-                            }
-                            // check datatype
-                            else if (column._dataType && typeof value[column._name] !== column._dataType) {
-                                onValidationError(Error_Type.BadDataType, { ColumnName: column._name });
-                            }
-                            checkAndModifyColumn(table._columns[index++]);
-                        };
-                        var saveAutoIncrementValue = function () {
-                            KeyStore.get(
-                                "JsStore_" + active_db._name + "_" + table_name + "_" + column._name + "_Value",
-                                function (columnValue: number) {
-                                    value[column._name] = ++columnValue;
-                                    KeyStore.set(
-                                        "JsStore_" + active_db._name + "_" + table_name + "_" + column._name + "_Value",
-                                        columnValue
-                                    );
-                                    checkNotNullAndDataType();
+                        if (this._errorOccured === true) {
+                            this.onErrorOccured(this._error, true);
+                        }
+                        else {
+                            var checkNotNullAndDataType = function () {
+                                // check not null schema
+                                if (column._notNull && isNull(value[column._name])) {
+                                    onValidationError(Error_Type.NullValue, { ColumnName: column._name });
                                 }
-                            );
-                        };
-
-                        if (column) {
-                            if (!this._errorOccured) {
+                                // check datatype
+                                else if (column._dataType && typeof value[column._name] !== column._dataType) {
+                                    onValidationError(Error_Type.BadDataType, { ColumnName: column._name });
+                                }
+                                checkAndModifyColumn(table._columns[column_index++]);
+                            };
+                            var saveAutoIncrementValue = function () {
+                                KeyStore.get(
+                                    "JsStore_" + active_db._name + "_" + table_name + "_" + column._name + "_Value",
+                                    function (columnValue: number) {
+                                        value[column._name] = ++columnValue;
+                                        KeyStore.set(
+                                            "JsStore_" + active_db._name + "_" + table_name + "_" + column._name + "_Value",
+                                            columnValue
+                                        );
+                                        checkNotNullAndDataType();
+                                    }
+                                );
+                            };
+                            if (column) {
                                 // check auto increment scheme
                                 if (column._autoIncrement) {
                                     saveAutoIncrementValue();
@@ -72,14 +71,11 @@ namespace JsStore {
                                 }
                             }
                             else {
-                                this.onErrorOccured(this._error, true);
+                                checkDatas();
                             }
                         }
-                        else {
-                            checkDatas();
-                        }
                     }.bind(this);
-                    checkAndModifyColumn(table._columns[index++]);
+                    checkAndModifyColumn(table._columns[column_index++]);
                 }.bind(this);
                 checkDatas();
             };

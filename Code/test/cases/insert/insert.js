@@ -116,4 +116,50 @@ describe('Test insert', function () {
             }
         });
     });
+
+    it('not null test for last column', function (done) {
+        var value = {
+            ShipperName: 'dsfgb'
+        }
+        Con.insert({
+            Into: 'Shippers',
+            Values: [value],
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').to.equal(3);
+                done();
+            },
+            OnError: function (err) {
+                console.log(err);
+                var error = {
+                    "_message": "Null value is not allowed for column 'Phone'",
+                    "_type": "null_value"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            }
+        });
+    });
+
+    it('wrong data type test', function (done) {
+        var value = {
+            ShipperName: 'dsfgb',
+            Phone: 91234
+        }
+        Con.insert({
+            Into: 'Shippers',
+            Values: [value],
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').to.equal(3);
+                done();
+            },
+            OnError: function (err) {
+                var error = {
+                    "_message": "Supplied value for column 'Phone' does not have valid type",
+                    "_type": "bad_data_type"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            }
+        });
+    });
 });

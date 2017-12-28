@@ -1442,8 +1442,6 @@ var JsStore;
                 _this.checkModifyInsertValues = function (table, values) {
                     var value_index = 0, value, table_name = table._name, checkDatas = function () {
                         value = values[value_index++];
-                        checkInternal();
-                    }.bind(this), checkInternal = function () {
                         if (value) {
                             checkAndModifyValue();
                         }
@@ -1457,25 +1455,28 @@ var JsStore;
                             this._error = new JsStore.Error(error, details).get();
                         }.bind(this);
                         var checkAndModifyColumn = function (column) {
-                            var checkNotNullAndDataType = function () {
-                                // check not null schema
-                                if (column._notNull && JsStore.isNull(value[column._name])) {
-                                    onValidationError(JsStore.Error_Type.NullValue, { ColumnName: column._name });
-                                }
-                                else if (column._dataType && typeof value[column._name] !== column._dataType) {
-                                    onValidationError(JsStore.Error_Type.BadDataType, { ColumnName: column._name });
-                                }
-                                checkAndModifyColumn(table._columns[index++]);
-                            };
-                            var saveAutoIncrementValue = function () {
-                                KeyStore.get("JsStore_" + Business.active_db._name + "_" + table_name + "_" + column._name + "_Value", function (columnValue) {
-                                    value[column._name] = ++columnValue;
-                                    KeyStore.set("JsStore_" + Business.active_db._name + "_" + table_name + "_" + column._name + "_Value", columnValue);
-                                    checkNotNullAndDataType();
-                                });
-                            };
-                            if (column) {
-                                if (!this._errorOccured) {
+                            if (this._errorOccured === true) {
+                                this.onErrorOccured(this._error, true);
+                            }
+                            else {
+                                var checkNotNullAndDataType = function () {
+                                    // check not null schema
+                                    if (column._notNull && JsStore.isNull(value[column._name])) {
+                                        onValidationError(JsStore.Error_Type.NullValue, { ColumnName: column._name });
+                                    }
+                                    else if (column._dataType && typeof value[column._name] !== column._dataType) {
+                                        onValidationError(JsStore.Error_Type.BadDataType, { ColumnName: column._name });
+                                    }
+                                    checkAndModifyColumn(table._columns[index++]);
+                                };
+                                var saveAutoIncrementValue = function () {
+                                    KeyStore.get("JsStore_" + Business.active_db._name + "_" + table_name + "_" + column._name + "_Value", function (columnValue) {
+                                        value[column._name] = ++columnValue;
+                                        KeyStore.set("JsStore_" + Business.active_db._name + "_" + table_name + "_" + column._name + "_Value", columnValue);
+                                        checkNotNullAndDataType();
+                                    });
+                                };
+                                if (column) {
                                     // check auto increment scheme
                                     if (column._autoIncrement) {
                                         saveAutoIncrementValue();
@@ -1489,11 +1490,8 @@ var JsStore;
                                     }
                                 }
                                 else {
-                                    this.onErrorOccured(this._error, true);
+                                    checkDatas();
                                 }
-                            }
-                            else {
-                                checkDatas();
                             }
                         }.bind(this);
                         checkAndModifyColumn(table._columns[index++]);
