@@ -1,8 +1,9 @@
 /** 
- * @license :JsStore.js - v1.3.2 - 15/12/2017
+ * @license :JsStore.js - v1.3.3 - 28/12/2017
  * https://github.com/ujjwalguptaofficial/JsStore
- * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
-declare module KeyStore {
+ * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT 
+ */
+declare namespace KeyStore {
     interface IError {
         Name: string;
         Value: string;
@@ -17,7 +18,7 @@ declare module KeyStore {
         static setDbType: () => void;
     }
 }
-declare module KeyStore {
+declare namespace KeyStore {
     interface ISelect {
         From: any;
         Where: any;
@@ -31,7 +32,7 @@ declare module KeyStore {
         Closed = "closed",
         NotStarted = "not_connected",
     }
-    interface KeyStoreStatus {
+    interface IKeyStoreStatus {
         ConStatus: ConnectionStatus;
         LastError: string;
     }
@@ -46,147 +47,133 @@ declare module KeyStore {
     interface IWebWorkerRequest {
         Name: string;
         Query: any;
-        OnSuccess: Function;
-        OnError: Function;
+        OnSuccess: (result) => void;
+        OnError: (err: IError) => void;
     }
     interface IWebWorkerResult {
         ErrorOccured: boolean;
         ErrorDetails: any;
         ReturnedValue: any;
     }
-    var RequestQueue: Array<IWebWorkerRequest>, TableName: string, IsCodeExecuting: boolean;
+    var request_queue: IWebWorkerRequest[], table_name: string, is_code_executing: boolean;
 }
-declare module KeyStore {
+declare namespace KeyStore {
     var prcoessExecutionOfCode: (request: IWebWorkerRequest) => void;
     var executeCode: () => void;
     var executeCodeDirect: (request: IWebWorkerRequest) => void;
     var processFinishedRequest: (message: IWebWorkerResult) => void;
 }
-declare module KeyStore {
-    module Business {
+declare namespace KeyStore {
+    namespace Business {
         class Base {
-            Results: any;
-            OnSuccess: Function;
-            OnError: Function;
-            ErrorOccured: boolean;
-            ErrorCount: number;
-            Transaction: IDBTransaction;
-            ObjectStore: IDBObjectStore;
-            protected onErrorOccured: (e: any) => void;
+            _results: any;
+            _onSuccess: (results) => void;
+            _onError: (err: IError) => void;
+            _errorOccured: boolean;
+            _errorCount: number;
+            _transaction: IDBTransaction;
+            _objectStore: IDBObjectStore;
+            protected on_errorOccured: (e: any) => void;
         }
     }
 }
-declare module KeyStore {
-    module Business {
+declare namespace KeyStore {
+    namespace Business {
         class Get extends Base {
-            Query: ISelect;
+            _query: ISelect;
+            constructor(query: ISelect, onSuccess: (result) => void, onError: (err: IError) => void);
             private get;
-            constructor(query: ISelect, onSuccess: Function, onError: Function);
         }
     }
 }
-declare module KeyStore {
-    module Business {
+declare namespace KeyStore {
+    namespace Business {
         class Set extends Base {
+            constructor(query: IInsert, onSuccess: () => void, onError: (err: IError) => void);
             private setData;
-            constructor(query: IInsert, onSuccess: Function, onError: Function);
         }
     }
 }
-declare module KeyStore {
-    module Business {
+declare namespace KeyStore {
+    namespace Business {
         class Remove extends Base {
-            Query: IDelete;
-            RowAffected: number;
+            _query: IDelete;
+            _rowAffected: number;
+            constructor(query: IDelete, onSuccess: (recordRemoved: number) => void, onError: (err: IError) => void);
             private remove;
-            constructor(query: IDelete, onSuccess: Function, onError: Function);
         }
     }
 }
-declare module KeyStore {
-    module Business {
+declare namespace KeyStore {
+    namespace Business {
         class InitDb {
-            constructor(dbName: string, tableName: string, onSuccess: Function, onError: Function);
+            constructor(dbName: string, tableName: string, onSuccess: () => void, onError: (err: IError) => void);
         }
     }
 }
-declare module KeyStore {
-    module Business {
-        var DbConnection: any, Status: KeyStoreStatus;
+declare namespace KeyStore {
+    namespace Business {
+        var db_connection: any, status: IKeyStoreStatus;
         class Main {
-            OnSuccess: Function;
+            _onSuccess: () => void;
             constructor(onSuccess?: any);
+            set: (query: IInsert, onSuccess: () => void, onError: (err: IError) => void) => void;
+            remove: (query: IDelete, onSuccess: (result: any) => void, onError: (err: IError) => void) => void;
+            get: (query: ISelect, onSuccess: (result: any) => void, onError: (err: IError) => void) => void;
+            createDb: (tableName: any, onSuccess: () => void, onError: (err: IError) => void) => void;
             checkConnectionAndExecuteLogic: (request: IWebWorkerRequest) => void;
             private returnResult;
             private executeLogic;
-            set: (query: IInsert, onSuccess: Function, onError: Function) => void;
-            remove: (query: IDelete, onSuccess: Function, onError: Function) => void;
-            get: (query: ISelect, onSuccess: Function, onError: Function) => void;
-            createDb: (tableName: any, onSuccess: Function, onError: Function) => void;
         }
     }
 }
-declare module KeyStore {
+declare namespace KeyStore {
     /**
      * Initialize KeyStore
      *
      */
     var init: () => void;
     /**
-    * return the value by key
-    *
-    * @param {string} key
-    * @param {Function} onSuccess
-    * @param {Function} [onError=null]
-    */
-    var get: (key: string, onSuccess: Function, onError?: Function) => any;
+     * return the value by key
+     *
+     * @param {string} key
+     * @param {(result) => void} onSuccess
+     * @param {(err: IError) => void} [onError=null]
+     * @returns
+     */
+    var get: (key: string, onSuccess: (result: any) => void, onError?: (err: IError) => void) => any;
     /**
-    * insert or update value
-    *
-    * @param {any} key
-    * @param {any} value
-    * @param {Function} [onSuccess=null]
-    * @param {Function} [onError=null]
-    */
-    var set: (key: any, value: any, onSuccess?: Function, onError?: Function) => any;
+     * insert or update value
+     *
+     * @param {any} key
+     * @param {any} value
+     * @param {(result) => void} [onSuccess]
+     * @param {(err: IError) => void} [onError]
+     * @returns
+     */
+    var set: (key: any, value: any, onSuccess?: (result: any) => void, onError?: (err: IError) => void) => any;
     /**
-    * delete value
-    *
-    * @param {string} key
-    * @param {Function} [onSuccess=null]
-    * @param {Function} [onError=null]
-    */
-    var remove: (key: string, onSuccess?: Function, onError?: Function) => any;
+     * delete value
+     *
+     * @param {string} key
+     * @param {(result) => void} [onSuccess=null]
+     * @param {(err: IError) => void} [onError=null]
+     * @returns
+     */
+    var remove: (key: string, onSuccess?: (result: any) => void, onError?: (err: IError) => void) => any;
 }
-declare module JsStore {
-    enum ErrorType {
-        UndefinedColumn = "undefined_column",
-        UndefinedValue = "undefined_value",
-        UndefinedColumnName = "undefined_column_name",
-        UndefinedColumnValue = "undefined_column_value",
-        NotArray = "not_array",
-        NoValueSupplied = "no_value_supplied",
-        ColumnNotExist = "column_not_exist",
-        InvalidOp = "invalid_operator",
-        NullValue = "null_value",
-        BadDataType = "bad_data_type",
-        NextJoinNotExist = "next_join_not_exist",
-        TableNotExist = "table_not_exist",
-        DbNotExist = "db_not_exist",
-        IndexedDbUndefined = "indexeddb_undefined",
-        IndexedDbBlocked = "indexeddb_blocked",
-    }
+declare namespace JsStore {
     enum Occurence {
         First = "f",
         Last = "l",
         Any = "a",
     }
-    enum WebWorkerStatus {
+    enum WebWorker_Status {
         Registered = "registerd",
         Failed = "failed",
         NotStarted = "not_started",
     }
-    enum ConnectionStatus {
+    enum Connection_Status {
         Connected = "connected",
         Closed = "closed",
         NotStarted = "not_started",
@@ -203,21 +190,40 @@ declare module JsStore {
         Array = "array",
     }
 }
-declare module JsStore {
-    interface DbInfo {
+declare namespace JsStore {
+    interface IDbInfo {
         DbName: string;
         Table: {
             Name: string;
             Version: number;
         };
     }
+    interface IDataBaseOption {
+        Name: string;
+        Tables: ITableOption[];
+    }
+    interface ITableOption {
+        Name: string;
+        Columns: IColumnOption[];
+        Version: number;
+    }
+    interface IColumnOption {
+        Name: string;
+        AutoIncrement: boolean;
+        PrimaryKey: boolean;
+        Unique: boolean;
+        NotNull: boolean;
+        DataType: string;
+        Default: any;
+        MultiEntry: boolean;
+    }
     interface ISelect {
         From: any;
         Where: any;
         Skip: number;
         Limit: number;
-        OnSuccess: Function;
-        OnError: Function;
+        OnSuccess: (results: any[]) => void;
+        OnError: (error: IError) => void;
         Order: IOrder;
         GroupBy: any;
         Aggregate: {
@@ -238,31 +244,31 @@ declare module JsStore {
         From: any;
         IgnoreCase: boolean;
         Where: any;
-        OnSuccess: Function;
-        OnError: Function;
+        OnSuccess: (noOfRecord: number) => void;
+        OnError: (error: IError) => void;
     }
     interface IDelete {
         From: string;
         IgnoreCase: boolean;
         Where: any;
-        OnSuccess: Function;
-        OnError: Function;
+        OnSuccess: (rowsDeleted: number) => void;
+        OnError: (error: IError) => void;
     }
     interface IUpdate {
         In: string;
         IgnoreCase: boolean;
         Set: any;
         Where: any;
-        OnSuccess: Function;
-        OnError: Function;
+        OnSuccess: (rowsUpdated: number) => void;
+        OnError: (error: IError) => void;
     }
     interface IInsert {
         Into: string;
-        Values: Array<any>;
+        Values: any[];
         Return: boolean;
-        OnSuccess: Function;
-        OnError: Function;
-        SkipDataCheck: any;
+        OnSuccess: (rowsInserted: number) => void;
+        OnError: (error: IError) => void;
+        SkipDataCheck: boolean;
     }
     interface ICondition {
         Column: string;
@@ -282,8 +288,8 @@ declare module JsStore {
         Count: boolean;
         Skip: number;
         Limit: number;
-        OnSuccess: Function;
-        OnError: Function;
+        OnSuccess: (results) => void;
+        OnError: (err: IError) => void;
     }
     interface IJoin {
         Table1: ITableJoin;
@@ -294,602 +300,643 @@ declare module JsStore {
         Table: string;
         Column: string;
     }
-    interface JsStoreStatus {
-        ConStatus: ConnectionStatus;
-        LastError: string;
+    interface IJsStoreStatus {
+        ConStatus: Connection_Status;
+        LastError: Error_Type;
     }
     interface IWebWorkerRequest {
         Name: string;
         Query: any;
-        OnSuccess: Function;
-        OnError: Function;
+        OnSuccess: (results) => void;
+        OnError: (err: IError) => void;
     }
     interface IWebWorkerResult {
         ErrorOccured: boolean;
         ErrorDetails: any;
         ReturnedValue: any;
-    }
-    interface IError {
-        Name: string;
-        Message: string;
+        ThrowError: boolean;
     }
     interface IAggregate {
-        Max: Array<any>;
-        Min: Array<any>;
-        Sum: Array<any>;
-        Count: Array<any>;
-        Avg: Array<any>;
+        Max: any[];
+        Min: any[];
+        Sum: any[];
+        Count: any[];
+        Avg: any[];
     }
 }
-declare module JsStore {
-    var EnableLog: boolean, DbVersion: number, Status: JsStoreStatus, TempResults: Array<any>;
-    var throwError: (error: any) => never;
+declare namespace JsStore {
+    var enable_log: boolean, db_version: number, status: IJsStoreStatus, temp_results: any[];
     var getObjectFirstKey: (value: any) => string;
     var log: (msg: any) => void;
     var logError: (msg: any) => void;
 }
-declare module JsStore {
+declare namespace JsStore {
     class Utils {
-        static getError(errorType: ErrorType, errorDetail: any): IError;
         static convertObjectintoLowerCase(obj: any): void;
-        /**
-         * determine and set the DataBase Type
-         *
-         *
-         * @memberOf MainLogic
-         */
-        static setDbType: () => void;
     }
 }
-declare module JsStore {
+declare namespace JsStore {
     /**
-    * checks whether db exist or not
-    *
-    * @param {DbInfo} dbInfo
-    * @param {Function} callback
-    * @param {Function} errCallBack
-    */
-    var isDbExist: (dbInfo: DbInfo, callback?: Function, errCallBack?: Function) => any;
+     * checks whether db exist or not
+     *
+     * @param {DbInfo} dbInfo
+     * @param {() => void} [callback=null]
+     * @param {() => void} [errCallBack=null]
+     * @returns
+     */
+    var isDbExist: (dbInfo: IDbInfo, callback?: (isExist: boolean) => void, errCallBack?: (err: IError) => void) => any;
     /**
-    * get Db Version
-    *
-    * @param {string} dbName
-    * @param {Function} callback
-    */
-    var getDbVersion: (dbName: string, callback: Function) => void;
+     * get Db Version
+     *
+     * @param {string} dbName
+     * @param {(version: number) => void} callback
+     */
+    var getDbVersion: (dbName: string, callback: (version: number) => void) => void;
     /**
-    * get Database Schema
-    *
-    * @param {string} dbName
-    * @param {Function} callback
-    */
-    var getDbSchema: (dbName: string, callback: Function) => void;
+     * get Database Schema
+     *
+     * @param {string} dbName
+     * @param {(any) => void} callback
+     */
+    var getDbSchema: (dbName: string, callback: (any: any) => void) => void;
     /**
-    * check value null or not
-    *
-    * @param {any} value
-    * @returns
-    */
+     * check for null value
+     *
+     * @param {any} value
+     * @returns
+     */
     var isNull: (value: any) => boolean;
     /**
-    * Enable log
-    *
-    */
+     * Enable log
+     *
+     */
     var enableLog: () => void;
     /**
-    * disable log
-    *
-    */
+     * disable log
+     *
+     */
     var disableLog: () => void;
 }
-declare module JsStore {
-    module Model {
-        interface IColumn {
-            Name: string;
-            AutoIncrement: boolean;
-            PrimaryKey: boolean;
-            Unique: boolean;
-            NotNull: boolean;
-            DataType: string;
-            Default: any;
-        }
-        class Column implements IColumn {
-            Name: string;
-            AutoIncrement: boolean;
-            PrimaryKey: boolean;
-            Unique: boolean;
-            NotNull: boolean;
-            DataType: string;
-            Default: any;
-            constructor(key: IColumn, tableName: string);
+declare namespace JsStore {
+    enum Error_Type {
+        UndefinedColumn = "undefined_column",
+        UndefinedValue = "undefined_value",
+        UndefinedColumnName = "undefined_column_name",
+        UndefinedDbName = "undefined_database_name",
+        UndefinedColumnValue = "undefined_column_value",
+        NotArray = "not_array",
+        NoValueSupplied = "no_value_supplied",
+        ColumnNotExist = "column_not_exist",
+        InvalidOp = "invalid_operator",
+        NullValue = "null_value",
+        BadDataType = "bad_data_type",
+        NextJoinNotExist = "next_join_not_exist",
+        TableNotExist = "table_not_exist",
+        DbNotExist = "db_not_exist",
+        IndexedDbUndefined = "indexeddb_undefined",
+        IndexedDbBlocked = "indexeddb_blocked",
+        ConnectionAborted = "connection_aborted",
+        ConnectionClosed = "connection_closed",
+        NotObject = "not_object",
+    }
+    interface IError {
+        _type: Error_Type;
+        _message: string;
+    }
+    class Error implements IError {
+        _type: Error_Type;
+        _message: string;
+        private _info;
+        constructor(type: Error_Type, info?: any);
+        throw: () => never;
+        logError: () => void;
+        logWarning: () => void;
+        get(): IError;
+        private getMsg;
+    }
+}
+declare namespace JsStore {
+    namespace Model {
+        class Column {
+            _name: string;
+            _autoIncrement: boolean;
+            _primaryKey: boolean;
+            _unique: boolean;
+            _notNull: boolean;
+            _dataType: string;
+            _default: any;
+            _multiEntry: boolean;
+            constructor(key: IColumnOption, tableName: string);
         }
     }
 }
-declare module JsStore {
-    module Model {
-        interface ITable {
-            Name: string;
-            Columns: Array<IColumn>;
-            Version: number;
-        }
-        class Table implements ITable {
-            Name: string;
-            Columns: Array<Column>;
-            Version: number;
-            RequireDelete: boolean;
-            RequireCreation: boolean;
-            PrimaryKey: string;
-            constructor(table: ITable, dbName: string);
+declare namespace JsStore {
+    namespace Model {
+        class Table {
+            _name: string;
+            _columns: Column[];
+            _version: number;
+            _requireDelete: boolean;
+            _requireCreation: boolean;
+            _primaryKey: string;
+            constructor(table: ITableOption, dbName: string);
             private setPrimaryKey(dbName);
             private setRequireDelete(dbName);
             private setDbVersion(dbName);
         }
     }
 }
-declare module JsStore {
-    module Model {
-        interface IDataBase {
-            Name: string;
-            Tables: Array<ITable>;
-        }
-        class DataBase implements IDataBase {
-            Name: string;
-            Tables: Array<Table>;
-            constructor(dataBase: IDataBase);
+declare namespace JsStore {
+    namespace Model {
+        class DataBase {
+            _name: string;
+            _tables: Table[];
+            constructor(dataBase: IDataBaseOption);
         }
     }
 }
-declare module JsStore {
-    module Business {
+declare namespace JsStore {
+    namespace Business {
         class BaseHelper {
             protected getTable: (tableName: string) => Table;
             protected getKeyRange: (value: any, op: any) => IDBKeyRange;
             protected getObjectSecondKey: (value: any) => string;
             protected getPrimaryKey: (tableName: any) => any;
-            private getKeyPath;
+            protected getKeyPath: (tableName: any) => string | string[];
             protected sortNumberInAsc: (values: any) => any;
             protected sortNumberInDesc: (values: any) => any;
             protected sortAlphabetInAsc: (values: any) => any;
             protected sortAlphabetInDesc: (values: any) => any;
-            private getCombination(word);
             protected getAllCombinationOfWord(word: any, isArray: any): any[];
+            private getCombination(word);
         }
     }
 }
-declare module JsStore {
-    module Business {
+declare namespace JsStore {
+    namespace Business {
         class Base extends BaseHelper {
-            Error: IError;
-            ErrorOccured: boolean;
-            ErrorCount: number;
-            RowAffected: number;
-            OnSuccess: Function;
-            OnError: Function;
-            Transaction: IDBTransaction;
-            ObjectStore: IDBObjectStore;
-            Query: any;
-            SendResultFlag: Boolean;
+            _error: IError;
+            _errorOccured: boolean;
+            _errorCount: number;
+            _rowAffected: number;
+            _onSuccess: (result?) => void;
+            _onError: (err: IError) => void;
+            _transaction: IDBTransaction;
+            _objectStore: IDBObjectStore;
+            _query: any;
+            _sendResultFlag: boolean;
             protected onErrorOccured: (e: any, customError?: boolean) => void;
             protected onTransactionTimeout: (e: any) => void;
             protected onExceptionOccured: (ex: DOMException, info: any) => void;
             /**
-            * For matching the different column value existance
-            *
-            * @private
-            * @param {any} where
-            * @param {any} value
-            * @returns
-            *
-            * @memberOf SelectLogic
-            */
+             * For matching the different column value existance
+             *
+             * @protected
+             * @param {any} rowValue
+             * @returns
+             * @memberof Base
+             */
             protected checkForWhereConditionMatch(rowValue: any): boolean;
             protected goToWhereLogic: () => void;
             protected makeQryInCaseSensitive: (qry: any) => any;
         }
     }
 }
-declare module JsStore {
-    module Business {
+declare namespace JsStore {
+    namespace Business {
         class CreateDb {
-            constructor(dbVersion: any, onSuccess: Function, onError: Function);
+            constructor(dbVersion: any, onSuccess: (listOf) => void, onError: (err: IError) => void);
         }
     }
 }
-declare module JsStore {
-    module Business {
+declare namespace JsStore {
+    namespace Business {
         class DropDb {
-            constructor(name: string, onSuccess: Function, onError: Function);
-            deleteDb: (name: string, onSuccess: Function, onError: Function) => void;
+            constructor(name: string, onSuccess: () => void, onError: (err: IError) => void);
+            deleteDb: (name: string, onSuccess: () => void, onError: (err: any) => void) => void;
         }
     }
 }
-declare module JsStore {
-    module Business {
-        class InsertHelper extends Base {
-            ValuesAffected: any[];
-            Query: IInsert;
-            onTransactionCompleted: () => void;
-            protected checkModifyInsertValues: (table: any, values: any) => void;
-        }
-    }
-}
-declare module JsStore {
-    module Business {
-        class Insert extends InsertHelper {
-            private insertData;
-            constructor(query: IInsert, onSuccess: Function, onError: Function);
-        }
-    }
-}
-declare module JsStore {
-    module Business {
+declare namespace JsStore {
+    namespace Business {
         class BulkInsert extends Base {
-            ValuesAffected: any[];
-            Query: IInsert;
-            ValuesIndex: number;
-            Table: Model.ITable;
-            onTransactionCompleted: () => void;
+            _query: IInsert;
+            constructor(query: IInsert, onSuccess: () => void, onError: (err: IError) => void);
             private bulkinsertData;
-            constructor(query: IInsert, onSuccess: Function, onError: Function);
         }
     }
 }
-declare module JsStore {
-    module Business {
+declare namespace JsStore {
+    namespace Business {
         class OpenDb {
-            constructor(dbVersion: any, onSuccess: Function, onError: Function);
+            constructor(dbVersion: any, onSuccess: () => void, onError: (err: IError) => void);
         }
     }
 }
-declare module JsStore {
-    module Business {
+declare namespace JsStore {
+    namespace Business {
         class Clear extends Base {
-            constructor(tableName: string, onSuccess: Function, onError: Function);
+            constructor(tableName: string, onSuccess: () => void, onError: (err: IError) => void);
         }
     }
 }
-declare module JsStore {
-    module Business {
-        var DbConnection: any, ActiveDataBase: DataBase;
+declare namespace JsStore {
+    namespace Business {
+        var db_connection: IDBDatabase, active_db: DataBase;
         class Main {
-            OnSuccess: Function;
+            _onSuccess: () => void;
             constructor(onSuccess?: any);
             checkConnectionAndExecuteLogic: (request: IWebWorkerRequest) => void;
             private changeLogStatus;
             private returnResult;
             private executeLogic;
-            openDb: (dbName: any, onSuccess: Function, onError: Function) => void;
-            closeDb: () => void;
-            dropDb: (onSuccess: Function, onError: Function) => void;
-            update: (query: IUpdate, onSuccess: Function, onError: Function) => void;
-            insert: (query: IInsert, onSuccess: Function, onError: Function) => void;
-            bulkInsert: (query: IInsert, onSuccess: Function, onError: Function) => void;
-            delete: (query: IDelete, onSuccess: Function, onError: Function) => void;
-            select: (query: any, onSuccess: Function, onError: Function) => void;
-            count: (query: any, onSuccess: Function, onError: Function) => void;
-            createDb: (dataBase: Model.IDataBase, onSuccess: Function, onError: Function) => void;
-            clear: (tableName: string, onSuccess: Function, onError: Function) => void;
-            exportJson: (query: ISelect, onSuccess: Function, onError: Function) => void;
+            private openDb;
+            private closeDb;
+            private dropDb;
+            private update;
+            private insert;
+            private bulkInsert;
+            private delete;
+            private select;
+            private count;
+            private createDb;
+            private clear;
+            private exportJson;
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Select {
+declare namespace JsStore {
+    namespace Business {
+        namespace Select {
             class BaseSelect extends Base {
-                Results: any[];
-                Sorted: boolean;
-                SkipRecord: any;
-                LimitRecord: any;
-                CheckFlag: boolean;
+                _results: any[];
+                _sorted: boolean;
+                _skipRecord: any;
+                _limitRecord: any;
+                _checkFlag: boolean;
                 protected removeDuplicates: () => void;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Select {
+declare namespace JsStore {
+    namespace Business {
+        namespace Select {
             class NotWhere extends BaseSelect {
                 protected executeWhereUndefinedLogic: () => void;
+                private executeSkipAndLimitForNoWhere;
+                private executeSkipForNoWhere;
+                private executeSimpleForNotWhere;
+                private executeLimitForNotWhere;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Select {
+declare namespace JsStore {
+    namespace Business {
+        namespace Select {
             class In extends NotWhere {
+                protected executeInLogic: (column: any, values: any) => void;
                 private executeSkipAndLimitForIn;
                 private executeSkipForIn;
                 private executeLimitForIn;
                 private executeSimpleForIn;
-                protected executeInLogic: (column: any, values: any) => void;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Select {
+declare namespace JsStore {
+    namespace Business {
+        namespace Select {
             class Like extends In {
-                CompSymbol: Occurence;
-                CompValue: any;
-                Column: any;
-                CompValueLength: Number;
+                _compSymbol: Occurence;
+                _compValue: any;
+                _compValueLength: number;
+                protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
                 private filterOnOccurence;
                 private executeSkipAndLimit;
                 private executeSkip;
                 private executeLimit;
                 private executeSimple;
-                protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Select {
+declare namespace JsStore {
+    namespace Business {
+        namespace Select {
             class Where extends Like {
+                private executeSkipAndLimitForWhere;
+                private executeSkipForWhere;
+                private executeLimitForWhere;
+                private executeSimpleForWhere;
                 private executeWhereLogic;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Select {
+declare namespace JsStore {
+    namespace Business {
+        namespace Select {
             class Join extends BaseSelect {
-                Query: ISelectJoin;
-                QueryStack: Array<ITableJoin>;
-                CurrentQueryStackIndex: number;
+                _query: ISelectJoin;
+                _queryStack: ITableJoin[];
+                _currentQueryStackIndex: number;
+                constructor(query: ISelectJoin, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
                 private onTransactionCompleted;
                 private executeWhereJoinLogic;
                 private executeRightJoin;
                 private executeWhereUndefinedLogicForJoin;
                 private startExecutionJoinLogic();
-                constructor(query: ISelectJoin, onSuccess: Function, onError: Function);
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Select {
+declare namespace JsStore {
+    namespace Business {
+        namespace Select {
             class GroupByHelper extends Where {
                 constructor();
-                private executeAggregateGroupBy;
                 protected processGroupBy: () => void;
+                private executeAggregateGroupBy;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Select {
+declare namespace JsStore {
+    namespace Business {
+        namespace Select {
             class Helper extends GroupByHelper {
+                constructor();
                 processOrderBy: () => void;
                 private processAggregateQry;
-                constructor();
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Select {
+declare namespace JsStore {
+    namespace Business {
+        namespace Select {
             class Instance extends Helper {
+                constructor(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
                 onTransactionCompleted: () => void;
                 private createtransactionForOrLogic;
                 private orQuerySuccess;
                 private executeOrLogic;
-                constructor(query: ISelect, onSuccess: Function, onError: Function);
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Count {
+declare namespace JsStore {
+    namespace Business {
+        namespace Count {
             class BaseCount extends Base {
-                ResultCount: number;
-                SkipRecord: any;
-                LimitRecord: any;
-                CheckFlag: boolean;
+                _resultCount: number;
+                _skipRecord: any;
+                _limitRecord: any;
+                _checkFlag: boolean;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Count {
+declare namespace JsStore {
+    namespace Business {
+        namespace Count {
             class NotWhere extends BaseCount {
                 protected executeWhereUndefinedLogic: () => void;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Count {
+declare namespace JsStore {
+    namespace Business {
+        namespace Count {
             class In extends NotWhere {
                 private executeInLogic;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Count {
+declare namespace JsStore {
+    namespace Business {
+        namespace Count {
             class Like extends In {
-                CompSymbol: Occurence;
-                CompValue: any;
-                Column: any;
-                CompValueLength: Number;
-                private filterOnOccurence;
+                _compSymbol: Occurence;
+                _compValue: any;
+                _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
+                private filterOnOccurence;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Count {
+declare namespace JsStore {
+    namespace Business {
+        namespace Count {
             class Where extends Like {
                 private executeWhereLogic;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Count {
+declare namespace JsStore {
+    namespace Business {
+        namespace Count {
             class Instance extends Where {
+                constructor(query: ICount, onSuccess: (noOfRecord: number) => void, onError: (error: IError) => void);
                 onTransactionCompleted: () => void;
-                constructor(query: ICount, onSuccess: Function, onError: Function);
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Update {
+declare namespace JsStore {
+    namespace Business {
+        namespace Update {
             var updateValue: (suppliedValue: any, storedValue: any) => any;
         }
         class BaseUpdate extends Base {
-            CheckFlag: boolean;
+            _checkFlag: boolean;
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Update {
+declare namespace JsStore {
+    namespace Business {
+        namespace Update {
             class NotWhere extends BaseUpdate {
                 protected executeWhereUndefinedLogic: () => void;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Update {
+declare namespace JsStore {
+    namespace Business {
+        namespace Update {
             class In extends NotWhere {
                 private executeInLogic;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Update {
+declare namespace JsStore {
+    namespace Business {
+        namespace Update {
             class Like extends In {
-                CompSymbol: Occurence;
-                CompValue: any;
-                Column: any;
-                CompValueLength: Number;
-                private filterOnOccurence;
+                _compSymbol: Occurence;
+                _compValue: any;
+                _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
+                private filterOnOccurence;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Update {
+declare namespace JsStore {
+    namespace Business {
+        namespace Update {
             class Where extends Like {
                 private executeWhereLogic;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Update {
+declare namespace JsStore {
+    namespace Business {
+        namespace Update {
             class Instance extends Where {
+                constructor(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void);
                 protected onTransactionCompleted: () => void;
                 private createtransactionForOrLogic;
                 private executeOrLogic;
-                constructor(query: IUpdate, onSuccess: Function, onError: Function);
                 private checkSchema(suppliedValue, tableName);
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Delete {
+declare namespace JsStore {
+    namespace Business {
+        namespace Delete {
             class BaseDelete extends Base {
-                CheckFlag: boolean;
+                _checkFlag: boolean;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Delete {
+declare namespace JsStore {
+    namespace Business {
+        namespace Delete {
             class NotWhere extends BaseDelete {
                 protected executeWhereUndefinedLogic: () => void;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Delete {
+declare namespace JsStore {
+    namespace Business {
+        namespace Delete {
             class In extends NotWhere {
                 private executeInLogic;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Delete {
+declare namespace JsStore {
+    namespace Business {
+        namespace Delete {
             class Like extends In {
-                CompSymbol: Occurence;
-                CompValue: any;
-                Column: any;
-                CompValueLength: Number;
-                private filterOnOccurence;
+                _compSymbol: Occurence;
+                _compValue: any;
+                _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
+                private filterOnOccurence;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Delete {
+declare namespace JsStore {
+    namespace Business {
+        namespace Delete {
             class Where extends Like {
                 private executeWhereLogic;
             }
         }
     }
 }
-declare module JsStore {
-    module Business {
-        module Delete {
+declare namespace JsStore {
+    namespace Business {
+        namespace Delete {
             class Instance extends Where {
+                constructor(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void);
                 private onTransactionCompleted;
                 private createtransactionForOrLogic;
                 private executeOrLogic;
-                constructor(query: IDelete, onSuccess: Function, onError: Function);
             }
         }
     }
 }
-declare module JsStore {
-    var WorkerStatus: WebWorkerStatus, WorkerInstance: Worker;
+declare namespace JsStore {
+    namespace Business {
+        namespace Insert {
+            class Instance extends Base {
+                _valuesAffected: any[];
+                _query: IInsert;
+                _table: Table;
+                constructor(query: IInsert, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void);
+                onTransactionCompleted: () => void;
+                private insertData;
+            }
+        }
+    }
+}
+declare namespace JsStore {
+    namespace Business {
+        namespace Insert {
+            class ValueChecker {
+                _table: Table;
+                _value: object;
+                _index: number;
+                _errorOccured: boolean;
+                _error: IError;
+                onFinish: () => void;
+                onError: (err: IError) => void;
+                constructor(table: Table, onFinish: () => void, onError: (err: IError) => void);
+                checkAndModifyValue: (value: any) => void;
+                private checkColumnValue;
+                private checkAndModifyColumnValue;
+                private onValidationError;
+            }
+        }
+    }
+}
+declare namespace JsStore {
+    namespace Business {
+        namespace Insert {
+            class ValuesChecker {
+                _table: Table;
+                _values: any[];
+                _index: number;
+                _error: Error;
+                onFinish: (isError: boolean) => void;
+                constructor(table: Table, values: any[]);
+                checkAndModifyValues: (onFinish: (isError: boolean) => void) => void;
+                private checkRowValue;
+            }
+        }
+    }
+}
+declare var Promise: any;
+declare namespace JsStore {
+    var worker_status: WebWorker_Status, worker_instance: Worker;
     class CodeExecutionHelper {
-        RequestQueue: Array<IWebWorkerRequest>;
-        IsCodeExecuting: boolean;
+        private _requestQueue;
+        private _isCodeExecuting;
         protected pushApi: (request: IWebWorkerRequest, usePromise: boolean) => any;
+        protected createWorker: () => void;
         private prcoessExecutionOfCode;
         private executeCode;
         private executeCodeDirect;
         private executeCodeUsingWorker;
         private processFinishedRequest;
         private onWorkerFailed;
-        protected createWorker: () => void;
         private getScriptUrl(fileName);
         private onMessageFromWorker;
     }
@@ -898,8 +945,7 @@ import Model = JsStore.Model;
 import DataBase = Model.DataBase;
 import Column = Model.Column;
 import Table = Model.Table;
-declare var Promise: any;
-declare module JsStore {
+declare namespace JsStore {
     class Instance extends CodeExecutionHelper {
         constructor(dbName?: any);
         /**
@@ -911,7 +957,7 @@ declare module JsStore {
          * @returns
          * @memberof Instance
          */
-        openDb: (dbName: string, onSuccess?: Function, onError?: Function) => any;
+        openDb: (dbName: string, onSuccess: () => void, onError: (err: IError) => void) => any;
         /**
          * creates DataBase
          *
@@ -921,7 +967,7 @@ declare module JsStore {
          * @returns
          * @memberof Instance
          */
-        createDb: (dataBase: Model.IDataBase, onSuccess?: Function, onError?: Function) => any;
+        createDb: (dataBase: IDataBaseOption, onSuccess: (dbSchema: any) => void, onError: (err: IError) => void) => any;
         /**
          * drop dataBase
          *
@@ -929,7 +975,7 @@ declare module JsStore {
          * @param {Function} [onError=null]
          * @memberof Instance
          */
-        dropDb: (onSuccess: Function, onError?: Function) => any;
+        dropDb: (onSuccess: () => void, onError: (err: IError) => void) => any;
         /**
          * select data from table
          *
@@ -939,7 +985,7 @@ declare module JsStore {
          *
          * @memberOf Main
          */
-        select: (query: ISelect, onSuccess?: Function, onError?: Function) => any;
+        select: (query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void) => any;
         /**
          * get no of result from table
          *
@@ -948,7 +994,7 @@ declare module JsStore {
          * @param {Function} [onError=null]
          * @memberof Instance
          */
-        count: (query: ICount, onSuccess?: Function, onError?: Function) => any;
+        count: (query: ICount, onSuccess: (noOfRecord: number) => void, onError: (err: IError) => void) => any;
         /**
          * insert data into table
          *
@@ -957,7 +1003,7 @@ declare module JsStore {
          * @param {Function} [onError=null]
          * @memberof Instance
          */
-        insert: (query: IInsert, onSuccess?: Function, onError?: Function) => any;
+        insert: (query: IInsert, onSuccess: (recordInserted: number) => void, onError: (err: IError) => void) => any;
         /**
          * update data into table
          *
@@ -966,7 +1012,7 @@ declare module JsStore {
          * @param {Function} [onError=null]
          * @memberof Instance
          */
-        update: (query: IUpdate, onSuccess?: Function, onError?: Function) => any;
+        update: (query: IUpdate, onSuccess: (recordUpdated: number) => void, onError: (err: IError) => void) => any;
         /**
          * delete data from table
          *
@@ -975,7 +1021,7 @@ declare module JsStore {
          * @param {Function} onError
          * @memberof Instance
          */
-        delete: (query: IDelete, onSuccess?: Function, onError?: Function) => any;
+        delete: (query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void) => any;
         /**
          * delete all data from table
          *
@@ -984,7 +1030,7 @@ declare module JsStore {
          * @param {Function} [onError=null]
          * @memberof Instance
          */
-        clear: (tableName: string, onSuccess?: Function, onError?: Function) => any;
+        clear: (tableName: string, onSuccess: () => void, onError: (err: IError) => void) => any;
         /**
          * insert bulk amount of data
          *
@@ -994,7 +1040,7 @@ declare module JsStore {
          * @returns
          * @memberof Instance
          */
-        bulkInsert: (query: IInsert, onSuccess?: Function, onError?: Function) => any;
+        bulkInsert: (query: IInsert, onSuccess: () => void, onError: (err: IError) => void) => any;
         /**
          * export the result in json file
          *

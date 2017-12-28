@@ -9,7 +9,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /**
- * @license :JsStore.js - v1.3.3 - 15/12/2017
+ * @license :JsStore.js - v1.3.3 - 28/12/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
  */ 
