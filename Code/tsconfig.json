@@ -16,14 +16,11 @@
     "files": [
         //License
         "License.ts",
-
         //KeyStore
-
         //Common
         "KeyStore/UtilsLogic.ts",
         "KeyStore/CommonLogic.ts",
         "KeyStore/Helper.ts",
-
         //Business
         "KeyStore/Business/BaseLogic.ts",
         "KeyStore/Business/GetLogic.ts",
@@ -31,10 +28,8 @@
         "KeyStore/Business/RemoveLogic.ts",
         "KeyStore/Business/InitDbLogic.ts",
         "KeyStore/Business/MainLogic.ts",
-
         //Instance
         "KeyStore/KeyStoreInstance.ts",
-
         //JsStore
         // common files
         "JsStore/enums.ts",
@@ -52,8 +47,6 @@
         "JsStore/Business/BaseLogic.ts",
         "JsStore/Business/CreateDbLogic.ts",
         "JsStore/Business/DropDbLogic.ts",
-        "JsStore/Business/InsertHelperLogic.ts",
-        "JsStore/Business/InsertLogic.ts",
         "JsStore/Business/BulkInsertLogic.ts",
         "JsStore/Business/OpenDbLogic.ts",
         "JsStore/Business/ClearLogic.ts",
@@ -89,6 +82,10 @@
         "JsStore/Business/Delete/LikeLogic.ts",
         "JsStore/Business/Delete/WhereLogic.ts",
         "JsStore/Business/Delete/InstanceLogic.ts",
+        //Insert
+        "JsStore/Business/Insert/InstanceLogic.ts",
+        "JsStore/Business/Insert/ValueCheckerLogic.ts",
+        "JsStore/Business/Insert/ValuesCheckerLogic.ts",
         //Instance
         "JsStore/CodeExecutionHelper.ts",
         "JsStore/JsStoreInstance.ts",

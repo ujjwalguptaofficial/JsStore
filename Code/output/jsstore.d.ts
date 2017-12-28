@@ -514,35 +514,6 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     namespace Business {
-        class InsertHelper {
-            _table: Table;
-            _values: any[];
-            _valueIndex: number;
-            _errorOccured: boolean;
-            _error: Error;
-            onFinish: (isError: boolean) => void;
-            constructor(table: Table, values: any[]);
-            checkAndModifyValues: (onFinish: (isError: boolean) => void) => void;
-            private checkRowValue;
-            private checkAndModifyValue;
-            private onValidationError;
-        }
-    }
-}
-declare namespace JsStore {
-    namespace Business {
-        class Insert extends Base {
-            _valuesAffected: any[];
-            _query: IInsert;
-            _table: Table;
-            constructor(query: IInsert, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void);
-            onTransactionCompleted: () => void;
-            private insertData;
-        }
-    }
-}
-declare namespace JsStore {
-    namespace Business {
         class BulkInsert extends Base {
             _query: IInsert;
             constructor(query: IInsert, onSuccess: () => void, onError: (err: IError) => void);
@@ -893,6 +864,56 @@ declare namespace JsStore {
                 private onTransactionCompleted;
                 private createtransactionForOrLogic;
                 private executeOrLogic;
+            }
+        }
+    }
+}
+declare namespace JsStore {
+    namespace Business {
+        namespace Insert {
+            class Instance extends Base {
+                _valuesAffected: any[];
+                _query: IInsert;
+                _table: Table;
+                constructor(query: IInsert, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void);
+                onTransactionCompleted: () => void;
+                private insertData;
+            }
+        }
+    }
+}
+declare namespace JsStore {
+    namespace Business {
+        namespace Insert {
+            class ValueChecker {
+                _table: Table;
+                _value: object;
+                _index: number;
+                _errorOccured: boolean;
+                _error: IError;
+                onFinish: () => void;
+                onError: (err: IError) => void;
+                constructor(table: Table, onFinish: () => void, onError: (err: IError) => void);
+                checkAndModifyValue: (value: any) => void;
+                private checkColumnValue;
+                private checkAndModifyColumnValue;
+                private onValidationError;
+            }
+        }
+    }
+}
+declare namespace JsStore {
+    namespace Business {
+        namespace Insert {
+            class ValuesChecker {
+                _table: Table;
+                _values: any[];
+                _index: number;
+                _error: Error;
+                onFinish: (isError: boolean) => void;
+                constructor(table: Table, values: any[]);
+                checkAndModifyValues: (onFinish: (isError: boolean) => void) => void;
+                private checkRowValue;
             }
         }
     }

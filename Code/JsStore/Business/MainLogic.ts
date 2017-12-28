@@ -131,7 +131,7 @@ namespace JsStore {
                     onError(erro_obj.get());
                 }
                 else {
-                    var insert_object = new Insert(query, onSuccess, onError);
+                    var insert_object = new Business.Insert.Instance(query, onSuccess, onError);
                 }
             };
 

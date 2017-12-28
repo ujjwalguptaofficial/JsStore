@@ -22,11 +22,12 @@ namespace JsStore {
                                 _type: (e as any).target.error.name
                             } as IError;
                             this._onError(error);
+                            logError(error);
                         }
                         else {
                             this._onError(e);
+                            logError(e);
                         }
-                        logError(Error);
                     }
                 }
             };

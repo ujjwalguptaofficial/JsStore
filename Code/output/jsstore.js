@@ -1057,11 +1057,12 @@ var JsStore;
                                     _type: e.target.error.name
                                 };
                                 this._onError(error);
+                                JsStore.logError(error);
                             }
                             else {
                                 this._onError(e);
+                                JsStore.logError(e);
                             }
-                            JsStore.logError(JsStore.Error);
                         }
                     }
                 };
@@ -1431,165 +1432,6 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var InsertHelper = /** @class */ (function () {
-            function InsertHelper(table, values) {
-                this._valueIndex = 0;
-                this._errorOccured = false;
-                this.checkAndModifyValues = function (onFinish) {
-                    this.onFinish = onFinish;
-                    this.checkRowValue();
-                };
-                this.checkRowValue = function () {
-                    var value = this._values[this._valueIndex];
-                    if (value) {
-                        this.checkAndModifyValue(value);
-                    }
-                    else {
-                        this.onFinish(false);
-                    }
-                };
-                this.checkAndModifyValue = function (value) {
-                    var column_index = 0;
-                    var checkAndModifyColumn = function (column) {
-                        if (this._errorOccured === true) {
-                            this.onFinish(true);
-                        }
-                        else {
-                            var checkNotNullAndDataType = function () {
-                                // check not null schema
-                                if (column._notNull && JsStore.isNull(value[column._name])) {
-                                    this.onValidationError(JsStore.Error_Type.NullValue, { ColumnName: column._name });
-                                }
-                                else if (column._dataType && typeof value[column._name] !== column._dataType) {
-                                    this.onValidationError(JsStore.Error_Type.BadDataType, { ColumnName: column._name });
-                                }
-                                checkAndModifyColumn(this._table._columns[column_index++]);
-                            }.bind(this);
-                            var saveAutoIncrementValue = function () {
-                                var auto_increment_key = "JsStore_" + Business.active_db._name + "_" + this._table._name + "_" + column._name + "_Value";
-                                KeyStore.get(auto_increment_key, function (columnValue) {
-                                    value[column._name] = ++columnValue;
-                                    KeyStore.set(auto_increment_key, columnValue, checkNotNullAndDataType);
-                                });
-                            }.bind(this);
-                            if (column) {
-                                // check auto increment scheme
-                                if (column._autoIncrement) {
-                                    saveAutoIncrementValue();
-                                }
-                                else if (column._default && JsStore.isNull(value[column._name])) {
-                                    value[column._name] = column._default;
-                                    checkNotNullAndDataType();
-                                }
-                                else {
-                                    checkNotNullAndDataType();
-                                }
-                            }
-                            else {
-                                this._values[this._valueIndex++] = value;
-                                this.checkRowValue();
-                            }
-                        }
-                    }.bind(this);
-                    checkAndModifyColumn(this._table._columns[column_index++]);
-                };
-                this.onValidationError = function (error, details) {
-                    this._errorOccured = true;
-                    this._error = new JsStore.Error(error, details).get();
-                };
-                this._table = table;
-                this._values = values;
-            }
-            return InsertHelper;
-        }());
-        Business.InsertHelper = InsertHelper;
-    })(Business = JsStore.Business || (JsStore.Business = {}));
-})(JsStore || (JsStore = {}));
-var JsStore;
-(function (JsStore) {
-    var Business;
-    (function (Business) {
-        var Insert = /** @class */ (function (_super) {
-            __extends(Insert, _super);
-            function Insert(query, onSuccess, onError) {
-                var _this = _super.call(this) || this;
-                _this._valuesAffected = [];
-                _this.onTransactionCompleted = function () {
-                    this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
-                };
-                _this.insertData = function (values) {
-                    var value_index = 0, is_return = this._query.Return, insertDataintoTable;
-                    if (is_return) {
-                        insertDataintoTable = function (value) {
-                            if (value) {
-                                var add_result = object_store.add(value);
-                                add_result.onerror = this.onErrorOccured.bind(this);
-                                add_result.onsuccess = function (e) {
-                                    this.ValuesAffected.push(value);
-                                    insertDataintoTable(values[value_index++]);
-                                }.bind(this);
-                            }
-                        }.bind(this);
-                    }
-                    else {
-                        insertDataintoTable = function (value) {
-                            if (value) {
-                                var add_result = object_store.add(value);
-                                add_result.onerror = this.onErrorOccured.bind(this);
-                                add_result.onsuccess = function (e) {
-                                    ++this._rowAffected;
-                                    insertDataintoTable(values[value_index++]);
-                                }.bind(this);
-                            }
-                        }.bind(this);
-                    }
-                    this._transaction = Business.db_connection.transaction([this._query.Into], "readwrite");
-                    var object_store = this._transaction.objectStore(this._query.Into);
-                    this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                    insertDataintoTable(values[value_index++]);
-                };
-                try {
-                    _this._query = query;
-                    _this._onSuccess = onSuccess;
-                    _this._onError = onError;
-                    var table = _this.getTable(query.Into);
-                    if (table) {
-                        if (_this._query.SkipDataCheck) {
-                            _this.insertData(_this._query.Values);
-                        }
-                        else {
-                            var insert_helper_obj = new Business.InsertHelper(table, _this._query.Values);
-                            insert_helper_obj.checkAndModifyValues(function (isError) {
-                                if (isError) {
-                                    this.onErrorOccured(insert_helper_obj._error, true);
-                                }
-                                else {
-                                    this.insertData(insert_helper_obj._values);
-                                }
-                                insert_helper_obj = undefined;
-                            }.bind(_this));
-                        }
-                        // remove values from query
-                        _this._query.Values = undefined;
-                    }
-                    else {
-                        new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: query.Into }).throw();
-                    }
-                }
-                catch (ex) {
-                    _this.onExceptionOccured(ex, { TableName: query.Into });
-                }
-                return _this;
-            }
-            return Insert;
-        }(Business.Base));
-        Business.Insert = Insert;
-    })(Business = JsStore.Business || (JsStore.Business = {}));
-})(JsStore || (JsStore = {}));
-var JsStore;
-(function (JsStore) {
-    var Business;
-    (function (Business) {
         var BulkInsert = /** @class */ (function (_super) {
             __extends(BulkInsert, _super);
             function BulkInsert(query, onSuccess, onError) {
@@ -1836,7 +1678,7 @@ var JsStore;
                         onError(erro_obj.get());
                     }
                     else {
-                        var insert_object = new Business.Insert(query, onSuccess, onError);
+                        var insert_object = new Business.Insert.Instance(query, onSuccess, onError);
                     }
                 };
                 this.bulkInsert = function (query, onSuccess, onError) {
@@ -4374,6 +4216,204 @@ var JsStore;
             }(Delete.Where));
             Delete.Instance = Instance;
         })(Delete = Business.Delete || (Business.Delete = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Insert;
+        (function (Insert) {
+            var Instance = /** @class */ (function (_super) {
+                __extends(Instance, _super);
+                function Instance(query, onSuccess, onError) {
+                    var _this = _super.call(this) || this;
+                    _this._valuesAffected = [];
+                    _this.onTransactionCompleted = function () {
+                        this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
+                    };
+                    _this.insertData = function (values) {
+                        var value_index = 0, is_return = this._query.Return, insertDataintoTable;
+                        if (is_return) {
+                            insertDataintoTable = function (value) {
+                                if (value) {
+                                    var add_result = object_store.add(value);
+                                    add_result.onerror = this.onErrorOccured.bind(this);
+                                    add_result.onsuccess = function (e) {
+                                        this.ValuesAffected.push(value);
+                                        insertDataintoTable(values[value_index++]);
+                                    }.bind(this);
+                                }
+                            }.bind(this);
+                        }
+                        else {
+                            insertDataintoTable = function (value) {
+                                if (value) {
+                                    var add_result = object_store.add(value);
+                                    add_result.onerror = this.onErrorOccured.bind(this);
+                                    add_result.onsuccess = function (e) {
+                                        ++this._rowAffected;
+                                        insertDataintoTable(values[value_index++]);
+                                    }.bind(this);
+                                }
+                            }.bind(this);
+                        }
+                        this._transaction = Business.db_connection.transaction([this._query.Into], "readwrite");
+                        var object_store = this._transaction.objectStore(this._query.Into);
+                        this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                        insertDataintoTable(values[value_index++]);
+                    };
+                    try {
+                        _this._query = query;
+                        _this._onSuccess = onSuccess;
+                        _this._onError = onError;
+                        var table = _this.getTable(query.Into);
+                        if (table) {
+                            if (_this._query.SkipDataCheck) {
+                                _this.insertData(_this._query.Values);
+                            }
+                            else {
+                                var value_checker_obj = new Insert.ValuesChecker(table, _this._query.Values);
+                                value_checker_obj.checkAndModifyValues(function (isError) {
+                                    if (isError) {
+                                        this.onErrorOccured(value_checker_obj._error, true);
+                                    }
+                                    else {
+                                        this.insertData(value_checker_obj._values);
+                                    }
+                                    value_checker_obj = undefined;
+                                }.bind(_this));
+                            }
+                            // remove values from query
+                            _this._query.Values = undefined;
+                        }
+                        else {
+                            new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: query.Into }).throw();
+                        }
+                    }
+                    catch (ex) {
+                        _this.onExceptionOccured(ex, { TableName: query.Into });
+                    }
+                    return _this;
+                }
+                return Instance;
+            }(Business.Base));
+            Insert.Instance = Instance;
+        })(Insert = Business.Insert || (Business.Insert = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Insert;
+        (function (Insert) {
+            var ValueChecker = /** @class */ (function () {
+                function ValueChecker(table, onFinish, onError) {
+                    this._errorOccured = false;
+                    this.checkAndModifyValue = function (value) {
+                        this._value = value;
+                        this._index = 0;
+                        this.checkColumnValue();
+                    };
+                    this.checkColumnValue = function () {
+                        var column = this._table._columns[this._index++];
+                        if (column) {
+                            this.checkAndModifyColumnValue(column, this._value);
+                        }
+                        else {
+                            this.onFinish();
+                        }
+                    };
+                    this.checkAndModifyColumnValue = function (column, value) {
+                        if (this._errorOccured === true) {
+                            this.onError(this._error);
+                        }
+                        else {
+                            var checkNotNullAndDataType = function () {
+                                // check not null schema
+                                if (column._notNull && JsStore.isNull(value[column._name])) {
+                                    this.onValidationError(JsStore.Error_Type.NullValue, { ColumnName: column._name });
+                                }
+                                else if (column._dataType && typeof value[column._name] !== column._dataType) {
+                                    this.onValidationError(JsStore.Error_Type.BadDataType, { ColumnName: column._name });
+                                }
+                                else {
+                                    this.checkColumnValue();
+                                }
+                            }.bind(this);
+                            var saveAutoIncrementValue = function () {
+                                var auto_increment_key = "JsStore_" + Business.active_db._name + "_" + this._table._name + "_" + column._name + "_Value";
+                                KeyStore.get(auto_increment_key, function (columnValue) {
+                                    value[column._name] = ++columnValue;
+                                    KeyStore.set(auto_increment_key, columnValue);
+                                    checkNotNullAndDataType();
+                                });
+                            }.bind(this);
+                            // check auto increment scheme
+                            if (column._autoIncrement) {
+                                saveAutoIncrementValue();
+                            }
+                            else if (column._default && JsStore.isNull(value[column._name])) {
+                                value[column._name] = column._default;
+                                checkNotNullAndDataType();
+                            }
+                            else {
+                                checkNotNullAndDataType();
+                            }
+                        }
+                    };
+                    this.onValidationError = function (error, details) {
+                        this._errorOccured = true;
+                        this._error = new JsStore.Error(error, details).get();
+                        this.onError(this._error);
+                    };
+                    this._table = table;
+                    this.onFinish = onFinish;
+                    this.onError = onError;
+                }
+                return ValueChecker;
+            }());
+            Insert.ValueChecker = ValueChecker;
+        })(Insert = Business.Insert || (Business.Insert = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Insert;
+        (function (Insert) {
+            var ValuesChecker = /** @class */ (function () {
+                function ValuesChecker(table, values) {
+                    this._index = 0;
+                    this.checkAndModifyValues = function (onFinish) {
+                        this.onFinish = onFinish;
+                        this.checkRowValue();
+                    };
+                    this.checkRowValue = function () {
+                        var row_value = this._values[this._index];
+                        if (row_value) {
+                            var values_checker_obj = new Insert.ValueChecker(this._table, function () {
+                                this._values[this._index++] = values_checker_obj._value;
+                                this.checkRowValue();
+                            }.bind(this), function (err) {
+                                this._error = err;
+                                this.onFinish(true);
+                            }.bind(this));
+                            values_checker_obj.checkAndModifyValue(row_value);
+                        }
+                        else {
+                            this.onFinish(false);
+                        }
+                    };
+                    this._table = table;
+                    this._values = values;
+                }
+                return ValuesChecker;
+            }());
+            Insert.ValuesChecker = ValuesChecker;
+        })(Insert = Business.Insert || (Business.Insert = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
