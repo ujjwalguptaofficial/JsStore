@@ -117,6 +117,7 @@ namespace JsStore {
             };
 
             private dropDb = function (onSuccess: () => void, onError: (err: IError) => void) {
+                this.closeDb();
                 var drop_db_object = new DropDb(active_db._name, onSuccess, onError);
             };
 

@@ -9,7 +9,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /**
- * @license :JsStore.js - v1.3.3 - 28/12/2017
+ * @license :JsStore.js - v1.4.0 - 28/12/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
  */ 
@@ -719,6 +719,15 @@ var JsStore;
             });
         }
     };
+    /**
+     * get the jsstore version
+     *
+     * @returns {number}
+     */
+    var getVersion = function () {
+        var version = parseFloat('1.3.3');
+        return version;
+    };
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
@@ -1414,11 +1423,9 @@ var JsStore;
                                 }
                             });
                         });
-                        KeyStore.remove("JsStore_" + Business.active_db._name + "_Schema");
-                        onSuccess();
+                        KeyStore.remove("JsStore_" + Business.active_db._name + "_Schema", onSuccess);
                     };
                 };
-                Business.db_connection.close();
                 setTimeout(function () {
                     this.deleteDb(name, onSuccess, onError);
                 }.bind(this), 100);
@@ -1666,6 +1673,7 @@ var JsStore;
                     }
                 };
                 this.dropDb = function (onSuccess, onError) {
+                    this.closeDb();
                     var drop_db_object = new Business.DropDb(Business.active_db._name, onSuccess, onError);
                 };
                 this.update = function (query, onSuccess, onError) {

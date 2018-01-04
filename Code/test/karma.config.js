@@ -20,6 +20,7 @@ module.exports = function (config) {
             'cases/helper/*.js',
             'cases/clear/*.js',
             'cases/column_option/*.js',
+            'cases/drop_db.js',
             {
                 pattern: 'static/*.json',
                 included: false,

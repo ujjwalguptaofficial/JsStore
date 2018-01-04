@@ -2,7 +2,6 @@ namespace JsStore {
     export namespace Business {
         export class DropDb {
             constructor(name: string, onSuccess: () => void, onError: (err: IError) => void) {
-                db_connection.close();
                 setTimeout(function () {
                     this.deleteDb(name, onSuccess, onError);
                 }.bind(this), 100);
@@ -33,8 +32,7 @@ namespace JsStore {
                             }
                         });
                     });
-                    KeyStore.remove("JsStore_" + active_db._name + "_Schema");
-                    onSuccess();
+                    KeyStore.remove("JsStore_" + active_db._name + "_Schema", onSuccess);
                 };
             };
         }
