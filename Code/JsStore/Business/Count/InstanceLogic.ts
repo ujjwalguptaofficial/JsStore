@@ -15,11 +15,12 @@ namespace JsStore {
                             this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
                         };
                         if (query.Where !== undefined) {
-                            if (query.Where.Or) {
-                                var select_object = new Select.Instance(query as any, function (results) {
-                                    this._resultCount = results.length;
-                                    this.onTransactionCompleted();
-                                }.bind(this), this._onError);
+                            if (query.Where.Or || Array.isArray(query.Where)) {
+                                var select_object = new Select.Instance(query as any,
+                                    function (results) {
+                                        this._resultCount = results.length;
+                                        this.onTransactionCompleted();
+                                    }.bind(this), this._onError);
                             }
                             else {
                                 createTransaction.call(this);
@@ -36,7 +37,7 @@ namespace JsStore {
                     }
                 }
 
-                public onTransactionCompleted = function () {
+                private onTransactionCompleted = function () {
                     if (this._sendResultFlag) {
                         this._onSuccess(this._resultCount);
                     }

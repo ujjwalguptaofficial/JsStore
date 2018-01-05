@@ -71,7 +71,7 @@ namespace JsStore {
                         }
                     };
                     // free or memory
-                    this._query.Where.Or = undefined;
+                    delete this._query.Where.Or;
                     this._onSuccess = onSuccess;
                 };
             }

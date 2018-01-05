@@ -9,7 +9,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /**
- * @license :JsStore.js - v1.4.0 - 28/12/2017
+ * @license :JsStore.js - v1.4.0 - 06/01/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
  */ 
@@ -718,15 +718,6 @@ var JsStore;
                 }
             });
         }
-    };
-    /**
-     * get the jsstore version
-     *
-     * @returns {number}
-     */
-    var getVersion = function () {
-        var version = parseFloat('1.3.3');
-        return version;
     };
 })(JsStore || (JsStore = {}));
 var JsStore;
@@ -3088,6 +3079,98 @@ var JsStore;
                 __extends(Instance, _super);
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
+                    _this.processWhereArrayQry = function () {
+                        var original_onsuccess = this._onSuccess, where_query = this._query.Where, output = [], operation, pKey = this.getPrimaryKey(this._query.From), isItemExist = function (keyValue) {
+                            var is_exist = false;
+                            output.every(function (item) {
+                                if (item[pKey] === keyValue) {
+                                    is_exist = true;
+                                    return false;
+                                }
+                                return true;
+                            });
+                            return is_exist;
+                        }, createTransaction = function () {
+                            try {
+                                this._transaction = Business.db_connection.transaction([this._query.From], "readonly");
+                                this._transaction.oncomplete = onSuccess;
+                                this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
+                                this._objectStore = this._transaction.objectStore(this._query.From);
+                            }
+                            catch (ex) {
+                                this._errorOccured = true;
+                                this.onExceptionOccured.call(this, ex, { TableName: this._query.From });
+                            }
+                        }.bind(this), onSuccess = function () {
+                            if (operation === 'and') {
+                                if (output.length > 0) {
+                                    var and_results = [];
+                                    this._results.forEach(function (item) {
+                                        if (isItemExist(item[pKey])) {
+                                            and_results.push(item);
+                                        }
+                                    });
+                                    output = and_results;
+                                    and_results = null;
+                                }
+                                else {
+                                    output = this._results;
+                                }
+                            }
+                            else {
+                                if (output.length > 0) {
+                                    this._results = output.concat(this._results);
+                                    this.removeDuplicates();
+                                    output = this._results;
+                                }
+                                else {
+                                    output = this._results;
+                                }
+                            }
+                            this._results = [];
+                            if (where_query.length > 0) {
+                                processFirstQry();
+                            }
+                            else {
+                                original_onsuccess(output);
+                            }
+                        }.bind(this), processFirstQry = function () {
+                            this._query.Where = where_query.shift();
+                            if (this._query.Where['Or']) {
+                                if (Object.keys(this._query.Where).length === 1) {
+                                    operation = 'or';
+                                    this._query.Where = this._query.Where['Or'];
+                                    createTransaction();
+                                }
+                                else {
+                                    operation = 'and';
+                                    this._onSuccess = onSuccess;
+                                }
+                            }
+                            else {
+                                operation = 'and';
+                                createTransaction();
+                            }
+                            this.processWhere(true);
+                        }.bind(this);
+                        processFirstQry();
+                    };
+                    _this.createTransaction = function () {
+                        this._transaction = Business.db_connection.transaction([this._query.From], "readonly");
+                        this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                        this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
+                        this._objectStore = this._transaction.objectStore(this._query.From);
+                    };
+                    _this.processWhere = function (isTransactionCreated) {
+                        if (this._query.Where.Or) {
+                            this.processOrLogic();
+                            this.createTransactionForOrLogic();
+                        }
+                        else if (!isTransactionCreated) {
+                            this.createTransaction();
+                        }
+                        this.goToWhereLogic();
+                    };
                     _this.onTransactionCompleted = function () {
                         if (this._sendResultFlag) {
                             this.processOrderBy();
@@ -3115,59 +3198,54 @@ var JsStore;
                             this._onSuccess(this._results);
                         }
                     };
-                    _this.createtransactionForOrLogic = function (query) {
-                        this._query = query;
+                    _this.createTransactionForOrLogic = function (query) {
                         try {
-                            this._transaction = Business.db_connection.transaction([query.From], "readonly");
-                            this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                            this._transaction = Business.db_connection.transaction([this._query.From], "readonly");
+                            this._transaction.oncomplete = this.orQuerySuccess.bind(this);
                             this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
-                            this._objectStore = this._transaction.objectStore(query.From);
-                            this.goToWhereLogic();
+                            this._objectStore = this._transaction.objectStore(this._query.From);
                         }
                         catch (ex) {
                             this._errorOccured = true;
-                            this.onExceptionOccured.call(this, ex, { TableName: query.From });
+                            this.onExceptionOccured.call(this, ex, { TableName: this._query.From });
                         }
                     };
-                    _this.orQuerySuccess = function () {
-                        this._results = this.OrInfo._results;
-                        // free var memory
-                        this.OrInfo._results = undefined;
+                    _this.orQueryFinish = function () {
+                        this._results = this._orInfo.Results;
+                        // free or info memory
+                        this._orInfo.Results = undefined;
                         this.removeDuplicates();
-                        this.OrInfo.OnSucess(this._results);
+                        this._orInfo.OnSucess(this._results);
                     };
-                    _this.executeOrLogic = function () {
-                        this.OrInfo = {
-                            OrQuery: this._query.Where.Or,
-                            OnSucess: this._onSuccess,
-                            _results: []
-                        };
-                        this.TmpQry = {
-                            From: this._query.From,
-                            Where: {}
-                        };
-                        var onSuccess = function () {
-                            this.OrInfo._results = this.OrInfo._results.concat(this._results);
-                            if (!this._query.Limit || (this._query.Limit > this.OrInfo._results.length)) {
-                                this._results = [];
-                                var key = JsStore.getObjectFirstKey(this.OrInfo.OrQuery);
-                                if (key != null) {
-                                    this.TmpQry['Where'][key] = this.OrInfo.OrQuery[key];
-                                    delete this.OrInfo.OrQuery[key];
-                                    this.createtransactionForOrLogic(this.TmpQry);
-                                    delete this.TmpQry['Where'][key];
-                                }
-                                else {
-                                    this.orQuerySuccess();
-                                }
+                    _this.orQuerySuccess = function () {
+                        this._orInfo.Results = this._orInfo.Results.concat(this._results);
+                        if (!this._query.Limit || (this._query.Limit > this._orInfo.Results.length)) {
+                            this._results = [];
+                            var key = JsStore.getObjectFirstKey(this._orInfo.OrQuery);
+                            if (key != null) {
+                                var where = {};
+                                where[key] = this._orInfo.OrQuery[key];
+                                delete this._orInfo.OrQuery[key];
+                                this._query.Where = where;
+                                this.createTransactionForOrLogic();
+                                this.goToWhereLogic();
                             }
                             else {
-                                this.orQuerySuccess();
+                                this.orQueryFinish();
                             }
+                        }
+                        else {
+                            this.orQueryFinish();
+                        }
+                    };
+                    _this.processOrLogic = function () {
+                        this._orInfo = {
+                            OrQuery: this._query.Where.Or,
+                            OnSucess: this._onSuccess,
+                            Results: []
                         };
                         // free or memory
-                        this._query.Where.Or = undefined;
-                        this._onSuccess = onSuccess;
+                        delete this._query.Where.Or;
                     };
                     _this._query = query;
                     _this._onSuccess = onSuccess;
@@ -3175,17 +3253,16 @@ var JsStore;
                     _this._skipRecord = _this._query.Skip;
                     _this._limitRecord = _this._query.Limit;
                     try {
-                        _this._transaction = Business.db_connection.transaction([query.From], "readonly");
-                        _this._transaction.oncomplete = _this.onTransactionCompleted.bind(_this);
-                        _this._transaction.ontimeout = _this.onTransactionTimeout.bind(_this);
-                        _this._objectStore = _this._transaction.objectStore(query.From);
                         if (query.Where) {
-                            if (query.Where.Or) {
-                                _this.executeOrLogic();
+                            if (Array.isArray(query.Where)) {
+                                _this.processWhereArrayQry();
                             }
-                            _this.goToWhereLogic();
+                            else {
+                                _this.processWhere(false);
+                            }
                         }
                         else {
+                            _this.createTransaction();
                             _this.executeWhereUndefinedLogic();
                         }
                     }
@@ -3486,7 +3563,7 @@ var JsStore;
                             this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
                         };
                         if (query.Where !== undefined) {
-                            if (query.Where.Or) {
+                            if (query.Where.Or || Array.isArray(query.Where)) {
                                 var select_object = new Business.Select.Instance(query, function (results) {
                                     this._resultCount = results.length;
                                     this.onTransactionCompleted();
@@ -3800,7 +3877,7 @@ var JsStore;
                             this.onExceptionOccured.call(this, ex, { TableName: query.From });
                         }
                     };
-                    _this.executeOrLogic = function () {
+                    _this.executeComplexLogic = function () {
                         var select_object = new Business.Select.Instance({
                             From: this._query.In,
                             Where: this._query.Where
@@ -3815,7 +3892,7 @@ var JsStore;
                                 Where: where_qry,
                                 Set: this._query.Set
                             });
-                        }.bind(this), this.OnError);
+                        }.bind(this), this._onError.bind(this));
                     };
                     try {
                         _this._onSuccess = onSuccess;
@@ -3830,8 +3907,8 @@ var JsStore;
                                 this._transaction.ontimeout = this.onTransactionTimeout;
                             }.bind(_this);
                             if (query.Where) {
-                                if (query.Where.Or) {
-                                    _this.executeOrLogic();
+                                if (query.Where.Or || Array.isArray(query.Where)) {
+                                    _this.executeComplexLogic();
                                 }
                                 else {
                                     createTransaction();
@@ -4195,7 +4272,7 @@ var JsStore;
                             }
                         };
                         // free or memory
-                        this._query.Where.Or = undefined;
+                        delete this._query.Where.Or;
                         this._onSuccess = onSuccess;
                     };
                     try {

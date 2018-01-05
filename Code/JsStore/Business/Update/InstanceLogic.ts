@@ -18,8 +18,8 @@ namespace JsStore {
                             }.bind(this);
 
                             if (query.Where) {
-                                if (query.Where.Or) {
-                                    this.executeOrLogic();
+                                if (query.Where.Or || Array.isArray(query.Where)) {
+                                    this.executeComplexLogic();
                                 }
                                 else {
                                     createTransaction();
@@ -60,7 +60,7 @@ namespace JsStore {
                     }
                 };
 
-                private executeOrLogic = function () {
+                private executeComplexLogic = function () {
                     var select_object = new Select.Instance({
                         From: this._query.In,
                         Where: this._query.Where
@@ -77,7 +77,7 @@ namespace JsStore {
                             Where: where_qry,
                             Set: this._query.Set
                         });
-                    }.bind(this), this.OnError);
+                    }.bind(this), this._onError.bind(this));
                 };
 
                 private checkSchema(suppliedValue, tableName: string) {

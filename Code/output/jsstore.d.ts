@@ -674,10 +674,14 @@ declare namespace JsStore {
         namespace Select {
             class Instance extends Helper {
                 constructor(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
-                onTransactionCompleted: () => void;
-                private createtransactionForOrLogic;
+                private processWhereArrayQry;
+                private createTransaction;
+                private processWhere;
+                private onTransactionCompleted;
+                private createTransactionForOrLogic;
+                private orQueryFinish;
                 private orQuerySuccess;
-                private executeOrLogic;
+                private processOrLogic;
             }
         }
     }
@@ -739,7 +743,7 @@ declare namespace JsStore {
         namespace Count {
             class Instance extends Where {
                 constructor(query: ICount, onSuccess: (noOfRecord: number) => void, onError: (error: IError) => void);
-                onTransactionCompleted: () => void;
+                private onTransactionCompleted;
             }
         }
     }
@@ -801,7 +805,7 @@ declare namespace JsStore {
                 constructor(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void);
                 protected onTransactionCompleted: () => void;
                 private createtransactionForOrLogic;
-                private executeOrLogic;
+                private executeComplexLogic;
                 private checkSchema(suppliedValue, tableName);
             }
         }

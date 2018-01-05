@@ -145,15 +145,4 @@ namespace JsStore {
             } as IWebWorkerRequest);
         }
     };
-
-    /**
-     * get the jsstore version
-     * 
-     * @returns {number} 
-     */
-    var getVersion = function (): number {
-        var version = parseFloat('1.3.3');
-        return version;
-    };
-
 }
