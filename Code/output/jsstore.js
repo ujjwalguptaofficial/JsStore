@@ -3155,6 +3155,7 @@ var JsStore;
                                     this.TmpQry['Where'][key] = this.OrInfo.OrQuery[key];
                                     delete this.OrInfo.OrQuery[key];
                                     this.createtransactionForOrLogic(this.TmpQry);
+                                    delete this.TmpQry['Where'][key];
                                 }
                                 else {
                                     this.orQuerySuccess();

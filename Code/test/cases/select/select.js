@@ -127,6 +127,28 @@ describe('Test Select Api', function () {
         })
     });
 
+    it('select with multiple or', function (done) {
+        Con.select({
+            From: 'Customers',
+            Where: {
+                Country: 'Mexico',
+                Or: {
+                    City: 'Madrid',
+                    Address: {
+                        Like: '%a%'
+                    }
+                }
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('array').length(73);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
     it('select with in', function (done) {
         Con.select({
             From: 'Customers',

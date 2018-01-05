@@ -101,6 +101,7 @@ namespace JsStore {
                                 (this as any).TmpQry['Where'][key] = (this as any).OrInfo.OrQuery[key];
                                 delete (this as any).OrInfo.OrQuery[key];
                                 this.createtransactionForOrLogic((this as any).TmpQry);
+                                delete (this as any).TmpQry['Where'][key];
                             }
                             else {
                                 this.orQuerySuccess();
