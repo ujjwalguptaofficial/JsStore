@@ -3863,19 +3863,11 @@ var JsStore;
                     _this.onTransactionCompleted = function () {
                         this._onSuccess(this._rowAffected);
                     };
-                    _this.createtransactionForOrLogic = function (query) {
-                        this._query = query;
-                        try {
-                            this._transaction = Business.db_connection.transaction([query.In], "readwrite");
-                            this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                            this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
-                            this._objectStore = this._transaction.objectStore(query.In);
-                            this.goToWhereLogic();
-                        }
-                        catch (ex) {
-                            this._errorOccured = true;
-                            this.onExceptionOccured.call(this, ex, { TableName: query.From });
-                        }
+                    _this.createTransaction = function () {
+                        this._transaction = Business.db_connection.transaction([this._query.In], "readwrite");
+                        this._objectStore = this._transaction.objectStore(this._query.In);
+                        this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                        this._transaction.ontimeout = this.onTransactionTimeout;
                     };
                     _this.executeComplexLogic = function () {
                         var select_object = new Business.Select.Instance({
@@ -3886,12 +3878,11 @@ var JsStore;
                             results.forEach(function (value) {
                                 in_query.push(value[key]);
                             });
+                            results = null;
                             where_qry[key] = { In: in_query };
-                            this.createtransactionForOrLogic({
-                                In: this._query.In,
-                                Where: where_qry,
-                                Set: this._query.Set
-                            });
+                            this._query['Where'] = where_qry;
+                            this.createTransaction();
+                            this.goToWhereLogic();
                         }.bind(this), this._onError.bind(this));
                     };
                     try {
@@ -3900,23 +3891,17 @@ var JsStore;
                         _this.checkSchema(query.Set, query.In);
                         if (!_this._errorOccured) {
                             _this._query = query;
-                            var createTransaction = function () {
-                                this._transaction = Business.db_connection.transaction([query.In], "readwrite");
-                                this._objectStore = this._transaction.objectStore(query.In);
-                                this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                                this._transaction.ontimeout = this.onTransactionTimeout;
-                            }.bind(_this);
                             if (query.Where) {
                                 if (query.Where.Or || Array.isArray(query.Where)) {
                                     _this.executeComplexLogic();
                                 }
                                 else {
-                                    createTransaction();
+                                    _this.createTransaction();
                                     _this.goToWhereLogic();
                                 }
                             }
                             else {
-                                createTransaction();
+                                _this.createTransaction();
                                 _this.executeWhereUndefinedLogic();
                             }
                         }
@@ -4235,66 +4220,90 @@ var JsStore;
                 __extends(Instance, _super);
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
+                    _this.processWhereArrayQry = function () {
+                        var select_object = new Business.Select.Instance(this._query, function (results) {
+                            var key_list = [], p_key = this.getPrimaryKey(this._query.From);
+                            results.forEach(function (item) {
+                                key_list.push(item[p_key]);
+                            });
+                            results = null;
+                            this._query.Where = {};
+                            this._query.Where[p_key] = { In: key_list };
+                            this.processWhere(false);
+                        }.bind(this), this._onError);
+                    };
+                    _this.processWhere = function (isTransactionCreated) {
+                        if (this._query.Where.Or) {
+                            this.processOrLogic();
+                            this.createTransactionForOrLogic();
+                        }
+                        else if (isTransactionCreated === false) {
+                            this.createTransaction();
+                        }
+                        this.goToWhereLogic();
+                    };
+                    _this.createTransaction = function () {
+                        this._transaction = Business.db_connection.transaction([this._query.From], "readwrite");
+                        this._objectStore = this._transaction.objectStore(this._query.From);
+                        this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                        this._transaction.onerror = this.onErrorOccured.bind(this);
+                    };
                     _this.onTransactionCompleted = function () {
                         this._onSuccess(this._rowAffected);
                     };
-                    _this.createtransactionForOrLogic = function (query) {
-                        this._query = query;
+                    _this.createTransactionForOrLogic = function () {
                         try {
-                            this._transaction = Business.db_connection.transaction([query.From], "readwrite");
-                            this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                            this._transaction = Business.db_connection.transaction([this._query.From], "readwrite");
+                            this._transaction.oncomplete = this.orQuerySuccess.bind(this);
                             (this._transaction).ontimeout = this.onTransactionTimeout.bind(this);
-                            this._objectStore = this._transaction.objectStore(query.From);
-                            this.goToWhereLogic();
+                            this._objectStore = this._transaction.objectStore(this._query.From);
                         }
                         catch (ex) {
-                            this.onExceptionOccured(ex, { TableName: query.From });
+                            this._errorOccured = true;
+                            this.onExceptionOccured(ex, { TableName: this._query.From });
                         }
                     };
-                    _this.executeOrLogic = function () {
-                        this.OrInfo = {
+                    _this.orQuerySuccess = function () {
+                        var key = JsStore.getObjectFirstKey(this._orInfo.OrQuery);
+                        if (key != null) {
+                            var where = {};
+                            where[key] = this._orInfo.OrQuery[key];
+                            delete this._orInfo.OrQuery[key];
+                            this._query.Where = where;
+                            this.createTransactionForOrLogic();
+                            this.goToWhereLogic();
+                        }
+                        else {
+                            this._orInfo.OnSucess(this._rowAffected);
+                        }
+                    };
+                    _this.processOrLogic = function () {
+                        this._orInfo = {
                             OrQuery: this._query.Where.Or,
                             OnSucess: this._onSuccess
                         };
-                        this.TmpQry = {
-                            From: this._query.From,
-                            Where: {}
-                        };
-                        var onSuccess = function () {
-                            var key = JsStore.getObjectFirstKey(this.OrInfo.OrQuery);
-                            if (key != null) {
-                                this.TmpQry['Where'][key] = this.OrInfo.OrQuery[key];
-                                delete this.OrInfo.OrQuery[key];
-                                this.createtransactionForOrLogic(this.TmpQry);
-                                delete this.TmpQry['Where'][key];
-                            }
-                            else {
-                                this.OrInfo.OnSucess(this._rowAffected);
-                            }
-                        };
                         // free or memory
                         delete this._query.Where.Or;
-                        this._onSuccess = onSuccess;
                     };
                     try {
                         _this._query = query;
                         _this._onSuccess = onSuccess;
                         _this._onError = onError;
-                        _this._transaction = Business.db_connection.transaction([query.From], "readwrite");
-                        _this._objectStore = _this._transaction.objectStore(query.From);
-                        _this._transaction.oncomplete = _this.onTransactionCompleted.bind(_this);
-                        _this._transaction.onerror = _this.onErrorOccured.bind(_this);
                         if (query.Where) {
-                            if (query.Where.Or) {
-                                _this.executeOrLogic();
+                            if (Array.isArray(query.Where)) {
+                                _this.processWhereArrayQry();
                             }
-                            _this.goToWhereLogic();
+                            else {
+                                _this.processWhere(false);
+                            }
                         }
                         else {
+                            _this.createTransaction();
                             _this.executeWhereUndefinedLogic();
                         }
                     }
                     catch (ex) {
+                        _this._errorOccured = true;
                         _this.onExceptionOccured(ex, { TableName: query.From });
                     }
                     return _this;

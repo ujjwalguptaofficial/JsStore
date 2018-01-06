@@ -803,8 +803,8 @@ declare namespace JsStore {
         namespace Update {
             class Instance extends Where {
                 constructor(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void);
-                protected onTransactionCompleted: () => void;
-                private createtransactionForOrLogic;
+                private onTransactionCompleted;
+                private createTransaction;
                 private executeComplexLogic;
                 private checkSchema(suppliedValue, tableName);
             }
@@ -865,9 +865,13 @@ declare namespace JsStore {
         namespace Delete {
             class Instance extends Where {
                 constructor(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void);
+                private processWhereArrayQry;
+                private processWhere;
+                private createTransaction;
                 private onTransactionCompleted;
-                private createtransactionForOrLogic;
-                private executeOrLogic;
+                private createTransactionForOrLogic;
+                private orQuerySuccess;
+                private processOrLogic;
             }
         }
     }

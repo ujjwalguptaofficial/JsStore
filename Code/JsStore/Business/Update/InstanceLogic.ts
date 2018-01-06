@@ -10,24 +10,17 @@ namespace JsStore {
                         this.checkSchema(query.Set, query.In);
                         if (!this._errorOccured) {
                             this._query = query;
-                            var createTransaction = function () {
-                                this._transaction = db_connection.transaction([query.In], "readwrite");
-                                this._objectStore = this._transaction.objectStore(query.In);
-                                this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                                (this._transaction as any).ontimeout = this.onTransactionTimeout;
-                            }.bind(this);
-
                             if (query.Where) {
                                 if (query.Where.Or || Array.isArray(query.Where)) {
                                     this.executeComplexLogic();
                                 }
                                 else {
-                                    createTransaction();
+                                    this.createTransaction();
                                     this.goToWhereLogic();
                                 }
                             }
                             else {
-                                createTransaction();
+                                this.createTransaction();
                                 this.executeWhereUndefinedLogic();
                             }
                         }
@@ -41,23 +34,15 @@ namespace JsStore {
                     }
                 }
 
-                protected onTransactionCompleted = function () {
+                private onTransactionCompleted = function () {
                     this._onSuccess(this._rowAffected);
                 };
 
-                private createtransactionForOrLogic = function (query) {
-                    this._query = query;
-                    try {
-                        this._transaction = db_connection.transaction([query.In], "readwrite");
-                        this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                        this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
-                        this._objectStore = this._transaction.objectStore(query.In);
-                        this.goToWhereLogic();
-                    }
-                    catch (ex) {
-                        this._errorOccured = true;
-                        this.onExceptionOccured.call(this, ex, { TableName: query.From });
-                    }
+                private createTransaction = function () {
+                    this._transaction = db_connection.transaction([this._query.In], "readwrite");
+                    this._objectStore = this._transaction.objectStore(this._query.In);
+                    this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                    (this._transaction as any).ontimeout = this.onTransactionTimeout;
                 };
 
                 private executeComplexLogic = function () {
@@ -71,12 +56,11 @@ namespace JsStore {
                         results.forEach(function (value) {
                             in_query.push(value[key]);
                         });
+                        results = null;
                         where_qry[key] = { In: in_query };
-                        this.createtransactionForOrLogic({
-                            In: this._query.In,
-                            Where: where_qry,
-                            Set: this._query.Set
-                        });
+                        this._query['Where'] = where_qry;
+                        this.createTransaction();
+                        this.goToWhereLogic();
                     }.bind(this), this._onError.bind(this));
                 };
 

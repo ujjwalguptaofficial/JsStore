@@ -1,5 +1,5 @@
 /** 
- * @license :JsStore.js - v1.3.3 - 28/12/2017
+ * @license :JsStore.js - v1.4.0 - 06/01/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT 
  */
@@ -679,10 +679,14 @@ declare namespace JsStore {
         namespace Select {
             class Instance extends Helper {
                 constructor(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
-                onTransactionCompleted: () => void;
-                private createtransactionForOrLogic;
+                private processWhereArrayQry;
+                private createTransaction;
+                private processWhere;
+                private onTransactionCompleted;
+                private createTransactionForOrLogic;
+                private orQueryFinish;
                 private orQuerySuccess;
-                private executeOrLogic;
+                private processOrLogic;
             }
         }
     }
@@ -744,7 +748,7 @@ declare namespace JsStore {
         namespace Count {
             class Instance extends Where {
                 constructor(query: ICount, onSuccess: (noOfRecord: number) => void, onError: (error: IError) => void);
-                onTransactionCompleted: () => void;
+                private onTransactionCompleted;
             }
         }
     }
@@ -804,9 +808,9 @@ declare namespace JsStore {
         namespace Update {
             class Instance extends Where {
                 constructor(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void);
-                protected onTransactionCompleted: () => void;
-                private createtransactionForOrLogic;
-                private executeOrLogic;
+                private onTransactionCompleted;
+                private createTransaction;
+                private executeComplexLogic;
                 private checkSchema(suppliedValue, tableName);
             }
         }
@@ -866,9 +870,13 @@ declare namespace JsStore {
         namespace Delete {
             class Instance extends Where {
                 constructor(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void);
+                private processWhereArrayQry;
+                private processWhere;
+                private createTransaction;
                 private onTransactionCompleted;
-                private createtransactionForOrLogic;
-                private executeOrLogic;
+                private createTransactionForOrLogic;
+                private orQuerySuccess;
+                private processOrLogic;
             }
         }
     }
