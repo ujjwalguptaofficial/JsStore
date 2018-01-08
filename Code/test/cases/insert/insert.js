@@ -78,6 +78,23 @@ describe('Test insert', function () {
         });
     });
 
+    it('insert suppliers - using return Data', function (done) {
+        $.getJSON("static/Suppliers.json", function (results) {
+            Con.insert({
+                Into: 'Suppliers',
+                Values: results,
+                Return: true,
+                OnSuccess: function (results) {
+                    expect(results).to.be.an('array').length(29);
+                    done();
+                },
+                OnError: function (err) {
+                    done(err);
+                }
+            });
+        });
+    });
+
     it('insert without values Option', function (done) {
         Con.insert({
             Into: 'Customers',

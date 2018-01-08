@@ -806,7 +806,18 @@ declare namespace JsStore {
                 private onTransactionCompleted;
                 private createTransaction;
                 private executeComplexLogic;
-                private checkSchema(suppliedValue, tableName);
+            }
+        }
+    }
+}
+declare namespace JsStore {
+    namespace Business {
+        namespace Update {
+            class SchemaChecker {
+                _table: Table;
+                constructor(table: Table);
+                check: (inValue: any, tblName: any) => IError;
+                private checkByColumn;
             }
         }
     }
