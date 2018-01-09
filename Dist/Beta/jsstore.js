@@ -9,7 +9,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /**
- * @license :JsStore.js - v1.4.0 - 06/01/2018
+ * @license :JsStore.js - v1.4.1 - 09/01/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
  */ 
@@ -3888,8 +3888,8 @@ var JsStore;
                     try {
                         _this._onSuccess = onSuccess;
                         _this._onError = onError;
-                        _this.checkSchema(query.Set, query.In);
-                        if (!_this._errorOccured) {
+                        _this._error = new Update.SchemaChecker(_this.getTable(query.In)).check(query.Set, query.In);
+                        if (!_this._error) {
                             _this._query = query;
                             if (query.Where) {
                                 if (query.Where.Or || Array.isArray(query.Where)) {
@@ -3906,6 +3906,7 @@ var JsStore;
                             }
                         }
                         else {
+                            _this._errorOccured = true;
                             _this.onErrorOccured(_this._error, true);
                         }
                     }
@@ -3915,64 +3916,76 @@ var JsStore;
                     }
                     return _this;
                 }
-                Instance.prototype.checkSchema = function (suppliedValue, tableName) {
-                    if (typeof suppliedValue === 'object') {
-                        var current_table = this.getTable(tableName);
-                        if (current_table) {
-                            var onValidationError = function (err, details) {
-                                this._errorOccured = true;
-                                this._error = new JsStore.Error(err, details);
-                            }.bind(this);
-                            // loop through table column and find data is valid
-                            current_table._columns.every(function (column) {
-                                if (!this._errorOccured) {
-                                    if (column._name in suppliedValue) {
-                                        var executeCheck = function (value) {
-                                            // check not null schema
-                                            if (column._notNull && JsStore.isNull(value)) {
-                                                onValidationError(JsStore.Error_Type.NullValue, { ColumnName: column._name });
-                                            }
-                                            // check datatype
-                                            if (column._dataType) {
-                                                var type = typeof value;
-                                                if (type !== column._dataType) {
-                                                    if (type !== 'object') {
-                                                        onValidationError(JsStore.Error_Type.BadDataType, { ColumnName: column._name });
-                                                    }
-                                                    else {
-                                                        var allowed_prop = ['+', '-', '*', '/'];
-                                                        for (var prop in value) {
-                                                            if (allowed_prop.indexOf(prop) < 0) {
-                                                                onValidationError(JsStore.Error_Type.BadDataType, { ColumnName: column._name });
-                                                            }
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        };
-                                        executeCheck(suppliedValue[column._name]);
-                                    }
-                                    return true;
-                                }
-                                else {
-                                    return false;
-                                }
-                            }, this);
-                        }
-                        else {
-                            this._error = new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: tableName }).get();
-                            this._errorOccured = true;
-                        }
-                    }
-                    else {
-                        this._error = new JsStore.Error(JsStore.Error_Type.NotObject).get();
-                        this._errorOccured = true;
-                    }
-                };
                 return Instance;
             }(Update.Where));
             Update.Instance = Instance;
+        })(Update = Business.Update || (Business.Update = {}));
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Update;
+        (function (Update) {
+            var SchemaChecker = /** @class */ (function () {
+                function SchemaChecker(table) {
+                    this.check = function (inValue, tblName) {
+                        var error = null;
+                        if (typeof inValue === 'object') {
+                            if (this._table) {
+                                // loop through table column and find data is valid
+                                this._table._columns.every(function (column) {
+                                    if (error === null) {
+                                        if (column._name in inValue) {
+                                            error = this.checkByColumn(column, inValue[column._name]);
+                                        }
+                                        return true;
+                                    }
+                                    else {
+                                        return false;
+                                    }
+                                }, this);
+                            }
+                            else {
+                                error = new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: tblName }).get();
+                            }
+                        }
+                        else {
+                            error = new JsStore.Error(JsStore.Error_Type.NotObject).get();
+                        }
+                        return error;
+                    };
+                    this.checkByColumn = function (column, value) {
+                        var error = null;
+                        // check not null schema
+                        if (column._notNull && JsStore.isNull(value)) {
+                            error = new JsStore.Error(JsStore.Error_Type.NullValue, { ColumnName: column._name }).get();
+                        }
+                        // check datatype
+                        var type = typeof value;
+                        if (column._dataType) {
+                            if (type !== column._dataType && type !== 'object') {
+                                error = new JsStore.Error(JsStore.Error_Type.BadDataType, { ColumnName: column._name }).get();
+                            }
+                        }
+                        // check allowed operators
+                        if (type === 'object') {
+                            var allowed_prop = ['+', '-', '*', '/'];
+                            for (var prop in value) {
+                                if (allowed_prop.indexOf(prop) < 0) {
+                                    error = new JsStore.Error(JsStore.Error_Type.InvalidOp, { Op: prop }).get();
+                                }
+                                break;
+                            }
+                        }
+                        return error;
+                    };
+                    this._table = table;
+                }
+                return SchemaChecker;
+            }());
+            Update.SchemaChecker = SchemaChecker;
         })(Update = Business.Update || (Business.Update = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
@@ -4329,18 +4342,18 @@ var JsStore;
                         this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
                     };
                     _this.insertData = function (values) {
-                        var value_index = 0, is_return = this._query.Return, insertDataintoTable;
-                        if (is_return) {
+                        var value_index = 0, insertDataintoTable;
+                        if (this._query.Return) {
                             insertDataintoTable = function (value) {
                                 if (value) {
                                     var add_result = object_store.add(value);
                                     add_result.onerror = this.onErrorOccured.bind(this);
                                     add_result.onsuccess = function (e) {
-                                        this.ValuesAffected.push(value);
-                                        insertDataintoTable(values[value_index++]);
+                                        this._valuesAffected.push(value);
+                                        insertDataintoTable.call(this, values[value_index++]);
                                     }.bind(this);
                                 }
-                            }.bind(this);
+                            };
                         }
                         else {
                             insertDataintoTable = function (value) {
@@ -4349,15 +4362,15 @@ var JsStore;
                                     add_result.onerror = this.onErrorOccured.bind(this);
                                     add_result.onsuccess = function (e) {
                                         ++this._rowAffected;
-                                        insertDataintoTable(values[value_index++]);
+                                        insertDataintoTable.call(this, values[value_index++]);
                                     }.bind(this);
                                 }
-                            }.bind(this);
+                            };
                         }
                         this._transaction = Business.db_connection.transaction([this._query.Into], "readwrite");
                         var object_store = this._transaction.objectStore(this._query.Into);
                         this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                        insertDataintoTable(values[value_index++]);
+                        insertDataintoTable.call(this, values[value_index++]);
                     };
                     try {
                         _this._query = query;

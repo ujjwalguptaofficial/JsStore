@@ -1,5 +1,5 @@
 /** 
- * @license :JsStore.js - v1.4.0 - 06/01/2018
+ * @license :JsStore.js - v1.4.1 - 09/01/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT 
  */
@@ -811,7 +811,18 @@ declare namespace JsStore {
                 private onTransactionCompleted;
                 private createTransaction;
                 private executeComplexLogic;
-                private checkSchema(suppliedValue, tableName);
+            }
+        }
+    }
+}
+declare namespace JsStore {
+    namespace Business {
+        namespace Update {
+            class SchemaChecker {
+                _table: Table;
+                constructor(table: Table);
+                check: (inValue: any, tblName: any) => IError;
+                private checkByColumn;
             }
         }
     }
