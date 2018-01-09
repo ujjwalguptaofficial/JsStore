@@ -480,18 +480,10 @@ declare namespace JsStore {
             _objectStore: IDBObjectStore;
             _query: any;
             _sendResultFlag: boolean;
+            _whereChecker: WhereChecker;
             protected onErrorOccured: (e: any, customError?: boolean) => void;
             protected onTransactionTimeout: (e: any) => void;
             protected onExceptionOccured: (ex: DOMException, info: any) => void;
-            /**
-             * For matching the different column value existance
-             *
-             * @protected
-             * @param {any} rowValue
-             * @returns
-             * @memberof Base
-             */
-            protected checkForWhereConditionMatch(rowValue: any): boolean;
             protected goToWhereLogic: () => void;
             protected makeQryInCaseSensitive: (qry: any) => any;
         }
@@ -557,6 +549,25 @@ declare namespace JsStore {
             private createDb;
             private clear;
             private exportJson;
+        }
+    }
+}
+declare namespace JsStore {
+    namespace Business {
+        /**
+         * For matching the different column value existance for where option
+         *
+         * @export
+         * @class WhereChecker
+         */
+        class WhereChecker {
+            _where: any;
+            _status: any;
+            constructor(where: any);
+            check: (rowValue: any) => any;
+            private checkIn;
+            private checkLike;
+            private checkComparisionOp;
         }
     }
 }

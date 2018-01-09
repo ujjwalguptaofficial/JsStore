@@ -22,7 +22,7 @@ namespace JsStore {
                             cursor = e.target.result;
                             if (cursor) {
                                 if (this.filterOnOccurence(cursor.key) &&
-                                    this.checkForWhereConditionMatch(cursor.value)) {
+                                    this._whereChecker.check(cursor.value)) {
                                     cursor.update(updateValue(this._query.Set, cursor.value));
                                     ++this._rowAffected;
                                 }

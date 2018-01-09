@@ -1079,6 +1079,7 @@ var JsStore;
                     }
                 };
                 _this.goToWhereLogic = function () {
+                    this._whereChecker = new Business.WhereChecker(this._query.Where);
                     var column = JsStore.getObjectFirstKey(this._query.Where);
                     if (this._query.IgnoreCase === true) {
                         this._query.Where = this.makeQryInCaseSensitive(this._query.Where);
@@ -1161,132 +1162,6 @@ var JsStore;
                 };
                 return _this;
             }
-            /**
-             * For matching the different column value existance
-             *
-             * @protected
-             * @param {any} rowValue
-             * @returns
-             * @memberof Base
-             */
-            Base.prototype.checkForWhereConditionMatch = function (rowValue) {
-                var where = this._query.Where, status = true;
-                var checkIn = function (column, value) {
-                    var values = where[column].In;
-                    for (var i = 0, length = values.length; i < length; i++) {
-                        if (values[i] === value) {
-                            status = true;
-                            break;
-                        }
-                        else {
-                            status = false;
-                        }
-                    }
-                }, checkLike = function (column, value) {
-                    var values = where[column].Like.split('%'), comp_symbol, comp_value, symbol_index;
-                    if (values[1]) {
-                        comp_value = values[1];
-                        comp_symbol = values.length > 2 ? JsStore.Occurence.Any : JsStore.Occurence.Last;
-                    }
-                    else {
-                        comp_value = values[0];
-                        comp_symbol = JsStore.Occurence.First;
-                    }
-                    value = value.toLowerCase();
-                    switch (comp_symbol) {
-                        case JsStore.Occurence.Any:
-                            symbol_index = value.indexOf(comp_value.toLowerCase());
-                            if (symbol_index < 0) {
-                                status = false;
-                            }
-                            break;
-                        case JsStore.Occurence.First:
-                            symbol_index = value.indexOf(comp_value.toLowerCase());
-                            if (symbol_index > 0 || symbol_index < 0) {
-                                status = false;
-                            }
-                            break;
-                        default:
-                            symbol_index = value.lastIndexOf(comp_value.toLowerCase());
-                            if (symbol_index < value.length - comp_value.length) {
-                                status = false;
-                            }
-                    }
-                }, checkComparisionOp = function (column, value, symbol) {
-                    var compare_value = where[column][symbol];
-                    switch (symbol) {
-                        // greater than
-                        case '>':
-                            if (value <= compare_value) {
-                                status = false;
-                            }
-                            break;
-                        // less than
-                        case '<':
-                            if (value >= compare_value) {
-                                status = false;
-                            }
-                            break;
-                        // less than equal
-                        case '<=':
-                            if (value > compare_value) {
-                                status = false;
-                            }
-                            break;
-                        // greather than equal
-                        case '>=':
-                            if (value < compare_value) {
-                                status = false;
-                            }
-                            break;
-                        // between
-                        case '-':
-                            if (value < compare_value.Low || value > compare_value.High) {
-                                status = false;
-                            }
-                            break;
-                    }
-                };
-                for (var columnValue in where) {
-                    var column_value = where[columnValue];
-                    if (status) {
-                        if (typeof column_value === 'object') {
-                            for (var key in column_value) {
-                                if (status) {
-                                    switch (key) {
-                                        case 'In':
-                                            checkIn(columnValue, rowValue[columnValue]);
-                                            break;
-                                        case 'Like':
-                                            checkLike(columnValue, rowValue[columnValue]);
-                                            break;
-                                        case '-':
-                                        case '>':
-                                        case '<':
-                                        case '>=':
-                                        case '<=':
-                                            checkComparisionOp(columnValue, rowValue[columnValue], key);
-                                            break;
-                                    }
-                                }
-                                else {
-                                    break;
-                                }
-                            }
-                        }
-                        else {
-                            if (column_value !== rowValue[columnValue]) {
-                                status = false;
-                                break;
-                            }
-                        }
-                    }
-                    else {
-                        break;
-                    }
-                }
-                return status;
-            };
             return Base;
         }(Business.BaseHelper));
         Business.Base = Base;
@@ -1755,6 +1630,145 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
+        /**
+         * For matching the different column value existance for where option
+         *
+         * @export
+         * @class WhereChecker
+         */
+        var WhereChecker = /** @class */ (function () {
+            function WhereChecker(where) {
+                this.check = function (rowValue) {
+                    this._status = true;
+                    var column_value;
+                    for (var columnName in this._where) {
+                        if (this._status) {
+                            column_value = this._where[columnName];
+                            if (typeof column_value === 'object') {
+                                for (var key in column_value) {
+                                    if (this._status) {
+                                        switch (key) {
+                                            case 'In':
+                                                this.checkIn(columnName, rowValue[columnName]);
+                                                break;
+                                            case 'Like':
+                                                this.checkLike(columnName, rowValue[columnName]);
+                                                break;
+                                            case '-':
+                                            case '>':
+                                            case '<':
+                                            case '>=':
+                                            case '<=':
+                                                this.checkComparisionOp(columnName, rowValue[columnName], key);
+                                                break;
+                                        }
+                                    }
+                                    else {
+                                        break;
+                                    }
+                                }
+                            }
+                            else {
+                                if (column_value !== rowValue[columnName]) {
+                                    this._status = false;
+                                    break;
+                                }
+                            }
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    return this._status;
+                };
+                this.checkIn = function (column, value) {
+                    for (var i = 0, values = this._where[column].In, length = values.length; i < length; i++) {
+                        if (values[i] === value) {
+                            this._status = true;
+                            break;
+                        }
+                        else {
+                            this._status = false;
+                        }
+                    }
+                };
+                this.checkLike = function (column, value) {
+                    var values = this._where[column].Like.split('%'), comp_symbol, comp_value, symbol_index;
+                    if (values[1]) {
+                        comp_value = values[1];
+                        comp_symbol = values.length > 2 ? JsStore.Occurence.Any : JsStore.Occurence.Last;
+                    }
+                    else {
+                        comp_value = values[0];
+                        comp_symbol = JsStore.Occurence.First;
+                    }
+                    value = value.toLowerCase();
+                    switch (comp_symbol) {
+                        case JsStore.Occurence.Any:
+                            symbol_index = value.indexOf(comp_value.toLowerCase());
+                            if (symbol_index < 0) {
+                                this._status = false;
+                            }
+                            break;
+                        case JsStore.Occurence.First:
+                            symbol_index = value.indexOf(comp_value.toLowerCase());
+                            if (symbol_index > 0 || symbol_index < 0) {
+                                this._status = false;
+                            }
+                            break;
+                        default:
+                            symbol_index = value.lastIndexOf(comp_value.toLowerCase());
+                            if (symbol_index < value.length - comp_value.length) {
+                                this._status = false;
+                            }
+                    }
+                };
+                this.checkComparisionOp = function (column, value, symbol) {
+                    var compare_value = this._where[column][symbol];
+                    switch (symbol) {
+                        // greater than
+                        case '>':
+                            if (value <= compare_value) {
+                                this._status = false;
+                            }
+                            break;
+                        // less than
+                        case '<':
+                            if (value >= compare_value) {
+                                this._status = false;
+                            }
+                            break;
+                        // less than equal
+                        case '<=':
+                            if (value > compare_value) {
+                                this._status = false;
+                            }
+                            break;
+                        // greather than equal
+                        case '>=':
+                            if (value < compare_value) {
+                                this._status = false;
+                            }
+                            break;
+                        // between
+                        case '-':
+                            if (value < compare_value.Low || value > compare_value.High) {
+                                this._status = false;
+                            }
+                            break;
+                    }
+                };
+                this._where = where;
+            }
+            return WhereChecker;
+        }());
+        Business.WhereChecker = WhereChecker;
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
         var Select;
         (function (Select) {
             var BaseSelect = /** @class */ (function (_super) {
@@ -1932,7 +1946,7 @@ var JsStore;
                                     cursor_request.onsuccess = function (e) {
                                         cursor = e.target.result;
                                         if (this._results.length !== this._limitRecord && cursor) {
-                                            if (this.checkForWhereConditionMatch(cursor.value)) {
+                                            if (this._whereChecker.check(cursor.value)) {
                                                 skipOrPush(cursor.value);
                                             }
                                             cursor.continue();
@@ -1976,7 +1990,7 @@ var JsStore;
                                     cursor_request.onsuccess = function (e) {
                                         cursor = e.target.result;
                                         if (cursor) {
-                                            if (this.checkForWhereConditionMatch(cursor.value)) {
+                                            if (this._whereChecker.check(cursor.value)) {
                                                 skipOrPush((cursor.value));
                                             }
                                             cursor.continue();
@@ -2013,7 +2027,7 @@ var JsStore;
                                     cursor_request.onsuccess = function (e) {
                                         cursor = e.target.result;
                                         if (cursor && this._results.length !== this._limitRecord) {
-                                            if (this.checkForWhereConditionMatch(cursor.value)) {
+                                            if (this._whereChecker.check(cursor.value)) {
                                                 this._results.push(cursor.value);
                                             }
                                             cursor.continue();
@@ -2050,7 +2064,7 @@ var JsStore;
                                     cursor_request.onsuccess = function (e) {
                                         cursor = e.target.result;
                                         if (cursor) {
-                                            if (this.checkForWhereConditionMatch(cursor.value)) {
+                                            if (this._whereChecker.check(cursor.value)) {
                                                 this._results.push(cursor.value);
                                             }
                                             cursor.continue();
@@ -2152,7 +2166,7 @@ var JsStore;
                                 cursor = e.target.result;
                                 if (this._results.length !== this._limitRecord && cursor) {
                                     if (this.filterOnOccurence(cursor.key) &&
-                                        this.checkForWhereConditionMatch(cursor.value)) {
+                                        this._whereChecker.check(cursor.value)) {
                                         skipOrPush(cursor.value);
                                     }
                                     cursor.continue();
@@ -2185,7 +2199,7 @@ var JsStore;
                                 cursor = e.target.result;
                                 if (cursor) {
                                     if (this.filterOnOccurence(cursor.key) &&
-                                        this.checkForWhereConditionMatch(cursor.value)) {
+                                        this._whereChecker.check(cursor.value)) {
                                         skipOrPush((cursor.value));
                                     }
                                     cursor.continue();
@@ -2211,7 +2225,7 @@ var JsStore;
                                 cursor = e.target.result;
                                 if (this._results.length !== this._limitRecord && cursor) {
                                     if (this.filterOnOccurence(cursor.key) &&
-                                        this.checkForWhereConditionMatch(cursor.value)) {
+                                        this._whereChecker.check(cursor.value)) {
                                         this._results.push(cursor.value);
                                     }
                                     cursor.continue();
@@ -2237,7 +2251,7 @@ var JsStore;
                                 cursor = e.target.result;
                                 if (cursor) {
                                     if (this.filterOnOccurence(cursor.key) &&
-                                        this.checkForWhereConditionMatch(cursor.value)) {
+                                        this._whereChecker.check(cursor.value)) {
                                         this._results.push(cursor.value);
                                     }
                                     cursor.continue();
@@ -2281,7 +2295,7 @@ var JsStore;
                                 cursor = e.target.result;
                                 if (cursor) {
                                     if (record_skipped && this._results.length !== this._limitRecord) {
-                                        if (this.checkForWhereConditionMatch(cursor.value)) {
+                                        if (this._whereChecker.check(cursor.value)) {
                                             this._results.push(cursor.value);
                                         }
                                         cursor.continue();
@@ -2316,7 +2330,7 @@ var JsStore;
                                 cursor = e.target.result;
                                 if (cursor) {
                                     if (record_skipped) {
-                                        if (this.checkForWhereConditionMatch(cursor.value)) {
+                                        if (this._whereChecker.check(cursor.value)) {
                                             this._results.push(cursor.value);
                                         }
                                         cursor.continue();
@@ -2350,7 +2364,7 @@ var JsStore;
                             this._cursorOpenRequest.onsuccess = function (e) {
                                 cursor = e.target.result;
                                 if (cursor && this._results.length !== this._limitRecord &&
-                                    this.checkForWhereConditionMatch(cursor.value)) {
+                                    this._whereChecker.check(cursor.value)) {
                                     this._results.push(cursor.value);
                                     cursor.continue();
                                 }
@@ -2372,7 +2386,7 @@ var JsStore;
                             this._cursorOpenRequest.onsuccess = function (e) {
                                 cursor = e.target.result;
                                 if (cursor) {
-                                    if (this.checkForWhereConditionMatch(cursor.value)) {
+                                    if (this._whereChecker.check(cursor.value)) {
                                         this._results.push(cursor.value);
                                     }
                                     cursor.continue();
@@ -3361,7 +3375,7 @@ var JsStore;
                                     cursor_request.onsuccess = function (e) {
                                         cursor = e.target.result;
                                         if (cursor) {
-                                            if (this.checkForWhereConditionMatch(cursor.value)) {
+                                            if (this._whereChecker.check(cursor.value)) {
                                                 ++this._resultCount;
                                             }
                                             cursor.continue();
@@ -3434,7 +3448,7 @@ var JsStore;
                                 cursor = e.target.result;
                                 if (cursor) {
                                     if (this.filterOnOccurence(cursor.key) &&
-                                        this.checkForWhereConditionMatch(cursor.value)) {
+                                        this._whereChecker.check(cursor.value)) {
                                         ++this._resultCount;
                                     }
                                     cursor.continue();
@@ -3499,7 +3513,7 @@ var JsStore;
                             cursor_request.onsuccess = function (e) {
                                 cursor = e.target.result;
                                 if (cursor) {
-                                    if (this.checkForWhereConditionMatch(cursor.value)) {
+                                    if (this._whereChecker.check(cursor.value)) {
                                         ++this._resultCount;
                                     }
                                     cursor.continue();
@@ -3689,7 +3703,7 @@ var JsStore;
                                     cursor_request.onsuccess = function (e) {
                                         cursor = e.target.result;
                                         if (cursor) {
-                                            if (this.checkForWhereConditionMatch(cursor.value)) {
+                                            if (this._whereChecker.check(cursor.value)) {
                                                 cursor.update(Update.updateValue(this._query.Set, cursor.value));
                                                 ++this._rowAffected;
                                             }
@@ -3752,7 +3766,7 @@ var JsStore;
                                 cursor = e.target.result;
                                 if (cursor) {
                                     if (this.filterOnOccurence(cursor.key) &&
-                                        this.checkForWhereConditionMatch(cursor.value)) {
+                                        this._whereChecker.check(cursor.value)) {
                                         cursor.update(Update.updateValue(this._query.Set, cursor.value));
                                         ++this._rowAffected;
                                     }
@@ -3819,7 +3833,7 @@ var JsStore;
                             cursor_request.onsuccess = function (e) {
                                 cursor = e.target.result;
                                 if (cursor) {
-                                    if (this.checkForWhereConditionMatch(cursor.value)) {
+                                    if (this._whereChecker.check(cursor.value)) {
                                         cursor.update(Update.updateValue(this._query.Set, cursor.value));
                                         ++this._rowAffected;
                                     }
@@ -4061,7 +4075,7 @@ var JsStore;
                                     cursor_request.onsuccess = function (e) {
                                         cursor = e.target.result;
                                         if (cursor) {
-                                            if (this.checkForWhereConditionMatch(cursor.value)) {
+                                            if (this._whereChecker.check(cursor.value)) {
                                                 cursor.delete();
                                                 ++this._rowAffected;
                                             }
@@ -4125,7 +4139,7 @@ var JsStore;
                                 cursor = e.target.result;
                                 if (cursor) {
                                     if (this.filterOnOccurence(cursor.key) &&
-                                        this.checkForWhereConditionMatch(cursor.value)) {
+                                        this._whereChecker.check(cursor.value)) {
                                         cursor.delete();
                                         ++this._rowAffected;
                                     }
@@ -4192,7 +4206,7 @@ var JsStore;
                             cursor_request.onsuccess = function (e) {
                                 cursor = e.target.result;
                                 if (cursor) {
-                                    if (this.checkForWhereConditionMatch(cursor.value)) {
+                                    if (this._whereChecker.check(cursor.value)) {
                                         cursor.delete();
                                         ++this._rowAffected;
                                     }

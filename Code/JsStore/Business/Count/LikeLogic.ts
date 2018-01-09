@@ -21,7 +21,7 @@ namespace JsStore {
                             cursor = e.target.result;
                             if (cursor) {
                                 if (this.filterOnOccurence(cursor.key) &&
-                                    this.checkForWhereConditionMatch(cursor.value)) {
+                                    this._whereChecker.check(cursor.value)) {
                                     ++this._resultCount;
                                 }
                                 cursor.continue();

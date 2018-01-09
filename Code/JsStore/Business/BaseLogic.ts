@@ -11,6 +11,7 @@ namespace JsStore {
             _objectStore: IDBObjectStore;
             _query;
             _sendResultFlag: boolean = true;
+            _whereChecker: WhereChecker;
 
             protected onErrorOccured = function (e, customError = false) {
                 ++this._errorCount;
@@ -46,125 +47,8 @@ namespace JsStore {
                 }
             };
 
-            /**
-             * For matching the different column value existance
-             * 
-             * @protected
-             * @param {any} rowValue 
-             * @returns 
-             * @memberof Base
-             */
-            protected checkForWhereConditionMatch(rowValue) {
-                var where = this._query.Where,
-                    status = true;
-                var checkIn = function (column, value) {
-                    var values = where[column].In;
-                    for (var i = 0, length = values.length; i < length; i++) {
-                        if (values[i] === value) {
-                            status = true;
-                            break;
-                        }
-                        else {
-                            status = false;
-                        }
-                    }
-                },
-                    checkLike = function (column, value) {
-                        var values = where[column].Like.split('%'),
-                            comp_symbol: Occurence,
-                            comp_value,
-                            symbol_index;
-                        if (values[1]) {
-                            comp_value = values[1];
-                            comp_symbol = values.length > 2 ? Occurence.Any : Occurence.Last;
-                        }
-                        else {
-                            comp_value = values[0];
-                            comp_symbol = Occurence.First;
-                        }
-                        value = value.toLowerCase();
-
-                        switch (comp_symbol) {
-                            case Occurence.Any:
-                                symbol_index = value.indexOf(comp_value.toLowerCase());
-                                if (symbol_index < 0) {
-                                    status = false;
-                                } break;
-                            case Occurence.First:
-                                symbol_index = value.indexOf(comp_value.toLowerCase());
-                                if (symbol_index > 0 || symbol_index < 0) {
-                                    status = false;
-                                } break;
-                            default:
-                                symbol_index = value.lastIndexOf(comp_value.toLowerCase());
-                                if (symbol_index < value.length - comp_value.length) {
-                                    status = false;
-                                }
-                        }
-                    },
-                    checkComparisionOp = function (column, value, symbol) {
-                        var compare_value = where[column][symbol];
-                        switch (symbol) {
-                            // greater than
-                            case '>': if (value <= compare_value) {
-                                status = false;
-                            } break;
-                            // less than
-                            case '<': if (value >= compare_value) {
-                                status = false;
-                            } break;
-                            // less than equal
-                            case '<=': if (value > compare_value) {
-                                status = false;
-                            } break;
-                            // greather than equal
-                            case '>=': if (value < compare_value) {
-                                status = false;
-                            } break;
-                            // between
-                            case '-': if (value < compare_value.Low || value > compare_value.High) {
-                                status = false;
-                            } break;
-                        }
-                    };
-                for (var columnValue in where) {
-                    var column_value = where[columnValue];
-                    if (status) {
-                        if (typeof column_value === 'object') {
-                            for (var key in column_value) {
-                                if (status) {
-                                    switch (key) {
-                                        case 'In': checkIn(columnValue, rowValue[columnValue]); break;
-                                        case 'Like': checkLike(columnValue, rowValue[columnValue]); break;
-                                        case '-':
-                                        case '>':
-                                        case '<':
-                                        case '>=':
-                                        case '<=':
-                                            checkComparisionOp(columnValue, rowValue[columnValue], key);
-                                            break;
-                                    }
-                                }
-                                else {
-                                    break;
-                                }
-                            }
-                        }
-                        else {
-                            if (column_value !== rowValue[columnValue]) {
-                                status = false;
-                                break;
-                            }
-                        }
-                    }
-                    else {
-                        break;
-                    }
-                }
-                return status;
-            }
-
             protected goToWhereLogic = function () {
+                this._whereChecker = new WhereChecker(this._query.Where);
                 var column = getObjectFirstKey(this._query.Where);
                 if (this._query.IgnoreCase === true) {
                     this._query.Where = this.makeQryInCaseSensitive(this._query.Where);

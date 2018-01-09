@@ -13,7 +13,7 @@ namespace JsStore {
                                 cursor_request.onsuccess = function (e) {
                                     cursor = e.target.result;
                                     if (cursor) {
-                                        if (this.checkForWhereConditionMatch(cursor.value)) {
+                                        if (this._whereChecker.check(cursor.value)) {
                                             cursor.update(updateValue(this._query.Set, cursor.value));
                                             ++this._rowAffected;
                                         }

@@ -51,6 +51,7 @@
         "JsStore/Business/OpenDbLogic.ts",
         "JsStore/Business/ClearLogic.ts",
         "JsStore/Business/MainLogic.ts",
+        "JsStore/Business/WhereChecker.ts",
         //select
         "JsStore/Business/Select/BaseSelectLogic.ts",
         "JsStore/Business/Select/NotWhereLogic.ts",

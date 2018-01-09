@@ -62,7 +62,7 @@ namespace JsStore {
                             cursor = e.target.result;
                             if (this._results.length !== this._limitRecord && cursor) {
                                 if (this.filterOnOccurence(cursor.key) &&
-                                    this.checkForWhereConditionMatch(cursor.value)) {
+                                    this._whereChecker.check(cursor.value)) {
                                     skipOrPush(cursor.value);
                                 }
                                 cursor.continue();
@@ -98,7 +98,7 @@ namespace JsStore {
                             cursor = e.target.result;
                             if (cursor) {
                                 if (this.filterOnOccurence(cursor.key) &&
-                                    this.checkForWhereConditionMatch(cursor.value)) {
+                                    this._whereChecker.check(cursor.value)) {
                                     skipOrPush((cursor.value));
                                 }
                                 cursor.continue();
@@ -125,7 +125,7 @@ namespace JsStore {
                             cursor = e.target.result;
                             if (this._results.length !== this._limitRecord && cursor) {
                                 if (this.filterOnOccurence(cursor.key) &&
-                                    this.checkForWhereConditionMatch(cursor.value)) {
+                                    this._whereChecker.check(cursor.value)) {
                                     this._results.push(cursor.value);
                                 }
                                 cursor.continue();
@@ -152,7 +152,7 @@ namespace JsStore {
                             cursor = e.target.result;
                             if (cursor) {
                                 if (this.filterOnOccurence(cursor.key) &&
-                                    this.checkForWhereConditionMatch(cursor.value)) {
+                                    this._whereChecker.check(cursor.value)) {
                                     this._results.push(cursor.value);
                                 }
                                 cursor.continue();
