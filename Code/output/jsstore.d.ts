@@ -453,6 +453,7 @@ declare namespace JsStore {
 declare namespace JsStore {
     namespace Business {
         class BaseHelper {
+            protected filterOnOccurence: (value: any) => boolean;
             protected getTable: (tableName: string) => Table;
             protected getKeyRange: (value: any, op: any) => IDBKeyRange;
             protected getObjectSecondKey: (value: any) => string;
@@ -619,7 +620,6 @@ declare namespace JsStore {
                 _compValue: any;
                 _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
-                private filterOnOccurence;
                 private executeSkipAndLimit;
                 private executeSkip;
                 private executeLimit;
@@ -735,7 +735,6 @@ declare namespace JsStore {
                 _compValue: any;
                 _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
-                private filterOnOccurence;
             }
         }
     }
@@ -795,7 +794,6 @@ declare namespace JsStore {
                 _compValue: any;
                 _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
-                private filterOnOccurence;
             }
         }
     }
@@ -868,7 +866,6 @@ declare namespace JsStore {
                 _compValue: any;
                 _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
-                private filterOnOccurence;
             }
         }
     }

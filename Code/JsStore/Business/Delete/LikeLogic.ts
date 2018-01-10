@@ -44,22 +44,6 @@ namespace JsStore {
                     }
                 };
 
-                private filterOnOccurence = function (value) {
-                    var found = false;
-                    value = value.toLowerCase();
-                    switch (this._compSymbol) {
-                        case Occurence.Any: if (value.indexOf(this._compValue) >= 0) {
-                            found = true;
-                        } break;
-                        case Occurence.First: if (value.indexOf(this._compValue) === 0) {
-                            found = true;
-                        } break;
-                        default: if (value.lastIndexOf(this._compValue) === value.length - this._compValueLength) {
-                            found = true;
-                        }
-                    }
-                    return found;
-                };
             }
         }
     }

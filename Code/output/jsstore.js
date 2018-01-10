@@ -922,6 +922,26 @@ var JsStore;
     (function (Business) {
         var BaseHelper = /** @class */ (function () {
             function BaseHelper() {
+                this.filterOnOccurence = function (value) {
+                    var found = false;
+                    value = value.toLowerCase();
+                    switch (this._compSymbol) {
+                        case JsStore.Occurence.Any:
+                            if (value.indexOf(this._compValue) >= 0) {
+                                found = true;
+                            }
+                            break;
+                        case JsStore.Occurence.First:
+                            if (value.indexOf(this._compValue) === 0) {
+                                found = true;
+                            }
+                            break;
+                        default: if (value.lastIndexOf(this._compValue) === value.length - this.CompValueLength) {
+                            found = true;
+                        }
+                    }
+                    return found;
+                };
                 this.getTable = function (tableName) {
                     var current_table;
                     Business.active_db._tables.every(function (table) {
@@ -2131,26 +2151,6 @@ var JsStore;
                         else {
                             this.executeSimple();
                         }
-                    };
-                    _this.filterOnOccurence = function (value) {
-                        var found = false;
-                        value = value.toLowerCase();
-                        switch (this._compSymbol) {
-                            case JsStore.Occurence.Any:
-                                if (value.indexOf(this._compValue) >= 0) {
-                                    found = true;
-                                }
-                                break;
-                            case JsStore.Occurence.First:
-                                if (value.indexOf(this._compValue) === 0) {
-                                    found = true;
-                                }
-                                break;
-                            default: if (value.lastIndexOf(this._compValue) === value.length - this._compValueLength) {
-                                found = true;
-                            }
-                        }
-                        return found;
                     };
                     _this.executeSkipAndLimit = function () {
                         var cursor, skip = this._skipRecord, skipOrPush = function (value) {
@@ -3467,26 +3467,6 @@ var JsStore;
                             }.bind(this);
                         }
                     };
-                    _this.filterOnOccurence = function (value) {
-                        var found = false;
-                        value = value.toLowerCase();
-                        switch (this._compSymbol) {
-                            case JsStore.Occurence.Any:
-                                if (value.indexOf(this._compValue) >= 0) {
-                                    found = true;
-                                }
-                                break;
-                            case JsStore.Occurence.First:
-                                if (value.indexOf(this._compValue) === 0) {
-                                    found = true;
-                                }
-                                break;
-                            default: if (value.lastIndexOf(this._compValue) === value.length - this.CompValueLength) {
-                                found = true;
-                            }
-                        }
-                        return found;
-                    };
                     return _this;
                 }
                 return Like;
@@ -3786,26 +3766,6 @@ var JsStore;
                                 }
                             }.bind(this);
                         }
-                    };
-                    _this.filterOnOccurence = function (value) {
-                        var found = false;
-                        value = value.toLowerCase();
-                        switch (this._compSymbol) {
-                            case JsStore.Occurence.Any:
-                                if (value.indexOf(this._compValue) >= 0) {
-                                    found = true;
-                                }
-                                break;
-                            case JsStore.Occurence.First:
-                                if (value.indexOf(this._compValue) === 0) {
-                                    found = true;
-                                }
-                                break;
-                            default: if (value.lastIndexOf(this._compValue) === value.length - this._compValueLength) {
-                                found = true;
-                            }
-                        }
-                        return found;
                     };
                     return _this;
                 }
@@ -4159,26 +4119,6 @@ var JsStore;
                                 }
                             }.bind(this);
                         }
-                    };
-                    _this.filterOnOccurence = function (value) {
-                        var found = false;
-                        value = value.toLowerCase();
-                        switch (this._compSymbol) {
-                            case JsStore.Occurence.Any:
-                                if (value.indexOf(this._compValue) >= 0) {
-                                    found = true;
-                                }
-                                break;
-                            case JsStore.Occurence.First:
-                                if (value.indexOf(this._compValue) === 0) {
-                                    found = true;
-                                }
-                                break;
-                            default: if (value.lastIndexOf(this._compValue) === value.length - this._compValueLength) {
-                                found = true;
-                            }
-                        }
-                        return found;
                     };
                     return _this;
                 }
