@@ -238,7 +238,7 @@ describe('Test Select Api', function () {
         })
     });
 
-    it('select with like', function (done) {
+    it('select with like -"%or%"', function (done) {
         Con.select({
             From: 'Customers',
             Where: {
@@ -248,6 +248,52 @@ describe('Test Select Api', function () {
             },
             OnSuccess: function (results) {
                 expect(results).to.be.an('array').length(11);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
+    it('select with like - "o%"', function (done) {
+        Con.select({
+            From: 'Customers',
+            Where: {
+                CustomerName: {
+                    Like: 'o%'
+                }
+            },
+            OnSuccess: function (results) {
+                var expected_id_list = [54, 55, 56];
+                var id_list = [];
+                results.forEach(element => {
+                    id_list.push(element.CustomerID);
+                });
+                expect(id_list).to.be.an('array').length(3).deep.equal(expected_id_list);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
+    it('select with like - "%o"', function (done) {
+        Con.select({
+            From: 'Customers',
+            Where: {
+                CustomerName: {
+                    Like: '%o'
+                }
+            },
+            OnSuccess: function (results) {
+                var expected_id_list = [15, 21, 29, 46, 69, 73];
+                var id_list = [];
+                results.forEach(element => {
+                    id_list.push(element.CustomerID);
+                });
+                expect(id_list).to.be.an('array').length(6).deep.equal(expected_id_list);
                 done();
             },
             OnError: function (err) {

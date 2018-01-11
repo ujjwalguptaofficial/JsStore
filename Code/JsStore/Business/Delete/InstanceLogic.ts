@@ -7,10 +7,10 @@ namespace JsStore {
                     onError: (err: IError) => void
                 ) {
                     super();
+                    this._query = query;
+                    this._onSuccess = onSuccess;
+                    this._onError = onError;
                     try {
-                        this._query = query;
-                        this._onSuccess = onSuccess;
-                        this._onError = onError;
                         if (query.Where) {
                             if (Array.isArray(query.Where)) {
                                 this.processWhereArrayQry();

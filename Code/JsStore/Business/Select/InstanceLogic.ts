@@ -4,28 +4,38 @@ namespace JsStore {
             export class Instance extends Helper {
                 constructor(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
                     super();
-                    this._query = query;
-                    this._onSuccess = onSuccess;
                     this._onError = onError;
-                    this._skipRecord = this._query.Skip;
-                    this._limitRecord = this._query.Limit;
-                    try {
-                        if (query.Where) {
-                            if (Array.isArray(query.Where)) {
-                                this.processWhereArrayQry();
+                    if (this.getTable(query.From)) {
+                        this._onSuccess = onSuccess;
+                        this._query = query;
+                        this._skipRecord = this._query.Skip;
+                        this._limitRecord = this._query.Limit;
+                        this._tableName = this._query.From;
+                        try {
+                            if (query.Where) {
+                                if (Array.isArray(query.Where)) {
+                                    this.processWhereArrayQry();
+                                }
+                                else {
+                                    this.processWhere(false);
+                                }
                             }
                             else {
-                                this.processWhere(false);
+                                this.createTransaction();
+                                this.executeWhereUndefinedLogic();
                             }
                         }
-                        else {
-                            this.createTransaction();
-                            this.executeWhereUndefinedLogic();
+                        catch (ex) {
+                            this._errorOccured = true;
+                            this.onExceptionOccured.call(this, ex, { TableName: query.From });
                         }
                     }
-                    catch (ex) {
+                    else {
                         this._errorOccured = true;
-                        this.onExceptionOccured.call(this, ex, { TableName: query.From });
+                        this.onErrorOccured(
+                            new Error(Error_Type.TableNotExist, { TableName: query.From }).get(),
+                            true
+                        );
                     }
                 }
 
@@ -117,7 +127,10 @@ namespace JsStore {
                 };
 
                 private createTransaction = function () {
-                    this._transaction = db_connection.transaction([this._query.From], "readonly");
+                    this._transaction = db_connection.transaction(
+                        [this._query.From].concat(this.getAtsTables(this.getAtsColumns())),
+                        "readonly"
+                    );
                     this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
                     (this._transaction as any).ontimeout = this.onTransactionTimeout.bind(this);
                     this._objectStore = this._transaction.objectStore(this._query.From);
@@ -163,9 +176,15 @@ namespace JsStore {
                     }
                 };
 
-                private createTransactionForOrLogic = function (query) {
+                private createTransactionForOrLogic = function () {
                     try {
-                        this._transaction = db_connection.transaction([this._query.From], "readonly");
+                        var table_list = [this._query.From];
+                        for (var prop in this._query.Where) {
+                            if (this._query.Where[prop].Like) {
+                                table_list = table_list.concat([this._query.From + "_" + prop]);
+                            }
+                        }
+                        this._transaction = db_connection.transaction(table_list, "readonly");
                         this._transaction.oncomplete = this.orQuerySuccess.bind(this);
                         this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
                         this._objectStore = this._transaction.objectStore(this._query.From);

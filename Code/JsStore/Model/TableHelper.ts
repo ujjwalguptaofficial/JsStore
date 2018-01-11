@@ -15,11 +15,11 @@ namespace JsStore {
                 this._name = table._name;
                 this._version = table._version;
                 this._columns = table._columns;
+                this.setPrimaryKey();
             }
 
             public createMetaData = function (dbName: string, callBack: () => void) {
                 this._callback = callBack;
-                this.setPrimaryKey();
                 this.setRequireDelete(dbName);
                 this.setDbVersion(dbName);
             };

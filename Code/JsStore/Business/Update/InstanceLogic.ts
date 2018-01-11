@@ -4,9 +4,9 @@ namespace JsStore {
             export class Instance extends Where {
                 constructor(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void) {
                     super();
+                    this._onSuccess = onSuccess;
+                    this._onError = onError;
                     try {
-                        this._onSuccess = onSuccess;
-                        this._onError = onError;
                         this._error = new SchemaChecker(this.getTable(query.In)).check(query.Set, query.In);
                         if (!this._error) {
                             this._query = query;

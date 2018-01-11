@@ -41,7 +41,8 @@ var Customers = {
         {
             Name: "Address",
             NotNull: true,
-            DataType: 'string'
+            DataType: 'string',
+            AdvTextSearch: true
         },
         {
             Name: "City",

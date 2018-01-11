@@ -482,6 +482,9 @@ declare namespace JsStore {
             protected filterOnOccurence: (value: any) => boolean;
             protected getArrayFromWord: (word: string) => string[];
             protected getTable: (tableName: string) => Table;
+            protected getAtsColumns: () => any[];
+            protected getAtsTables: (atsColumns: any) => any[];
+            protected isAtsColumn: (columnName: any) => boolean;
             protected getKeyRange: (value: any, op: any) => IDBKeyRange;
             protected getObjectSecondKey: (value: any) => string;
             protected getPrimaryKey: (tableName: any) => any;
@@ -509,10 +512,12 @@ declare namespace JsStore {
             _query: any;
             _sendResultFlag: boolean;
             _whereChecker: WhereChecker;
+            _tableName: string;
             protected onErrorOccured: (e: any, customError?: boolean) => void;
             protected onTransactionTimeout: (e: any) => void;
             protected onExceptionOccured: (ex: DOMException, info: any) => void;
-            protected goToWhereLogic: () => void;
+            protected processAtsLogic: (columnName: any, searchValue: any, occurence: Occurence) => void;
+            protected goToWhereLogic: (processAts?: boolean) => void;
             protected makeQryInCaseSensitive: (qry: any) => any;
         }
     }
@@ -932,6 +937,7 @@ declare namespace JsStore {
                 _table: Table;
                 constructor(query: IInsert, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void);
                 onTransactionCompleted: () => void;
+                private insertAtsDatas(values, atsColumns);
                 private insertData;
             }
         }
