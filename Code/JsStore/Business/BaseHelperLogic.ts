@@ -19,6 +19,10 @@ namespace JsStore {
                 return found;
             };
 
+            protected getArrayFromWord = function (word: string) {
+                return word.split(" ");
+            };
+
             protected getTable = function (tableName: string) {
                 var current_table: Table;
                 active_db._tables.every(function (table) {

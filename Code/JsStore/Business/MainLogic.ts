@@ -94,10 +94,8 @@ namespace JsStore {
             };
 
             private openDb = function (dbName, onSuccess: () => void, onError: (err: IError) => void) {
-                // KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
                 getDbVersion(dbName, function (dbVersion) {
                     if (dbVersion != null) {
-                        // KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
                         getDbSchema(dbName, function (result) {
                             active_db = result;
                             var open_db_object = new OpenDb(dbVersion, onSuccess, onError);
@@ -177,21 +175,13 @@ namespace JsStore {
                 KeyStore.get("JsStore_" + dataBase.Name + "_Db_Version", function (version) {
                     db_version = version ? version : 1;
                     active_db = new Model.DataBase(dataBase);
-                    var createDbInternal = function () {
-                        setTimeout(function () {
-                            var last_table = (active_db._tables[active_db._tables.length - 1]);
-                            KeyStore.get("JsStore_" + active_db._name + "_" + last_table._name + "_Version",
-                                function (tableVersion) {
-                                    if (tableVersion === last_table._version) {
-                                        var create_db_object = new CreateDb(db_version, onSuccess, onError);
-                                    }
-                                    else {
-                                        createDbInternal();
-                                    }
-                                });
-                        }, 200);
-                    };
-                    createDbInternal();
+                    // save dbSchema in keystore
+                    KeyStore.set("JsStore_" + active_db._name + "_Schema", active_db);
+                    // create meta data
+                    var db_helper = new Model.DbHelper(active_db);
+                    db_helper.createMetaData(function (tablesMetaData: Model.TableHelper[]) {
+                        var create_db_object = new CreateDb(tablesMetaData, onSuccess, onError);
+                    });
                 });
 
             };

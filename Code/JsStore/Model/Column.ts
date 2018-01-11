@@ -10,6 +10,7 @@ namespace JsStore {
             _dataType: string;
             _default: any;
             _multiEntry: boolean;
+            _advTextSearch: boolean;
 
             constructor(key: IColumnOption, tableName: string) {
                 if (key.Name != null) {
@@ -26,6 +27,7 @@ namespace JsStore {
                 this._dataType = key.DataType != null ? key.DataType : (key.AutoIncrement ? 'number' : null);
                 this._default = key.Default;
                 this._multiEntry = key.MultiEntry == null ? false : true;
+                this._advTextSearch = key.AdvTextSearch != null ? true : false;
             }
 
         }

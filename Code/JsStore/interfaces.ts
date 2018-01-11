@@ -15,18 +15,19 @@ namespace JsStore {
     export interface ITableOption {
         Name: string;
         Columns: IColumnOption[];
-        Version: number;
+        Version?: number;
     }
 
     export interface IColumnOption {
         Name: string;
-        AutoIncrement: boolean;
-        PrimaryKey: boolean;
-        Unique: boolean;
-        NotNull: boolean;
-        DataType: string;
-        Default: any;
-        MultiEntry: boolean;
+        PrimaryKey?: boolean;
+        AutoIncrement?: boolean;
+        Unique?: boolean;
+        NotNull?: boolean;
+        DataType?: string;
+        Default?: any;
+        MultiEntry?: boolean;
+        AdvTextSearch?: boolean;
     }
 
     export interface ISelect {

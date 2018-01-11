@@ -845,6 +845,7 @@ var JsStore;
                 this._dataType = key.DataType != null ? key.DataType : (key.AutoIncrement ? 'number' : null);
                 this._default = key.Default;
                 this._multiEntry = key.MultiEntry == null ? false : true;
+                this._advTextSearch = key.AdvTextSearch != null ? true : false;
             }
             return Column;
         }());
@@ -856,28 +857,68 @@ var JsStore;
     var Model;
     (function (Model) {
         var Table = /** @class */ (function () {
-            function Table(table, dbName) {
+            function Table(table) {
                 this._columns = [];
-                // internal Members
-                this._requireDelete = false;
-                this._requireCreation = false;
-                this._primaryKey = "";
                 this._name = table.Name;
                 this._version = table.Version == null ? 1 : table.Version;
                 table.Columns.forEach(function (item) {
                     this._columns.push(new Model.Column(item, table.Name));
                 }, this);
-                this.setRequireDelete(dbName);
-                this.setDbVersion(dbName);
-                this.setPrimaryKey(dbName);
             }
-            Table.prototype.setPrimaryKey = function (dbName) {
+            return Table;
+        }());
+        Model.Table = Table;
+    })(Model = JsStore.Model || (JsStore.Model = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Model;
+    (function (Model) {
+        var TableHelper = /** @class */ (function () {
+            function TableHelper(table) {
+                this._columns = [];
+                this._requireDelete = false;
+                this._requireCreation = false;
+                this.createMetaData = function (dbName, callBack) {
+                    this._callback = callBack;
+                    this.setPrimaryKey();
+                    this.setRequireDelete(dbName);
+                    this.setDbVersion(dbName);
+                };
+                this.getAtsTable = function () {
+                    var table = null;
+                    this._columns.every(function (column) {
+                        if (column._advTextSearch) {
+                            table = new Model.Table({
+                                Name: this._name + "_" + column._name,
+                                Columns: [
+                                    {
+                                        Name: this._primaryKey,
+                                        PrimaryKey: true
+                                    },
+                                    {
+                                        Name: column._name,
+                                        MultiEntry: true
+                                    }
+                                ]
+                            });
+                            return false;
+                        }
+                        return true;
+                    }, this);
+                    return table;
+                };
+                this._name = table._name;
+                this._version = table._version;
+                this._columns = table._columns;
+            }
+            TableHelper.prototype.setPrimaryKey = function () {
                 this._columns.every(function (item) {
                     this._primaryKey = item._primaryKey ? item._name : "";
                     return !item._primaryKey;
                 }, this);
             };
-            Table.prototype.setRequireDelete = function (dbName) {
+            TableHelper.prototype.setRequireDelete = function (dbName) {
                 KeyStore.get("JsStore_" + dbName + "_" + this._name + "_Version", function (tableVersion) {
                     if (tableVersion == null) {
                         this._requireCreation = true;
@@ -887,16 +928,51 @@ var JsStore;
                     }
                 }.bind(this));
             };
-            Table.prototype.setDbVersion = function (dbName) {
+            TableHelper.prototype.setDbVersion = function (dbName) {
                 JsStore.db_version = JsStore.db_version > this._version ? JsStore.db_version : this._version;
                 // setting db version
                 KeyStore.set('JsStore_' + dbName + '_Db_Version', JsStore.db_version)
-                    .set("JsStore_" + dbName + "_" + this._name + "_Version", JsStore.db_version);
+                    .set("JsStore_" + dbName + "_" + this._name + "_Version", JsStore.db_version, this._callback);
                 this._version = JsStore.db_version;
             };
-            return Table;
+            return TableHelper;
         }());
-        Model.Table = Table;
+        Model.TableHelper = TableHelper;
+    })(Model = JsStore.Model || (JsStore.Model = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Model;
+    (function (Model) {
+        var DbHelper = /** @class */ (function () {
+            function DbHelper(dataBase) {
+                this._tables = [];
+                this.createMetaData = function (callBack) {
+                    var index = 0, table_helpers = [], createMetaDataForTable = function () {
+                        if (index < this._tables.length) {
+                            var table = this._tables[index], table_helper = new Model.TableHelper(table), ats_table = table_helper.getAtsTable();
+                            table_helper.createMetaData(this._name, function () {
+                                table_helper._callback = null;
+                                table_helpers.push(table_helper);
+                                createMetaDataForTable();
+                            });
+                            if (ats_table != null) {
+                                this._tables.push(ats_table);
+                            }
+                            ++index;
+                        }
+                        else {
+                            callBack(table_helpers);
+                        }
+                    }.bind(this);
+                    createMetaDataForTable();
+                };
+                this._name = dataBase._name;
+                this._tables = dataBase._tables;
+            }
+            return DbHelper;
+        }());
+        Model.DbHelper = DbHelper;
     })(Model = JsStore.Model || (JsStore.Model = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
@@ -908,7 +984,7 @@ var JsStore;
                 this._tables = [];
                 this._name = dataBase.Name;
                 dataBase.Tables.forEach(function (item) {
-                    this._tables.push(new Model.Table(item, this._name));
+                    this._tables.push(new Model.Table(item));
                 }, this);
             }
             return DataBase;
@@ -941,6 +1017,9 @@ var JsStore;
                         }
                     }
                     return found;
+                };
+                this.getArrayFromWord = function (word) {
+                    return word.split(" ");
                 };
                 this.getTable = function (tableName) {
                     var current_table;
@@ -1192,8 +1271,8 @@ var JsStore;
     var Business;
     (function (Business) {
         var CreateDb = /** @class */ (function () {
-            function CreateDb(dbVersion, onSuccess, onError) {
-                var table_created_list = [], db_request = indexedDB.open(Business.active_db._name, dbVersion);
+            function CreateDb(tablesMetaData, onSuccess, onError) {
+                var table_created_list = [], db_request = indexedDB.open(Business.active_db._name, JsStore.db_version);
                 db_request.onerror = function (event) {
                     if (onError != null) {
                         onError(event.target.error);
@@ -1221,28 +1300,27 @@ var JsStore;
                     if (onSuccess != null) {
                         onSuccess(table_created_list);
                     }
-                    // save dbSchema in keystore
-                    KeyStore.set("JsStore_" + Business.active_db._name + "_Schema", Business.active_db);
                 };
                 db_request.onupgradeneeded = function (event) {
-                    var db = event.target.result;
-                    Business.active_db._tables.forEach(function (item) {
+                    Business.db_connection = event.target.result;
+                    tablesMetaData.forEach(function (item, index) {
                         if (item._requireDelete) {
                             // Delete the old datastore.    
-                            if (db.objectStoreNames.contains(item._name)) {
-                                db.deleteObjectStore(item._name);
+                            if (Business.db_connection.objectStoreNames.contains(item._name)) {
+                                Business.db_connection.deleteObjectStore(item._name);
                             }
-                            createObjectStore(db, item);
+                            createObjectStore(item, index);
                         }
                         else if (item._requireCreation) {
-                            createObjectStore(db, item);
+                            createObjectStore(item, index);
                         }
                     });
                 };
-                var createObjectStore = function (db_connection, item) {
+                var createObjectStore = function (item, index) {
                     try {
                         if (item._primaryKey.length > 0) {
-                            var store = db_connection.createObjectStore(item._name, {
+                            Business.active_db._tables[index]._primaryKey = item._primaryKey;
+                            var store = Business.db_connection.createObjectStore(item._name, {
                                 keyPath: item._primaryKey
                             });
                             item._columns.forEach(function (column) {
@@ -1255,7 +1333,7 @@ var JsStore;
                             });
                         }
                         else {
-                            var store = db_connection.createObjectStore(item._name, {
+                            var store = Business.db_connection.createObjectStore(item._name, {
                                 autoIncrement: true
                             });
                             item._columns.forEach(function (column) {
@@ -1367,6 +1445,14 @@ var JsStore;
     (function (Business) {
         var OpenDb = /** @class */ (function () {
             function OpenDb(dbVersion, onSuccess, onError) {
+                this.setPrimaryKey = function () {
+                    Business.active_db._tables.forEach(function (table, index) {
+                        table._columns.every(function (item) {
+                            Business.active_db._tables[index]._primaryKey = item._primaryKey ? item._name : "";
+                            return !item._primaryKey;
+                        });
+                    });
+                };
                 if (Business.active_db._name.length > 0) {
                     var db_request = indexedDB.open(Business.active_db._name, dbVersion);
                     db_request.onerror = function (event) {
@@ -1396,6 +1482,7 @@ var JsStore;
                         if (onSuccess != null) {
                             onSuccess();
                         }
+                        this.setPrimaryKey();
                     }.bind(this);
                 }
                 else {
@@ -1538,10 +1625,8 @@ var JsStore;
                     }
                 };
                 this.openDb = function (dbName, onSuccess, onError) {
-                    // KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
                     JsStore.getDbVersion(dbName, function (dbVersion) {
                         if (dbVersion != null) {
-                            // KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
                             JsStore.getDbSchema(dbName, function (result) {
                                 Business.active_db = result;
                                 var open_db_object = new Business.OpenDb(dbVersion, onSuccess, onError);
@@ -1610,20 +1695,13 @@ var JsStore;
                     KeyStore.get("JsStore_" + dataBase.Name + "_Db_Version", function (version) {
                         JsStore.db_version = version ? version : 1;
                         Business.active_db = new JsStore.Model.DataBase(dataBase);
-                        var createDbInternal = function () {
-                            setTimeout(function () {
-                                var last_table = (Business.active_db._tables[Business.active_db._tables.length - 1]);
-                                KeyStore.get("JsStore_" + Business.active_db._name + "_" + last_table._name + "_Version", function (tableVersion) {
-                                    if (tableVersion === last_table._version) {
-                                        var create_db_object = new Business.CreateDb(JsStore.db_version, onSuccess, onError);
-                                    }
-                                    else {
-                                        createDbInternal();
-                                    }
-                                });
-                            }, 200);
-                        };
-                        createDbInternal();
+                        // save dbSchema in keystore
+                        KeyStore.set("JsStore_" + Business.active_db._name + "_Schema", Business.active_db);
+                        // create meta data
+                        var db_helper = new JsStore.Model.DbHelper(Business.active_db);
+                        db_helper.createMetaData(function (tablesMetaData) {
+                            var create_db_object = new Business.CreateDb(tablesMetaData, onSuccess, onError);
+                        });
                     });
                 };
                 this.clear = function (tableName, onSuccess, onError) {

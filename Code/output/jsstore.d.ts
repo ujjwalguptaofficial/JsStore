@@ -200,17 +200,18 @@ declare namespace JsStore {
     interface ITableOption {
         Name: string;
         Columns: IColumnOption[];
-        Version: number;
+        Version?: number;
     }
     interface IColumnOption {
         Name: string;
-        AutoIncrement: boolean;
-        PrimaryKey: boolean;
-        Unique: boolean;
-        NotNull: boolean;
-        DataType: string;
-        Default: any;
-        MultiEntry: boolean;
+        PrimaryKey?: boolean;
+        AutoIncrement?: boolean;
+        Unique?: boolean;
+        NotNull?: boolean;
+        DataType?: string;
+        Default?: any;
+        MultiEntry?: boolean;
+        AdvTextSearch?: boolean;
     }
     interface ISelect {
         From: any;
@@ -421,6 +422,7 @@ declare namespace JsStore {
             _dataType: string;
             _default: any;
             _multiEntry: boolean;
+            _advTextSearch: boolean;
             constructor(key: IColumnOption, tableName: string);
         }
     }
@@ -431,13 +433,37 @@ declare namespace JsStore {
             _name: string;
             _columns: Column[];
             _version: number;
+            _primaryKey: string;
+            constructor(table: ITableOption);
+        }
+    }
+}
+declare namespace JsStore {
+    namespace Model {
+        class TableHelper {
+            _name: string;
+            _columns: Column[];
+            _primaryKey: string;
+            _version: number;
             _requireDelete: boolean;
             _requireCreation: boolean;
-            _primaryKey: string;
-            constructor(table: ITableOption, dbName: string);
-            private setPrimaryKey(dbName);
+            _callback: () => void;
+            constructor(table: Table);
+            createMetaData: (dbName: string, callBack: () => void) => void;
+            getAtsTable: () => Table;
+            private setPrimaryKey();
             private setRequireDelete(dbName);
             private setDbVersion(dbName);
+        }
+    }
+}
+declare namespace JsStore {
+    namespace Model {
+        class DbHelper {
+            _name: string;
+            _tables: Table[];
+            constructor(dataBase: DataBase);
+            createMetaData: (callBack: (tablesMetaData: TableHelper[]) => void) => void;
         }
     }
 }
@@ -454,6 +480,7 @@ declare namespace JsStore {
     namespace Business {
         class BaseHelper {
             protected filterOnOccurence: (value: any) => boolean;
+            protected getArrayFromWord: (word: string) => string[];
             protected getTable: (tableName: string) => Table;
             protected getKeyRange: (value: any, op: any) => IDBKeyRange;
             protected getObjectSecondKey: (value: any) => string;
@@ -493,7 +520,7 @@ declare namespace JsStore {
 declare namespace JsStore {
     namespace Business {
         class CreateDb {
-            constructor(dbVersion: any, onSuccess: (listOf) => void, onError: (err: IError) => void);
+            constructor(tablesMetaData: Model.TableHelper[], onSuccess: (listOf) => void, onError: (err: IError) => void);
         }
     }
 }
@@ -518,6 +545,7 @@ declare namespace JsStore {
     namespace Business {
         class OpenDb {
             constructor(dbVersion: any, onSuccess: () => void, onError: (err: IError) => void);
+            private setPrimaryKey;
         }
     }
 }

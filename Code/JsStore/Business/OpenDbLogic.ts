@@ -37,6 +37,7 @@ namespace JsStore {
                         if (onSuccess != null) {
                             onSuccess();
                         }
+                        this.setPrimaryKey();
                     }.bind(this);
                 }
                 else {
@@ -44,6 +45,15 @@ namespace JsStore {
                     error.throw();
                 }
             }
+
+            private setPrimaryKey = function () {
+                active_db._tables.forEach(function (table: Table, index) {
+                    table._columns.every(function (item) {
+                        active_db._tables[index]._primaryKey = item._primaryKey ? item._name : "";
+                        return !item._primaryKey;
+                    });
+                });
+            };
         }
     }
 }

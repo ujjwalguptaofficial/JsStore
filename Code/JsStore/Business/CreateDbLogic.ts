@@ -1,9 +1,10 @@
 namespace JsStore {
     export namespace Business {
         export class CreateDb {
-            constructor(dbVersion, onSuccess: (listOf) => void, onError: (err: IError) => void) {
+            constructor(tablesMetaData: Model.TableHelper[],
+                onSuccess: (listOf) => void, onError: (err: IError) => void) {
                 var table_created_list = [],
-                    db_request = indexedDB.open(active_db._name, dbVersion);
+                    db_request = indexedDB.open(active_db._name, db_version);
 
                 db_request.onerror = function (event) {
                     if (onError != null) {
@@ -37,29 +38,28 @@ namespace JsStore {
                     if (onSuccess != null) {
                         onSuccess(table_created_list);
                     }
-                    // save dbSchema in keystore
-                    KeyStore.set("JsStore_" + active_db._name + "_Schema", active_db);
                 };
 
                 db_request.onupgradeneeded = function (event) {
-                    var db = (event as any).target.result;
-                    active_db._tables.forEach(function (item) {
+                    db_connection = (event as any).target.result;
+                    tablesMetaData.forEach(function (item: Model.TableHelper, index) {
                         if (item._requireDelete) {
                             // Delete the old datastore.    
-                            if (db.objectStoreNames.contains(item._name)) {
-                                db.deleteObjectStore(item._name);
+                            if (db_connection.objectStoreNames.contains(item._name)) {
+                                db_connection.deleteObjectStore(item._name);
                             }
-                            createObjectStore(db, item);
+                            createObjectStore(item, index);
                         }
                         else if (item._requireCreation) {
-                            createObjectStore(db, item);
+                            createObjectStore(item, index);
                         }
                     });
                 };
 
-                var createObjectStore = function (db_connection, item: Table) {
+                var createObjectStore = function (item: Model.TableHelper, index) {
                     try {
                         if (item._primaryKey.length > 0) {
+                            active_db._tables[index]._primaryKey = item._primaryKey;
                             var store = db_connection.createObjectStore(item._name, {
                                 keyPath: item._primaryKey
                             });

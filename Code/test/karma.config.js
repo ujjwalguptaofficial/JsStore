@@ -41,7 +41,6 @@ module.exports = function (config) {
             HeadlessChrome: {
                 base: 'ChromeHeadless',
                 flags: [
-                    '--no-sandbox',
                     '--headless',
                     '--disable-gpu',
                     '--disable-translate',

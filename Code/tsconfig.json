@@ -41,6 +41,8 @@
         // Model
         "JsStore/Model/Column.ts",
         "JsStore/Model/Table.ts",
+        "JsStore/Model/TableHelper.ts",
+        "JsStore/Model/DbHelper.ts",
         "JsStore/Model/DataBase.ts",
         //Business
         "JsStore/Business/BaseHelperLogic.ts",
