@@ -29,17 +29,17 @@ namespace JsStore {
                 this._columns.every(function (column: Column) {
                     if (column._advTextSearch) {
                         table = new Table({
-                            Name: this._name + "_" + column._name,
                             Columns: [
                                 {
                                     Name: this._primaryKey,
                                     PrimaryKey: true
                                 },
                                 {
+                                    MultiEntry: true,
                                     Name: column._name,
-                                    MultiEntry: true
                                 }
-                            ]
+                            ],
+                            Name: this._name + "_" + column._name,
                         });
                         return false;
                     }

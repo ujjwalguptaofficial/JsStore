@@ -890,17 +890,17 @@ var JsStore;
                     this._columns.every(function (column) {
                         if (column._advTextSearch) {
                             table = new Model.Table({
-                                Name: this._name + "_" + column._name,
                                 Columns: [
                                     {
                                         Name: this._primaryKey,
                                         PrimaryKey: true
                                     },
                                     {
+                                        MultiEntry: true,
                                         Name: column._name,
-                                        MultiEntry: true
                                     }
-                                ]
+                                ],
+                                Name: this._name + "_" + column._name,
                             });
                             return false;
                         }
