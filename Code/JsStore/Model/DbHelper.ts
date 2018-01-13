@@ -16,16 +16,12 @@ namespace JsStore {
                     createMetaDataForTable = function () {
                         if (index < this._tables.length) {
                             var table: Table = this._tables[index],
-                                table_helper: TableHelper = new TableHelper(table),
-                                ats_table = table_helper.getAtsTable();
+                                table_helper: TableHelper = new TableHelper(table);
                             table_helper.createMetaData(this._name, function () {
                                 table_helper._callback = null;
                                 table_helpers.push(table_helper);
                                 createMetaDataForTable();
                             });
-                            if (ats_table != null) {
-                                this._tables.push(ats_table);
-                            }
                             ++index;
                         }
                         else {

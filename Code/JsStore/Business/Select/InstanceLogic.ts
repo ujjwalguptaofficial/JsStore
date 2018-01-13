@@ -127,10 +127,7 @@ namespace JsStore {
                 };
 
                 private createTransaction = function () {
-                    this._transaction = db_connection.transaction(
-                        [this._query.From].concat(this.getAtsTables(this.getAtsColumns())),
-                        "readonly"
-                    );
+                    this._transaction = db_connection.transaction([this._query.From], "readonly");
                     this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
                     (this._transaction as any).ontimeout = this.onTransactionTimeout.bind(this);
                     this._objectStore = this._transaction.objectStore(this._query.From);
@@ -178,13 +175,7 @@ namespace JsStore {
 
                 private createTransactionForOrLogic = function () {
                     try {
-                        var table_list = [this._query.From];
-                        for (var prop in this._query.Where) {
-                            if (this._query.Where[prop].Like) {
-                                table_list = table_list.concat([this._query.From + "_" + prop]);
-                            }
-                        }
-                        this._transaction = db_connection.transaction(table_list, "readonly");
+                        this._transaction = db_connection.transaction([this._query.From], "readonly");
                         this._transaction.oncomplete = this.orQuerySuccess.bind(this);
                         this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
                         this._objectStore = this._transaction.objectStore(this._query.From);

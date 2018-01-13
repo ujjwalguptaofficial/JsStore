@@ -845,7 +845,6 @@ var JsStore;
                 this._dataType = key.DataType != null ? key.DataType : (key.AutoIncrement ? 'number' : null);
                 this._default = key.Default;
                 this._multiEntry = key.MultiEntry == null ? false : true;
-                this._advTextSearch = key.AdvTextSearch != null ? true : false;
             }
             return Column;
         }());
@@ -883,29 +882,6 @@ var JsStore;
                     this._callback = callBack;
                     this.setRequireDelete(dbName);
                     this.setDbVersion(dbName);
-                };
-                this.getAtsTable = function () {
-                    var table = null;
-                    this._columns.every(function (column) {
-                        if (column._advTextSearch) {
-                            table = new Model.Table({
-                                Columns: [
-                                    {
-                                        Name: this._primaryKey,
-                                        PrimaryKey: true
-                                    },
-                                    {
-                                        MultiEntry: true,
-                                        Name: column._name,
-                                    }
-                                ],
-                                Name: this._name + "_" + column._name,
-                            });
-                            return false;
-                        }
-                        return true;
-                    }, this);
-                    return table;
                 };
                 this._name = table._name;
                 this._version = table._version;
@@ -950,15 +926,12 @@ var JsStore;
                 this.createMetaData = function (callBack) {
                     var index = 0, table_helpers = [], createMetaDataForTable = function () {
                         if (index < this._tables.length) {
-                            var table = this._tables[index], table_helper = new Model.TableHelper(table), ats_table = table_helper.getAtsTable();
+                            var table = this._tables[index], table_helper = new Model.TableHelper(table);
                             table_helper.createMetaData(this._name, function () {
                                 table_helper._callback = null;
                                 table_helpers.push(table_helper);
                                 createMetaDataForTable();
                             });
-                            if (ats_table != null) {
-                                this._tables.push(ats_table);
-                            }
                             ++index;
                         }
                         else {
@@ -1031,36 +1004,6 @@ var JsStore;
                         return true;
                     });
                     return current_table;
-                };
-                this.getAtsColumns = function () {
-                    var table = this.getTable(this._tableName), columns = [];
-                    table._columns.forEach(function (column) {
-                        if (column._advTextSearch === true) {
-                            columns.push(column._name);
-                        }
-                    });
-                    return columns;
-                };
-                this.getAtsTables = function (atsColumns) {
-                    var tables = [];
-                    atsColumns.forEach(function (columnName) {
-                        tables.push(this._tableName + "_" + columnName);
-                    }, this);
-                    return tables;
-                };
-                this.isAtsColumn = function (columnName) {
-                    if (this._tableName) {
-                        var table = this.getTable(this._tableName), status = false;
-                        table._columns.every(function (column) {
-                            if (column._name === columnName) {
-                                status = column._advTextSearch;
-                                return false;
-                            }
-                            return true;
-                        });
-                        return status;
-                    }
-                    return false;
                 };
                 this.getKeyRange = function (value, op) {
                     var key_range;
@@ -1207,33 +1150,7 @@ var JsStore;
                         default: console.error(ex);
                     }
                 };
-                _this.processAtsLogic = function (columnName, searchValue, occurence) {
-                    var cursor_request = this._transaction.objectStore(this._tableName + "_" + columnName).
-                        index(columnName).openCursor(this.getKeyRange({ Low: searchValue, High: searchValue + '\uffff' }, '-')), cursor, key = this.getPrimaryKey(this._tableName), key_list = [];
-                    cursor_request.onsuccess = function (e) {
-                        cursor = e.target.result;
-                        if (cursor) {
-                            key_list.push(cursor.value[key]);
-                            cursor.continue();
-                        }
-                        else {
-                            if (!this._errorOccured) {
-                                if (occurence === JsStore.Occurence.Any) {
-                                    delete this._query.Where[columnName];
-                                }
-                                this._query.Where[key] = {};
-                                this._query.Where[key]['In'] = key_list;
-                                this.goToWhereLogic(false);
-                            }
-                        }
-                    }.bind(this);
-                    cursor_request.onerror = function (e) {
-                        this._errorOccured = true;
-                        this.onErrorOccured(e);
-                    }.bind(this);
-                };
-                _this.goToWhereLogic = function (processAts) {
-                    if (processAts === void 0) { processAts = true; }
+                _this.goToWhereLogic = function () {
                     this._whereChecker = new Business.WhereChecker(this._query.Where);
                     var column_name = JsStore.getObjectFirstKey(this._query.Where);
                     if (this._query.IgnoreCase === true) {
@@ -1257,8 +1174,11 @@ var JsStore;
                                             filter_value = filter_values[0];
                                             occurence = JsStore.Occurence.First;
                                         }
-                                        if (processAts && this.isAtsColumn(column_name)) {
-                                            this.processAtsLogic(column_name, filter_value, occurence);
+                                        if (occurence === JsStore.Occurence.First) {
+                                            this.getAllCombinationOfWord(filter_value).forEach(function (item) {
+                                                this.executeWhereLogic(column_name, { '-': { Low: item, High: item + '\uffff' } }, '-');
+                                            }, this);
+                                            delete this._query.Where[column_name]['Like'];
                                         }
                                         else {
                                             this.executeLikeLogic(column_name, filter_value, occurence);
@@ -2540,9 +2460,9 @@ var JsStore;
                             }.bind(this);
                         }
                     };
-                    _this.executeWhereLogic = function (column, value, op) {
+                    _this.executeWhereLogic = function (column, value, op, dir) {
                         value = op ? value[op] : value;
-                        this._cursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
+                        this._cursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op), dir);
                         this._cursorOpenRequest.onerror = function (e) {
                             this._errorOccured = true;
                             this.onErrorOccured(e);
@@ -3307,7 +3227,7 @@ var JsStore;
                         processFirstQry();
                     };
                     _this.createTransaction = function () {
-                        this._transaction = Business.db_connection.transaction([this._query.From].concat(this.getAtsTables(this.getAtsColumns())), "readonly");
+                        this._transaction = Business.db_connection.transaction([this._query.From], "readonly");
                         this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
                         this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
                         this._objectStore = this._transaction.objectStore(this._query.From);
@@ -3351,13 +3271,7 @@ var JsStore;
                     };
                     _this.createTransactionForOrLogic = function () {
                         try {
-                            var table_list = [this._query.From];
-                            for (var prop in this._query.Where) {
-                                if (this._query.Where[prop].Like) {
-                                    table_list = table_list.concat([this._query.From + "_" + prop]);
-                                }
-                            }
-                            this._transaction = Business.db_connection.transaction(table_list, "readonly");
+                            this._transaction = Business.db_connection.transaction([this._query.From], "readonly");
                             this._transaction.oncomplete = this.orQuerySuccess.bind(this);
                             this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
                             this._objectStore = this._transaction.objectStore(this._query.From);
@@ -4463,9 +4377,6 @@ var JsStore;
                                         insertDataIntoTable.call(this, values[value_index++]);
                                     }.bind(this);
                                 }
-                                else {
-                                    this.insertAtsDatas(values, ats_columns);
-                                }
                             };
                         }
                         else {
@@ -4478,14 +4389,9 @@ var JsStore;
                                         insertDataIntoTable.call(this, values[value_index++]);
                                     }.bind(this);
                                 }
-                                else {
-                                    this.insertAtsDatas(values, ats_columns);
-                                }
                             };
                         }
-                        var ats_columns = this.getAtsColumns();
-                        this._transaction = Business.db_connection.transaction([this._query.Into].concat(this.getAtsTables(ats_columns)), "readwrite");
-                        // this._transaction = db_connection.transaction([this._query.Into], "readwrite");
+                        this._transaction = Business.db_connection.transaction([this._query.Into], "readwrite");
                         var object_store = this._transaction.objectStore(this._query.Into);
                         this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
                         insertDataIntoTable.call(this, values[value_index++]);
@@ -4524,34 +4430,6 @@ var JsStore;
                     }
                     return _this;
                 }
-                Instance.prototype.insertAtsDatas = function (values, atsColumns) {
-                    if (atsColumns.length > 0) {
-                        var ats_column_index = 0, value_index = 0, ats_column_name = atsColumns[ats_column_index], key = this.getPrimaryKey(this._tableName), value, ats_value, insertDataIntoTable = function () {
-                            value = values[value_index++];
-                            if (value) {
-                                ats_value = {};
-                                ats_value[key] = value[key];
-                                ats_value[ats_column_name] = this.getArrayFromWord(value[ats_column_name]);
-                                var add_result = object_store.add(ats_value);
-                                add_result.onerror = this.onErrorOccured.bind(this);
-                                add_result.onsuccess = function (e) {
-                                    insertDataIntoTable.call(this);
-                                }.bind(this);
-                            }
-                            else {
-                                value_index = 0;
-                                ++ats_column_index;
-                                if (ats_column_index < atsColumns.length) {
-                                    ats_column_name = atsColumns[ats_column_index];
-                                    object_store = this._transaction.objectStore(this._tableName + "_" + ats_column_name);
-                                    insertDataIntoTable.call(this);
-                                }
-                            }
-                        };
-                        var object_store = this._transaction.objectStore(this._tableName + "_" + ats_column_name);
-                        insertDataIntoTable.call(this);
-                    }
-                };
                 return Instance;
             }(Business.Base));
             Insert.Instance = Instance;

@@ -48,39 +48,7 @@ namespace JsStore {
                 }
             };
 
-            protected processAtsLogic = function (columnName, searchValue, occurence: Occurence) {
-                var cursor_request = this._transaction.objectStore(this._tableName + "_" + columnName).
-                    index(columnName).openCursor(
-                    this.getKeyRange({ Low: searchValue, High: searchValue + '\uffff' }, '-')
-                    ),
-                    cursor: IDBCursorWithValue,
-                    key = this.getPrimaryKey(this._tableName),
-                    key_list = [];
-                cursor_request.onsuccess = function (e) {
-                    cursor = e.target.result;
-                    if (cursor) {
-                        key_list.push(cursor.value[key]);
-                        cursor.continue();
-                    }
-                    else {
-                        if (!this._errorOccured) {
-                            if (occurence === Occurence.Any) {
-                                delete this._query.Where[columnName];
-                            }
-                            this._query.Where[key] = {};
-                            this._query.Where[key]['In'] = key_list;
-                            this.goToWhereLogic(false);
-                        }
-                    }
-                }.bind(this);
-
-                cursor_request.onerror = function (e) {
-                    this._errorOccured = true;
-                    this.onErrorOccured(e);
-                }.bind(this);
-            };
-
-            protected goToWhereLogic = function (processAts = true) {
+            protected goToWhereLogic = function () {
                 this._whereChecker = new WhereChecker(this._query.Where);
                 var column_name = getObjectFirstKey(this._query.Where);
                 if (this._query.IgnoreCase === true) {
@@ -107,8 +75,13 @@ namespace JsStore {
                                     filter_value = filter_values[0];
                                     occurence = Occurence.First;
                                 }
-                                if (processAts && this.isAtsColumn(column_name)) {
-                                    this.processAtsLogic(column_name, filter_value, occurence);
+                                if (occurence === Occurence.First) {
+                                    this.getAllCombinationOfWord(filter_value).forEach(function (item) {
+                                        this.executeWhereLogic(column_name,
+                                            { '-': { Low: item, High: item + '\uffff' } },
+                                            '-');
+                                    }, this);
+                                    delete this._query.Where[column_name]['Like'];
                                 }
                                 else {
                                     this.executeLikeLogic(column_name, filter_value, occurence);

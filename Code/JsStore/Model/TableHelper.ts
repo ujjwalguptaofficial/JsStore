@@ -24,30 +24,6 @@ namespace JsStore {
                 this.setDbVersion(dbName);
             };
 
-            public getAtsTable = function () {
-                var table: Table = null;
-                this._columns.every(function (column: Column) {
-                    if (column._advTextSearch) {
-                        table = new Table({
-                            Columns: [
-                                {
-                                    Name: this._primaryKey,
-                                    PrimaryKey: true
-                                },
-                                {
-                                    MultiEntry: true,
-                                    Name: column._name,
-                                }
-                            ],
-                            Name: this._name + "_" + column._name,
-                        });
-                        return false;
-                    }
-                    return true;
-                }, this);
-                return table;
-            };
-
             private setPrimaryKey() {
                 this._columns.every(function (item) {
                     this._primaryKey = item._primaryKey ? item._name : "";

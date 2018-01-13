@@ -35,41 +35,6 @@ namespace JsStore {
                 return current_table;
             };
 
-            protected getAtsColumns = function () {
-                var table: Table = this.getTable(this._tableName),
-                    columns = [];
-                table._columns.forEach(function (column) {
-                    if (column._advTextSearch === true) {
-                        columns.push(column._name);
-                    }
-                });
-                return columns;
-            };
-
-            protected getAtsTables = function (atsColumns) {
-                var tables = [];
-                atsColumns.forEach(function (columnName) {
-                    tables.push(this._tableName + "_" + columnName);
-                }, this);
-                return tables;
-            };
-
-            protected isAtsColumn = function (columnName) {
-                if (this._tableName) {
-                    var table: Table = this.getTable(this._tableName),
-                        status = false;
-                    table._columns.every(function (column) {
-                        if (column._name === columnName) {
-                            status = column._advTextSearch;
-                            return false;
-                        }
-                        return true;
-                    });
-                    return status;
-                }
-                return false;
-            };
-
             protected getKeyRange = function (value, op) {
                 var key_range: IDBKeyRange;
                 switch (op) {

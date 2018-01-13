@@ -27,7 +27,6 @@ namespace JsStore {
                 this._dataType = key.DataType != null ? key.DataType : (key.AutoIncrement ? 'number' : null);
                 this._default = key.Default;
                 this._multiEntry = key.MultiEntry == null ? false : true;
-                this._advTextSearch = key.AdvTextSearch != null ? true : false;
             }
 
         }

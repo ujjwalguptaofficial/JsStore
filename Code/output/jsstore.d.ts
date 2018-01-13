@@ -211,7 +211,6 @@ declare namespace JsStore {
         DataType?: string;
         Default?: any;
         MultiEntry?: boolean;
-        AdvTextSearch?: boolean;
     }
     interface ISelect {
         From: any;
@@ -450,7 +449,6 @@ declare namespace JsStore {
             _callback: () => void;
             constructor(table: Table);
             createMetaData: (dbName: string, callBack: () => void) => void;
-            getAtsTable: () => Table;
             private setPrimaryKey();
             private setRequireDelete(dbName);
             private setDbVersion(dbName);
@@ -482,9 +480,6 @@ declare namespace JsStore {
             protected filterOnOccurence: (value: any) => boolean;
             protected getArrayFromWord: (word: string) => string[];
             protected getTable: (tableName: string) => Table;
-            protected getAtsColumns: () => any[];
-            protected getAtsTables: (atsColumns: any) => any[];
-            protected isAtsColumn: (columnName: any) => boolean;
             protected getKeyRange: (value: any, op: any) => IDBKeyRange;
             protected getObjectSecondKey: (value: any) => string;
             protected getPrimaryKey: (tableName: any) => any;
@@ -516,8 +511,7 @@ declare namespace JsStore {
             protected onErrorOccured: (e: any, customError?: boolean) => void;
             protected onTransactionTimeout: (e: any) => void;
             protected onExceptionOccured: (ex: DOMException, info: any) => void;
-            protected processAtsLogic: (columnName: any, searchValue: any, occurence: Occurence) => void;
-            protected goToWhereLogic: (processAts?: boolean) => void;
+            protected goToWhereLogic: () => void;
             protected makeQryInCaseSensitive: (qry: any) => any;
         }
     }
@@ -937,7 +931,6 @@ declare namespace JsStore {
                 _table: Table;
                 constructor(query: IInsert, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void);
                 onTransactionCompleted: () => void;
-                private insertAtsDatas(values, atsColumns);
                 private insertData;
             }
         }

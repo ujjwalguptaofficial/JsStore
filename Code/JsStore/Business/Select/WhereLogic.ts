@@ -123,9 +123,12 @@ namespace JsStore {
                     }
                 };
 
-                private executeWhereLogic = function (column, value, op) {
+                private executeWhereLogic = function (column, value, op, dir) {
                     value = op ? value[op] : value;
-                    this._cursorOpenRequest = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
+                    this._cursorOpenRequest = this._objectStore.index(column).openCursor(
+                        this.getKeyRange(value, op),
+                        dir
+                    );
 
                     this._cursorOpenRequest.onerror = function (e) {
                         this._errorOccured = true;
