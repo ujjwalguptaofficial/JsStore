@@ -76,6 +76,69 @@ describe('Test update Api', function () {
         })
     });
 
+    it('update with like -"%or%', function (done) {
+        Con.update({
+            In: 'Customers',
+            Where: {
+                CustomerName: {
+                    Like: '%or%'
+                }
+            },
+            Set: {
+                Country: 'india'
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').to.equal(11);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
+    it('update with like -"o%', function (done) {
+        Con.update({
+            In: 'Customers',
+            Where: {
+                CustomerName: {
+                    Like: 'o%'
+                }
+            },
+            Set: {
+                Country: 'india'
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').to.equal(3);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
+    it('update with like -"%o', function (done) {
+        Con.update({
+            In: 'Customers',
+            Where: {
+                CustomerName: {
+                    Like: '%o'
+                }
+            },
+            Set: {
+                Country: 'india'
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').to.equal(6);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
     it('update with like', function (done) {
         Con.update({
             In: 'Customers',
@@ -179,7 +242,8 @@ describe('Test update Api', function () {
         })
     });
 
-    it('select with in', function (done) {
+    it('update with in', function (done) {
+        var Count;
         Con.select({
             From: 'Customers',
             Where: {
@@ -188,16 +252,12 @@ describe('Test update Api', function () {
                 }
             },
             OnSuccess: function (results) {
-                expect(results).to.be.an('array').length(24);
-                done();
+                Count = results.length;
             },
             OnError: function (err) {
                 done(err);
             }
         })
-    });
-
-    it('update with in', function (done) {
         Con.update({
             In: 'Customers',
             Where: {
@@ -210,7 +270,7 @@ describe('Test update Api', function () {
                 City: 'bhubaneswar'
             },
             OnSuccess: function (results) {
-                expect(results).to.be.an('number').to.equal(24);
+                expect(results).to.be.an('number').to.equal(Count);
                 done();
             },
             OnError: function (err) {

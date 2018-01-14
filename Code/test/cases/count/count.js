@@ -210,6 +210,42 @@ describe('Test count Api', function () {
         })
     });
 
+    it('select with like - "o%"', function (done) {
+        Con.count({
+            From: 'Customers',
+            Where: {
+                CustomerName: {
+                    Like: 'o%'
+                }
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').equal(3);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
+    it('select with like - "%o"', function (done) {
+        Con.count({
+            From: 'Customers',
+            Where: {
+                CustomerName: {
+                    Like: '%o'
+                }
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').equal(6);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
     it('wrong table test', function (done) {
         Con.count({
             From: 'Cusdtomers'

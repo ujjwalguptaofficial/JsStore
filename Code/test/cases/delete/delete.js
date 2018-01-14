@@ -343,38 +343,103 @@ describe('Test delete Api', function () {
         })
     });
 
-    it('delete with like', function (done) {
+    it('delete with like- "%or%"', function (done) {
         var Count;
         Con.select({
-            From: 'Customers',
-            Where: {
-                CustomerName: {
-                    Like: '%or%'
+                From: 'Customers',
+                Where: {
+                    CustomerName: {
+                        Like: '%or%'
+                    }
+                },
+                OnSuccess: function (results) {
+                    Count = results.length;
+                },
+                OnError: function (err) {
+                    done(err);
                 }
-            },
-            OnSuccess: function (results) {
-                Count = results.length;
-            },
-            OnError: function (err) {
-                done(err);
-            }
-        })
+            })
+            .delete({
+                From: 'Customers',
+                Where: {
+                    CustomerName: {
+                        Like: '%or%'
+                    }
+                },
+                OnSuccess: function (results) {
+                    expect(results).to.be.an('number').to.equal(Count);
+                    done();
+                },
+                OnError: function (err) {
+                    done(err);
+                }
+            })
+    });
 
-        Con.delete({
-            From: 'Customers',
-            Where: {
-                CustomerName: {
-                    Like: '%or%'
+    it('delete with like- "%or"', function (done) {
+        var Count;
+        Con.select({
+                From: 'Customers',
+                Where: {
+                    CustomerName: {
+                        Like: '%or'
+                    }
+                },
+                OnSuccess: function (results) {
+                    Count = results.length;
+                },
+                OnError: function (err) {
+                    done(err);
                 }
-            },
-            OnSuccess: function (results) {
-                expect(results).to.be.an('number').to.equal(Count);
-                done();
-            },
-            OnError: function (err) {
-                done(err);
-            }
-        })
+            })
+            .delete({
+                From: 'Customers',
+                Where: {
+                    CustomerName: {
+                        Like: '%or'
+                    }
+                },
+                OnSuccess: function (results) {
+                    expect(results).to.be.an('number').to.equal(Count);
+                    done();
+                },
+                OnError: function (err) {
+                    done(err);
+                }
+            })
+    });
+
+    it('delete with like- "or%"', function (done) {
+        var Count;
+        Con.select({
+                From: 'Customers',
+                Where: {
+                    CustomerName: {
+                        Like: 'or%'
+                    }
+                },
+                OnSuccess: function (results) {
+                    Count = results.length;
+                },
+                OnError: function (err) {
+                    done(err);
+                }
+            })
+            .delete({
+                From: 'Customers',
+                Where: {
+                    CustomerName: {
+                        Like: 'or%'
+                    }
+                },
+                OnSuccess: function (results) {
+                    expect(results).to.be.an('number').to.equal(Count);
+                    done();
+                },
+                OnError: function (err) {
+                    done(err);
+                }
+            })
     });
 
     it('delete all - using promise', function (done) {

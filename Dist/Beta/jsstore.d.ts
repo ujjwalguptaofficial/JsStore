@@ -1,5 +1,5 @@
 /** 
- * @license :JsStore.js - v1.4.1 - 09/01/2018
+ * @license :JsStore.js - v1.4.2 - 14/01/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT 
  */
@@ -205,17 +205,17 @@ declare namespace JsStore {
     interface ITableOption {
         Name: string;
         Columns: IColumnOption[];
-        Version: number;
+        Version?: number;
     }
     interface IColumnOption {
         Name: string;
-        AutoIncrement: boolean;
-        PrimaryKey: boolean;
-        Unique: boolean;
-        NotNull: boolean;
-        DataType: string;
-        Default: any;
-        MultiEntry: boolean;
+        PrimaryKey?: boolean;
+        AutoIncrement?: boolean;
+        Unique?: boolean;
+        NotNull?: boolean;
+        DataType?: string;
+        Default?: any;
+        MultiEntry?: boolean;
     }
     interface ISelect {
         From: any;
@@ -426,6 +426,7 @@ declare namespace JsStore {
             _dataType: string;
             _default: any;
             _multiEntry: boolean;
+            _advTextSearch: boolean;
             constructor(key: IColumnOption, tableName: string);
         }
     }
@@ -436,13 +437,36 @@ declare namespace JsStore {
             _name: string;
             _columns: Column[];
             _version: number;
+            _primaryKey: string;
+            constructor(table: ITableOption);
+        }
+    }
+}
+declare namespace JsStore {
+    namespace Model {
+        class TableHelper {
+            _name: string;
+            _columns: Column[];
+            _primaryKey: string;
+            _version: number;
             _requireDelete: boolean;
             _requireCreation: boolean;
-            _primaryKey: string;
-            constructor(table: ITableOption, dbName: string);
-            private setPrimaryKey(dbName);
+            _callback: () => void;
+            constructor(table: Table);
+            createMetaData: (dbName: string, callBack: () => void) => void;
+            private setPrimaryKey();
             private setRequireDelete(dbName);
             private setDbVersion(dbName);
+        }
+    }
+}
+declare namespace JsStore {
+    namespace Model {
+        class DbHelper {
+            _name: string;
+            _tables: Table[];
+            constructor(dataBase: DataBase);
+            createMetaData: (callBack: (tablesMetaData: TableHelper[]) => void) => void;
         }
     }
 }
@@ -458,6 +482,8 @@ declare namespace JsStore {
 declare namespace JsStore {
     namespace Business {
         class BaseHelper {
+            protected filterOnOccurence: (value: any) => boolean;
+            protected getArrayFromWord: (word: string) => string[];
             protected getTable: (tableName: string) => Table;
             protected getKeyRange: (value: any, op: any) => IDBKeyRange;
             protected getObjectSecondKey: (value: any) => string;
@@ -485,18 +511,11 @@ declare namespace JsStore {
             _objectStore: IDBObjectStore;
             _query: any;
             _sendResultFlag: boolean;
+            _whereChecker: WhereChecker;
+            _tableName: string;
             protected onErrorOccured: (e: any, customError?: boolean) => void;
             protected onTransactionTimeout: (e: any) => void;
             protected onExceptionOccured: (ex: DOMException, info: any) => void;
-            /**
-             * For matching the different column value existance
-             *
-             * @protected
-             * @param {any} rowValue
-             * @returns
-             * @memberof Base
-             */
-            protected checkForWhereConditionMatch(rowValue: any): boolean;
             protected goToWhereLogic: () => void;
             protected makeQryInCaseSensitive: (qry: any) => any;
         }
@@ -505,7 +524,7 @@ declare namespace JsStore {
 declare namespace JsStore {
     namespace Business {
         class CreateDb {
-            constructor(dbVersion: any, onSuccess: (listOf) => void, onError: (err: IError) => void);
+            constructor(tablesMetaData: Model.TableHelper[], onSuccess: (listOf) => void, onError: (err: IError) => void);
         }
     }
 }
@@ -530,6 +549,7 @@ declare namespace JsStore {
     namespace Business {
         class OpenDb {
             constructor(dbVersion: any, onSuccess: () => void, onError: (err: IError) => void);
+            private setPrimaryKey;
         }
     }
 }
@@ -562,6 +582,25 @@ declare namespace JsStore {
             private createDb;
             private clear;
             private exportJson;
+        }
+    }
+}
+declare namespace JsStore {
+    namespace Business {
+        /**
+         * For matching the different column value existance for where option
+         *
+         * @export
+         * @class WhereChecker
+         */
+        class WhereChecker {
+            _where: any;
+            _status: any;
+            constructor(where: any);
+            check: (rowValue: any) => any;
+            private checkIn;
+            private checkLike;
+            private checkComparisionOp;
         }
     }
 }
@@ -613,7 +652,6 @@ declare namespace JsStore {
                 _compValue: any;
                 _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
-                private filterOnOccurence;
                 private executeSkipAndLimit;
                 private executeSkip;
                 private executeLimit;
@@ -729,7 +767,6 @@ declare namespace JsStore {
                 _compValue: any;
                 _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
-                private filterOnOccurence;
             }
         }
     }
@@ -789,7 +826,6 @@ declare namespace JsStore {
                 _compValue: any;
                 _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
-                private filterOnOccurence;
             }
         }
     }
@@ -862,7 +898,6 @@ declare namespace JsStore {
                 _compValue: any;
                 _compValueLength: number;
                 protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
-                private filterOnOccurence;
             }
         }
     }
@@ -1069,4 +1104,3 @@ declare namespace JsStore {
         exportJson: (query: ISelect) => any;
     }
 }
-export = JsStore;
