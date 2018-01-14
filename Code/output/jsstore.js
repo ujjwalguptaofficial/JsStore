@@ -3243,31 +3243,29 @@ var JsStore;
                         this.goToWhereLogic();
                     };
                     _this.onTransactionCompleted = function () {
-                        if (this._sendResultFlag) {
-                            this.processOrderBy();
-                            if (this._query.Distinct) {
-                                var group_by = [];
-                                var result = this._results[0];
-                                for (var key in result) {
-                                    group_by.push(key);
-                                }
-                                var primary_key = this.getPrimaryKey(this._query.From), index = group_by.indexOf(primary_key);
-                                group_by.splice(index, 1);
-                                this._query.GroupBy = group_by.length > 0 ? group_by : null;
+                        this.processOrderBy();
+                        if (this._query.Distinct) {
+                            var group_by = [];
+                            var result = this._results[0];
+                            for (var key in result) {
+                                group_by.push(key);
                             }
-                            if (this._query.GroupBy) {
-                                if (this._query.Aggregate) {
-                                    this.executeAggregateGroupBy();
-                                }
-                                else {
-                                    this.processGroupBy();
-                                }
-                            }
-                            else if (this._query.Aggregate) {
-                                this.processAggregateQry();
-                            }
-                            this._onSuccess(this._results);
+                            var primary_key = this.getPrimaryKey(this._query.From), index = group_by.indexOf(primary_key);
+                            group_by.splice(index, 1);
+                            this._query.GroupBy = group_by.length > 0 ? group_by : null;
                         }
+                        if (this._query.GroupBy) {
+                            if (this._query.Aggregate) {
+                                this.executeAggregateGroupBy();
+                            }
+                            else {
+                                this.processGroupBy();
+                            }
+                        }
+                        else if (this._query.Aggregate) {
+                            this.processAggregateQry();
+                        }
+                        this._onSuccess(this._results);
                     };
                     _this.createTransactionForOrLogic = function () {
                         try {
@@ -3606,9 +3604,7 @@ var JsStore;
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
                     _this.onTransactionCompleted = function () {
-                        if (this._sendResultFlag) {
-                            this._onSuccess(this._resultCount);
-                        }
+                        this._onSuccess(this._resultCount);
                     };
                     _this._onError = onError;
                     if (_this.getTable(query.From)) {

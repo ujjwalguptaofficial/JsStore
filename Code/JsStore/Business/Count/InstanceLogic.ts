@@ -47,9 +47,7 @@ namespace JsStore {
                 }
 
                 private onTransactionCompleted = function () {
-                    if (this._sendResultFlag) {
-                        this._onSuccess(this._resultCount);
-                    }
+                    this._onSuccess(this._resultCount);
                 };
             }
         }
