@@ -20,6 +20,9 @@ namespace JsStore {
                                     cursor.advance(this._skipRecord);
                                 }
                             }
+                            else {
+                                this.onQueryFinished();
+                            }
                         }.bind(this);
                     }
                     else {
@@ -34,6 +37,9 @@ namespace JsStore {
                                     record_skipped = true;
                                     cursor.advance(this._skipRecord);
                                 }
+                            }
+                            else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                     }
@@ -57,6 +63,9 @@ namespace JsStore {
                                     cursor.advance(this._skipRecord);
                                 }
                             }
+                            else {
+                                this.onQueryFinished();
+                            }
                         }.bind(this);
                     }
                     else {
@@ -72,6 +81,9 @@ namespace JsStore {
                                     cursor.advance(this._skipRecord);
                                 }
                             }
+                            else {
+                                this.onQueryFinished();
+                            }
                         }.bind(this);
                     }
                 };
@@ -86,6 +98,9 @@ namespace JsStore {
                                 this._results.push(cursor.value);
                                 cursor.continue();
                             }
+                            else {
+                                this.onQueryFinished();
+                            }
                         }.bind(this);
                     }
                     else {
@@ -94,6 +109,9 @@ namespace JsStore {
                             if (cursor && this._results.length !== this._limitRecord) {
                                 this._results.push(cursor.value);
                                 cursor.continue();
+                            }
+                            else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                     }
@@ -110,6 +128,9 @@ namespace JsStore {
                                 }
                                 cursor.continue();
                             }
+                            else {
+                                this.onQueryFinished();
+                            }
                         }.bind(this);
                     }
                     else {
@@ -118,6 +139,8 @@ namespace JsStore {
                             if (cursor) {
                                 this._results.push(cursor.value);
                                 cursor.continue();
+                            } else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                     }

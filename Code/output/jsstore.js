@@ -1937,6 +1937,9 @@ var JsStore;
                                     cursor.advance(this._skipRecord);
                                 }
                             }
+                            else {
+                                this.onQueryFinished();
+                            }
                         }.bind(this);
                     };
                     _this.executeSkipForNoWhere = function () {
@@ -1953,6 +1956,9 @@ var JsStore;
                                     cursor.advance(this._skipRecord);
                                 }
                             }
+                            else {
+                                this.onQueryFinished();
+                            }
                         }.bind(this);
                     };
                     _this.executeSimpleForNotWhere = function () {
@@ -1963,6 +1969,9 @@ var JsStore;
                                 this._results.push(cursor.value);
                                 cursor.continue();
                             }
+                            else {
+                                this.onQueryFinished();
+                            }
                         }.bind(this);
                     };
                     _this.executeLimitForNotWhere = function () {
@@ -1972,6 +1981,9 @@ var JsStore;
                             if (cursor && this._results.length !== this._limitRecord) {
                                 this._results.push(cursor.value);
                                 cursor.continue();
+                            }
+                            else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                     };
@@ -2228,6 +2240,9 @@ var JsStore;
                                     }
                                     cursor.continue();
                                 }
+                                else {
+                                    this.onQueryFinished();
+                                }
                             }.bind(this);
                         }
                         else {
@@ -2238,6 +2253,9 @@ var JsStore;
                                         skipOrPush(cursor.value);
                                     }
                                     cursor.continue();
+                                }
+                                else {
+                                    this.onQueryFinished();
                                 }
                             }.bind(this);
                         }
@@ -2261,6 +2279,9 @@ var JsStore;
                                     }
                                     cursor.continue();
                                 }
+                                else {
+                                    this.onQueryFinished();
+                                }
                             }.bind(this);
                         }
                         else {
@@ -2271,6 +2292,9 @@ var JsStore;
                                         skipOrPush((cursor.value));
                                     }
                                     cursor.continue();
+                                }
+                                else {
+                                    this.onQueryFinished();
                                 }
                             }.bind(this);
                         }
@@ -2287,6 +2311,9 @@ var JsStore;
                                     }
                                     cursor.continue();
                                 }
+                                else {
+                                    this.onQueryFinished();
+                                }
                             }.bind(this);
                         }
                         else {
@@ -2297,6 +2324,9 @@ var JsStore;
                                         this._results.push(cursor.value);
                                     }
                                     cursor.continue();
+                                }
+                                else {
+                                    this.onQueryFinished();
                                 }
                             }.bind(this);
                         }
@@ -2313,6 +2343,9 @@ var JsStore;
                                     }
                                     cursor.continue();
                                 }
+                                else {
+                                    this.onQueryFinished();
+                                }
                             }.bind(this);
                         }
                         else {
@@ -2323,6 +2356,9 @@ var JsStore;
                                         this._results.push(cursor.value);
                                     }
                                     cursor.continue();
+                                }
+                                else {
+                                    this.onQueryFinished();
                                 }
                             }.bind(this);
                         }
@@ -2362,6 +2398,9 @@ var JsStore;
                                         cursor.advance(this._skipRecord);
                                     }
                                 }
+                                else {
+                                    this.onQueryFinished();
+                                }
                             }.bind(this);
                         }
                         else {
@@ -2376,6 +2415,9 @@ var JsStore;
                                         record_skipped = true;
                                         cursor.advance(this._skipRecord);
                                     }
+                                }
+                                else {
+                                    this.onQueryFinished();
                                 }
                             }.bind(this);
                         }
@@ -2397,6 +2439,9 @@ var JsStore;
                                         cursor.advance(this._skipRecord);
                                     }
                                 }
+                                else {
+                                    this.onQueryFinished();
+                                }
                             }.bind(this);
                         }
                         else {
@@ -2412,6 +2457,9 @@ var JsStore;
                                         cursor.advance(this._skipRecord);
                                     }
                                 }
+                                else {
+                                    this.onQueryFinished();
+                                }
                             }.bind(this);
                         }
                     };
@@ -2425,6 +2473,9 @@ var JsStore;
                                     this._results.push(cursor.value);
                                     cursor.continue();
                                 }
+                                else {
+                                    this.onQueryFinished();
+                                }
                             }.bind(this);
                         }
                         else {
@@ -2433,6 +2484,9 @@ var JsStore;
                                 if (cursor && this._results.length !== this._limitRecord) {
                                     this._results.push(cursor.value);
                                     cursor.continue();
+                                }
+                                else {
+                                    this.onQueryFinished();
                                 }
                             }.bind(this);
                         }
@@ -2448,6 +2502,9 @@ var JsStore;
                                     }
                                     cursor.continue();
                                 }
+                                else {
+                                    this.onQueryFinished();
+                                }
                             }.bind(this);
                         }
                         else {
@@ -2456,6 +2513,9 @@ var JsStore;
                                 if (cursor) {
                                     this._results.push(cursor.value);
                                     cursor.continue();
+                                }
+                                else {
+                                    this.onQueryFinished();
                                 }
                             }.bind(this);
                         }
@@ -3151,7 +3211,8 @@ var JsStore;
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
                     _this.processWhereArrayQry = function () {
-                        var original_onsuccess = this._onSuccess, where_query = this._query.Where, output = [], operation, pKey = this.getPrimaryKey(this._query.From), isItemExist = function (keyValue) {
+                        this._isArrayQry = true;
+                        var where_query = this._query.Where, output = [], operation, pKey = this.getPrimaryKey(this._query.From), isItemExist = function (keyValue) {
                             var is_exist = false;
                             output.every(function (item) {
                                 if (item[pKey] === keyValue) {
@@ -3161,18 +3222,7 @@ var JsStore;
                                 return true;
                             });
                             return is_exist;
-                        }, createTransaction = function () {
-                            try {
-                                this._transaction = Business.db_connection.transaction([this._query.From], "readonly");
-                                this._transaction.oncomplete = onSuccess;
-                                this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
-                                this._objectStore = this._transaction.objectStore(this._query.From);
-                            }
-                            catch (ex) {
-                                this._errorOccured = true;
-                                this.onExceptionOccured.call(this, ex, { TableName: this._query.From });
-                            }
-                        }.bind(this), onSuccess = function () {
+                        }, onSuccess = function () {
                             if (operation === 'and') {
                                 if (output.length > 0) {
                                     var and_results = [];
@@ -3198,12 +3248,12 @@ var JsStore;
                                     output = this._results;
                                 }
                             }
-                            this._results = [];
                             if (where_query.length > 0) {
+                                this._results = [];
                                 processFirstQry();
                             }
                             else {
-                                original_onsuccess(output);
+                                this._results = output;
                             }
                         }.bind(this), processFirstQry = function () {
                             this._query.Where = where_query.shift();
@@ -3211,16 +3261,16 @@ var JsStore;
                                 if (Object.keys(this._query.Where).length === 1) {
                                     operation = 'or';
                                     this._query.Where = this._query.Where['Or'];
-                                    createTransaction();
+                                    this._onWhereArrayQrySuccess = onSuccess;
                                 }
                                 else {
                                     operation = 'and';
-                                    this._onSuccess = onSuccess;
+                                    this._onWhereArrayQrySuccess = onSuccess;
                                 }
                             }
                             else {
                                 operation = 'and';
-                                createTransaction();
+                                this._onWhereArrayQrySuccess = onSuccess;
                             }
                             this.processWhere(true);
                         }.bind(this);
@@ -3235,12 +3285,16 @@ var JsStore;
                     _this.processWhere = function (isTransactionCreated) {
                         if (this._query.Where.Or) {
                             this.processOrLogic();
-                            this.createTransactionForOrLogic();
-                        }
-                        else if (!isTransactionCreated) {
-                            this.createTransaction();
                         }
                         this.goToWhereLogic();
+                    };
+                    _this.onQueryFinished = function () {
+                        if (this._isOr) {
+                            this.orQuerySuccess();
+                        }
+                        else if (this._isArrayQry) {
+                            this._onWhereArrayQrySuccess();
+                        }
                     };
                     _this.onTransactionCompleted = function () {
                         this.processOrderBy();
@@ -3267,26 +3321,16 @@ var JsStore;
                         }
                         this._onSuccess(this._results);
                     };
-                    _this.createTransactionForOrLogic = function () {
-                        try {
-                            this._transaction = Business.db_connection.transaction([this._query.From], "readonly");
-                            this._transaction.oncomplete = this.orQuerySuccess.bind(this);
-                            this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
-                            this._objectStore = this._transaction.objectStore(this._query.From);
-                        }
-                        catch (ex) {
-                            this._errorOccured = true;
-                            this.onExceptionOccured.call(this, ex, { TableName: this._query.From });
-                        }
-                    };
                     _this.orQueryFinish = function () {
+                        this._isOr = false;
                         this._results = this._orInfo.Results;
                         // free or info memory
-                        this._orInfo.Results = undefined;
+                        this._orInfo = undefined;
                         this.removeDuplicates();
-                        this._orInfo.OnSucess(this._results);
+                        this.onQueryFinished();
                     };
                     _this.orQuerySuccess = function () {
+                        // if ((this as any)._orInfo) {
                         this._orInfo.Results = this._orInfo.Results.concat(this._results);
                         if (!this._query.Limit || (this._query.Limit > this._orInfo.Results.length)) {
                             this._results = [];
@@ -3296,7 +3340,6 @@ var JsStore;
                                 where[key] = this._orInfo.OrQuery[key];
                                 delete this._orInfo.OrQuery[key];
                                 this._query.Where = where;
-                                this.createTransactionForOrLogic();
                                 this.goToWhereLogic();
                             }
                             else {
@@ -3306,11 +3349,12 @@ var JsStore;
                         else {
                             this.orQueryFinish();
                         }
+                        // }
                     };
                     _this.processOrLogic = function () {
+                        this._isOr = true;
                         this._orInfo = {
                             OrQuery: this._query.Where.Or,
-                            OnSucess: this._onSuccess,
                             Results: []
                         };
                         // free or memory
@@ -3324,6 +3368,7 @@ var JsStore;
                         _this._limitRecord = _this._query.Limit;
                         _this._tableName = _this._query.From;
                         try {
+                            _this.createTransaction();
                             if (query.Where) {
                                 if (Array.isArray(query.Where)) {
                                     _this.processWhereArrayQry();
@@ -3333,7 +3378,7 @@ var JsStore;
                                 }
                             }
                             else {
-                                _this.createTransaction();
+                                // this.createTransaction();
                                 _this.executeWhereUndefinedLogic();
                             }
                         }

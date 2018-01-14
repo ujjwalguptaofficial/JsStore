@@ -54,6 +54,8 @@ namespace JsStore {
                                 record_skipped = true;
                                 cursor.advance(this._skipRecord);
                             }
+                        } else {
+                            this.onQueryFinished();
                         }
                     }.bind(this);
                 };
@@ -72,6 +74,8 @@ namespace JsStore {
                                 record_skipped = true;
                                 cursor.advance(this._skipRecord);
                             }
+                        } else {
+                            this.onQueryFinished();
                         }
                     }.bind(this);
                 };
@@ -84,7 +88,9 @@ namespace JsStore {
                             this._results.push(cursor.value);
                             (cursor as any).continue();
                         }
-
+                        else {
+                            this.onQueryFinished();
+                        }
                     }.bind(this);
                 };
 
@@ -95,6 +101,8 @@ namespace JsStore {
                         if (cursor && this._results.length !== this._limitRecord) {
                             this._results.push(cursor.value);
                             cursor.continue();
+                        } else {
+                            this.onQueryFinished();
                         }
                     }.bind(this);
                 };

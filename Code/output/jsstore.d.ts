@@ -711,12 +711,13 @@ declare namespace JsStore {
     namespace Business {
         namespace Select {
             class Instance extends Helper {
+                _isOr: boolean;
                 constructor(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
                 private processWhereArrayQry;
                 private createTransaction;
                 private processWhere;
+                private onQueryFinished;
                 private onTransactionCompleted;
-                private createTransactionForOrLogic;
                 private orQueryFinish;
                 private orQuerySuccess;
                 private processOrLogic;

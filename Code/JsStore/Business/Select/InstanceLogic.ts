@@ -2,6 +2,7 @@ namespace JsStore {
     export namespace Business {
         export namespace Select {
             export class Instance extends Helper {
+                _isOr: boolean;
                 constructor(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
                     super();
                     this._onError = onError;
@@ -12,6 +13,7 @@ namespace JsStore {
                         this._limitRecord = this._query.Limit;
                         this._tableName = this._query.From;
                         try {
+                            this.createTransaction();
                             if (query.Where) {
                                 if (Array.isArray(query.Where)) {
                                     this.processWhereArrayQry();
@@ -21,7 +23,7 @@ namespace JsStore {
                                 }
                             }
                             else {
-                                this.createTransaction();
+                                // this.createTransaction();
                                 this.executeWhereUndefinedLogic();
                             }
                         }
@@ -40,8 +42,8 @@ namespace JsStore {
                 }
 
                 private processWhereArrayQry = function () {
-                    var original_onsuccess = this._onSuccess,
-                        where_query = this._query.Where,
+                    this._isArrayQry = true;
+                    var where_query = this._query.Where,
                         output = [], operation,
                         pKey = this.getPrimaryKey(this._query.From),
                         isItemExist = function (keyValue) {
@@ -55,21 +57,6 @@ namespace JsStore {
                             });
                             return is_exist;
                         },
-                        createTransaction = function () {
-                            try {
-                                this._transaction = db_connection.transaction(
-                                    [this._query.From],
-                                    "readonly"
-                                );
-                                this._transaction.oncomplete = onSuccess;
-                                this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
-                                this._objectStore = this._transaction.objectStore(this._query.From);
-                            }
-                            catch (ex) {
-                                this._errorOccured = true;
-                                this.onExceptionOccured.call(this, ex, { TableName: this._query.From });
-                            }
-                        }.bind(this),
                         onSuccess = function () {
                             if (operation === 'and') {
                                 if (output.length > 0) {
@@ -96,12 +83,12 @@ namespace JsStore {
                                     output = this._results;
                                 }
                             }
-                            this._results = [];
                             if (where_query.length > 0) {
+                                this._results = [];
                                 processFirstQry();
                             }
                             else {
-                                original_onsuccess(output);
+                                this._results = output;
                             }
                         }.bind(this),
                         processFirstQry = function () {
@@ -110,16 +97,16 @@ namespace JsStore {
                                 if (Object.keys(this._query.Where).length === 1) {
                                     operation = 'or';
                                     this._query.Where = this._query.Where['Or'];
-                                    createTransaction();
+                                    this._onWhereArrayQrySuccess = onSuccess;
                                 }
                                 else {
                                     operation = 'and';
-                                    this._onSuccess = onSuccess;
+                                    this._onWhereArrayQrySuccess = onSuccess;
                                 }
                             }
                             else {
                                 operation = 'and';
-                                createTransaction();
+                                this._onWhereArrayQrySuccess = onSuccess;
                             }
                             this.processWhere(true);
                         }.bind(this);
@@ -136,12 +123,17 @@ namespace JsStore {
                 private processWhere = function (isTransactionCreated) {
                     if (this._query.Where.Or) {
                         this.processOrLogic();
-                        this.createTransactionForOrLogic();
-                    }
-                    else if (!isTransactionCreated) {
-                        this.createTransaction();
                     }
                     this.goToWhereLogic();
+                };
+
+                private onQueryFinished = function () {
+                    if (this._isOr) {
+                        this.orQuerySuccess();
+                    }
+                    else if (this._isArrayQry) {
+                        this._onWhereArrayQrySuccess();
+                    }
                 };
 
                 private onTransactionCompleted = function () {
@@ -171,25 +163,13 @@ namespace JsStore {
                     this._onSuccess(this._results);
                 };
 
-                private createTransactionForOrLogic = function () {
-                    try {
-                        this._transaction = db_connection.transaction([this._query.From], "readonly");
-                        this._transaction.oncomplete = this.orQuerySuccess.bind(this);
-                        this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
-                        this._objectStore = this._transaction.objectStore(this._query.From);
-                    }
-                    catch (ex) {
-                        this._errorOccured = true;
-                        this.onExceptionOccured.call(this, ex, { TableName: this._query.From });
-                    }
-                };
-
                 private orQueryFinish = function () {
+                    this._isOr = false;
                     this._results = (this as any)._orInfo.Results;
                     // free or info memory
-                    (this as any)._orInfo.Results = undefined;
+                    (this as any)._orInfo = undefined;
                     this.removeDuplicates();
-                    (this as any)._orInfo.OnSucess(this._results);
+                    this.onQueryFinished();
                 };
 
                 private orQuerySuccess = function () {
@@ -202,7 +182,6 @@ namespace JsStore {
                             where[key] = (this as any)._orInfo.OrQuery[key];
                             delete (this as any)._orInfo.OrQuery[key];
                             this._query.Where = where;
-                            this.createTransactionForOrLogic();
                             this.goToWhereLogic();
                         }
                         else {
@@ -215,9 +194,9 @@ namespace JsStore {
                 };
 
                 private processOrLogic = function () {
+                    this._isOr = true;
                     (this as any)._orInfo = {
                         OrQuery: this._query.Where.Or,
-                        OnSucess: this._onSuccess,
                         Results: []
                     };
                     // free or memory

@@ -49,6 +49,8 @@ namespace JsStore {
                                     skipOrPush(cursor.value);
                                 }
                                 cursor.continue();
+                            } else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                     }
@@ -60,6 +62,8 @@ namespace JsStore {
                                     skipOrPush(cursor.value);
                                 }
                                 cursor.continue();
+                            } else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                     }
@@ -85,6 +89,8 @@ namespace JsStore {
                                     skipOrPush((cursor.value));
                                 }
                                 cursor.continue();
+                            } else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                     }
@@ -96,6 +102,8 @@ namespace JsStore {
                                     skipOrPush((cursor.value));
                                 }
                                 cursor.continue();
+                            } else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                     }
@@ -112,6 +120,8 @@ namespace JsStore {
                                     this._results.push(cursor.value);
                                 }
                                 cursor.continue();
+                            } else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                     }
@@ -123,6 +133,8 @@ namespace JsStore {
                                     this._results.push(cursor.value);
                                 }
                                 cursor.continue();
+                            } else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                     }
@@ -139,6 +151,8 @@ namespace JsStore {
                                     this._results.push(cursor.value);
                                 }
                                 cursor.continue();
+                            } else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                     }
@@ -150,6 +164,8 @@ namespace JsStore {
                                     this._results.push(cursor.value);
                                 }
                                 cursor.continue();
+                            } else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                     }
