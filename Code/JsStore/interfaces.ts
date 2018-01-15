@@ -149,4 +149,8 @@ namespace JsStore {
         Count: any[];
         Avg: any[];
     }
+
+    export interface ITranscationQry {
+        TableNames: [];
+    }
 }

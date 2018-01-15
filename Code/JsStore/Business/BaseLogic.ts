@@ -34,10 +34,6 @@ namespace JsStore {
                 }
             };
 
-            protected onTransactionTimeout = function (e) {
-                console.error('transaction timed out');
-            };
-
             protected onExceptionOccured = function (ex: DOMException, info) {
                 switch (ex.name) {
                     case 'NotFoundError':

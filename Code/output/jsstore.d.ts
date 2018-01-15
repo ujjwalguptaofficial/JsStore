@@ -509,7 +509,6 @@ declare namespace JsStore {
             _whereChecker: WhereChecker;
             _tableName: string;
             protected onErrorOccured: (e: any, customError?: boolean) => void;
-            protected onTransactionTimeout: (e: any) => void;
             protected onExceptionOccured: (ex: DOMException, info: any) => void;
             protected goToWhereLogic: () => void;
             protected makeQryInCaseSensitive: (qry: any) => any;
@@ -557,7 +556,7 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     namespace Business {
-        var db_connection: IDBDatabase, active_db: DataBase;
+        var db_connection: IDBDatabase, active_db: DataBase, db_transaction: IDBTransaction, createTransaction: any;
         class Main {
             _onSuccess: () => void;
             constructor(onSuccess?: any);
@@ -565,6 +564,7 @@ declare namespace JsStore {
             private changeLogStatus;
             private returnResult;
             private executeLogic;
+            private transaction(tableNames, callBack);
             private openDb;
             private closeDb;
             private dropDb;
@@ -596,6 +596,13 @@ declare namespace JsStore {
             private checkIn;
             private checkLike;
             private checkComparisionOp;
+        }
+    }
+}
+declare namespace JsStore {
+    namespace Business {
+        class Transaction extends Base {
+            create(tableNames: string[]): void;
         }
     }
 }
@@ -714,7 +721,7 @@ declare namespace JsStore {
                 _isOr: boolean;
                 constructor(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
                 private processWhereArrayQry;
-                private createTransaction;
+                private initTransaction;
                 private processWhere;
                 private onQueryFinished;
                 private onTransactionCompleted;
@@ -781,6 +788,7 @@ declare namespace JsStore {
         namespace Count {
             class Instance extends Where {
                 constructor(query: ICount, onSuccess: (noOfRecord: number) => void, onError: (error: IError) => void);
+                private initTransaction;
                 private onTransactionCompleted;
             }
         }
@@ -841,7 +849,7 @@ declare namespace JsStore {
             class Instance extends Where {
                 constructor(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void);
                 private onTransactionCompleted;
-                private createTransaction;
+                private initTransaction;
                 private executeComplexLogic;
             }
         }
@@ -914,7 +922,7 @@ declare namespace JsStore {
                 constructor(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void);
                 private processWhereArrayQry;
                 private processWhere;
-                private createTransaction;
+                private initTransaction;
                 private onTransactionCompleted;
                 private onQueryFinished;
                 private orQuerySuccess;

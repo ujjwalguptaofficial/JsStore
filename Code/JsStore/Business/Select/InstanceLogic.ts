@@ -13,7 +13,7 @@ namespace JsStore {
                         this._limitRecord = this._query.Limit;
                         this._tableName = this._query.From;
                         try {
-                            this.createTransaction();
+                            this.initTransaction();
                             if (query.Where) {
                                 if (Array.isArray(query.Where)) {
                                     this.processWhereArrayQry();
@@ -112,11 +112,9 @@ namespace JsStore {
                     processFirstQry();
                 };
 
-                private createTransaction = function () {
-                    this._transaction = db_connection.transaction([this._query.From], "readonly");
-                    this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                    (this._transaction as any).ontimeout = this.onTransactionTimeout.bind(this);
-                    this._objectStore = this._transaction.objectStore(this._query.From);
+                private initTransaction = function () {
+                    createTransaction([this._query.From], this.onTransactionCompleted.bind(this), 'readonly');
+                    this._objectStore = db_transaction.objectStore(this._query.From);
                 };
 
                 private processWhere = function (isTransactionCreated) {

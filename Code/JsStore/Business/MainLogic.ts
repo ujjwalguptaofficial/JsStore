@@ -2,7 +2,22 @@
 namespace JsStore {
     export namespace Business {
         export var db_connection: IDBDatabase,
-            active_db: DataBase;
+            active_db: DataBase,
+            db_transaction: IDBTransaction = null,
+            createTransaction = function (tableNames, callBack: () => void, mode) {
+                if (db_transaction === null) {
+                    mode = mode ? mode : "readwrite";
+                    db_transaction = db_connection.transaction(tableNames, mode);
+                    db_transaction.oncomplete = function () {
+                        db_transaction = null;
+                        callBack();
+                    };
+                    (db_transaction as any).ontimeout = function () {
+                        db_transaction = null;
+                        console.error('transaction timed out');
+                    };
+                }
+            };
 
         export class Main {
             _onSuccess: () => void;
@@ -92,6 +107,11 @@ namespace JsStore {
                     default: console.error('The Api:-' + request.Name + 'does not support');
                 }
             };
+
+            private transaction(qry: string) {
+                
+                createTransaction(tableNames, )
+            }
 
             private openDb = function (dbName, onSuccess: () => void, onError: (err: IError) => void) {
                 getDbVersion(dbName, function (dbVersion) {

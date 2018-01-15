@@ -1138,9 +1138,6 @@ var JsStore;
                         }
                     }
                 };
-                _this.onTransactionTimeout = function (e) {
-                    console.error('transaction timed out');
-                };
                 _this.onExceptionOccured = function (ex, info) {
                     switch (ex.name) {
                         case 'NotFoundError':
@@ -1510,6 +1507,20 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
+        Business.db_transaction = null, Business.createTransaction = Business.createTransaction = function (tableNames, callBack, mode) {
+            if (Business.db_transaction === null) {
+                mode = mode ? mode : "readwrite";
+                Business.db_transaction = Business.db_connection.transaction(tableNames, mode);
+                Business.db_transaction.oncomplete = function () {
+                    Business.db_transaction = null;
+                    callBack();
+                };
+                Business.db_transaction.ontimeout = function () {
+                    Business.db_transaction = null;
+                    console.error('transaction timed out');
+                };
+            }
+        };
         var Main = /** @class */ (function () {
             function Main(onSuccess) {
                 if (onSuccess === void 0) { onSuccess = null; }
@@ -1698,6 +1709,9 @@ var JsStore;
                 };
                 this._onSuccess = onSuccess;
             }
+            Main.prototype.transaction = function (tableNames, callBack) {
+                // fuck
+            };
             return Main;
         }());
         Business.Main = Main;
@@ -1840,6 +1854,24 @@ var JsStore;
             return WhereChecker;
         }());
         Business.WhereChecker = WhereChecker;
+    })(Business = JsStore.Business || (JsStore.Business = {}));
+})(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var Business;
+    (function (Business) {
+        var Transaction = /** @class */ (function (_super) {
+            __extends(Transaction, _super);
+            function Transaction() {
+                return _super !== null && _super.apply(this, arguments) || this;
+            }
+            Transaction.prototype.create = function (tableNames) {
+                // is_transaction_active = true;
+                // this._transaction.
+            };
+            return Transaction;
+        }(Business.Base));
+        Business.Transaction = Transaction;
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
@@ -3300,11 +3332,9 @@ var JsStore;
                         }.bind(this);
                         processFirstQry();
                     };
-                    _this.createTransaction = function () {
-                        this._transaction = Business.db_connection.transaction([this._query.From], "readonly");
-                        this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                        this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
-                        this._objectStore = this._transaction.objectStore(this._query.From);
+                    _this.initTransaction = function () {
+                        Business.createTransaction([this._query.From], this.onTransactionCompleted.bind(this), 'readonly');
+                        this._objectStore = Business.db_transaction.objectStore(this._query.From);
                     };
                     _this.processWhere = function (isTransactionCreated) {
                         if (this._query.Where.Or) {
@@ -3390,7 +3420,7 @@ var JsStore;
                         _this._limitRecord = _this._query.Limit;
                         _this._tableName = _this._query.From;
                         try {
-                            _this.createTransaction();
+                            _this.initTransaction();
                             if (query.Where) {
                                 if (Array.isArray(query.Where)) {
                                     _this.processWhereArrayQry();
@@ -3669,6 +3699,10 @@ var JsStore;
                 __extends(Instance, _super);
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
+                    _this.initTransaction = function () {
+                        Business.createTransaction([this._query.From], this.onTransactionCompleted.bind(this), 'readonly');
+                        this._objectStore = Business.db_transaction.objectStore(this._query.From);
+                    };
                     _this.onTransactionCompleted = function () {
                         this._onSuccess(this._resultCount);
                     };
@@ -3677,12 +3711,6 @@ var JsStore;
                         _this._onSuccess = onSuccess;
                         _this._query = query;
                         try {
-                            var createTransaction = function () {
-                                this._transaction = Business.db_connection.transaction([query.From], "readonly");
-                                this._objectStore = this._transaction.objectStore(query.From);
-                                this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                                this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
-                            };
                             if (query.Where !== undefined) {
                                 if (query.Where.Or || Array.isArray(query.Where)) {
                                     var select_object = new Business.Select.Instance(query, function (results) {
@@ -3691,12 +3719,12 @@ var JsStore;
                                     }.bind(_this), _this._onError);
                                 }
                                 else {
-                                    createTransaction.call(_this);
+                                    _this.initTransaction();
                                     _this.goToWhereLogic();
                                 }
                             }
                             else {
-                                createTransaction.call(_this);
+                                _this.initTransaction();
                                 _this.executeWhereUndefinedLogic();
                             }
                         }
@@ -3969,11 +3997,9 @@ var JsStore;
                     _this.onTransactionCompleted = function () {
                         this._onSuccess(this._rowAffected);
                     };
-                    _this.createTransaction = function () {
-                        this._transaction = Business.db_connection.transaction([this._query.In], "readwrite");
-                        this._objectStore = this._transaction.objectStore(this._query.In);
-                        this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                        this._transaction.ontimeout = this.onTransactionTimeout;
+                    _this.initTransaction = function () {
+                        Business.createTransaction([this._query.In], this.onTransactionCompleted.bind(this));
+                        this._objectStore = Business.db_transaction.objectStore(this._query.In);
                     };
                     _this.executeComplexLogic = function () {
                         var select_object = new Business.Select.Instance({
@@ -3987,7 +4013,7 @@ var JsStore;
                             results = null;
                             where_qry[key] = { In: in_query };
                             this._query['Where'] = where_qry;
-                            this.createTransaction();
+                            this.initTransaction();
                             this.goToWhereLogic();
                         }.bind(this), this._onError.bind(this));
                     };
@@ -4002,12 +4028,12 @@ var JsStore;
                                     _this.executeComplexLogic();
                                 }
                                 else {
-                                    _this.createTransaction();
+                                    _this.initTransaction();
                                     _this.goToWhereLogic();
                                 }
                             }
                             else {
-                                _this.createTransaction();
+                                _this.initTransaction();
                                 _this.executeWhereUndefinedLogic();
                             }
                         }
@@ -4358,11 +4384,9 @@ var JsStore;
                         }
                         this.goToWhereLogic();
                     };
-                    _this.createTransaction = function () {
-                        this._transaction = Business.db_connection.transaction([this._query.From], "readwrite");
-                        this._objectStore = this._transaction.objectStore(this._query.From);
-                        this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                        this._transaction.onerror = this.onErrorOccured.bind(this);
+                    _this.initTransaction = function () {
+                        Business.createTransaction([this._query.From], this.onTransactionCompleted.bind(this));
+                        this._objectStore = Business.db_transaction.objectStore(this._query.From);
                     };
                     _this.onTransactionCompleted = function () {
                         this._onSuccess(this._rowAffected);
@@ -4397,7 +4421,7 @@ var JsStore;
                     _this._onSuccess = onSuccess;
                     _this._onError = onError;
                     try {
-                        _this.createTransaction();
+                        _this.initTransaction();
                         if (query.Where) {
                             if (Array.isArray(query.Where)) {
                                 _this.processWhereArrayQry();

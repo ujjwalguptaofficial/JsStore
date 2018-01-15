@@ -9,12 +9,6 @@ namespace JsStore {
                         this._onSuccess = onSuccess;
                         this._query = query;
                         try {
-                            var createTransaction = function () {
-                                this._transaction = db_connection.transaction([query.From], "readonly");
-                                this._objectStore = this._transaction.objectStore(query.From);
-                                this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                                this._transaction.ontimeout = this.onTransactionTimeout.bind(this);
-                            };
                             if (query.Where !== undefined) {
                                 if (query.Where.Or || Array.isArray(query.Where)) {
                                     var select_object = new Select.Instance(query as any,
@@ -24,12 +18,12 @@ namespace JsStore {
                                         }.bind(this), this._onError);
                                 }
                                 else {
-                                    createTransaction.call(this);
+                                    this.initTransaction();
                                     this.goToWhereLogic();
                                 }
                             }
                             else {
-                                createTransaction.call(this);
+                                this.initTransaction();
                                 this.executeWhereUndefinedLogic();
                             }
                         }
@@ -45,6 +39,11 @@ namespace JsStore {
                         );
                     }
                 }
+
+                private initTransaction = function () {
+                    createTransaction([this._query.From], this.onTransactionCompleted.bind(this), 'readonly');
+                    this._objectStore = db_transaction.objectStore(this._query.From);
+                };
 
                 private onTransactionCompleted = function () {
                     this._onSuccess(this._resultCount);

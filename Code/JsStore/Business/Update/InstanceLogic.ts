@@ -15,12 +15,12 @@ namespace JsStore {
                                     this.executeComplexLogic();
                                 }
                                 else {
-                                    this.createTransaction();
+                                    this.initTransaction();
                                     this.goToWhereLogic();
                                 }
                             }
                             else {
-                                this.createTransaction();
+                                this.initTransaction();
                                 this.executeWhereUndefinedLogic();
                             }
                         }
@@ -39,11 +39,9 @@ namespace JsStore {
                     this._onSuccess(this._rowAffected);
                 };
 
-                private createTransaction = function () {
-                    this._transaction = db_connection.transaction([this._query.In], "readwrite");
-                    this._objectStore = this._transaction.objectStore(this._query.In);
-                    this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                    (this._transaction as any).ontimeout = this.onTransactionTimeout;
+                private initTransaction = function () {
+                    createTransaction([this._query.In], this.onTransactionCompleted.bind(this));
+                    this._objectStore = db_transaction.objectStore(this._query.In);
                 };
 
                 private executeComplexLogic = function () {
@@ -60,7 +58,7 @@ namespace JsStore {
                         results = null;
                         where_qry[key] = { In: in_query };
                         this._query['Where'] = where_qry;
-                        this.createTransaction();
+                        this.initTransaction();
                         this.goToWhereLogic();
                     }.bind(this), this._onError.bind(this));
                 };

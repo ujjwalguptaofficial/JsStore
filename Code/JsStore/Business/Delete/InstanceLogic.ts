@@ -11,7 +11,7 @@ namespace JsStore {
                     this._onSuccess = onSuccess;
                     this._onError = onError;
                     try {
-                        this.createTransaction();
+                        this.initTransaction();
                         if (query.Where) {
                             if (Array.isArray(query.Where)) {
                                 this.processWhereArrayQry();
@@ -53,11 +53,9 @@ namespace JsStore {
                     this.goToWhereLogic();
                 };
 
-                private createTransaction = function () {
-                    this._transaction = db_connection.transaction([this._query.From], "readwrite");
-                    this._objectStore = this._transaction.objectStore(this._query.From);
-                    this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                    this._transaction.onerror = this.onErrorOccured.bind(this);
+                private initTransaction = function () {
+                    createTransaction([this._query.From], this.onTransactionCompleted.bind(this));
+                    this._objectStore = db_transaction.objectStore(this._query.From);
                 };
 
                 private onTransactionCompleted = function () {
