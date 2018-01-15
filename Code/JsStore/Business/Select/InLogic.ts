@@ -42,6 +42,9 @@ namespace JsStore {
                                         }
                                         cursor.continue();
                                     }
+                                    else if (i + 1 === length) {
+                                        this.onQueryFinished();
+                                    }
                                 }.bind(this);
                             }
                         }
@@ -55,6 +58,9 @@ namespace JsStore {
                                     if (this._results.length !== this._limitRecord && cursor) {
                                         skipOrPush(cursor.value);
                                         cursor.continue();
+                                    }
+                                    else if (i + 1 === length) {
+                                        this.onQueryFinished();
                                     }
                                 }.bind(this);
                             }
@@ -91,6 +97,9 @@ namespace JsStore {
                                         }
                                         cursor.continue();
                                     }
+                                    else if (i + 1 === length) {
+                                        this.onQueryFinished();
+                                    }
                                 }.bind(this);
                             }
                         }
@@ -104,6 +113,9 @@ namespace JsStore {
                                     if (cursor) {
                                         skipOrPush((cursor.value));
                                         cursor.continue();
+                                    }
+                                    else if (i + 1 === length) {
+                                        this.onQueryFinished();
                                     }
                                 }.bind(this);
                             }
@@ -131,6 +143,9 @@ namespace JsStore {
                                         }
                                         cursor.continue();
                                     }
+                                    else if (i + 1 === length) {
+                                        this.onQueryFinished();
+                                    }
                                 }.bind(this);
                             }
                         }
@@ -144,6 +159,9 @@ namespace JsStore {
                                     if (cursor && this._results.length !== this._limitRecord) {
                                         this._results.push(cursor.value);
                                         cursor.continue();
+                                    }
+                                    else if (i + 1 === length) {
+                                        this.onQueryFinished();
                                     }
                                 }.bind(this);
                             }
@@ -171,6 +189,9 @@ namespace JsStore {
                                         }
                                         cursor.continue();
                                     }
+                                    else if (i + 1 === length) {
+                                        this.onQueryFinished();
+                                    }
                                 }.bind(this);
                             }
                         }
@@ -184,6 +205,9 @@ namespace JsStore {
                                     if (cursor) {
                                         this._results.push(cursor.value);
                                         cursor.continue();
+                                    }
+                                    else if (i + 1 === length) {
+                                        this.onQueryFinished();
                                     }
                                 }.bind(this);
                             }

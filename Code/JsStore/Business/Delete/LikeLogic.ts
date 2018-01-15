@@ -28,6 +28,9 @@ namespace JsStore {
                                 }
                                 cursor.continue();
                             }
+                            else {
+                                this.onQueryFinished();
+                            }
                         }.bind(this);
                     }
                     else {
@@ -39,6 +42,9 @@ namespace JsStore {
                                     ++this._rowAffected;
                                 }
                                 cursor.continue();
+                            }
+                            else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                     }

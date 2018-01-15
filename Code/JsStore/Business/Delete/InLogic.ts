@@ -19,6 +19,9 @@ namespace JsStore {
                                         }
                                         cursor.continue();
                                     }
+                                    else if (i + 1 === length) {
+                                        this.onQueryFinished();
+                                    }
                                 }.bind(this);
 
                             }
@@ -28,13 +31,16 @@ namespace JsStore {
                         for (var i = 0, length = values.length; i < length; i++) {
                             if (!this._errorOccured) {
                                 cursor_request = this._objectStore.index(column).
-                                openCursor(IDBKeyRange.only(values[i]));
+                                    openCursor(IDBKeyRange.only(values[i]));
                                 cursor_request.onsuccess = function (e) {
                                     cursor = e.target.result;
                                     if (cursor) {
                                         cursor.delete();
                                         ++this._rowAffected;
                                         cursor.continue();
+                                    }
+                                    else if (i + 1 === length) {
+                                        this.onQueryFinished();
                                     }
                                 }.bind(this);
                             }

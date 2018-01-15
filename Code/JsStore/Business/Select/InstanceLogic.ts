@@ -23,7 +23,6 @@ namespace JsStore {
                                 }
                             }
                             else {
-                                // this.createTransaction();
                                 this.executeWhereUndefinedLogic();
                             }
                         }

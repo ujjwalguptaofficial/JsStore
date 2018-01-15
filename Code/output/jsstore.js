@@ -2040,6 +2040,9 @@ var JsStore;
                                             }
                                             cursor.continue();
                                         }
+                                        else if (i + 1 === length) {
+                                            this.onQueryFinished();
+                                        }
                                     }.bind(this);
                                 }
                             }
@@ -2053,6 +2056,9 @@ var JsStore;
                                         if (this._results.length !== this._limitRecord && cursor) {
                                             skipOrPush(cursor.value);
                                             cursor.continue();
+                                        }
+                                        else if (i + 1 === length) {
+                                            this.onQueryFinished();
                                         }
                                     }.bind(this);
                                 }
@@ -2084,6 +2090,9 @@ var JsStore;
                                             }
                                             cursor.continue();
                                         }
+                                        else if (i + 1 === length) {
+                                            this.onQueryFinished();
+                                        }
                                     }.bind(this);
                                 }
                             }
@@ -2097,6 +2106,9 @@ var JsStore;
                                         if (cursor) {
                                             skipOrPush((cursor.value));
                                             cursor.continue();
+                                        }
+                                        else if (i + 1 === length) {
+                                            this.onQueryFinished();
                                         }
                                     }.bind(this);
                                 }
@@ -2121,6 +2133,9 @@ var JsStore;
                                             }
                                             cursor.continue();
                                         }
+                                        else if (i + 1 === length) {
+                                            this.onQueryFinished();
+                                        }
                                     }.bind(this);
                                 }
                             }
@@ -2134,6 +2149,9 @@ var JsStore;
                                         if (cursor && this._results.length !== this._limitRecord) {
                                             this._results.push(cursor.value);
                                             cursor.continue();
+                                        }
+                                        else if (i + 1 === length) {
+                                            this.onQueryFinished();
                                         }
                                     }.bind(this);
                                 }
@@ -2158,6 +2176,9 @@ var JsStore;
                                             }
                                             cursor.continue();
                                         }
+                                        else if (i + 1 === length) {
+                                            this.onQueryFinished();
+                                        }
                                     }.bind(this);
                                 }
                             }
@@ -2171,6 +2192,9 @@ var JsStore;
                                         if (cursor) {
                                             this._results.push(cursor.value);
                                             cursor.continue();
+                                        }
+                                        else if (i + 1 === length) {
+                                            this.onQueryFinished();
                                         }
                                     }.bind(this);
                                 }
@@ -3330,7 +3354,6 @@ var JsStore;
                         this.onQueryFinished();
                     };
                     _this.orQuerySuccess = function () {
-                        // if ((this as any)._orInfo) {
                         this._orInfo.Results = this._orInfo.Results.concat(this._results);
                         if (!this._query.Limit || (this._query.Limit > this._orInfo.Results.length)) {
                             this._results = [];
@@ -3349,7 +3372,6 @@ var JsStore;
                         else {
                             this.orQueryFinish();
                         }
-                        // }
                     };
                     _this.processOrLogic = function () {
                         this._isOr = true;
@@ -3378,7 +3400,6 @@ var JsStore;
                                 }
                             }
                             else {
-                                // this.createTransaction();
                                 _this.executeWhereUndefinedLogic();
                             }
                         }
@@ -4112,6 +4133,9 @@ var JsStore;
                                 ++this._rowAffected;
                                 cursor.continue();
                             }
+                            else {
+                                this.onQueryFinished();
+                            }
                         }.bind(this);
                         cursor_request.onerror = function (e) {
                             this._errorOccured = true;
@@ -4152,6 +4176,9 @@ var JsStore;
                                             }
                                             cursor.continue();
                                         }
+                                        else if (i + 1 === length) {
+                                            this.onQueryFinished();
+                                        }
                                     }.bind(this);
                                 }
                             }
@@ -4167,6 +4194,9 @@ var JsStore;
                                             cursor.delete();
                                             ++this._rowAffected;
                                             cursor.continue();
+                                        }
+                                        else if (i + 1 === length) {
+                                            this.onQueryFinished();
                                         }
                                     }.bind(this);
                                 }
@@ -4216,6 +4246,9 @@ var JsStore;
                                     }
                                     cursor.continue();
                                 }
+                                else {
+                                    this.onQueryFinished();
+                                }
                             }.bind(this);
                         }
                         else {
@@ -4227,6 +4260,9 @@ var JsStore;
                                         ++this._rowAffected;
                                     }
                                     cursor.continue();
+                                }
+                                else {
+                                    this.onQueryFinished();
                                 }
                             }.bind(this);
                         }
@@ -4263,6 +4299,9 @@ var JsStore;
                                     }
                                     cursor.continue();
                                 }
+                                else {
+                                    this.onQueryFinished();
+                                }
                             }.bind(this);
                         }
                         else {
@@ -4272,6 +4311,9 @@ var JsStore;
                                     cursor.delete();
                                     ++this._rowAffected;
                                     cursor.continue();
+                                }
+                                else {
+                                    this.onQueryFinished();
                                 }
                             }.bind(this);
                         }
@@ -4310,13 +4352,9 @@ var JsStore;
                             this.processWhere(false);
                         }.bind(this), this._onError);
                     };
-                    _this.processWhere = function (isTransactionCreated) {
+                    _this.processWhere = function () {
                         if (this._query.Where.Or) {
                             this.processOrLogic();
-                            this.createTransactionForOrLogic();
-                        }
-                        else if (isTransactionCreated === false) {
-                            this.createTransaction();
                         }
                         this.goToWhereLogic();
                     };
@@ -4329,16 +4367,9 @@ var JsStore;
                     _this.onTransactionCompleted = function () {
                         this._onSuccess(this._rowAffected);
                     };
-                    _this.createTransactionForOrLogic = function () {
-                        try {
-                            this._transaction = Business.db_connection.transaction([this._query.From], "readwrite");
-                            this._transaction.oncomplete = this.orQuerySuccess.bind(this);
-                            (this._transaction).ontimeout = this.onTransactionTimeout.bind(this);
-                            this._objectStore = this._transaction.objectStore(this._query.From);
-                        }
-                        catch (ex) {
-                            this._errorOccured = true;
-                            this.onExceptionOccured(ex, { TableName: this._query.From });
+                    _this.onQueryFinished = function () {
+                        if (this._isOr) {
+                            this.orQuerySuccess();
                         }
                     };
                     _this.orQuerySuccess = function () {
@@ -4348,17 +4379,16 @@ var JsStore;
                             where[key] = this._orInfo.OrQuery[key];
                             delete this._orInfo.OrQuery[key];
                             this._query.Where = where;
-                            this.createTransactionForOrLogic();
                             this.goToWhereLogic();
                         }
                         else {
-                            this._orInfo.OnSucess(this._rowAffected);
+                            this._isOr = true;
                         }
                     };
                     _this.processOrLogic = function () {
+                        this._isOr = true;
                         this._orInfo = {
-                            OrQuery: this._query.Where.Or,
-                            OnSucess: this._onSuccess
+                            OrQuery: this._query.Where.Or
                         };
                         // free or memory
                         delete this._query.Where.Or;
@@ -4367,16 +4397,16 @@ var JsStore;
                     _this._onSuccess = onSuccess;
                     _this._onError = onError;
                     try {
+                        _this.createTransaction();
                         if (query.Where) {
                             if (Array.isArray(query.Where)) {
                                 _this.processWhereArrayQry();
                             }
                             else {
-                                _this.processWhere(false);
+                                _this.processWhere();
                             }
                         }
                         else {
-                            _this.createTransaction();
                             _this.executeWhereUndefinedLogic();
                         }
                     }

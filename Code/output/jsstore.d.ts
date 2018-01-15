@@ -916,7 +916,7 @@ declare namespace JsStore {
                 private processWhere;
                 private createTransaction;
                 private onTransactionCompleted;
-                private createTransactionForOrLogic;
+                private onQueryFinished;
                 private orQuerySuccess;
                 private processOrLogic;
             }
