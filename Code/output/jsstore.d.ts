@@ -318,6 +318,10 @@ declare namespace JsStore {
         Count: any[];
         Avg: any[];
     }
+    interface ITranscationQry {
+        TableNames: string[];
+        Logic: string;
+    }
 }
 declare namespace JsStore {
     var enable_log: boolean, db_version: number, status: IJsStoreStatus, temp_results: any[];
@@ -478,7 +482,7 @@ declare namespace JsStore {
     namespace Business {
         class BaseHelper {
             protected filterOnOccurence: (value: any) => boolean;
-            protected getArrayFromWord: (word: string) => string[];
+            protected isTableExist: (tableName: string) => boolean;
             protected getTable: (tableName: string) => Table;
             protected getKeyRange: (value: any, op: any) => IDBKeyRange;
             protected getObjectSecondKey: (value: any) => string;
@@ -502,12 +506,11 @@ declare namespace JsStore {
             _rowAffected: number;
             _onSuccess: (result?) => void;
             _onError: (err: IError) => void;
-            _transaction: IDBTransaction;
             _objectStore: IDBObjectStore;
             _query: any;
-            _sendResultFlag: boolean;
             _whereChecker: WhereChecker;
             _tableName: string;
+            _isTransaction: boolean;
             protected onErrorOccured: (e: any, customError?: boolean) => void;
             protected onExceptionOccured: (ex: DOMException, info: any) => void;
             protected goToWhereLogic: () => void;
@@ -535,7 +538,8 @@ declare namespace JsStore {
         class BulkInsert extends Base {
             _query: IInsert;
             constructor(query: IInsert, onSuccess: () => void, onError: (err: IError) => void);
-            private bulkinsertData;
+            execute(): void;
+            private bulkinsertData();
         }
     }
 }
@@ -556,7 +560,7 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     namespace Business {
-        var db_connection: IDBDatabase, active_db: DataBase, db_transaction: IDBTransaction, createTransaction: any;
+        var db_connection: IDBDatabase, active_db: DataBase, db_transaction: IDBTransaction, createTransaction: (tableNames: any, callBack: () => void, mode?: any) => void;
         class Main {
             _onSuccess: () => void;
             constructor(onSuccess?: any);
@@ -564,7 +568,7 @@ declare namespace JsStore {
             private changeLogStatus;
             private returnResult;
             private executeLogic;
-            private transaction(tableNames, callBack);
+            private transaction(qry, onSuccess, onError);
             private openDb;
             private closeDb;
             private dropDb;
@@ -602,7 +606,11 @@ declare namespace JsStore {
 declare namespace JsStore {
     namespace Business {
         class Transaction extends Base {
-            create(tableNames: string[]): void;
+            _results: any;
+            constructor(onSuccess: any, onError: any);
+            execute(tableNames: string[], txLogic: any): void;
+            private initTransaction;
+            private onTransactionCompleted;
         }
     }
 }
@@ -720,6 +728,7 @@ declare namespace JsStore {
             class Instance extends Helper {
                 _isOr: boolean;
                 constructor(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
+                execute(): void;
                 private processWhereArrayQry;
                 private initTransaction;
                 private processWhere;
@@ -788,8 +797,9 @@ declare namespace JsStore {
         namespace Count {
             class Instance extends Where {
                 constructor(query: ICount, onSuccess: (noOfRecord: number) => void, onError: (error: IError) => void);
-                private initTransaction;
-                private onTransactionCompleted;
+                execute(): void;
+                private initTransaction();
+                private onTransactionCompleted();
             }
         }
     }
@@ -848,9 +858,10 @@ declare namespace JsStore {
         namespace Update {
             class Instance extends Where {
                 constructor(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void);
-                private onTransactionCompleted;
-                private initTransaction;
-                private executeComplexLogic;
+                execute(): void;
+                private onTransactionCompleted();
+                private initTransaction();
+                private executeComplexLogic();
             }
         }
     }
@@ -919,14 +930,16 @@ declare namespace JsStore {
     namespace Business {
         namespace Delete {
             class Instance extends Where {
+                _isOr: boolean;
                 constructor(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void);
-                private processWhereArrayQry;
-                private processWhere;
-                private initTransaction;
-                private onTransactionCompleted;
-                private onQueryFinished;
-                private orQuerySuccess;
-                private processOrLogic;
+                execute(): void;
+                private processWhereArrayQry();
+                private processWhere();
+                private initTransaction();
+                private onTransactionCompleted();
+                private onQueryFinished();
+                private orQuerySuccess();
+                private processOrLogic();
             }
         }
     }
@@ -939,8 +952,9 @@ declare namespace JsStore {
                 _query: IInsert;
                 _table: Table;
                 constructor(query: IInsert, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void);
-                onTransactionCompleted: () => void;
-                private insertData;
+                execute(): void;
+                onTransactionCompleted(): void;
+                private insertData(values);
             }
         }
     }
@@ -1044,6 +1058,17 @@ declare namespace JsStore {
          * @memberOf Main
          */
         select: (query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void) => any;
+        /**
+         * perform transaction
+         *
+         * @param {string[]} tableNames
+         * @param {any} txLogic
+         * @param {(results: any[]) => void} onSuccess
+         * @param {(err: IError) => void} onError
+         * @returns
+         * @memberof Instance
+         */
+        transaction(tableNames: string[], txLogic: any, onSuccess: (results: any[]) => void, onError: (err: IError) => void): any;
         /**
          * get no of result from table
          *

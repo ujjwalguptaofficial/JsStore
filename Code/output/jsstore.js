@@ -991,8 +991,16 @@ var JsStore;
                     }
                     return found;
                 };
-                this.getArrayFromWord = function (word) {
-                    return word.split(" ");
+                this.isTableExist = function (tableName) {
+                    var is_exist = false;
+                    Business.active_db._tables.every(function (table) {
+                        if (table._name === tableName) {
+                            is_exist = true;
+                            return false;
+                        }
+                        return true;
+                    });
+                    return is_exist;
                 };
                 this.getTable = function (tableName) {
                     var current_table;
@@ -1117,7 +1125,6 @@ var JsStore;
                 _this._errorOccured = false;
                 _this._errorCount = 0;
                 _this._rowAffected = 0;
-                _this._sendResultFlag = true;
                 _this.onErrorOccured = function (e, customError) {
                     if (customError === void 0) { customError = false; }
                     ++this._errorCount;
@@ -1383,33 +1390,38 @@ var JsStore;
             __extends(BulkInsert, _super);
             function BulkInsert(query, onSuccess, onError) {
                 var _this = _super.call(this) || this;
-                _this.bulkinsertData = function () {
-                    this._transaction = Business.db_connection.transaction([this._query.Into], "readwrite");
-                    this._objectStore = this._transaction.objectStore(this._query.Into);
-                    this._transaction.oncomplete = function (e) {
-                        this._onSuccess();
-                    }.bind(this);
-                    this._query.Values.forEach(function (value) {
-                        this._objectStore.add(value);
-                    }, this);
-                };
-                try {
-                    _this._query = query;
-                    _this._onSuccess = onSuccess;
-                    _this._onError = onError;
-                    if (_this.getTable(query.Into)) {
-                        _this.bulkinsertData();
-                    }
-                    else {
-                        var error = new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: query.Into });
-                        error.throw();
-                    }
-                }
-                catch (ex) {
-                    _this.onExceptionOccured(ex, { TableName: query.Into });
-                }
+                _this._query = query;
+                _this._onSuccess = onSuccess;
+                _this._onError = onError;
                 return _this;
             }
+            BulkInsert.prototype.execute = function () {
+                if (this.isTableExist(this._query.Into) === true) {
+                    try {
+                        this.bulkinsertData();
+                    }
+                    catch (ex) {
+                        this.onExceptionOccured(ex, { TableName: this._query.Into });
+                    }
+                }
+                else {
+                    var error = new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: this._query.Into });
+                    error.throw();
+                }
+            };
+            BulkInsert.prototype.bulkinsertData = function () {
+                // this._transaction = db_connection.transaction([this._query.Into], "readwrite");
+                Business.createTransaction([this._query.Into], function (e) {
+                    this._onSuccess();
+                }.bind(this));
+                this._objectStore = Business.db_transaction.objectStore(this._query.Into);
+                // this._transaction.oncomplete = function (e) {
+                //     this._onSuccess();
+                // }.bind(this);
+                this._query.Values.forEach(function (value) {
+                    this._objectStore.add(value);
+                }, this);
+            };
             return BulkInsert;
         }(Business.Base));
         Business.BulkInsert = BulkInsert;
@@ -1507,7 +1519,7 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        Business.db_transaction = null, Business.createTransaction = Business.createTransaction = function (tableNames, callBack, mode) {
+        Business.db_transaction = null, Business.createTransaction = function (tableNames, callBack, mode) {
             if (Business.db_transaction === null) {
                 mode = mode ? mode : "readwrite";
                 Business.db_transaction = Business.db_connection.transaction(tableNames, mode);
@@ -1608,6 +1620,9 @@ var JsStore;
                         case 'bulk_insert':
                             this.bulkInsert(request.Query, onSuccess, onError);
                             break;
+                        case 'transaction':
+                            this.transaction(request.Query, onSuccess, onError);
+                            break;
                         case 'export_json':
                             this.exportJson(request.Query, onSuccess, onError);
                             break;
@@ -1639,6 +1654,7 @@ var JsStore;
                 };
                 this.update = function (query, onSuccess, onError) {
                     var update_db_object = new Business.Update.Instance(query, onSuccess, onError);
+                    update_db_object.execute();
                 };
                 this.insert = function (query, onSuccess, onError) {
                     if (!Array.isArray(query.Values)) {
@@ -1648,6 +1664,7 @@ var JsStore;
                     }
                     else {
                         var insert_object = new Business.Insert.Instance(query, onSuccess, onError);
+                        insert_object.execute();
                     }
                 };
                 this.bulkInsert = function (query, onSuccess, onError) {
@@ -1658,17 +1675,20 @@ var JsStore;
                     }
                     else {
                         var bulk_insert_object = new Business.BulkInsert(query, onSuccess, onError);
+                        bulk_insert_object.execute();
                     }
                 };
                 this.delete = function (query, onSuccess, onError) {
                     var delete_object = new Business.Delete.Instance(query, onSuccess, onError);
+                    delete_object.execute();
                 };
                 this.select = function (query, onSuccess, onError) {
                     if (typeof query.From === 'object') {
                         var select_join_object = new Business.Select.Join(query, onSuccess, onError);
                     }
                     else {
-                        var select_object = new Business.Select.Instance(query, onSuccess, onError);
+                        var select_instance = new Business.Select.Instance(query, onSuccess, onError);
+                        select_instance.execute();
                     }
                 };
                 this.count = function (query, onSuccess, onError) {
@@ -1678,6 +1698,7 @@ var JsStore;
                     }
                     else {
                         var count_object = new Business.Count.Instance(query, onSuccess, onError);
+                        count_object.execute();
                     }
                 };
                 this.createDb = function (dataBase, onSuccess, onError) {
@@ -1709,8 +1730,9 @@ var JsStore;
                 };
                 this._onSuccess = onSuccess;
             }
-            Main.prototype.transaction = function (tableNames, callBack) {
-                // fuck
+            Main.prototype.transaction = function (qry, onSuccess, onError) {
+                var transaction_obj = new Business.Transaction(onSuccess, onError);
+                transaction_obj.execute(qry.TableNames, qry.Logic);
             };
             return Main;
         }());
@@ -1862,12 +1884,46 @@ var JsStore;
     (function (Business) {
         var Transaction = /** @class */ (function (_super) {
             __extends(Transaction, _super);
-            function Transaction() {
-                return _super !== null && _super.apply(this, arguments) || this;
+            function Transaction(onSuccess, onError) {
+                var _this = _super.call(this) || this;
+                _this.initTransaction = function (tableNames) {
+                    Business.createTransaction(tableNames, this.onTransactionCompleted.bind(this));
+                };
+                _this.onTransactionCompleted = function () {
+                    this._onSuccess(this._results);
+                };
+                _this._onSuccess = onSuccess;
+                _this._onError = onError;
+                return _this;
             }
-            Transaction.prototype.create = function (tableNames) {
-                // is_transaction_active = true;
-                // this._transaction.
+            Transaction.prototype.execute = function (tableNames, txLogic) {
+                var select = function (qry, onSuccess) {
+                    onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
+                    var select_obj = new Business.Select.Instance(qry, onSuccess, this._onError.bind(this));
+                    select_obj._isTransaction = true;
+                    select_obj.execute();
+                }.bind(this);
+                var insert = function (qry, onSuccess) {
+                    onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
+                    var insert_obj = new Business.Insert.Instance(qry, onSuccess, this._onError.bind(this));
+                    insert_obj._isTransaction = true;
+                    insert_obj.execute();
+                }.bind(this);
+                var update = function (qry, onSuccess) {
+                    onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
+                    var update_obj = new Business.Update.Instance(qry, onSuccess, this._onError.bind(this));
+                }.bind(this);
+                var remove = function (qry, onSuccess) {
+                    onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
+                    var delete_obj = new Business.Delete.Instance(qry, onSuccess, this._onError.bind(this));
+                }.bind(this);
+                var count = function (qry, onSuccess) {
+                    onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
+                    var count_obj = new Business.Count.Instance(qry, onSuccess, this._onError.bind(this));
+                }.bind(this);
+                eval("var txLogic =" + txLogic);
+                this.initTransaction(tableNames);
+                txLogic.call(this);
             };
             return Transaction;
         }(Business.Base));
@@ -2661,6 +2717,7 @@ var JsStore;
                                 this.onTransactionCompleted(null);
                             }
                         }.bind(this), this.onErrorOccured.bind(this));
+                        select_object.execute();
                         var doJoin = function (value1, value2, itemIndex) {
                             results[join_index] = {};
                             if (value1 === value2[query.Column]) {
@@ -2730,6 +2787,7 @@ var JsStore;
                                 doRightJoin(results);
                                 onExecutionFinished();
                             }.bind(this), this.onErrorOccured.bind(this));
+                            select_object.execute();
                         }.bind(this);
                         executeLogic();
                     };
@@ -2782,6 +2840,7 @@ var JsStore;
                                         ++item_index;
                                         executeLogic();
                                     }.bind(this), this.onErrorOccured.bind(this));
+                                    select_object.execute();
                                 }
                             }
                             else {
@@ -2826,6 +2885,7 @@ var JsStore;
                             }, this);
                             this.startExecutionJoinLogic();
                         }.bind(_this), _this.onErrorOccured.bind(_this));
+                        select_object.execute();
                     }
                     return _this;
                 }
@@ -3343,11 +3403,14 @@ var JsStore;
                         this.goToWhereLogic();
                     };
                     _this.onQueryFinished = function () {
-                        if (this._isOr) {
+                        if (this._isOr === true) {
                             this.orQuerySuccess();
                         }
-                        else if (this._isArrayQry) {
+                        else if (this._isArrayQry === true) {
                             this._onWhereArrayQrySuccess();
+                        }
+                        else if (this._isTransaction === true) {
+                            this.onTransactionCompleted();
                         }
                     };
                     _this.onTransactionCompleted = function () {
@@ -3413,37 +3476,39 @@ var JsStore;
                         delete this._query.Where.Or;
                     };
                     _this._onError = onError;
-                    if (_this.getTable(query.From)) {
-                        _this._onSuccess = onSuccess;
-                        _this._query = query;
-                        _this._skipRecord = _this._query.Skip;
-                        _this._limitRecord = _this._query.Limit;
-                        _this._tableName = _this._query.From;
+                    _this._onSuccess = onSuccess;
+                    _this._query = query;
+                    _this._skipRecord = _this._query.Skip;
+                    _this._limitRecord = _this._query.Limit;
+                    _this._tableName = _this._query.From;
+                    return _this;
+                }
+                Instance.prototype.execute = function () {
+                    if (this.isTableExist(this._tableName) === true) {
                         try {
-                            _this.initTransaction();
-                            if (query.Where) {
-                                if (Array.isArray(query.Where)) {
-                                    _this.processWhereArrayQry();
+                            this.initTransaction();
+                            if (this._query.Where) {
+                                if (Array.isArray(this._query.Where)) {
+                                    this.processWhereArrayQry();
                                 }
                                 else {
-                                    _this.processWhere(false);
+                                    this.processWhere(false);
                                 }
                             }
                             else {
-                                _this.executeWhereUndefinedLogic();
+                                this.executeWhereUndefinedLogic();
                             }
                         }
                         catch (ex) {
-                            _this._errorOccured = true;
-                            _this.onExceptionOccured.call(_this, ex, { TableName: query.From });
+                            this._errorOccured = true;
+                            this.onExceptionOccured.call(this, ex, { TableName: this._query.From });
                         }
                     }
                     else {
-                        _this._errorOccured = true;
-                        _this.onErrorOccured(new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: query.From }).get(), true);
+                        this._errorOccured = true;
+                        this.onErrorOccured(new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: this._query.From }).get(), true);
                     }
-                    return _this;
-                }
+                };
                 return Instance;
             }(Select.Helper));
             Select.Instance = Instance;
@@ -3699,45 +3764,48 @@ var JsStore;
                 __extends(Instance, _super);
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
-                    _this.initTransaction = function () {
-                        Business.createTransaction([this._query.From], this.onTransactionCompleted.bind(this), 'readonly');
-                        this._objectStore = Business.db_transaction.objectStore(this._query.From);
-                    };
-                    _this.onTransactionCompleted = function () {
-                        this._onSuccess(this._resultCount);
-                    };
                     _this._onError = onError;
-                    if (_this.getTable(query.From)) {
-                        _this._onSuccess = onSuccess;
-                        _this._query = query;
+                    _this._onSuccess = onSuccess;
+                    _this._query = query;
+                    return _this;
+                }
+                Instance.prototype.execute = function () {
+                    if (this.isTableExist(this._query.From)) {
                         try {
-                            if (query.Where !== undefined) {
-                                if (query.Where.Or || Array.isArray(query.Where)) {
-                                    var select_object = new Business.Select.Instance(query, function (results) {
+                            if (this._query.Where !== undefined) {
+                                if (this._query.Where.Or || Array.isArray(this._query.Where)) {
+                                    var select_object = new Business.Select.Instance(this._query, function (results) {
                                         this._resultCount = results.length;
                                         this.onTransactionCompleted();
-                                    }.bind(_this), _this._onError);
+                                    }.bind(this), this._onError);
+                                    select_object.execute();
                                 }
                                 else {
-                                    _this.initTransaction();
-                                    _this.goToWhereLogic();
+                                    this.initTransaction();
+                                    this.goToWhereLogic();
                                 }
                             }
                             else {
-                                _this.initTransaction();
-                                _this.executeWhereUndefinedLogic();
+                                this.initTransaction();
+                                this.executeWhereUndefinedLogic();
                             }
                         }
                         catch (ex) {
-                            _this.onExceptionOccured(ex, { TableName: query.From });
+                            this.onExceptionOccured(ex, { TableName: this._query.From });
                         }
                     }
                     else {
-                        _this._errorOccured = true;
-                        _this.onErrorOccured(new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: query.From }).get(), true);
+                        this._errorOccured = true;
+                        this.onErrorOccured(new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: this._query.From }).get(), true);
                     }
-                    return _this;
-                }
+                };
+                Instance.prototype.initTransaction = function () {
+                    Business.createTransaction([this._query.From], this.onTransactionCompleted.bind(this), 'readonly');
+                    this._objectStore = Business.db_transaction.objectStore(this._query.From);
+                };
+                Instance.prototype.onTransactionCompleted = function () {
+                    this._onSuccess(this._resultCount);
+                };
                 return Instance;
             }(Count.Where));
             Count.Instance = Instance;
@@ -3994,60 +4062,64 @@ var JsStore;
                 __extends(Instance, _super);
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
-                    _this.onTransactionCompleted = function () {
-                        this._onSuccess(this._rowAffected);
-                    };
-                    _this.initTransaction = function () {
-                        Business.createTransaction([this._query.In], this.onTransactionCompleted.bind(this));
-                        this._objectStore = Business.db_transaction.objectStore(this._query.In);
-                    };
-                    _this.executeComplexLogic = function () {
-                        var select_object = new Business.Select.Instance({
-                            From: this._query.In,
-                            Where: this._query.Where
-                        }, function (results) {
-                            var key = this.getPrimaryKey(this._query.In), in_query = [], where_qry = {};
-                            results.forEach(function (value) {
-                                in_query.push(value[key]);
-                            });
-                            results = null;
-                            where_qry[key] = { In: in_query };
-                            this._query['Where'] = where_qry;
-                            this.initTransaction();
-                            this.goToWhereLogic();
-                        }.bind(this), this._onError.bind(this));
-                    };
                     _this._onSuccess = onSuccess;
                     _this._onError = onError;
+                    _this._query = query;
+                    return _this;
+                }
+                Instance.prototype.execute = function () {
                     try {
-                        _this._error = new Update.SchemaChecker(_this.getTable(query.In)).check(query.Set, query.In);
-                        if (!_this._error) {
-                            _this._query = query;
-                            if (query.Where) {
-                                if (query.Where.Or || Array.isArray(query.Where)) {
-                                    _this.executeComplexLogic();
+                        this._error = new Update.SchemaChecker(this.getTable(this._query.In)).
+                            check(this._query.Set, this._query.In);
+                        if (!this._error) {
+                            if (this._query.Where) {
+                                if (this._query.Where.Or || Array.isArray(this._query.Where)) {
+                                    this.executeComplexLogic();
                                 }
                                 else {
-                                    _this.initTransaction();
-                                    _this.goToWhereLogic();
+                                    this.initTransaction();
+                                    this.goToWhereLogic();
                                 }
                             }
                             else {
-                                _this.initTransaction();
-                                _this.executeWhereUndefinedLogic();
+                                this.initTransaction();
+                                this.executeWhereUndefinedLogic();
                             }
                         }
                         else {
-                            _this._errorOccured = true;
-                            _this.onErrorOccured(_this._error, true);
+                            this._errorOccured = true;
+                            this.onErrorOccured(this._error, true);
                         }
                     }
                     catch (ex) {
-                        _this._errorOccured = true;
-                        _this.onExceptionOccured.call(_this, ex, { TableName: query.In });
+                        this._errorOccured = true;
+                        this.onExceptionOccured.call(this, ex, { TableName: this._query.In });
                     }
-                    return _this;
-                }
+                };
+                Instance.prototype.onTransactionCompleted = function () {
+                    this._onSuccess(this._rowAffected);
+                };
+                Instance.prototype.initTransaction = function () {
+                    Business.createTransaction([this._query.In], this.onTransactionCompleted.bind(this));
+                    this._objectStore = Business.db_transaction.objectStore(this._query.In);
+                };
+                Instance.prototype.executeComplexLogic = function () {
+                    var select_object = new Business.Select.Instance({
+                        From: this._query.In,
+                        Where: this._query.Where
+                    }, function (results) {
+                        var key = this.getPrimaryKey(this._query.In), in_query = [], where_qry = {};
+                        results.forEach(function (value) {
+                            in_query.push(value[key]);
+                        });
+                        results = null;
+                        where_qry[key] = { In: in_query };
+                        this._query['Where'] = where_qry;
+                        this.initTransaction();
+                        this.goToWhereLogic();
+                    }.bind(this), this._onError.bind(this));
+                    select_object.execute();
+                };
                 return Instance;
             }(Update.Where));
             Update.Instance = Instance;
@@ -4366,80 +4438,83 @@ var JsStore;
                 __extends(Instance, _super);
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
-                    _this.processWhereArrayQry = function () {
-                        var select_object = new Business.Select.Instance(this._query, function (results) {
-                            var key_list = [], p_key = this.getPrimaryKey(this._query.From);
-                            results.forEach(function (item) {
-                                key_list.push(item[p_key]);
-                            });
-                            results = null;
-                            this._query.Where = {};
-                            this._query.Where[p_key] = { In: key_list };
-                            this.processWhere(false);
-                        }.bind(this), this._onError);
-                    };
-                    _this.processWhere = function () {
-                        if (this._query.Where.Or) {
-                            this.processOrLogic();
-                        }
-                        this.goToWhereLogic();
-                    };
-                    _this.initTransaction = function () {
-                        Business.createTransaction([this._query.From], this.onTransactionCompleted.bind(this));
-                        this._objectStore = Business.db_transaction.objectStore(this._query.From);
-                    };
-                    _this.onTransactionCompleted = function () {
-                        this._onSuccess(this._rowAffected);
-                    };
-                    _this.onQueryFinished = function () {
-                        if (this._isOr) {
-                            this.orQuerySuccess();
-                        }
-                    };
-                    _this.orQuerySuccess = function () {
-                        var key = JsStore.getObjectFirstKey(this._orInfo.OrQuery);
-                        if (key != null) {
-                            var where = {};
-                            where[key] = this._orInfo.OrQuery[key];
-                            delete this._orInfo.OrQuery[key];
-                            this._query.Where = where;
-                            this.goToWhereLogic();
-                        }
-                        else {
-                            this._isOr = true;
-                        }
-                    };
-                    _this.processOrLogic = function () {
-                        this._isOr = true;
-                        this._orInfo = {
-                            OrQuery: this._query.Where.Or
-                        };
-                        // free or memory
-                        delete this._query.Where.Or;
-                    };
                     _this._query = query;
                     _this._onSuccess = onSuccess;
                     _this._onError = onError;
+                    return _this;
+                }
+                Instance.prototype.execute = function () {
                     try {
-                        _this.initTransaction();
-                        if (query.Where) {
-                            if (Array.isArray(query.Where)) {
-                                _this.processWhereArrayQry();
+                        this.initTransaction();
+                        if (this._query.Where) {
+                            if (Array.isArray(this._query.Where)) {
+                                this.processWhereArrayQry();
                             }
                             else {
-                                _this.processWhere();
+                                this.processWhere();
                             }
                         }
                         else {
-                            _this.executeWhereUndefinedLogic();
+                            this.executeWhereUndefinedLogic();
                         }
                     }
                     catch (ex) {
-                        _this._errorOccured = true;
-                        _this.onExceptionOccured(ex, { TableName: query.From });
+                        this._errorOccured = true;
+                        this.onExceptionOccured(ex, { TableName: this._query.From });
                     }
-                    return _this;
-                }
+                };
+                Instance.prototype.processWhereArrayQry = function () {
+                    var select_object = new Business.Select.Instance(this._query, function (results) {
+                        var key_list = [], p_key = this.getPrimaryKey(this._query.From);
+                        results.forEach(function (item) {
+                            key_list.push(item[p_key]);
+                        });
+                        results = null;
+                        this._query.Where = {};
+                        this._query.Where[p_key] = { In: key_list };
+                        this.processWhere(false);
+                    }.bind(this), this._onError);
+                    select_object.execute();
+                };
+                Instance.prototype.processWhere = function () {
+                    if (this._query.Where.Or) {
+                        this.processOrLogic();
+                    }
+                    this.goToWhereLogic();
+                };
+                Instance.prototype.initTransaction = function () {
+                    Business.createTransaction([this._query.From], this.onTransactionCompleted.bind(this));
+                    this._objectStore = Business.db_transaction.objectStore(this._query.From);
+                };
+                Instance.prototype.onTransactionCompleted = function () {
+                    this._onSuccess(this._rowAffected);
+                };
+                Instance.prototype.onQueryFinished = function () {
+                    if (this._isOr === true) {
+                        this.orQuerySuccess();
+                    }
+                };
+                Instance.prototype.orQuerySuccess = function () {
+                    var key = JsStore.getObjectFirstKey(this._orInfo.OrQuery);
+                    if (key != null) {
+                        var where = {};
+                        where[key] = this._orInfo.OrQuery[key];
+                        delete this._orInfo.OrQuery[key];
+                        this._query.Where = where;
+                        this.goToWhereLogic();
+                    }
+                    else {
+                        this._isOr = true;
+                    }
+                };
+                Instance.prototype.processOrLogic = function () {
+                    this._isOr = true;
+                    this._orInfo = {
+                        OrQuery: this._query.Where.Or
+                    };
+                    // free or memory
+                    delete this._query.Where.Or;
+                };
                 return Instance;
             }(Delete.Where));
             Delete.Instance = Instance;
@@ -4457,52 +4532,21 @@ var JsStore;
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
                     _this._valuesAffected = [];
-                    _this.onTransactionCompleted = function () {
-                        this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
-                    };
-                    _this.insertData = function (values) {
-                        var value_index = 0, insertDataIntoTable;
-                        if (this._query.Return) {
-                            insertDataIntoTable = function (value) {
-                                if (value) {
-                                    var add_result = object_store.add(value);
-                                    add_result.onerror = this.onErrorOccured.bind(this);
-                                    add_result.onsuccess = function (e) {
-                                        this._valuesAffected.push(value);
-                                        insertDataIntoTable.call(this, values[value_index++]);
-                                    }.bind(this);
-                                }
-                            };
-                        }
-                        else {
-                            insertDataIntoTable = function (value) {
-                                if (value) {
-                                    var add_result = object_store.add(value);
-                                    add_result.onerror = this.onErrorOccured.bind(this);
-                                    add_result.onsuccess = function (e) {
-                                        ++this._rowAffected;
-                                        insertDataIntoTable.call(this, values[value_index++]);
-                                    }.bind(this);
-                                }
-                            };
-                        }
-                        this._transaction = Business.db_connection.transaction([this._query.Into], "readwrite");
-                        var object_store = this._transaction.objectStore(this._query.Into);
-                        this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
-                        insertDataIntoTable.call(this, values[value_index++]);
-                    };
                     _this._onError = onError;
-                    var table = _this.getTable(query.Into);
+                    _this._query = query;
+                    _this._onSuccess = onSuccess;
+                    _this._tableName = _this._query.Into;
+                    return _this;
+                }
+                Instance.prototype.execute = function () {
+                    var table = this.getTable(this._query.Into);
                     if (table) {
-                        _this._query = query;
-                        _this._onSuccess = onSuccess;
-                        _this._tableName = _this._query.Into;
                         try {
-                            if (_this._query.SkipDataCheck) {
-                                _this.insertData(_this._query.Values);
+                            if (this._query.SkipDataCheck) {
+                                this.insertData(this._query.Values);
                             }
                             else {
-                                var value_checker_obj = new Insert.ValuesChecker(table, _this._query.Values);
+                                var value_checker_obj = new Insert.ValuesChecker(table, this._query.Values);
                                 value_checker_obj.checkAndModifyValues(function (isError) {
                                     if (isError) {
                                         this.onErrorOccured(value_checker_obj._error, true);
@@ -4511,20 +4555,52 @@ var JsStore;
                                         this.insertData(value_checker_obj._values);
                                     }
                                     value_checker_obj = undefined;
-                                }.bind(_this));
+                                }.bind(this));
                             }
                             // remove values from query
-                            _this._query.Values = undefined;
+                            this._query.Values = undefined;
                         }
                         catch (ex) {
-                            _this.onExceptionOccured(ex, { TableName: query.Into });
+                            this.onExceptionOccured(ex, { TableName: this._query.Into });
                         }
                     }
                     else {
-                        new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: query.Into }).throw();
+                        new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: this._query.Into }).throw();
                     }
-                    return _this;
-                }
+                };
+                Instance.prototype.onTransactionCompleted = function () {
+                    this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
+                };
+                Instance.prototype.insertData = function (values) {
+                    var value_index = 0, insertDataIntoTable;
+                    if (this._query.Return) {
+                        insertDataIntoTable = function (value) {
+                            if (value) {
+                                var add_result = object_store.add(value);
+                                add_result.onerror = this.onErrorOccured.bind(this);
+                                add_result.onsuccess = function (e) {
+                                    this._valuesAffected.push(value);
+                                    insertDataIntoTable.call(this, values[value_index++]);
+                                }.bind(this);
+                            }
+                        };
+                    }
+                    else {
+                        insertDataIntoTable = function (value) {
+                            if (value) {
+                                var add_result = object_store.add(value);
+                                add_result.onerror = this.onErrorOccured.bind(this);
+                                add_result.onsuccess = function (e) {
+                                    ++this._rowAffected;
+                                    insertDataIntoTable.call(this, values[value_index++]);
+                                }.bind(this);
+                            }
+                        };
+                    }
+                    Business.createTransaction([this._query.Into], this.onTransactionCompleted.bind(this));
+                    var object_store = Business.db_transaction.objectStore(this._query.Into);
+                    insertDataIntoTable.call(this, values[value_index++]);
+                };
                 return Instance;
             }(Business.Base));
             Insert.Instance = Instance;
@@ -5062,6 +5138,29 @@ var JsStore;
             }
             return _this;
         }
+        /**
+         * perform transaction
+         *
+         * @param {string[]} tableNames
+         * @param {any} txLogic
+         * @param {(results: any[]) => void} onSuccess
+         * @param {(err: IError) => void} onError
+         * @returns
+         * @memberof Instance
+         */
+        Instance.prototype.transaction = function (tableNames, txLogic, onSuccess, onError) {
+            var query = {
+                TableNames: tableNames,
+                Logic: txLogic.toString()
+            };
+            var use_promise = onSuccess ? false : true;
+            return this.pushApi({
+                Name: 'transaction',
+                Query: query,
+                OnSuccess: onSuccess,
+                OnError: onError
+            }, use_promise);
+        };
         return Instance;
     }(JsStore.CodeExecutionHelper));
     JsStore.Instance = Instance;

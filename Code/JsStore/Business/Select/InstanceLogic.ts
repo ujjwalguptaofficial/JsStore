@@ -3,19 +3,23 @@ namespace JsStore {
         export namespace Select {
             export class Instance extends Helper {
                 _isOr: boolean;
+
                 constructor(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
                     super();
                     this._onError = onError;
-                    if (this.getTable(query.From)) {
-                        this._onSuccess = onSuccess;
-                        this._query = query;
-                        this._skipRecord = this._query.Skip;
-                        this._limitRecord = this._query.Limit;
-                        this._tableName = this._query.From;
+                    this._onSuccess = onSuccess;
+                    this._query = query;
+                    this._skipRecord = this._query.Skip;
+                    this._limitRecord = this._query.Limit;
+                    this._tableName = this._query.From;
+                }
+
+                execute() {
+                    if (this.isTableExist(this._tableName) === true) {
                         try {
                             this.initTransaction();
-                            if (query.Where) {
-                                if (Array.isArray(query.Where)) {
+                            if (this._query.Where) {
+                                if (Array.isArray(this._query.Where)) {
                                     this.processWhereArrayQry();
                                 }
                                 else {
@@ -28,13 +32,13 @@ namespace JsStore {
                         }
                         catch (ex) {
                             this._errorOccured = true;
-                            this.onExceptionOccured.call(this, ex, { TableName: query.From });
+                            this.onExceptionOccured.call(this, ex, { TableName: this._query.From });
                         }
                     }
                     else {
                         this._errorOccured = true;
                         this.onErrorOccured(
-                            new Error(Error_Type.TableNotExist, { TableName: query.From }).get(),
+                            new Error(Error_Type.TableNotExist, { TableName: this._query.From }).get(),
                             true
                         );
                     }
@@ -125,11 +129,14 @@ namespace JsStore {
                 };
 
                 private onQueryFinished = function () {
-                    if (this._isOr) {
+                    if (this._isOr === true) {
                         this.orQuerySuccess();
                     }
-                    else if (this._isArrayQry) {
+                    else if (this._isArrayQry === true) {
                         this._onWhereArrayQrySuccess();
+                    }
+                    else if (this._isTransaction === true) {
+                        this.onTransactionCompleted();
                     }
                 };
 

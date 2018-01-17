@@ -2,6 +2,8 @@ namespace JsStore {
     export namespace Business {
         export namespace Delete {
             export class Instance extends Where {
+                _isOr: boolean;
+
                 constructor(
                     query: IDelete, onSuccess: (recordDeleted: number) => void,
                     onError: (err: IError) => void
@@ -10,10 +12,13 @@ namespace JsStore {
                     this._query = query;
                     this._onSuccess = onSuccess;
                     this._onError = onError;
+                }
+
+                execute() {
                     try {
                         this.initTransaction();
-                        if (query.Where) {
-                            if (Array.isArray(query.Where)) {
+                        if (this._query.Where) {
+                            if (Array.isArray(this._query.Where)) {
                                 this.processWhereArrayQry();
                             }
                             else {
@@ -27,11 +32,11 @@ namespace JsStore {
                     }
                     catch (ex) {
                         this._errorOccured = true;
-                        this.onExceptionOccured(ex, { TableName: query.From });
+                        this.onExceptionOccured(ex, { TableName: this._query.From });
                     }
                 }
 
-                private processWhereArrayQry = function () {
+                private processWhereArrayQry() {
                     var select_object = new Select.Instance(this._query as any,
                         function (results) {
                             var key_list = [],
@@ -44,31 +49,32 @@ namespace JsStore {
                             this._query.Where[p_key] = { In: key_list };
                             this.processWhere(false);
                         }.bind(this), this._onError);
-                };
+                    select_object.execute();
+                }
 
-                private processWhere = function () {
+                private processWhere() {
                     if (this._query.Where.Or) {
                         this.processOrLogic();
                     }
                     this.goToWhereLogic();
-                };
+                }
 
-                private initTransaction = function () {
+                private initTransaction() {
                     createTransaction([this._query.From], this.onTransactionCompleted.bind(this));
                     this._objectStore = db_transaction.objectStore(this._query.From);
-                };
+                }
 
-                private onTransactionCompleted = function () {
+                private onTransactionCompleted() {
                     this._onSuccess(this._rowAffected);
-                };
+                }
 
-                private onQueryFinished = function () {
-                    if (this._isOr) {
+                private onQueryFinished() {
+                    if (this._isOr === true) {
                         this.orQuerySuccess();
                     }
-                };
+                }
 
-                private orQuerySuccess = function () {
+                private orQuerySuccess() {
                     var key = getObjectFirstKey((this as any)._orInfo.OrQuery);
                     if (key != null) {
                         var where = {};
@@ -80,9 +86,9 @@ namespace JsStore {
                     else {
                         this._isOr = true;
                     }
-                };
+                }
 
-                private processOrLogic = function () {
+                private processOrLogic() {
                     this._isOr = true;
                     (this as any)._orInfo = {
                         OrQuery: this._query.Where.Or
@@ -90,7 +96,7 @@ namespace JsStore {
 
                     // free or memory
                     delete this._query.Where.Or;
-                };
+                }
             }
         }
     }

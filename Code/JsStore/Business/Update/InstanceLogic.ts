@@ -6,12 +6,16 @@ namespace JsStore {
                     super();
                     this._onSuccess = onSuccess;
                     this._onError = onError;
+                    this._query = query;
+                }
+
+                execute() {
                     try {
-                        this._error = new SchemaChecker(this.getTable(query.In)).check(query.Set, query.In);
+                        this._error = new SchemaChecker(this.getTable(this._query.In)).
+                            check(this._query.Set, this._query.In);
                         if (!this._error) {
-                            this._query = query;
-                            if (query.Where) {
-                                if (query.Where.Or || Array.isArray(query.Where)) {
+                            if (this._query.Where) {
+                                if (this._query.Where.Or || Array.isArray(this._query.Where)) {
                                     this.executeComplexLogic();
                                 }
                                 else {
@@ -31,20 +35,20 @@ namespace JsStore {
                     }
                     catch (ex) {
                         this._errorOccured = true;
-                        this.onExceptionOccured.call(this, ex, { TableName: query.In });
+                        this.onExceptionOccured.call(this, ex, { TableName: this._query.In });
                     }
                 }
 
-                private onTransactionCompleted = function () {
+                private onTransactionCompleted() {
                     this._onSuccess(this._rowAffected);
-                };
+                }
 
-                private initTransaction = function () {
+                private initTransaction() {
                     createTransaction([this._query.In], this.onTransactionCompleted.bind(this));
                     this._objectStore = db_transaction.objectStore(this._query.In);
-                };
+                }
 
-                private executeComplexLogic = function () {
+                private executeComplexLogic() {
                     var select_object = new Select.Instance({
                         From: this._query.In,
                         Where: this._query.Where
@@ -61,7 +65,8 @@ namespace JsStore {
                         this.initTransaction();
                         this.goToWhereLogic();
                     }.bind(this), this._onError.bind(this));
-                };
+                    select_object.execute();
+                }
             }
         }
     }

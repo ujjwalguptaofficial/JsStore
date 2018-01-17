@@ -45,6 +45,7 @@ namespace JsStore {
                             }, this);
                             this.startExecutionJoinLogic();
                         }.bind(this), this.onErrorOccured.bind(this));
+                        select_object.execute();
                     }
                 }
 
@@ -102,6 +103,7 @@ namespace JsStore {
                         }
 
                     }.bind(this), this.onErrorOccured.bind(this));
+                    select_object.execute();
 
                     var doJoin = function (value1, value2, itemIndex) {
                         results[join_index] = {};
@@ -182,6 +184,7 @@ namespace JsStore {
                                 doRightJoin(results);
                                 onExecutionFinished();
                             }.bind(this), this.onErrorOccured.bind(this));
+                            select_object.execute();
                         }.bind(this);
                     executeLogic();
                 };
@@ -243,6 +246,7 @@ namespace JsStore {
                                         ++item_index;
                                         executeLogic();
                                     }.bind(this), this.onErrorOccured.bind(this));
+                                    select_object.execute();
                                 }
                             }
                             else {

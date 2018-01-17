@@ -94,6 +94,33 @@ namespace JsStore {
                 OnError: onError
             } as IWebWorkerRequest, use_promise);
         };
+        
+        /**
+         * perform transaction
+         * 
+         * @param {string[]} tableNames 
+         * @param {any} txLogic 
+         * @param {(results: any[]) => void} onSuccess 
+         * @param {(err: IError) => void} onError 
+         * @returns 
+         * @memberof Instance
+         */
+        transaction(tableNames: string[], txLogic,
+            onSuccess: (results: any[]) => void,
+            onError: (err: IError) => void
+        ) {
+            var query: ITranscationQry = {
+                TableNames: tableNames,
+                Logic: txLogic.toString()
+            } as ITranscationQry;
+            var use_promise = onSuccess ? false : true;
+            return this.pushApi({
+                Name: 'transaction',
+                Query: query,
+                OnSuccess: onSuccess,
+                OnError: onError
+            } as IWebWorkerRequest, use_promise);
+        }
 
         /**
          * get no of result from table

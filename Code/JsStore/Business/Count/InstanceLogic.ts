@@ -2,20 +2,25 @@ namespace JsStore {
     export namespace Business {
         export namespace Count {
             export class Instance extends Where {
+
                 constructor(query: ICount, onSuccess: (noOfRecord: number) => void, onError: (error: IError) => void) {
                     super();
                     this._onError = onError;
-                    if (this.getTable(query.From)) {
-                        this._onSuccess = onSuccess;
-                        this._query = query;
+                    this._onSuccess = onSuccess;
+                    this._query = query;
+                }
+
+                execute() {
+                    if (this.isTableExist(this._query.From)) {
                         try {
-                            if (query.Where !== undefined) {
-                                if (query.Where.Or || Array.isArray(query.Where)) {
-                                    var select_object = new Select.Instance(query as any,
+                            if (this._query.Where !== undefined) {
+                                if (this._query.Where.Or || Array.isArray(this._query.Where)) {
+                                    var select_object = new Select.Instance(this._query as any,
                                         function (results) {
                                             this._resultCount = results.length;
                                             this.onTransactionCompleted();
                                         }.bind(this), this._onError);
+                                    select_object.execute();
                                 }
                                 else {
                                     this.initTransaction();
@@ -28,26 +33,26 @@ namespace JsStore {
                             }
                         }
                         catch (ex) {
-                            this.onExceptionOccured(ex, { TableName: query.From });
+                            this.onExceptionOccured(ex, { TableName: this._query.From });
                         }
                     }
                     else {
                         this._errorOccured = true;
                         this.onErrorOccured(
-                            new Error(Error_Type.TableNotExist, { TableName: query.From }).get(),
+                            new Error(Error_Type.TableNotExist, { TableName: this._query.From }).get(),
                             true
                         );
                     }
                 }
 
-                private initTransaction = function () {
+                private initTransaction() {
                     createTransaction([this._query.From], this.onTransactionCompleted.bind(this), 'readonly');
                     this._objectStore = db_transaction.objectStore(this._query.From);
-                };
+                }
 
-                private onTransactionCompleted = function () {
+                private onTransactionCompleted() {
                     this._onSuccess(this._resultCount);
-                };
+                }
             }
         }
 

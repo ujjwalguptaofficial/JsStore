@@ -5,14 +5,18 @@ namespace JsStore {
                 _valuesAffected = [];
                 _query: IInsert;
                 _table: Table;
+
                 constructor(query: IInsert, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void) {
                     super();
                     this._onError = onError;
-                    var table = this.getTable(query.Into);
+                    this._query = query;
+                    this._onSuccess = onSuccess;
+                    this._tableName = this._query.Into;
+                }
+
+                execute() {
+                    var table = this.getTable(this._query.Into);
                     if (table) {
-                        this._query = query;
-                        this._onSuccess = onSuccess;
-                        this._tableName = this._query.Into;
                         try {
                             if (this._query.SkipDataCheck) {
                                 this.insertData(this._query.Values);
@@ -33,19 +37,19 @@ namespace JsStore {
                             this._query.Values = undefined;
                         }
                         catch (ex) {
-                            this.onExceptionOccured(ex, { TableName: query.Into });
+                            this.onExceptionOccured(ex, { TableName: this._query.Into });
                         }
                     }
                     else {
-                        new Error(Error_Type.TableNotExist, { TableName: query.Into }).throw();
+                        new Error(Error_Type.TableNotExist, { TableName: this._query.Into }).throw();
                     }
                 }
 
-                public onTransactionCompleted = function () {
+                public onTransactionCompleted() {
                     this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
-                };
+                }
 
-                private insertData = function (values) {
+                private insertData(values) {
                     var value_index = 0,
                         insertDataIntoTable: (value: object) => void;
                     if (this._query.Return) {
@@ -72,11 +76,10 @@ namespace JsStore {
                             }
                         };
                     }
-                    this._transaction = db_connection.transaction([this._query.Into], "readwrite");
-                    var object_store = this._transaction.objectStore(this._query.Into);
-                    this._transaction.oncomplete = this.onTransactionCompleted.bind(this);
+                    createTransaction([this._query.Into], this.onTransactionCompleted.bind(this));
+                    var object_store = db_transaction.objectStore(this._query.Into);
                     insertDataIntoTable.call(this, values[value_index++]);
-                };
+                }
             }
         }
     }

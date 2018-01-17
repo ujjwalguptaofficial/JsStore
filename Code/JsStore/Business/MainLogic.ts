@@ -4,7 +4,7 @@ namespace JsStore {
         export var db_connection: IDBDatabase,
             active_db: DataBase,
             db_transaction: IDBTransaction = null,
-            createTransaction = function (tableNames, callBack: () => void, mode) {
+            createTransaction = function (tableNames, callBack: () => void, mode?) {
                 if (db_transaction === null) {
                     mode = mode ? mode : "readwrite";
                     db_transaction = db_connection.transaction(tableNames, mode);
@@ -102,15 +102,17 @@ namespace JsStore {
                         break;
                     case 'bulk_insert': this.bulkInsert(request.Query, onSuccess, onError);
                         break;
+                    case 'transaction': this.transaction(request.Query, onSuccess, onError);
+                        break;
                     case 'export_json': this.exportJson(request.Query, onSuccess, onError);
                         break;
                     default: console.error('The Api:-' + request.Name + 'does not support');
                 }
             };
 
-            private transaction(qry: string) {
-                
-                createTransaction(tableNames, )
+            private transaction(qry: ITranscationQry, onSuccess, onError) {
+                var transaction_obj = new Transaction(onSuccess, onError);
+                transaction_obj.execute(qry.TableNames, qry.Logic);
             }
 
             private openDb = function (dbName, onSuccess: () => void, onError: (err: IError) => void) {
@@ -141,6 +143,7 @@ namespace JsStore {
 
             private update = function (query: IUpdate, onSuccess: () => void, onError: (err: IError) => void) {
                 var update_db_object = new Update.Instance(query, onSuccess, onError);
+                update_db_object.execute();
             };
 
             private insert = function (query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
@@ -151,6 +154,7 @@ namespace JsStore {
                 }
                 else {
                     var insert_object = new Business.Insert.Instance(query, onSuccess, onError);
+                    insert_object.execute();
                 }
             };
 
@@ -162,11 +166,13 @@ namespace JsStore {
                 }
                 else {
                     var bulk_insert_object = new BulkInsert(query, onSuccess, onError);
+                    bulk_insert_object.execute();
                 }
             };
 
             private delete = function (query: IDelete, onSuccess: () => void, onError: (err: IError) => void) {
                 var delete_object = new Delete.Instance(query, onSuccess, onError);
+                delete_object.execute();
             };
 
             private select = function (query, onSuccess: () => void, onError: (err: IError) => void) {
@@ -174,7 +180,8 @@ namespace JsStore {
                     var select_join_object = new Select.Join(query as ISelectJoin, onSuccess, onError);
                 }
                 else {
-                    var select_object = new Select.Instance(query, onSuccess, onError);
+                    var select_instance = new Select.Instance(query, onSuccess, onError);
+                    select_instance.execute();
                 }
             };
 
@@ -185,6 +192,7 @@ namespace JsStore {
                 }
                 else {
                     var count_object = new Count.Instance(query, onSuccess, onError);
+                    count_object.execute();
                 }
             };
 

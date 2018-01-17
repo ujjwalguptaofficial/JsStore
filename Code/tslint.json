@@ -11,6 +11,7 @@
         "only-arrow-functions": false,
         "space-before-function-paren": false,
         "one-variable-per-declaration": false,
+        "no-eval": false,
         "variable-name": [
             true,
             "check-format",

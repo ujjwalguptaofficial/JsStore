@@ -151,6 +151,7 @@ namespace JsStore {
     }
 
     export interface ITranscationQry {
-        TableNames: [];
+        TableNames: string[];
+        Logic: string;
     }
 }

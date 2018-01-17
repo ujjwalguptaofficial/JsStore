@@ -7,12 +7,11 @@ namespace JsStore {
             _rowAffected = 0;
             _onSuccess: (result?) => void;
             _onError: (err: IError) => void;
-            _transaction: IDBTransaction;
             _objectStore: IDBObjectStore;
             _query;
-            _sendResultFlag: boolean = true;
             _whereChecker: WhereChecker;
             _tableName: string;
+            _isTransaction: boolean;
 
             protected onErrorOccured = function (e, customError = false) {
                 ++this._errorCount;
