@@ -9,7 +9,11 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /**
- * @license :JsStore.js - v1.4.2 - 14/01/2018
+<<<<<<< HEAD
+ * @license :JsStore.js - v1.5.0 - 18/01/2018
+=======
+ * @license :JsStore.js - v1.4.3 - 16/01/2018
+>>>>>>> master
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
  */ 
@@ -1912,14 +1916,20 @@ var JsStore;
                 var update = function (qry, onSuccess) {
                     onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
                     var update_obj = new Business.Update.Instance(qry, onSuccess, this._onError.bind(this));
+                    update_obj._isTransaction = true;
+                    update_obj.execute();
                 }.bind(this);
                 var remove = function (qry, onSuccess) {
                     onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
                     var delete_obj = new Business.Delete.Instance(qry, onSuccess, this._onError.bind(this));
+                    delete_obj._isTransaction = true;
+                    delete_obj.execute();
                 }.bind(this);
                 var count = function (qry, onSuccess) {
                     onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
                     var count_obj = new Business.Count.Instance(qry, onSuccess, this._onError.bind(this));
+                    count_obj._isTransaction = true;
+                    count_obj.execute();
                 }.bind(this);
                 eval("var txLogic =" + txLogic);
                 this.initTransaction(tableNames);
@@ -3360,7 +3370,7 @@ var JsStore;
                 };
                 Instance.prototype.processWhereArrayQry = function () {
                     this._isArrayQry = true;
-                    var where_query = this._query.Where, output = [], operation, pKey = this.getPrimaryKey(this._query.From), isItemExist = function (keyValue) {
+                    var is_first_where = true, where_query = this._query.Where, output = [], operation, pKey = this.getPrimaryKey(this._query.From), isItemExist = function (keyValue) {
                         var is_exist = false;
                         output.every(function (item) {
                             if (item[pKey] === keyValue) {
@@ -3372,7 +3382,7 @@ var JsStore;
                         return is_exist;
                     }, onSuccess = function () {
                         if (operation === 'and') {
-                            if (output.length > 0) {
+                            var doAnd = function () {
                                 var and_results = [];
                                 this._results.forEach(function (item) {
                                     if (isItemExist(item[pKey])) {
@@ -3381,9 +3391,15 @@ var JsStore;
                                 });
                                 output = and_results;
                                 and_results = null;
+                            }.bind(this);
+                            if (output.length > 0) {
+                                doAnd();
+                            }
+                            else if (is_first_where === true) {
+                                output = this._results;
                             }
                             else {
-                                output = this._results;
+                                doAnd();
                             }
                         }
                         else {
@@ -3403,6 +3419,7 @@ var JsStore;
                         else {
                             this._results = output;
                         }
+                        is_first_where = false;
                     }.bind(this), processFirstQry = function () {
                         this._query.Where = where_query.shift();
                         if (this._query.Where['Or']) {
@@ -4964,237 +4981,6 @@ var JsStore;
         function Instance(dbName) {
             if (dbName === void 0) { dbName = null; }
             var _this = _super.call(this) || this;
-            /**
-             * open database
-             *
-             * @param {string} dbName
-             * @param {Function} [onSuccess=null]
-             * @param {Function} [onError=null]
-             * @returns
-             * @memberof Instance
-             */
-            _this.openDb = function (dbName, onSuccess, onError) {
-                return this.pushApi({
-                    Name: 'open_db',
-                    Query: dbName,
-                    OnSuccess: onSuccess,
-                    OnError: onError,
-                }, false);
-            };
-            /**
-             * creates DataBase
-             *
-             * @param {Model.IDataBase} dataBase
-             * @param {Function} [onSuccess=null]
-             * @param {Function} [onError=null]
-             * @returns
-             * @memberof Instance
-             */
-            _this.createDb = function (dataBase, onSuccess, onError) {
-                return this.pushApi({
-                    Name: 'create_db',
-                    OnSuccess: onSuccess,
-                    OnError: onError,
-                    Query: dataBase
-                }, false);
-            };
-            /**
-             * drop dataBase
-             *
-             * @param {Function} onSuccess
-             * @param {Function} [onError=null]
-             * @memberof Instance
-             */
-            _this.dropDb = function (onSuccess, onError) {
-                var use_promise = onSuccess ? false : true;
-                return this.pushApi({
-                    Name: 'drop_db',
-                    Query: null,
-                    OnSuccess: onSuccess,
-                    OnError: onError
-                }, use_promise);
-            };
-            /**
-             * select data from table
-             *
-             * @param {IQuery} query
-             * @param {Function} [onSuccess=null]
-             * @param {Function} [onError=null]
-             *
-             * @memberOf Main
-             */
-            _this.select = function (query, onSuccess, onError) {
-                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
-                onError = query.OnError ? query.OnError : onError;
-                query.OnSuccess = query.OnError = null;
-                var use_promise = onSuccess ? false : true;
-                return this.pushApi({
-                    Name: 'select',
-                    Query: query,
-                    OnSuccess: onSuccess,
-                    OnError: onError
-                }, use_promise);
-            };
-            /**
-             * get no of result from table
-             *
-             * @param {ICount} query
-             * @param {Function} [onSuccess=null]
-             * @param {Function} [onError=null]
-             * @memberof Instance
-             */
-            _this.count = function (query, onSuccess, onError) {
-                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
-                onError = query.OnError ? query.OnError : onError;
-                query.OnSuccess = query.OnError = null;
-                var use_promise = onSuccess ? false : true;
-                return this.pushApi({
-                    Name: 'count',
-                    Query: query,
-                    OnSuccess: onSuccess,
-                    OnError: onError
-                }, use_promise);
-            };
-            /**
-             * insert data into table
-             *
-             * @param {IInsert} query
-             * @param {Function} [onSuccess=null]
-             * @param {Function} [onError=null]
-             * @memberof Instance
-             */
-            _this.insert = function (query, onSuccess, onError) {
-                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
-                onError = query.OnError ? query.OnError : onError;
-                query.OnSuccess = query.OnError = null;
-                var use_promise = onSuccess ? false : true;
-                return this.pushApi({
-                    Name: 'insert',
-                    Query: query,
-                    OnSuccess: onSuccess,
-                    OnError: onError
-                }, use_promise);
-            };
-            /**
-             * update data into table
-             *
-             * @param {IUpdate} query
-             * @param {Function} [onSuccess=null]
-             * @param {Function} [onError=null]
-             * @memberof Instance
-             */
-            _this.update = function (query, onSuccess, onError) {
-                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
-                onError = query.OnError ? query.OnError : onError;
-                query.OnSuccess = query.OnError = null;
-                var use_promise = onSuccess ? false : true;
-                return this.pushApi({
-                    Name: 'update',
-                    Query: query,
-                    OnSuccess: onSuccess,
-                    OnError: onError
-                }, use_promise);
-            };
-            /**
-             * delete data from table
-             *
-             * @param {IDelete} query
-             * @param {Function} [onSuccess=null]
-             * @param {Function} onError
-             * @memberof Instance
-             */
-            _this.delete = function (query, onSuccess, onError) {
-                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
-                onError = query.OnError ? query.OnError : onError;
-                query.OnSuccess = query.OnError = null;
-                var use_promise = onSuccess ? false : true;
-                return this.pushApi({
-                    Name: 'delete',
-                    Query: query,
-                    OnSuccess: onSuccess,
-                    OnError: onError
-                }, use_promise);
-            };
-            /**
-             * delete all data from table
-             *
-             * @param {string} tableName
-             * @param {Function} [onSuccess=null]
-             * @param {Function} [onError=null]
-             * @memberof Instance
-             */
-            _this.clear = function (tableName, onSuccess, onError) {
-                var use_promise = onSuccess ? false : true;
-                return this.pushApi({
-                    Name: 'clear',
-                    Query: tableName,
-                    OnSuccess: onSuccess,
-                    OnError: onError
-                }, use_promise);
-            };
-            /**
-             * insert bulk amount of data
-             *
-             * @param {IInsert} query
-             * @param {Function} [onSuccess=null]
-             * @param {Function} [onError=null]
-             * @returns
-             * @memberof Instance
-             */
-            _this.bulkInsert = function (query, onSuccess, onError) {
-                onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
-                onError = query.OnError ? query.OnError : onError;
-                var use_promise = onSuccess ? false : true;
-                query.OnSuccess = query.OnError = null;
-                return this.pushApi({
-                    Name: 'bulk_insert',
-                    Query: query,
-                    OnSuccess: onSuccess,
-                    OnError: onError
-                }, use_promise);
-            };
-            /**
-             * export the result in json file
-             *
-             * @param {ISelect} qry
-             * @memberof Instance
-             */
-            _this.exportJson = function (query) {
-                var onSuccess = function (url) {
-                    var link = document.createElement("a");
-                    link.href = url;
-                    link.download = query.From + ".json";
-                    link.click();
-                    if (onSuccessCallBack) {
-                        onSuccessCallBack(null);
-                    }
-                }, onError = query['OnError'], onSuccessCallBack = query['OnSuccess'];
-                query['OnSuccess'] = query['OnError'] = undefined;
-                var use_promise = onSuccessCallBack ? false : true;
-                if (use_promise) {
-                    return new Promise(function (resolve, reject) {
-                        this.pushApi({
-                            Name: 'export_json',
-                            Query: query,
-                            OnSuccess: onSuccess,
-                            OnError: onError
-                        }, use_promise).then(function (url) {
-                            onSuccess(url);
-                            resolve();
-                        }).catch(function (err) {
-                            reject(err);
-                        });
-                    });
-                }
-                else {
-                    this.pushApi({
-                        Name: 'export_json',
-                        Query: query,
-                        OnSuccess: onSuccess,
-                        OnError: onError
-                    }, use_promise);
-                }
-            };
             if (JsStore.worker_status === JsStore.WebWorker_Status.Registered) {
                 JsStore.worker_instance.terminate();
             }
@@ -5208,7 +4994,78 @@ var JsStore;
             return _this;
         }
         /**
-         * perform transaction
+         * open database
+         *
+         * @param {string} dbName
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         * @returns
+         * @memberof Instance
+         */
+        Instance.prototype.openDb = function (dbName, onSuccess, onError) {
+            return this.pushApi({
+                Name: 'open_db',
+                Query: dbName,
+                OnSuccess: onSuccess,
+                OnError: onError,
+            }, false);
+        };
+        /**
+         * creates DataBase
+         *
+         * @param {Model.IDataBase} dataBase
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         * @returns
+         * @memberof Instance
+         */
+        Instance.prototype.createDb = function (dataBase, onSuccess, onError) {
+            return this.pushApi({
+                Name: 'create_db',
+                OnSuccess: onSuccess,
+                OnError: onError,
+                Query: dataBase
+            }, false);
+        };
+        /**
+         * drop dataBase
+         *
+         * @param {Function} onSuccess
+         * @param {Function} [onError=null]
+         * @memberof Instance
+         */
+        Instance.prototype.dropDb = function (onSuccess, onError) {
+            var use_promise = onSuccess ? false : true;
+            return this.pushApi({
+                Name: 'drop_db',
+                Query: null,
+                OnSuccess: onSuccess,
+                OnError: onError
+            }, use_promise);
+        };
+        /**
+         * select data from table
+         *
+         * @param {IQuery} query
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         *
+         * @memberOf Main
+         */
+        Instance.prototype.select = function (query, onSuccess, onError) {
+            onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+            onError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = query.OnError = null;
+            var use_promise = onSuccess ? false : true;
+            return this.pushApi({
+                Name: 'select',
+                Query: query,
+                OnSuccess: onSuccess,
+                OnError: onError
+            }, use_promise);
+        };
+        /**
+         * perform transaction - execute multiple apis
          *
          * @param {string[]} tableNames
          * @param {any} txLogic
@@ -5217,9 +5074,9 @@ var JsStore;
          * @returns
          * @memberof Instance
          */
-        Instance.prototype.transaction = function (tableNames, txLogic, onSuccess, onError) {
+        Instance.prototype.transaction = function (tblNames, txLogic, onSuccess, onError) {
             var query = {
-                TableNames: tableNames,
+                TableNames: tblNames,
                 Logic: txLogic.toString()
             };
             var use_promise = onSuccess ? false : true;
@@ -5229,6 +5086,173 @@ var JsStore;
                 OnSuccess: onSuccess,
                 OnError: onError
             }, use_promise);
+        };
+        /**
+         * get no of result from table
+         *
+         * @param {ICount} query
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         * @memberof Instance
+         */
+        Instance.prototype.count = function (query, onSuccess, onError) {
+            onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+            onError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = query.OnError = null;
+            var use_promise = onSuccess ? false : true;
+            return this.pushApi({
+                Name: 'count',
+                Query: query,
+                OnSuccess: onSuccess,
+                OnError: onError
+            }, use_promise);
+        };
+        /**
+         * insert data into table
+         *
+         * @param {IInsert} query
+         * @param {(recordInserted: number) => void} onSuccess
+         * @param {(err: IError) => void} onError
+         * @returns
+         * @memberof Instance
+         */
+        Instance.prototype.insert = function (query, onSuccess, onError) {
+            onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+            onError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = query.OnError = null;
+            var use_promise = onSuccess ? false : true;
+            return this.pushApi({
+                Name: 'insert',
+                Query: query,
+                OnSuccess: onSuccess,
+                OnError: onError
+            }, use_promise);
+        };
+        /**
+         * update data into table
+         *
+         * @param {IUpdate} query
+         * @param {(recordUpdated: number) => void} onSuccess
+         * @param {(err: IError) => void} onError
+         * @returns
+         * @memberof Instance
+         */
+        Instance.prototype.update = function (query, onSuccess, onError) {
+            onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+            onError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = query.OnError = null;
+            var use_promise = onSuccess ? false : true;
+            return this.pushApi({
+                Name: 'update',
+                Query: query,
+                OnSuccess: onSuccess,
+                OnError: onError
+            }, use_promise);
+        };
+        Instance.prototype.delete = function (query, onSuccess, onError) {
+            JsStore.logError('delete is deprecated because delete is reserved keyword in js. Please use remove api');
+        };
+        /**
+         * remove data from table
+         *
+         * @param {IDelete} query
+         * @param {(recordDeleted: number) => void} onSuccess
+         * @param {(err: IError) => void} onError
+         * @returns
+         * @memberof Instance
+         */
+        Instance.prototype.remove = function (query, onSuccess, onError) {
+            onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+            onError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = query.OnError = null;
+            var use_promise = onSuccess ? false : true;
+            return this.pushApi({
+                Name: 'delete',
+                Query: query,
+                OnSuccess: onSuccess,
+                OnError: onError
+            }, use_promise);
+        };
+        /**
+         * delete all data from table
+         *
+         * @param {string} tableName
+         * @param {() => void} onSuccess
+         * @param {(err: IError) => void} onError
+         * @returns
+         * @memberof Instance
+         */
+        Instance.prototype.clear = function (tableName, onSuccess, onError) {
+            var use_promise = onSuccess ? false : true;
+            return this.pushApi({
+                Name: 'clear',
+                Query: tableName,
+                OnSuccess: onSuccess,
+                OnError: onError
+            }, use_promise);
+        };
+        /**
+         * insert bulk amount of data
+         *
+         * @param {IInsert} query
+         * @param {() => void} onSuccess
+         * @param {(err: IError) => void} onError
+         * @returns
+         * @memberof Instance
+         */
+        Instance.prototype.bulkInsert = function (query, onSuccess, onError) {
+            onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+            onError = query.OnError ? query.OnError : onError;
+            var use_promise = onSuccess ? false : true;
+            query.OnSuccess = query.OnError = null;
+            return this.pushApi({
+                Name: 'bulk_insert',
+                Query: query,
+                OnSuccess: onSuccess,
+                OnError: onError
+            }, use_promise);
+        };
+        /**
+         * export the result in json file
+         *
+         * @param {ISelect} qry
+         * @memberof Instance
+         */
+        Instance.prototype.exportJson = function (query) {
+            var onSuccess = function (url) {
+                var link = document.createElement("a");
+                link.href = url;
+                link.download = query.From + ".json";
+                link.click();
+                if (onSuccessCallBack) {
+                    onSuccessCallBack(null);
+                }
+            }, onError = query['OnError'], onSuccessCallBack = query['OnSuccess'];
+            query['OnSuccess'] = query['OnError'] = undefined;
+            var use_promise = onSuccessCallBack ? false : true;
+            if (use_promise) {
+                return new Promise(function (resolve, reject) {
+                    this.pushApi({
+                        Name: 'export_json',
+                        Query: query,
+                        OnSuccess: onSuccess,
+                        OnError: onError
+                    }, use_promise).then(function (url) {
+                        onSuccess(url);
+                        resolve();
+                    }).catch(function (err) {
+                        reject(err);
+                    });
+                });
+            }
+            else {
+                this.pushApi({
+                    Name: 'export_json',
+                    Query: query,
+                    OnSuccess: onSuccess,
+                    OnError: onError
+                }, use_promise);
+            }
         };
         return Instance;
     }(JsStore.CodeExecutionHelper));

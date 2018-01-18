@@ -1034,7 +1034,7 @@ declare namespace JsStore {
          * @returns
          * @memberof Instance
          */
-        openDb: (dbName: string, onSuccess: () => void, onError: (err: IError) => void) => any;
+        openDb(dbName: string, onSuccess: () => void, onError: (err: IError) => void): any;
         /**
          * creates DataBase
          *
@@ -1044,7 +1044,7 @@ declare namespace JsStore {
          * @returns
          * @memberof Instance
          */
-        createDb: (dataBase: IDataBaseOption, onSuccess: (dbSchema: any) => void, onError: (err: IError) => void) => any;
+        createDb(dataBase: IDataBaseOption, onSuccess: (dbSchema: any) => void, onError: (err: IError) => void): any;
         /**
          * drop dataBase
          *
@@ -1052,7 +1052,7 @@ declare namespace JsStore {
          * @param {Function} [onError=null]
          * @memberof Instance
          */
-        dropDb: (onSuccess: () => void, onError: (err: IError) => void) => any;
+        dropDb(onSuccess: () => void, onError: (err: IError) => void): any;
         /**
          * select data from table
          *
@@ -1062,9 +1062,9 @@ declare namespace JsStore {
          *
          * @memberOf Main
          */
-        select: (query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void) => any;
+        select(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void): any;
         /**
-         * perform transaction
+         * perform transaction - execute multiple apis
          *
          * @param {string[]} tableNames
          * @param {any} txLogic
@@ -1073,7 +1073,7 @@ declare namespace JsStore {
          * @returns
          * @memberof Instance
          */
-        transaction(tableNames: string[], txLogic: any, onSuccess: (results: any[]) => void, onError: (err: IError) => void): any;
+        transaction(tblNames: string[], txLogic: any, onSuccess: (results: any[]) => void, onError: (err: IError) => void): any;
         /**
          * get no of result from table
          *
@@ -1082,59 +1082,64 @@ declare namespace JsStore {
          * @param {Function} [onError=null]
          * @memberof Instance
          */
-        count: (query: ICount, onSuccess: (noOfRecord: number) => void, onError: (err: IError) => void) => any;
+        count(query: ICount, onSuccess: (noOfRecord: number) => void, onError: (err: IError) => void): any;
         /**
          * insert data into table
          *
          * @param {IInsert} query
-         * @param {Function} [onSuccess=null]
-         * @param {Function} [onError=null]
+         * @param {(recordInserted: number) => void} onSuccess
+         * @param {(err: IError) => void} onError
+         * @returns
          * @memberof Instance
          */
-        insert: (query: IInsert, onSuccess: (recordInserted: number) => void, onError: (err: IError) => void) => any;
+        insert(query: IInsert, onSuccess: (recordInserted: number) => void, onError: (err: IError) => void): any;
         /**
          * update data into table
          *
          * @param {IUpdate} query
-         * @param {Function} [onSuccess=null]
-         * @param {Function} [onError=null]
+         * @param {(recordUpdated: number) => void} onSuccess
+         * @param {(err: IError) => void} onError
+         * @returns
          * @memberof Instance
          */
-        update: (query: IUpdate, onSuccess: (recordUpdated: number) => void, onError: (err: IError) => void) => any;
+        update(query: IUpdate, onSuccess: (recordUpdated: number) => void, onError: (err: IError) => void): any;
+        delete(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void): void;
         /**
-         * delete data from table
+         * remove data from table
          *
          * @param {IDelete} query
-         * @param {Function} [onSuccess=null]
-         * @param {Function} onError
+         * @param {(recordDeleted: number) => void} onSuccess
+         * @param {(err: IError) => void} onError
+         * @returns
          * @memberof Instance
          */
-        delete: (query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void) => any;
+        remove(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void): any;
         /**
          * delete all data from table
          *
          * @param {string} tableName
-         * @param {Function} [onSuccess=null]
-         * @param {Function} [onError=null]
+         * @param {() => void} onSuccess
+         * @param {(err: IError) => void} onError
+         * @returns
          * @memberof Instance
          */
-        clear: (tableName: string, onSuccess: () => void, onError: (err: IError) => void) => any;
+        clear(tableName: string, onSuccess: () => void, onError: (err: IError) => void): any;
         /**
          * insert bulk amount of data
          *
          * @param {IInsert} query
-         * @param {Function} [onSuccess=null]
-         * @param {Function} [onError=null]
+         * @param {() => void} onSuccess
+         * @param {(err: IError) => void} onError
          * @returns
          * @memberof Instance
          */
-        bulkInsert: (query: IInsert, onSuccess: () => void, onError: (err: IError) => void) => any;
+        bulkInsert(query: IInsert, onSuccess: () => void, onError: (err: IError) => void): any;
         /**
          * export the result in json file
          *
          * @param {ISelect} qry
          * @memberof Instance
          */
-        exportJson: (query: ISelect) => any;
+        exportJson(query: ISelect): any;
     }
 }

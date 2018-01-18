@@ -45,7 +45,8 @@ namespace JsStore {
 
                 private processWhereArrayQry() {
                     this._isArrayQry = true;
-                    var where_query = this._query.Where,
+                    var is_first_where = true,
+                        where_query = this._query.Where,
                         output = [], operation,
                         pKey = this.getPrimaryKey(this._query.From),
                         isItemExist = function (keyValue) {
@@ -61,7 +62,7 @@ namespace JsStore {
                         },
                         onSuccess = function () {
                             if (operation === 'and') {
-                                if (output.length > 0) {
+                                var doAnd = function () {
                                     var and_results = [];
                                     this._results.forEach(function (item) {
                                         if (isItemExist(item[pKey])) {
@@ -70,9 +71,15 @@ namespace JsStore {
                                     });
                                     output = and_results;
                                     and_results = null;
+                                }.bind(this);
+                                if (output.length > 0) {
+                                    doAnd();
+                                }
+                                else if (is_first_where === true) {
+                                    output = this._results;
                                 }
                                 else {
-                                    output = this._results;
+                                    doAnd();
                                 }
                             }
                             else {
@@ -92,6 +99,7 @@ namespace JsStore {
                             else {
                                 this._results = output;
                             }
+                            is_first_where = false;
                         }.bind(this),
                         processFirstQry = function () {
                             this._query.Where = where_query.shift();
