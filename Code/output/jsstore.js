@@ -1943,24 +1943,24 @@ var JsStore;
                     _this._results = [];
                     _this._sorted = false;
                     _this._checkFlag = false;
-                    _this.removeDuplicates = function () {
-                        var datas = this._results;
-                        // free results memory
-                        this._results = undefined;
-                        var key = this.getPrimaryKey(this._query.From);
-                        var lookupObject = {};
-                        for (var i in datas) {
-                            lookupObject[datas[i][key]] = datas[i];
-                        }
-                        // free datas memory
-                        datas = [];
-                        for (i in lookupObject) {
-                            datas.push(lookupObject[i]);
-                        }
-                        this._results = datas;
-                    };
                     return _this;
                 }
+                BaseSelect.prototype.removeDuplicates = function () {
+                    var datas = this._results;
+                    // free results memory
+                    this._results = undefined;
+                    var key = this.getPrimaryKey(this._query.From);
+                    var lookupObject = {};
+                    for (var i in datas) {
+                        lookupObject[datas[i][key]] = datas[i];
+                    }
+                    // free datas memory
+                    datas = [];
+                    for (i in lookupObject) {
+                        datas.push(lookupObject[i]);
+                    }
+                    this._results = datas;
+                };
                 return BaseSelect;
             }(Business.Base));
             Select.BaseSelect = BaseSelect;
@@ -2927,220 +2927,219 @@ var JsStore;
             var GroupByHelper = /** @class */ (function (_super) {
                 __extends(GroupByHelper, _super);
                 function GroupByHelper() {
-                    var _this = _super.call(this) || this;
-                    _this.processGroupBy = function () {
-                        var grp_qry = this._query.GroupBy, datas = this._results, look_up_obj = {};
-                        // free results memory
-                        this._results = this._query.GroupBy = undefined;
-                        if (typeof grp_qry === 'string') {
-                            for (var i in datas) {
-                                look_up_obj[datas[i][grp_qry]] = datas[i];
+                    return _super.call(this) || this;
+                }
+                GroupByHelper.prototype.processGroupBy = function () {
+                    var grp_qry = this._query.GroupBy, datas = this._results, look_up_obj = {};
+                    // free results memory
+                    this._results = this._query.GroupBy = undefined;
+                    if (typeof grp_qry === 'string') {
+                        for (var i in datas) {
+                            look_up_obj[datas[i][grp_qry]] = datas[i];
+                        }
+                    }
+                    else {
+                        var obj_key;
+                        for (var i in datas) {
+                            obj_key = "";
+                            for (var column in grp_qry) {
+                                obj_key += datas[i][grp_qry[column]];
                             }
+                            look_up_obj[obj_key] = datas[i];
                         }
-                        else {
-                            var obj_key;
-                            for (var i in datas) {
-                                obj_key = "";
-                                for (var column in grp_qry) {
-                                    obj_key += datas[i][grp_qry[column]];
-                                }
-                                look_up_obj[obj_key] = datas[i];
-                            }
-                        }
-                        // free datas memory
-                        datas = [];
-                        for (i in look_up_obj) {
-                            datas.push(look_up_obj[i]);
-                        }
-                        this._results = datas;
-                    };
-                    _this.executeAggregateGroupBy = function () {
-                        var grp_qry = this._query.GroupBy, datas = this._results, look_up_obj = {}, 
-                        // assign aggregate and free aggregate memory
-                        aggregate_qry = this._query.Aggregate;
-                        this._query.Aggregate = undefined;
-                        // free results memory
-                        this._results = undefined;
-                        var index, obj_Key, value, aggr_column;
-                        var calculateAggregate = function () {
-                            for (var prop in aggregate_qry) {
-                                switch (prop) {
-                                    case 'Count':
-                                        var getCount = function () {
-                                            value = look_up_obj[obj_Key];
-                                            // get old value
-                                            value = value ? value["Count(" + aggr_column + ")"] : 0;
-                                            // add with old value if data exist
-                                            value += datas[index][aggr_column] ? 1 : 0;
-                                            return value;
-                                        };
-                                        if (typeof aggregate_qry[prop] === 'string') {
-                                            aggr_column = aggregate_qry[prop];
+                    }
+                    // free datas memory
+                    datas = [];
+                    for (i in look_up_obj) {
+                        datas.push(look_up_obj[i]);
+                    }
+                    this._results = datas;
+                };
+                GroupByHelper.prototype.executeAggregateGroupBy = function () {
+                    var grp_qry = this._query.GroupBy, datas = this._results, look_up_obj = {}, 
+                    // assign aggregate and free aggregate memory
+                    aggregate_qry = this._query.Aggregate;
+                    this._query.Aggregate = undefined;
+                    // free results memory
+                    this._results = undefined;
+                    var index, obj_Key, value, aggr_column;
+                    var calculateAggregate = function () {
+                        for (var prop in aggregate_qry) {
+                            switch (prop) {
+                                case 'Count':
+                                    var getCount = function () {
+                                        value = look_up_obj[obj_Key];
+                                        // get old value
+                                        value = value ? value["Count(" + aggr_column + ")"] : 0;
+                                        // add with old value if data exist
+                                        value += datas[index][aggr_column] ? 1 : 0;
+                                        return value;
+                                    };
+                                    if (typeof aggregate_qry[prop] === 'string') {
+                                        aggr_column = aggregate_qry[prop];
+                                        datas[index]["Count(" + aggr_column + ")"] = getCount();
+                                    }
+                                    else if (Array.isArray(aggregate_qry[prop])) {
+                                        for (var item in aggregate_qry[prop]) {
+                                            aggr_column = aggregate_qry[prop][item];
                                             datas[index]["Count(" + aggr_column + ")"] = getCount();
                                         }
-                                        else if (Array.isArray(aggregate_qry[prop])) {
-                                            for (var item in aggregate_qry[prop]) {
-                                                aggr_column = aggregate_qry[prop][item];
-                                                datas[index]["Count(" + aggr_column + ")"] = getCount();
-                                            }
-                                        }
-                                        break;
-                                    case 'Max':
-                                        var getMax = function () {
-                                            value = look_up_obj[obj_Key];
-                                            // get old value
-                                            value = value ? value["Max(" + aggr_column + ")"] : 0;
-                                            datas[index][aggr_column] = datas[index][aggr_column] ?
-                                                datas[index][aggr_column] : 0;
-                                            // compare between old value and new value
-                                            return value > datas[index][aggr_column] ? value : datas[index][aggr_column];
-                                        };
-                                        if (typeof aggregate_qry[prop] === 'string') {
-                                            aggr_column = aggregate_qry[prop];
+                                    }
+                                    break;
+                                case 'Max':
+                                    var getMax = function () {
+                                        value = look_up_obj[obj_Key];
+                                        // get old value
+                                        value = value ? value["Max(" + aggr_column + ")"] : 0;
+                                        datas[index][aggr_column] = datas[index][aggr_column] ?
+                                            datas[index][aggr_column] : 0;
+                                        // compare between old value and new value
+                                        return value > datas[index][aggr_column] ? value : datas[index][aggr_column];
+                                    };
+                                    if (typeof aggregate_qry[prop] === 'string') {
+                                        aggr_column = aggregate_qry[prop];
+                                        datas[index]["Max(" + aggr_column + ")"] = getMax();
+                                    }
+                                    else if (Array.isArray(aggregate_qry[prop])) {
+                                        for (var item in aggregate_qry[prop]) {
+                                            aggr_column = aggregate_qry[prop][item];
                                             datas[index]["Max(" + aggr_column + ")"] = getMax();
                                         }
-                                        else if (Array.isArray(aggregate_qry[prop])) {
-                                            for (var item in aggregate_qry[prop]) {
-                                                aggr_column = aggregate_qry[prop][item];
-                                                datas[index]["Max(" + aggr_column + ")"] = getMax();
-                                            }
-                                        }
-                                        break;
-                                    case 'Min':
-                                        var getMin = function () {
-                                            value = look_up_obj[obj_Key];
-                                            // get old value
-                                            value = value ? value["Min(" + aggr_column + ")"] : Infinity;
-                                            datas[index][aggr_column] = datas[index][aggr_column] ?
-                                                datas[index][aggr_column] : Infinity;
-                                            // compare between old value and new value
-                                            return value < datas[index][aggr_column] ? value : datas[index][aggr_column];
-                                        };
-                                        if (typeof aggregate_qry[prop] === 'string') {
-                                            aggr_column = aggregate_qry[prop];
+                                    }
+                                    break;
+                                case 'Min':
+                                    var getMin = function () {
+                                        value = look_up_obj[obj_Key];
+                                        // get old value
+                                        value = value ? value["Min(" + aggr_column + ")"] : Infinity;
+                                        datas[index][aggr_column] = datas[index][aggr_column] ?
+                                            datas[index][aggr_column] : Infinity;
+                                        // compare between old value and new value
+                                        return value < datas[index][aggr_column] ? value : datas[index][aggr_column];
+                                    };
+                                    if (typeof aggregate_qry[prop] === 'string') {
+                                        aggr_column = aggregate_qry[prop];
+                                        datas[index]["Min(" + aggr_column + ")"] = getMin();
+                                    }
+                                    else if (Array.isArray(aggregate_qry[prop])) {
+                                        for (var item in aggregate_qry[prop]) {
+                                            aggr_column = aggregate_qry[prop][item];
                                             datas[index]["Min(" + aggr_column + ")"] = getMin();
                                         }
-                                        else if (Array.isArray(aggregate_qry[prop])) {
-                                            for (var item in aggregate_qry[prop]) {
-                                                aggr_column = aggregate_qry[prop][item];
-                                                datas[index]["Min(" + aggr_column + ")"] = getMin();
-                                            }
-                                        }
-                                        break;
-                                    case 'Sum':
-                                        var getSum = function () {
-                                            value = look_up_obj[obj_Key];
-                                            // get old value
-                                            value = value ? value["Sum(" + aggr_column + ")"] : 0;
-                                            // add with old value if data exist
-                                            value += datas[index][aggr_column] ? datas[index][aggr_column] : 0;
-                                            return value;
-                                        };
-                                        if (typeof aggregate_qry[prop] === 'string') {
-                                            aggr_column = aggregate_qry[prop];
+                                    }
+                                    break;
+                                case 'Sum':
+                                    var getSum = function () {
+                                        value = look_up_obj[obj_Key];
+                                        // get old value
+                                        value = value ? value["Sum(" + aggr_column + ")"] : 0;
+                                        // add with old value if data exist
+                                        value += datas[index][aggr_column] ? datas[index][aggr_column] : 0;
+                                        return value;
+                                    };
+                                    if (typeof aggregate_qry[prop] === 'string') {
+                                        aggr_column = aggregate_qry[prop];
+                                        datas[index]["Sum(" + aggr_column + ")"] = getSum();
+                                    }
+                                    else if (Array.isArray(aggregate_qry[prop])) {
+                                        for (var item in aggregate_qry[prop]) {
+                                            aggr_column = aggregate_qry[prop][item];
                                             datas[index]["Sum(" + aggr_column + ")"] = getSum();
                                         }
-                                        else if (Array.isArray(aggregate_qry[prop])) {
-                                            for (var item in aggregate_qry[prop]) {
-                                                aggr_column = aggregate_qry[prop][item];
-                                                datas[index]["Sum(" + aggr_column + ")"] = getSum();
-                                            }
-                                        }
-                                        break;
-                                    case 'Avg':
-                                        var getAvg = function () {
-                                            value = look_up_obj[obj_Key];
-                                            // get old sum value
-                                            var sum_of_column = value ? value["Sum(" + aggr_column + ")"] : 0;
-                                            // add with old value if data exist
-                                            sum_of_column += datas[index][aggr_column] ? datas[index][aggr_column] : 0;
-                                            datas[index]["Sum(" + aggr_column + ")"] = sum_of_column;
-                                            // get old count value
-                                            value = value ? value["Count(" + aggr_column + ")"] : 0;
-                                            // add with old value if data exist
-                                            value += datas[index][aggr_column] ? 1 : 0;
-                                            datas[index]["Count(" + aggr_column + ")"] = value;
-                                        };
-                                        if (typeof aggregate_qry[prop] === 'string') {
-                                            aggr_column = aggregate_qry[prop];
+                                    }
+                                    break;
+                                case 'Avg':
+                                    var getAvg = function () {
+                                        value = look_up_obj[obj_Key];
+                                        // get old sum value
+                                        var sum_of_column = value ? value["Sum(" + aggr_column + ")"] : 0;
+                                        // add with old value if data exist
+                                        sum_of_column += datas[index][aggr_column] ? datas[index][aggr_column] : 0;
+                                        datas[index]["Sum(" + aggr_column + ")"] = sum_of_column;
+                                        // get old count value
+                                        value = value ? value["Count(" + aggr_column + ")"] : 0;
+                                        // add with old value if data exist
+                                        value += datas[index][aggr_column] ? 1 : 0;
+                                        datas[index]["Count(" + aggr_column + ")"] = value;
+                                    };
+                                    if (typeof aggregate_qry[prop] === 'string') {
+                                        aggr_column = aggregate_qry[prop];
+                                        getAvg();
+                                    }
+                                    else if (Array.isArray(aggregate_qry[prop])) {
+                                        for (var item in aggregate_qry[prop]) {
+                                            aggr_column = aggregate_qry[prop][item];
                                             getAvg();
                                         }
-                                        else if (Array.isArray(aggregate_qry[prop])) {
-                                            for (var item in aggregate_qry[prop]) {
-                                                aggr_column = aggregate_qry[prop][item];
-                                                getAvg();
-                                            }
-                                        }
-                                        break;
-                                }
+                                    }
+                                    break;
                             }
-                        };
-                        if (typeof grp_qry === 'string') {
+                        }
+                    };
+                    if (typeof grp_qry === 'string') {
+                        for (index in datas) {
+                            obj_Key = datas[index][grp_qry];
+                            calculateAggregate();
+                            look_up_obj[obj_Key] = datas[index];
+                        }
+                    }
+                    else {
+                        for (index in datas) {
+                            obj_Key = "";
+                            for (var column in grp_qry) {
+                                obj_Key += datas[index][grp_qry[column]];
+                            }
+                            calculateAggregate();
+                            look_up_obj[obj_Key] = datas[index];
+                        }
+                    }
+                    // free datas memory
+                    datas = [];
+                    for (var i in look_up_obj) {
+                        datas.push(look_up_obj[i]);
+                    }
+                    // Checking for avg and if exist then fill the datas;
+                    if (aggregate_qry.Avg) {
+                        if (typeof aggregate_qry.Avg === 'string') {
                             for (index in datas) {
-                                obj_Key = datas[index][grp_qry];
-                                calculateAggregate();
-                                look_up_obj[obj_Key] = datas[index];
+                                var sum_for_avg = datas[index]["Sum(" + aggregate_qry.Avg + ")"], count_for_avg = datas[index]["Count(" + aggregate_qry.Avg + ")"];
+                                datas[index]["Avg(" + aggregate_qry.Avg + ")"] = sum_for_avg / count_for_avg;
+                                if (aggregate_qry.Count !== aggregate_qry.Avg) {
+                                    delete datas[index]["Count(" + aggregate_qry.Avg + ")"];
+                                }
+                                if (aggregate_qry.Sum !== aggregate_qry.Avg) {
+                                    delete datas[index]["Sum(" + aggregate_qry.Avg + ")"];
+                                }
                             }
                         }
                         else {
+                            var is_count_type_string = typeof aggregate_qry.Count, is_sum_type_string = typeof aggregate_qry.Count;
                             for (index in datas) {
-                                obj_Key = "";
-                                for (var column in grp_qry) {
-                                    obj_Key += datas[index][grp_qry[column]];
-                                }
-                                calculateAggregate();
-                                look_up_obj[obj_Key] = datas[index];
-                            }
-                        }
-                        // free datas memory
-                        datas = [];
-                        for (var i in look_up_obj) {
-                            datas.push(look_up_obj[i]);
-                        }
-                        // Checking for avg and if exist then fill the datas;
-                        if (aggregate_qry.Avg) {
-                            if (typeof aggregate_qry.Avg === 'string') {
-                                for (index in datas) {
-                                    var sum_for_avg = datas[index]["Sum(" + aggregate_qry.Avg + ")"], count_for_avg = datas[index]["Count(" + aggregate_qry.Avg + ")"];
-                                    datas[index]["Avg(" + aggregate_qry.Avg + ")"] = sum_for_avg / count_for_avg;
-                                    if (aggregate_qry.Count !== aggregate_qry.Avg) {
-                                        delete datas[index]["Count(" + aggregate_qry.Avg + ")"];
-                                    }
-                                    if (aggregate_qry.Sum !== aggregate_qry.Avg) {
-                                        delete datas[index]["Sum(" + aggregate_qry.Avg + ")"];
-                                    }
-                                }
-                            }
-                            else {
-                                var is_count_type_string = typeof aggregate_qry.Count, is_sum_type_string = typeof aggregate_qry.Count;
-                                for (index in datas) {
-                                    for (var column in aggregate_qry.Avg) {
-                                        var avg_column = aggregate_qry.Avg[column], sum = datas[index]["Sum(" + avg_column + ")"], count = datas[index]["Count(" + avg_column + ")"];
-                                        datas[index]["Avg(" + avg_column + ")"] = sum / count;
-                                        if (is_count_type_string) {
-                                            if (aggregate_qry.Count !== avg_column) {
-                                                delete datas[index]["Count(" + avg_column + ")"];
-                                            }
-                                            else if (aggregate_qry.Count.indexOf(avg_column) === -1) {
-                                                delete datas[index]["Count(" + avg_column + ")"];
-                                            }
+                                for (var column in aggregate_qry.Avg) {
+                                    var avg_column = aggregate_qry.Avg[column], sum = datas[index]["Sum(" + avg_column + ")"], count = datas[index]["Count(" + avg_column + ")"];
+                                    datas[index]["Avg(" + avg_column + ")"] = sum / count;
+                                    if (is_count_type_string) {
+                                        if (aggregate_qry.Count !== avg_column) {
+                                            delete datas[index]["Count(" + avg_column + ")"];
                                         }
-                                        if (is_sum_type_string) {
-                                            if (aggregate_qry.Sum !== avg_column) {
-                                                delete datas[index]["Sum(" + avg_column + ")"];
-                                            }
-                                            else if (aggregate_qry.Sum.indexOf(avg_column) === -1) {
-                                                delete datas[index]["Sum(" + avg_column + ")"];
-                                            }
+                                        else if (aggregate_qry.Count.indexOf(avg_column) === -1) {
+                                            delete datas[index]["Count(" + avg_column + ")"];
+                                        }
+                                    }
+                                    if (is_sum_type_string) {
+                                        if (aggregate_qry.Sum !== avg_column) {
+                                            delete datas[index]["Sum(" + avg_column + ")"];
+                                        }
+                                        else if (aggregate_qry.Sum.indexOf(avg_column) === -1) {
+                                            delete datas[index]["Sum(" + avg_column + ")"];
                                         }
                                     }
                                 }
                             }
                         }
-                        this._results = datas;
-                    };
-                    return _this;
-                }
+                    }
+                    this._results = datas;
+                };
                 return GroupByHelper;
             }(Select.Where));
             Select.GroupByHelper = GroupByHelper;
@@ -3156,160 +3155,159 @@ var JsStore;
             var Helper = /** @class */ (function (_super) {
                 __extends(Helper, _super);
                 function Helper() {
-                    var _this = _super.call(this) || this;
-                    _this.processOrderBy = function () {
-                        var Order = this._query.Order;
-                        if (Order && this._results.length > 0 && !this._sorted && Order.By) {
-                            Order.Type = Order.Type ? Order.Type.toLowerCase() : 'asc';
-                            var order_column = Order.By, sortNumberInAsc = function () {
-                                this._results.sort(function (a, b) {
-                                    return a[order_column] - b[order_column];
-                                });
-                            }.bind(this), sortNumberInDesc = function () {
-                                this._results.sort(function (a, b) {
-                                    return b[order_column] - a[order_column];
-                                });
-                            }.bind(this), sortAlphabetInAsc = function () {
-                                this._results.sort(function (a, b) {
-                                    return a[order_column].toLowerCase().localeCompare(b[order_column].toLowerCase());
-                                });
-                            }.bind(this), sortAlphabetInDesc = function () {
-                                this._results.sort(function (a, b) {
-                                    return b[order_column].toLowerCase().localeCompare(a[order_column].toLowerCase());
-                                });
-                            }.bind(this);
-                            if (typeof this._results[0][order_column] === 'string') {
-                                if (Order.Type === 'asc') {
-                                    sortAlphabetInAsc();
-                                }
-                                else {
-                                    sortAlphabetInDesc();
-                                }
+                    return _super.call(this) || this;
+                }
+                Helper.prototype.processOrderBy = function () {
+                    var Order = this._query.Order;
+                    if (Order && this._results.length > 0 && !this._sorted && Order.By) {
+                        Order.Type = Order.Type ? Order.Type.toLowerCase() : 'asc';
+                        var order_column = Order.By, sortNumberInAsc = function () {
+                            this._results.sort(function (a, b) {
+                                return a[order_column] - b[order_column];
+                            });
+                        }.bind(this), sortNumberInDesc = function () {
+                            this._results.sort(function (a, b) {
+                                return b[order_column] - a[order_column];
+                            });
+                        }.bind(this), sortAlphabetInAsc = function () {
+                            this._results.sort(function (a, b) {
+                                return a[order_column].toLowerCase().localeCompare(b[order_column].toLowerCase());
+                            });
+                        }.bind(this), sortAlphabetInDesc = function () {
+                            this._results.sort(function (a, b) {
+                                return b[order_column].toLowerCase().localeCompare(a[order_column].toLowerCase());
+                            });
+                        }.bind(this);
+                        if (typeof this._results[0][order_column] === 'string') {
+                            if (Order.Type === 'asc') {
+                                sortAlphabetInAsc();
                             }
-                            else if (typeof this._results[0][order_column] === 'number') {
-                                if (Order.Type === 'asc') {
-                                    sortNumberInAsc();
-                                }
-                                else {
-                                    sortNumberInDesc();
-                                }
+                            else {
+                                sortAlphabetInDesc();
                             }
                         }
-                    };
-                    _this.processAggregateQry = function () {
-                        var datas = this._results, results = {}, column_to_aggregate;
-                        // free results memory
-                        this._results = undefined;
-                        for (var prop in this._query.Aggregate) {
-                            switch (prop) {
-                                case 'Count':
-                                    var getCount = function () {
-                                        var result = 0;
-                                        for (var i in datas) {
-                                            result += datas[i][column_to_aggregate] ? 1 : 0;
-                                        }
-                                        return result;
-                                    };
-                                    if (typeof this._query.Aggregate[prop] === 'string') {
-                                        column_to_aggregate = this._query.Aggregate[prop];
+                        else if (typeof this._results[0][order_column] === 'number') {
+                            if (Order.Type === 'asc') {
+                                sortNumberInAsc();
+                            }
+                            else {
+                                sortNumberInDesc();
+                            }
+                        }
+                    }
+                };
+                Helper.prototype.processAggregateQry = function () {
+                    var datas = this._results, results = {}, column_to_aggregate;
+                    // free results memory
+                    this._results = undefined;
+                    for (var prop in this._query.Aggregate) {
+                        switch (prop) {
+                            case 'Count':
+                                var getCount = function () {
+                                    var result = 0;
+                                    for (var i in datas) {
+                                        result += datas[i][column_to_aggregate] ? 1 : 0;
+                                    }
+                                    return result;
+                                };
+                                if (typeof this._query.Aggregate[prop] === 'string') {
+                                    column_to_aggregate = this._query.Aggregate[prop];
+                                    results["Count(" + column_to_aggregate + ")"] = getCount();
+                                }
+                                else if (Array.isArray(this._query.Aggregate[prop])) {
+                                    for (var key in this._query.Aggregate[prop]) {
+                                        column_to_aggregate = this._query.Aggregate[prop][key];
                                         results["Count(" + column_to_aggregate + ")"] = getCount();
                                     }
-                                    else if (Array.isArray(this._query.Aggregate[prop])) {
-                                        for (var key in this._query.Aggregate[prop]) {
-                                            column_to_aggregate = this._query.Aggregate[prop][key];
-                                            results["Count(" + column_to_aggregate + ")"] = getCount();
-                                        }
+                                }
+                                break;
+                            case 'Max':
+                                var getMax = function () {
+                                    var result = 0;
+                                    for (var i in datas) {
+                                        result = result > datas[i][column_to_aggregate] ?
+                                            result : datas[i][column_to_aggregate];
                                     }
-                                    break;
-                                case 'Max':
-                                    var getMax = function () {
-                                        var result = 0;
-                                        for (var i in datas) {
-                                            result = result > datas[i][column_to_aggregate] ?
-                                                result : datas[i][column_to_aggregate];
-                                        }
-                                        return result;
-                                    };
-                                    if (typeof this._query.Aggregate[prop] === 'string') {
-                                        column_to_aggregate = this._query.Aggregate[prop];
+                                    return result;
+                                };
+                                if (typeof this._query.Aggregate[prop] === 'string') {
+                                    column_to_aggregate = this._query.Aggregate[prop];
+                                    results["Max(" + column_to_aggregate + ")"] = getMax();
+                                }
+                                else if (Array.isArray(this._query.Aggregate[prop])) {
+                                    for (var key in this._query.Aggregate[prop]) {
+                                        column_to_aggregate = this._query.Aggregate[prop][key];
                                         results["Max(" + column_to_aggregate + ")"] = getMax();
                                     }
-                                    else if (Array.isArray(this._query.Aggregate[prop])) {
-                                        for (var key in this._query.Aggregate[prop]) {
-                                            column_to_aggregate = this._query.Aggregate[prop][key];
-                                            results["Max(" + column_to_aggregate + ")"] = getMax();
-                                        }
+                                }
+                                break;
+                            case 'Min':
+                                var getMin = function () {
+                                    var result = Infinity, value = Infinity;
+                                    for (var i in datas) {
+                                        value = datas[i][column_to_aggregate] ?
+                                            datas[i][column_to_aggregate] : Infinity;
+                                        result = result < value ? result : value;
                                     }
-                                    break;
-                                case 'Min':
-                                    var getMin = function () {
-                                        var result = Infinity, value = Infinity;
-                                        for (var i in datas) {
-                                            value = datas[i][column_to_aggregate] ?
-                                                datas[i][column_to_aggregate] : Infinity;
-                                            result = result < value ? result : value;
-                                        }
-                                        return result;
-                                    };
-                                    if (typeof this._query.Aggregate[prop] === 'string') {
-                                        column_to_aggregate = this._query.Aggregate[prop];
+                                    return result;
+                                };
+                                if (typeof this._query.Aggregate[prop] === 'string') {
+                                    column_to_aggregate = this._query.Aggregate[prop];
+                                    results["Min(" + column_to_aggregate + ")"] = getMin();
+                                }
+                                else if (Array.isArray(this._query.Aggregate[prop])) {
+                                    for (var key in this._query.Aggregate[prop]) {
+                                        column_to_aggregate = this._query.Aggregate[prop][key];
                                         results["Min(" + column_to_aggregate + ")"] = getMin();
                                     }
-                                    else if (Array.isArray(this._query.Aggregate[prop])) {
-                                        for (var key in this._query.Aggregate[prop]) {
-                                            column_to_aggregate = this._query.Aggregate[prop][key];
-                                            results["Min(" + column_to_aggregate + ")"] = getMin();
-                                        }
+                                }
+                                break;
+                            case 'Sum':
+                                var getSum = function () {
+                                    var result = 0;
+                                    for (var i in datas) {
+                                        result += datas[i][column_to_aggregate];
                                     }
-                                    break;
-                                case 'Sum':
-                                    var getSum = function () {
-                                        var result = 0;
-                                        for (var i in datas) {
-                                            result += datas[i][column_to_aggregate];
-                                        }
-                                        return result;
-                                    };
-                                    if (typeof this._query.Aggregate[prop] === 'string') {
-                                        column_to_aggregate = this._query.Aggregate[prop];
+                                    return result;
+                                };
+                                if (typeof this._query.Aggregate[prop] === 'string') {
+                                    column_to_aggregate = this._query.Aggregate[prop];
+                                    results["Sum(" + column_to_aggregate + ")"] = getSum();
+                                }
+                                else if (Array.isArray(this._query.Aggregate[prop])) {
+                                    for (var key in this._query.Aggregate[prop]) {
+                                        column_to_aggregate = this._query.Aggregate[prop][key];
                                         results["Sum(" + column_to_aggregate + ")"] = getSum();
                                     }
-                                    else if (Array.isArray(this._query.Aggregate[prop])) {
-                                        for (var key in this._query.Aggregate[prop]) {
-                                            column_to_aggregate = this._query.Aggregate[prop][key];
-                                            results["Sum(" + column_to_aggregate + ")"] = getSum();
-                                        }
+                                }
+                                break;
+                            case 'Avg':
+                                var getAvg = function () {
+                                    var result = 0;
+                                    for (var i in datas) {
+                                        result += datas[i][column_to_aggregate];
                                     }
-                                    break;
-                                case 'Avg':
-                                    var getAvg = function () {
-                                        var result = 0;
-                                        for (var i in datas) {
-                                            result += datas[i][column_to_aggregate];
-                                        }
-                                        return result / datas.length;
-                                    };
-                                    if (typeof this._query.Aggregate[prop] === 'string') {
-                                        column_to_aggregate = this._query.Aggregate[prop];
+                                    return result / datas.length;
+                                };
+                                if (typeof this._query.Aggregate[prop] === 'string') {
+                                    column_to_aggregate = this._query.Aggregate[prop];
+                                    results["Avg(" + column_to_aggregate + ")"] = getAvg();
+                                }
+                                else if (Array.isArray(this._query.Aggregate[prop])) {
+                                    for (var key in this._query.Aggregate[prop]) {
+                                        column_to_aggregate = this._query.Aggregate[prop][key];
                                         results["Avg(" + column_to_aggregate + ")"] = getAvg();
                                     }
-                                    else if (Array.isArray(this._query.Aggregate[prop])) {
-                                        for (var key in this._query.Aggregate[prop]) {
-                                            column_to_aggregate = this._query.Aggregate[prop][key];
-                                            results["Avg(" + column_to_aggregate + ")"] = getAvg();
-                                        }
-                                    }
-                                    break;
-                            }
+                                }
+                                break;
                         }
-                        // add results to the first index of result
-                        for (var prop in results) {
-                            datas[0][prop] = results[prop];
-                        }
-                        this._results = datas;
-                    };
-                    return _this;
-                }
+                    }
+                    // add results to the first index of result
+                    for (var prop in results) {
+                        datas[0][prop] = results[prop];
+                    }
+                    this._results = datas;
+                };
                 return Helper;
             }(Select.GroupByHelper));
             Select.Helper = Helper;
@@ -3326,155 +3324,6 @@ var JsStore;
                 __extends(Instance, _super);
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
-                    _this.processWhereArrayQry = function () {
-                        this._isArrayQry = true;
-                        var where_query = this._query.Where, output = [], operation, pKey = this.getPrimaryKey(this._query.From), isItemExist = function (keyValue) {
-                            var is_exist = false;
-                            output.every(function (item) {
-                                if (item[pKey] === keyValue) {
-                                    is_exist = true;
-                                    return false;
-                                }
-                                return true;
-                            });
-                            return is_exist;
-                        }, onSuccess = function () {
-                            if (operation === 'and') {
-                                if (output.length > 0) {
-                                    var and_results = [];
-                                    this._results.forEach(function (item) {
-                                        if (isItemExist(item[pKey])) {
-                                            and_results.push(item);
-                                        }
-                                    });
-                                    output = and_results;
-                                    and_results = null;
-                                }
-                                else {
-                                    output = this._results;
-                                }
-                            }
-                            else {
-                                if (output.length > 0) {
-                                    this._results = output.concat(this._results);
-                                    this.removeDuplicates();
-                                    output = this._results;
-                                }
-                                else {
-                                    output = this._results;
-                                }
-                            }
-                            if (where_query.length > 0) {
-                                this._results = [];
-                                processFirstQry();
-                            }
-                            else {
-                                this._results = output;
-                            }
-                        }.bind(this), processFirstQry = function () {
-                            this._query.Where = where_query.shift();
-                            if (this._query.Where['Or']) {
-                                if (Object.keys(this._query.Where).length === 1) {
-                                    operation = 'or';
-                                    this._query.Where = this._query.Where['Or'];
-                                    this._onWhereArrayQrySuccess = onSuccess;
-                                }
-                                else {
-                                    operation = 'and';
-                                    this._onWhereArrayQrySuccess = onSuccess;
-                                }
-                            }
-                            else {
-                                operation = 'and';
-                                this._onWhereArrayQrySuccess = onSuccess;
-                            }
-                            this.processWhere(true);
-                        }.bind(this);
-                        processFirstQry();
-                    };
-                    _this.initTransaction = function () {
-                        Business.createTransaction([this._query.From], this.onTransactionCompleted.bind(this), 'readonly');
-                        this._objectStore = Business.db_transaction.objectStore(this._query.From);
-                    };
-                    _this.processWhere = function (isTransactionCreated) {
-                        if (this._query.Where.Or) {
-                            this.processOrLogic();
-                        }
-                        this.goToWhereLogic();
-                    };
-                    _this.onQueryFinished = function () {
-                        if (this._isOr === true) {
-                            this.orQuerySuccess();
-                        }
-                        else if (this._isArrayQry === true) {
-                            this._onWhereArrayQrySuccess();
-                        }
-                        else if (this._isTransaction === true) {
-                            this.onTransactionCompleted();
-                        }
-                    };
-                    _this.onTransactionCompleted = function () {
-                        this.processOrderBy();
-                        if (this._query.Distinct) {
-                            var group_by = [];
-                            var result = this._results[0];
-                            for (var key in result) {
-                                group_by.push(key);
-                            }
-                            var primary_key = this.getPrimaryKey(this._query.From), index = group_by.indexOf(primary_key);
-                            group_by.splice(index, 1);
-                            this._query.GroupBy = group_by.length > 0 ? group_by : null;
-                        }
-                        if (this._query.GroupBy) {
-                            if (this._query.Aggregate) {
-                                this.executeAggregateGroupBy();
-                            }
-                            else {
-                                this.processGroupBy();
-                            }
-                        }
-                        else if (this._query.Aggregate) {
-                            this.processAggregateQry();
-                        }
-                        this._onSuccess(this._results);
-                    };
-                    _this.orQueryFinish = function () {
-                        this._isOr = false;
-                        this._results = this._orInfo.Results;
-                        // free or info memory
-                        this._orInfo = undefined;
-                        this.removeDuplicates();
-                        this.onQueryFinished();
-                    };
-                    _this.orQuerySuccess = function () {
-                        this._orInfo.Results = this._orInfo.Results.concat(this._results);
-                        if (!this._query.Limit || (this._query.Limit > this._orInfo.Results.length)) {
-                            this._results = [];
-                            var key = JsStore.getObjectFirstKey(this._orInfo.OrQuery);
-                            if (key != null) {
-                                var where = {};
-                                where[key] = this._orInfo.OrQuery[key];
-                                delete this._orInfo.OrQuery[key];
-                                this._query.Where = where;
-                                this.goToWhereLogic();
-                            }
-                            else {
-                                this.orQueryFinish();
-                            }
-                        }
-                        else {
-                            this.orQueryFinish();
-                        }
-                    };
-                    _this.processOrLogic = function () {
-                        this._isOr = true;
-                        this._orInfo = {
-                            OrQuery: this._query.Where.Or,
-                            Results: []
-                        };
-                        // free or memory
-                        delete this._query.Where.Or;
-                    };
                     _this._onError = onError;
                     _this._onSuccess = onSuccess;
                     _this._query = query;
@@ -3492,7 +3341,7 @@ var JsStore;
                                     this.processWhereArrayQry();
                                 }
                                 else {
-                                    this.processWhere(false);
+                                    this.processWhere();
                                 }
                             }
                             else {
@@ -3508,6 +3357,155 @@ var JsStore;
                         this._errorOccured = true;
                         this.onErrorOccured(new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: this._query.From }).get(), true);
                     }
+                };
+                Instance.prototype.processWhereArrayQry = function () {
+                    this._isArrayQry = true;
+                    var where_query = this._query.Where, output = [], operation, pKey = this.getPrimaryKey(this._query.From), isItemExist = function (keyValue) {
+                        var is_exist = false;
+                        output.every(function (item) {
+                            if (item[pKey] === keyValue) {
+                                is_exist = true;
+                                return false;
+                            }
+                            return true;
+                        });
+                        return is_exist;
+                    }, onSuccess = function () {
+                        if (operation === 'and') {
+                            if (output.length > 0) {
+                                var and_results = [];
+                                this._results.forEach(function (item) {
+                                    if (isItemExist(item[pKey])) {
+                                        and_results.push(item);
+                                    }
+                                });
+                                output = and_results;
+                                and_results = null;
+                            }
+                            else {
+                                output = this._results;
+                            }
+                        }
+                        else {
+                            if (output.length > 0) {
+                                this._results = output.concat(this._results);
+                                this.removeDuplicates();
+                                output = this._results;
+                            }
+                            else {
+                                output = this._results;
+                            }
+                        }
+                        if (where_query.length > 0) {
+                            this._results = [];
+                            processFirstQry();
+                        }
+                        else {
+                            this._results = output;
+                        }
+                    }.bind(this), processFirstQry = function () {
+                        this._query.Where = where_query.shift();
+                        if (this._query.Where['Or']) {
+                            if (Object.keys(this._query.Where).length === 1) {
+                                operation = 'or';
+                                this._query.Where = this._query.Where['Or'];
+                                this._onWhereArrayQrySuccess = onSuccess;
+                            }
+                            else {
+                                operation = 'and';
+                                this._onWhereArrayQrySuccess = onSuccess;
+                            }
+                        }
+                        else {
+                            operation = 'and';
+                            this._onWhereArrayQrySuccess = onSuccess;
+                        }
+                        this.processWhere();
+                    }.bind(this);
+                    processFirstQry();
+                };
+                Instance.prototype.onQueryFinished = function () {
+                    if (this._isOr === true) {
+                        this.orQuerySuccess();
+                    }
+                    else if (this._isArrayQry === true) {
+                        this._onWhereArrayQrySuccess();
+                    }
+                    else if (this._isTransaction === true) {
+                        this.onTransactionCompleted();
+                    }
+                };
+                Instance.prototype.initTransaction = function () {
+                    Business.createTransaction([this._query.From], this.onTransactionCompleted.bind(this), 'readonly');
+                    this._objectStore = Business.db_transaction.objectStore(this._query.From);
+                };
+                Instance.prototype.processWhere = function () {
+                    if (this._query.Where.Or) {
+                        this.processOrLogic();
+                    }
+                    this.goToWhereLogic();
+                };
+                Instance.prototype.onTransactionCompleted = function () {
+                    this.processOrderBy();
+                    if (this._query.Distinct) {
+                        var group_by = [];
+                        var result = this._results[0];
+                        for (var key in result) {
+                            group_by.push(key);
+                        }
+                        var primary_key = this.getPrimaryKey(this._query.From), index = group_by.indexOf(primary_key);
+                        group_by.splice(index, 1);
+                        this._query.GroupBy = group_by.length > 0 ? group_by : null;
+                    }
+                    if (this._query.GroupBy) {
+                        if (this._query.Aggregate) {
+                            this.executeAggregateGroupBy();
+                        }
+                        else {
+                            this.processGroupBy();
+                        }
+                    }
+                    else if (this._query.Aggregate) {
+                        this.processAggregateQry();
+                    }
+                    this._onSuccess(this._results);
+                };
+                Instance.prototype.orQueryFinish = function () {
+                    this._isOr = false;
+                    this._results = this._orInfo.Results;
+                    // free or info memory
+                    this._orInfo = undefined;
+                    this.removeDuplicates();
+                    this.onQueryFinished();
+                };
+                Instance.prototype.orQuerySuccess = function () {
+                    this._orInfo.Results = this._orInfo.Results.concat(this._results);
+                    if (!this._query.Limit || (this._query.Limit > this._orInfo.Results.length)) {
+                        this._results = [];
+                        var key = JsStore.getObjectFirstKey(this._orInfo.OrQuery);
+                        if (key != null) {
+                            var where = {};
+                            where[key] = this._orInfo.OrQuery[key];
+                            delete this._orInfo.OrQuery[key];
+                            this._query.Where = where;
+                            this.goToWhereLogic();
+                        }
+                        else {
+                            this.orQueryFinish();
+                        }
+                    }
+                    else {
+                        this.orQueryFinish();
+                    }
+                };
+                Instance.prototype.processOrLogic = function () {
+                    this._isOr = true;
+                    this._orInfo = {
+                        OrQuery: this._query.Where.Or,
+                        Results: []
+                    };
+                    // free or memory
+                    delete this._query.Where.Or;
                 };
                 return Instance;
             }(Select.Helper));
@@ -3550,6 +3548,7 @@ var JsStore;
                             var count_request = this._objectStore.count();
                             count_request.onsuccess = function () {
                                 this._resultCount = count_request.result;
+                                this.onQueryFinished();
                             }.bind(this);
                             count_request.onerror = function (e) {
                                 this._errorOccured = true;
@@ -3563,6 +3562,9 @@ var JsStore;
                                 if (cursor) {
                                     ++this._resultCount;
                                     cursor.continue();
+                                }
+                                else {
+                                    this.onQueryFinished();
                                 }
                             }.bind(this);
                             cursor_request.onerror = function (e) {
@@ -3603,6 +3605,9 @@ var JsStore;
                                             }
                                             cursor.continue();
                                         }
+                                        else if (i + 1 === length) {
+                                            this.onQueryFinished();
+                                        }
                                     }.bind(this);
                                 }
                             }
@@ -3614,6 +3619,9 @@ var JsStore;
                                         cursor_request = column_store.count(IDBKeyRange.only(values[i]));
                                         cursor_request.onsuccess = function (e) {
                                             this._resultCount += e.target.result;
+                                            if (i + 1 === length) {
+                                                this.onQueryFinished();
+                                            }
                                         }.bind(this);
                                     }
                                 }
@@ -3627,6 +3635,9 @@ var JsStore;
                                             if (cursor) {
                                                 ++this._resultCount;
                                                 cursor.continue();
+                                            }
+                                            else if (i + 1 === length) {
+                                                this.onQueryFinished();
                                             }
                                         }.bind(this);
                                     }
@@ -3676,6 +3687,9 @@ var JsStore;
                                     }
                                     cursor.continue();
                                 }
+                                else {
+                                    this.onQueryFinished();
+                                }
                             }.bind(this);
                         }
                         else {
@@ -3686,6 +3700,9 @@ var JsStore;
                                         ++this._resultCount;
                                     }
                                     cursor.continue();
+                                }
+                                else {
+                                    this.onQueryFinished();
                                 }
                             }.bind(this);
                         }
@@ -3721,6 +3738,9 @@ var JsStore;
                                     }
                                     cursor.continue();
                                 }
+                                else {
+                                    this.onQueryFinished();
+                                }
                             }.bind(this);
                         }
                         else {
@@ -3728,6 +3748,7 @@ var JsStore;
                                 cursor_request = this._objectStore.index(column).count(this.getKeyRange(value, op));
                                 cursor_request.onsuccess = function () {
                                     this._resultCount = cursor_request.result;
+                                    this.onQueryFinished();
                                 }.bind(this);
                             }
                             else {
@@ -3737,6 +3758,9 @@ var JsStore;
                                     if (cursor) {
                                         ++this._resultCount;
                                         cursor.continue();
+                                    }
+                                    else {
+                                        this.onQueryFinished();
                                     }
                                 }.bind(this);
                             }
@@ -3764,6 +3788,11 @@ var JsStore;
                 __extends(Instance, _super);
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
+                    _this.onQueryFinished = function () {
+                        if (this._isTransaction === true) {
+                            this.onTransactionCompleted();
+                        }
+                    };
                     _this._onError = onError;
                     _this._onSuccess = onSuccess;
                     _this._query = query;
@@ -3852,6 +3881,11 @@ var JsStore;
             function BaseUpdate() {
                 var _this = _super !== null && _super.apply(this, arguments) || this;
                 _this._checkFlag = false;
+                _this.onQueryFinished = function () {
+                    if (this._isTransaction === true) {
+                        this.onTransactionCompleted();
+                    }
+                };
                 return _this;
             }
             return BaseUpdate;
@@ -3877,6 +3911,9 @@ var JsStore;
                                 cursor.update(Update.updateValue(this._query.Set, cursor.value));
                                 ++this._rowAffected;
                                 cursor.continue();
+                            }
+                            else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                         cursor_request.onerror = function (e) {
@@ -3917,6 +3954,9 @@ var JsStore;
                                             }
                                             cursor.continue();
                                         }
+                                        else if (i + 1 === length) {
+                                            this.onQueryFinished();
+                                        }
                                     }.bind(this);
                                 }
                             }
@@ -3931,6 +3971,9 @@ var JsStore;
                                             cursor.update(Update.updateValue(this._query.Set, cursor.value));
                                             ++this._rowAffected;
                                             cursor.continue();
+                                        }
+                                        else if (i + 1 === length) {
+                                            this.onQueryFinished();
                                         }
                                     }.bind(this);
                                 }
@@ -3980,6 +4023,9 @@ var JsStore;
                                     }
                                     cursor.continue();
                                 }
+                                else {
+                                    this.onQueryFinished();
+                                }
                             }.bind(this);
                         }
                         else {
@@ -3991,6 +4037,9 @@ var JsStore;
                                         ++this._rowAffected;
                                     }
                                     cursor.continue();
+                                }
+                                else {
+                                    this.onQueryFinished();
                                 }
                             }.bind(this);
                         }
@@ -4027,6 +4076,9 @@ var JsStore;
                                     }
                                     cursor.continue();
                                 }
+                                else {
+                                    this.onQueryFinished();
+                                }
                             }.bind(this);
                         }
                         else {
@@ -4036,6 +4088,9 @@ var JsStore;
                                     cursor.update(Update.updateValue(this._query.Set, cursor.value));
                                     ++this._rowAffected;
                                     cursor.continue();
+                                }
+                                else {
+                                    this.onQueryFinished();
                                 }
                             }.bind(this);
                         }
@@ -4493,6 +4548,9 @@ var JsStore;
                     if (this._isOr === true) {
                         this.orQuerySuccess();
                     }
+                    else if (this._isTransaction === true) {
+                        this.onTransactionCompleted();
+                    }
                 };
                 Instance.prototype.orQuerySuccess = function () {
                     var key = JsStore.getObjectFirstKey(this._orInfo.OrQuery);
@@ -4532,6 +4590,11 @@ var JsStore;
                 function Instance(query, onSuccess, onError) {
                     var _this = _super.call(this) || this;
                     _this._valuesAffected = [];
+                    _this.onQueryFinished = function () {
+                        if (this._isTransaction === true) {
+                            this.onTransactionCompleted();
+                        }
+                    };
                     _this._onError = onError;
                     _this._query = query;
                     _this._onSuccess = onSuccess;
@@ -4583,6 +4646,9 @@ var JsStore;
                                     insertDataIntoTable.call(this, values[value_index++]);
                                 }.bind(this);
                             }
+                            else {
+                                this.onQueryFinished();
+                            }
                         };
                     }
                     else {
@@ -4594,6 +4660,9 @@ var JsStore;
                                     ++this._rowAffected;
                                     insertDataIntoTable.call(this, values[value_index++]);
                                 }.bind(this);
+                            }
+                            else {
+                                this.onQueryFinished();
                             }
                         };
                     }

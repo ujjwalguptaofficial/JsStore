@@ -19,6 +19,9 @@ namespace JsStore {
                                         }
                                         cursor.continue();
                                     }
+                                    else if (i + 1 === length) {
+                                        this.onQueryFinished();
+                                    }
                                 }.bind(this);
 
                             }
@@ -34,6 +37,8 @@ namespace JsStore {
                                         cursor.update(updateValue(this._query.Set, cursor.value));
                                         ++this._rowAffected;
                                         cursor.continue();
+                                    } else if (i + 1 === length) {
+                                        this.onQueryFinished();
                                     }
                                 }.bind(this);
                             }

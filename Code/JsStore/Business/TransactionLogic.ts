@@ -25,14 +25,20 @@ namespace JsStore {
                 var update = function (qry: IUpdate, onSuccess) {
                     onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
                     var update_obj = new Update.Instance(qry, onSuccess, this._onError.bind(this));
+                    update_obj._isTransaction = true;
+                    update_obj.execute();
                 }.bind(this);
                 var remove = function (qry: IDelete, onSuccess) {
                     onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
                     var delete_obj = new Delete.Instance(qry, onSuccess, this._onError.bind(this));
+                    delete_obj._isTransaction = true;
+                    delete_obj.execute();
                 }.bind(this);
                 var count = function (qry: ICount, onSuccess) {
                     onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
                     var count_obj = new Count.Instance(qry, onSuccess, this._onError.bind(this));
+                    count_obj._isTransaction = true;
+                    count_obj.execute();
                 }.bind(this);
                 eval("var txLogic =" + txLogic);
                 this.initTransaction(tableNames);

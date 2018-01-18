@@ -6,7 +6,7 @@ namespace JsStore {
                     super();
                 }
 
-                protected processGroupBy = function () {
+                protected processGroupBy() {
                     var grp_qry = this._query.GroupBy,
                         datas = this._results,
                         look_up_obj = {};
@@ -33,9 +33,9 @@ namespace JsStore {
                         datas.push(look_up_obj[i]);
                     }
                     this._results = datas;
-                };
+                }
 
-                private executeAggregateGroupBy = function () {
+                protected executeAggregateGroupBy() {
                     var grp_qry = this._query.GroupBy,
                         datas = this._results,
                         look_up_obj = {},
@@ -233,7 +233,7 @@ namespace JsStore {
                         }
                     }
                     this._results = datas;
-                };
+                }
             }
         }
     }

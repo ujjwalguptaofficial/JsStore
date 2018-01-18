@@ -7,7 +7,7 @@ namespace JsStore {
                     super();
                 }
 
-                processOrderBy = function () {
+                processOrderBy() {
                     var Order = this._query.Order;
                     if (Order && this._results.length > 0 && !this._sorted && Order.By) {
                         Order.Type = Order.Type ? Order.Type.toLowerCase() : 'asc';
@@ -49,9 +49,9 @@ namespace JsStore {
                             }
                         }
                     }
-                };
+                }
 
-                private processAggregateQry = function () {
+                protected processAggregateQry() {
                     var datas = this._results,
                         results = {},
                         column_to_aggregate;
@@ -165,7 +165,7 @@ namespace JsStore {
                         datas[0][prop] = results[prop];
                     }
                     this._results = datas;
-                };
+                }
             }
         }
     }

@@ -7,6 +7,7 @@ namespace JsStore {
                         var count_request = this._objectStore.count();
                         count_request.onsuccess = function () {
                             this._resultCount = count_request.result;
+                            this.onQueryFinished();
                         }.bind(this);
                         count_request.onerror = function (e) {
                             this._errorOccured = true;
@@ -21,6 +22,9 @@ namespace JsStore {
                             if (cursor) {
                                 ++this._resultCount;
                                 (cursor as any).continue();
+                            }
+                            else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                         cursor_request.onerror = function (e) {

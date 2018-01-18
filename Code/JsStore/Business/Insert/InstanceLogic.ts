@@ -49,6 +49,12 @@ namespace JsStore {
                     this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
                 }
 
+                private onQueryFinished = function () {
+                    if (this._isTransaction === true) {
+                        this.onTransactionCompleted();
+                    }
+                };
+
                 private insertData(values) {
                     var value_index = 0,
                         insertDataIntoTable: (value: object) => void;
@@ -62,6 +68,9 @@ namespace JsStore {
                                     insertDataIntoTable.call(this, values[value_index++]);
                                 }.bind(this);
                             }
+                            else {
+                                this.onQueryFinished();
+                            }
                         };
                     }
                     else {
@@ -73,6 +82,9 @@ namespace JsStore {
                                     ++this._rowAffected;
                                     insertDataIntoTable.call(this, values[value_index++]);
                                 }.bind(this);
+                            }
+                            else {
+                                this.onQueryFinished();
                             }
                         };
                     }

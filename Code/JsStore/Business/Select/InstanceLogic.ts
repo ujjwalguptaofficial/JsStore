@@ -2,7 +2,6 @@ namespace JsStore {
     export namespace Business {
         export namespace Select {
             export class Instance extends Helper {
-                _isOr: boolean;
 
                 constructor(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
                     super();
@@ -23,7 +22,7 @@ namespace JsStore {
                                     this.processWhereArrayQry();
                                 }
                                 else {
-                                    this.processWhere(false);
+                                    this.processWhere();
                                 }
                             }
                             else {
@@ -44,7 +43,7 @@ namespace JsStore {
                     }
                 }
 
-                private processWhereArrayQry = function () {
+                private processWhereArrayQry() {
                     this._isArrayQry = true;
                     var where_query = this._query.Where,
                         output = [], operation,
@@ -111,24 +110,12 @@ namespace JsStore {
                                 operation = 'and';
                                 this._onWhereArrayQrySuccess = onSuccess;
                             }
-                            this.processWhere(true);
+                            this.processWhere();
                         }.bind(this);
                     processFirstQry();
-                };
+                }
 
-                private initTransaction = function () {
-                    createTransaction([this._query.From], this.onTransactionCompleted.bind(this), 'readonly');
-                    this._objectStore = db_transaction.objectStore(this._query.From);
-                };
-
-                private processWhere = function (isTransactionCreated) {
-                    if (this._query.Where.Or) {
-                        this.processOrLogic();
-                    }
-                    this.goToWhereLogic();
-                };
-
-                private onQueryFinished = function () {
+                private onQueryFinished() {
                     if (this._isOr === true) {
                         this.orQuerySuccess();
                     }
@@ -138,9 +125,21 @@ namespace JsStore {
                     else if (this._isTransaction === true) {
                         this.onTransactionCompleted();
                     }
-                };
+                }
 
-                private onTransactionCompleted = function () {
+                private initTransaction() {
+                    createTransaction([this._query.From], this.onTransactionCompleted.bind(this), 'readonly');
+                    this._objectStore = db_transaction.objectStore(this._query.From);
+                }
+
+                private processWhere() {
+                    if (this._query.Where.Or) {
+                        this.processOrLogic();
+                    }
+                    this.goToWhereLogic();
+                }
+
+                private onTransactionCompleted() {
                     this.processOrderBy();
                     if (this._query.Distinct) {
                         var group_by = [];
@@ -165,18 +164,18 @@ namespace JsStore {
                         this.processAggregateQry();
                     }
                     this._onSuccess(this._results);
-                };
+                }
 
-                private orQueryFinish = function () {
+                private orQueryFinish() {
                     this._isOr = false;
                     this._results = (this as any)._orInfo.Results;
                     // free or info memory
                     (this as any)._orInfo = undefined;
                     this.removeDuplicates();
                     this.onQueryFinished();
-                };
+                }
 
-                private orQuerySuccess = function () {
+                private orQuerySuccess() {
                     (this as any)._orInfo.Results = (this as any)._orInfo.Results.concat(this._results);
                     if (!this._query.Limit || (this._query.Limit > (this as any)._orInfo.Results.length)) {
                         this._results = [];
@@ -195,9 +194,9 @@ namespace JsStore {
                     else {
                         this.orQueryFinish();
                     }
-                };
+                }
 
-                private processOrLogic = function () {
+                private processOrLogic() {
                     this._isOr = true;
                     (this as any)._orInfo = {
                         OrQuery: this._query.Where.Or,
@@ -205,7 +204,7 @@ namespace JsStore {
                     };
                     // free or memory
                     delete this._query.Where.Or;
-                };
+                }
             }
         }
     }

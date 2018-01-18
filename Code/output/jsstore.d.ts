@@ -623,7 +623,10 @@ declare namespace JsStore {
                 _skipRecord: any;
                 _limitRecord: any;
                 _checkFlag: boolean;
-                protected removeDuplicates: () => void;
+                _isOr: boolean;
+                _isArrayQry: boolean;
+                _onWhereArrayQrySuccess: () => void;
+                protected removeDuplicates(): void;
             }
         }
     }
@@ -705,8 +708,8 @@ declare namespace JsStore {
         namespace Select {
             class GroupByHelper extends Where {
                 constructor();
-                protected processGroupBy: () => void;
-                private executeAggregateGroupBy;
+                protected processGroupBy(): void;
+                protected executeAggregateGroupBy(): void;
             }
         }
     }
@@ -716,8 +719,8 @@ declare namespace JsStore {
         namespace Select {
             class Helper extends GroupByHelper {
                 constructor();
-                processOrderBy: () => void;
-                private processAggregateQry;
+                processOrderBy(): void;
+                protected processAggregateQry(): void;
             }
         }
     }
@@ -726,17 +729,16 @@ declare namespace JsStore {
     namespace Business {
         namespace Select {
             class Instance extends Helper {
-                _isOr: boolean;
                 constructor(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
                 execute(): void;
-                private processWhereArrayQry;
-                private initTransaction;
-                private processWhere;
-                private onQueryFinished;
-                private onTransactionCompleted;
-                private orQueryFinish;
-                private orQuerySuccess;
-                private processOrLogic;
+                private processWhereArrayQry();
+                private onQueryFinished();
+                private initTransaction();
+                private processWhere();
+                private onTransactionCompleted();
+                private orQueryFinish();
+                private orQuerySuccess();
+                private processOrLogic();
             }
         }
     }
@@ -799,6 +801,7 @@ declare namespace JsStore {
                 constructor(query: ICount, onSuccess: (noOfRecord: number) => void, onError: (error: IError) => void);
                 execute(): void;
                 private initTransaction();
+                private onQueryFinished;
                 private onTransactionCompleted();
             }
         }
@@ -811,6 +814,7 @@ declare namespace JsStore {
         }
         class BaseUpdate extends Base {
             _checkFlag: boolean;
+            private onQueryFinished;
         }
     }
 }
@@ -954,6 +958,7 @@ declare namespace JsStore {
                 constructor(query: IInsert, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void);
                 execute(): void;
                 onTransactionCompleted(): void;
+                private onQueryFinished;
                 private insertData(values);
             }
         }

@@ -72,6 +72,9 @@ namespace JsStore {
                     if (this._isOr === true) {
                         this.orQuerySuccess();
                     }
+                    else if (this._isTransaction === true) {
+                        this.onTransactionCompleted();
+                    }
                 }
 
                 private orQuerySuccess() {

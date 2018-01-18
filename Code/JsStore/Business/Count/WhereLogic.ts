@@ -16,6 +16,9 @@ namespace JsStore {
                                 }
                                 cursor.continue();
                             }
+                            else {
+                                this.onQueryFinished();
+                            }
                         }.bind(this);
                     }
                     else {
@@ -23,6 +26,7 @@ namespace JsStore {
                             cursor_request = this._objectStore.index(column).count(this.getKeyRange(value, op));
                             cursor_request.onsuccess = function () {
                                 this._resultCount = cursor_request.result;
+                                this.onQueryFinished();
                             }.bind(this);
                         }
                         else {
@@ -32,6 +36,9 @@ namespace JsStore {
                                 if (cursor) {
                                     ++this._resultCount;
                                     cursor.continue();
+                                }
+                                else {
+                                    this.onQueryFinished();
                                 }
                             }.bind(this);
                         }

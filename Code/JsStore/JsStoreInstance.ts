@@ -28,14 +28,14 @@ namespace JsStore {
          * @returns 
          * @memberof Instance
          */
-        openDb = function (dbName: string, onSuccess: () => void, onError: (err: IError) => void) {
+        openDb(dbName: string, onSuccess: () => void, onError: (err: IError) => void) {
             return this.pushApi({
                 Name: 'open_db',
                 Query: dbName,
                 OnSuccess: onSuccess,
                 OnError: onError,
             } as IWebWorkerRequest, false);
-        };
+        }
 
         /**
          * creates DataBase
@@ -46,15 +46,14 @@ namespace JsStore {
          * @returns 
          * @memberof Instance
          */
-        createDb = function (
-            dataBase: IDataBaseOption, onSuccess: (dbSchema: any) => void, onError: (err: IError) => void) {
+        createDb(dataBase: IDataBaseOption, onSuccess: (dbSchema: any) => void, onError: (err: IError) => void) {
             return this.pushApi({
                 Name: 'create_db',
                 OnSuccess: onSuccess,
                 OnError: onError,
                 Query: dataBase
             } as IWebWorkerRequest, false);
-        };
+        }
 
         /**
          * drop dataBase
@@ -63,7 +62,7 @@ namespace JsStore {
          * @param {Function} [onError=null] 
          * @memberof Instance
          */
-        dropDb = function (onSuccess: () => void, onError: (err: IError) => void) {
+        dropDb(onSuccess: () => void, onError: (err: IError) => void) {
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'drop_db',
@@ -71,7 +70,7 @@ namespace JsStore {
                 OnSuccess: onSuccess,
                 OnError: onError
             } as IWebWorkerRequest, use_promise);
-        };
+        }
 
         /**
          * select data from table
@@ -82,7 +81,7 @@ namespace JsStore {
          * 
          * @memberOf Main
          */
-        select = function (query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
+        select(query: ISelect, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
@@ -93,10 +92,10 @@ namespace JsStore {
                 OnSuccess: onSuccess,
                 OnError: onError
             } as IWebWorkerRequest, use_promise);
-        };
-        
+        }
+
         /**
-         * perform transaction
+         * perform transaction - execute multiple apis
          * 
          * @param {string[]} tableNames 
          * @param {any} txLogic 
@@ -105,12 +104,9 @@ namespace JsStore {
          * @returns 
          * @memberof Instance
          */
-        transaction(tableNames: string[], txLogic,
-            onSuccess: (results: any[]) => void,
-            onError: (err: IError) => void
-        ) {
+        transaction(tblNames: string[], txLogic, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
             var query: ITranscationQry = {
-                TableNames: tableNames,
+                TableNames: tblNames,
                 Logic: txLogic.toString()
             } as ITranscationQry;
             var use_promise = onSuccess ? false : true;
@@ -130,7 +126,7 @@ namespace JsStore {
          * @param {Function} [onError=null] 
          * @memberof Instance
          */
-        count = function (query: ICount, onSuccess: (noOfRecord: number) => void, onError: (err: IError) => void) {
+        count(query: ICount, onSuccess: (noOfRecord: number) => void, onError: (err: IError) => void) {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
@@ -141,18 +137,18 @@ namespace JsStore {
                 OnSuccess: onSuccess,
                 OnError: onError
             } as IWebWorkerRequest, use_promise);
-        };
+        }
 
         /**
          * insert data into table
          * 
          * @param {IInsert} query 
-         * @param {Function} [onSuccess=null] 
-         * @param {Function} [onError=null] 
+         * @param {(recordInserted: number) => void} onSuccess 
+         * @param {(err: IError) => void} onError 
+         * @returns 
          * @memberof Instance
          */
-        insert = function
-        (query: IInsert, onSuccess: (recordInserted: number) => void, onError: (err: IError) => void) {
+        insert(query: IInsert, onSuccess: (recordInserted: number) => void, onError: (err: IError) => void) {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
@@ -163,17 +159,18 @@ namespace JsStore {
                 OnSuccess: onSuccess,
                 OnError: onError
             } as IWebWorkerRequest, use_promise);
-        };
+        }
 
         /**
          * update data into table
          * 
          * @param {IUpdate} query 
-         * @param {Function} [onSuccess=null] 
-         * @param {Function} [onError=null] 
+         * @param {(recordUpdated: number) => void} onSuccess 
+         * @param {(err: IError) => void} onError 
+         * @returns 
          * @memberof Instance
          */
-        update = function (query: IUpdate, onSuccess: (recordUpdated: number) => void, onError: (err: IError) => void) {
+        update(query: IUpdate, onSuccess: (recordUpdated: number) => void, onError: (err: IError) => void) {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
@@ -184,17 +181,22 @@ namespace JsStore {
                 OnSuccess: onSuccess,
                 OnError: onError
             } as IWebWorkerRequest, use_promise);
-        };
+        }
+
+        delete(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void) {
+            JsStore.logError('delete is deprecated because delete is reserved keyword in js. Please use remove api');
+        }
 
         /**
-         * delete data from table
+         * remove data from table
          * 
          * @param {IDelete} query 
-         * @param {Function} [onSuccess=null] 
-         * @param {Function} onError 
+         * @param {(recordDeleted: number) => void} onSuccess 
+         * @param {(err: IError) => void} onError 
+         * @returns 
          * @memberof Instance
          */
-        delete = function (query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void) {
+        remove(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void) {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
@@ -205,17 +207,18 @@ namespace JsStore {
                 OnSuccess: onSuccess,
                 OnError: onError
             } as IWebWorkerRequest, use_promise);
-        };
+        }
 
         /**
          * delete all data from table
          * 
          * @param {string} tableName 
-         * @param {Function} [onSuccess=null] 
-         * @param {Function} [onError=null] 
+         * @param {() => void} onSuccess 
+         * @param {(err: IError) => void} onError 
+         * @returns 
          * @memberof Instance
          */
-        clear = function (tableName: string, onSuccess: () => void, onError: (err: IError) => void) {
+        clear(tableName: string, onSuccess: () => void, onError: (err: IError) => void) {
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'clear',
@@ -223,18 +226,18 @@ namespace JsStore {
                 OnSuccess: onSuccess,
                 OnError: onError
             } as IWebWorkerRequest, use_promise);
-        };
+        }
 
         /**
          * insert bulk amount of data
          * 
          * @param {IInsert} query 
-         * @param {Function} [onSuccess=null] 
-         * @param {Function} [onError=null] 
+         * @param {() => void} onSuccess 
+         * @param {(err: IError) => void} onError 
          * @returns 
          * @memberof Instance
          */
-        bulkInsert = function (query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
+        bulkInsert(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
             onSuccess = query.OnSuccess ? query.OnSuccess as any : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             var use_promise = onSuccess ? false : true;
@@ -245,7 +248,7 @@ namespace JsStore {
                 OnSuccess: onSuccess,
                 OnError: onError
             } as IWebWorkerRequest, use_promise);
-        };
+        }
 
         /**
          * export the result in json file
@@ -253,7 +256,7 @@ namespace JsStore {
          * @param {ISelect} qry 
          * @memberof Instance
          */
-        exportJson = function (query: ISelect) {
+        exportJson(query: ISelect) {
             var onSuccess = function (url) {
                 var link = document.createElement("a");
                 link.href = url;
@@ -291,6 +294,6 @@ namespace JsStore {
                 } as IWebWorkerRequest, use_promise);
             }
 
-        };
+        }
     }
 }

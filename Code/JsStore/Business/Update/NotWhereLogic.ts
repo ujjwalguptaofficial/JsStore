@@ -13,6 +13,9 @@ namespace JsStore {
                             ++this._rowAffected;
                             (cursor as any).continue();
                         }
+                        else {
+                            this.onQueryFinished();
+                        }
 
                     }.bind(this);
                     cursor_request.onerror = function (e) {

@@ -25,6 +25,12 @@ namespace JsStore {
 
         export class BaseUpdate extends Base {
             _checkFlag = false;
+
+            private onQueryFinished = function () {
+                if (this._isTransaction === true) {
+                    this.onTransactionCompleted();
+                }
+            };
         }
     }
 }

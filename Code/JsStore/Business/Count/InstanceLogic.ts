@@ -50,6 +50,12 @@ namespace JsStore {
                     this._objectStore = db_transaction.objectStore(this._query.From);
                 }
 
+                private onQueryFinished = function () {
+                    if (this._isTransaction === true) {
+                        this.onTransactionCompleted();
+                    }
+                };
+
                 private onTransactionCompleted() {
                     this._onSuccess(this._resultCount);
                 }

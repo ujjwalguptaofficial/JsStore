@@ -26,6 +26,9 @@ namespace JsStore {
                                 }
                                 cursor.continue();
                             }
+                            else {
+                                this.onQueryFinished();
+                            }
                         }.bind(this);
                     }
                     else {
@@ -36,6 +39,9 @@ namespace JsStore {
                                     ++this._resultCount;
                                 }
                                 cursor.continue();
+                            }
+                            else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                     }

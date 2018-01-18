@@ -18,6 +18,9 @@ namespace JsStore {
                                         }
                                         cursor.continue();
                                     }
+                                    else if (i + 1 === length) {
+                                        this.onQueryFinished();
+                                    }
                                 }.bind(this);
                             }
                         }
@@ -29,6 +32,9 @@ namespace JsStore {
                                     cursor_request = column_store.count(IDBKeyRange.only(values[i]));
                                     cursor_request.onsuccess = function (e) {
                                         this._resultCount += e.target.result;
+                                        if (i + 1 === length) {
+                                            this.onQueryFinished();
+                                        }
                                     }.bind(this);
                                 }
                             }
@@ -42,6 +48,9 @@ namespace JsStore {
                                         if (cursor) {
                                             ++this._resultCount;
                                             cursor.continue();
+                                        }
+                                        else if (i + 1 === length) {
+                                            this.onQueryFinished();
                                         }
                                     }.bind(this);
                                 }

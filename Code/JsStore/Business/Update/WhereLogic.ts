@@ -17,6 +17,9 @@ namespace JsStore {
                                 }
                                 cursor.continue();
                             }
+                            else {
+                                this.onQueryFinished();
+                            }
                         }.bind(this);
                     }
                     else {
@@ -26,6 +29,9 @@ namespace JsStore {
                                 cursor.update(updateValue(this._query.Set, cursor.value));
                                 ++this._rowAffected;
                                 cursor.continue();
+                            }
+                            else {
+                                this.onQueryFinished();
                             }
                         }.bind(this);
                     }

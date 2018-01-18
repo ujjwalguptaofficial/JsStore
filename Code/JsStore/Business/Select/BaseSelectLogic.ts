@@ -7,8 +7,11 @@ namespace JsStore {
                 _skipRecord;
                 _limitRecord;
                 _checkFlag = false;
+                _isOr: boolean;
+                _isArrayQry: boolean;
+                _onWhereArrayQrySuccess: () => void;
 
-                protected removeDuplicates = function () {
+                protected removeDuplicates() {
                     var datas = this._results;
                     // free results memory
                     this._results = undefined;
@@ -23,7 +26,7 @@ namespace JsStore {
                         datas.push(lookupObject[i]);
                     }
                     this._results = datas;
-                };
+                }
             }
         }
     }
