@@ -1,6 +1,6 @@
 namespace JsStore {
     export namespace Business {
-        export namespace Delete {
+        export namespace Remove {
             export class Like extends In {
                 _compSymbol: Occurence;
                 _compValue;

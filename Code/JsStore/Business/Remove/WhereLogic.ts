@@ -1,6 +1,6 @@
 namespace JsStore {
     export namespace Business {
-        export namespace Delete {
+        export namespace Remove {
             export class Where extends Like {
                 private executeWhereLogic = function (column, value, op) {
                     var cursor: IDBCursorWithValue,

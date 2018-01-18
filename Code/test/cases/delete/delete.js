@@ -1,5 +1,5 @@
-describe('Test delete Api', function () {
-    it('delete with where', function (done) {
+describe('Test remove Api', function () {
+    it('remove with where', function (done) {
         var Count;
         Con.select({
             From: 'Customers',
@@ -14,7 +14,7 @@ describe('Test delete Api', function () {
             }
         })
 
-        Con.delete({
+        Con.remove({
             From: 'Customers',
             Where: {
                 Country: 'Mexico'
@@ -29,7 +29,7 @@ describe('Test delete Api', function () {
         })
     });
 
-    it('delete without ignore case', function (done) {
+    it('remove without ignore case', function (done) {
 
         var Count;
         Con.select({
@@ -45,7 +45,7 @@ describe('Test delete Api', function () {
             }
         })
 
-        Con.delete({
+        Con.remove({
             From: 'Customers',
             Where: {
                 Country: 'mexico'
@@ -60,7 +60,7 @@ describe('Test delete Api', function () {
         })
     });
 
-    it('delete with ignore case', function (done) {
+    it('remove with ignore case', function (done) {
 
         var Count;
         Con.select({
@@ -76,7 +76,7 @@ describe('Test delete Api', function () {
             }
         })
 
-        Con.delete({
+        Con.remove({
             From: 'Customers',
             IgnoreCase: true,
             Where: {
@@ -92,7 +92,7 @@ describe('Test delete Api', function () {
         })
     });
 
-    it('delete with or', function (done) {
+    it('remove with or', function (done) {
 
         var Count;
         Con.select({
@@ -111,7 +111,7 @@ describe('Test delete Api', function () {
             }
         })
 
-        Con.delete({
+        Con.remove({
             From: 'Customers',
             Where: {
                 Country: 'Mexico',
@@ -129,7 +129,7 @@ describe('Test delete Api', function () {
         })
     });
 
-    it('delete with in', function (done) {
+    it('remove with in', function (done) {
 
         var Count;
         Con.select({
@@ -147,7 +147,7 @@ describe('Test delete Api', function () {
             }
         })
 
-        Con.delete({
+        Con.remove({
             From: 'Customers',
             Where: {
                 Country: {
@@ -164,7 +164,7 @@ describe('Test delete Api', function () {
         })
     });
 
-    it('delete with operator - >', function (done) {
+    it('remove with operator - >', function (done) {
 
         var Count;
         Con.select({
@@ -182,7 +182,7 @@ describe('Test delete Api', function () {
             }
         })
 
-        Con.delete({
+        Con.remove({
             From: 'Products',
             Where: {
                 Price: {
@@ -199,7 +199,7 @@ describe('Test delete Api', function () {
         })
     });
 
-    it('delete with operator - >=', function (done) {
+    it('remove with operator - >=', function (done) {
 
         var Count;
         Con.select({
@@ -217,7 +217,7 @@ describe('Test delete Api', function () {
             }
         })
 
-        Con.delete({
+        Con.remove({
             From: 'Products',
             Where: {
                 Price: {
@@ -234,7 +234,7 @@ describe('Test delete Api', function () {
         })
     });
 
-    it('delete with operator - <', function (done) {
+    it('remove with operator - <', function (done) {
 
         var Count;
         Con.select({
@@ -252,7 +252,7 @@ describe('Test delete Api', function () {
             }
         })
 
-        Con.delete({
+        Con.remove({
             From: 'Products',
             Where: {
                 Price: {
@@ -269,7 +269,7 @@ describe('Test delete Api', function () {
         })
     });
 
-    it('delete with operator - <=', function (done) {
+    it('remove with operator - <=', function (done) {
         var Count;
         Con.select({
             From: 'Products',
@@ -286,7 +286,7 @@ describe('Test delete Api', function () {
             }
         })
 
-        Con.delete({
+        Con.remove({
             From: 'Products',
             Where: {
                 Price: {
@@ -303,7 +303,7 @@ describe('Test delete Api', function () {
         })
     });
 
-    it('delete with operator - between', function (done) {
+    it('remove with operator - between', function (done) {
         var Count;
         Con.select({
             From: 'Products',
@@ -323,7 +323,7 @@ describe('Test delete Api', function () {
             }
         })
 
-        Con.delete({
+        Con.remove({
             From: 'Products',
             Where: {
                 Price: {
@@ -343,7 +343,7 @@ describe('Test delete Api', function () {
         })
     });
 
-    it('delete with like- "%or%"', function (done) {
+    it('remove with like- "%or%"', function (done) {
         var Count;
         Con.select({
                 From: 'Customers',
@@ -359,7 +359,7 @@ describe('Test delete Api', function () {
                     done(err);
                 }
             })
-            .delete({
+            .remove({
                 From: 'Customers',
                 Where: {
                     CustomerName: {
@@ -376,7 +376,7 @@ describe('Test delete Api', function () {
             })
     });
 
-    it('delete with like- "%or"', function (done) {
+    it('remove with like- "%or"', function (done) {
         var Count;
         Con.select({
                 From: 'Customers',
@@ -392,7 +392,7 @@ describe('Test delete Api', function () {
                     done(err);
                 }
             })
-            .delete({
+            .remove({
                 From: 'Customers',
                 Where: {
                     CustomerName: {
@@ -409,7 +409,7 @@ describe('Test delete Api', function () {
             })
     });
 
-    it('delete with like- "or%"', function (done) {
+    it('remove with like- "or%"', function (done) {
         var Count;
         Con.select({
                 From: 'Customers',
@@ -425,7 +425,7 @@ describe('Test delete Api', function () {
                     done(err);
                 }
             })
-            .delete({
+            .remove({
                 From: 'Customers',
                 Where: {
                     CustomerName: {
@@ -442,7 +442,7 @@ describe('Test delete Api', function () {
             })
     });
 
-    it('delete all - using promise', function (done) {
+    it('remove all - using promise', function (done) {
         var Count;
         Con.count({
             From: 'Customers',
@@ -453,7 +453,7 @@ describe('Test delete Api', function () {
                 done(err);
             }
         });
-        Con.delete({
+        Con.remove({
             From: 'Customers'
         }).
         then(function (results) {
@@ -467,7 +467,7 @@ describe('Test delete Api', function () {
     });
 
     it('wrong table test - using promise', function (done) {
-        Con.delete({
+        Con.remove({
             From: 'Cusdtomers'
         }).
         catch(function (err) {

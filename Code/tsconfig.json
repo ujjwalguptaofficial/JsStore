@@ -80,13 +80,13 @@
         "JsStore/Business/Update/WhereLogic.ts",
         "JsStore/Business/Update/InstanceLogic.ts",
         "JsStore/Business/Update/SchemaChecker.ts",
-        //delete
-        "JsStore/Business/Delete/BaseDeleteLogic.ts",
-        "JsStore/Business/Delete/NotWhereLogic.ts",
-        "JsStore/Business/Delete/InLogic.ts",
-        "JsStore/Business/Delete/LikeLogic.ts",
-        "JsStore/Business/Delete/WhereLogic.ts",
-        "JsStore/Business/Delete/InstanceLogic.ts",
+        //Remove
+        "JsStore/Business/Remove/BaseRemoveLogic.ts",
+        "JsStore/Business/Remove/NotWhereLogic.ts",
+        "JsStore/Business/Remove/InLogic.ts",
+        "JsStore/Business/Remove/LikeLogic.ts",
+        "JsStore/Business/Remove/WhereLogic.ts",
+        "JsStore/Business/Remove/InstanceLogic.ts",
         //Insert
         "JsStore/Business/Insert/InstanceLogic.ts",
         "JsStore/Business/Insert/ValueCheckerLogic.ts",

@@ -1,5 +1,5 @@
-describe('Test delete complex case', function () {
-    it('delete with multiple or', function (done) {
+describe('Test remove complex case', function () {
+    it('remove with multiple or', function (done) {
         var where_query = {
                 Country: 'Mexico',
                 Or: {
@@ -21,7 +21,7 @@ describe('Test delete complex case', function () {
             }
         })
 
-        Con.delete({
+        Con.remove({
             From: 'Customers',
             Where: where_query,
             OnSuccess: function (results) {
@@ -59,7 +59,7 @@ describe('Test delete complex case', function () {
             }
         })
 
-        Con.delete({
+        Con.remove({
             From: 'Customers',
             Where: where_query,
             OnSuccess: function (results) {
@@ -97,7 +97,7 @@ describe('Test delete complex case', function () {
             }
         })
 
-        Con.delete({
+        Con.remove({
             From: 'Customers',
             Where: where_query,
             OnSuccess: function (results) {

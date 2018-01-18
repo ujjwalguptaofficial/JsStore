@@ -1,11 +1,11 @@
 namespace JsStore {
     export namespace Business {
-        export namespace Delete {
+        export namespace Remove {
             export class Instance extends Where {
                 _isOr: boolean;
 
                 constructor(
-                    query: IDelete, onSuccess: (recordDeleted: number) => void,
+                    query: IRemove, onSuccess: (recordRemoved: number) => void,
                     onError: (err: IError) => void
                 ) {
                     super();

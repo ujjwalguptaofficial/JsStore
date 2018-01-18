@@ -1,7 +1,7 @@
 namespace JsStore {
     export namespace Business {
-        export namespace Delete {
-            export class NotWhere extends BaseDelete {
+        export namespace Remove {
+            export class NotWhere extends BaseRemove {
                 protected executeWhereUndefinedLogic = function () {
                     var cursor,
                         cursor_request = this._objectStore.openCursor();

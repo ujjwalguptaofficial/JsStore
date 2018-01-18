@@ -88,7 +88,7 @@ namespace JsStore {
                         break;
                     case 'update': this.update(request.Query, onSuccess, onError);
                         break;
-                    case 'delete': this.delete(request.Query, onSuccess, onError);
+                    case 'remove': this.remove(request.Query, onSuccess, onError);
                         break;
                     case 'open_db': this.openDb(request.Query, onSuccess, onError);
                         break;
@@ -106,7 +106,7 @@ namespace JsStore {
                         break;
                     case 'export_json': this.exportJson(request.Query, onSuccess, onError);
                         break;
-                    default: console.error('The Api:-' + request.Name + 'does not support');
+                    default: console.error('The Api:-' + request.Name + ' does not support.');
                 }
             };
 
@@ -170,8 +170,8 @@ namespace JsStore {
                 }
             };
 
-            private delete = function (query: IDelete, onSuccess: () => void, onError: (err: IError) => void) {
-                var delete_object = new Delete.Instance(query, onSuccess, onError);
+            private remove = function (query: IRemove, onSuccess: () => void, onError: (err: IError) => void) {
+                var delete_object = new Remove.Instance(query, onSuccess, onError);
                 delete_object.execute();
             };
 

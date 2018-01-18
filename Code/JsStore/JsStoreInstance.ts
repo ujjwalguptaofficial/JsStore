@@ -183,26 +183,26 @@ namespace JsStore {
             } as IWebWorkerRequest, use_promise);
         }
 
-        delete(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void) {
-            JsStore.logError('delete is deprecated because delete is reserved keyword in js. Please use remove api');
+        delete(query: IRemove, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void) {
+            JsStore.logError('delete is deprecated because delete is reserved keyword in js. Please use remove api.');
         }
 
         /**
          * remove data from table
          * 
-         * @param {IDelete} query 
+         * @param {IRemove} query 
          * @param {(recordDeleted: number) => void} onSuccess 
          * @param {(err: IError) => void} onError 
          * @returns 
          * @memberof Instance
          */
-        remove(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void) {
+        remove(query: IRemove, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void) {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
-                Name: 'delete',
+                Name: 'remove',
                 Query: query,
                 OnSuccess: onSuccess,
                 OnError: onError

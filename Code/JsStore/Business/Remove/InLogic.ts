@@ -1,6 +1,6 @@
 namespace JsStore {
     export namespace Business {
-        export namespace Delete {
+        export namespace Remove {
             export class In extends NotWhere {
                 private executeInLogic = function (column, values) {
                     var cursor: IDBCursorWithValue,

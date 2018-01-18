@@ -28,9 +28,9 @@ namespace JsStore {
                     update_obj._isTransaction = true;
                     update_obj.execute();
                 }.bind(this);
-                var remove = function (qry: IDelete, onSuccess) {
+                var remove = function (qry: IRemove, onSuccess) {
                     onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
-                    var delete_obj = new Delete.Instance(qry, onSuccess, this._onError.bind(this));
+                    var delete_obj = new Remove.Instance(qry, onSuccess, this._onError.bind(this));
                     delete_obj._isTransaction = true;
                     delete_obj.execute();
                 }.bind(this);

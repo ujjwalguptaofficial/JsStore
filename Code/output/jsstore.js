@@ -9,11 +9,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /**
-<<<<<<< HEAD
  * @license :JsStore.js - v1.5.0 - 18/01/2018
-=======
- * @license :JsStore.js - v1.4.3 - 16/01/2018
->>>>>>> master
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
  */ 
@@ -1603,8 +1599,8 @@ var JsStore;
                         case 'update':
                             this.update(request.Query, onSuccess, onError);
                             break;
-                        case 'delete':
-                            this.delete(request.Query, onSuccess, onError);
+                        case 'remove':
+                            this.remove(request.Query, onSuccess, onError);
                             break;
                         case 'open_db':
                             this.openDb(request.Query, onSuccess, onError);
@@ -1630,7 +1626,7 @@ var JsStore;
                         case 'export_json':
                             this.exportJson(request.Query, onSuccess, onError);
                             break;
-                        default: console.error('The Api:-' + request.Name + 'does not support');
+                        default: console.error('The Api:-' + request.Name + ' does not support.');
                     }
                 };
                 this.openDb = function (dbName, onSuccess, onError) {
@@ -1682,8 +1678,8 @@ var JsStore;
                         bulk_insert_object.execute();
                     }
                 };
-                this.delete = function (query, onSuccess, onError) {
-                    var delete_object = new Business.Delete.Instance(query, onSuccess, onError);
+                this.remove = function (query, onSuccess, onError) {
+                    var delete_object = new Business.Remove.Instance(query, onSuccess, onError);
                     delete_object.execute();
                 };
                 this.select = function (query, onSuccess, onError) {
@@ -1921,7 +1917,7 @@ var JsStore;
                 }.bind(this);
                 var remove = function (qry, onSuccess) {
                     onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
-                    var delete_obj = new Business.Delete.Instance(qry, onSuccess, this._onError.bind(this));
+                    var delete_obj = new Business.Remove.Instance(qry, onSuccess, this._onError.bind(this));
                     delete_obj._isTransaction = true;
                     delete_obj.execute();
                 }.bind(this);
@@ -4269,27 +4265,27 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var Delete;
-        (function (Delete) {
-            var BaseDelete = /** @class */ (function (_super) {
-                __extends(BaseDelete, _super);
-                function BaseDelete() {
+        var Remove;
+        (function (Remove) {
+            var BaseRemove = /** @class */ (function (_super) {
+                __extends(BaseRemove, _super);
+                function BaseRemove() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this._checkFlag = false;
                     return _this;
                 }
-                return BaseDelete;
+                return BaseRemove;
             }(Business.Base));
-            Delete.BaseDelete = BaseDelete;
-        })(Delete = Business.Delete || (Business.Delete = {}));
+            Remove.BaseRemove = BaseRemove;
+        })(Remove = Business.Remove || (Business.Remove = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var Delete;
-        (function (Delete) {
+        var Remove;
+        (function (Remove) {
             var NotWhere = /** @class */ (function (_super) {
                 __extends(NotWhere, _super);
                 function NotWhere() {
@@ -4315,17 +4311,17 @@ var JsStore;
                     return _this;
                 }
                 return NotWhere;
-            }(Delete.BaseDelete));
-            Delete.NotWhere = NotWhere;
-        })(Delete = Business.Delete || (Business.Delete = {}));
+            }(Remove.BaseRemove));
+            Remove.NotWhere = NotWhere;
+        })(Remove = Business.Remove || (Business.Remove = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var Delete;
-        (function (Delete) {
+        var Remove;
+        (function (Remove) {
             var In = /** @class */ (function (_super) {
                 __extends(In, _super);
                 function In() {
@@ -4380,17 +4376,17 @@ var JsStore;
                     return _this;
                 }
                 return In;
-            }(Delete.NotWhere));
-            Delete.In = In;
-        })(Delete = Business.Delete || (Business.Delete = {}));
+            }(Remove.NotWhere));
+            Remove.In = In;
+        })(Remove = Business.Remove || (Business.Remove = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var Delete;
-        (function (Delete) {
+        var Remove;
+        (function (Remove) {
             var Like = /** @class */ (function (_super) {
                 __extends(Like, _super);
                 function Like() {
@@ -4440,17 +4436,17 @@ var JsStore;
                     return _this;
                 }
                 return Like;
-            }(Delete.In));
-            Delete.Like = Like;
-        })(Delete = Business.Delete || (Business.Delete = {}));
+            }(Remove.In));
+            Remove.Like = Like;
+        })(Remove = Business.Remove || (Business.Remove = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var Delete;
-        (function (Delete) {
+        var Remove;
+        (function (Remove) {
             var Where = /** @class */ (function (_super) {
                 __extends(Where, _super);
                 function Where() {
@@ -4495,17 +4491,17 @@ var JsStore;
                     return _this;
                 }
                 return Where;
-            }(Delete.Like));
-            Delete.Where = Where;
-        })(Delete = Business.Delete || (Business.Delete = {}));
+            }(Remove.Like));
+            Remove.Where = Where;
+        })(Remove = Business.Remove || (Business.Remove = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        var Delete;
-        (function (Delete) {
+        var Remove;
+        (function (Remove) {
             var Instance = /** @class */ (function (_super) {
                 __extends(Instance, _super);
                 function Instance(query, onSuccess, onError) {
@@ -4591,9 +4587,9 @@ var JsStore;
                     delete this._query.Where.Or;
                 };
                 return Instance;
-            }(Delete.Where));
-            Delete.Instance = Instance;
-        })(Delete = Business.Delete || (Business.Delete = {}));
+            }(Remove.Where));
+            Remove.Instance = Instance;
+        })(Remove = Business.Remove || (Business.Remove = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
@@ -5150,12 +5146,12 @@ var JsStore;
             }, use_promise);
         };
         Instance.prototype.delete = function (query, onSuccess, onError) {
-            JsStore.logError('delete is deprecated because delete is reserved keyword in js. Please use remove api');
+            JsStore.logError('delete is deprecated because delete is reserved keyword in js. Please use remove api.');
         };
         /**
          * remove data from table
          *
-         * @param {IDelete} query
+         * @param {IRemove} query
          * @param {(recordDeleted: number) => void} onSuccess
          * @param {(err: IError) => void} onError
          * @returns
@@ -5167,7 +5163,7 @@ var JsStore;
             query.OnSuccess = query.OnError = null;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
-                Name: 'delete',
+                Name: 'remove',
                 Query: query,
                 OnSuccess: onSuccess,
                 OnError: onError

@@ -62,7 +62,7 @@ namespace JsStore {
         OnError: (error: IError) => void;
     }
 
-    export interface IDelete {
+    export interface IRemove {
         From: string;
         IgnoreCase: boolean;
         Where: any;

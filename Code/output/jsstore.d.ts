@@ -242,7 +242,7 @@ declare namespace JsStore {
         OnSuccess: (noOfRecord: number) => void;
         OnError: (error: IError) => void;
     }
-    interface IDelete {
+    interface IRemove {
         From: string;
         IgnoreCase: boolean;
         Where: any;
@@ -575,7 +575,7 @@ declare namespace JsStore {
             private update;
             private insert;
             private bulkInsert;
-            private delete;
+            private remove;
             private select;
             private count;
             private createDb;
@@ -884,8 +884,8 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     namespace Business {
-        namespace Delete {
-            class BaseDelete extends Base {
+        namespace Remove {
+            class BaseRemove extends Base {
                 _checkFlag: boolean;
             }
         }
@@ -893,8 +893,8 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     namespace Business {
-        namespace Delete {
-            class NotWhere extends BaseDelete {
+        namespace Remove {
+            class NotWhere extends BaseRemove {
                 protected executeWhereUndefinedLogic: () => void;
             }
         }
@@ -902,7 +902,7 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     namespace Business {
-        namespace Delete {
+        namespace Remove {
             class In extends NotWhere {
                 private executeInLogic;
             }
@@ -911,7 +911,7 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     namespace Business {
-        namespace Delete {
+        namespace Remove {
             class Like extends In {
                 _compSymbol: Occurence;
                 _compValue: any;
@@ -923,7 +923,7 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     namespace Business {
-        namespace Delete {
+        namespace Remove {
             class Where extends Like {
                 private executeWhereLogic;
             }
@@ -932,10 +932,10 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     namespace Business {
-        namespace Delete {
+        namespace Remove {
             class Instance extends Where {
                 _isOr: boolean;
-                constructor(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void);
+                constructor(query: IRemove, onSuccess: (recordRemoved: number) => void, onError: (err: IError) => void);
                 execute(): void;
                 private processWhereArrayQry();
                 private processWhere();
@@ -1103,17 +1103,17 @@ declare namespace JsStore {
          * @memberof Instance
          */
         update(query: IUpdate, onSuccess: (recordUpdated: number) => void, onError: (err: IError) => void): any;
-        delete(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void): void;
+        delete(query: IRemove, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void): void;
         /**
          * remove data from table
          *
-         * @param {IDelete} query
+         * @param {IRemove} query
          * @param {(recordDeleted: number) => void} onSuccess
          * @param {(err: IError) => void} onError
          * @returns
          * @memberof Instance
          */
-        remove(query: IDelete, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void): any;
+        remove(query: IRemove, onSuccess: (recordDeleted: number) => void, onError: (err: IError) => void): any;
         /**
          * delete all data from table
          *
