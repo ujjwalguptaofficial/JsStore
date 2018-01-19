@@ -16,7 +16,13 @@ namespace JsStore {
 
                 execute() {
                     var table = this.getTable(this._query.Into);
-                    if (table) {
+                    if (!Array.isArray(this._query.Values)) {
+                        this.onErrorOccured(
+                            new Error(Error_Type.NotArray).get(),
+                            true
+                        );
+                    }
+                    else if (table) {
                         try {
                             if (this._query.SkipDataCheck) {
                                 this.insertData(this._query.Values);

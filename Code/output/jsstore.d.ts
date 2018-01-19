@@ -321,6 +321,9 @@ declare namespace JsStore {
     interface ITranscationQry {
         TableNames: string[];
         Logic: string;
+        Data: any;
+        OnSuccess: (results: any[]) => void;
+        OnError: (err: IError) => void;
     }
 }
 declare namespace JsStore {
@@ -608,9 +611,9 @@ declare namespace JsStore {
         class Transaction extends Base {
             _results: any;
             constructor(onSuccess: any, onError: any);
-            execute(tableNames: string[], txLogic: any): void;
-            private initTransaction;
-            private onTransactionCompleted;
+            execute(tableNames: string[], data: any, txLogic: any): void;
+            private initTransaction(tableNames);
+            private onTransactionCompleted();
         }
     }
 }
@@ -1073,7 +1076,7 @@ declare namespace JsStore {
          * @returns
          * @memberof Instance
          */
-        transaction(tblNames: string[], txLogic: any, onSuccess: (results: any[]) => void, onError: (err: IError) => void): any;
+        transaction(query: ITranscationQry, onSuccess: (results: any[]) => void, onError: (err: IError) => void): any;
         /**
          * get no of result from table
          *

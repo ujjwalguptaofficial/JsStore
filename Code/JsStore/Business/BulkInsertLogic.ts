@@ -11,7 +11,13 @@ namespace JsStore {
             }
 
             execute() {
-                if (this.isTableExist(this._query.Into) === true) {
+                if (!Array.isArray(this._query.Values)) {
+                    this.onErrorOccured(
+                        new Error(Error_Type.NotArray).get(),
+                        true
+                    );
+                }
+                else if (this.isTableExist(this._query.Into) === true) {
                     try {
                         this.bulkinsertData();
                     }
@@ -26,14 +32,10 @@ namespace JsStore {
             }
 
             private bulkinsertData() {
-                // this._transaction = db_connection.transaction([this._query.Into], "readwrite");
                 createTransaction([this._query.Into], function (e) {
                     this._onSuccess();
                 }.bind(this));
                 this._objectStore = db_transaction.objectStore(this._query.Into);
-                // this._transaction.oncomplete = function (e) {
-                //     this._onSuccess();
-                // }.bind(this);
                 this._query.Values.forEach(function (value) {
                     this._objectStore.add(value);
                 }, this);

@@ -104,12 +104,12 @@ namespace JsStore {
          * @returns 
          * @memberof Instance
          */
-        transaction(tblNames: string[], txLogic, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
-            var query: ITranscationQry = {
-                TableNames: tblNames,
-                Logic: txLogic.toString()
-            } as ITranscationQry;
+        transaction(query: ITranscationQry, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
+            onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
+            onError = query.OnError ? query.OnError : onError;
+            query.OnSuccess = query.OnError = null;
             var use_promise = onSuccess ? false : true;
+            query.Logic = query.Logic.toString();
             return this.pushApi({
                 Name: 'transaction',
                 Query: query,

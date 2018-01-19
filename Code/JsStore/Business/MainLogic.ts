@@ -112,7 +112,7 @@ namespace JsStore {
 
             private transaction(qry: ITranscationQry, onSuccess, onError) {
                 var transaction_obj = new Transaction(onSuccess, onError);
-                transaction_obj.execute(qry.TableNames, qry.Logic);
+                transaction_obj.execute(qry.TableNames, qry.Data, qry.Logic);
             }
 
             private openDb = function (dbName, onSuccess: () => void, onError: (err: IError) => void) {
@@ -147,27 +147,13 @@ namespace JsStore {
             };
 
             private insert = function (query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
-                if (!Array.isArray(query.Values)) {
-                    var erro_obj = new Error(Error_Type.NotArray);
-                    erro_obj.logError();
-                    onError(erro_obj.get());
-                }
-                else {
-                    var insert_object = new Business.Insert.Instance(query, onSuccess, onError);
-                    insert_object.execute();
-                }
+                var insert_object = new Business.Insert.Instance(query, onSuccess, onError);
+                insert_object.execute();
             };
 
             private bulkInsert = function (query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
-                if (!Array.isArray(query.Values)) {
-                    var erro_obj = new Error(Error_Type.NotArray);
-                    erro_obj.logError();
-                    onError(erro_obj.get());
-                }
-                else {
-                    var bulk_insert_object = new BulkInsert(query, onSuccess, onError);
-                    bulk_insert_object.execute();
-                }
+                var bulk_insert_object = new BulkInsert(query, onSuccess, onError);
+                bulk_insert_object.execute();
             };
 
             private remove = function (query: IRemove, onSuccess: () => void, onError: (err: IError) => void) {
@@ -200,7 +186,7 @@ namespace JsStore {
                 dataBase: IDataBaseOption, onSuccess: () => void, onError: (err: IError) => void
             ) {
                 this.closeDb();
-                KeyStore.get("JsStore_" + dataBase.Name + "_Db_Version", function (version) {
+                getDbVersion(dataBase.Name, function (version) {
                     db_version = version ? version : 1;
                     active_db = new Model.DataBase(dataBase);
                     // save dbSchema in keystore
