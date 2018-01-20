@@ -84,13 +84,18 @@ namespace JsStore {
     export var getDbSchema = function (dbName: string, callback: (any) => void) {
         if (callback) {
             KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
-                if (result._name) {
-                    callback(result);
+                if (result) {
+                    if (result._name) {
+                        callback(result);
+                    }
+                    else {
+                        var db_schema = new Model.DataBase(result);
+                        KeyStore.set("JsStore_" + dbName + "_Schema", db_schema);
+                        callback(db_schema);
+                    }
                 }
                 else {
-                    var db_schema = new Model.DataBase(result);
-                    KeyStore.set("JsStore_" + dbName + "_Schema", db_schema);
-                    callback(db_schema);
+                    callback(result);
                 }
             });
         }
