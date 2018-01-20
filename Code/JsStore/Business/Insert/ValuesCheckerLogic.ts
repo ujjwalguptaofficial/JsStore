@@ -4,26 +4,17 @@ namespace JsStore {
             export class ValuesChecker {
                 _table: Table;
                 _values: any[];
-                _index: number = 0;
-                _error: Error;
-                onFinish: (isError: boolean) => void;
+                _error: IError;
+                _onFinish: (isError: boolean) => void;
                 _valueCheckerObj: ValueChecker;
 
                 constructor(table: Table, values: any[]) {
                     this._table = table;
                     this._values = values;
-                    this._valueCheckerObj = new ValueChecker(
-                        this._table,
-                        this.onFinishValueChecking.bind(this),
-                        function (err: IError) {
-                            this._error = err;
-                            this.onFinish(true);
-                        }.bind(this)
-                    );
                 }
 
                 public checkAndModifyValues(onFinish: (isError: boolean) => void) {
-                    this.onFinish = onFinish;
+                    this._onFinish = onFinish;
                     var auto_inc_columns = this._table._columns.filter(function (col) {
                         return col._autoIncrement;
                     });
@@ -36,32 +27,38 @@ namespace JsStore {
                         });
                     }, this);
                     KeyStore.get('dumy_key', function (val) {
-                        this._valueCheckerObj._autoIncrementValue = auto_inc_values;
-                        this.checkRowValue();
+                        this._valueCheckerObj = new ValueChecker(this._table, auto_inc_values);
+                        this.startChecking();
+                    }.bind(this), function (err) {
+                        this._error = err;
+                        this._onFinish(true);
                     }.bind(this));
 
                 }
 
-                private onFinishValueChecking() {
-                    this._values[this._index++] = this._valueCheckerObj._value;
-                    this.checkRowValue();
-                }
-
-                private checkRowValue() {
-                    var row_value = this._values[this._index];
-                    if (row_value) {
-                        this._valueCheckerObj.checkAndModifyValue(row_value);
-                    }
-                    else {
+                private startChecking() {
+                    var is_error: boolean = false;
+                    this._values.every(function (item, index) {
+                        is_error = this._valueCheckerObj.checkAndModifyValue(item);
+                        if (is_error) {
+                            this._error = this._valueCheckerObj._error;
+                            this._onFinish(true);
+                        }
+                        return !is_error;
+                    }, this);
+                    if (!is_error) {
                         for (var prop in this._valueCheckerObj._autoIncrementValue) {
                             var auto_increment_key =
                                 "JsStore_" + active_db._name + "_" + this._table._name + "_" + prop + "_Value";
                             KeyStore.set(auto_increment_key, this._valueCheckerObj._autoIncrementValue[prop]);
                         }
                         KeyStore.get('dumy_key', function (val) {
-                            this.onFinish(false);
-                        }.bind(this));
-
+                            this._onFinish(false);
+                        }.bind(this),
+                            function (err) {
+                                this._error = err;
+                                this._onFinish(true);
+                            }.bind(this));
                     }
                 }
             }

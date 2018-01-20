@@ -4737,65 +4737,42 @@ var JsStore;
         var Insert;
         (function (Insert) {
             var ValueChecker = /** @class */ (function () {
-                function ValueChecker(table, onFinish, onError) {
+                function ValueChecker(table, autoIncrementValue) {
                     this._errorOccured = false;
                     this._autoIncrementValue = {};
-                    this.checkAndModifyValue = function (value) {
-                        this._value = value;
-                        this._index = 0;
-                        this.checkColumnValue();
-                    };
-                    this.checkColumnValue = function () {
-                        var column = this._table._columns[this._index++];
-                        if (column) {
-                            this.checkAndModifyColumnValue(column, this._value);
-                        }
-                        else {
-                            this._onFinish();
-                        }
-                    };
-                    this.checkAndModifyColumnValue = function (column, value) {
-                        if (this._errorOccured === true) {
-                            this._onError(this._error);
-                        }
-                        else {
-                            // check auto increment scheme
-                            if (column._autoIncrement) {
-                                value[column._name] = this.getAutoIncrementValue(column._name);
-                                this.checkNotNullAndDataType(column, value);
-                            }
-                            else if (column._default && JsStore.isNull(value[column._name])) {
-                                value[column._name] = column._default;
-                                this.checkNotNullAndDataType(column, value);
-                            }
-                            else {
-                                this.checkNotNullAndDataType(column, value);
-                            }
-                        }
-                    };
                     this._table = table;
-                    this._onFinish = onFinish;
-                    this._onError = onError;
+                    this._autoIncrementValue = autoIncrementValue;
                 }
-                ValueChecker.prototype.checkNotNullAndDataType = function (column, value) {
+                ValueChecker.prototype.checkAndModifyValue = function (value) {
+                    this._value = value;
+                    this._table._columns.every(function (column) {
+                        this.checkAndModifyColumnValue(column, value);
+                        return !this._errorOccured;
+                    }, this);
+                    return this._errorOccured;
+                };
+                ValueChecker.prototype.checkNotNullAndDataType = function (column) {
                     // check not null schema
-                    if (column._notNull && JsStore.isNull(value[column._name])) {
+                    if (column._notNull && JsStore.isNull(this._value[column._name])) {
                         this.onValidationError(JsStore.Error_Type.NullValue, { ColumnName: column._name });
                     }
-                    else if (column._dataType && typeof value[column._name] !== column._dataType) {
+                    else if (column._dataType && typeof this._value[column._name] !== column._dataType) {
                         this.onValidationError(JsStore.Error_Type.BadDataType, { ColumnName: column._name });
                     }
-                    else {
-                        this.checkColumnValue();
-                    }
                 };
-                ValueChecker.prototype.getAutoIncrementValue = function (columnName) {
-                    return ++this._autoIncrementValue[columnName];
+                ValueChecker.prototype.checkAndModifyColumnValue = function (column) {
+                    // check auto increment scheme
+                    if (column._autoIncrement) {
+                        this._value[column._name] = ++this._autoIncrementValue[column._name];
+                    }
+                    else if (column._default && JsStore.isNull(this._value[column._name])) {
+                        this._value[column._name] = column._default;
+                    }
+                    this.checkNotNullAndDataType(column);
                 };
                 ValueChecker.prototype.onValidationError = function (error, details) {
                     this._errorOccured = true;
                     this._error = new JsStore.Error(error, details).get();
-                    this._onError(this._error);
                 };
                 return ValueChecker;
             }());
@@ -4811,16 +4788,11 @@ var JsStore;
         (function (Insert) {
             var ValuesChecker = /** @class */ (function () {
                 function ValuesChecker(table, values) {
-                    this._index = 0;
                     this._table = table;
                     this._values = values;
-                    this._valueCheckerObj = new Insert.ValueChecker(this._table, this.onFinishValueChecking.bind(this), function (err) {
-                        this._error = err;
-                        this.onFinish(true);
-                    }.bind(this));
                 }
                 ValuesChecker.prototype.checkAndModifyValues = function (onFinish) {
-                    this.onFinish = onFinish;
+                    this._onFinish = onFinish;
                     var auto_inc_columns = this._table._columns.filter(function (col) {
                         return col._autoIncrement;
                     });
@@ -4832,26 +4804,33 @@ var JsStore;
                         });
                     }, this);
                     KeyStore.get('dumy_key', function (val) {
-                        this._valueCheckerObj._autoIncrementValue = auto_inc_values;
-                        this.checkRowValue();
+                        this._valueCheckerObj = new Insert.ValueChecker(this._table, auto_inc_values);
+                        this.startChecking();
+                    }.bind(this), function (err) {
+                        this._error = err;
+                        this._onFinish(true);
                     }.bind(this));
                 };
-                ValuesChecker.prototype.onFinishValueChecking = function () {
-                    this._values[this._index++] = this._valueCheckerObj._value;
-                    this.checkRowValue();
-                };
-                ValuesChecker.prototype.checkRowValue = function () {
-                    var row_value = this._values[this._index];
-                    if (row_value) {
-                        this._valueCheckerObj.checkAndModifyValue(row_value);
-                    }
-                    else {
+                ValuesChecker.prototype.startChecking = function () {
+                    var is_error = false;
+                    this._values.every(function (item, index) {
+                        is_error = this._valueCheckerObj.checkAndModifyValue(item);
+                        if (is_error) {
+                            this._error = this._valueCheckerObj._error;
+                            this._onFinish(true);
+                        }
+                        return !is_error;
+                    }, this);
+                    if (!is_error) {
                         for (var prop in this._valueCheckerObj._autoIncrementValue) {
                             var auto_increment_key = "JsStore_" + Business.active_db._name + "_" + this._table._name + "_" + prop + "_Value";
                             KeyStore.set(auto_increment_key, this._valueCheckerObj._autoIncrementValue[prop]);
                         }
                         KeyStore.get('dumy_key', function (val) {
-                            this.onFinish(false);
+                            this._onFinish(false);
+                        }.bind(this), function (err) {
+                            this._error = err;
+                            this._onFinish(true);
                         }.bind(this));
                     }
                 };

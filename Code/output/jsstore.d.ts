@@ -975,18 +975,13 @@ declare namespace JsStore {
             class ValueChecker {
                 _table: Table;
                 _value: object;
-                _index: number;
                 _errorOccured: boolean;
                 _error: IError;
-                _onFinish: () => void;
-                _onError: (err: IError) => void;
                 _autoIncrementValue: {};
-                constructor(table: Table, onFinish: () => void, onError: (err: IError) => void);
-                checkAndModifyValue: (value: any) => void;
-                private checkColumnValue;
-                private checkNotNullAndDataType(column, value);
-                private checkAndModifyColumnValue;
-                private getAutoIncrementValue(columnName);
+                constructor(table: Table, autoIncrementValue: any);
+                checkAndModifyValue(value: any): boolean;
+                private checkNotNullAndDataType(column);
+                private checkAndModifyColumnValue(column);
                 private onValidationError(error, details);
             }
         }
@@ -998,14 +993,12 @@ declare namespace JsStore {
             class ValuesChecker {
                 _table: Table;
                 _values: any[];
-                _index: number;
-                _error: Error;
-                onFinish: (isError: boolean) => void;
+                _error: IError;
+                _onFinish: (isError: boolean) => void;
                 _valueCheckerObj: ValueChecker;
                 constructor(table: Table, values: any[]);
                 checkAndModifyValues(onFinish: (isError: boolean) => void): void;
-                private onFinishValueChecking();
-                private checkRowValue();
+                private startChecking();
             }
         }
     }
