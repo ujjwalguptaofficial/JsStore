@@ -9,7 +9,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /**
- * @license :JsStore.js - v1.4.3 - 16/01/2018
+ * @license :JsStore.js - v1.4.4 - 20/01/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
  */ 
@@ -660,13 +660,18 @@ var JsStore;
     JsStore.getDbSchema = function (dbName, callback) {
         if (callback) {
             KeyStore.get("JsStore_" + dbName + "_Schema", function (result) {
-                if (result._name) {
-                    callback(result);
+                if (result) {
+                    if (result._name) {
+                        callback(result);
+                    }
+                    else {
+                        var db_schema = new JsStore.Model.DataBase(result);
+                        KeyStore.set("JsStore_" + dbName + "_Schema", db_schema);
+                        callback(db_schema);
+                    }
                 }
                 else {
-                    var db_schema = new JsStore.Model.DataBase(result);
-                    KeyStore.set("JsStore_" + dbName + "_Schema", db_schema);
-                    callback(db_schema);
+                    callback(result);
                 }
             });
         }
