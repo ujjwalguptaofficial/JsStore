@@ -1,4 +1,3 @@
-
 namespace JsStore {
     export namespace Business {
         export var db_connection: IDBDatabase,
@@ -111,8 +110,8 @@ namespace JsStore {
             };
 
             private transaction(qry: ITranscationQry, onSuccess, onError) {
-                var transaction_obj = new Transaction(onSuccess, onError);
-                transaction_obj.execute(qry.TableNames, qry.Data, qry.Logic);
+                var transaction_obj = new Transaction(qry, onSuccess, onError);
+                transaction_obj.execute();
             }
 
             private openDb = function (dbName, onSuccess: () => void, onError: (err: IError) => void) {

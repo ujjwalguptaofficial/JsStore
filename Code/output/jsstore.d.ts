@@ -322,6 +322,7 @@ declare namespace JsStore {
         TableNames: string[];
         Logic: string;
         Data: any;
+        AbortOnError: boolean;
         OnSuccess: (results: any[]) => void;
         OnError: (err: IError) => void;
     }
@@ -606,12 +607,13 @@ declare namespace JsStore {
         }
     }
 }
+declare var tx_logic: any;
 declare namespace JsStore {
     namespace Business {
         class Transaction extends Base {
             _results: any;
-            constructor(onSuccess: any, onError: any);
-            execute(tableNames: string[], data: any, txLogic: any): void;
+            constructor(qry: ITranscationQry, onSuccess: any, onError: any);
+            execute(): void;
             private initTransaction(tableNames);
             private onTransactionCompleted();
         }
@@ -976,13 +978,16 @@ declare namespace JsStore {
                 _index: number;
                 _errorOccured: boolean;
                 _error: IError;
-                onFinish: () => void;
-                onError: (err: IError) => void;
+                _onFinish: () => void;
+                _onError: (err: IError) => void;
+                _autoIncrementValue: {};
                 constructor(table: Table, onFinish: () => void, onError: (err: IError) => void);
                 checkAndModifyValue: (value: any) => void;
                 private checkColumnValue;
+                private checkNotNullAndDataType(column, value);
                 private checkAndModifyColumnValue;
-                private onValidationError;
+                private getAutoIncrementValue(columnName);
+                private onValidationError(error, details);
             }
         }
     }
@@ -996,9 +1001,11 @@ declare namespace JsStore {
                 _index: number;
                 _error: Error;
                 onFinish: (isError: boolean) => void;
+                _valueCheckerObj: ValueChecker;
                 constructor(table: Table, values: any[]);
-                checkAndModifyValues: (onFinish: (isError: boolean) => void) => void;
-                private checkRowValue;
+                checkAndModifyValues(onFinish: (isError: boolean) => void): void;
+                private onFinishValueChecking();
+                private checkRowValue();
             }
         }
     }

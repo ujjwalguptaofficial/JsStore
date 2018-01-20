@@ -154,6 +154,7 @@ namespace JsStore {
         TableNames: string[];
         Logic: string;
         Data: any;
+        AbortOnError: boolean;
         OnSuccess: (results: any[]) => void;
         OnError: (err: IError) => void;
     }

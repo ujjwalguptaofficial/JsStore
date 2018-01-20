@@ -1,24 +1,32 @@
+declare var tx_logic;
 namespace JsStore {
     export namespace Business {
         export class Transaction extends Base {
             _results;
 
-            constructor(onSuccess, onError) {
+            constructor(qry: ITranscationQry, onSuccess, onError) {
                 super();
+                qry.AbortOnError = qry.AbortOnError ? qry.AbortOnError : true;
+                this._query = qry;
                 this._onSuccess = onSuccess;
                 this._onError = onError;
             }
 
-            execute(tableNames: string[], data, txLogic) {
+            execute() {
                 var request_queue: IWebWorkerRequest[] = [],
                     onRequestFinished = function (result) {
                         var finisehd_request = request_queue.shift();
-                        if (finisehd_request && !this._errorOccured) {
-                            if (finisehd_request.OnSuccess) {
-                                finisehd_request.OnSuccess(result);
+                        if (finisehd_request) {
+                            if (this._errorOccured && this._query.AbortOnError === true) {
+                                db_transaction.abort();
                             }
-                            if (request_queue.length >= 1) {
-                                executeRequest(request_queue[0]);
+                            else {
+                                if (finisehd_request.OnSuccess) {
+                                    finisehd_request.OnSuccess(result);
+                                }
+                                if (request_queue.length >= 1) {
+                                    executeRequest(request_queue[0]);
+                                }
                             }
                         }
                     }.bind(this),
@@ -45,7 +53,7 @@ namespace JsStore {
                     pushRequest = function (request: IWebWorkerRequest) {
                         request_queue.push(request);
                         if (request_queue.length === 1) {
-                            this.initTransaction(tableNames);
+                            this.initTransaction(this._query.TableNames);
                             executeRequest(request_queue[0]);
                         }
                     }.bind(this),
@@ -89,9 +97,10 @@ namespace JsStore {
                         OnSuccess: onSuccess
                     } as IWebWorkerRequest);
                 };
-                eval("var txLogic =" + txLogic);
-                txLogic.call(this, data);
-                data = null;
+
+                eval("var tx_logic =" + this._query.Logic);
+                tx_logic.call(this, this._query.Data);
+                this._query.Data = this._query.Logic = null;
             }
 
             private initTransaction(tableNames) {
