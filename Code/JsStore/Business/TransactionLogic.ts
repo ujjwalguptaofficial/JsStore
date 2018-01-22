@@ -61,40 +61,40 @@ namespace JsStore {
                         onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
                         pushRequest({
                             Name: 'select',
-                            Query: qry,
-                            OnSuccess: onSuccess
+                            OnSuccess: onSuccess,
+                            Query: qry
                         } as IWebWorkerRequest);
                     };
                 var insert = function (qry: IInsert, onSuccess) {
                     onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
                     pushRequest({
                         Name: 'insert',
-                        Query: qry,
-                        OnSuccess: onSuccess
+                        OnSuccess: onSuccess,
+                        Query: qry
                     } as IWebWorkerRequest);
                 };
                 var update = function (qry: IUpdate, onSuccess) {
                     onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
                     pushRequest({
                         Name: 'update',
-                        Query: qry,
-                        OnSuccess: onSuccess
+                        OnSuccess: onSuccess,
+                        Query: qry
                     } as IWebWorkerRequest);
                 };
                 var remove = function (qry: IRemove, onSuccess) {
                     onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
                     pushRequest({
                         Name: 'remove',
-                        Query: qry,
-                        OnSuccess: onSuccess
+                        OnSuccess: onSuccess,
+                        Query: qry
                     } as IWebWorkerRequest);
                 };
                 var count = function (qry: ICount, onSuccess) {
                     onSuccess = qry.OnSuccess ? qry.OnSuccess : onSuccess;
                     pushRequest({
                         Name: 'count',
-                        Query: qry,
-                        OnSuccess: onSuccess
+                        OnSuccess: onSuccess,
+                        Query: qry
                     } as IWebWorkerRequest);
                 };
 

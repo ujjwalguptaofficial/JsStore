@@ -6,7 +6,7 @@ namespace JsStore {
         private _requestQueue: IWebWorkerRequest[] = [];
         private _isCodeExecuting = false;
 
-        protected pushApi = function (request: IWebWorkerRequest, usePromise: boolean) {
+        protected pushApi(request: IWebWorkerRequest, usePromise: boolean) {
             if (usePromise === true) {
                 return new Promise(function (resolve, reject) {
                     request.OnSuccess = function (result) {
@@ -22,12 +22,12 @@ namespace JsStore {
                 this.prcoessExecutionOfCode(request);
                 return this;
             }
-        };
+        }
 
-        protected createWorker = function () {
+        protected createWorker() {
             try {
                 if (Worker) {
-                    var script_url = this.getScriptUrl();
+                    var script_url = this.getScriptUrl(file_name);
                     if (script_url && script_url.length > 0) {
                         worker_instance = new Worker(script_url);
                         worker_instance.onmessage = function (msg) {
@@ -60,9 +60,9 @@ namespace JsStore {
             catch (ex) {
                 this.onWorkerFailed();
             }
-        };
+        }
 
-        private prcoessExecutionOfCode = function (request: IWebWorkerRequest) {
+        private prcoessExecutionOfCode(request: IWebWorkerRequest) {
             if (status.ConStatus === Connection_Status.NotStarted) {
                 switch (request.Name) {
                     case 'create_db':
@@ -83,9 +83,9 @@ namespace JsStore {
                 }
             }
             log("request pushed: " + request.Name);
-        };
+        }
 
-        private executeCode = function () {
+        private executeCode() {
             if (!this._isCodeExecuting && this._requestQueue.length > 0) {
                 this._isCodeExecuting = true;
                 var first_request = this._requestQueue[0],
@@ -100,19 +100,19 @@ namespace JsStore {
                     this.executeCodeDirect(request);
                 }
             }
-        };
+        }
 
-        private executeCodeDirect = function (request: IWebWorkerRequest) {
+        private executeCodeDirect(request: IWebWorkerRequest) {
             new Business.Main(function (results) {
                 this.processFinishedRequest(results);
             }.bind(this)).checkConnectionAndExecuteLogic(request);
-        };
+        }
 
-        private executeCodeUsingWorker = function (request: IWebWorkerRequest) {
+        private executeCodeUsingWorker(request: IWebWorkerRequest) {
             worker_instance.postMessage(request);
-        };
+        }
 
-        private processFinishedRequest = function (message: IWebWorkerResult) {
+        private processFinishedRequest(message: IWebWorkerResult) {
             var finished_request: IWebWorkerRequest = this._requestQueue.shift();
             this._isCodeExecuting = false;
             if (finished_request) {
@@ -129,15 +129,15 @@ namespace JsStore {
                 }
                 this.executeCode();
             }
-        };
+        }
 
-        private onWorkerFailed = function () {
+        private onWorkerFailed() {
             console.warn('JsStore is not runing in web worker');
             worker_status = WebWorker_Status.Failed;
             if (status.ConStatus === Connection_Status.NotStarted) {
                 this.executeCode();
             }
-        };
+        }
 
         private getScriptUrl(fileName: string) {
             var script_url = "";
@@ -154,7 +154,7 @@ namespace JsStore {
             return script_url;
         }
 
-        private onMessageFromWorker = function (msg) {
+        private onMessageFromWorker(msg) {
             if (typeof msg.data === 'string') {
                 var datas = msg.data.split(':')[1];
                 switch (datas) {
@@ -165,6 +165,6 @@ namespace JsStore {
             else {
                 this.processFinishedRequest(msg.data);
             }
-        };
+        }
     }
 }

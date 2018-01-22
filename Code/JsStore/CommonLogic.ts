@@ -5,7 +5,11 @@ namespace JsStore {
             ConStatus: Connection_Status.NotStarted,
             LastError: null
         } as IJsStoreStatus,
-        temp_results: any[] = [];
+        file_name;
+
+    export var setFileName = function (fileName) {
+        file_name = fileName;
+    };
 
     export var getObjectFirstKey = function (value) {
         for (var key in value) {

@@ -7,15 +7,15 @@ namespace JsStore {
                     this._table = table;
                 }
 
-                check = function (inValue, tblName) {
+                check = function (setValue, tblName) {
                     var error: IError = null;
-                    if (typeof inValue === 'object') {
+                    if (typeof setValue === 'object') {
                         if (this._table) {
                             // loop through table column and find data is valid
                             this._table._columns.every(function (column: Model.Column) {
                                 if (error === null) {
-                                    if (column._name in inValue) {
-                                        error = this.checkByColumn(column, inValue[column._name]);
+                                    if (column._name in setValue) {
+                                        error = this.checkByColumn(column, setValue[column._name]);
                                     }
                                     return true;
                                 }

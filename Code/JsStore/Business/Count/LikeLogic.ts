@@ -11,13 +11,13 @@ namespace JsStore {
                     this._compValue = (value as string).toLowerCase();
                     this._compValueLength = this._compValue.length;
                     this._compSymbol = symbol;
-                    this.CursorOpenRequest = this._objectStore.index(column).openCursor();
-                    this.CursorOpenRequest.onerror = function (e) {
+                    var cursor_request = this._objectStore.index(column).openCursor();
+                    cursor_request.onerror = function (e) {
                         this._errorOccured = true;
                         this.onErrorOccured(e);
                     }.bind(this);
                     if (this._checkFlag) {
-                        this.CursorOpenRequest.onsuccess = function (e) {
+                        cursor_request.onsuccess = function (e) {
                             cursor = e.target.result;
                             if (cursor) {
                                 if (this.filterOnOccurence(cursor.key) &&
@@ -32,7 +32,7 @@ namespace JsStore {
                         }.bind(this);
                     }
                     else {
-                        this.CursorOpenRequest.onsuccess = function (e) {
+                        cursor_request.onsuccess = function (e) {
                             cursor = e.target.result;
                             if (cursor) {
                                 if (this.filterOnOccurence(cursor.key)) {

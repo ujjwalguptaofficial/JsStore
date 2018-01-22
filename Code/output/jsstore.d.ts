@@ -328,7 +328,8 @@ declare namespace JsStore {
     }
 }
 declare namespace JsStore {
-    var enable_log: boolean, db_version: number, status: IJsStoreStatus, temp_results: any[];
+    var enable_log: boolean, db_version: number, status: IJsStoreStatus, file_name: any;
+    var setFileName: (fileName: any) => void;
     var getObjectFirstKey: (value: any) => string;
     var log: (msg: any) => void;
     var logError: (msg: any) => void;
@@ -533,7 +534,7 @@ declare namespace JsStore {
     namespace Business {
         class DropDb {
             constructor(name: string, onSuccess: () => void, onError: (err: IError) => void);
-            deleteDb: (name: string, onSuccess: () => void, onError: (err: any) => void) => void;
+            deleteDb(name: string, onSuccess: () => void, onError: (err: any) => void): void;
         }
     }
 }
@@ -566,25 +567,25 @@ declare namespace JsStore {
     namespace Business {
         var db_connection: IDBDatabase, active_db: DataBase, db_transaction: IDBTransaction, createTransaction: (tableNames: any, callBack: () => void, mode?: any) => void;
         class Main {
-            _onSuccess: () => void;
+            _onSuccess: (result) => void;
             constructor(onSuccess?: any);
-            checkConnectionAndExecuteLogic: (request: IWebWorkerRequest) => void;
-            private changeLogStatus;
-            private returnResult;
-            private executeLogic;
+            checkConnectionAndExecuteLogic(request: IWebWorkerRequest): void;
+            private changeLogStatus(request);
+            private returnResult(result);
+            private executeLogic(request);
             private transaction(qry, onSuccess, onError);
-            private openDb;
-            private closeDb;
-            private dropDb;
-            private update;
-            private insert;
-            private bulkInsert;
-            private remove;
-            private select;
-            private count;
-            private createDb;
-            private clear;
-            private exportJson;
+            private openDb(dbName, onSuccess, onError);
+            private closeDb();
+            private dropDb(onSuccess, onError);
+            private update(query, onSuccess, onError);
+            private insert(query, onSuccess, onError);
+            private bulkInsert(query, onSuccess, onError);
+            private remove(query, onSuccess, onError);
+            private select(query, onSuccess, onError);
+            private count(query, onSuccess, onError);
+            private createDb(dataBase, onSuccess, onError);
+            private clear(tableName, onSuccess, onError);
+            private exportJson(query, onSuccess, onError);
         }
     }
 }
@@ -806,7 +807,7 @@ declare namespace JsStore {
                 constructor(query: ICount, onSuccess: (noOfRecord: number) => void, onError: (error: IError) => void);
                 execute(): void;
                 private initTransaction();
-                private onQueryFinished;
+                private onQueryFinished();
                 private onTransactionCompleted();
             }
         }
@@ -881,7 +882,7 @@ declare namespace JsStore {
             class SchemaChecker {
                 _table: Table;
                 constructor(table: Table);
-                check: (inValue: any, tblName: any) => IError;
+                check: (setValue: any, tblName: any) => IError;
                 private checkByColumn;
             }
         }
@@ -962,8 +963,8 @@ declare namespace JsStore {
                 _table: Table;
                 constructor(query: IInsert, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void);
                 execute(): void;
-                onTransactionCompleted(): void;
-                private onQueryFinished;
+                private onTransactionCompleted();
+                private onQueryFinished();
                 private insertData(values);
             }
         }
@@ -1009,16 +1010,16 @@ declare namespace JsStore {
     class CodeExecutionHelper {
         private _requestQueue;
         private _isCodeExecuting;
-        protected pushApi: (request: IWebWorkerRequest, usePromise: boolean) => any;
-        protected createWorker: () => void;
-        private prcoessExecutionOfCode;
-        private executeCode;
-        private executeCodeDirect;
-        private executeCodeUsingWorker;
-        private processFinishedRequest;
-        private onWorkerFailed;
+        protected pushApi(request: IWebWorkerRequest, usePromise: boolean): any;
+        protected createWorker(): void;
+        private prcoessExecutionOfCode(request);
+        private executeCode();
+        private executeCodeDirect(request);
+        private executeCodeUsingWorker(request);
+        private processFinishedRequest(message);
+        private onWorkerFailed();
         private getScriptUrl(fileName);
-        private onMessageFromWorker;
+        private onMessageFromWorker(msg);
     }
 }
 import Model = JsStore.Model;

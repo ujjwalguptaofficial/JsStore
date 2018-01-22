@@ -7,7 +7,7 @@ namespace JsStore {
                 }.bind(this), 100);
             }
 
-            deleteDb = function (name: string, onSuccess: () => void, onError: (err: any) => void) {
+            deleteDb(name: string, onSuccess: () => void, onError: (err: any) => void) {
                 var db_drop_request = indexedDB.deleteDatabase(name);
                 db_drop_request.onblocked = function () {
                     if (onError != null) {
@@ -34,7 +34,7 @@ namespace JsStore {
                     });
                     KeyStore.remove("JsStore_" + active_db._name + "_Schema", onSuccess);
                 };
-            };
+            }
         }
     }
 }

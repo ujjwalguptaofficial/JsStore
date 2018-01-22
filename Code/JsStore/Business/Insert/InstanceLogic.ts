@@ -15,7 +15,7 @@ namespace JsStore {
                 }
 
                 execute() {
-                    var table = this.getTable(this._query.Into);
+                    var table = this.getTable(this._tableName);
                     if (!Array.isArray(this._query.Values)) {
                         this.onErrorOccured(
                             new Error(Error_Type.NotArray).get(),
@@ -43,23 +43,23 @@ namespace JsStore {
                             this._query.Values = undefined;
                         }
                         catch (ex) {
-                            this.onExceptionOccured(ex, { TableName: this._query.Into });
+                            this.onExceptionOccured(ex, { TableName: this._tableName });
                         }
                     }
                     else {
-                        new Error(Error_Type.TableNotExist, { TableName: this._query.Into }).throw();
+                        new Error(Error_Type.TableNotExist, { TableName: this._tableName }).throw();
                     }
                 }
 
-                public onTransactionCompleted() {
+                private onTransactionCompleted() {
                     this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
                 }
 
-                private onQueryFinished = function () {
+                private onQueryFinished() {
                     if (this._isTransaction === true) {
                         this.onTransactionCompleted();
                     }
-                };
+                }
 
                 private insertData(values) {
                     var value_index = 0,

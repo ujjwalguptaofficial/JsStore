@@ -38,15 +38,15 @@ namespace JsStore {
 
                 private startChecking() {
                     var is_error: boolean = false;
-                    this._values.every(function (item, index) {
+                    this._values.every(function (item) {
                         is_error = this._valueCheckerObj.checkAndModifyValue(item);
-                        if (is_error) {
-                            this._error = this._valueCheckerObj._error;
-                            this._onFinish(true);
-                        }
                         return !is_error;
                     }, this);
-                    if (!is_error) {
+                    if (is_error) {
+                        this._error = this._valueCheckerObj._error;
+                        this._onFinish(true);
+                    }
+                    else {
                         for (var prop in this._valueCheckerObj._autoIncrementValue) {
                             var auto_increment_key =
                                 "JsStore_" + active_db._name + "_" + this._table._name + "_" + prop + "_Value";
