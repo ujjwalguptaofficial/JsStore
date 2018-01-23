@@ -116,15 +116,16 @@ namespace JsStore {
 
             private openDb(dbName, onSuccess: () => void, onError: (err: IError) => void) {
                 getDbVersion(dbName, function (dbVersion) {
-                    if (dbVersion != null) {
+                    if (dbVersion !== 0) {
                         getDbSchema(dbName, function (result) {
                             active_db = result;
                             var open_db_object = new OpenDb(dbVersion, onSuccess, onError);
                         });
                     }
                     else {
-                        var error = new Error(Error_Type.DbNotExist, { DbName: dbName });
-                        error.throw();
+                        var err = new Error(Error_Type.DbNotExist, { DbName: dbName });
+                        err.logError();
+                        onError(err.get());
                     }
                 });
             }

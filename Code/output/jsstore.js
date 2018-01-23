@@ -9,7 +9,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /**
- * @license :JsStore.js - v1.5.0 - 18/01/2018
+ * @license :JsStore.js - v1.5.0 - 23/01/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
  */ 
@@ -1644,15 +1644,16 @@ var JsStore;
             };
             Main.prototype.openDb = function (dbName, onSuccess, onError) {
                 JsStore.getDbVersion(dbName, function (dbVersion) {
-                    if (dbVersion != null) {
+                    if (dbVersion !== 0) {
                         JsStore.getDbSchema(dbName, function (result) {
                             Business.active_db = result;
                             var open_db_object = new Business.OpenDb(dbVersion, onSuccess, onError);
                         });
                     }
                     else {
-                        var error = new JsStore.Error(JsStore.Error_Type.DbNotExist, { DbName: dbName });
-                        error.throw();
+                        var err = new JsStore.Error(JsStore.Error_Type.DbNotExist, { DbName: dbName });
+                        err.logError();
+                        onError(err.get());
                     }
                 });
             };
