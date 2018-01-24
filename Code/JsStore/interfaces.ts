@@ -158,4 +158,10 @@ namespace JsStore {
         OnSuccess: (results: any[]) => void;
         OnError: (err: IError) => void;
     }
+
+    export interface IConfig {
+        EnableLog: boolean;
+        DropDbExplicitly: boolean;
+        DropDbCallBack: any;
+    }
 }

@@ -125,14 +125,7 @@ namespace JsStore {
      */
     export var enableLog = function () {
         enable_log = true;
-        if (worker_instance) {
-            worker_instance.postMessage({
-                Name: 'change_log_status',
-                Query: {
-                    logging: enable_log
-                }
-            } as IWebWorkerRequest);
-        }
+        Utils.changeLogStatus();
     };
 
     /**
@@ -141,13 +134,12 @@ namespace JsStore {
      */
     export var disableLog = function () {
         enable_log = false;
-        if (worker_instance) {
-            worker_instance.postMessage({
-                Name: 'change_log_status',
-                Query: {
-                    logging: enable_log
-                }
-            } as IWebWorkerRequest);
+        Utils.changeLogStatus();
+    };
+
+    export var setConfig = function (config: IConfig) {
+        if (config.DropDbCallBack) {
+            config.DropDbCallBack = config.DropDbCallBack.toString();
         }
     };
 }

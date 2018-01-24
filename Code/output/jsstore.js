@@ -574,6 +574,16 @@ var JsStore;
                 delete obj[key];
             }
         };
+        Utils.changeLogStatus = function () {
+            if (JsStore.worker_instance) {
+                JsStore.worker_instance.postMessage({
+                    Name: 'change_log_status',
+                    Query: {
+                        logging: JsStore.enable_log
+                    }
+                });
+            }
+        };
         return Utils;
     }());
     JsStore.Utils = Utils;
@@ -703,14 +713,7 @@ var JsStore;
      */
     JsStore.enableLog = function () {
         JsStore.enable_log = true;
-        if (JsStore.worker_instance) {
-            JsStore.worker_instance.postMessage({
-                Name: 'change_log_status',
-                Query: {
-                    logging: JsStore.enable_log
-                }
-            });
-        }
+        JsStore.Utils.changeLogStatus();
     };
     /**
      * disable log
@@ -718,13 +721,11 @@ var JsStore;
      */
     JsStore.disableLog = function () {
         JsStore.enable_log = false;
-        if (JsStore.worker_instance) {
-            JsStore.worker_instance.postMessage({
-                Name: 'change_log_status',
-                Query: {
-                    logging: JsStore.enable_log
-                }
-            });
+        JsStore.Utils.changeLogStatus();
+    };
+    JsStore.setConfig = function (config) {
+        if (config.DropDbCallBack) {
+            config.DropDbCallBack = config.DropDbCallBack.toString();
         }
     };
 })(JsStore || (JsStore = {}));

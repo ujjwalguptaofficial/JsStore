@@ -326,6 +326,11 @@ declare namespace JsStore {
         OnSuccess: (results: any[]) => void;
         OnError: (err: IError) => void;
     }
+    interface IConfig {
+        EnableLog: boolean;
+        DropDbExplicitly: boolean;
+        DropDbCallBack: any;
+    }
 }
 declare namespace JsStore {
     var enable_log: boolean, db_version: number, status: IJsStoreStatus, file_name: any;
@@ -337,6 +342,7 @@ declare namespace JsStore {
 declare namespace JsStore {
     class Utils {
         static convertObjectintoLowerCase(obj: any): void;
+        static changeLogStatus(): void;
     }
 }
 declare namespace JsStore {
@@ -380,6 +386,7 @@ declare namespace JsStore {
      *
      */
     var disableLog: () => void;
+    var setConfig: (config: IConfig) => void;
 }
 declare namespace JsStore {
     enum Error_Type {
