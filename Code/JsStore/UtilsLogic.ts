@@ -1,12 +1,14 @@
 namespace JsStore {
     export class Utils {
-        static convertObjectintoLowerCase(obj: any) {
-            var keys = Object.keys(obj);
-            var n = keys.length;
-            while (n--) {
-                var key = keys[n];
-                obj[key.toLowerCase()] = obj[key];
-                delete obj[key];
+        static updateDbStatus(status: Connection_Status, err?: Error_Type) {
+            if (err === undefined) {
+                db_status.ConStatus = status;
+            }
+            else {
+                db_status = {
+                    ConStatus: status,
+                    LastError: err
+                };
             }
         }
 

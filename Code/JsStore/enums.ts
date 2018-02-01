@@ -16,7 +16,8 @@ namespace JsStore {
         Connected = "connected",
         Closed = "closed",
         NotStarted = "not_started",
-        UnableToStart = "unable_to_start"
+        UnableToStart = "unable_to_start",
+        ClosedByJsStore = "closed_by_jsstore"
     }
 
     export enum WhereQryOption {

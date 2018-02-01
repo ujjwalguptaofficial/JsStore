@@ -12,28 +12,31 @@ namespace JsStore {
                     };
 
                     db_request.onsuccess = function (event) {
-                        status.ConStatus = Connection_Status.Connected;
+                        db_status.ConStatus = Connection_Status.Connected;
                         db_connection = db_request.result;
-                        (db_connection as any).onclose = function () {
-                            status.ConStatus = Connection_Status.Closed;
-                            status.LastError = Error_Type.ConnectionClosed;
+                        (db_connection as any).onclose = function (e) {
+                            callDbDroppedByBrowser();
+                            Utils.updateDbStatus(Connection_Status.Closed, Error_Type.ConnectionClosed);
                         };
 
                         db_connection.onversionchange = function (e) {
                             if (e.newVersion === null) { // An attempt is made to delete the db
-                                (e.target as any).close(); // Manually close our connection to the db
+                                if (e.newVersion === null) { // An attempt is made to delete the db
+                                    (e.target as any).close(); // Manually close our connection to the db
+                                    callDbDroppedByBrowser(true);
+                                    Utils.updateDbStatus(Connection_Status.Closed, Error_Type.ConnectionClosed);
+                                }
                             }
                         };
 
                         db_connection.onerror = function (e) {
-                            status.LastError = ("Error occured in connection :" + (e.target as any).result) as any;
+                            db_status.LastError = ("Error occured in connection :" + (e.target as any).result) as any;
                         };
 
                         db_connection.onabort = function (e) {
-                            status.ConStatus = Connection_Status.Closed;
-                            status.LastError = Error_Type.ConnectionAborted;
+                            db_status.ConStatus = Connection_Status.Closed;
+                            db_status.LastError = Error_Type.ConnectionAborted;
                         };
-
                         if (onSuccess != null) {
                             onSuccess();
                         }

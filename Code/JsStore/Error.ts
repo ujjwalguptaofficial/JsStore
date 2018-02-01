@@ -18,7 +18,8 @@ namespace JsStore {
         IndexedDbBlocked = "indexeddb_blocked",
         ConnectionAborted = "connection_aborted",
         ConnectionClosed = "connection_closed",
-        NotObject = "not_object"
+        NotObject = "not_object",
+        InvalidConfig = "invalid_config"
     }
 
     export interface IError {
@@ -104,6 +105,8 @@ namespace JsStore {
                 case Error_Type.NotObject:
                     err_msg = "supplied value is not object";
                     break;
+                case Error_Type.InvalidOp:
+                    err_msg = "Invalid Config '" + this._info['Config'] + " '";
                 default:
                     err_msg = this._message;
                     break;

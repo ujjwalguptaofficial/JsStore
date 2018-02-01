@@ -43,7 +43,7 @@ namespace JsStore {
                             if (worker_status !== WebWorker_Status.Failed) {
                                 worker_status = WebWorker_Status.Registered;
                             }
-                            if (status.ConStatus === Connection_Status.Connected) {
+                            if (db_status.ConStatus === Connection_Status.Connected) {
                                 this.executeCode();
                             }
                         }.bind(this), 100);
@@ -63,7 +63,7 @@ namespace JsStore {
         }
 
         private prcoessExecutionOfCode(request: IWebWorkerRequest) {
-            if (status.ConStatus === Connection_Status.NotStarted) {
+            if (db_status.ConStatus === Connection_Status.NotStarted) {
                 switch (request.Name) {
                     case 'create_db':
                     case 'open_db':
@@ -71,7 +71,7 @@ namespace JsStore {
                         if (worker_status !== WebWorker_Status.NotStarted) {
                             this.executeCode();
                         }
-                        status.ConStatus = Connection_Status.Connected;
+                        db_status.ConStatus = Connection_Status.Connected;
                         break;
                     default: this._requestQueue.push(request);
                 }
@@ -134,7 +134,7 @@ namespace JsStore {
         private onWorkerFailed() {
             console.warn('JsStore is not runing in web worker');
             worker_status = WebWorker_Status.Failed;
-            if (status.ConStatus === Connection_Status.NotStarted) {
+            if (db_status.ConStatus === Connection_Status.NotStarted) {
                 this.executeCode();
             }
         }

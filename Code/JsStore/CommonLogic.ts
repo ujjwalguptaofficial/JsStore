@@ -1,10 +1,10 @@
 namespace JsStore {
     export var enable_log = false,
         db_version: number = 0,
-        status: IJsStoreStatus = {
+        db_status: IDbStatus = {
             ConStatus: Connection_Status.NotStarted,
             LastError: null
-        } as IJsStoreStatus,
+        },
         file_name;
 
     export var setFileName = function (fileName) {

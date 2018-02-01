@@ -24,7 +24,7 @@ namespace KeyStore {
                 (self as any).postMessage('message:WorkerFailed');
             }
             else {
-                JsStore.status = {
+                JsStore.db_status = {
                     ConStatus: JsStore.Connection_Status.UnableToStart,
                     LastError: JsStore.Error_Type.IndexedDbUndefined
                 };

@@ -13,7 +13,7 @@ namespace JsStore {
         errCallBack: (err: IError) => void = null
     ) {
         var use_promise = callback ? false : true;
-        if (status.ConStatus !== Connection_Status.UnableToStart) {
+        if (db_status.ConStatus !== Connection_Status.UnableToStart) {
             if (use_promise) {
                 return new Promise(function (resolve, reject) {
                     if (typeof dbInfo === 'string') {
@@ -43,7 +43,7 @@ namespace JsStore {
         }
         else {
             var error = {
-                _type: status.LastError,
+                _type: db_status.LastError,
                 _message: null
             } as IError;
             switch (error._type) {
@@ -138,8 +138,14 @@ namespace JsStore {
     };
 
     export var setConfig = function (config: IConfig) {
-        if (config.DropDbCallBack) {
-            config.DropDbCallBack = config.DropDbCallBack.toString();
+        if (config.OnDbDroppedByBrowser) {
+            config.OnDbDroppedByBrowser = config.OnDbDroppedByBrowser.toString();
+        }
+        if (worker_instance) {
+            worker_instance.postMessage({
+                Name: 'set_config',
+                Query: config
+            } as IWebWorkerRequest);
         }
     };
 }

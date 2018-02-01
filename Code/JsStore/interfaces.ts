@@ -123,7 +123,7 @@ namespace JsStore {
         Column: string;
     }
 
-    export interface IJsStoreStatus {
+    export interface IDbStatus {
         ConStatus: Connection_Status;
         LastError: Error_Type;
     }
@@ -161,7 +161,7 @@ namespace JsStore {
 
     export interface IConfig {
         EnableLog: boolean;
-        DropDbExplicitly: boolean;
-        DropDbCallBack: any;
+        OnDbDroppedByBrowser: string;
+        FileName: string;
     }
 }

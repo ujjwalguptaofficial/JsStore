@@ -38,7 +38,7 @@ var KeyStore;
                 self.postMessage('message:WorkerFailed');
             }
             else {
-                JsStore.status = {
+                JsStore.db_status = {
                     ConStatus: JsStore.Connection_Status.UnableToStart,
                     LastError: JsStore.Error_Type.IndexedDbUndefined
                 };
@@ -50,12 +50,12 @@ var KeyStore;
 })(KeyStore || (KeyStore = {}));
 var KeyStore;
 (function (KeyStore) {
-    var ConnectionStatus;
-    (function (ConnectionStatus) {
-        ConnectionStatus["Connected"] = "connected";
-        ConnectionStatus["Closed"] = "closed";
-        ConnectionStatus["NotStarted"] = "not_connected";
-    })(ConnectionStatus = KeyStore.ConnectionStatus || (KeyStore.ConnectionStatus = {}));
+    var Connection_Status;
+    (function (Connection_Status) {
+        Connection_Status["Connected"] = "connected";
+        Connection_Status["Closed"] = "closed";
+        Connection_Status["NotStarted"] = "not_connected";
+    })(Connection_Status = KeyStore.Connection_Status || (KeyStore.Connection_Status = {}));
     KeyStore.request_queue = [], KeyStore.table_name = "LocalStore", KeyStore.is_code_executing = false;
 })(KeyStore || (KeyStore = {}));
 var KeyStore;
@@ -284,7 +284,7 @@ var KeyStore;
                 var db_request = self.indexedDB.open(dbName, 1);
                 db_request.onerror = function (event) {
                     if (event.target.error.name === 'InvalidStateError') {
-                        JsStore.status = {
+                        JsStore.db_status = {
                             ConStatus: JsStore.Connection_Status.UnableToStart,
                             LastError: JsStore.Error_Type.IndexedDbBlocked,
                         };
@@ -294,23 +294,31 @@ var KeyStore;
                     }
                 };
                 db_request.onsuccess = function (event) {
-                    Business.status.ConStatus = KeyStore.ConnectionStatus.Connected;
+                    Business.db_status.ConStatus = KeyStore.Connection_Status.Connected;
                     Business.db_connection = db_request.result;
                     Business.db_connection.onclose = function () {
-                        Business.status.ConStatus = KeyStore.ConnectionStatus.Closed;
-                        Business.status.LastError = "Connection Closed";
+                        Business.callDbDroppedByBrowser();
+                        Business.db_status = {
+                            ConStatus: KeyStore.Connection_Status.Closed,
+                            LastError: "Connection Closed"
+                        };
                     };
                     Business.db_connection.onversionchange = function (e) {
                         if (e.newVersion === null) {
                             e.target.close(); // Manually close our connection to the db
+                            Business.db_status = {
+                                ConStatus: KeyStore.Connection_Status.Closed,
+                                LastError: "Connection Closed"
+                            };
+                            Business.callDbDroppedByBrowser();
                         }
                     };
                     Business.db_connection.onerror = function (e) {
-                        Business.status.LastError = "Error occured in connection :" + e.target.result;
+                        Business.db_status.LastError = "Error occured in connection :" + e.target.result;
                     };
                     Business.db_connection.onabort = function (e) {
-                        Business.status.ConStatus = KeyStore.ConnectionStatus.Closed;
-                        Business.status.LastError = "Connection aborted";
+                        Business.db_status.ConStatus = KeyStore.Connection_Status.Closed;
+                        Business.db_status.LastError = "Connection aborted";
                     };
                     if (onSuccess != null) {
                         onSuccess();
@@ -332,51 +340,17 @@ var KeyStore;
 (function (KeyStore) {
     var Business;
     (function (Business) {
-        Business.status = {
-            ConStatus: KeyStore.ConnectionStatus.NotStarted,
+        Business.is_db_deleted_by_browser = false, Business.db_status = {
+            ConStatus: KeyStore.Connection_Status.NotStarted,
             LastError: ""
+        }, Business.callDbDroppedByBrowser = function () {
+            if (Business.db_status.ConStatus === KeyStore.Connection_Status.Connected) {
+                Business.is_db_deleted_by_browser = true;
+            }
         };
         var Main = /** @class */ (function () {
             function Main(onSuccess) {
                 if (onSuccess === void 0) { onSuccess = null; }
-                this.set = function (query, onSuccess, onError) {
-                    var obj_insert = new Business.Set(query, onSuccess, onError);
-                };
-                this.remove = function (query, onSuccess, onError) {
-                    var obj_delete = new Business.Remove(query, onSuccess, onError);
-                };
-                this.get = function (query, onSuccess, onError) {
-                    var get_object = new Business.Get(query, onSuccess, onError);
-                };
-                this.createDb = function (tableName, onSuccess, onError) {
-                    var db_name = "KeyStore";
-                    var init_db_object = new Business.InitDb(db_name, tableName, onSuccess, onError);
-                };
-                this.checkConnectionAndExecuteLogic = function (request) {
-                    if (request.Name === 'create_db' || request.Name === 'open_db') {
-                        this.executeLogic(request);
-                    }
-                    else {
-                        if (Business.status.ConStatus === KeyStore.ConnectionStatus.Connected) {
-                            this.executeLogic(request);
-                        }
-                        else if (Business.status.ConStatus === KeyStore.ConnectionStatus.NotStarted) {
-                            setTimeout(function () {
-                                this.checkConnectionAndExecuteLogic(request);
-                            }.bind(this), 100);
-                        }
-                        else if (Business.status.ConStatus === KeyStore.ConnectionStatus.Closed) {
-                            this.createDb(KeyStore.table_name, function () {
-                                this.checkConnectionAndExecuteLogic(request);
-                            }.bind(this), 100);
-                        }
-                    }
-                };
-                this.returnResult = function (result) {
-                    if (this._onSuccess) {
-                        this._onSuccess(result);
-                    }
-                };
                 this.executeLogic = function (request) {
                     var onSuccess = function (results) {
                         this.returnResult({
@@ -405,6 +379,49 @@ var KeyStore;
                 };
                 this._onSuccess = onSuccess;
             }
+            Main.prototype.set = function (query, onSuccess, onError) {
+                var obj_insert = new Business.Set(query, onSuccess, onError);
+            };
+            Main.prototype.remove = function (query, onSuccess, onError) {
+                var obj_delete = new Business.Remove(query, onSuccess, onError);
+            };
+            Main.prototype.get = function (query, onSuccess, onError) {
+                var get_object = new Business.Get(query, onSuccess, onError);
+            };
+            Main.prototype.createDb = function (tableName, onSuccess, onError) {
+                var db_name = "KeyStore";
+                var init_db_object = new Business.InitDb(db_name, tableName, onSuccess, onError);
+            };
+            Main.prototype.checkConnectionAndExecuteLogic = function (request) {
+                if (request.Name === 'create_db' || request.Name === 'open_db') {
+                    this.executeLogic(request);
+                }
+                else {
+                    switch (Business.db_status.ConStatus) {
+                        case KeyStore.Connection_Status.Connected:
+                            this.executeLogic(request);
+                            break;
+                        case KeyStore.Connection_Status.NotStarted:
+                            setTimeout(function () {
+                                this.checkConnectionAndExecuteLogic(request);
+                            }.bind(this), 100);
+                            break;
+                        case KeyStore.Connection_Status.Closed:
+                            if (Business.is_db_deleted_by_browser) {
+                                this.createDb(KeyStore.table_name, function () {
+                                    this.checkConnectionAndExecuteLogic(request);
+                                }.bind(this), function (err) {
+                                    console.error(err);
+                                });
+                            }
+                    }
+                }
+            };
+            Main.prototype.returnResult = function (result) {
+                if (this._onSuccess) {
+                    this._onSuccess(result);
+                }
+            };
             return Main;
         }());
         Business.Main = Main;
@@ -520,6 +537,7 @@ var JsStore;
         Connection_Status["Closed"] = "closed";
         Connection_Status["NotStarted"] = "not_started";
         Connection_Status["UnableToStart"] = "unable_to_start";
+        Connection_Status["ClosedByJsStore"] = "closed_by_jsstore";
     })(Connection_Status = JsStore.Connection_Status || (JsStore.Connection_Status = {}));
     var WhereQryOption;
     (function (WhereQryOption) {
@@ -536,7 +554,7 @@ var JsStore;
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
-    JsStore.enable_log = false, JsStore.db_version = 0, JsStore.status = {
+    JsStore.enable_log = false, JsStore.db_version = 0, JsStore.db_status = {
         ConStatus: JsStore.Connection_Status.NotStarted,
         LastError: null
     };
@@ -565,13 +583,15 @@ var JsStore;
     var Utils = /** @class */ (function () {
         function Utils() {
         }
-        Utils.convertObjectintoLowerCase = function (obj) {
-            var keys = Object.keys(obj);
-            var n = keys.length;
-            while (n--) {
-                var key = keys[n];
-                obj[key.toLowerCase()] = obj[key];
-                delete obj[key];
+        Utils.updateDbStatus = function (status, err) {
+            if (err === undefined) {
+                JsStore.db_status.ConStatus = status;
+            }
+            else {
+                JsStore.db_status = {
+                    ConStatus: status,
+                    LastError: err
+                };
             }
         };
         Utils.changeLogStatus = function () {
@@ -602,7 +622,7 @@ var JsStore;
         if (callback === void 0) { callback = null; }
         if (errCallBack === void 0) { errCallBack = null; }
         var use_promise = callback ? false : true;
-        if (JsStore.status.ConStatus !== JsStore.Connection_Status.UnableToStart) {
+        if (JsStore.db_status.ConStatus !== JsStore.Connection_Status.UnableToStart) {
             if (use_promise) {
                 return new Promise(function (resolve, reject) {
                     if (typeof dbInfo === 'string') {
@@ -632,7 +652,7 @@ var JsStore;
         }
         else {
             var error = {
-                _type: JsStore.status.LastError,
+                _type: JsStore.db_status.LastError,
                 _message: null
             };
             switch (error._type) {
@@ -724,8 +744,14 @@ var JsStore;
         JsStore.Utils.changeLogStatus();
     };
     JsStore.setConfig = function (config) {
-        if (config.DropDbCallBack) {
-            config.DropDbCallBack = config.DropDbCallBack.toString();
+        if (config.OnDbDroppedByBrowser) {
+            config.OnDbDroppedByBrowser = config.OnDbDroppedByBrowser.toString();
+        }
+        if (JsStore.worker_instance) {
+            JsStore.worker_instance.postMessage({
+                Name: 'set_config',
+                Query: config
+            });
         }
     };
 })(JsStore || (JsStore = {}));
@@ -752,6 +778,7 @@ var JsStore;
         Error_Type["ConnectionAborted"] = "connection_aborted";
         Error_Type["ConnectionClosed"] = "connection_closed";
         Error_Type["NotObject"] = "not_object";
+        Error_Type["InvalidConfig"] = "invalid_config";
     })(Error_Type = JsStore.Error_Type || (JsStore.Error_Type = {}));
     var Error = /** @class */ (function () {
         function Error(type, info) {
@@ -814,6 +841,8 @@ var JsStore;
                     case Error_Type.NotObject:
                         err_msg = "supplied value is not object";
                         break;
+                    case Error_Type.InvalidOp:
+                        err_msg = "Invalid Config '" + this._info['Config'] + " '";
                     default:
                         err_msg = this._message;
                         break;
@@ -1271,23 +1300,27 @@ var JsStore;
                     }
                 };
                 db_request.onsuccess = function (event) {
-                    JsStore.status.ConStatus = JsStore.Connection_Status.Connected;
+                    JsStore.db_status.ConStatus = JsStore.Connection_Status.Connected;
                     Business.db_connection = db_request.result;
-                    Business.db_connection.onclose = function () {
-                        JsStore.status.ConStatus = JsStore.Connection_Status.Closed;
-                        JsStore.status.LastError = JsStore.Error_Type.ConnectionClosed;
+                    Business.db_connection.onclose = function (e) {
+                        Business.callDbDroppedByBrowser();
+                        JsStore.Utils.updateDbStatus(JsStore.Connection_Status.Closed, JsStore.Error_Type.ConnectionClosed);
                     };
                     Business.db_connection.onversionchange = function (e) {
                         if (e.newVersion === null) {
                             e.target.close(); // Manually close our connection to the db
+                            Business.callDbDroppedByBrowser(true);
+                            JsStore.Utils.updateDbStatus(JsStore.Connection_Status.Closed, JsStore.Error_Type.ConnectionClosed);
                         }
                     };
                     Business.db_connection.onerror = function (e) {
-                        JsStore.status.LastError = ("Error occured in connection :" + e.target.result);
+                        JsStore.db_status.LastError = ("Error occured in connection :" + e.target.result);
                     };
                     Business.db_connection.onabort = function (e) {
-                        JsStore.status.ConStatus = JsStore.Connection_Status.Closed;
-                        JsStore.status.LastError = JsStore.Error_Type.ConnectionAborted;
+                        JsStore.db_status = {
+                            ConStatus: JsStore.Connection_Status.Closed,
+                            LastError: JsStore.Error_Type.ConnectionAborted
+                        };
                     };
                     if (onSuccess != null) {
                         onSuccess(table_created_list);
@@ -1355,36 +1388,40 @@ var JsStore;
     var Business;
     (function (Business) {
         var DropDb = /** @class */ (function () {
-            function DropDb(name, onSuccess, onError) {
-                setTimeout(function () {
-                    this.deleteDb(name, onSuccess, onError);
-                }.bind(this), 100);
+            function DropDb(onSuccess, onError) {
+                this._onSuccess = onSuccess;
+                this._onError = onError;
             }
-            DropDb.prototype.deleteDb = function (name, onSuccess, onError) {
-                var db_drop_request = indexedDB.deleteDatabase(name);
-                db_drop_request.onblocked = function () {
-                    if (onError != null) {
-                        onError("database is blocked, cant be deleted right now.");
-                    }
-                };
-                db_drop_request.onerror = function (e) {
-                    if (onError != null) {
-                        onError(event.target.error);
-                    }
-                };
-                db_drop_request.onsuccess = function () {
-                    JsStore.status.ConStatus = JsStore.Connection_Status.Closed;
-                    KeyStore.remove('JsStore_' + Business.active_db._name + '_Db_Version');
-                    Business.active_db._tables.forEach(function (table) {
-                        KeyStore.remove("JsStore_" + Business.active_db._name + "_" + table._name + "_Version");
-                        table._columns.forEach(function (column) {
-                            if (column._autoIncrement) {
-                                KeyStore.remove("JsStore_" + Business.active_db._name + "_" + table._name + "_" + column._name + "_Value");
-                            }
-                        });
+            DropDb.prototype.deleteMetaData = function () {
+                KeyStore.remove('JsStore_' + Business.active_db._name + '_Db_Version');
+                Business.active_db._tables.forEach(function (table) {
+                    KeyStore.remove("JsStore_" + Business.active_db._name + "_" + table._name + "_Version");
+                    table._columns.forEach(function (column) {
+                        if (column._autoIncrement) {
+                            KeyStore.remove("JsStore_" + Business.active_db._name + "_" + table._name + "_" + column._name + "_Value");
+                        }
                     });
-                    KeyStore.remove("JsStore_" + Business.active_db._name + "_Schema", onSuccess);
-                };
+                });
+                KeyStore.remove("JsStore_" + Business.active_db._name + "_Schema", this._onSuccess);
+            };
+            DropDb.prototype.deleteDb = function () {
+                setTimeout(function () {
+                    var db_drop_request = indexedDB.deleteDatabase(Business.active_db._name);
+                    db_drop_request.onblocked = function () {
+                        if (this._onError != null) {
+                            this._onError("database is blocked, cant be deleted right now.");
+                        }
+                    }.bind(this);
+                    db_drop_request.onerror = function (e) {
+                        if (this._onError != null) {
+                            this._onError(event.target.error);
+                        }
+                    }.bind(this);
+                    db_drop_request.onsuccess = function () {
+                        JsStore.db_status.ConStatus = JsStore.Connection_Status.Closed;
+                        this.deleteMetaData();
+                    }.bind(this);
+                }.bind(this), 100);
             };
             return DropDb;
         }());
@@ -1457,23 +1494,27 @@ var JsStore;
                         }
                     };
                     db_request.onsuccess = function (event) {
-                        JsStore.status.ConStatus = JsStore.Connection_Status.Connected;
+                        JsStore.db_status.ConStatus = JsStore.Connection_Status.Connected;
                         Business.db_connection = db_request.result;
-                        Business.db_connection.onclose = function () {
-                            JsStore.status.ConStatus = JsStore.Connection_Status.Closed;
-                            JsStore.status.LastError = JsStore.Error_Type.ConnectionClosed;
+                        Business.db_connection.onclose = function (e) {
+                            Business.callDbDroppedByBrowser();
+                            JsStore.Utils.updateDbStatus(JsStore.Connection_Status.Closed, JsStore.Error_Type.ConnectionClosed);
                         };
                         Business.db_connection.onversionchange = function (e) {
                             if (e.newVersion === null) {
-                                e.target.close(); // Manually close our connection to the db
+                                if (e.newVersion === null) {
+                                    e.target.close(); // Manually close our connection to the db
+                                    Business.callDbDroppedByBrowser(true);
+                                    JsStore.Utils.updateDbStatus(JsStore.Connection_Status.Closed, JsStore.Error_Type.ConnectionClosed);
+                                }
                             }
                         };
                         Business.db_connection.onerror = function (e) {
-                            JsStore.status.LastError = ("Error occured in connection :" + e.target.result);
+                            JsStore.db_status.LastError = ("Error occured in connection :" + e.target.result);
                         };
                         Business.db_connection.onabort = function (e) {
-                            JsStore.status.ConStatus = JsStore.Connection_Status.Closed;
-                            JsStore.status.LastError = JsStore.Error_Type.ConnectionAborted;
+                            JsStore.db_status.ConStatus = JsStore.Connection_Status.Closed;
+                            JsStore.db_status.LastError = JsStore.Error_Type.ConnectionAborted;
                         };
                         if (onSuccess != null) {
                             onSuccess();
@@ -1527,7 +1568,15 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        Business.db_transaction = null, Business.createTransaction = function (tableNames, callBack, mode) {
+        Business.is_db_deleted_by_browser = false, Business.db_transaction = null, Business.callDbDroppedByBrowser = function (deleteMetaData) {
+            if (JsStore.db_status.ConStatus === JsStore.Connection_Status.Connected) {
+                Business.is_db_deleted_by_browser = true;
+                if (deleteMetaData === true) {
+                    var drop_db_object = new Business.DropDb(null, null);
+                    drop_db_object.deleteMetaData();
+                }
+            }
+        }, Business.createTransaction = function (tableNames, callBack, mode) {
             if (Business.db_transaction === null) {
                 mode = mode ? mode : "readwrite";
                 Business.db_transaction = Business.db_connection.transaction(tableNames, mode);
@@ -1554,9 +1603,13 @@ var JsStore;
                         this.executeLogic(request);
                         break;
                     case 'change_log_status':
-                        this.changeLogStatus(request);
+                        this.changeLogStatus(request.Query['logging']);
+                        break;
+                    case 'set_config':
+                        this.setConfig(request.Query);
+                        break;
                     default:
-                        switch (JsStore.status.ConStatus) {
+                        switch (JsStore.db_status.ConStatus) {
                             case JsStore.Connection_Status.Connected:
                                 {
                                     this.executeLogic(request);
@@ -1564,20 +1617,42 @@ var JsStore;
                                 break;
                             case JsStore.Connection_Status.Closed:
                                 {
-                                    this.openDb(Business.active_db._name, function () {
-                                        this.checkConnectionAndExecuteLogic(request);
-                                    }.bind(this), request.OnError);
+                                    if (Business.is_db_deleted_by_browser === true) {
+                                        // create meta data
+                                        var db_helper = new JsStore.Model.DbHelper(Business.active_db);
+                                        db_helper.createMetaData(function (tablesMetaData) {
+                                            var create_db_object = new Business.CreateDb(tablesMetaData, function () {
+                                                Business.is_db_deleted_by_browser = false;
+                                                this.checkConnectionAndExecuteLogic(request);
+                                            }.bind(this), request.OnError);
+                                        }.bind(this));
+                                    }
+                                    else {
+                                        this.openDb(Business.active_db._name, function () {
+                                            this.checkConnectionAndExecuteLogic(request);
+                                        }.bind(this), request.OnError);
+                                    }
                                 }
                                 break;
                         }
                 }
             };
-            Main.prototype.changeLogStatus = function (request) {
-                if (request.Query['logging'] === true) {
-                    JsStore.enable_log = true;
-                }
-                else {
-                    JsStore.enable_log = false;
+            Main.prototype.changeLogStatus = function (enableLog) {
+                JsStore.enable_log = enableLog;
+            };
+            Main.prototype.setConfig = function (config) {
+                for (var prop in config) {
+                    switch (prop) {
+                        case 'EnableLog':
+                            this.changeLogStatus(config[prop]);
+                            break;
+                        case 'FileName':
+                            JsStore.file_name = config[prop];
+                            break;
+                        default:
+                            var err = new JsStore.Error(JsStore.Error_Type.InvalidConfig, { Config: prop });
+                            err.logError();
+                    }
                 }
             };
             Main.prototype.returnResult = function (result) {
@@ -1613,7 +1688,18 @@ var JsStore;
                         this.remove(request.Query, onSuccess, onError);
                         break;
                     case 'open_db':
-                        this.openDb(request.Query, onSuccess, onError);
+                        if (Business.is_db_deleted_by_browser === true) {
+                            var db_helper = new JsStore.Model.DbHelper(Business.active_db);
+                            db_helper.createMetaData(function (tablesMetaData) {
+                                var create_db_object = new Business.CreateDb(tablesMetaData, function () {
+                                    Business.is_db_deleted_by_browser = false;
+                                    onSuccess();
+                                }.bind(this), onError);
+                            });
+                        }
+                        else {
+                            this.openDb(request.Query, onSuccess, onError);
+                        }
                         break;
                     case 'create_db':
                         this.createDb(request.Query, onSuccess, onError);
@@ -1659,13 +1745,15 @@ var JsStore;
                 });
             };
             Main.prototype.closeDb = function () {
-                if (JsStore.status.ConStatus === JsStore.Connection_Status.Connected) {
+                if (JsStore.db_status.ConStatus === JsStore.Connection_Status.Connected) {
+                    JsStore.db_status.ConStatus = JsStore.Connection_Status.ClosedByJsStore;
                     Business.db_connection.close();
                 }
             };
             Main.prototype.dropDb = function (onSuccess, onError) {
                 this.closeDb();
-                var drop_db_object = new Business.DropDb(Business.active_db._name, onSuccess, onError);
+                var drop_db_object = new Business.DropDb(onSuccess, onError);
+                drop_db_object.deleteDb();
             };
             Main.prototype.update = function (query, onSuccess, onError) {
                 var update_db_object = new Business.Update.Instance(query, onSuccess, onError);
@@ -4889,7 +4977,7 @@ var JsStore;
                             if (JsStore.worker_status !== JsStore.WebWorker_Status.Failed) {
                                 JsStore.worker_status = JsStore.WebWorker_Status.Registered;
                             }
-                            if (JsStore.status.ConStatus === JsStore.Connection_Status.Connected) {
+                            if (JsStore.db_status.ConStatus === JsStore.Connection_Status.Connected) {
                                 this.executeCode();
                             }
                         }.bind(this), 100);
@@ -4907,7 +4995,7 @@ var JsStore;
             }
         };
         CodeExecutionHelper.prototype.prcoessExecutionOfCode = function (request) {
-            if (JsStore.status.ConStatus === JsStore.Connection_Status.NotStarted) {
+            if (JsStore.db_status.ConStatus === JsStore.Connection_Status.NotStarted) {
                 switch (request.Name) {
                     case 'create_db':
                     case 'open_db':
@@ -4915,7 +5003,7 @@ var JsStore;
                         if (JsStore.worker_status !== JsStore.WebWorker_Status.NotStarted) {
                             this.executeCode();
                         }
-                        JsStore.status.ConStatus = JsStore.Connection_Status.Connected;
+                        JsStore.db_status.ConStatus = JsStore.Connection_Status.Connected;
                         break;
                     default: this._requestQueue.push(request);
                 }
@@ -4973,7 +5061,7 @@ var JsStore;
         CodeExecutionHelper.prototype.onWorkerFailed = function () {
             console.warn('JsStore is not runing in web worker');
             JsStore.worker_status = JsStore.WebWorker_Status.Failed;
-            if (JsStore.status.ConStatus === JsStore.Connection_Status.NotStarted) {
+            if (JsStore.db_status.ConStatus === JsStore.Connection_Status.NotStarted) {
                 this.executeCode();
             }
         };

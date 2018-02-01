@@ -22,13 +22,13 @@ declare namespace KeyStore {
         From: string;
         Where: any;
     }
-    enum ConnectionStatus {
+    enum Connection_Status {
         Connected = "connected",
         Closed = "closed",
         NotStarted = "not_connected",
     }
-    interface IKeyStoreStatus {
-        ConStatus: ConnectionStatus;
+    interface IDbStatus {
+        ConStatus: Connection_Status;
         LastError: string;
     }
     interface IInsert {
@@ -108,16 +108,16 @@ declare namespace KeyStore {
 }
 declare namespace KeyStore {
     namespace Business {
-        var db_connection: any, status: IKeyStoreStatus;
+        var db_connection: any, is_db_deleted_by_browser: boolean, db_status: IDbStatus, callDbDroppedByBrowser: () => void;
         class Main {
-            _onSuccess: () => void;
+            _onSuccess: (result) => void;
             constructor(onSuccess?: any);
-            set: (query: IInsert, onSuccess: () => void, onError: (err: IError) => void) => void;
-            remove: (query: IDelete, onSuccess: (result: any) => void, onError: (err: IError) => void) => void;
-            get: (query: ISelect, onSuccess: (result: any) => void, onError: (err: IError) => void) => void;
-            createDb: (tableName: any, onSuccess: () => void, onError: (err: IError) => void) => void;
-            checkConnectionAndExecuteLogic: (request: IWebWorkerRequest) => void;
-            private returnResult;
+            set(query: IInsert, onSuccess: () => void, onError: (err: IError) => void): void;
+            remove(query: IDelete, onSuccess: (result) => void, onError: (err: IError) => void): void;
+            get(query: ISelect, onSuccess: (result) => void, onError: (err: IError) => void): void;
+            createDb(tableName: any, onSuccess: () => void, onError: (err: IError) => void): void;
+            checkConnectionAndExecuteLogic(request: IWebWorkerRequest): void;
+            private returnResult(result);
             private executeLogic;
         }
     }
@@ -173,6 +173,7 @@ declare namespace JsStore {
         Closed = "closed",
         NotStarted = "not_started",
         UnableToStart = "unable_to_start",
+        ClosedByJsStore = "closed_by_jsstore",
     }
     enum WhereQryOption {
         In = "In",
@@ -295,7 +296,7 @@ declare namespace JsStore {
         Table: string;
         Column: string;
     }
-    interface IJsStoreStatus {
+    interface IDbStatus {
         ConStatus: Connection_Status;
         LastError: Error_Type;
     }
@@ -328,12 +329,12 @@ declare namespace JsStore {
     }
     interface IConfig {
         EnableLog: boolean;
-        DropDbExplicitly: boolean;
-        DropDbCallBack: any;
+        OnDbDroppedByBrowser: string;
+        FileName: string;
     }
 }
 declare namespace JsStore {
-    var enable_log: boolean, db_version: number, status: IJsStoreStatus, file_name: any;
+    var enable_log: boolean, db_version: number, db_status: IDbStatus, file_name: any;
     var setFileName: (fileName: any) => void;
     var getObjectFirstKey: (value: any) => string;
     var log: (msg: any) => void;
@@ -341,7 +342,7 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     class Utils {
-        static convertObjectintoLowerCase(obj: any): void;
+        static updateDbStatus(status: Connection_Status, err?: Error_Type): void;
         static changeLogStatus(): void;
     }
 }
@@ -409,6 +410,7 @@ declare namespace JsStore {
         ConnectionAborted = "connection_aborted",
         ConnectionClosed = "connection_closed",
         NotObject = "not_object",
+        InvalidConfig = "invalid_config",
     }
     interface IError {
         _type: Error_Type;
@@ -540,8 +542,11 @@ declare namespace JsStore {
 declare namespace JsStore {
     namespace Business {
         class DropDb {
-            constructor(name: string, onSuccess: () => void, onError: (err: IError) => void);
-            deleteDb(name: string, onSuccess: () => void, onError: (err: any) => void): void;
+            _onSuccess: () => void;
+            _onError: (err: IError) => void;
+            constructor(onSuccess: () => void, onError: (err: IError) => void);
+            deleteMetaData(): void;
+            deleteDb(): void;
         }
     }
 }
@@ -572,12 +577,13 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     namespace Business {
-        var db_connection: IDBDatabase, active_db: DataBase, db_transaction: IDBTransaction, createTransaction: (tableNames: any, callBack: () => void, mode?: any) => void;
+        var on_db_dropped_by_browser: () => void, is_db_deleted_by_browser: boolean, db_connection: IDBDatabase, active_db: DataBase, db_transaction: IDBTransaction, callDbDroppedByBrowser: (deleteMetaData?: boolean) => void, createTransaction: (tableNames: any, callBack: () => void, mode?: any) => void;
         class Main {
             _onSuccess: (result) => void;
             constructor(onSuccess?: any);
             checkConnectionAndExecuteLogic(request: IWebWorkerRequest): void;
-            private changeLogStatus(request);
+            private changeLogStatus(enableLog);
+            private setConfig(config);
             private returnResult(result);
             private executeLogic(request);
             private transaction(qry, onSuccess, onError);

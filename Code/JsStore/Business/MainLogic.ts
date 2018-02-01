@@ -1,8 +1,20 @@
 namespace JsStore {
     export namespace Business {
-        export var db_connection: IDBDatabase,
+        export var
+            on_db_dropped_by_browser: () => void,
+            is_db_deleted_by_browser = false,
+            db_connection: IDBDatabase,
             active_db: DataBase,
             db_transaction: IDBTransaction = null,
+            callDbDroppedByBrowser = function (deleteMetaData?: boolean) {
+                if (db_status.ConStatus === Connection_Status.Connected) {
+                    is_db_deleted_by_browser = true;
+                    if (deleteMetaData === true) {
+                        var drop_db_object = new DropDb(null, null);
+                        drop_db_object.deleteMetaData();
+                    }
+                }
+            },
             createTransaction = function (tableNames, callBack: () => void, mode?) {
                 if (db_transaction === null) {
                     mode = mode ? mode : "readwrite";
@@ -33,27 +45,48 @@ namespace JsStore {
                         this.executeLogic(request);
                         break;
                     case 'change_log_status':
-                        this.changeLogStatus(request);
+                        this.changeLogStatus(request.Query['logging']); break;
+                    case 'set_config':
+                        this.setConfig(request.Query); break;
                     default:
-                        switch (status.ConStatus) {
+                        switch (db_status.ConStatus) {
                             case Connection_Status.Connected: {
                                 this.executeLogic(request);
                             } break;
                             case Connection_Status.Closed: {
-                                this.openDb(active_db._name, function () {
-                                    this.checkConnectionAndExecuteLogic(request);
-                                }.bind(this), request.OnError);
+                                if (is_db_deleted_by_browser === true) {
+                                    // create meta data
+                                    var db_helper = new Model.DbHelper(active_db);
+                                    db_helper.createMetaData(function (tablesMetaData: Model.TableHelper[]) {
+                                        var create_db_object = new CreateDb(tablesMetaData, function () {
+                                            is_db_deleted_by_browser = false;
+                                            this.checkConnectionAndExecuteLogic(request);
+                                        }.bind(this), request.OnError);
+                                    }.bind(this));
+                                }
+                                else {
+                                    this.openDb(active_db._name, function () {
+                                        this.checkConnectionAndExecuteLogic(request);
+                                    }.bind(this), request.OnError);
+                                }
                             } break;
                         }
                 }
             }
 
-            private changeLogStatus(request: IWebWorkerRequest) {
-                if (request.Query['logging'] === true) {
-                    enable_log = true;
-                }
-                else {
-                    enable_log = false;
+            private changeLogStatus(enableLog) {
+                enable_log = enableLog;
+            }
+
+            private setConfig(config: IConfig) {
+                for (var prop in config) {
+                    switch (prop) {
+                        case 'EnableLog': this.changeLogStatus(config[prop]); break;
+                        case 'FileName': file_name = config[prop]; break;
+                        default:
+                            var err = new Error(Error_Type.InvalidConfig, { Config: prop });
+                            err.logError();
+                    }
                 }
             }
 
@@ -89,7 +122,19 @@ namespace JsStore {
                         break;
                     case 'remove': this.remove(request.Query, onSuccess, onError);
                         break;
-                    case 'open_db': this.openDb(request.Query, onSuccess, onError);
+                    case 'open_db':
+                        if (is_db_deleted_by_browser === true) {
+                            var db_helper = new Model.DbHelper(active_db);
+                            db_helper.createMetaData(function (tablesMetaData: Model.TableHelper[]) {
+                                var create_db_object = new CreateDb(tablesMetaData, function () {
+                                    is_db_deleted_by_browser = false;
+                                    onSuccess();
+                                }.bind(this), onError);
+                            });
+                        }
+                        else {
+                            this.openDb(request.Query, onSuccess, onError);
+                        }
                         break;
                     case 'create_db': this.createDb(request.Query, onSuccess, onError);
                         break;
@@ -131,14 +176,16 @@ namespace JsStore {
             }
 
             private closeDb() {
-                if (status.ConStatus === Connection_Status.Connected) {
+                if (db_status.ConStatus === Connection_Status.Connected) {
+                    db_status.ConStatus = Connection_Status.ClosedByJsStore;
                     db_connection.close();
                 }
             }
 
             private dropDb(onSuccess: () => void, onError: (err: IError) => void) {
                 this.closeDb();
-                var drop_db_object = new DropDb(active_db._name, onSuccess, onError);
+                var drop_db_object = new DropDb(onSuccess, onError);
+                drop_db_object.deleteDb();
             }
 
             private update(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void) {

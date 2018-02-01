@@ -10,14 +10,14 @@ namespace KeyStore {
         Where: any;
     }
 
-    export enum ConnectionStatus {
+    export enum Connection_Status {
         Connected = "connected",
         Closed = "closed",
         NotStarted = "not_connected"
     }
 
-    export interface IKeyStoreStatus {
-        ConStatus: ConnectionStatus;
+    export interface IDbStatus {
+        ConStatus: Connection_Status;
         LastError: string;
     }
 
