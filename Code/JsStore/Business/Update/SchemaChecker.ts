@@ -7,7 +7,7 @@ namespace JsStore {
                     this._table = table;
                 }
 
-                check = function (setValue, tblName) {
+                check(setValue, tblName) {
                     var error: IError = null;
                     if (typeof setValue === 'object') {
                         if (this._table) {
@@ -35,9 +35,9 @@ namespace JsStore {
                         error = new Error(Error_Type.NotObject).get();
                     }
                     return error;
-                };
+                }
 
-                private checkByColumn = function (column, value) {
+                private checkByColumn(column, value) {
                     var error: IError = null;
                     // check not null schema
                     if (column._notNull && isNull(value)) {
@@ -60,17 +60,16 @@ namespace JsStore {
                     if (type === 'object') {
                         var allowed_prop = ['+', '-', '*', '/'];
                         for (var prop in value) {
-                            if (allowed_prop.indexOf(prop) < 0) {
-                                error = new Error(
-                                    Error_Type.InvalidOp,
-                                    { Op: prop }
+                            if (allowed_prop.indexOf(prop) < 0 && column._dataType && type !== column._dataType) {
+                                error = new Error(Error_Type.BadDataType,
+                                    { ColumnName: column._name }
                                 ).get();
                             }
                             break;
                         }
                     }
                     return error;
-                };
+                }
             }
         }
     }

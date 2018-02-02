@@ -251,8 +251,8 @@ describe('Test update with operator option', function () {
             },
             OnError: function (err) {
                 var error = {
-                    "_message": "Invalid Op Value '#'",
-                    "_type": "invalid_operator"
+                    "_message": "Supplied value for column 'ProductName' does not have valid type",
+                    "_type": "bad_data_type"
                 };
                 expect(err).to.be.an('object').eql(error);
                 done();

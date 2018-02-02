@@ -527,12 +527,14 @@ var JsStore;
         WhereQryOption["Like"] = "Like";
         WhereQryOption["Or"] = "Or";
     })(WhereQryOption = JsStore.WhereQryOption || (JsStore.WhereQryOption = {}));
-    var DataType;
-    (function (DataType) {
-        DataType["String"] = "string";
-        DataType["Object"] = "object";
-        DataType["Array"] = "array";
-    })(DataType = JsStore.DataType || (JsStore.DataType = {}));
+    var Data_Type;
+    (function (Data_Type) {
+        Data_Type["String"] = "string";
+        Data_Type["Object"] = "object";
+        Data_Type["Array"] = "array";
+        Data_Type["Number"] = "number";
+        Data_Type["Boolean"] = "boolean";
+    })(Data_Type = JsStore.Data_Type || (JsStore.Data_Type = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
@@ -4244,59 +4246,59 @@ var JsStore;
         (function (Update) {
             var SchemaChecker = /** @class */ (function () {
                 function SchemaChecker(table) {
-                    this.check = function (setValue, tblName) {
-                        var error = null;
-                        if (typeof setValue === 'object') {
-                            if (this._table) {
-                                // loop through table column and find data is valid
-                                this._table._columns.every(function (column) {
-                                    if (error === null) {
-                                        if (column._name in setValue) {
-                                            error = this.checkByColumn(column, setValue[column._name]);
-                                        }
-                                        return true;
-                                    }
-                                    else {
-                                        return false;
-                                    }
-                                }, this);
-                            }
-                            else {
-                                error = new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: tblName }).get();
-                            }
-                        }
-                        else {
-                            error = new JsStore.Error(JsStore.Error_Type.NotObject).get();
-                        }
-                        return error;
-                    };
-                    this.checkByColumn = function (column, value) {
-                        var error = null;
-                        // check not null schema
-                        if (column._notNull && JsStore.isNull(value)) {
-                            error = new JsStore.Error(JsStore.Error_Type.NullValue, { ColumnName: column._name }).get();
-                        }
-                        // check datatype
-                        var type = typeof value;
-                        if (column._dataType) {
-                            if (type !== column._dataType && type !== 'object') {
-                                error = new JsStore.Error(JsStore.Error_Type.BadDataType, { ColumnName: column._name }).get();
-                            }
-                        }
-                        // check allowed operators
-                        if (type === 'object') {
-                            var allowed_prop = ['+', '-', '*', '/'];
-                            for (var prop in value) {
-                                if (allowed_prop.indexOf(prop) < 0) {
-                                    error = new JsStore.Error(JsStore.Error_Type.InvalidOp, { Op: prop }).get();
-                                }
-                                break;
-                            }
-                        }
-                        return error;
-                    };
                     this._table = table;
                 }
+                SchemaChecker.prototype.check = function (setValue, tblName) {
+                    var error = null;
+                    if (typeof setValue === 'object') {
+                        if (this._table) {
+                            // loop through table column and find data is valid
+                            this._table._columns.every(function (column) {
+                                if (error === null) {
+                                    if (column._name in setValue) {
+                                        error = this.checkByColumn(column, setValue[column._name]);
+                                    }
+                                    return true;
+                                }
+                                else {
+                                    return false;
+                                }
+                            }, this);
+                        }
+                        else {
+                            error = new JsStore.Error(JsStore.Error_Type.TableNotExist, { TableName: tblName }).get();
+                        }
+                    }
+                    else {
+                        error = new JsStore.Error(JsStore.Error_Type.NotObject).get();
+                    }
+                    return error;
+                };
+                SchemaChecker.prototype.checkByColumn = function (column, value) {
+                    var error = null;
+                    // check not null schema
+                    if (column._notNull && JsStore.isNull(value)) {
+                        error = new JsStore.Error(JsStore.Error_Type.NullValue, { ColumnName: column._name }).get();
+                    }
+                    // check datatype
+                    var type = typeof value;
+                    if (column._dataType) {
+                        if (type !== column._dataType && type !== 'object') {
+                            error = new JsStore.Error(JsStore.Error_Type.BadDataType, { ColumnName: column._name }).get();
+                        }
+                    }
+                    // check allowed operators
+                    if (type === 'object') {
+                        var allowed_prop = ['+', '-', '*', '/'];
+                        for (var prop in value) {
+                            if (allowed_prop.indexOf(prop) < 0 && column._dataType && type !== column._dataType) {
+                                error = new JsStore.Error(JsStore.Error_Type.BadDataType, { ColumnName: column._name }).get();
+                            }
+                            break;
+                        }
+                    }
+                    return error;
+                };
                 return SchemaChecker;
             }());
             Update.SchemaChecker = SchemaChecker;

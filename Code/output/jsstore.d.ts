@@ -179,10 +179,12 @@ declare namespace JsStore {
         Like = "Like",
         Or = "Or",
     }
-    enum DataType {
+    enum Data_Type {
         String = "string",
         Object = "object",
         Array = "array",
+        Number = "number",
+        Boolean = "boolean",
     }
 }
 declare namespace JsStore {
@@ -882,8 +884,8 @@ declare namespace JsStore {
             class SchemaChecker {
                 _table: Table;
                 constructor(table: Table);
-                check: (setValue: any, tblName: any) => IError;
-                private checkByColumn;
+                check(setValue: any, tblName: any): IError;
+                private checkByColumn(column, value);
             }
         }
     }

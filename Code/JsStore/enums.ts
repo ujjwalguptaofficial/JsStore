@@ -25,9 +25,11 @@ namespace JsStore {
         Or = "Or"
     }
 
-    export enum DataType {
+    export enum Data_Type {
         String = "string",
         Object = "object",
-        Array = "array"
+        Array = "array",
+        Number = "number",
+        Boolean = "boolean"
     }
 }
