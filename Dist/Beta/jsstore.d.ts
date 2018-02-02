@@ -1,5 +1,5 @@
 /** 
- * @license :JsStore.js - v1.5.0 - 23/01/2018
+ * @license :JsStore.js - v1.5.1 - 02/02/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT 
  */
@@ -184,10 +184,12 @@ declare namespace JsStore {
         Like = "Like",
         Or = "Or",
     }
-    enum DataType {
+    enum Data_Type {
         String = "string",
         Object = "object",
         Array = "array",
+        Number = "number",
+        Boolean = "boolean",
     }
 }
 declare namespace JsStore {
@@ -887,8 +889,8 @@ declare namespace JsStore {
             class SchemaChecker {
                 _table: Table;
                 constructor(table: Table);
-                check: (setValue: any, tblName: any) => IError;
-                private checkByColumn;
+                check(setValue: any, tblName: any): IError;
+                private checkByColumn(column, value);
             }
         }
     }
