@@ -64,14 +64,17 @@ namespace JsStore {
                                 keyPath: item._primaryKey
                             });
                             item._columns.forEach(function (column: Column) {
-                                var options = column._primaryKey ? { unique: true } : { unique: column._unique };
-                                options['multiEntry'] = column._multiEntry;
-                                store.createIndex(column._name, column._name, options);
-                                if (column._autoIncrement) {
-                                    KeyStore.set(
-                                        "JsStore_" + active_db._name + "_" + item._name + "_" + column._name + "_Value",
-                                        0
-                                    );
+                                if (column._enableSearch === true) {
+                                    var options = column._primaryKey ? { unique: true } : { unique: column._unique };
+                                    options['multiEntry'] = column._multiEntry;
+                                    store.createIndex(column._name, column._name, options);
+                                    if (column._autoIncrement) {
+                                        KeyStore.set(
+                                            "JsStore_" + active_db._name + "_" + item._name +
+                                            "_" + column._name + "_Value",
+                                            0
+                                        );
+                                    }
                                 }
                             });
                         }

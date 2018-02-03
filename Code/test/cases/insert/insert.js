@@ -157,7 +157,7 @@ describe('Test insert', function () {
         });
     });
 
-    it('wrong data type test', function (done) {
+    it('wrong data type test - string', function (done) {
         var value = {
             ShipperName: 'dsfgb',
             Phone: 91234
@@ -172,6 +172,82 @@ describe('Test insert', function () {
             OnError: function (err) {
                 var error = {
                     "_message": "Supplied value for column 'Phone' does not have valid type",
+                    "_type": "bad_data_type"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            }
+        });
+    });
+
+    it('wrong data type test - number', function (done) {
+        var value = {
+            ProductName: "dfb",
+            SupplierID: 5,
+            CategoryID: 10,
+            Price: "1123",
+            Unit: 12333
+        }
+        Con.insert({
+            Into: 'Products',
+            Values: [value],
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').to.equal(3);
+                done();
+            },
+            OnError: function (err) {
+                var error = {
+                    "_message": "Supplied value for column 'Unit' does not have valid type",
+                    "_type": "bad_data_type"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            }
+        });
+    });
+
+    it('undefined column insert', function (done) {
+        var value = {
+            ShipperName: 'dsfgb',
+            Phone: '91234',
+            Address: 'ewrtgb'
+        }
+        Con.insert({
+            Into: 'Shippers',
+            Values: [value],
+            Return: true,
+            OnSuccess: function (results) {
+                var returned_value = results[0];
+                value['ShipperID'] = returned_value.ShipperID;
+                expect(returned_value).to.be.an('object').eql(value);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        });
+    });
+
+    it('EnableSearch column test', function (done) {
+        var value = {
+            CustomerName: "dfb",
+            ContactName: "Anders",
+            Address: 'ewrgt',
+            City: "1123",
+            PostalCode: "frfd",
+            Country: 'fesgt',
+            Email: 1234
+        }
+        Con.insert({
+            Into: 'Customers',
+            Values: [value],
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').to.equal(3);
+                done();
+            },
+            OnError: function (err) {
+                var error = {
+                    "_message": "Supplied value for column 'Email' does not have valid type",
                     "_type": "bad_data_type"
                 };
                 expect(err).to.be.an('object').eql(error);

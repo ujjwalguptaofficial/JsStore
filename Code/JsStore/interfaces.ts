@@ -27,6 +27,7 @@ namespace JsStore {
         DataType?: string;
         Default?: any;
         MultiEntry?: boolean;
+        EnableSearch?: boolean;
     }
 
     export interface ISelect {

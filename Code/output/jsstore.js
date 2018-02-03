@@ -534,6 +534,7 @@ var JsStore;
         Data_Type["Array"] = "array";
         Data_Type["Number"] = "number";
         Data_Type["Boolean"] = "boolean";
+        Data_Type["Null"] = "null";
     })(Data_Type = JsStore.Data_Type || (JsStore.Data_Type = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
@@ -729,6 +730,26 @@ var JsStore;
             });
         }
     };
+    /**
+     * get data type of supplied value
+     *
+     * @param {any} value
+     * @returns
+     */
+    JsStore.getType = function (value) {
+        if (value === null) {
+            return JsStore.Data_Type.Null;
+        }
+        var type = typeof value;
+        switch (type) {
+            case 'object':
+                if (Array.isArray(value)) {
+                    return JsStore.Data_Type.Array;
+                }
+            default:
+                return type;
+        }
+    };
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
@@ -742,6 +763,7 @@ var JsStore;
         Error_Type["NotArray"] = "not_array";
         Error_Type["NoValueSupplied"] = "no_value_supplied";
         Error_Type["ColumnNotExist"] = "column_not_exist";
+        Error_Type["EnableSearchOff"] = "enable_search_off";
         Error_Type["InvalidOp"] = "invalid_operator";
         Error_Type["NullValue"] = "null_value";
         Error_Type["BadDataType"] = "bad_data_type";
@@ -795,6 +817,9 @@ var JsStore;
                         break;
                     case Error_Type.ColumnNotExist:
                         err_msg = "Column '" + this._info['ColumnName'] + "' does not exist";
+                        break;
+                    case Error_Type.EnableSearchOff:
+                        err_msg = "Search is turned off for the Column '" + this._info['ColumnName'] + "'";
                         break;
                     case Error_Type.NullValue:
                         err_msg = "Null value is not allowed for column '" + this._info['ColumnName'] + "'";
@@ -854,7 +879,8 @@ var JsStore;
                 this._notNull = key.NotNull != null ? key.NotNull : false;
                 this._dataType = key.DataType != null ? key.DataType : (key.AutoIncrement ? 'number' : null);
                 this._default = key.Default;
-                this._multiEntry = key.MultiEntry == null ? false : true;
+                this._multiEntry = key.MultiEntry == null ? false : key.MultiEntry;
+                this._enableSearch = key.EnableSearch == null ? true : key.EnableSearch;
             }
             return Column;
         }());
@@ -1220,8 +1246,14 @@ var JsStore;
                     }
                     else {
                         this._errorOccured = true;
-                        this._error = new JsStore.Error(JsStore.Error_Type.ColumnNotExist, { ColumnName: column_name });
-                        this._error.throw();
+                        var column = this.getColumnInfo(column_name), error;
+                        if (column._enableSearch) {
+                            error = new JsStore.Error(JsStore.Error_Type.ColumnNotExist, { ColumnName: column_name }).get();
+                        }
+                        else {
+                            error = new JsStore.Error(JsStore.Error_Type.EnableSearchOff, { ColumnName: column_name }).get();
+                        }
+                        this.onErrorOccured(error, true);
                     }
                 };
                 _this.makeQryInCaseSensitive = function (qry) {
@@ -1254,6 +1286,11 @@ var JsStore;
                 };
                 return _this;
             }
+            Base.prototype.getColumnInfo = function (columnName) {
+                return this.getTable(this._tableName)._columns.filter(function (column) {
+                    return column._name === columnName;
+                })[0];
+            };
             return Base;
         }(Business.BaseHelper));
         Business.Base = Base;
@@ -1317,11 +1354,14 @@ var JsStore;
                                 keyPath: item._primaryKey
                             });
                             item._columns.forEach(function (column) {
-                                var options = column._primaryKey ? { unique: true } : { unique: column._unique };
-                                options['multiEntry'] = column._multiEntry;
-                                store.createIndex(column._name, column._name, options);
-                                if (column._autoIncrement) {
-                                    KeyStore.set("JsStore_" + Business.active_db._name + "_" + item._name + "_" + column._name + "_Value", 0);
+                                if (column._enableSearch === true) {
+                                    var options = column._primaryKey ? { unique: true } : { unique: column._unique };
+                                    options['multiEntry'] = column._multiEntry;
+                                    store.createIndex(column._name, column._name, options);
+                                    if (column._autoIncrement) {
+                                        KeyStore.set("JsStore_" + Business.active_db._name + "_" + item._name +
+                                            "_" + column._name + "_Value", 0);
+                                    }
                                 }
                             });
                         }
@@ -4281,7 +4321,7 @@ var JsStore;
                         error = new JsStore.Error(JsStore.Error_Type.NullValue, { ColumnName: column._name }).get();
                     }
                     // check datatype
-                    var type = typeof value;
+                    var type = JsStore.getType(value);
                     if (column._dataType) {
                         if (type !== column._dataType && type !== 'object') {
                             error = new JsStore.Error(JsStore.Error_Type.BadDataType, { ColumnName: column._name }).get();
@@ -4762,7 +4802,8 @@ var JsStore;
                     if (column._notNull && JsStore.isNull(this._value[column._name])) {
                         this.onValidationError(JsStore.Error_Type.NullValue, { ColumnName: column._name });
                     }
-                    else if (column._dataType && typeof this._value[column._name] !== column._dataType) {
+                    else if (column._dataType && !JsStore.isNull(this._value[column._name]) &&
+                        JsStore.getType(this._value[column._name]) !== column._dataType) {
                         this.onValidationError(JsStore.Error_Type.BadDataType, { ColumnName: column._name });
                     }
                 };

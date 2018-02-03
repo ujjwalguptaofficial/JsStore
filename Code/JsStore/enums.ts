@@ -30,6 +30,7 @@ namespace JsStore {
         Object = "object",
         Array = "array",
         Number = "number",
-        Boolean = "boolean"
+        Boolean = "boolean",
+        Null = "null"
     }
 }

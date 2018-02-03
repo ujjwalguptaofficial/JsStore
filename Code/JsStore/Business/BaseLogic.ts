@@ -43,6 +43,12 @@ namespace JsStore {
                 }
             };
 
+            protected getColumnInfo(columnName) {
+                return this.getTable(this._tableName)._columns.filter(function (column) {
+                    return column._name === columnName;
+                })[0];
+            }
+
             protected goToWhereLogic = function () {
                 this._whereChecker = new WhereChecker(this._query.Where);
                 var column_name = getObjectFirstKey(this._query.Where);
@@ -103,8 +109,15 @@ namespace JsStore {
                 }
                 else {
                     this._errorOccured = true;
-                    this._error = new Error(Error_Type.ColumnNotExist, { ColumnName: column_name });
-                    this._error.throw();
+                    var column: Column = this.getColumnInfo(column_name),
+                        error;
+                    if (column._enableSearch) {
+                        error = new Error(Error_Type.ColumnNotExist, { ColumnName: column_name }).get();
+                    }
+                    else {
+                        error = new Error(Error_Type.EnableSearchOff, { ColumnName: column_name }).get();
+                    }
+                    this.onErrorOccured(error, true);
                 }
             };
 

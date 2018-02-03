@@ -28,7 +28,8 @@ namespace JsStore {
                         this.onValidationError(Error_Type.NullValue, { ColumnName: column._name });
                     }
                     // check datatype
-                    else if (column._dataType && typeof this._value[column._name] !== column._dataType) {
+                    else if (column._dataType && !isNull(this._value[column._name]) &&
+                        getType(this._value[column._name]) !== column._dataType) {
                         this.onValidationError(Error_Type.BadDataType, { ColumnName: column._name });
                     }
                 }

@@ -27,6 +27,24 @@ describe('Test Select Api', function () {
         })
     });
 
+    it('EnableSearch column test', function (done) {
+        Con.select({
+            From: 'Customers',
+            Where: {
+                Email: 'uk@gmail.com'
+            }
+        }).
+        catch(function (err) {
+            console.log(err);
+            var error = {
+                "_message": "Search is turned off for the Column 'Email'",
+                "_type": "enable_search_off"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    });
+
     it('select with skip', function (done) {
         Con.select({
             From: 'Customers',

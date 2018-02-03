@@ -47,7 +47,7 @@ namespace JsStore {
                     }
 
                     // check datatype
-                    var type = typeof value;
+                    var type = getType(value);
                     if (column._dataType) {
                         if (type !== column._dataType && type !== 'object') {
                             error = new Error(Error_Type.BadDataType,
