@@ -44,9 +44,15 @@ namespace JsStore {
             };
 
             protected getColumnInfo(columnName) {
-                return this.getTable(this._tableName)._columns.filter(function (column) {
-                    return column._name === columnName;
-                })[0];
+                var column_info: Column;
+                this.getTable(this._tableName)._columns.every(function (column) {
+                    if (column._name === columnName) {
+                        column_info = column;
+                        return false;
+                    }
+                    return true;
+                });
+                return column_info;
             }
 
             protected goToWhereLogic = function () {
