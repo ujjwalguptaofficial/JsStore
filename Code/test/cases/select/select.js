@@ -27,6 +27,20 @@ describe('Test Select Api', function () {
         })
     });
 
+    it('select with skip', function (done) {
+        Con.select({
+            From: 'Customers',
+            Skip: 10,
+            OnSuccess: function (results) {
+                expect(results).to.be.an('array').length(83);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
     it('EnableSearch column test', function (done) {
         Con.select({
             From: 'Customers',
@@ -45,19 +59,7 @@ describe('Test Select Api', function () {
         })
     });
 
-    it('select with skip', function (done) {
-        Con.select({
-            From: 'Customers',
-            Skip: 10,
-            OnSuccess: function (results) {
-                expect(results).to.be.an('array').length(83);
-                done();
-            },
-            OnError: function (err) {
-                done(err);
-            }
-        })
-    });
+
 
     it('select with where', function (done) {
         Con.select({
