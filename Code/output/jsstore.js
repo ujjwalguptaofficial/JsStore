@@ -3938,7 +3938,9 @@ var JsStore;
                     }
                 };
                 Instance.prototype.onTransactionCompleted = function () {
-                    this._onSuccess(this._resultCount);
+                    if (this._errorOccured === false) {
+                        this._onSuccess(this._resultCount);
+                    }
                 };
                 return Instance;
             }(Count.Where));
@@ -4258,7 +4260,9 @@ var JsStore;
                     }
                 };
                 Instance.prototype.onTransactionCompleted = function () {
-                    this._onSuccess(this._rowAffected);
+                    if (this._errorOccured === false) {
+                        this._onSuccess(this._rowAffected);
+                    }
                 };
                 Instance.prototype.initTransaction = function () {
                     Business.createTransaction([this._query.In], this.onTransactionCompleted.bind(this));
@@ -4649,7 +4653,9 @@ var JsStore;
                     this._objectStore = Business.db_transaction.objectStore(this._query.From);
                 };
                 Instance.prototype.onTransactionCompleted = function () {
-                    this._onSuccess(this._rowAffected);
+                    if (this._errorOccured === false) {
+                        this._onSuccess(this._rowAffected);
+                    }
                 };
                 Instance.prototype.onQueryFinished = function () {
                     if (this._isOr === true) {
@@ -4737,7 +4743,9 @@ var JsStore;
                     }
                 };
                 Instance.prototype.onTransactionCompleted = function () {
-                    this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
+                    if (this._errorOccured === false) {
+                        this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
+                    }
                 };
                 Instance.prototype.onQueryFinished = function () {
                     if (this._isTransaction === true) {

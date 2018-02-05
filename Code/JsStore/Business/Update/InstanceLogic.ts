@@ -40,7 +40,9 @@ namespace JsStore {
                 }
 
                 private onTransactionCompleted() {
-                    this._onSuccess(this._rowAffected);
+                    if (this._errorOccured === false) {
+                        this._onSuccess(this._rowAffected);
+                    }
                 }
 
                 private initTransaction() {
