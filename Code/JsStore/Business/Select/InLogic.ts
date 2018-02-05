@@ -29,6 +29,10 @@ namespace JsStore {
                             else {
                                 --skip;
                             }
+                        }.bind(this),
+                        onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
                         }.bind(this);
                     if (this._checkFlag) {
                         for (var i = 0, length = values.length; i < length; i++) {
@@ -46,6 +50,7 @@ namespace JsStore {
                                         this.onQueryFinished();
                                     }
                                 }.bind(this);
+                                cursor_request.onerror = onCursorError;
                             }
                         }
                     }
@@ -63,13 +68,10 @@ namespace JsStore {
                                         this.onQueryFinished();
                                     }
                                 }.bind(this);
+                                cursor_request.onerror = onCursorError;
                             }
                         }
                     }
-                    cursor_request.onerror = function (e) {
-                        this._errorOccured = true;
-                        this.onErrorOccured(e);
-                    }.bind(this);
                 };
 
                 private executeSkipForIn = function (column, values) {
@@ -84,6 +86,10 @@ namespace JsStore {
                             else {
                                 --skip;
                             }
+                        }.bind(this),
+                        onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
                         }.bind(this);
                     if (this._checkFlag) {
                         for (var i = 0, length = values.length; i < length; i++) {
@@ -101,6 +107,7 @@ namespace JsStore {
                                         this.onQueryFinished();
                                     }
                                 }.bind(this);
+                                cursor_request.onerror = onCursorError;
                             }
                         }
                     }
@@ -118,19 +125,20 @@ namespace JsStore {
                                         this.onQueryFinished();
                                     }
                                 }.bind(this);
+                                cursor_request.onerror = onCursorError;
                             }
                         }
                     }
-                    cursor_request.onerror = function (e) {
-                        this._errorOccured = true;
-                        this.onErrorOccured(e);
-                    }.bind(this);
                 };
 
                 private executeLimitForIn = function (column, values) {
                     var cursor: IDBCursorWithValue,
                         cursor_request: IDBRequest,
-                        column_store = this._objectStore.index(column);
+                        column_store = this._objectStore.index(column),
+                        onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                     if (this._checkFlag) {
                         for (var i = 0, length = values.length; i < length; i++) {
                             if (!this._errorOccured) {
@@ -147,6 +155,7 @@ namespace JsStore {
                                         this.onQueryFinished();
                                     }
                                 }.bind(this);
+                                cursor_request.onerror = onCursorError;
                             }
                         }
                     }
@@ -164,19 +173,20 @@ namespace JsStore {
                                         this.onQueryFinished();
                                     }
                                 }.bind(this);
+                                cursor_request.onerror = onCursorError;
                             }
                         }
                     }
-                    cursor_request.onerror = function (e) {
-                        this._errorOccured = true;
-                        this.onErrorOccured(e);
-                    }.bind(this);
                 };
 
                 private executeSimpleForIn = function (column, values) {
                     var cursor: IDBCursorWithValue,
                         cursor_request: IDBRequest,
-                        column_store = this._objectStore.index(column);
+                        column_store = this._objectStore.index(column),
+                        onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                     if (this._checkFlag) {
                         for (var i = 0, length = values.length; i < length; i++) {
                             if (!this._errorOccured) {
@@ -193,6 +203,7 @@ namespace JsStore {
                                         this.onQueryFinished();
                                     }
                                 }.bind(this);
+                                cursor_request.onerror = onCursorError;
                             }
                         }
                     }
@@ -210,13 +221,10 @@ namespace JsStore {
                                         this.onQueryFinished();
                                     }
                                 }.bind(this);
+                                cursor_request.onerror = onCursorError;
                             }
                         }
                     }
-                    cursor_request.onerror = function (e) {
-                        this._errorOccured = true;
-                        this.onErrorOccured(e);
-                    }.bind(this);
                 };
             }
         }

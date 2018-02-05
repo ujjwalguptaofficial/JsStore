@@ -1,12 +1,12 @@
 describe('Test update complex case', function () {
     it('update with multiple or', function (done) {
         var where_query = {
-                Country: 'Mexico',
+                Price: {
+                    '<': 10
+                },
                 Or: {
-                    City: 'Madrid',
-                    Address: {
-                        Like: '%a%'
-                    }
+                    SupplierID: 1,
+                    CategoryID: 3
                 }
             },
             count;
@@ -38,16 +38,16 @@ describe('Test update complex case', function () {
         })
     });
 
-    it("sql - SELECT * FROM Customers WHERE Country='Mexico' and (City='London' or Address Like '%a%')", function (done) {
+    it("sql - Update Products set ProductName='Tea' WHERE ProductName='Cofee' and (Price < 10 or SupplierID =1)", function (done) {
         var where_query = [{
-                    Country: 'Mexico'
+                    ProductName: 'Cofee'
                 },
                 {
-                    City: 'London',
+                    Price: {
+                        '<': 10
+                    },
                     Or: {
-                        Address: {
-                            Like: '%a%'
-                        }
+                        SupplierID: 1
                     }
                 }
             ],
@@ -68,7 +68,7 @@ describe('Test update complex case', function () {
             In: 'Products',
             Where: where_query,
             Set: {
-                ProductName: 'Cofee'
+                ProductName: 'Tea'
             },
             OnSuccess: function (results) {
                 expect(results).to.be.an('number').to.equal(count);
@@ -80,16 +80,14 @@ describe('Test update complex case', function () {
         })
     });
 
-    it("sql - SELECT * FROM Customers WHERE Country='Mexico' or (City='London' and Address Like '%a%')", function (done) {
+    it("sql - Update Products Set ProductName='Cofee_Tea' WHERE ProductName='Cofee' or (SupplierID=1 and CategoryID = 1)", function (done) {
         var where_query = [{
-                    Country: 'Mexico'
+                    ProductName: 'Tea'
                 },
                 {
                     Or: {
-                        City: 'London',
-                        Address: {
-                            Like: '%a%'
-                        }
+                        SupplierID: 1,
+                        CategoryID: 3
                     }
                 }
             ],
@@ -110,7 +108,7 @@ describe('Test update complex case', function () {
             In: 'Products',
             Where: where_query,
             Set: {
-                ProductName: 'Cofee'
+                ProductName: 'Cofee_Tea'
             },
             OnSuccess: function (results) {
                 expect(results).to.be.an('number').to.equal(count);

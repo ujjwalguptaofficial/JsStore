@@ -5,7 +5,11 @@ namespace JsStore {
                 private executeInLogic = function (column, values) {
                     var cursor: IDBCursorWithValue,
                         column_store = this._objectStore.index(column),
-                        cursor_request;
+                        cursor_request,
+                        onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                     if (this._checkFlag) {
                         for (var i = 0, length = values.length; i < length; i++) {
                             if (!this._errorOccured) {
@@ -22,6 +26,7 @@ namespace JsStore {
                                         this.onQueryFinished();
                                     }
                                 }.bind(this);
+                                cursor_request.onerror = onCursorError;
                             }
                         }
                     }
@@ -36,6 +41,7 @@ namespace JsStore {
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
@@ -53,15 +59,11 @@ namespace JsStore {
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
                     }
-
-                    cursor_request.onerror = function (e) {
-                        this._errorOccured = true;
-                        this.onErrorOccured(e);
-                    }.bind(this);
                 };
             }
         }

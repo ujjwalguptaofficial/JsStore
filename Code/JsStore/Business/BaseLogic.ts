@@ -111,7 +111,7 @@ namespace JsStore {
                     this._errorOccured = true;
                     var column: Column = this.getColumnInfo(column_name),
                         error;
-                    if (column._enableSearch) {
+                    if (column == null) {
                         error = new Error(Error_Type.ColumnNotExist, { ColumnName: column_name }).get();
                     }
                     else {

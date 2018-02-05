@@ -1247,7 +1247,7 @@ var JsStore;
                     else {
                         this._errorOccured = true;
                         var column = this.getColumnInfo(column_name), error;
-                        if (column._enableSearch) {
+                        if (column == null) {
                             error = new JsStore.Error(JsStore.Error_Type.ColumnNotExist, { ColumnName: column_name }).get();
                         }
                         else {
@@ -2205,6 +2205,9 @@ var JsStore;
                             else {
                                 --skip;
                             }
+                        }.bind(this), onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
                         }.bind(this);
                         if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
@@ -2222,6 +2225,7 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
@@ -2239,13 +2243,10 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
-                        cursor_request.onerror = function (e) {
-                            this._errorOccured = true;
-                            this.onErrorOccured(e);
-                        }.bind(this);
                     };
                     _this.executeSkipForIn = function (column, values) {
                         var cursor, skip = this._skipRecord, cursor_request, column_store = this._objectStore.index(column), skipOrPush = function (value) {
@@ -2255,6 +2256,9 @@ var JsStore;
                             else {
                                 --skip;
                             }
+                        }.bind(this), onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
                         }.bind(this);
                         if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
@@ -2272,6 +2276,7 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
@@ -2289,16 +2294,16 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
-                        cursor_request.onerror = function (e) {
-                            this._errorOccured = true;
-                            this.onErrorOccured(e);
-                        }.bind(this);
                     };
                     _this.executeLimitForIn = function (column, values) {
-                        var cursor, cursor_request, column_store = this._objectStore.index(column);
+                        var cursor, cursor_request, column_store = this._objectStore.index(column), onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                         if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!this._errorOccured) {
@@ -2315,6 +2320,7 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
@@ -2332,16 +2338,16 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
-                        cursor_request.onerror = function (e) {
-                            this._errorOccured = true;
-                            this.onErrorOccured(e);
-                        }.bind(this);
                     };
                     _this.executeSimpleForIn = function (column, values) {
-                        var cursor, cursor_request, column_store = this._objectStore.index(column);
+                        var cursor, cursor_request, column_store = this._objectStore.index(column), onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                         if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!this._errorOccured) {
@@ -2358,6 +2364,7 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
@@ -2375,13 +2382,10 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
-                        cursor_request.onerror = function (e) {
-                            this._errorOccured = true;
-                            this.onErrorOccured(e);
-                        }.bind(this);
                     };
                     return _this;
                 }
@@ -3689,7 +3693,10 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeInLogic = function (column, values) {
-                        var cursor, column_store = this._objectStore.index(column), cursor_request;
+                        var cursor, column_store = this._objectStore.index(column), cursor_request, onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                         if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!this._errorOccured) {
@@ -3706,6 +3713,7 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
@@ -3720,6 +3728,7 @@ var JsStore;
                                                 this.onQueryFinished();
                                             }
                                         }.bind(this);
+                                        cursor_request.onerror = onCursorError;
                                     }
                                 }
                             }
@@ -3737,14 +3746,11 @@ var JsStore;
                                                 this.onQueryFinished();
                                             }
                                         }.bind(this);
+                                        cursor_request.onerror = onCursorError;
                                     }
                                 }
                             }
                         }
-                        cursor_request.onerror = function (e) {
-                            this._errorOccured = true;
-                            this.onErrorOccured(e);
-                        }.bind(this);
                     };
                     return _this;
                 }
@@ -4037,7 +4043,10 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeInLogic = function (column, values) {
-                        var cursor, column_store = this._objectStore.index(column), cursor_request;
+                        var cursor, column_store = this._objectStore.index(column), cursor_request, onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                         if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!this._errorOccured) {
@@ -4055,6 +4064,7 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
@@ -4073,13 +4083,10 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
-                        cursor_request.onerror = function (e) {
-                            this._errorOccured = true;
-                            this.onErrorOccured(e);
-                        }.bind(this);
                     };
                     return _this;
                 }
@@ -4411,7 +4418,10 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeInLogic = function (column, values) {
-                        var cursor, cursor_request;
+                        var cursor, cursor_request, onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                         if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!this._errorOccured) {
@@ -4430,6 +4440,7 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
@@ -4449,13 +4460,10 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
-                        cursor_request.onerror = function (e) {
-                            this._errorOccured = true;
-                            this.onErrorOccured(e);
-                        }.bind(this);
                     };
                     return _this;
                 }
