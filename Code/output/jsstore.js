@@ -1287,15 +1287,9 @@ var JsStore;
                 return _this;
             }
             Base.prototype.getColumnInfo = function (columnName) {
-                var column_info;
-                this.getTable(this._tableName)._columns.every(function (column) {
-                    if (column._name === columnName) {
-                        column_info = column;
-                        return false;
-                    }
-                    return true;
-                });
-                return column_info;
+                return this.getTable(this._tableName)._columns.filter(function (column) {
+                    return column._name === columnName;
+                })[0];
             };
             return Base;
         }(Business.BaseHelper));
