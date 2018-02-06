@@ -5,7 +5,7 @@ module.exports = function (config) {
         frameworks: ['mocha', 'chai'],
         client: {
             mocha: {
-                timeout: 20000 // 6 seconds - upped from 2 seconds
+                timeout: 2000 // 6 seconds - upped from 2 seconds
             }
         },
         files: [

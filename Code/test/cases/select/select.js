@@ -48,6 +48,9 @@ describe('Test Select Api', function () {
                 Email: 'uk@gmail.com'
             }
         }).
+        then(function (results) {
+            done(results);
+        }).
         catch(function (err) {
             console.log(err);
             var error = {
@@ -58,8 +61,6 @@ describe('Test Select Api', function () {
             done();
         })
     });
-
-
 
     it('select with where', function (done) {
         Con.select({
