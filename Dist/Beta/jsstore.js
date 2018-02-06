@@ -9,7 +9,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /**
- * @license :JsStore.js - v1.5.1 - 02/02/2018
+ * @license :JsStore.js - v1.5.2 - 06/02/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
  */ 
@@ -384,8 +384,8 @@ var KeyStore;
                         });
                     }.bind(this), onError = function (err) {
                         this.returnResult({
-                            ErrorOccured: true,
-                            ErrorDetails: err
+                            ErrorDetails: err,
+                            ErrorOccured: true
                         });
                     }.bind(this);
                     switch (request.Name) {
@@ -443,9 +443,9 @@ var KeyStore;
         };
         KeyStore.prcoessExecutionOfCode({
             Name: 'get',
-            Query: query,
+            OnError: onError,
             OnSuccess: onSuccess,
-            OnError: onError
+            Query: query
         });
         return this;
     };
@@ -460,17 +460,17 @@ var KeyStore;
      */
     KeyStore.set = function (key, value, onSuccess, onError) {
         var query = {
-            TableName: KeyStore.table_name,
             Set: {
                 Key: key,
                 Value: value
-            }
+            },
+            TableName: KeyStore.table_name,
         };
         KeyStore.prcoessExecutionOfCode({
             Name: 'set',
-            Query: query,
+            OnError: onError,
             OnSuccess: onSuccess,
-            OnError: onError
+            Query: query
         });
         return this;
     };
@@ -493,9 +493,9 @@ var KeyStore;
         };
         KeyStore.prcoessExecutionOfCode({
             Name: 'remove',
-            Query: query,
+            OnError: onError,
             OnSuccess: onSuccess,
-            OnError: onError
+            Query: query
         });
         return this;
     };
@@ -534,6 +534,7 @@ var JsStore;
         Data_Type["Array"] = "array";
         Data_Type["Number"] = "number";
         Data_Type["Boolean"] = "boolean";
+        Data_Type["Null"] = "null";
     })(Data_Type = JsStore.Data_Type || (JsStore.Data_Type = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
@@ -624,8 +625,8 @@ var JsStore;
         }
         else {
             var error = {
-                _type: JsStore.status.LastError,
-                _message: null
+                _message: null,
+                _type: JsStore.status.LastError
             };
             switch (error._type) {
                 case JsStore.Error_Type.IndexedDbBlocked:
@@ -729,6 +730,26 @@ var JsStore;
             });
         }
     };
+    /**
+     * get data type of supplied value
+     *
+     * @param {any} value
+     * @returns
+     */
+    JsStore.getType = function (value) {
+        if (value === null) {
+            return JsStore.Data_Type.Null;
+        }
+        var type = typeof value;
+        switch (type) {
+            case 'object':
+                if (Array.isArray(value)) {
+                    return JsStore.Data_Type.Array;
+                }
+            default:
+                return type;
+        }
+    };
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
@@ -742,6 +763,7 @@ var JsStore;
         Error_Type["NotArray"] = "not_array";
         Error_Type["NoValueSupplied"] = "no_value_supplied";
         Error_Type["ColumnNotExist"] = "column_not_exist";
+        Error_Type["EnableSearchOff"] = "enable_search_off";
         Error_Type["InvalidOp"] = "invalid_operator";
         Error_Type["NullValue"] = "null_value";
         Error_Type["BadDataType"] = "bad_data_type";
@@ -795,6 +817,9 @@ var JsStore;
                         break;
                     case Error_Type.ColumnNotExist:
                         err_msg = "Column '" + this._info['ColumnName'] + "' does not exist";
+                        break;
+                    case Error_Type.EnableSearchOff:
+                        err_msg = "Search is turned off for the Column '" + this._info['ColumnName'] + "'";
                         break;
                     case Error_Type.NullValue:
                         err_msg = "Null value is not allowed for column '" + this._info['ColumnName'] + "'";
@@ -854,7 +879,8 @@ var JsStore;
                 this._notNull = key.NotNull != null ? key.NotNull : false;
                 this._dataType = key.DataType != null ? key.DataType : (key.AutoIncrement ? 'number' : null);
                 this._default = key.Default;
-                this._multiEntry = key.MultiEntry == null ? false : true;
+                this._multiEntry = key.MultiEntry == null ? false : key.MultiEntry;
+                this._enableSearch = key.EnableSearch == null ? true : key.EnableSearch;
             }
             return Column;
         }());
@@ -1220,8 +1246,14 @@ var JsStore;
                     }
                     else {
                         this._errorOccured = true;
-                        this._error = new JsStore.Error(JsStore.Error_Type.ColumnNotExist, { ColumnName: column_name });
-                        this._error.throw();
+                        var column = this.getColumnInfo(column_name), error;
+                        if (column == null) {
+                            error = new JsStore.Error(JsStore.Error_Type.ColumnNotExist, { ColumnName: column_name }).get();
+                        }
+                        else {
+                            error = new JsStore.Error(JsStore.Error_Type.EnableSearchOff, { ColumnName: column_name }).get();
+                        }
+                        this.onErrorOccured(error, true);
                     }
                 };
                 _this.makeQryInCaseSensitive = function (qry) {
@@ -1254,6 +1286,17 @@ var JsStore;
                 };
                 return _this;
             }
+            Base.prototype.getColumnInfo = function (columnName) {
+                var column_info;
+                this.getTable(this._tableName)._columns.every(function (column) {
+                    if (column._name === columnName) {
+                        column_info = column;
+                        return false;
+                    }
+                    return true;
+                });
+                return column_info;
+            };
             return Base;
         }(Business.BaseHelper));
         Business.Base = Base;
@@ -1317,11 +1360,14 @@ var JsStore;
                                 keyPath: item._primaryKey
                             });
                             item._columns.forEach(function (column) {
-                                var options = column._primaryKey ? { unique: true } : { unique: column._unique };
-                                options['multiEntry'] = column._multiEntry;
-                                store.createIndex(column._name, column._name, options);
-                                if (column._autoIncrement) {
-                                    KeyStore.set("JsStore_" + Business.active_db._name + "_" + item._name + "_" + column._name + "_Value", 0);
+                                if (column._enableSearch === true) {
+                                    var options = column._primaryKey ? { unique: true } : { unique: column._unique };
+                                    options['multiEntry'] = column._multiEntry;
+                                    store.createIndex(column._name, column._name, options);
+                                    if (column._autoIncrement) {
+                                        KeyStore.set("JsStore_" + Business.active_db._name + "_" + item._name +
+                                            "_" + column._name + "_Value", 0);
+                                    }
                                 }
                             });
                         }
@@ -2165,6 +2211,9 @@ var JsStore;
                             else {
                                 --skip;
                             }
+                        }.bind(this), onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
                         }.bind(this);
                         if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
@@ -2182,6 +2231,7 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
@@ -2199,13 +2249,10 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
-                        cursor_request.onerror = function (e) {
-                            this._errorOccured = true;
-                            this.onErrorOccured(e);
-                        }.bind(this);
                     };
                     _this.executeSkipForIn = function (column, values) {
                         var cursor, skip = this._skipRecord, cursor_request, column_store = this._objectStore.index(column), skipOrPush = function (value) {
@@ -2215,6 +2262,9 @@ var JsStore;
                             else {
                                 --skip;
                             }
+                        }.bind(this), onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
                         }.bind(this);
                         if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
@@ -2232,6 +2282,7 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
@@ -2249,16 +2300,16 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
-                        cursor_request.onerror = function (e) {
-                            this._errorOccured = true;
-                            this.onErrorOccured(e);
-                        }.bind(this);
                     };
                     _this.executeLimitForIn = function (column, values) {
-                        var cursor, cursor_request, column_store = this._objectStore.index(column);
+                        var cursor, cursor_request, column_store = this._objectStore.index(column), onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                         if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!this._errorOccured) {
@@ -2275,6 +2326,7 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
@@ -2292,16 +2344,16 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
-                        cursor_request.onerror = function (e) {
-                            this._errorOccured = true;
-                            this.onErrorOccured(e);
-                        }.bind(this);
                     };
                     _this.executeSimpleForIn = function (column, values) {
-                        var cursor, cursor_request, column_store = this._objectStore.index(column);
+                        var cursor, cursor_request, column_store = this._objectStore.index(column), onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                         if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!this._errorOccured) {
@@ -2318,6 +2370,7 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
@@ -2335,13 +2388,10 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
-                        cursor_request.onerror = function (e) {
-                            this._errorOccured = true;
-                            this.onErrorOccured(e);
-                        }.bind(this);
                     };
                     return _this;
                 }
@@ -2747,8 +2797,8 @@ var JsStore;
                         // get the data from query table
                         var select_object = new Select.Instance({
                             From: query.Table,
-                            Where: query.Where,
-                            Order: query.Order
+                            Order: query.Order,
+                            Where: query.Where
                         }, function (selectResults) {
                             // perform join
                             selectResults.forEach(function (value, index) {
@@ -2831,8 +2881,8 @@ var JsStore;
                         }.bind(this), executeLogic = function () {
                             var select_object = new Select.Instance({
                                 From: query.Table,
-                                Where: query.Where,
-                                Order: query.Order
+                                Order: query.Order,
+                                Where: query.Where
                             }, function (results) {
                                 doRightJoin(results);
                                 onExecutionFinished();
@@ -2883,8 +2933,8 @@ var JsStore;
                                     where[query.Column] = tmp_results[item_index][joinQuery.Table][joinQuery.Column];
                                     var select_object = new Select.Instance({
                                         From: query.Table,
-                                        Where: where,
-                                        Order: query.Order
+                                        Order: query.Order,
+                                        Where: where
                                     }, function (results) {
                                         doJoin(results);
                                         ++item_index;
@@ -2943,8 +2993,8 @@ var JsStore;
                     var join_query;
                     if (this._currentQueryStackIndex >= 1 && this._currentQueryStackIndex % 2 === 1) {
                         join_query = {
-                            Table: this._queryStack[this._currentQueryStackIndex].NextJoin.Table,
-                            Column: this._queryStack[this._currentQueryStackIndex].NextJoin.Column
+                            Column: this._queryStack[this._currentQueryStackIndex].NextJoin.Column,
+                            Table: this._queryStack[this._currentQueryStackIndex].NextJoin.Table
                         };
                         this._currentQueryStackIndex++;
                     }
@@ -3503,29 +3553,31 @@ var JsStore;
                     this.goToWhereLogic();
                 };
                 Instance.prototype.onTransactionCompleted = function () {
-                    this.processOrderBy();
-                    if (this._query.Distinct) {
-                        var group_by = [];
-                        var result = this._results[0];
-                        for (var key in result) {
-                            group_by.push(key);
+                    if (this._errorOccured === false) {
+                        this.processOrderBy();
+                        if (this._query.Distinct) {
+                            var group_by = [];
+                            var result = this._results[0];
+                            for (var key in result) {
+                                group_by.push(key);
+                            }
+                            var primary_key = this.getPrimaryKey(this._query.From), index = group_by.indexOf(primary_key);
+                            group_by.splice(index, 1);
+                            this._query.GroupBy = group_by.length > 0 ? group_by : null;
                         }
-                        var primary_key = this.getPrimaryKey(this._query.From), index = group_by.indexOf(primary_key);
-                        group_by.splice(index, 1);
-                        this._query.GroupBy = group_by.length > 0 ? group_by : null;
-                    }
-                    if (this._query.GroupBy) {
-                        if (this._query.Aggregate) {
-                            this.executeAggregateGroupBy();
+                        if (this._query.GroupBy) {
+                            if (this._query.Aggregate) {
+                                this.executeAggregateGroupBy();
+                            }
+                            else {
+                                this.processGroupBy();
+                            }
                         }
-                        else {
-                            this.processGroupBy();
+                        else if (this._query.Aggregate) {
+                            this.processAggregateQry();
                         }
+                        this._onSuccess(this._results);
                     }
-                    else if (this._query.Aggregate) {
-                        this.processAggregateQry();
-                    }
-                    this._onSuccess(this._results);
                 };
                 Instance.prototype.orQueryFinish = function () {
                     this._isOr = false;
@@ -3649,7 +3701,10 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeInLogic = function (column, values) {
-                        var cursor, column_store = this._objectStore.index(column), cursor_request;
+                        var cursor, column_store = this._objectStore.index(column), cursor_request, onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                         if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!this._errorOccured) {
@@ -3666,6 +3721,7 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
@@ -3680,6 +3736,7 @@ var JsStore;
                                                 this.onQueryFinished();
                                             }
                                         }.bind(this);
+                                        cursor_request.onerror = onCursorError;
                                     }
                                 }
                             }
@@ -3697,14 +3754,11 @@ var JsStore;
                                                 this.onQueryFinished();
                                             }
                                         }.bind(this);
+                                        cursor_request.onerror = onCursorError;
                                     }
                                 }
                             }
                         }
-                        cursor_request.onerror = function (e) {
-                            this._errorOccured = true;
-                            this.onErrorOccured(e);
-                        }.bind(this);
                     };
                     return _this;
                 }
@@ -3890,7 +3944,9 @@ var JsStore;
                     }
                 };
                 Instance.prototype.onTransactionCompleted = function () {
-                    this._onSuccess(this._resultCount);
+                    if (this._errorOccured === false) {
+                        this._onSuccess(this._resultCount);
+                    }
                 };
                 return Instance;
             }(Count.Where));
@@ -3997,7 +4053,10 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeInLogic = function (column, values) {
-                        var cursor, column_store = this._objectStore.index(column), cursor_request;
+                        var cursor, column_store = this._objectStore.index(column), cursor_request, onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                         if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!this._errorOccured) {
@@ -4015,6 +4074,7 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
@@ -4033,13 +4093,10 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
-                        cursor_request.onerror = function (e) {
-                            this._errorOccured = true;
-                            this.onErrorOccured(e);
-                        }.bind(this);
                     };
                     return _this;
                 }
@@ -4209,7 +4266,9 @@ var JsStore;
                     }
                 };
                 Instance.prototype.onTransactionCompleted = function () {
-                    this._onSuccess(this._rowAffected);
+                    if (this._errorOccured === false) {
+                        this._onSuccess(this._rowAffected);
+                    }
                 };
                 Instance.prototype.initTransaction = function () {
                     Business.createTransaction([this._query.In], this.onTransactionCompleted.bind(this));
@@ -4281,7 +4340,7 @@ var JsStore;
                         error = new JsStore.Error(JsStore.Error_Type.NullValue, { ColumnName: column._name }).get();
                     }
                     // check datatype
-                    var type = typeof value;
+                    var type = JsStore.getType(value);
                     if (column._dataType) {
                         if (type !== column._dataType && type !== 'object') {
                             error = new JsStore.Error(JsStore.Error_Type.BadDataType, { ColumnName: column._name }).get();
@@ -4371,7 +4430,10 @@ var JsStore;
                 function In() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeInLogic = function (column, values) {
-                        var cursor, cursor_request;
+                        var cursor, cursor_request, onCursorError = function (e) {
+                            this._errorOccured = true;
+                            this.onErrorOccured(e);
+                        }.bind(this);
                         if (this._checkFlag) {
                             for (var i = 0, length = values.length; i < length; i++) {
                                 if (!this._errorOccured) {
@@ -4390,6 +4452,7 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
@@ -4409,13 +4472,10 @@ var JsStore;
                                             this.onQueryFinished();
                                         }
                                     }.bind(this);
+                                    cursor_request.onerror = onCursorError;
                                 }
                             }
                         }
-                        cursor_request.onerror = function (e) {
-                            this._errorOccured = true;
-                            this.onErrorOccured(e);
-                        }.bind(this);
                     };
                     return _this;
                 }
@@ -4599,7 +4659,9 @@ var JsStore;
                     this._objectStore = Business.db_transaction.objectStore(this._query.From);
                 };
                 Instance.prototype.onTransactionCompleted = function () {
-                    this._onSuccess(this._rowAffected);
+                    if (this._errorOccured === false) {
+                        this._onSuccess(this._rowAffected);
+                    }
                 };
                 Instance.prototype.onQueryFinished = function () {
                     if (this._isOr === true) {
@@ -4687,7 +4749,9 @@ var JsStore;
                     }
                 };
                 Instance.prototype.onTransactionCompleted = function () {
-                    this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
+                    if (this._errorOccured === false) {
+                        this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
+                    }
                 };
                 Instance.prototype.onQueryFinished = function () {
                     if (this._isTransaction === true) {
@@ -4762,7 +4826,8 @@ var JsStore;
                     if (column._notNull && JsStore.isNull(this._value[column._name])) {
                         this.onValidationError(JsStore.Error_Type.NullValue, { ColumnName: column._name });
                     }
-                    else if (column._dataType && typeof this._value[column._name] !== column._dataType) {
+                    else if (column._dataType && !JsStore.isNull(this._value[column._name]) &&
+                        JsStore.getType(this._value[column._name]) !== column._dataType) {
                         this.onValidationError(JsStore.Error_Type.BadDataType, { ColumnName: column._name });
                     }
                 };
@@ -5044,9 +5109,9 @@ var JsStore;
         Instance.prototype.openDb = function (dbName, onSuccess, onError) {
             return this.pushApi({
                 Name: 'open_db',
-                Query: dbName,
-                OnSuccess: onSuccess,
                 OnError: onError,
+                OnSuccess: onSuccess,
+                Query: dbName
             }, false);
         };
         /**
@@ -5061,8 +5126,8 @@ var JsStore;
         Instance.prototype.createDb = function (dataBase, onSuccess, onError) {
             return this.pushApi({
                 Name: 'create_db',
-                OnSuccess: onSuccess,
                 OnError: onError,
+                OnSuccess: onSuccess,
                 Query: dataBase
             }, false);
         };
@@ -5077,9 +5142,9 @@ var JsStore;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'drop_db',
-                Query: null,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: null
             }, use_promise);
         };
         /**
@@ -5098,9 +5163,9 @@ var JsStore;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'select',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             }, use_promise);
         };
         /**
@@ -5121,9 +5186,9 @@ var JsStore;
             query.Logic = query.Logic.toString();
             return this.pushApi({
                 Name: 'transaction',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             }, use_promise);
         };
         /**
@@ -5141,9 +5206,9 @@ var JsStore;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'count',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             }, use_promise);
         };
         /**
@@ -5162,9 +5227,9 @@ var JsStore;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'insert',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             }, use_promise);
         };
         /**
@@ -5183,9 +5248,9 @@ var JsStore;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'update',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             }, use_promise);
         };
         Instance.prototype.delete = function (query, onSuccess, onError) {
@@ -5207,9 +5272,9 @@ var JsStore;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'remove',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             }, use_promise);
         };
         /**
@@ -5225,9 +5290,9 @@ var JsStore;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'clear',
-                Query: tableName,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: tableName
             }, use_promise);
         };
         /**
@@ -5246,9 +5311,9 @@ var JsStore;
             query.OnSuccess = query.OnError = null;
             return this.pushApi({
                 Name: 'bulk_insert',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             }, use_promise);
         };
         /**
@@ -5273,9 +5338,9 @@ var JsStore;
                 return new Promise(function (resolve, reject) {
                     this.pushApi({
                         Name: 'export_json',
-                        Query: query,
+                        OnError: onError,
                         OnSuccess: onSuccess,
-                        OnError: onError
+                        Query: query
                     }, use_promise).then(function (url) {
                         onSuccess(url);
                         resolve();
@@ -5287,9 +5352,9 @@ var JsStore;
             else {
                 this.pushApi({
                     Name: 'export_json',
-                    Query: query,
+                    OnError: onError,
                     OnSuccess: onSuccess,
-                    OnError: onError
+                    Query: query,
                 }, use_promise);
             }
         };

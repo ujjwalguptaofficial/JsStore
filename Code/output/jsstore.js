@@ -9,7 +9,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /**
- * @license :JsStore.js - v1.5.1 - 02/02/2018
+ * @license :JsStore.js - v1.5.2 - 06/02/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
  */ 
@@ -1287,9 +1287,15 @@ var JsStore;
                 return _this;
             }
             Base.prototype.getColumnInfo = function (columnName) {
-                return this.getTable(this._tableName)._columns.filter(function (column) {
-                    return column._name === columnName;
-                })[0];
+                var column_info;
+                this.getTable(this._tableName)._columns.every(function (column) {
+                    if (column._name === columnName) {
+                        column_info = column;
+                        return false;
+                    }
+                    return true;
+                });
+                return column_info;
             };
             return Base;
         }(Business.BaseHelper));
