@@ -443,9 +443,9 @@ var KeyStore;
         };
         KeyStore.prcoessExecutionOfCode({
             Name: 'get',
-            Query: query,
+            OnError: onError,
             OnSuccess: onSuccess,
-            OnError: onError
+            Query: query
         });
         return this;
     };
@@ -460,17 +460,17 @@ var KeyStore;
      */
     KeyStore.set = function (key, value, onSuccess, onError) {
         var query = {
-            TableName: KeyStore.table_name,
             Set: {
                 Key: key,
                 Value: value
-            }
+            },
+            TableName: KeyStore.table_name,
         };
         KeyStore.prcoessExecutionOfCode({
             Name: 'set',
-            Query: query,
+            OnError: onError,
             OnSuccess: onSuccess,
-            OnError: onError
+            Query: query
         });
         return this;
     };
@@ -493,9 +493,9 @@ var KeyStore;
         };
         KeyStore.prcoessExecutionOfCode({
             Name: 'remove',
-            Query: query,
+            OnError: onError,
             OnSuccess: onSuccess,
-            OnError: onError
+            Query: query
         });
         return this;
     };
@@ -625,8 +625,8 @@ var JsStore;
         }
         else {
             var error = {
-                _type: JsStore.status.LastError,
-                _message: null
+                _message: null,
+                _type: JsStore.status.LastError
             };
             switch (error._type) {
                 case JsStore.Error_Type.IndexedDbBlocked:
@@ -2797,8 +2797,8 @@ var JsStore;
                         // get the data from query table
                         var select_object = new Select.Instance({
                             From: query.Table,
-                            Where: query.Where,
-                            Order: query.Order
+                            Order: query.Order,
+                            Where: query.Where
                         }, function (selectResults) {
                             // perform join
                             selectResults.forEach(function (value, index) {
@@ -2881,8 +2881,8 @@ var JsStore;
                         }.bind(this), executeLogic = function () {
                             var select_object = new Select.Instance({
                                 From: query.Table,
-                                Where: query.Where,
-                                Order: query.Order
+                                Order: query.Order,
+                                Where: query.Where
                             }, function (results) {
                                 doRightJoin(results);
                                 onExecutionFinished();
@@ -2933,8 +2933,8 @@ var JsStore;
                                     where[query.Column] = tmp_results[item_index][joinQuery.Table][joinQuery.Column];
                                     var select_object = new Select.Instance({
                                         From: query.Table,
-                                        Where: where,
-                                        Order: query.Order
+                                        Order: query.Order,
+                                        Where: where
                                     }, function (results) {
                                         doJoin(results);
                                         ++item_index;
@@ -2993,8 +2993,8 @@ var JsStore;
                     var join_query;
                     if (this._currentQueryStackIndex >= 1 && this._currentQueryStackIndex % 2 === 1) {
                         join_query = {
-                            Table: this._queryStack[this._currentQueryStackIndex].NextJoin.Table,
-                            Column: this._queryStack[this._currentQueryStackIndex].NextJoin.Column
+                            Column: this._queryStack[this._currentQueryStackIndex].NextJoin.Column,
+                            Table: this._queryStack[this._currentQueryStackIndex].NextJoin.Table
                         };
                         this._currentQueryStackIndex++;
                     }
@@ -5109,9 +5109,9 @@ var JsStore;
         Instance.prototype.openDb = function (dbName, onSuccess, onError) {
             return this.pushApi({
                 Name: 'open_db',
-                Query: dbName,
-                OnSuccess: onSuccess,
                 OnError: onError,
+                OnSuccess: onSuccess,
+                Query: dbName
             }, false);
         };
         /**
@@ -5126,8 +5126,8 @@ var JsStore;
         Instance.prototype.createDb = function (dataBase, onSuccess, onError) {
             return this.pushApi({
                 Name: 'create_db',
-                OnSuccess: onSuccess,
                 OnError: onError,
+                OnSuccess: onSuccess,
                 Query: dataBase
             }, false);
         };
@@ -5142,9 +5142,9 @@ var JsStore;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'drop_db',
-                Query: null,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: null
             }, use_promise);
         };
         /**
@@ -5163,9 +5163,9 @@ var JsStore;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'select',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             }, use_promise);
         };
         /**
@@ -5186,9 +5186,9 @@ var JsStore;
             query.Logic = query.Logic.toString();
             return this.pushApi({
                 Name: 'transaction',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             }, use_promise);
         };
         /**
@@ -5206,9 +5206,9 @@ var JsStore;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'count',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             }, use_promise);
         };
         /**
@@ -5227,9 +5227,9 @@ var JsStore;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'insert',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             }, use_promise);
         };
         /**
@@ -5248,9 +5248,9 @@ var JsStore;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'update',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             }, use_promise);
         };
         Instance.prototype.delete = function (query, onSuccess, onError) {
@@ -5272,9 +5272,9 @@ var JsStore;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'remove',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             }, use_promise);
         };
         /**
@@ -5290,9 +5290,9 @@ var JsStore;
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'clear',
-                Query: tableName,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: tableName
             }, use_promise);
         };
         /**
@@ -5311,9 +5311,9 @@ var JsStore;
             query.OnSuccess = query.OnError = null;
             return this.pushApi({
                 Name: 'bulk_insert',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             }, use_promise);
         };
         /**
@@ -5338,9 +5338,9 @@ var JsStore;
                 return new Promise(function (resolve, reject) {
                     this.pushApi({
                         Name: 'export_json',
-                        Query: query,
+                        OnError: onError,
                         OnSuccess: onSuccess,
-                        OnError: onError
+                        Query: query
                     }, use_promise).then(function (url) {
                         onSuccess(url);
                         resolve();
@@ -5352,9 +5352,9 @@ var JsStore;
             else {
                 this.pushApi({
                     Name: 'export_json',
-                    Query: query,
+                    OnError: onError,
                     OnSuccess: onSuccess,
-                    OnError: onError
+                    Query: query,
                 }, use_promise);
             }
         };

@@ -82,8 +82,8 @@ namespace JsStore {
                     // get the data from query table
                     var select_object = new Select.Instance({
                         From: query.Table,
-                        Where: query.Where,
-                        Order: query.Order
+                        Order: query.Order,
+                        Where: query.Where
                     } as ISelect, function (selectResults) {
                         // perform join
                         selectResults.forEach(function (value, index) {
@@ -178,8 +178,8 @@ namespace JsStore {
                         executeLogic = function () {
                             var select_object = new Select.Instance({
                                 From: query.Table,
-                                Where: query.Where,
-                                Order: query.Order
+                                Order: query.Order,
+                                Where: query.Where
                             } as ISelect, function (results) {
                                 doRightJoin(results);
                                 onExecutionFinished();
@@ -239,8 +239,8 @@ namespace JsStore {
                                     where[query.Column] = tmp_results[item_index][joinQuery.Table][joinQuery.Column];
                                     var select_object = new Select.Instance({
                                         From: query.Table,
-                                        Where: where,
-                                        Order: query.Order
+                                        Order: query.Order,
+                                        Where: where
                                     } as ISelect, function (results) {
                                         doJoin(results);
                                         ++item_index;
@@ -260,8 +260,8 @@ namespace JsStore {
                     var join_query;
                     if (this._currentQueryStackIndex >= 1 && this._currentQueryStackIndex % 2 === 1) {
                         join_query = {
-                            Table: this._queryStack[this._currentQueryStackIndex].NextJoin.Table,
-                            Column: this._queryStack[this._currentQueryStackIndex].NextJoin.Column
+                            Column: this._queryStack[this._currentQueryStackIndex].NextJoin.Column,
+                            Table: this._queryStack[this._currentQueryStackIndex].NextJoin.Table
                         } as ITableJoin;
                         this._currentQueryStackIndex++;
                     }

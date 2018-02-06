@@ -43,8 +43,8 @@ namespace JsStore {
         }
         else {
             var error = {
-                _type: status.LastError,
-                _message: null
+                _message: null,
+                _type: status.LastError
             } as IError;
             switch (error._type) {
                 case Error_Type.IndexedDbBlocked:

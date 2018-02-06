@@ -31,9 +31,9 @@ namespace JsStore {
         openDb(dbName: string, onSuccess: () => void, onError: (err: IError) => void) {
             return this.pushApi({
                 Name: 'open_db',
-                Query: dbName,
-                OnSuccess: onSuccess,
                 OnError: onError,
+                OnSuccess: onSuccess,
+                Query: dbName
             } as IWebWorkerRequest, false);
         }
 
@@ -49,8 +49,8 @@ namespace JsStore {
         createDb(dataBase: IDataBaseOption, onSuccess: (dbSchema: any) => void, onError: (err: IError) => void) {
             return this.pushApi({
                 Name: 'create_db',
-                OnSuccess: onSuccess,
                 OnError: onError,
+                OnSuccess: onSuccess,
                 Query: dataBase
             } as IWebWorkerRequest, false);
         }
@@ -66,9 +66,9 @@ namespace JsStore {
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'drop_db',
-                Query: null,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: null
             } as IWebWorkerRequest, use_promise);
         }
 
@@ -88,9 +88,9 @@ namespace JsStore {
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'select',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             } as IWebWorkerRequest, use_promise);
         }
 
@@ -112,9 +112,9 @@ namespace JsStore {
             query.Logic = query.Logic.toString();
             return this.pushApi({
                 Name: 'transaction',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             } as IWebWorkerRequest, use_promise);
         }
 
@@ -133,9 +133,9 @@ namespace JsStore {
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'count',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             } as IWebWorkerRequest, use_promise);
         }
 
@@ -155,9 +155,9 @@ namespace JsStore {
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'insert',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             } as IWebWorkerRequest, use_promise);
         }
 
@@ -177,9 +177,9 @@ namespace JsStore {
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'update',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             } as IWebWorkerRequest, use_promise);
         }
 
@@ -203,9 +203,9 @@ namespace JsStore {
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'remove',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             } as IWebWorkerRequest, use_promise);
         }
 
@@ -222,9 +222,9 @@ namespace JsStore {
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'clear',
-                Query: tableName,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: tableName
             } as IWebWorkerRequest, use_promise);
         }
 
@@ -244,9 +244,9 @@ namespace JsStore {
             query.OnSuccess = query.OnError = null;
             return this.pushApi({
                 Name: 'bulk_insert',
-                Query: query,
+                OnError: onError,
                 OnSuccess: onSuccess,
-                OnError: onError
+                Query: query
             } as IWebWorkerRequest, use_promise);
         }
 
@@ -274,9 +274,9 @@ namespace JsStore {
                 return new Promise(function (resolve, reject) {
                     this.pushApi({
                         Name: 'export_json',
-                        Query: query,
+                        OnError: onError,
                         OnSuccess: onSuccess,
-                        OnError: onError
+                        Query: query
                     } as IWebWorkerRequest, use_promise).then(function (url) {
                         onSuccess(url);
                         resolve();
@@ -288,9 +288,9 @@ namespace JsStore {
             else {
                 this.pushApi({
                     Name: 'export_json',
-                    Query: query,
+                    OnError: onError,
                     OnSuccess: onSuccess,
-                    OnError: onError
+                    Query: query,
                 } as IWebWorkerRequest, use_promise);
             }
 
