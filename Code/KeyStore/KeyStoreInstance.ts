@@ -31,9 +31,9 @@ namespace KeyStore {
         } as ISelect;
         prcoessExecutionOfCode({
             Name: 'get',
-            Query: query,
+            OnError: onError,
             OnSuccess: onSuccess,
-            OnError: onError
+            Query: query
         } as IWebWorkerRequest);
         return this;
     };
@@ -49,17 +49,17 @@ namespace KeyStore {
      */
     export var set = function (key, value, onSuccess?: (result) => void, onError?: (err: IError) => void) {
         var query = {
-            TableName: table_name,
             Set: {
                 Key: key,
                 Value: value
-            }
+            },
+            TableName: table_name,
         } as IInsert;
         prcoessExecutionOfCode({
             Name: 'set',
-            Query: query,
+            OnError: onError,
             OnSuccess: onSuccess,
-            OnError: onError
+            Query: query
         } as IWebWorkerRequest);
         return this;
     };
@@ -83,9 +83,9 @@ namespace KeyStore {
         } as IDelete;
         prcoessExecutionOfCode({
             Name: 'remove',
-            Query: query,
+            OnError: onError,
             OnSuccess: onSuccess,
-            OnError: onError
+            Query: query
         } as IWebWorkerRequest);
         return this;
     };

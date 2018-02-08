@@ -57,6 +57,11 @@ var Customers = {
             Name: "Country",
             NotNull: true,
             DataType: 'string'
+        },
+        {
+            Name: "Email",
+            DataType: 'string',
+            EnableSearch: false
         }
     ]
 };

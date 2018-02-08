@@ -57,7 +57,9 @@ namespace JsStore {
                 }
 
                 private onTransactionCompleted() {
-                    this._onSuccess(this._resultCount);
+                    if (this._errorOccured === false) {
+                        this._onSuccess(this._resultCount);
+                    }
                 }
             }
         }

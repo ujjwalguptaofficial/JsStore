@@ -1,5 +1,5 @@
 /** 
- * @license :JsStore.js - v1.5.0 - 23/01/2018
+ * @license :JsStore.js - v1.5.2 - 06/02/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT 
  */
@@ -184,10 +184,13 @@ declare namespace JsStore {
         Like = "Like",
         Or = "Or",
     }
-    enum DataType {
+    enum Data_Type {
         String = "string",
         Object = "object",
         Array = "array",
+        Number = "number",
+        Boolean = "boolean",
+        Null = "null",
     }
 }
 declare namespace JsStore {
@@ -216,6 +219,7 @@ declare namespace JsStore {
         DataType?: string;
         Default?: any;
         MultiEntry?: boolean;
+        EnableSearch?: boolean;
     }
     interface ISelect {
         From: any;
@@ -385,6 +389,13 @@ declare namespace JsStore {
      *
      */
     var disableLog: () => void;
+    /**
+     * get data type of supplied value
+     *
+     * @param {any} value
+     * @returns
+     */
+    var getType: (value: any) => "string" | "number" | "boolean" | "symbol" | "undefined" | "object" | "function" | Data_Type.Array | Data_Type.Null;
 }
 declare namespace JsStore {
     enum Error_Type {
@@ -396,6 +407,7 @@ declare namespace JsStore {
         NotArray = "not_array",
         NoValueSupplied = "no_value_supplied",
         ColumnNotExist = "column_not_exist",
+        EnableSearchOff = "enable_search_off",
         InvalidOp = "invalid_operator",
         NullValue = "null_value",
         BadDataType = "bad_data_type",
@@ -435,7 +447,7 @@ declare namespace JsStore {
             _dataType: string;
             _default: any;
             _multiEntry: boolean;
-            _advTextSearch: boolean;
+            _enableSearch: boolean;
             constructor(key: IColumnOption, tableName: string);
         }
     }
@@ -523,6 +535,7 @@ declare namespace JsStore {
             _isTransaction: boolean;
             protected onErrorOccured: (e: any, customError?: boolean) => void;
             protected onExceptionOccured: (ex: DOMException, info: any) => void;
+            protected getColumnInfo(columnName: any): Column;
             protected goToWhereLogic: () => void;
             protected makeQryInCaseSensitive: (qry: any) => any;
         }
@@ -887,8 +900,8 @@ declare namespace JsStore {
             class SchemaChecker {
                 _table: Table;
                 constructor(table: Table);
-                check: (setValue: any, tblName: any) => IError;
-                private checkByColumn;
+                check(setValue: any, tblName: any): IError;
+                private checkByColumn(column, value);
             }
         }
     }
@@ -1152,4 +1165,5 @@ declare namespace JsStore {
         exportJson(query: ISelect): any;
     }
 }
+
 export = JsStore;

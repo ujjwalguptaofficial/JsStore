@@ -1,6 +1,5 @@
 namespace JsStore {
     export namespace Model {
-
         export class Column {
             _name: string;
             _autoIncrement: boolean;
@@ -10,7 +9,7 @@ namespace JsStore {
             _dataType: string;
             _default: any;
             _multiEntry: boolean;
-            _advTextSearch: boolean;
+            _enableSearch: boolean;
 
             constructor(key: IColumnOption, tableName: string) {
                 if (key.Name != null) {
@@ -26,7 +25,8 @@ namespace JsStore {
                 this._notNull = key.NotNull != null ? key.NotNull : false;
                 this._dataType = key.DataType != null ? key.DataType : (key.AutoIncrement ? 'number' : null);
                 this._default = key.Default;
-                this._multiEntry = key.MultiEntry == null ? false : true;
+                this._multiEntry = key.MultiEntry == null ? false : key.MultiEntry;
+                this._enableSearch = key.EnableSearch == null ? true : key.EnableSearch;
             }
 
         }

@@ -5,12 +5,12 @@ module.exports = function (config) {
         frameworks: ['mocha', 'chai'],
         client: {
             mocha: {
-                timeout: 5000 // 6 seconds - upped from 2 seconds
+                timeout: 2000 // 6 seconds - upped from 2 seconds
             }
         },
         files: [
             'scripts/jquery-3.2.1.min.js',
-            '../output/jsstore.js',
+            '../output/jsstore.min.js',
             'scripts/dbhelper.js',
             'cases/insert/*.js',
             'cases/select/*.js',

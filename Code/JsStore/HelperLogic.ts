@@ -43,8 +43,13 @@ namespace JsStore {
         }
         else {
             var error = {
+<<<<<<< HEAD
                 _type: db_status.LastError,
                 _message: null
+=======
+                _message: null,
+                _type: status.LastError
+>>>>>>> master
             } as IError;
             switch (error._type) {
                 case Error_Type.IndexedDbBlocked:
@@ -146,6 +151,27 @@ namespace JsStore {
                 Name: 'set_config',
                 Query: config
             } as IWebWorkerRequest);
+        }
+    };
+
+    /**
+     * get data type of supplied value
+     * 
+     * @param {any} value 
+     * @returns 
+     */
+    export var getType = function (value) {
+        if (value === null) {
+            return Data_Type.Null;
+        }
+        var type = typeof value;
+        switch (type) {
+            case 'object':
+                if (Array.isArray(value)) {
+                    return Data_Type.Array;
+                }
+            default:
+                return type;
         }
     };
 }

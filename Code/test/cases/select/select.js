@@ -41,6 +41,27 @@ describe('Test Select Api', function () {
         })
     });
 
+    // it('EnableSearch column test', function (done) {
+    //     Con.select({
+    //         From: 'Customers',
+    //         Where: {
+    //             Email: 'uk@gmail.com'
+    //         }
+    //     }).
+    //     then(function (results) {
+    //         done(results);
+    //     }).
+    //     catch(function (err) {
+    //         console.log(err);
+    //         var error = {
+    //             "_message": "Search is turned off for the Column 'Email'",
+    //             "_type": "enable_search_off"
+    //         };
+    //         expect(err).to.be.an('object').eql(error);
+    //         done();
+    //     })
+    // });
+
     it('select with where', function (done) {
         Con.select({
             From: 'Customers',

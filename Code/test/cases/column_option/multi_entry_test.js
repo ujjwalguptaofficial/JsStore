@@ -125,6 +125,29 @@ describe('Multi Entry Test', function () {
 
     });
 
+    it('array data type check', function (done) {
+        var value = {
+            name: "Ray",
+            tags: "apple"
+        };
+        Con.insert({
+            Into: 'people',
+            Values: [value]
+        }).
+        then(function (results) {
+            expect(results).to.be.an('array').length(1);
+            done();
+        }).
+        catch(function (err) {
+            var error = {
+                "_message": "Supplied value for column 'tags' does not have valid type",
+                "_type": "bad_data_type"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+
+    });
 });
 
 MultiEntryTest = {
@@ -134,10 +157,11 @@ MultiEntryTest = {
                 Columns: [{
                         Name: 'name',
                         Unique: true,
-                        DataType: 'string'
+                        DataType: JsStore.Data_Type.String
                     },
                     {
-                        Name: 'tags'
+                        Name: 'tags',
+                        DataType: JsStore.Data_Type.Array
                     }
                 ]
             },

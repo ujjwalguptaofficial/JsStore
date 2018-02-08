@@ -52,7 +52,9 @@ namespace JsStore {
                 }
 
                 private onTransactionCompleted() {
-                    this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
+                    if (this._errorOccured === false) {
+                        this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
+                    }
                 }
 
                 private onQueryFinished() {

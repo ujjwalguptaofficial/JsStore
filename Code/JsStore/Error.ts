@@ -8,6 +8,7 @@ namespace JsStore {
         NotArray = "not_array",
         NoValueSupplied = "no_value_supplied",
         ColumnNotExist = "column_not_exist",
+        EnableSearchOff = "enable_search_off",
         InvalidOp = "invalid_operator",
         NullValue = "null_value",
         BadDataType = "bad_data_type",
@@ -86,6 +87,9 @@ namespace JsStore {
                     break;
                 case Error_Type.ColumnNotExist:
                     err_msg = "Column '" + this._info['ColumnName'] + "' does not exist";
+                    break;
+                case Error_Type.EnableSearchOff:
+                    err_msg = "Search is turned off for the Column '" + this._info['ColumnName'] + "'";
                     break;
                 case Error_Type.NullValue:
                     err_msg = "Null value is not allowed for column '" + this._info['ColumnName'] + "'";

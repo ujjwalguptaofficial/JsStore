@@ -3,3 +3,7 @@
 #################
 
 Code/node_modules/
+Code/output/jsstore.js
+Code/output/jsstore.js.map
+Code/output/jsstore.min.js
+Code/output/jsstore.min.js.map
