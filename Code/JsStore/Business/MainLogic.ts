@@ -2,7 +2,7 @@ namespace JsStore {
     export namespace Business {
         export var
             on_db_dropped_by_browser: () => void,
-            is_db_deleted_by_browser = false,
+            is_db_deleted_by_browser: boolean,
             db_connection: IDBDatabase,
             active_db: DataBase,
             db_transaction: IDBTransaction = null,
@@ -55,14 +55,10 @@ namespace JsStore {
                             } break;
                             case Connection_Status.Closed: {
                                 if (is_db_deleted_by_browser === true) {
-                                    // create meta data
-                                    var db_helper = new Model.DbHelper(active_db);
-                                    db_helper.createMetaData(function (tablesMetaData: Model.TableHelper[]) {
-                                        var create_db_object = new CreateDb(tablesMetaData, function () {
-                                            is_db_deleted_by_browser = false;
-                                            this.checkConnectionAndExecuteLogic(request);
-                                        }.bind(this), request.OnError);
-                                    }.bind(this));
+                                    this.createDb(null, function () {
+                                        is_db_deleted_by_browser = false;
+                                        this.checkConnectionAndExecuteLogic(request);
+                                    }.bind(this), request.OnError);
                                 }
                                 else {
                                     this.openDb(active_db._name, function () {
@@ -124,13 +120,10 @@ namespace JsStore {
                         break;
                     case 'open_db':
                         if (is_db_deleted_by_browser === true) {
-                            var db_helper = new Model.DbHelper(active_db);
-                            db_helper.createMetaData(function (tablesMetaData: Model.TableHelper[]) {
-                                var create_db_object = new CreateDb(tablesMetaData, function () {
-                                    is_db_deleted_by_browser = false;
-                                    onSuccess();
-                                }.bind(this), onError);
-                            });
+                            this.createDb(null, function () {
+                                is_db_deleted_by_browser = false;
+                                onSuccess();
+                            }.bind(this), onError);
                         }
                         else {
                             this.openDb(request.Query, onSuccess, onError);
@@ -232,10 +225,7 @@ namespace JsStore {
             private createDb(
                 dataBase: IDataBaseOption, onSuccess: () => void, onError: (err: IError) => void
             ) {
-                this.closeDb();
-                getDbVersion(dataBase.Name, function (version) {
-                    db_version = version ? version : 1;
-                    active_db = new Model.DataBase(dataBase);
+                var processCreateDb = function () {
                     // save dbSchema in keystore
                     KeyStore.set("JsStore_" + active_db._name + "_Schema", active_db);
                     // create meta data
@@ -243,7 +233,18 @@ namespace JsStore {
                     db_helper.createMetaData(function (tablesMetaData: Model.TableHelper[]) {
                         var create_db_object = new CreateDb(tablesMetaData, onSuccess, onError);
                     });
-                });
+                };
+                if (dataBase == null) {
+                    processCreateDb();
+                }
+                else {
+                    this.closeDb();
+                    getDbVersion(dataBase.Name, function (version) {
+                        db_version = version ? version : 1;
+                        active_db = new Model.DataBase(dataBase);
+                        processCreateDb();
+                    });
+                }
 
             }
 

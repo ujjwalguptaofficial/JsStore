@@ -1,8 +1,10 @@
 namespace KeyStore {
     export namespace Business {
+        export var temp_datas;
         export class InitDb {
-            constructor(dbName: string, tableName: string, onSuccess: () => void, onError: (err: IError) => void) {
+            constructor(dbName: string, onSuccess: () => void, onError: (err: IError) => void) {
                 var db_request = self.indexedDB.open(dbName, 1);
+                is_db_deleted_by_browser = false;
                 db_request.onerror = function (event) {
                     if ((event as any).target.error.name === 'InvalidStateError') {
                         JsStore.db_status = {
@@ -20,20 +22,14 @@ namespace KeyStore {
                     db_connection = db_request.result;
                     db_connection.onclose = function () {
                         callDbDroppedByBrowser();
-                        db_status = {
-                            ConStatus: Connection_Status.Closed,
-                            LastError: "Connection Closed"
-                        };
+                        Utils.updateDbStatus(Connection_Status.Closed, JsStore.Error_Type.ConnectionClosed);
                     };
 
                     db_connection.onversionchange = function (e) {
                         if (e.newVersion === null) { // An attempt is made to delete the db
                             e.target.close(); // Manually close our connection to the db
-                            db_status = {
-                                ConStatus: Connection_Status.Closed,
-                                LastError: "Connection Closed"
-                            };
                             callDbDroppedByBrowser();
+                            Utils.updateDbStatus(Connection_Status.Closed, JsStore.Error_Type.ConnectionClosed);
                         }
                     };
 
@@ -54,7 +50,7 @@ namespace KeyStore {
                 db_request.onupgradeneeded = function (event: any) {
                     var db = event.target.result,
                         column = "Key";
-                    db.createObjectStore(tableName, {
+                    db.createObjectStore(table_name, {
                         keyPath: column
                     }).createIndex(column, column, { unique: true });
                 };

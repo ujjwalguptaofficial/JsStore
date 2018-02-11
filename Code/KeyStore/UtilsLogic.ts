@@ -30,5 +30,17 @@ namespace KeyStore {
                 };
             }
         };
+
+        static updateDbStatus(status: Connection_Status, err?: JsStore.Error_Type) {
+            if (err === undefined) {
+                db_status.ConStatus = status;
+            }
+            else {
+                db_status = {
+                    ConStatus: status,
+                    LastError: err
+                };
+            }
+        }
     }
 }

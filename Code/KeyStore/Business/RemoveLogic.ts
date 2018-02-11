@@ -6,28 +6,17 @@ namespace KeyStore {
             constructor(query: IDelete, onSuccess: (recordRemoved: number) => void, onError: (err: IError) => void) {
                 super();
                 this._query = query;
+                this._onSuccess = onSuccess;
                 this._onError = onError;
-                this._transaction = db_connection.transaction([query.From], "readwrite");
-                this._objectStore = this._transaction.objectStore(query.From);
-
-                this._transaction.oncomplete = function () {
-                    if (onSuccess != null) {
-                        onSuccess(this._rowAffected);
-                    }
-                }.bind(this);
-
-                this._transaction.onerror = function (e) {
-                    this.on_errorOccured(e);
-                }.bind(this);
-                this.remove();
             }
 
-            private remove = function () {
+            public execute() {
+                this.initTransaction();
                 var removeData = function (column, value) {
                     var cursor_request = this._objectStore.index(column).openCursor(IDBKeyRange.only(value));
                     cursor_request.onerror = function (e) {
                         this._errorOccured = true;
-                        this.on_errorOccured(e);
+                        this.onErrorOccured(e);
                     }.bind(this);
                     cursor_request.onsuccess = function (e) {
                         var cursor: IDBCursorWithValue = e.target.result;
@@ -45,7 +34,18 @@ namespace KeyStore {
                     }
                     break;
                 }
-            };
+            }
+
+            private initTransaction() {
+                createTransaction([this._query.From], this.onTransactionCompleted.bind(this));
+                this._objectStore = db_transaction.objectStore(this._query.From);
+            }
+
+            private onTransactionCompleted() {
+                if (this._errorOccured === false) {
+                    this._onSuccess(this._rowAffected);
+                }
+            }
         }
     }
 }

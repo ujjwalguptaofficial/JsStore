@@ -3,6 +3,7 @@ namespace JsStore {
         export class CreateDb {
             constructor(tablesMetaData: Model.TableHelper[],
                 onSuccess: (listOf) => void, onError: (err: IError) => void) {
+
                 var table_created_list = [],
                     db_request = indexedDB.open(active_db._name, db_version);
 

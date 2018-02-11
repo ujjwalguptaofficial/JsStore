@@ -9,7 +9,7 @@ namespace KeyStore {
         if (indexedDB) {
             prcoessExecutionOfCode({
                 Name: 'create_db',
-                Query: table_name
+                Query: null
             } as IWebWorkerRequest);
         }
     };

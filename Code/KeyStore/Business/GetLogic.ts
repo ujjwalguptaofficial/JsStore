@@ -5,18 +5,11 @@ namespace KeyStore {
             constructor(query: ISelect, onSuccess: (result) => void, onError: (err: IError) => void) {
                 super();
                 this._query = query;
+                this._onSuccess = onSuccess;
                 this._onError = onError;
-                this._transaction = db_connection.transaction([query.From], "readonly");
-                this._objectStore = this._transaction.objectStore(query.From);
-                this._transaction.oncomplete = function (e) {
-                    if (onSuccess != null) {
-                        onSuccess(this._results);
-                    }
-                }.bind(this);
-                this.get();
             }
 
-            private get = function () {
+            public execute() {
                 var getData = function (column, value) {
                     var cursor_request = this._objectStore.index(column).openCursor(IDBKeyRange.only(value));
                     cursor_request.onerror = function (e) {
@@ -30,13 +23,40 @@ namespace KeyStore {
                         }
                     }.bind(this);
                 }.bind(this);
-
+                this.initTransaction();
                 for (var prop in this._query.Where) {
                     getData(prop, this._query.Where[prop]);
                     break;
                 }
+            }
 
-            };
+            public getAll() {
+                this._results = [];
+                this.initTransaction();
+                var cursor_request = this._objectStore.openCursor();
+                cursor_request.onerror = function (e) {
+                    this._errorOccured = true;
+                    this.onErrorOccured(e);
+                }.bind(this);
+                cursor_request.onsuccess = function (e) {
+                    var cursor: IDBCursorWithValue = e.target.result;
+                    if (cursor) {
+                        this._results.push(cursor.value);
+                        cursor.continue();
+                    }
+                }.bind(this);
+            }
+
+            private initTransaction() {
+                createTransaction([this._query.From], this.onTransactionCompleted.bind(this), 'readonly');
+                this._objectStore = db_transaction.objectStore(this._query.From);
+            }
+
+            private onTransactionCompleted() {
+                if (this._errorOccured === false) {
+                    this._onSuccess(this._results);
+                }
+            }
         }
     }
 }

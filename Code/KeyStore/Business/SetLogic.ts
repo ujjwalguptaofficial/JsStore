@@ -1,32 +1,28 @@
 namespace KeyStore {
     export namespace Business {
         export class Set extends Base {
-
+            _query: IInsert;
             constructor(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
                 super();
                 try {
+                    this._query = query;
+                    this._onSuccess = onSuccess;
                     this._onError = onError;
-                    this._transaction = db_connection.transaction([query.TableName], "readwrite");
-                    this._objectStore = this._transaction.objectStore(query.TableName);
-                    this._transaction.oncomplete = function (e) {
-                        if (onSuccess != null) {
-                            onSuccess();
-                        }
-                    };
-                    this.setData(query.Set);
                 }
                 catch (ex) {
                     console.error(ex);
                 }
             }
 
-            private setData = function (value) {
+            public execute() {
                 var updateIfExistElseInsert = function () {
-                    var cursor_request = this._objectStore.index('Key').openCursor(IDBKeyRange.only(value['Key']));
+                    var cursor_request = this._objectStore.index('Key').openCursor(
+                        IDBKeyRange.only(this._query.Set['Key'])
+                    );
                     cursor_request.onsuccess = function (e) {
                         var cursor: IDBCursorWithValue = e.target.result;
                         if (cursor) {
-                            cursor.value['Value'] = value['Value'];
+                            cursor.value['Value'] = this._query.Set['Value'];
                             cursor.update(cursor.value);
                         }
                         else {
@@ -36,19 +32,31 @@ namespace KeyStore {
 
                     cursor_request.onerror = function (e) {
                         this._errorOccured = true;
-                        this.on_errorOccured(e);
+                        this.onErrorOccured(e);
                     }.bind(this);
 
                 }.bind(this),
                     insertData = function () {
-                        var add_result = this._objectStore.add(value);
+                        var add_result = this._objectStore.add(this._query.Set);
                         add_result.onerror = function (e) {
                             this._errorOccured = true;
-                            this.on_errorOccured(e);
+                            this.onErrorOccured(e);
                         }.bind(this);
                     }.bind(this);
+                this.initTransaction();
                 updateIfExistElseInsert();
-            };
+            }
+
+            private initTransaction() {
+                createTransaction([this._query.TableName], this.onTransactionCompleted.bind(this));
+                this._objectStore = db_transaction.objectStore(this._query.TableName);
+            }
+
+            private onTransactionCompleted() {
+                if (this._errorOccured === false && this._onSuccess) {
+                    this._onSuccess(null);
+                }
+            }
         }
     }
 }

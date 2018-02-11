@@ -1,14 +1,23 @@
 namespace KeyStore {
     export namespace Business {
         export var db_connection,
-            is_db_deleted_by_browser: boolean = false,
-            db_status: IDbStatus = {
-                ConStatus: Connection_Status.NotStarted,
-                LastError: ""
-            },
+            is_db_deleted_by_browser: boolean,
+            db_transaction: IDBTransaction = null,
             callDbDroppedByBrowser = function () {
-                if (db_status.ConStatus === Connection_Status.Connected) {
-                    is_db_deleted_by_browser = true;
+                is_db_deleted_by_browser = db_status.ConStatus === Connection_Status.Connected ? true : false;
+            },
+            createTransaction = function (tableNames, callBack: () => void, mode?) {
+                if (db_transaction === null) {
+                    mode = mode ? mode : "readwrite";
+                    db_transaction = db_connection.transaction(tableNames, mode);
+                    db_transaction.oncomplete = function () {
+                        db_transaction = null;
+                        callBack();
+                    };
+                    (db_transaction as any).ontimeout = function () {
+                        db_transaction = null;
+                        console.error('transaction timed out');
+                    };
                 }
             };
 
@@ -20,19 +29,22 @@ namespace KeyStore {
 
             public set(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
                 var obj_insert = new Set(query, onSuccess, onError);
+                obj_insert.execute();
             }
 
             public remove(query: IDelete, onSuccess: (result) => void, onError: (err: IError) => void) {
                 var obj_delete = new Remove(query, onSuccess, onError);
+                obj_delete.execute();
             }
 
             public get(query: ISelect, onSuccess: (result) => void, onError: (err: IError) => void) {
                 var get_object = new Get(query, onSuccess, onError);
+                get_object.execute();
             }
 
-            public createDb(tableName, onSuccess: () => void, onError: (err: IError) => void) {
+            public createDb(onSuccess: () => void, onError: (err: IError) => void) {
                 var db_name = "KeyStore";
-                var init_db_object = new InitDb(db_name, tableName, onSuccess, onError);
+                var init_db_object = new InitDb(db_name, onSuccess, onError);
             }
 
             public checkConnectionAndExecuteLogic(request: IWebWorkerRequest) {
@@ -48,7 +60,8 @@ namespace KeyStore {
                             }.bind(this), 100); break;
                         case Connection_Status.Closed:
                             if (is_db_deleted_by_browser) {
-                                this.createDb(table_name, function () {
+                                this.createDb(function () {
+                                    is_db_deleted_by_browser = false;
                                     this.checkConnectionAndExecuteLogic(request);
                                 }.bind(this), function (err) {
                                     console.error(err);
@@ -85,7 +98,7 @@ namespace KeyStore {
                         break;
                     case 'remove': this.remove(request.Query, onSuccess, onError);
                         break;
-                    case 'create_db': this.createDb(request.Query, onSuccess, onError); break;
+                    case 'create_db': this.createDb(onSuccess, onError); break;
                 }
             };
         }

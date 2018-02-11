@@ -9,15 +9,15 @@ namespace KeyStore {
             _transaction: IDBTransaction;
             _objectStore: IDBObjectStore;
 
-            protected on_errorOccured = function (e) {
+            protected onErrorOccured(e) {
                 ++this._errorCount;
                 if (this._errorCount === 1) {
-                    if (this.OnError != null) {
-                        this.OnError((e as any).target.error);
+                    if (this._onError != null) {
+                        this._onError((e as any).target.error);
                     }
                 }
                 console.error(e);
-            };
+            }
         }
     }
 }
