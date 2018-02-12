@@ -13,7 +13,7 @@ namespace JsStore {
             _tableName: string;
             _isTransaction: boolean;
 
-            protected onErrorOccured = function (e, customError = false) {
+            protected onErrorOccured(e, customError = false) {
                 ++this._errorCount;
                 if (this._errorCount === 1) {
                     if (this._onError != null) {
@@ -31,9 +31,9 @@ namespace JsStore {
                         }
                     }
                 }
-            };
+            }
 
-            protected onExceptionOccured = function (ex: DOMException, info) {
+            protected onExceptionOccured(ex: DOMException, info) {
                 switch (ex.name) {
                     case 'NotFoundError':
                         var error = new Error(Error_Type.TableNotExist, info);
@@ -41,7 +41,7 @@ namespace JsStore {
                         break;
                     default: console.error(ex);
                 }
-            };
+            }
 
             protected getColumnInfo(columnName) {
                 var column_info: Column;
@@ -127,7 +127,7 @@ namespace JsStore {
                 }
             };
 
-            protected makeQryInCaseSensitive = function (qry) {
+            protected makeQryInCaseSensitive(qry) {
                 var results = [],
                     column_value,
                     key_value;
@@ -156,7 +156,7 @@ namespace JsStore {
                     }
                 }
                 return qry;
-            };
+            }
         }
     }
 }

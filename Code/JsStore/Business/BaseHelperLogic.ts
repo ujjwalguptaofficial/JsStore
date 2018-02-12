@@ -19,7 +19,7 @@ namespace JsStore {
                 return found;
             };
 
-            protected isTableExist = function (tableName: string) {
+            protected isTableExist(tableName: string) {
                 var is_exist: boolean = false;
                 active_db._tables.every(function (table) {
                     if (table._name === tableName) {
@@ -29,9 +29,9 @@ namespace JsStore {
                     return true;
                 });
                 return is_exist;
-            };
+            }
 
-            protected getTable = function (tableName: string) {
+            protected getTable(tableName: string) {
                 var current_table: Table;
                 active_db._tables.every(function (table) {
                     if (table._name === tableName) {
@@ -41,9 +41,9 @@ namespace JsStore {
                     return true;
                 });
                 return current_table;
-            };
+            }
 
-            protected getKeyRange = function (value, op) {
+            protected getKeyRange(value, op) {
                 var key_range: IDBKeyRange;
                 switch (op) {
                     case '-': key_range = IDBKeyRange.bound(value.Low, value.High, false, false); break;
@@ -54,61 +54,48 @@ namespace JsStore {
                     default: key_range = IDBKeyRange.only(value); break;
                 }
                 return key_range;
+            }
 
-            };
-
-            protected getObjectSecondKey = function (value) {
-                var is_second = false;
-                for (var key in value) {
-                    if (is_second) {
-                        return key;
-                    }
-                    else {
-                        is_second = true;
-                    }
-                }
-            };
-
-            protected getPrimaryKey = function (tableName) {
-                var primary_key = (this.getTable(tableName) as Table)._primaryKey;
+            protected getPrimaryKey(tableName): string {
+                var primary_key: string = (this.getTable(tableName) as Table)._primaryKey;
                 return primary_key ? primary_key : this.getKeyPath(tableName);
-            };
+            }
 
-            protected getKeyPath = function (tableName) {
+            protected getKeyPath(tableName) {
                 var transaction: IDBTransaction = db_connection.transaction([tableName], "readonly"),
                     object_store = transaction.objectStore(tableName);
-                return object_store.keyPath;
-            };
+                return object_store.keyPath as string;
+            }
 
-            protected sortNumberInAsc = function (values) {
+            protected sortNumberInAsc(values) {
                 values.sort(function (a, b) {
                     return a - b;
                 });
                 return values;
-            };
+            }
 
-            protected sortNumberInDesc = function (values) {
+            protected sortNumberInDesc(values) {
                 values.sort(function (a, b) {
                     return b - a;
                 });
                 return values;
-            };
+            }
 
-            protected sortAlphabetInAsc = function (values) {
+            protected sortAlphabetInAsc(values) {
                 values.sort(function (a, b) {
                     return a.toLowerCase().localeCompare(b.toLowerCase());
                 });
                 return values;
-            };
+            }
 
-            protected sortAlphabetInDesc = function (values) {
+            protected sortAlphabetInDesc(values) {
                 values.sort(function (a, b) {
                     return b.toLowerCase().localeCompare(a.toLowerCase());
                 });
                 return values;
-            };
+            }
 
-            protected getAllCombinationOfWord(word, isArray) {
+            protected getAllCombinationOfWord(word: string, isArray?: boolean) {
                 if (isArray) {
                     var results = [];
                     for (var i = 0, length = word.length; i < length; i++) {

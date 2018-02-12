@@ -10,7 +10,7 @@ namespace JsStore {
                 if (db_status.ConStatus === Connection_Status.Connected) {
                     is_db_deleted_by_browser = true;
                     if (deleteMetaData === true) {
-                        var drop_db_object = new DropDb(null, null);
+                        var drop_db_object = new DropDb(on_db_dropped_by_browser, null);
                         drop_db_object.deleteMetaData();
                     }
                 }
@@ -79,6 +79,8 @@ namespace JsStore {
                     switch (prop) {
                         case 'EnableLog': this.changeLogStatus(config[prop]); break;
                         case 'FileName': file_name = config[prop]; break;
+                        case 'OnDbDroppedByBrowser': eval("on_db_dropped_by_browser=" + config.OnDbDroppedByBrowser);
+                            break;
                         default:
                             var err = new Error(Error_Type.InvalidConfig, { Config: prop });
                             err.logError();
@@ -250,6 +252,7 @@ namespace JsStore {
 
             private clear(tableName: string, onSuccess: () => void, onError: (err: IError) => void) {
                 var clear_object = new Clear(tableName, onSuccess, onError);
+                clear_object.execute();
             }
 
             private exportJson(query: ISelect, onSuccess: (url: string) => void, onError: (err: IError) => void) {

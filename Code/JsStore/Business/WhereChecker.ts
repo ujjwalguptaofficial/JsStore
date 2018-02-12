@@ -1,6 +1,5 @@
 namespace JsStore {
   export namespace Business {
-
     /**
      * For matching the different column value existance for where option
      * 

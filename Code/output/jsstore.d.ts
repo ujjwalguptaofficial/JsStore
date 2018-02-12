@@ -518,17 +518,16 @@ declare namespace JsStore {
     namespace Business {
         class BaseHelper {
             protected filterOnOccurence: (value: any) => boolean;
-            protected isTableExist: (tableName: string) => boolean;
-            protected getTable: (tableName: string) => Table;
-            protected getKeyRange: (value: any, op: any) => IDBKeyRange;
-            protected getObjectSecondKey: (value: any) => string;
-            protected getPrimaryKey: (tableName: any) => any;
-            protected getKeyPath: (tableName: any) => string | string[];
-            protected sortNumberInAsc: (values: any) => any;
-            protected sortNumberInDesc: (values: any) => any;
-            protected sortAlphabetInAsc: (values: any) => any;
-            protected sortAlphabetInDesc: (values: any) => any;
-            protected getAllCombinationOfWord(word: any, isArray: any): any[];
+            protected isTableExist(tableName: string): boolean;
+            protected getTable(tableName: string): Table;
+            protected getKeyRange(value: any, op: any): IDBKeyRange;
+            protected getPrimaryKey(tableName: any): string;
+            protected getKeyPath(tableName: any): string;
+            protected sortNumberInAsc(values: any): any;
+            protected sortNumberInDesc(values: any): any;
+            protected sortAlphabetInAsc(values: any): any;
+            protected sortAlphabetInDesc(values: any): any;
+            protected getAllCombinationOfWord(word: string, isArray?: boolean): any[];
             private getCombination(word);
         }
     }
@@ -547,11 +546,11 @@ declare namespace JsStore {
             _whereChecker: WhereChecker;
             _tableName: string;
             _isTransaction: boolean;
-            protected onErrorOccured: (e: any, customError?: boolean) => void;
-            protected onExceptionOccured: (ex: DOMException, info: any) => void;
+            protected onErrorOccured(e: any, customError?: boolean): void;
+            protected onExceptionOccured(ex: DOMException, info: any): void;
             protected getColumnInfo(columnName: any): Column;
             protected goToWhereLogic: () => void;
-            protected makeQryInCaseSensitive: (qry: any) => any;
+            protected makeQryInCaseSensitive(qry: any): any;
         }
     }
 }
@@ -595,6 +594,7 @@ declare namespace JsStore {
     namespace Business {
         class Clear extends Base {
             constructor(tableName: string, onSuccess: () => void, onError: (err: IError) => void);
+            execute(): void;
         }
     }
 }
