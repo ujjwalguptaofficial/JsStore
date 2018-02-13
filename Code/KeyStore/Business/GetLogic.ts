@@ -30,23 +30,6 @@ namespace KeyStore {
                 }
             }
 
-            public getAll() {
-                this._results = [];
-                this.initTransaction();
-                var cursor_request = this._objectStore.openCursor();
-                cursor_request.onerror = function (e) {
-                    this._errorOccured = true;
-                    this.onErrorOccured(e);
-                }.bind(this);
-                cursor_request.onsuccess = function (e) {
-                    var cursor: IDBCursorWithValue = e.target.result;
-                    if (cursor) {
-                        this._results.push(cursor.value);
-                        cursor.continue();
-                    }
-                }.bind(this);
-            }
-
             private initTransaction() {
                 createTransaction([this._query.From], this.onTransactionCompleted.bind(this), 'readonly');
                 this._objectStore = db_transaction.objectStore(this._query.From);

@@ -2,7 +2,7 @@ namespace JsStore {
     export namespace Business {
         export namespace Count {
             export class Where extends Like {
-                private executeWhereLogic = function (column, value, op) {
+                private executeWhereLogic(column, value, op) {
                     value = op ? value[op] : value;
                     var cursor_request,
                         cursor: IDBCursorWithValue;
@@ -47,7 +47,7 @@ namespace JsStore {
                         this._errorOccured = true;
                         this.onErrorOccured(e);
                     }.bind(this);
-                };
+                }
             }
         }
     }

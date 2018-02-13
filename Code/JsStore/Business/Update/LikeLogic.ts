@@ -6,7 +6,7 @@ namespace JsStore {
                 _compValue;
                 _compValueLength: number;
 
-                protected executeLikeLogic = function (column, value, symbol: Occurence) {
+                protected executeLikeLogic(column, value, symbol: Occurence) {
                     var cursor: IDBCursorWithValue;
                     this._compValue = (value as string).toLowerCase();
                     this._compValueLength = this._compValue.length;
@@ -49,7 +49,7 @@ namespace JsStore {
                             }
                         }.bind(this);
                     }
-                };
+                }
             }
         }
     }

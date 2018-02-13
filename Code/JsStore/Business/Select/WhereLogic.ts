@@ -2,7 +2,8 @@ namespace JsStore {
     export namespace Business {
         export namespace Select {
             export class Where extends Like {
-                private executeSkipAndLimitForWhere = function () {
+               
+                private executeSkipAndLimitForWhere() {
                     var record_skipped = false,
                         cursor;
                     if (this._checkFlag) {
@@ -43,9 +44,9 @@ namespace JsStore {
                             }
                         }.bind(this);
                     }
-                };
+                }
 
-                private executeSkipForWhere = function () {
+                private executeSkipForWhere() {
                     var record_skipped = false,
                         cursor;
                     if (this._checkFlag) {
@@ -86,9 +87,9 @@ namespace JsStore {
                             }
                         }.bind(this);
                     }
-                };
+                }
 
-                private executeLimitForWhere = function () {
+                private executeLimitForWhere() {
                     var cursor;
                     if (this._checkFlag) {
                         this._cursorOpenRequest.onsuccess = function (e) {
@@ -115,9 +116,9 @@ namespace JsStore {
                             }
                         }.bind(this);
                     }
-                };
+                }
 
-                private executeSimpleForWhere = function () {
+                private executeSimpleForWhere() {
                     var cursor;
                     if (this._checkFlag) {
                         this._cursorOpenRequest.onsuccess = function (e) {
@@ -144,9 +145,9 @@ namespace JsStore {
                             }
                         }.bind(this);
                     }
-                };
+                }
 
-                private executeWhereLogic = function (column, value, op, dir) {
+                private executeWhereLogic(column, value, op, dir) {
                     value = op ? value[op] : value;
                     this._cursorOpenRequest = this._objectStore.index(column).openCursor(
                         this.getKeyRange(value, op),
@@ -170,7 +171,7 @@ namespace JsStore {
                     else {
                         this.executeSimpleForWhere();
                     }
-                };
+                }
             }
         }
     }

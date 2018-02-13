@@ -2,10 +2,10 @@ namespace JsStore {
     export namespace Business {
         export namespace Select {
             export class NotWhere extends BaseSelect {
-                protected executeWhereUndefinedLogic = function () {
+                protected executeWhereUndefinedLogic() {
                     if (this._query.Order && this._query.Order.By) {
                         if (this._objectStore.indexNames.contains(this._query.Order.By)) {
-                            var order_type = this._query.Order.Type &&
+                            var order_type: IDBCursorDirection = this._query.Order.Type &&
                                 this._query.Order.Type.toLowerCase() === 'desc' ? 'prev' : 'next';
                             this._sorted = true;
                             this._cursorOpenRequest = this._objectStore.index(this._query.Order.By).
@@ -38,9 +38,9 @@ namespace JsStore {
                         this.onErrorOccured(e);
                     }.bind(this);
 
-                };
+                }
 
-                private executeSkipAndLimitForNoWhere = function () {
+                private executeSkipAndLimitForNoWhere() {
                     var record_skipped = false,
                         cursor: IDBCursorWithValue;
                     this._cursorOpenRequest.onsuccess = function (e) {
@@ -58,9 +58,9 @@ namespace JsStore {
                             this.onQueryFinished();
                         }
                     }.bind(this);
-                };
+                }
 
-                private executeSkipForNoWhere = function () {
+                private executeSkipForNoWhere() {
                     var record_skipped = false,
                         cursor;
                     this._cursorOpenRequest.onsuccess = function (e) {
@@ -78,9 +78,9 @@ namespace JsStore {
                             this.onQueryFinished();
                         }
                     }.bind(this);
-                };
+                }
 
-                private executeSimpleForNotWhere = function () {
+                private executeSimpleForNotWhere() {
                     var cursor;
                     this._cursorOpenRequest.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -92,9 +92,9 @@ namespace JsStore {
                             this.onQueryFinished();
                         }
                     }.bind(this);
-                };
+                }
 
-                private executeLimitForNotWhere = function () {
+                private executeLimitForNotWhere() {
                     var cursor;
                     this._cursorOpenRequest.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -105,10 +105,8 @@ namespace JsStore {
                             this.onQueryFinished();
                         }
                     }.bind(this);
-                };
-
+                }
             }
         }
-
     }
 }

@@ -14,7 +14,7 @@ namespace JsStore {
         this._where = where;
       }
 
-      check = function (rowValue) {
+      check(rowValue) {
         this._status = true;
         var column_value;
         for (var columnName in this._where) {
@@ -52,9 +52,9 @@ namespace JsStore {
           }
         }
         return this._status;
-      };
+      }
 
-      private checkIn = function (column, value) {
+      private checkIn(column, value) {
         for (var i = 0, values = this._where[column].In, length = values.length; i < length; i++) {
           if (values[i] === value) {
             this._status = true;
@@ -64,9 +64,9 @@ namespace JsStore {
             this._status = false;
           }
         }
-      };
+      }
 
-      private checkLike = function (column, value) {
+      private checkLike(column, value) {
         var values = this._where[column].Like.split('%'),
           comp_symbol: Occurence,
           comp_value,
@@ -98,9 +98,9 @@ namespace JsStore {
               this._status = false;
             }
         }
-      };
+      }
 
-      private checkComparisionOp = function (column, value, symbol) {
+      private checkComparisionOp(column, value, symbol) {
         var compare_value = this._where[column][symbol];
         switch (symbol) {
           // greater than
@@ -124,7 +124,7 @@ namespace JsStore {
             this._status = false;
           } break;
         }
-      };
+      }
     }
   }
 }

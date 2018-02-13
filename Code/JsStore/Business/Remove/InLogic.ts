@@ -2,7 +2,7 @@ namespace JsStore {
     export namespace Business {
         export namespace Remove {
             export class In extends NotWhere {
-                private executeInLogic = function (column, values) {
+                private executeInLogic(column, values) {
                     var cursor: IDBCursorWithValue,
                         cursor_request,
                         onCursorError = function (e) {
@@ -51,7 +51,7 @@ namespace JsStore {
                             }
                         }
                     }
-                };
+                }
             }
         }
     }

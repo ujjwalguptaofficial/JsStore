@@ -10,7 +10,7 @@ declare namespace KeyStore {
          *
          * @memberOf UtilityLogic
          */
-        static setDbType: () => void;
+        static setDbType(): void;
         static updateDbStatus(status: Connection_Status, err?: JsStore.Error_Type): void;
     }
 }
@@ -79,7 +79,6 @@ declare namespace KeyStore {
             _query: ISelect;
             constructor(query: ISelect, onSuccess: (result) => void, onError: (err: IError) => void);
             execute(): void;
-            getAll(): void;
             private initTransaction();
             private onTransactionCompleted();
         }
@@ -488,7 +487,7 @@ declare namespace JsStore {
             _requireCreation: boolean;
             _callback: () => void;
             constructor(table: Table);
-            createMetaData: (dbName: string, callBack: () => void) => void;
+            createMetaData(dbName: string, callBack: () => void): void;
             private setPrimaryKey();
             private setRequireDelete(dbName);
             private setDbVersion(dbName);
@@ -501,7 +500,7 @@ declare namespace JsStore {
             _name: string;
             _tables: Table[];
             constructor(dataBase: DataBase);
-            createMetaData: (callBack: (tablesMetaData: TableHelper[]) => void) => void;
+            createMetaData(callBack: (tablesMetaData: TableHelper[]) => void): void;
         }
     }
 }
@@ -546,6 +545,7 @@ declare namespace JsStore {
             _whereChecker: WhereChecker;
             _tableName: string;
             _isTransaction: boolean;
+            _cursorOpenRequest: IDBRequest;
             protected onErrorOccured(e: any, customError?: boolean): void;
             protected onExceptionOccured(ex: DOMException, info: any): void;
             protected getColumnInfo(columnName: any): Column;
@@ -637,10 +637,10 @@ declare namespace JsStore {
             _where: any;
             _status: any;
             constructor(where: any);
-            check: (rowValue: any) => any;
-            private checkIn;
-            private checkLike;
-            private checkComparisionOp;
+            check(rowValue: any): any;
+            private checkIn(column, value);
+            private checkLike(column, value);
+            private checkComparisionOp(column, value, symbol);
         }
     }
 }
@@ -677,11 +677,11 @@ declare namespace JsStore {
     namespace Business {
         namespace Select {
             class NotWhere extends BaseSelect {
-                protected executeWhereUndefinedLogic: () => void;
-                private executeSkipAndLimitForNoWhere;
-                private executeSkipForNoWhere;
-                private executeSimpleForNotWhere;
-                private executeLimitForNotWhere;
+                protected executeWhereUndefinedLogic(): void;
+                private executeSkipAndLimitForNoWhere();
+                private executeSkipForNoWhere();
+                private executeSimpleForNotWhere();
+                private executeLimitForNotWhere();
             }
         }
     }
@@ -690,11 +690,11 @@ declare namespace JsStore {
     namespace Business {
         namespace Select {
             class In extends NotWhere {
-                protected executeInLogic: (column: any, values: any) => void;
-                private executeSkipAndLimitForIn;
-                private executeSkipForIn;
-                private executeLimitForIn;
-                private executeSimpleForIn;
+                protected executeInLogic(column: any, values: any): void;
+                private executeSkipAndLimitForIn(column, values);
+                private executeSkipForIn(column, values);
+                private executeLimitForIn(column, values);
+                private executeSimpleForIn(column, values);
             }
         }
     }
@@ -706,11 +706,11 @@ declare namespace JsStore {
                 _compSymbol: Occurence;
                 _compValue: any;
                 _compValueLength: number;
-                protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
-                private executeSkipAndLimit;
-                private executeSkip;
-                private executeLimit;
-                private executeSimple;
+                protected executeLikeLogic(column: any, value: any, symbol: Occurence): void;
+                private executeSkipAndLimit();
+                private executeSkip();
+                private executeLimit();
+                private executeSimple();
             }
         }
     }
@@ -719,11 +719,11 @@ declare namespace JsStore {
     namespace Business {
         namespace Select {
             class Where extends Like {
-                private executeSkipAndLimitForWhere;
-                private executeSkipForWhere;
-                private executeLimitForWhere;
-                private executeSimpleForWhere;
-                private executeWhereLogic;
+                private executeSkipAndLimitForWhere();
+                private executeSkipForWhere();
+                private executeLimitForWhere();
+                private executeSimpleForWhere();
+                private executeWhereLogic(column, value, op, dir);
             }
         }
     }
@@ -736,10 +736,10 @@ declare namespace JsStore {
                 _queryStack: ITableJoin[];
                 _currentQueryStackIndex: number;
                 constructor(query: ISelectJoin, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
-                private onTransactionCompleted;
-                private executeWhereJoinLogic;
-                private executeRightJoin;
-                private executeWhereUndefinedLogicForJoin;
+                private onTransactionCompleted(e);
+                private executeWhereJoinLogic(joinQuery, query);
+                private executeRightJoin(joinQuery, query);
+                private executeWhereUndefinedLogicForJoin(joinQuery, query);
                 private startExecutionJoinLogic();
             }
         }
@@ -801,7 +801,7 @@ declare namespace JsStore {
     namespace Business {
         namespace Count {
             class NotWhere extends BaseCount {
-                protected executeWhereUndefinedLogic: () => void;
+                protected executeWhereUndefinedLogic(): void;
             }
         }
     }
@@ -810,7 +810,7 @@ declare namespace JsStore {
     namespace Business {
         namespace Count {
             class In extends NotWhere {
-                private executeInLogic;
+                private executeInLogic(column, values);
             }
         }
     }
@@ -822,7 +822,7 @@ declare namespace JsStore {
                 _compSymbol: Occurence;
                 _compValue: any;
                 _compValueLength: number;
-                protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
+                protected executeLikeLogic(column: any, value: any, symbol: Occurence): void;
             }
         }
     }
@@ -831,7 +831,7 @@ declare namespace JsStore {
     namespace Business {
         namespace Count {
             class Where extends Like {
-                private executeWhereLogic;
+                private executeWhereLogic(column, value, op);
             }
         }
     }
@@ -856,7 +856,9 @@ declare namespace JsStore {
         }
         class BaseUpdate extends Base {
             _checkFlag: boolean;
-            private onQueryFinished;
+            protected initTransaction(): void;
+            private onQueryFinished();
+            private onTransactionCompleted();
         }
     }
 }
@@ -864,7 +866,7 @@ declare namespace JsStore {
     namespace Business {
         namespace Update {
             class NotWhere extends BaseUpdate {
-                protected executeWhereUndefinedLogic: () => void;
+                protected executeWhereUndefinedLogic(): void;
             }
         }
     }
@@ -873,7 +875,7 @@ declare namespace JsStore {
     namespace Business {
         namespace Update {
             class In extends NotWhere {
-                private executeInLogic;
+                private executeInLogic(column, values);
             }
         }
     }
@@ -885,7 +887,7 @@ declare namespace JsStore {
                 _compSymbol: Occurence;
                 _compValue: any;
                 _compValueLength: number;
-                protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
+                protected executeLikeLogic(column: any, value: any, symbol: Occurence): void;
             }
         }
     }
@@ -894,7 +896,7 @@ declare namespace JsStore {
     namespace Business {
         namespace Update {
             class Where extends Like {
-                private executeWhereLogic;
+                private executeWhereLogic(column, value, op);
             }
         }
     }
@@ -905,8 +907,6 @@ declare namespace JsStore {
             class Instance extends Where {
                 constructor(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void);
                 execute(): void;
-                private onTransactionCompleted();
-                private initTransaction();
                 private executeComplexLogic();
             }
         }
@@ -937,7 +937,7 @@ declare namespace JsStore {
     namespace Business {
         namespace Remove {
             class NotWhere extends BaseRemove {
-                protected executeWhereUndefinedLogic: () => void;
+                protected executeWhereUndefinedLogic(): void;
             }
         }
     }
@@ -946,7 +946,7 @@ declare namespace JsStore {
     namespace Business {
         namespace Remove {
             class In extends NotWhere {
-                private executeInLogic;
+                private executeInLogic(column, values);
             }
         }
     }
@@ -958,7 +958,7 @@ declare namespace JsStore {
                 _compSymbol: Occurence;
                 _compValue: any;
                 _compValueLength: number;
-                protected executeLikeLogic: (column: any, value: any, symbol: Occurence) => void;
+                protected executeLikeLogic(column: any, value: any, symbol: Occurence): void;
             }
         }
     }
@@ -967,7 +967,7 @@ declare namespace JsStore {
     namespace Business {
         namespace Remove {
             class Where extends Like {
-                private executeWhereLogic;
+                private executeWhereLogic(column, value, op);
             }
         }
     }

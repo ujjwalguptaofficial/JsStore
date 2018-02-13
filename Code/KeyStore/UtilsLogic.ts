@@ -10,7 +10,7 @@ namespace KeyStore {
          * 
          * @memberOf UtilityLogic
          */
-        static setDbType = function () {
+        static setDbType() {
             (self as any).indexedDB = self.indexedDB || (self as any).mozIndexedDB ||
                 (self as any).webkitIndexedDB || (self as any).msIndexedDB;
             if (indexedDB) {
@@ -29,7 +29,7 @@ namespace KeyStore {
                     LastError: JsStore.Error_Type.IndexedDbUndefined
                 };
             }
-        };
+        }
 
         static updateDbStatus(status: Connection_Status, err?: JsStore.Error_Type) {
             if (err === undefined) {

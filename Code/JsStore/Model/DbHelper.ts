@@ -10,7 +10,7 @@ namespace JsStore {
                 this._tables = dataBase._tables;
             }
 
-            public createMetaData = function (callBack: (tablesMetaData: TableHelper[]) => void) {
+            public createMetaData(callBack: (tablesMetaData: TableHelper[]) => void) {
                 var index = 0,
                     table_helpers: TableHelper[] = [],
                     createMetaDataForTable = function () {
@@ -29,8 +29,7 @@ namespace JsStore {
                         }
                     }.bind(this);
                 createMetaDataForTable();
-            };
-
+            }
         }
     }
 }

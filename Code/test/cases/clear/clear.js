@@ -5,7 +5,7 @@ describe('Test clear', function () {
             expect(results).to.be.an('undefined');
             done();
         }).
-        then(function (err) {
+        catch(function (err) {
             done(err);
         })
     });

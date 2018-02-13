@@ -49,7 +49,7 @@ namespace JsStore {
                     }
                 }
 
-                private onTransactionCompleted = function (e) {
+                private onTransactionCompleted(e) {
                     if (this._onSuccess != null && (this._queryStack.length === this._currentQueryStackIndex + 1)) {
                         if (this._query['Count']) {
                             this._onSuccess(this._results.length);
@@ -69,9 +69,9 @@ namespace JsStore {
                         }
 
                     }
-                };
+                }
 
-                private executeWhereJoinLogic = function (joinQuery: ITableJoin, query: ITableJoin) {
+                private executeWhereJoinLogic(joinQuery: ITableJoin, query: ITableJoin) {
                     var results = [],
                         join_index = 0,
                         column = query.Column,
@@ -129,9 +129,9 @@ namespace JsStore {
                             ++join_index;
                         }
                     }.bind(this);
-                };
+                }
 
-                private executeRightJoin = function (joinQuery: ITableJoin, query: ITableJoin) {
+                private executeRightJoin(joinQuery: ITableJoin, query: ITableJoin) {
                     var join_results = [],
                         join_index = 0,
                         column = query.Column,
@@ -187,9 +187,9 @@ namespace JsStore {
                             select_object.execute();
                         }.bind(this);
                     executeLogic();
-                };
+                }
 
-                private executeWhereUndefinedLogicForJoin = function (joinQuery: ITableJoin, query: ITableJoin) {
+                private executeWhereUndefinedLogicForJoin(joinQuery: ITableJoin, query: ITableJoin) {
                     var join_results = [],
                         join_index = 0,
                         column = query.Column,
@@ -254,7 +254,7 @@ namespace JsStore {
                             }
                         }.bind(this);
                     executeLogic();
-                };
+                }
 
                 private startExecutionJoinLogic() {
                     var join_query;

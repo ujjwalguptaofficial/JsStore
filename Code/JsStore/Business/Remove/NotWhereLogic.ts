@@ -2,7 +2,7 @@ namespace JsStore {
     export namespace Business {
         export namespace Remove {
             export class NotWhere extends BaseRemove {
-                protected executeWhereUndefinedLogic = function () {
+                protected executeWhereUndefinedLogic() {
                     var cursor,
                         cursor_request = this._objectStore.openCursor();
                     cursor_request.onsuccess = function (e) {
@@ -20,7 +20,7 @@ namespace JsStore {
                         this._errorOccured = true;
                         this.onErrorOccured(e);
                     }.bind(this);
-                };
+                }
             }
         }
     }

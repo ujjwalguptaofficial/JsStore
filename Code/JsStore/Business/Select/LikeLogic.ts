@@ -6,7 +6,7 @@ namespace JsStore {
                 _compValue;
                 _compValueLength: number;
 
-                protected executeLikeLogic = function (column, value, symbol: Occurence) {
+                protected executeLikeLogic(column, value, symbol: Occurence) {
                     this._compValue = (value as string).toLowerCase();
                     this._compValueLength = this._compValue.length;
                     this._compSymbol = symbol;
@@ -27,9 +27,9 @@ namespace JsStore {
                     else {
                         this.executeSimple();
                     }
-                };
+                }
 
-                private executeSkipAndLimit = function () {
+                private executeSkipAndLimit() {
                     var cursor: IDBCursorWithValue,
                         skip = this._skipRecord,
                         skipOrPush = function (value) {
@@ -67,9 +67,9 @@ namespace JsStore {
                             }
                         }.bind(this);
                     }
-                };
+                }
 
-                private executeSkip = function () {
+                private executeSkip() {
                     var cursor: IDBCursorWithValue,
                         skip = this._skipRecord,
                         skipOrPush = function (value) {
@@ -107,9 +107,9 @@ namespace JsStore {
                             }
                         }.bind(this);
                     }
-                };
+                }
 
-                private executeLimit = function () {
+                private executeLimit() {
                     var cursor: IDBCursorWithValue;
                     if (this._checkFlag) {
                         this._cursorOpenRequest.onsuccess = function (e) {
@@ -138,9 +138,9 @@ namespace JsStore {
                             }
                         }.bind(this);
                     }
-                };
+                }
 
-                private executeSimple = function () {
+                private executeSimple() {
                     var cursor: IDBCursorWithValue;
                     if (this._checkFlag) {
                         this._cursorOpenRequest.onsuccess = function (e) {
@@ -169,7 +169,7 @@ namespace JsStore {
                             }
                         }.bind(this);
                     }
-                };
+                }
             }
         }
     }

@@ -25,12 +25,22 @@ namespace JsStore {
 
         export class BaseUpdate extends Base {
             _checkFlag = false;
+            protected initTransaction() {
+                createTransaction([this._query.In], this.onTransactionCompleted.bind(this));
+                this._objectStore = db_transaction.objectStore(this._query.In);
+            }
 
-            private onQueryFinished = function () {
+            private onQueryFinished() {
                 if (this._isTransaction === true) {
                     this.onTransactionCompleted();
                 }
-            };
+            }
+
+            private onTransactionCompleted() {
+                if (this._errorOccured === false) {
+                    this._onSuccess(this._rowAffected);
+                }
+            }
         }
     }
 }

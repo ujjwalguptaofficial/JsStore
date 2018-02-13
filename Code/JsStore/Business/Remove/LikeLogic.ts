@@ -6,19 +6,19 @@ namespace JsStore {
                 _compValue;
                 _compValueLength: number;
 
-                protected executeLikeLogic = function (column, value, symbol: Occurence) {
+                protected executeLikeLogic(column, value, symbol: Occurence) {
                     var cursor: IDBCursorWithValue;
                     this._compValue = (value as string).toLowerCase();
                     this._compValueLength = this._compValue.length;
                     this._compSymbol = symbol;
-                    this.cursor_request = this._objectStore.index(column).openCursor();
-                    this.cursor_request.onerror = function (e) {
+                    var cursor_request = this._objectStore.index(column).openCursor();
+                    cursor_request.onerror = function (e) {
                         this._errorOccured = true;
                         this.onErrorOccured(e);
                     }.bind(this);
 
                     if (this._checkFlag) {
-                        this.cursor_request.onsuccess = function (e) {
+                        cursor_request.onsuccess = function (e) {
                             cursor = e.target.result;
                             if (cursor) {
                                 if (this.filterOnOccurence(cursor.key) &&
@@ -34,7 +34,7 @@ namespace JsStore {
                         }.bind(this);
                     }
                     else {
-                        this.cursor_request.onsuccess = function (e) {
+                        cursor_request.onsuccess = function (e) {
                             cursor = e.target.result;
                             if (cursor) {
                                 if (this.filterOnOccurence(cursor.key)) {
@@ -48,8 +48,7 @@ namespace JsStore {
                             }
                         }.bind(this);
                     }
-                };
-
+                }
             }
         }
     }

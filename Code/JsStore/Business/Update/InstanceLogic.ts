@@ -38,18 +38,7 @@ namespace JsStore {
                         this.onExceptionOccured.call(this, ex, { TableName: this._query.In });
                     }
                 }
-
-                private onTransactionCompleted() {
-                    if (this._errorOccured === false) {
-                        this._onSuccess(this._rowAffected);
-                    }
-                }
-
-                private initTransaction() {
-                    createTransaction([this._query.In], this.onTransactionCompleted.bind(this));
-                    this._objectStore = db_transaction.objectStore(this._query.In);
-                }
-
+                              
                 private executeComplexLogic() {
                     var select_object = new Select.Instance({
                         From: this._query.In,

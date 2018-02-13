@@ -2,7 +2,7 @@ namespace JsStore {
     export namespace Business {
         export namespace Select {
             export class In extends NotWhere {
-                protected executeInLogic = function (column, values) {
+                protected executeInLogic(column, values) {
                     if (this._skipRecord && this._limitRecord) {
                         this.executeSkipAndLimitForIn(column, values);
                     }
@@ -15,9 +15,9 @@ namespace JsStore {
                     else {
                         this.executeSimpleForIn(column, values);
                     }
-                };
+                }
 
-                private executeSkipAndLimitForIn = function (column, values) {
+                private executeSkipAndLimitForIn(column, values) {
                     var cursor: IDBCursorWithValue,
                         skip = this._skipRecord,
                         column_store = this._objectStore.index(column),
@@ -72,9 +72,9 @@ namespace JsStore {
                             }
                         }
                     }
-                };
+                }
 
-                private executeSkipForIn = function (column, values) {
+                private executeSkipForIn(column, values) {
                     var cursor: IDBCursorWithValue,
                         skip = this._skipRecord,
                         cursor_request: IDBRequest,
@@ -129,9 +129,9 @@ namespace JsStore {
                             }
                         }
                     }
-                };
+                }
 
-                private executeLimitForIn = function (column, values) {
+                private executeLimitForIn(column, values) {
                     var cursor: IDBCursorWithValue,
                         cursor_request: IDBRequest,
                         column_store = this._objectStore.index(column),
@@ -177,9 +177,9 @@ namespace JsStore {
                             }
                         }
                     }
-                };
+                }
 
-                private executeSimpleForIn = function (column, values) {
+                private executeSimpleForIn(column, values) {
                     var cursor: IDBCursorWithValue,
                         cursor_request: IDBRequest,
                         column_store = this._objectStore.index(column),
@@ -225,7 +225,7 @@ namespace JsStore {
                             }
                         }
                     }
-                };
+                }
             }
         }
     }

@@ -2,7 +2,7 @@ namespace JsStore {
     export namespace Business {
         export namespace Count {
             export class NotWhere extends BaseCount {
-                protected executeWhereUndefinedLogic = function () {
+                protected executeWhereUndefinedLogic() {
                     if (this._objectStore.count) {
                         var count_request = this._objectStore.count();
                         count_request.onsuccess = function () {
@@ -32,7 +32,7 @@ namespace JsStore {
                             this.onErrorOccured(e);
                         }.bind(this);
                     }
-                };
+                }
             }
         }
     }

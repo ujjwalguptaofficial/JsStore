@@ -2,7 +2,7 @@ namespace JsStore {
     export namespace Business {
         export namespace Count {
             export class In extends NotWhere {
-                private executeInLogic = function (column, values) {
+                private executeInLogic(column, values) {
                     var cursor: IDBCursorWithValue,
                         column_store = this._objectStore.index(column),
                         cursor_request,
@@ -64,7 +64,7 @@ namespace JsStore {
                             }
                         }
                     }
-                };
+                }
             }
         }
     }

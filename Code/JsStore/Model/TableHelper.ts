@@ -18,11 +18,11 @@ namespace JsStore {
                 this.setPrimaryKey();
             }
 
-            public createMetaData = function (dbName: string, callBack: () => void) {
+            public createMetaData(dbName: string, callBack: () => void) {
                 this._callback = callBack;
                 this.setRequireDelete(dbName);
                 this.setDbVersion(dbName);
-            };
+            }
 
             private setPrimaryKey() {
                 this._columns.every(function (item) {
@@ -51,7 +51,6 @@ namespace JsStore {
                     .set("JsStore_" + dbName + "_" + this._name + "_Version", db_version, this._callback);
                 this._version = db_version;
             }
-
         }
     }
 }

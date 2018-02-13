@@ -12,6 +12,7 @@ namespace JsStore {
             _whereChecker: WhereChecker;
             _tableName: string;
             _isTransaction: boolean;
+            _cursorOpenRequest: IDBRequest;
 
             protected onErrorOccured(e, customError = false) {
                 ++this._errorCount;
