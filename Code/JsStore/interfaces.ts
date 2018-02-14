@@ -39,13 +39,7 @@ namespace JsStore {
         OnError?: (error: IError) => void;
         Order?: IOrder;
         GroupBy?: any;
-        Aggregate?: {
-            Max: any,
-            Min: any,
-            Count: any,
-            Sum: any,
-            Avg: any
-        };
+        Aggregate?: IAggregate;
         IgnoreCase?: boolean;
         Distinct?: boolean;
     }
@@ -144,25 +138,25 @@ namespace JsStore {
     }
 
     export interface IAggregate {
-        Max: any[];
-        Min: any[];
-        Sum: any[];
-        Count: any[];
-        Avg: any[];
+        Max?: any[];
+        Min?: any[];
+        Sum?: any[];
+        Count?: any[];
+        Avg?: any[];
     }
 
     export interface ITranscationQry {
         TableNames: string[];
         Logic: string;
         Data: any;
-        AbortOnError: boolean;
-        OnSuccess: (results: any[]) => void;
-        OnError: (err: IError) => void;
+        AbortOnError?: boolean;
+        OnSuccess?: (results: any[]) => void;
+        OnError?: (err: IError) => void;
     }
 
     export interface IConfig {
-        EnableLog: boolean;
-        OnDbDroppedByBrowser: string;
-        FileName: string;
+        EnableLog?: boolean;
+        OnDbDroppedByBrowser?: string;
+        FileName?: string;
     }
 }

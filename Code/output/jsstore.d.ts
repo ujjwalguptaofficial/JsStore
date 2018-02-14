@@ -235,13 +235,7 @@ declare namespace JsStore {
         OnError?: (error: IError) => void;
         Order?: IOrder;
         GroupBy?: any;
-        Aggregate?: {
-            Max: any;
-            Min: any;
-            Count: any;
-            Sum: any;
-            Avg: any;
-        };
+        Aggregate?: IAggregate;
         IgnoreCase?: boolean;
         Distinct?: boolean;
     }
@@ -326,24 +320,24 @@ declare namespace JsStore {
         ThrowError: boolean;
     }
     interface IAggregate {
-        Max: any[];
-        Min: any[];
-        Sum: any[];
-        Count: any[];
-        Avg: any[];
+        Max?: any[];
+        Min?: any[];
+        Sum?: any[];
+        Count?: any[];
+        Avg?: any[];
     }
     interface ITranscationQry {
         TableNames: string[];
         Logic: string;
         Data: any;
-        AbortOnError: boolean;
-        OnSuccess: (results: any[]) => void;
-        OnError: (err: IError) => void;
+        AbortOnError?: boolean;
+        OnSuccess?: (results: any[]) => void;
+        OnError?: (err: IError) => void;
     }
     interface IConfig {
-        EnableLog: boolean;
-        OnDbDroppedByBrowser: string;
-        FileName: string;
+        EnableLog?: boolean;
+        OnDbDroppedByBrowser?: string;
+        FileName?: string;
     }
 }
 declare namespace JsStore {
@@ -363,12 +357,12 @@ declare namespace JsStore {
     /**
      * checks whether db exist or not
      *
-     * @param {DbInfo} dbInfo
-     * @param {() => void} [callback=null]
-     * @param {() => void} [errCallBack=null]
+     * @param {(IDbInfo | string)} dbInfo
+     * @param {(isExist: boolean) => void} callback
+     * @param {(err: IError) => void} [errCallBack]
      * @returns
      */
-    var isDbExist: (dbInfo: IDbInfo, callback?: (isExist: boolean) => void, errCallBack?: (err: IError) => void) => any;
+    var isDbExist: (dbInfo: string | IDbInfo, callback: (isExist: boolean) => void, errCallBack?: (err: IError) => void) => any;
     /**
      * get Db Version
      *

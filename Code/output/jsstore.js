@@ -9,7 +9,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /**
- * @license :JsStore.js - v1.5.2 - 06/02/2018
+ * @license :JsStore.js - v1.6.0 - 14/02/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
  */ 
@@ -644,14 +644,12 @@ var JsStore;
     /**
      * checks whether db exist or not
      *
-     * @param {DbInfo} dbInfo
-     * @param {() => void} [callback=null]
-     * @param {() => void} [errCallBack=null]
+     * @param {(IDbInfo | string)} dbInfo
+     * @param {(isExist: boolean) => void} callback
+     * @param {(err: IError) => void} [errCallBack]
      * @returns
      */
     JsStore.isDbExist = function (dbInfo, callback, errCallBack) {
-        if (callback === void 0) { callback = null; }
-        if (errCallBack === void 0) { errCallBack = null; }
         var use_promise = callback ? false : true;
         if (JsStore.db_status.ConStatus !== JsStore.Connection_Status.UnableToStart) {
             if (use_promise) {

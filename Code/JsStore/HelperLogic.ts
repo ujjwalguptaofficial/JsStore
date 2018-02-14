@@ -1,16 +1,17 @@
 namespace JsStore {
+
     /**
      * checks whether db exist or not
      * 
-     * @param {DbInfo} dbInfo 
-     * @param {() => void} [callback=null] 
-     * @param {() => void} [errCallBack=null] 
+     * @param {(IDbInfo | string)} dbInfo 
+     * @param {(isExist: boolean) => void} callback 
+     * @param {(err: IError) => void} [errCallBack] 
      * @returns 
      */
     export var isDbExist = function (
-        dbInfo: IDbInfo,
-        callback: (isExist: boolean) => void = null,
-        errCallBack: (err: IError) => void = null
+        dbInfo: IDbInfo | string,
+        callback: (isExist: boolean) => void,
+        errCallBack?: (err: IError) => void
     ) {
         var use_promise = callback ? false : true;
         if (db_status.ConStatus !== Connection_Status.UnableToStart) {
