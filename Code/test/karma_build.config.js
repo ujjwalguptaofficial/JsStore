@@ -1,4 +1,5 @@
-process.env.CHROME_BIN = require('puppeteer').executablePath()
+process.env.CHROME_BIN = require('puppeteer').executablePath();
+var files = require('./files');
 module.exports = function (config) {
     config.set({
         basePath: '',
@@ -8,26 +9,7 @@ module.exports = function (config) {
                 timeout: 2000 // 6 seconds - upped from 2 seconds
             }
         },
-        files: [
-            'scripts/jquery-3.2.1.min.js',
-            '../output/jsstore.min.js',
-            'scripts/dbhelper.js',
-            'cases/insert/*.js',
-            'cases/select/*.js',
-            'cases/count/*.js',
-            'cases/update/*.js',
-            'cases/delete/*.js',
-            'cases/helper/*.js',
-            'cases/clear/*.js',
-            'cases/column_option/*.js',
-            'cases/db_test.js',
-            {
-                pattern: 'static/*.json',
-                included: false,
-                served: true,
-            },
-            'setup.js'
-        ],
+        files: files.list_of_files,
         proxies: {
             '/static/': '/base/static/',
             '/cases/': '/base/cases/'
