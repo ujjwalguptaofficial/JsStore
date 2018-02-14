@@ -635,9 +635,9 @@ declare namespace JsStore {
          */
         class WhereChecker {
             _where: any;
-            _status: any;
+            _status: boolean;
             constructor(where: any);
-            check(rowValue: any): any;
+            check(rowValue: any): boolean;
             private checkIn(column, value);
             private checkLike(column, value);
             private checkComparisionOp(column, value, symbol);
