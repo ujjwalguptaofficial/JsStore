@@ -8,7 +8,9 @@
         "out": "output/jsstore.js",
         "target": "es5",
         "preserveConstEnums": true,
-        "declaration": true
+        "declaration": true,
+        // "module": "umd",
+        // "outDir": "buildOutput"
     },
     "exclude": [
         "node_namespaces"
