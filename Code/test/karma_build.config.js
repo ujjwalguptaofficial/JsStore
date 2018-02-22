@@ -9,7 +9,7 @@ module.exports = function (config) {
                 timeout: 2000 // 6 seconds - upped from 2 seconds
             }
         },
-        files: files.list_of_files,
+        files: ['../output/jsstore.min.js', ...files.list_of_files],
         proxies: {
             '/static/': '/base/static/',
             '/cases/': '/base/cases/'

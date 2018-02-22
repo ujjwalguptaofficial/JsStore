@@ -1,6 +1,5 @@
 exports.list_of_files = [
     'scripts/jquery-3.2.1.min.js',
-    '../output/jsstore.js',
     'scripts/dbhelper.js',
     'cases/insert/*.js',
     'cases/select/*.js',

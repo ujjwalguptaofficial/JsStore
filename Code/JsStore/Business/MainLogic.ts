@@ -33,7 +33,7 @@ namespace JsStore {
         export class Main {
             _onSuccess: (result) => void;
 
-            constructor(onSuccess = null) {
+            constructor(onSuccess?) {
                 this._onSuccess = onSuccess;
             }
 
@@ -165,7 +165,9 @@ namespace JsStore {
                     else {
                         var err = new Error(Error_Type.DbNotExist, { DbName: dbName });
                         err.logError();
-                        onError(err.get());
+                        if (onError) {
+                            onError(err.get());
+                        }
                     }
                 });
             }
