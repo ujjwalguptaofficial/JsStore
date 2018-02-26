@@ -165,9 +165,7 @@ namespace JsStore {
                     else {
                         var err = new Error(Error_Type.DbNotExist, { DbName: dbName });
                         err.logError();
-                        if (onError) {
-                            onError(err.get());
-                        }
+                        onError(err.get());
                     }
                 });
             }

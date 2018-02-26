@@ -5,12 +5,12 @@ namespace JsStore {
                 super();
                 this._query = tableName;
                 this._onSuccess = onSuccess;
-                this._onSuccess = onError;
+                this._onError = onError;
             }
 
             execute() {
                 createTransaction([this._query], function (e) {
-                    if (this._onSuccess) {
+                    if (this._errorOccured === false) {
                         this._onSuccess();
                     }
                 }.bind(this));
