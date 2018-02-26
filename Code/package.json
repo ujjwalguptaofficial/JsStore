@@ -1,13 +1,12 @@
 {
   "name": "jsstore",
-  "version": "1.5.2",
+  "version": "1.6.1",
   "description": "JsStore is an IndexedDB Wrapper. It makes IndexedDB super easy with its SQL like apis.",
   "main": "index.js",
   "scripts": {
     "pretest": "tslint JsStore/**/*.ts && tslint KeyStore/**/*.ts && tsc",
     "test": "karma start test/karma.config.js",
     "build_test": "npm run pretest && npm run minify && karma start test/karma_build.config.js",
-    "prebuild": "tslint JsStore/**/*.ts && tslint KeyStore/**/*.ts",
     "minify": "uglifyjs output/jsstore.js --compress sequences=true,dead_code=true,conditionals=true,booleans=true,unused=true,if_return=true,join_vars=true --source-map --mangle --output output/jsstore.min.js",
     "build": "npm run build_test"
   },

@@ -9,7 +9,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /**
- * @license :JsStore.js - v1.6.0 - 15/02/2018
+ * @license :JsStore.js - v1.6.1 - 26/02/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
  */ 
@@ -1605,12 +1605,12 @@ var JsStore;
                 var _this = _super.call(this) || this;
                 _this._query = tableName;
                 _this._onSuccess = onSuccess;
-                _this._onSuccess = onError;
+                _this._onError = onError;
                 return _this;
             }
             Clear.prototype.execute = function () {
                 Business.createTransaction([this._query], function (e) {
-                    if (this._onSuccess) {
+                    if (this._errorOccured === false) {
                         this._onSuccess();
                     }
                 }.bind(this));
@@ -1661,7 +1661,6 @@ var JsStore;
         };
         var Main = /** @class */ (function () {
             function Main(onSuccess) {
-                if (onSuccess === void 0) { onSuccess = null; }
                 this._onSuccess = onSuccess;
             }
             Main.prototype.checkConnectionAndExecuteLogic = function (request) {

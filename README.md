@@ -16,7 +16,8 @@ JsStore is an IndexedDB Wrapper. It makes IndexedDB super easy with its SQL like
 
 # Demo
 
-* https://ujjwalguptaofficial.github.io/ShopStore/
+* Shop Application - https://ujjwalguptaofficial.github.io/ShopStore/
+* Image Upload Demo - https://udaychy.github.io/ImageDemo/
 
 ## Note : - 
 Demos are created and managed by particular user. So it may be buggy or not working Properly. JsStore does not take responsibility of these demo projects.
