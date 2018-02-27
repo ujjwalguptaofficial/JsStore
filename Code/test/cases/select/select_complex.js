@@ -40,6 +40,25 @@ describe('Test select complex case', function () {
         })
     });
 
+    it('select with and "&" not', function (done) {
+        Con.select({
+            From: 'Customers',
+            Where: {
+                Country: {
+                    '!=': 'Mexico'
+                },
+                City: 'London'
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('array').length(6);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
     it('select with multiple and (wrong data)', function (done) {
         Con.select({
             From: 'Customers',

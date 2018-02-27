@@ -166,6 +166,24 @@ describe('Test Select Api', function () {
         })
     });
 
+    it('select with operator - not', function (done) {
+        Con.select({
+            From: 'Customers',
+            Where: {
+                Country: {
+                    '!=': 'Mexico'
+                }
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('array').length(88);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
     it('select with operator - >', function (done) {
         Con.select({
             From: 'Products',
