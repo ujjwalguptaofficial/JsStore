@@ -171,6 +171,7 @@ declare namespace JsStore {
         First = "f",
         Last = "l",
         Any = "a",
+        Not = "!",
     }
     enum WebWorker_Status {
         Registered = "registerd",
@@ -700,7 +701,7 @@ declare namespace JsStore {
                 _compSymbol: Occurence;
                 _compValue: any;
                 _compValueLength: number;
-                protected executeLikeLogic(column: any, value: any, symbol: Occurence): void;
+                protected executeLikeLogic(column: any, value: string, symbol: Occurence): void;
                 private executeSkipAndLimit();
                 private executeSkip();
                 private executeLimit();

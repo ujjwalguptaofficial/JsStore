@@ -1,15 +1,10 @@
 namespace JsStore {
     export namespace Business {
         export namespace Select {
-            export class Like extends In {
-                _compSymbol: Occurence;
-                _compValue;
-                _compValueLength: number;
-
-                protected executeLikeLogic(column, value: string, symbol: Occurence) {
+            export class Not extends NotWhere {
+                _compValue: string;
+                protected executeLikeLogic(column, value: string) {
                     this._compValue = value.toLowerCase();
-                    this._compValueLength = this._compValue.length;
-                    this._compSymbol = symbol;
                     this._cursorOpenRequest = this._objectStore.index(column).openCursor();
                     this._cursorOpenRequest.onerror = function (e) {
                         this._errorOccured = true;

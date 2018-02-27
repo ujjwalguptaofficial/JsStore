@@ -2,7 +2,6 @@ namespace JsStore {
     export namespace Business {
         export namespace Select {
             export class Where extends Like {
-               
                 private executeSkipAndLimitForWhere() {
                     var record_skipped = false,
                         cursor;

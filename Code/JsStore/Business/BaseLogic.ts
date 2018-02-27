@@ -71,6 +71,9 @@ namespace JsStore {
                         );
                         var key = getObjectFirstKey(value);
                         switch (key) {
+                            case '!=':
+                                this.executeLikeLogic(column_name, value, Occurence.Not);
+                                break;
                             case 'Like': {
                                 var filter_values = value.Like.split('%'),
                                     filter_value: string,

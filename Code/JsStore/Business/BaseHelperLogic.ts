@@ -12,7 +12,11 @@ namespace JsStore {
                     case Occurence.First: if (value.indexOf(this._compValue) === 0) {
                         found = true;
                     } break;
-                    default: if (value.lastIndexOf(this._compValue) === value.length - this._compValueLength) {
+                    case Occurence.Last:
+                        if (value.lastIndexOf(this._compValue) === value.length - this._compValueLength) {
+                            found = true;
+                        } break;
+                    default: if (value !== this._compValue) {
                         found = true;
                     }
                 }

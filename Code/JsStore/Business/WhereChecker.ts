@@ -31,6 +31,7 @@ namespace JsStore {
                     case '<':
                     case '>=':
                     case '<=':
+                    case '!=':
                       this.checkComparisionOp(columnName, rowValue[columnName], key);
                       break;
                   }
@@ -121,6 +122,10 @@ namespace JsStore {
           } break;
           // between
           case '-': if (value < compare_value.Low || value > compare_value.High) {
+            this._status = false;
+          } break;
+          // Not equal to
+          case '!=': if (value === compare_value) {
             this._status = false;
           } break;
         }
