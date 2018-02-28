@@ -9,7 +9,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /**
- * @license :JsStore.js - v1.6.1 - 26/02/2018
+ * @license :JsStore.js - v1.6.2 - 28/02/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
  */ 
@@ -552,6 +552,7 @@ var JsStore;
         Occurence["First"] = "f";
         Occurence["Last"] = "l";
         Occurence["Any"] = "a";
+        Occurence["Not"] = "!";
     })(Occurence = JsStore.Occurence || (JsStore.Occurence = {}));
     var WebWorker_Status;
     (function (WebWorker_Status) {
@@ -1077,7 +1078,12 @@ var JsStore;
                                 found = true;
                             }
                             break;
-                        default: if (value.lastIndexOf(this._compValue) === value.length - this._compValueLength) {
+                        case JsStore.Occurence.Last:
+                            if (value.lastIndexOf(this._compValue) === value.length - this._compValueLength) {
+                                found = true;
+                            }
+                            break;
+                        default: if (value !== this._compValue) {
                             found = true;
                         }
                     }
@@ -1219,6 +1225,9 @@ var JsStore;
                                 Object.keys(this._query.Where).length > 1);
                             var key = JsStore.getObjectFirstKey(value);
                             switch (key) {
+                                case '!=':
+                                    this.executeLikeLogic(column_name, value['!='], JsStore.Occurence.Not);
+                                    break;
                                 case 'Like':
                                     {
                                         var filter_values = value.Like.split('%'), filter_value, occurence;
@@ -1930,6 +1939,7 @@ var JsStore;
                                         case '<':
                                         case '>=':
                                         case '<=':
+                                        case '!=':
                                             this.checkComparisionOp(columnName, rowValue[columnName], key);
                                             break;
                                     }
@@ -2024,6 +2034,12 @@ var JsStore;
                     // between
                     case '-':
                         if (value < compare_value.Low || value > compare_value.High) {
+                            this._status = false;
+                        }
+                        break;
+                    // Not equal to
+                    case '!=':
+                        if (value === compare_value) {
                             this._status = false;
                         }
                         break;

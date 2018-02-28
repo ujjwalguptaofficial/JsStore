@@ -1,5 +1,5 @@
 /** 
- * @license :JsStore.js - v1.6.1 - 26/02/2018
+ * @license :JsStore.js - v1.6.2 - 28/02/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT 
  */
@@ -176,6 +176,7 @@ declare namespace JsStore {
         First = "f",
         Last = "l",
         Any = "a",
+        Not = "!",
     }
     enum WebWorker_Status {
         Registered = "registerd",
@@ -705,7 +706,7 @@ declare namespace JsStore {
                 _compSymbol: Occurence;
                 _compValue: any;
                 _compValueLength: number;
-                protected executeLikeLogic(column: any, value: any, symbol: Occurence): void;
+                protected executeLikeLogic(column: any, value: string, symbol: Occurence): void;
                 private executeSkipAndLimit();
                 private executeSkip();
                 private executeLimit();
