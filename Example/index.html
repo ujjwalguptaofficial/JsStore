@@ -31,7 +31,7 @@
         };
 
         function deleteData(studentId) {
-            DbConnection.delete({
+            DbConnection.remove({
                 From: 'Student',
                 Where: {
                     Id: Number(studentId)
@@ -42,7 +42,7 @@
                     showTableData();
                 }
             }, function (error) {
-                alert(error.Message);
+                alert(error._message);
             })
         }
 
@@ -59,7 +59,7 @@
                     showTableData();
                 }
             }, function (err) {
-                alert(err.Message);
+                alert(err._message);
             });
         }
 

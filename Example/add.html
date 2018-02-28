@@ -27,7 +27,7 @@
                     window.location.href = "index.html";
                 }
             }, function (err) {
-                alert(err.Message);
+                alert(err._message);
             });
         }
 
@@ -52,7 +52,7 @@
                     }
 
                 }, function (error) {
-                    alert(error.Message);
+                    alert(error._message);
                 })
             }
         }
@@ -85,7 +85,7 @@
                     window.location.href = "index.html";
                 }
             }, function (error) {
-                alert(error.Message);
+                alert(error._message);
             })
         }
 
@@ -104,7 +104,7 @@
                 alert(rowsAdded + " record Added");
                 window.location.href = "index.html";
             }, function (error) {
-                alert(error.Message);
+                alert(error._message);
             })
 
         }
