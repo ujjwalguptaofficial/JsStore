@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="style/bootstrap.css" />
     <script src="scripts/bootstrap.js"></script>
     <link rel="stylesheet" href="style/font-awesome.min.css" />
-    <script src="scripts/jsstore.min.js "></script>
+    <script src="scripts/jsstore.js "></script>
     <script>
         var DbConnection = new JsStore.Instance(),
             StudentId;
@@ -80,7 +80,7 @@
                     Id: Number(StudentId)
                 }
             }, function (rowsAffected) {
-                alert(rowsAffected + " rows Updated");
+                alert(rowsAffected + " record Updated");
                 if (rowsAffected > 0) {
                     window.location.href = "index.html";
                 }
@@ -101,7 +101,7 @@
                 Into: "Student",
                 Values: [Value]
             }, function (rowsAdded) {
-                alert(rowsAdded + " rows Added");
+                alert(rowsAdded + " record Added");
                 window.location.href = "index.html";
             }, function (error) {
                 alert(error.Message);

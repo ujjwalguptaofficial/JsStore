@@ -10,7 +10,7 @@
     <script src="scripts/bootstrap.js"></script>
     <link rel="stylesheet" href="style/font-awesome.min.css" />
     <!-- <script src="scripts/jsstore.min.js "></script> -->
-    <script src="../Code/output/jsstore.js"></script>
+    <script src="scripts/jsstore.js "></script>
     <script>
         var DbConnection = new JsStore.Instance();
         window.onload = function () {
@@ -70,7 +70,9 @@
                 Into: "Student",
                 Values: Students
             }, function (rowsAdded) {
-
+                if (rowsAdded > 0) {
+                    alert('Successfully added');
+                }
             }, function (err) {
                 console.log(err);
                 alert('Error Occured while adding data')
