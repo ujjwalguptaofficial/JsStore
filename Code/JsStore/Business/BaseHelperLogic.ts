@@ -1,7 +1,19 @@
 namespace JsStore {
     export namespace Business {
         export class BaseHelper {
-
+            protected containsNot(whereQry: object) {
+                var status = false,
+                    value;
+                Object.keys(whereQry).every(function (key) {
+                    value = whereQry[key];
+                    if (value['!=']) {
+                        status = true;
+                    }
+                    return !status;
+                });
+                return status;
+            }
+            
             protected filterOnOccurence = function (value) {
                 var found = false;
                 value = value.toLowerCase();

@@ -171,7 +171,6 @@ declare namespace JsStore {
         First = "f",
         Last = "l",
         Any = "a",
-        Not = "!",
     }
     enum WebWorker_Status {
         Registered = "registerd",
@@ -511,6 +510,7 @@ declare namespace JsStore {
 declare namespace JsStore {
     namespace Business {
         class BaseHelper {
+            protected containsNot(whereQry: object): boolean;
             protected filterOnOccurence: (value: any) => boolean;
             protected isTableExist(tableName: string): boolean;
             protected getTable(tableName: string): Table;
@@ -544,6 +544,7 @@ declare namespace JsStore {
             protected onErrorOccured(e: any, customError?: boolean): void;
             protected onExceptionOccured(ex: DOMException, info: any): void;
             protected getColumnInfo(columnName: any): Column;
+            protected addGreatAndLessToNotOp(): void;
             protected goToWhereLogic: () => void;
             protected makeQryInCaseSensitive(qry: any): any;
         }

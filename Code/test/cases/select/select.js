@@ -166,7 +166,7 @@ describe('Test Select Api', function () {
         })
     });
 
-    it('select with operator - not', function (done) {
+    it('select with operator - != (for string)', function (done) {
         Con.select({
             From: 'Customers',
             Where: {
@@ -176,6 +176,24 @@ describe('Test Select Api', function () {
             },
             OnSuccess: function (results) {
                 expect(results).to.be.an('array').length(88);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
+    it('select with operator - != (for number)', function (done) {
+        Con.select({
+            From: 'Products',
+            Where: {
+                Price: {
+                    '!=': 20
+                }
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('array').length(76);
                 done();
             },
             OnError: function (err) {

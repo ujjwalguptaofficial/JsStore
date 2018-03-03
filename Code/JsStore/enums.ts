@@ -3,8 +3,7 @@ namespace JsStore {
     export enum Occurence {
         First = 'f',
         Last = 'l',
-        Any = 'a',
-        Not = '!'
+        Any = 'a'
     }
 
     export enum WebWorker_Status {

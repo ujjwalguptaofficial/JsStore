@@ -56,6 +56,54 @@ namespace JsStore {
                 return column_info;
             }
 
+            protected addGreatAndLessToNotOp() {
+                var where_query = this._query.Where,
+                    value;
+                if (this.containsNot(where_query)) {
+                    var query_keys = Object.keys(where_query);
+                    if (query_keys.length === 1) {
+                        query_keys.forEach(function (prop) {
+                            value = where_query[prop];
+                            if (value['!=']) {
+                                where_query[prop]['>'] = value['!='];
+                                if (where_query['Or'] === undefined) {
+                                    where_query['Or'] = {};
+                                    where_query['Or'][prop] = {};
+                                }
+                                else if (where_query['Or'][prop] === undefined) {
+                                    where_query['Or'][prop] = {};
+                                }
+                                where_query['Or'][prop]['<'] = value['!='];
+                                delete where_query[prop]['!='];
+                            }
+                        });
+                        this._query.Where = where_query;
+                    }
+                    else {
+                        var where_tmp = [];
+                        query_keys.forEach(function (prop) {
+                            value = where_query[prop];
+                            var tmp_qry = {};
+                            if (value['!=']) {
+                                tmp_qry[prop] = {
+                                    '>': value['!='],
+                                    'Or': {
+
+                                    }
+                                };
+                                tmp_qry[prop]['Or'][prop] = {};
+                                tmp_qry[prop]['Or'][prop]['<'] = value['!='];
+                            }
+                            else {
+                                tmp_qry[prop] = value;
+                            }
+                            where_tmp.push(tmp_qry);
+                        });
+                        this._query.Where = where_tmp;
+                    }
+                }
+            }
+
             protected goToWhereLogic = function () {
                 this._whereChecker = new WhereChecker(this._query.Where);
                 var column_name = getObjectFirstKey(this._query.Where);
@@ -71,9 +119,6 @@ namespace JsStore {
                         );
                         var key = getObjectFirstKey(value);
                         switch (key) {
-                            case '!=':
-                                this.executeLikeLogic(column_name, value['!='], Occurence.Not);
-                                break;
                             case 'Like': {
                                 var filter_values = value.Like.split('%'),
                                     filter_value: string,
