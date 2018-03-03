@@ -1,5 +1,5 @@
-/** 
- * @license :JsStore.js - v1.6.2 - 28/02/2018
+/*! 
+ * @license :JsStore.js - v1.6.3 - 03/03/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT 
  */
@@ -176,7 +176,6 @@ declare namespace JsStore {
         First = "f",
         Last = "l",
         Any = "a",
-        Not = "!",
     }
     enum WebWorker_Status {
         Registered = "registerd",
@@ -516,6 +515,7 @@ declare namespace JsStore {
 declare namespace JsStore {
     namespace Business {
         class BaseHelper {
+            protected containsNot(whereQry: object): boolean;
             protected filterOnOccurence: (value: any) => boolean;
             protected isTableExist(tableName: string): boolean;
             protected getTable(tableName: string): Table;
@@ -549,6 +549,7 @@ declare namespace JsStore {
             protected onErrorOccured(e: any, customError?: boolean): void;
             protected onExceptionOccured(ex: DOMException, info: any): void;
             protected getColumnInfo(columnName: any): Column;
+            protected addGreatAndLessToNotOp(): void;
             protected goToWhereLogic: () => void;
             protected makeQryInCaseSensitive(qry: any): any;
         }
@@ -558,6 +559,7 @@ declare namespace JsStore {
     namespace Business {
         class CreateDb {
             constructor(tablesMetaData: Model.TableHelper[], onSuccess: (listOf) => void, onError: (err: IError) => void);
+            private saveDbName();
         }
     }
 }
@@ -634,9 +636,9 @@ declare namespace JsStore {
          * @class WhereChecker
          */
         class WhereChecker {
-            _where: any;
+            _where: object;
             _status: boolean;
-            constructor(where: any);
+            constructor(where: object);
             check(rowValue: any): boolean;
             private checkIn(column, value);
             private checkLike(column, value);

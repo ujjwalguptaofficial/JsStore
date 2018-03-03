@@ -554,6 +554,7 @@ declare namespace JsStore {
     namespace Business {
         class CreateDb {
             constructor(tablesMetaData: Model.TableHelper[], onSuccess: (listOf) => void, onError: (err: IError) => void);
+            private saveDbName();
         }
     }
 }

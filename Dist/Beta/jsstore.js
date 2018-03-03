@@ -8,8 +8,8 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/**
- * @license :JsStore.js - v1.6.2 - 28/02/2018
+/*!
+ * @license :JsStore.js - v1.6.3 - 03/03/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
  */ 
@@ -552,7 +552,6 @@ var JsStore;
         Occurence["First"] = "f";
         Occurence["Last"] = "l";
         Occurence["Any"] = "a";
-        Occurence["Not"] = "!";
     })(Occurence = JsStore.Occurence || (JsStore.Occurence = {}));
     var WebWorker_Status;
     (function (WebWorker_Status) {
@@ -1090,6 +1089,17 @@ var JsStore;
                     return found;
                 };
             }
+            BaseHelper.prototype.containsNot = function (whereQry) {
+                var status = false, value;
+                Object.keys(whereQry).every(function (key) {
+                    value = whereQry[key];
+                    if (value['!=']) {
+                        status = true;
+                    }
+                    return !status;
+                });
+                return status;
+            };
             BaseHelper.prototype.isTableExist = function (tableName) {
                 var is_exist = false;
                 Business.active_db._tables.every(function (table) {
@@ -1213,7 +1223,6 @@ var JsStore;
                 _this._errorCount = 0;
                 _this._rowAffected = 0;
                 _this.goToWhereLogic = function () {
-                    this._whereChecker = new Business.WhereChecker(this._query.Where);
                     var column_name = JsStore.getObjectFirstKey(this._query.Where);
                     if (this._query.IgnoreCase === true) {
                         this._query.Where = this.makeQryInCaseSensitive(this._query.Where);
@@ -1223,11 +1232,11 @@ var JsStore;
                         if (typeof value === 'object') {
                             this._checkFlag = Boolean(Object.keys(value).length > 1 ||
                                 Object.keys(this._query.Where).length > 1);
+                            if (this._checkFlag === true) {
+                                this._whereChecker = new Business.WhereChecker(this._query.Where);
+                            }
                             var key = JsStore.getObjectFirstKey(value);
                             switch (key) {
-                                case '!=':
-                                    this.executeLikeLogic(column_name, value['!='], JsStore.Occurence.Not);
-                                    break;
                                 case 'Like':
                                     {
                                         var filter_values = value.Like.split('%'), filter_value, occurence;
@@ -1266,6 +1275,9 @@ var JsStore;
                         }
                         else {
                             this._checkFlag = Boolean(Object.keys(this._query.Where).length > 1);
+                            if (this._checkFlag === true) {
+                                this._whereChecker = new Business.WhereChecker(this._query.Where);
+                            }
                             this.executeWhereLogic(column_name, value);
                         }
                     }
@@ -1322,6 +1334,50 @@ var JsStore;
                     return true;
                 });
                 return column_info;
+            };
+            Base.prototype.addGreatAndLessToNotOp = function () {
+                var where_query = this._query.Where, value;
+                if (this.containsNot(where_query)) {
+                    var query_keys = Object.keys(where_query);
+                    if (query_keys.length === 1) {
+                        query_keys.forEach(function (prop) {
+                            value = where_query[prop];
+                            if (value['!=']) {
+                                where_query[prop]['>'] = value['!='];
+                                if (where_query['Or'] === undefined) {
+                                    where_query['Or'] = {};
+                                    where_query['Or'][prop] = {};
+                                }
+                                else if (where_query['Or'][prop] === undefined) {
+                                    where_query['Or'][prop] = {};
+                                }
+                                where_query['Or'][prop]['<'] = value['!='];
+                                delete where_query[prop]['!='];
+                            }
+                        });
+                        this._query.Where = where_query;
+                    }
+                    else {
+                        var where_tmp = [];
+                        query_keys.forEach(function (prop) {
+                            value = where_query[prop];
+                            var tmp_qry = {};
+                            if (value['!=']) {
+                                tmp_qry[prop] = {
+                                    '>': value['!='],
+                                    'Or': {}
+                                };
+                                tmp_qry[prop]['Or'][prop] = {};
+                                tmp_qry[prop]['Or'][prop]['<'] = value['!='];
+                            }
+                            else {
+                                tmp_qry[prop] = value;
+                            }
+                            where_tmp.push(tmp_qry);
+                        });
+                        this._query.Where = where_tmp;
+                    }
+                }
             };
             Base.prototype.makeQryInCaseSensitive = function (qry) {
                 var results = [], column_value, key_value;
@@ -1391,10 +1447,12 @@ var JsStore;
                             LastError: JsStore.Error_Type.ConnectionAborted
                         };
                     };
+                    // save in database list
+                    this.saveDbName();
                     if (onSuccess != null) {
                         onSuccess(table_created_list);
                     }
-                };
+                }.bind(this);
                 db_request.onupgradeneeded = function (event) {
                     Business.db_connection = event.target.result;
                     tablesMetaData.forEach(function (item, index) {
@@ -1450,6 +1508,15 @@ var JsStore;
                     }
                 };
             }
+            CreateDb.prototype.saveDbName = function () {
+                KeyStore.get('database_list', function (result) {
+                    if (JsStore.getType(result) !== JsStore.Data_Type.Array) {
+                        result = [];
+                    }
+                    result.push(Business.active_db._name);
+                    KeyStore.set("database_list", result);
+                });
+            };
             return CreateDb;
         }());
         Business.CreateDb = CreateDb;
@@ -1473,6 +1540,11 @@ var JsStore;
                             KeyStore.remove("JsStore_" + Business.active_db._name + "_" + table._name + "_" + column._name + "_Value");
                         }
                     });
+                });
+                // remove from database_list 
+                KeyStore.get("database_list", function (result) {
+                    result.splice(result.indexOf(Business.active_db._name), 1);
+                    KeyStore.set("database_list", result);
                 });
                 KeyStore.remove("JsStore_" + Business.active_db._name + "_Schema", this._onSuccess);
             };
@@ -3561,8 +3633,9 @@ var JsStore;
                 Instance.prototype.execute = function () {
                     if (this.isTableExist(this._tableName) === true) {
                         try {
-                            this.initTransaction();
-                            if (this._query.Where) {
+                            if (this._query.Where !== undefined) {
+                                this.addGreatAndLessToNotOp();
+                                this.initTransaction();
                                 if (Array.isArray(this._query.Where)) {
                                     this.processWhereArrayQry();
                                 }
@@ -3571,6 +3644,7 @@ var JsStore;
                                 }
                             }
                             else {
+                                this.initTransaction();
                                 this.executeWhereUndefinedLogic();
                             }
                         }
@@ -4030,6 +4104,7 @@ var JsStore;
                     if (this.isTableExist(this._query.From)) {
                         try {
                             if (this._query.Where !== undefined) {
+                                this.addGreatAndLessToNotOp();
                                 if (this._query.Where.Or || Array.isArray(this._query.Where)) {
                                     var select_object = new Business.Select.Instance(this._query, function (results) {
                                         this._resultCount = results.length;
@@ -4368,7 +4443,8 @@ var JsStore;
                         this._error = new Update.SchemaChecker(this.getTable(this._query.In)).
                             check(this._query.Set, this._query.In);
                         if (!this._error) {
-                            if (this._query.Where) {
+                            if (this._query.Where !== undefined) {
+                                this.addGreatAndLessToNotOp();
                                 if (this._query.Where.Or || Array.isArray(this._query.Where)) {
                                     this.executeComplexLogic();
                                 }
@@ -4731,8 +4807,9 @@ var JsStore;
                 }
                 Instance.prototype.execute = function () {
                     try {
-                        this.initTransaction();
-                        if (this._query.Where) {
+                        if (this._query.Where !== undefined) {
+                            this.addGreatAndLessToNotOp();
+                            this.initTransaction();
                             if (Array.isArray(this._query.Where)) {
                                 this.processWhereArrayQry();
                             }
@@ -4741,6 +4818,7 @@ var JsStore;
                             }
                         }
                         else {
+                            this.initTransaction();
                             this.executeWhereUndefinedLogic();
                         }
                     }

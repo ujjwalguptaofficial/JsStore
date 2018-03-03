@@ -40,10 +40,12 @@ namespace JsStore {
                         };
                     };
 
+                    // save in database list
+                    this.saveDbName();
                     if (onSuccess != null) {
                         onSuccess(table_created_list);
                     }
-                };
+                }.bind(this);
 
                 db_request.onupgradeneeded = function (event) {
                     db_connection = (event as any).target.result;
@@ -106,6 +108,16 @@ namespace JsStore {
                         console.error(e);
                     }
                 };
+            }
+
+            private saveDbName() {
+                KeyStore.get('database_list', function (result) {
+                    if (getType(result) !== Data_Type.Array) {
+                        result = [];
+                    }
+                    result.push(active_db._name);
+                    KeyStore.set("database_list", result);
+                });
             }
         }
     }
