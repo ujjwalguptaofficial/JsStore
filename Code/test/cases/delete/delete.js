@@ -164,6 +164,74 @@ describe('Test remove Api', function () {
         })
     });
 
+    it('remove with operator - != (for string)', function (done) {
+        var count;
+        Con.count({
+            From: 'Customers',
+            Where: {
+                Country: {
+                    '!=': 'Mexico'
+                }
+            },
+            OnSuccess: function (results) {
+                count = results;
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        });
+
+        Con.remove({
+            From: 'Customers',
+            Where: {
+                Country: {
+                    '!=': 'Mexico'
+                }
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').to.equal(count);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        });
+    });
+
+    it('remove with operator - != (for number)', function (done) {
+        var count;
+        Con.count({
+            From: 'Products',
+            Where: {
+                Price: {
+                    '!=': 20
+                }
+            },
+            OnSuccess: function (results) {
+                count = results;
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+
+        Con.remove({
+            From: 'Products',
+            Where: {
+                Price: {
+                    '!=': 20
+                }
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').to.equal(count);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
     it('remove with operator - >', function (done) {
 
         var Count;

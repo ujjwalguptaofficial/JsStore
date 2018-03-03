@@ -16,8 +16,9 @@ namespace JsStore {
 
                 execute() {
                     try {
-                        this.initTransaction();
-                        if (this._query.Where) {
+                        if (this._query.Where !== undefined) {
+                            this.addGreatAndLessToNotOp();
+                            this.initTransaction();
                             if (Array.isArray(this._query.Where)) {
                                 this.processWhereArrayQry();
                             }
@@ -26,6 +27,7 @@ namespace JsStore {
                             }
                         }
                         else {
+                            this.initTransaction();
                             this.executeWhereUndefinedLogic();
                         }
 

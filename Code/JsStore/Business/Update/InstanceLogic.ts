@@ -14,7 +14,8 @@ namespace JsStore {
                         this._error = new SchemaChecker(this.getTable(this._query.In)).
                             check(this._query.Set, this._query.In);
                         if (!this._error) {
-                            if (this._query.Where) {
+                            if (this._query.Where !== undefined) {
+                                this.addGreatAndLessToNotOp();
                                 if (this._query.Where.Or || Array.isArray(this._query.Where)) {
                                     this.executeComplexLogic();
                                 }
@@ -38,7 +39,7 @@ namespace JsStore {
                         this.onExceptionOccured.call(this, ex, { TableName: this._query.In });
                     }
                 }
-                              
+
                 private executeComplexLogic() {
                     var select_object = new Select.Instance({
                         From: this._query.In,

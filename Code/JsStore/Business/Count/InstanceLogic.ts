@@ -14,6 +14,7 @@ namespace JsStore {
                     if (this.isTableExist(this._query.From)) {
                         try {
                             if (this._query.Where !== undefined) {
+                                this.addGreatAndLessToNotOp();
                                 if (this._query.Where.Or || Array.isArray(this._query.Where)) {
                                     var select_object = new Select.Instance(this._query as any,
                                         function (results) {

@@ -171,6 +171,42 @@ describe('Test count Api', function () {
         })
     });
 
+    it('select with operator - != (for string)', function (done) {
+        Con.count({
+            From: 'Customers',
+            Where: {
+                Country: {
+                    '!=': 'Mexico'
+                }
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').to.equal(88);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
+    it('select with operator - != (for number)', function (done) {
+        Con.count({
+            From: 'Products',
+            Where: {
+                Price: {
+                    '!=': 20
+                }
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').to.equal(76);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
+
     it('count with operator - between', function (done) {
         Con.count({
             From: 'Products',

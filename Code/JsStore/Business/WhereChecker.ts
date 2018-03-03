@@ -7,10 +7,10 @@ namespace JsStore {
      * @class WhereChecker
      */
     export class WhereChecker {
-      _where;
+      _where: object;
       _status: boolean;
 
-      constructor(where) {
+      constructor(where: object) {
         this._where = where;
       }
 

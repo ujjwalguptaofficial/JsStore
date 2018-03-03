@@ -279,6 +279,81 @@ describe('Test update Api', function () {
         })
     });
 
+    it('update with operator - != (for string)', function (done) {
+        var count;
+        Con.count({
+            From: 'Customers',
+            Where: {
+                Country: {
+                    '!=': 'Mexico'
+                }
+            },
+            OnSuccess: function (results) {
+                count = results;
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        });
+
+        Con.update({
+            In: 'Customers',
+            Where: {
+                Country: {
+                    '!=': 'Mexico'
+                }
+            },
+            Set: {
+                ContactName: 'Ujjwsal',
+                City: 'bhubaneswsar'
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').to.equal(count);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        });
+    });
+
+    it('remove with operator - != (for number)', function (done) {
+        var count;
+        Con.count({
+            From: 'Products',
+            Where: {
+                Price: {
+                    '!=': 20
+                }
+            },
+            OnSuccess: function (results) {
+                count = results;
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+
+        Con.update({
+            In: 'Products',
+            Where: {
+                Price: {
+                    '!=': 20
+                }
+            },
+            Set: {
+                ContactName: 'Ujjwal',
+                City: 'bhubaneswar'
+            },
+            OnSuccess: function (results) {
+                expect(results).to.be.an('number').to.equal(count);
+                done();
+            },
+            OnError: function (err) {
+                done(err);
+            }
+        })
+    });
 
     it('select with operator - >', function (done) {
         Con.select({
