@@ -105,7 +105,6 @@ namespace JsStore {
             }
 
             protected goToWhereLogic = function () {
-                this._whereChecker = new WhereChecker(this._query.Where);
                 var column_name = getObjectFirstKey(this._query.Where);
                 if (this._query.IgnoreCase === true) {
                     this._query.Where = this.makeQryInCaseSensitive(this._query.Where);
@@ -117,6 +116,9 @@ namespace JsStore {
                             Object.keys(value).length > 1 ||
                             Object.keys(this._query.Where).length > 1
                         );
+                        if (this._checkFlag === true) {
+                            this._whereChecker = new WhereChecker(this._query.Where);
+                        }
                         var key = getObjectFirstKey(value);
                         switch (key) {
                             case 'Like': {
@@ -159,6 +161,9 @@ namespace JsStore {
                     }
                     else {
                         this._checkFlag = Boolean(Object.keys(this._query.Where).length > 1);
+                        if (this._checkFlag === true) {
+                            this._whereChecker = new WhereChecker(this._query.Where);
+                        }
                         this.executeWhereLogic(column_name, value);
                     }
                 }
