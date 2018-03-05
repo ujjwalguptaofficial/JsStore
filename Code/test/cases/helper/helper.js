@@ -33,10 +33,27 @@ describe('Test helper Api', function () {
         });
     });
 
+    it('getDbList api test', function (done) {
+        JsStore.getDbList(function (result) {
+            expect(result).to.be.an('array').to.deep.equal(['Demo']);
+            done();
+        });
+    });
+
     it('isNull', function () {
-        expect(JsStore.isNull('fuck')).to.be.an('boolean').to.equal(false);
+        expect(JsStore.isNull('hi there')).to.be.an('boolean').to.equal(false);
         expect(JsStore.isNull(null)).to.be.an('boolean').to.equal(true);
         expect(JsStore.isNull('')).to.be.an('boolean').to.equal(true);
+    });
+
+    it('getType', function () {
+        expect(JsStore.getType('hi there')).to.equal('string');
+        expect(JsStore.getType(null)).to.equal('null');
+        expect(JsStore.getType('')).to.equal('string');
+        expect(JsStore.getType(true)).to.equal('boolean');
+        expect(JsStore.getType({})).to.equal('object');
+        expect(JsStore.getType(9)).to.equal('number');
+        expect(JsStore.getType([])).to.equal('array');
     });
 
 });

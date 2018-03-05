@@ -1,5 +1,13 @@
 describe('Db Test', function () {
 
+    it('getDbList api test', function (done) {
+        JsStore.getDbList(function (result) {
+            console.log(result);
+            expect(result).to.be.an('array').to.deep.equal(['Demo', 'MultiEntryTest']);
+            done();
+        });
+    });
+
     it('drop db without promise', function (done) {
         Con.dropDb(function (results) {
                 done();
@@ -7,6 +15,14 @@ describe('Db Test', function () {
             function (err) {
                 done(err);
             })
+    });
+
+    it('getDbList api test', function (done) {
+        JsStore.getDbList(function (result) {
+            console.log(result);
+            expect(result).to.be.an('array').to.deep.equal(['Demo']);
+            done();
+        });
     });
 
     it('drop db with promise', function (done) {
@@ -18,6 +34,14 @@ describe('Db Test', function () {
             function (err) {
                 done(err);
             });
+    });
+
+    it('getDbList api test', function (done) {
+        JsStore.getDbList(function (result) {
+            console.log(result);
+            expect(result).to.be.an('array').to.deep.equal([]);
+            done();
+        });
     });
 
     it('open db test - invalid db', function (done) {

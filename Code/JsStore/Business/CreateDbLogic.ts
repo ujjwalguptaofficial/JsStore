@@ -111,12 +111,11 @@ namespace JsStore {
             }
 
             private saveDbName() {
-                KeyStore.get('database_list', function (result) {
-                    if (getType(result) !== Data_Type.Array) {
-                        result = [];
+                getDbList(function (result) {
+                    if (result.indexOf(active_db._name) < 0) {
+                        result.push(active_db._name);
+                        setDbList(result);
                     }
-                    result.push(active_db._name);
-                    KeyStore.set("database_list", result);
                 });
             }
         }

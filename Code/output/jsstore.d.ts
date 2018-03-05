@@ -394,6 +394,11 @@ declare namespace JsStore {
      *
      */
     var disableLog: () => void;
+    /**
+     * set the configuration
+     *
+     * @param {IConfig} config
+     */
     var setConfig: (config: IConfig) => void;
     /**
      * get data type of supplied value
@@ -402,6 +407,12 @@ declare namespace JsStore {
      * @returns
      */
     var getType: (value: any) => "string" | "number" | "boolean" | "symbol" | "undefined" | "object" | "function" | Data_Type.Array | Data_Type.Null;
+    /**
+     * get database list
+     *
+     * @param {(dbList: string[]) => void} callback
+     */
+    var getDbList: (callback: (dbList: string[]) => void) => void;
 }
 declare namespace JsStore {
     enum Error_Type {
@@ -597,7 +608,7 @@ declare namespace JsStore {
 }
 declare namespace JsStore {
     namespace Business {
-        var on_db_dropped_by_browser: () => void, is_db_deleted_by_browser: boolean, db_connection: IDBDatabase, active_db: DataBase, db_transaction: IDBTransaction, callDbDroppedByBrowser: (deleteMetaData?: boolean) => void, createTransaction: (tableNames: any, callBack: () => void, mode?: any) => void;
+        var on_db_dropped_by_browser: () => void, is_db_deleted_by_browser: boolean, db_connection: IDBDatabase, active_db: DataBase, db_transaction: IDBTransaction, callDbDroppedByBrowser: (deleteMetaData?: boolean) => void, createTransaction: (tableNames: any, callBack: () => void, mode?: any) => void, setDbList: (list: string[]) => void;
         class Main {
             _onSuccess: (result) => void;
             constructor(onSuccess?: any);

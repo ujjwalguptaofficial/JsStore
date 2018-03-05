@@ -28,6 +28,9 @@ namespace JsStore {
                         console.error('transaction timed out');
                     };
                 }
+            },
+            setDbList = function (list: string[]) {
+                KeyStore.set('database_list', list);
             };
 
         export class Main {

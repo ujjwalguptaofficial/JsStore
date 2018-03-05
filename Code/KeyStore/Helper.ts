@@ -31,13 +31,11 @@ namespace KeyStore {
                 finished_request.OnError(message.ErrorDetails);
             }
             else {
-                console.log(message.ErrorDetails);
+                console.error(message.ErrorDetails);
             }
         }
-        else {
-            if (finished_request.OnSuccess) {
-                finished_request.OnSuccess(message.ReturnedValue);
-            }
+        else if (finished_request.OnSuccess) {
+            finished_request.OnSuccess(message.ReturnedValue);
         }
         this.executeCode();
     };

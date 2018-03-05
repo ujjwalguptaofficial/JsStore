@@ -21,9 +21,9 @@ namespace JsStore {
                     });
                 });
                 // remove from database_list 
-                KeyStore.get("database_list", function (result: string[]) {
+                getDbList(function (result) {
                     result.splice(result.indexOf(active_db._name), 1);
-                    KeyStore.set("database_list", result);
+                    setDbList(result);
                 });
                 KeyStore.remove("JsStore_" + active_db._name + "_Schema", this._onSuccess);
             }

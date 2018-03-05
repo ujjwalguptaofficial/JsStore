@@ -138,6 +138,11 @@ namespace JsStore {
         Utils.changeLogStatus();
     };
 
+    /**
+     * set the configuration
+     * 
+     * @param {IConfig} config 
+     */
     export var setConfig = function (config: IConfig) {
         if (config.OnDbDroppedByBrowser) {
             config.OnDbDroppedByBrowser = config.OnDbDroppedByBrowser.toString();
@@ -169,5 +174,19 @@ namespace JsStore {
             default:
                 return type;
         }
+    };
+
+    /**
+     * get database list
+     * 
+     * @param {(dbList: string[]) => void} callback 
+     */
+    export var getDbList = function (callback: (dbList: string[]) => void) {
+        KeyStore.get('database_list', function (result) {
+            if (result == null) {
+                result = [];
+            }
+            callback(result);
+        });
     };
 }
