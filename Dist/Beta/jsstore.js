@@ -9,7 +9,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /*!
- * @license :JsStore.js - v1.6.3 - 03/03/2018
+ * @license :JsStore.js - v1.6.4 - 15/03/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT
  */ 
@@ -103,13 +103,11 @@ var KeyStore;
                 finished_request.OnError(message.ErrorDetails);
             }
             else {
-                console.log(message.ErrorDetails);
+                console.error(message.ErrorDetails);
             }
         }
-        else {
-            if (finished_request.OnSuccess) {
-                finished_request.OnSuccess(message.ReturnedValue);
-            }
+        else if (finished_request.OnSuccess) {
+            finished_request.OnSuccess(message.ReturnedValue);
         }
         this.executeCode();
     };
@@ -772,6 +770,11 @@ var JsStore;
         JsStore.enable_log = false;
         JsStore.Utils.changeLogStatus();
     };
+    /**
+     * set the configuration
+     *
+     * @param {IConfig} config
+     */
     JsStore.setConfig = function (config) {
         if (config.OnDbDroppedByBrowser) {
             config.OnDbDroppedByBrowser = config.OnDbDroppedByBrowser.toString();
@@ -801,6 +804,33 @@ var JsStore;
                 }
             default:
                 return type;
+        }
+    };
+    /**
+     * get database list
+     *
+     * @param {(dbList: string[]) => void} callback
+     */
+    JsStore.getDbList = function (callback) {
+        if (callback === undefined) {
+            return new Promise(function (resolve, reject) {
+                KeyStore.get('database_list', function (result) {
+                    if (result == null) {
+                        result = [];
+                    }
+                    resolve(result);
+                }, function (err) {
+                    reject(err);
+                });
+            });
+        }
+        else {
+            KeyStore.get('database_list', function (result) {
+                if (result == null) {
+                    result = [];
+                }
+                callback(result);
+            });
         }
     };
 })(JsStore || (JsStore = {}));
@@ -1509,12 +1539,11 @@ var JsStore;
                 };
             }
             CreateDb.prototype.saveDbName = function () {
-                KeyStore.get('database_list', function (result) {
-                    if (JsStore.getType(result) !== JsStore.Data_Type.Array) {
-                        result = [];
+                JsStore.getDbList(function (result) {
+                    if (result.indexOf(Business.active_db._name) < 0) {
+                        result.push(Business.active_db._name);
+                        Business.setDbList(result);
                     }
-                    result.push(Business.active_db._name);
-                    KeyStore.set("database_list", result);
                 });
             };
             return CreateDb;
@@ -1542,9 +1571,9 @@ var JsStore;
                     });
                 });
                 // remove from database_list 
-                KeyStore.get("database_list", function (result) {
+                JsStore.getDbList(function (result) {
                     result.splice(result.indexOf(Business.active_db._name), 1);
-                    KeyStore.set("database_list", result);
+                    Business.setDbList(result);
                 });
                 KeyStore.remove("JsStore_" + Business.active_db._name + "_Schema", this._onSuccess);
             };
@@ -1739,6 +1768,8 @@ var JsStore;
                     console.error('transaction timed out');
                 };
             }
+        }, Business.setDbList = function (list) {
+            KeyStore.set('database_list', list);
         };
         var Main = /** @class */ (function () {
             function Main(onSuccess) {
