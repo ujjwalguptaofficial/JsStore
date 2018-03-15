@@ -182,11 +182,25 @@ namespace JsStore {
      * @param {(dbList: string[]) => void} callback 
      */
     export var getDbList = function (callback: (dbList: string[]) => void) {
-        KeyStore.get('database_list', function (result) {
-            if (result == null) {
-                result = [];
-            }
-            callback(result);
-        });
+        if (callback === undefined) {
+            return new Promise(function (resolve, reject) {
+                KeyStore.get('database_list', function (result) {
+                    if (result == null) {
+                        result = [];
+                    }
+                    resolve(result);
+                }, function (err) {
+                    reject(err);
+                });
+            });
+        }
+        else {
+            KeyStore.get('database_list', function (result) {
+                if (result == null) {
+                    result = [];
+                }
+                callback(result);
+            });
+        }
     };
 }

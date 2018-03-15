@@ -412,7 +412,7 @@ declare namespace JsStore {
      *
      * @param {(dbList: string[]) => void} callback
      */
-    var getDbList: (callback: (dbList: string[]) => void) => void;
+    var getDbList: (callback: (dbList: string[]) => void) => any;
 }
 declare namespace JsStore {
     enum Error_Type {

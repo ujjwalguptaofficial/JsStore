@@ -24,14 +24,12 @@ describe('Test operator', function () {
                 Price: {
                     '!=': 20
                 }
-            },
-            OnSuccess: function (results) {
-                expect(results).to.be.an('array').length(76);
-                done();
-            },
-            OnError: function (err) {
-                done(err);
             }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(76);
+            done();
+        }).catch(function (err) {
+            done(err);
         })
     });
 

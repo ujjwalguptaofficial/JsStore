@@ -37,10 +37,11 @@ describe('Db Test', function () {
     });
 
     it('getDbList api test', function (done) {
-        JsStore.getDbList(function (result) {
-            console.log(result);
+        JsStore.getDbList().then(function (result) {
             expect(result).to.be.an('array').to.deep.equal([]);
             done();
+        }).catch(function (err) {
+            done(err);
         });
     });
 
