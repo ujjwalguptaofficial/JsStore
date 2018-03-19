@@ -16,8 +16,9 @@ export namespace Business {
                 this.addStudent();
             });
             // edit button
-            $('#divContainer').on('click', 'td .btn-edit', () => {
-                console.log('edit clicked');
+            $('#divContainer').on('click', 'td .btn-edit', function () {
+                var id = $(this).parents('tr').attr('data-id');
+                editStudent(Number(id));
             });
             // delete button
             $('#divContainer').on('click', 'td .btn-delete', function () {
@@ -25,21 +26,36 @@ export namespace Business {
                 deleteStudent(Number(id));
             });
 
-            var deleteStudent = function (id: number) {
+            $('#divContainer').on('click', 'td .btn-update', function () {
+                var id = $(this).parents('tr').attr('data-id');
+                updateStudent(Number(id));
+            });
+
+            var deleteStudent = (id: number) => {
                 this.deleteStudent(id);
-            }.bind(this);
+            };
+
+            var editStudent = (id: number) => {
+                this.editStudent(id);
+            };
+
+            var updateStudent = (id: number) => {
+                this.updateStudent(id);
+            };
 
         }
 
-        getAddRow() {
-            return `<tr class="tr-add">
-            <td><input type="text"></td>
-            <td><input type="text"></td>
-            <td><input type="text"></td>
-            <td><input type="text"></td>
-            <td><button class="btn-add">Add</button></td>
-            <td><button>Cancel</button></td>
-            </tr>`;
+        getRowWithTextbox(student?: Model.Student) {
+            return `<tr class=${student ? "tr-edit" : "tr-add"} data-id=${student ? student._id : ""}>
+                        <td><input type="text" value=${student ? student._name : ""}></td>
+                        <td><input type="text" value=${student ? student._gender : ""}></td>
+                        <td><input type="text" value=${student ? student._country : ""}></td>
+                        <td><input type="text" value=${student ? student._city : ""}></td>
+                        <td>
+                            <button class=${student ? "btn-update" : "btn-add"}>${student ? "Update" : "Add"}</button>
+                        </td>
+                        <td><button>Cancel</button></td>
+                    </tr>`;
         }
 
         deleteStudent(studentId) {
@@ -47,6 +63,25 @@ export namespace Business {
                 if (rowsDeleted > 0) {
                     var row = $("#tblStudents tbody tr[data-id='" + studentId + "']");
                     row.remove();
+                }
+            }).catch(err => {
+                alert(err._message);
+            });
+        }
+
+        updateStudent(studentId) {
+            var columns = $("#tblStudents tbody tr[data-id='" + studentId + "']").find('td');
+            var updated_value: Model.Student = {
+                _name: columns[0].querySelector('input').value,
+                _gender: columns[1].querySelector('input').value,
+                _country: columns[2].querySelector('input').value,
+                _city: columns[3].querySelector('input').value
+            };
+            this._service.updateStudent(studentId, updated_value).then((rowsUpdated) => {
+                if (rowsUpdated > 0) {
+                    updated_value._id = studentId;
+                    ($("#tblStudents tbody tr[data-id='" + studentId + "']")[0] as HTMLElement).outerHTML =
+                        this.getHtmlRow(updated_value);
                 }
             }).catch(err => {
                 alert(err._message);
@@ -72,6 +107,17 @@ export namespace Business {
             });
         }
 
+        editStudent(studentId) {
+            this._service.getStudent(studentId).then(students => {
+                if (students.length > 0) {
+                    var row: HTMLElement = $("#tblStudents tbody tr[data-id='" + studentId + "']")[0];
+                    row.outerHTML = this.getRowWithTextbox(students[0]);
+                }
+            }).catch(err => {
+                alert(err._message);
+            });
+        }
+
         clearAddText() {
             var columns = document.querySelectorAll('.tr-add td');
             (columns as any).forEach(column => {
@@ -82,16 +128,9 @@ export namespace Business {
         refreshStudentList() {
             this._service.getStudents().then((results: Model.Student[]) => {
                 var table_body = document.querySelector('#tblStudents tbody');
-                var html = this.getAddRow();
+                var html = this.getRowWithTextbox();
                 results.forEach(student => {
-                    html += `<tr data-id=${student._id}>
-                    <td>${student._name}</td>
-                    <td>${student._gender}</td>
-                    <td>${student._country}</td>
-                    <td>${student._city}</td>
-                    <td><button class="btn-edit">Edit</button></td>
-                    <td><button class="btn-delete">Delete</button></td>
-                    </tr>`;
+                    html += this.getHtmlRow(student);
                 });
                 table_body.innerHTML = html;
 
@@ -100,5 +139,17 @@ export namespace Business {
                 alert(err._message);
             });
         }
+
+        private getHtmlRow(student) {
+            return `<tr data-id=${student._id}>
+            <td>${student._name}</td>
+            <td>${student._gender}</td>
+            <td>${student._country}</td>
+            <td>${student._city}</td>
+            <td><button class="btn-edit">Edit</button></td>
+            <td><button class="btn-delete">Delete</button></td>
+            </tr>`;
+        }
+
     }
 }

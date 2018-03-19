@@ -46,6 +46,25 @@ export class Student extends Base {
         });
     }
 
+    getStudent(studentId: number) {
+        return connection.select({
+            From: 'Student',
+            Where: {
+                _id: studentId
+            }
+        });
+    }
+
+    updateStudent(studentId: number, value) {
+        return connection.update({
+            In: 'Student',
+            Set: value,
+            Where: {
+                _id: studentId
+            }
+        });
+    }
+
     private getDatabase() {
         const tbl_student: ITableOption = {
             Name: 'Student',

@@ -54,6 +54,23 @@ var Student = /** @class */ (function (_super) {
             }
         });
     };
+    Student.prototype.getStudent = function (studentId) {
+        return connection.select({
+            From: 'Student',
+            Where: {
+                _id: studentId
+            }
+        });
+    };
+    Student.prototype.updateStudent = function (studentId, value) {
+        return connection.update({
+            In: 'Student',
+            Set: value,
+            Where: {
+                _id: studentId
+            }
+        });
+    };
     Student.prototype.getDatabase = function () {
         var tbl_student = {
             Name: 'Student',
