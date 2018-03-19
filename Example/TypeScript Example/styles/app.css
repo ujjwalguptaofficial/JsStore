@@ -1,0 +1,21 @@
+table {
+    border-collapse: collapse;
+  }
+  
+  table tr td,
+  th {
+    border: 1px solid black;
+    text-align: center;
+    padding: 10px;
+  }
+  
+  contenteditable {
+    border: 2px solid blue;
+  }
+  
+  #divContainer {
+    text-align: center;
+    width: 50%;
+    margin: 0 auto;
+  }
+  

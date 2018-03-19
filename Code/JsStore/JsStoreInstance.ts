@@ -28,7 +28,7 @@ namespace JsStore {
          * @returns 
          * @memberof Instance
          */
-        openDb(dbName: string, onSuccess?: () => void, onError?: (err: IError) => void) {
+        openDb(dbName: string, onSuccess?: () => void, onError?: (err: IError) => void): Promise<null> {
             return this.pushApi({
                 Name: 'open_db',
                 OnError: onError,
@@ -46,7 +46,8 @@ namespace JsStore {
          * @returns 
          * @memberof Instance
          */
-        createDb(dataBase: IDataBaseOption, onSuccess?: (dbSchema: any) => void, onError?: (err: IError) => void) {
+        createDb(dataBase: IDataBaseOption, onSuccess?: (dbSchema: any) => void, onError?: (err: IError) => void)
+            : Promise<null> {
             return this.pushApi({
                 Name: 'create_db',
                 OnError: onError,
@@ -62,7 +63,7 @@ namespace JsStore {
          * @param {Function} [onError=null] 
          * @memberof Instance
          */
-        dropDb(onSuccess?: () => void, onError?: (err: IError) => void) {
+        dropDb(onSuccess?: () => void, onError?: (err: IError) => void): Promise<null> {
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'drop_db',
@@ -81,7 +82,8 @@ namespace JsStore {
          * 
          * @memberOf Main
          */
-        select(query: ISelect, onSuccess?: (results: any[]) => void, onError?: (err: IError) => void) {
+        select(query: ISelect, onSuccess?: (results: any[]) => void, onError?: (err: IError) => void)
+            : Promise<any[]> {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
@@ -104,7 +106,8 @@ namespace JsStore {
          * @returns 
          * @memberof Instance
          */
-        transaction(query: ITranscationQry, onSuccess?: (results: any[]) => void, onError?: (err: IError) => void) {
+        transaction(query: ITranscationQry, onSuccess?: (results: any[]) => void, onError?: (err: IError) => void)
+            : Promise<null> {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
@@ -126,7 +129,8 @@ namespace JsStore {
          * @param {Function} [onError=null] 
          * @memberof Instance
          */
-        count(query: ICount, onSuccess?: (noOfRecord: number) => void, onError?: (err: IError) => void) {
+        count(query: ICount, onSuccess?: (noOfRecord: number) => void, onError?: (err: IError) => void)
+            : Promise<number> {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
@@ -148,7 +152,8 @@ namespace JsStore {
          * @returns 
          * @memberof Instance
          */
-        insert(query: IInsert, onSuccess?: (recordInserted: number) => void, onError?: (err: IError) => void) {
+        insert(query: IInsert, onSuccess?: (recordInserted: number) => void, onError?: (err: IError) => void)
+            : Promise<number> {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
@@ -170,7 +175,8 @@ namespace JsStore {
          * @returns 
          * @memberof Instance
          */
-        update(query: IUpdate, onSuccess?: (recordUpdated: number) => void, onError?: (err: IError) => void) {
+        update(query: IUpdate, onSuccess?: (recordUpdated: number) => void, onError?: (err: IError) => void)
+            : Promise<number> {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
@@ -196,7 +202,8 @@ namespace JsStore {
          * @returns 
          * @memberof Instance
          */
-        remove(query: IRemove, onSuccess?: (recordDeleted: number) => void, onError?: (err: IError) => void) {
+        remove(query: IRemove, onSuccess?: (recordDeleted: number) => void, onError?: (err: IError) => void)
+            : Promise<number> {
             onSuccess = query.OnSuccess ? query.OnSuccess : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             query.OnSuccess = query.OnError = null;
@@ -218,7 +225,8 @@ namespace JsStore {
          * @returns 
          * @memberof Instance
          */
-        clear(tableName: string, onSuccess?: () => void, onError?: (err: IError) => void) {
+        clear(tableName: string, onSuccess?: () => void, onError?: (err: IError) => void)
+            : Promise<null> {
             var use_promise = onSuccess ? false : true;
             return this.pushApi({
                 Name: 'clear',
@@ -237,7 +245,8 @@ namespace JsStore {
          * @returns 
          * @memberof Instance
          */
-        bulkInsert(query: IInsert, onSuccess?: () => void, onError?: (err: IError) => void) {
+        bulkInsert(query: IInsert, onSuccess?: () => void, onError?: (err: IError) => void)
+            : Promise<null> {
             onSuccess = query.OnSuccess ? query.OnSuccess as any : onSuccess;
             onError = query.OnError ? query.OnError : onError;
             var use_promise = onSuccess ? false : true;
@@ -256,7 +265,7 @@ namespace JsStore {
          * @param {ISelect} qry 
          * @memberof Instance
          */
-        exportJson(query: ISelect) {
+        exportJson(query: ISelect): Promise<null> {
             var onSuccess = function (url) {
                 var link = document.createElement("a");
                 link.href = url;

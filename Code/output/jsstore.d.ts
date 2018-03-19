@@ -1082,7 +1082,7 @@ declare namespace JsStore {
          * @returns
          * @memberof Instance
          */
-        openDb(dbName: string, onSuccess?: () => void, onError?: (err: IError) => void): any;
+        openDb(dbName: string, onSuccess?: () => void, onError?: (err: IError) => void): Promise<null>;
         /**
          * creates DataBase
          *
@@ -1092,7 +1092,7 @@ declare namespace JsStore {
          * @returns
          * @memberof Instance
          */
-        createDb(dataBase: IDataBaseOption, onSuccess?: (dbSchema: any) => void, onError?: (err: IError) => void): any;
+        createDb(dataBase: IDataBaseOption, onSuccess?: (dbSchema: any) => void, onError?: (err: IError) => void): Promise<null>;
         /**
          * drop dataBase
          *
@@ -1100,7 +1100,7 @@ declare namespace JsStore {
          * @param {Function} [onError=null]
          * @memberof Instance
          */
-        dropDb(onSuccess?: () => void, onError?: (err: IError) => void): any;
+        dropDb(onSuccess?: () => void, onError?: (err: IError) => void): Promise<null>;
         /**
          * select data from table
          *
@@ -1110,7 +1110,7 @@ declare namespace JsStore {
          *
          * @memberOf Main
          */
-        select(query: ISelect, onSuccess?: (results: any[]) => void, onError?: (err: IError) => void): any;
+        select(query: ISelect, onSuccess?: (results: any[]) => void, onError?: (err: IError) => void): Promise<any[]>;
         /**
          * perform transaction - execute multiple apis
          *
@@ -1121,7 +1121,7 @@ declare namespace JsStore {
          * @returns
          * @memberof Instance
          */
-        transaction(query: ITranscationQry, onSuccess?: (results: any[]) => void, onError?: (err: IError) => void): any;
+        transaction(query: ITranscationQry, onSuccess?: (results: any[]) => void, onError?: (err: IError) => void): Promise<null>;
         /**
          * get no of result from table
          *
@@ -1130,7 +1130,7 @@ declare namespace JsStore {
          * @param {Function} [onError=null]
          * @memberof Instance
          */
-        count(query: ICount, onSuccess?: (noOfRecord: number) => void, onError?: (err: IError) => void): any;
+        count(query: ICount, onSuccess?: (noOfRecord: number) => void, onError?: (err: IError) => void): Promise<number>;
         /**
          * insert data into table
          *
@@ -1140,7 +1140,7 @@ declare namespace JsStore {
          * @returns
          * @memberof Instance
          */
-        insert(query: IInsert, onSuccess?: (recordInserted: number) => void, onError?: (err: IError) => void): any;
+        insert(query: IInsert, onSuccess?: (recordInserted: number) => void, onError?: (err: IError) => void): Promise<number>;
         /**
          * update data into table
          *
@@ -1150,8 +1150,8 @@ declare namespace JsStore {
          * @returns
          * @memberof Instance
          */
-        update(query: IUpdate, onSuccess?: (recordUpdated: number) => void, onError?: (err: IError) => void): any;
-        delete(query: IRemove, onSuccess?: (recordDeleted: number) => void, onError?: (err: IError) => void): void;
+        update(query: IUpdate, onSuccess?: (recordUpdated: number) => void, onError?: (err: IError) => void): Promise<number>;
+        delete(query: IRemove, onSuccess?: (recordDeleted: number) => void, onError?: (err: IError) => void): Promise<number>;
         /**
          * remove data from table
          *
@@ -1161,7 +1161,7 @@ declare namespace JsStore {
          * @returns
          * @memberof Instance
          */
-        remove(query: IRemove, onSuccess?: (recordDeleted: number) => void, onError?: (err: IError) => void): any;
+        remove(query: IRemove, onSuccess?: (recordDeleted: number) => void, onError?: (err: IError) => void): Promise<number>;
         /**
          * delete all data from table
          *
@@ -1171,7 +1171,7 @@ declare namespace JsStore {
          * @returns
          * @memberof Instance
          */
-        clear(tableName: string, onSuccess?: () => void, onError?: (err: IError) => void): any;
+        clear(tableName: string, onSuccess?: () => void, onError?: (err: IError) => void): Promise<null>;
         /**
          * insert bulk amount of data
          *
@@ -1181,13 +1181,14 @@ declare namespace JsStore {
          * @returns
          * @memberof Instance
          */
-        bulkInsert(query: IInsert, onSuccess?: () => void, onError?: (err: IError) => void): any;
+        bulkInsert(query: IInsert, onSuccess?: () => void, onError?: (err: IError) => void): Promise<null>;
         /**
          * export the result in json file
          *
          * @param {ISelect} qry
          * @memberof Instance
          */
-        exportJson(query: ISelect): any;
+        exportJson(query: ISelect): Promise<null>;
     }
 }
+export = JsStore;
