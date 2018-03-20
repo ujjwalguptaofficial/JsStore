@@ -5,6 +5,7 @@
     ],
     "jsRules": {},
     "rules": {
+        "ordered-imports": false,
         "no-namespace": false,
         "no-var-keyword": false,
         "quotemark": false,

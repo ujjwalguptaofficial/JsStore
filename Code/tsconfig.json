@@ -5,97 +5,16 @@
         "removeComments": false,
         "sourceMap": true,
         "inlineSources": true,
-        "out": "output/jsstore.js",
+        // "out": "output/jsstore.js",
         "target": "es5",
         "preserveConstEnums": true,
-        "declaration": true,
-        // "module": "umd",
-        // "outDir": "buildOutput"
+        // "declaration": true,
+        "module": "es6",
+        "outDir": "tsc_build"
     },
     "exclude": [
-        "node_namespaces"
+        "node_namespaces",
+        "tsc_build"
     ],
-    "files": [
-        //License
-        "License.ts",
-        //KeyStore
-        //Common
-        "KeyStore/UtilsLogic.ts",
-        "KeyStore/CommonLogic.ts",
-        "KeyStore/Helper.ts",
-        //Business
-        "KeyStore/Business/BaseLogic.ts",
-        "KeyStore/Business/GetLogic.ts",
-        "KeyStore/Business/SetLogic.ts",
-        "KeyStore/Business/RemoveLogic.ts",
-        "KeyStore/Business/InitDbLogic.ts",
-        "KeyStore/Business/MainLogic.ts",
-        //Instance
-        "KeyStore/KeyStoreInstance.ts",
-        //JsStore
-        // common files
-        "JsStore/enums.ts",
-        "JsStore/interfaces.ts",
-        "JsStore/CommonLogic.ts",
-        "JsStore/UtilsLogic.ts",
-        "JsStore/HelperLogic.ts",
-        "JsStore/Error.ts",
-        // Model
-        "JsStore/Model/Column.ts",
-        "JsStore/Model/Table.ts",
-        "JsStore/Model/TableHelper.ts",
-        "JsStore/Model/DbHelper.ts",
-        "JsStore/Model/DataBase.ts",
-        //Business
-        "JsStore/Business/BaseHelperLogic.ts",
-        "JsStore/Business/BaseLogic.ts",
-        "JsStore/Business/CreateDbLogic.ts",
-        "JsStore/Business/DropDbLogic.ts",
-        "JsStore/Business/BulkInsertLogic.ts",
-        "JsStore/Business/OpenDbLogic.ts",
-        "JsStore/Business/ClearLogic.ts",
-        "JsStore/Business/MainLogic.ts",
-        "JsStore/Business/WhereChecker.ts",
-        "JsStore/Business/TransactionLogic.ts",
-        //select
-        "JsStore/Business/Select/BaseSelectLogic.ts",
-        "JsStore/Business/Select/NotWhereLogic.ts",
-        "JsStore/Business/Select/InLogic.ts",
-        "JsStore/Business/Select/LikeLogic.ts",
-        "JsStore/Business/Select/WhereLogic.ts",
-        "JsStore/Business/Select/JoinLogic.ts",
-        "JsStore/Business/Select/GroupByHelperLogic.ts",
-        "JsStore/Business/Select/HelperLogic.ts",
-        "JsStore/Business/Select/InstanceLogic.ts",
-        //count
-        "JsStore/Business/Count/BaseCountLogic.ts",
-        "JsStore/Business/Count/NotWhereLogic.ts",
-        "JsStore/Business/Count/InLogic.ts",
-        "JsStore/Business/Count/LikeLogic.ts",
-        "JsStore/Business/Count/WhereLogic.ts",
-        "JsStore/Business/Count/InstanceLogic.ts",
-        //update
-        "JsStore/Business/Update/BaseUpdateLogic.ts",
-        "JsStore/Business/Update/NotWhereLogic.ts",
-        "JsStore/Business/Update/InLogic.ts",
-        "JsStore/Business/Update/LikeLogic.ts",
-        "JsStore/Business/Update/WhereLogic.ts",
-        "JsStore/Business/Update/InstanceLogic.ts",
-        "JsStore/Business/Update/SchemaChecker.ts",
-        //Remove
-        "JsStore/Business/Remove/BaseRemoveLogic.ts",
-        "JsStore/Business/Remove/NotWhereLogic.ts",
-        "JsStore/Business/Remove/InLogic.ts",
-        "JsStore/Business/Remove/LikeLogic.ts",
-        "JsStore/Business/Remove/WhereLogic.ts",
-        "JsStore/Business/Remove/InstanceLogic.ts",
-        //Insert
-        "JsStore/Business/Insert/InstanceLogic.ts",
-        "JsStore/Business/Insert/ValueCheckerLogic.ts",
-        "JsStore/Business/Insert/ValuesCheckerLogic.ts",
-        //Instance
-        "JsStore/CodeExecutionHelper.ts",
-        "JsStore/JsStoreInstance.ts",
-        "JsStore/DirectCode.ts"
-    ]
+    "mapRoot": "./"
 }

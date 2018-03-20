@@ -1,3 +1,4 @@
+import * as JsStore from '../JsStore/jsstore';
 namespace KeyStore {
     export interface IError {
         Name: string;
