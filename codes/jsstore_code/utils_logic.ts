@@ -1,6 +1,6 @@
 import { Connection_Status } from "./enums";
 import { Error_Type } from "./error_helper";
-import { db_status, enable_log } from "./CommonLogic";
+import { db_status, enable_log } from "./common_logic";
 import { worker_instance } from "./CodeExecutionHelper";
 import { IWebWorkerRequest } from "./interfaces";
 

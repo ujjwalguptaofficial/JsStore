@@ -1,11 +1,11 @@
 import { WebWorker_Status, Connection_Status } from "./enums";
 import { IWebWorkerRequest, IWebWorkerResult } from "./interfaces";
-import { file_name, enable_log, db_status, log } from "./CommonLogic";
+import { file_name, enable_log, db_status, log } from "./common_logic";
 import { QueryExecutor } from "./web_worker/query_executor";
 
 export var worker_status: WebWorker_Status = WebWorker_Status.NotStarted,
     worker_instance: Worker;
-export class CodeExecutionHelper {
+export class QueryExecutionHelper {
     private _requestQueue: IWebWorkerRequest[] = [];
     private _isCodeExecuting = false;
 

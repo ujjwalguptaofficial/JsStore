@@ -1,3 +1,8 @@
+import { Utils } from "./utils_logic";
+import { prcoessExecutionOfCode } from "./helpers";
+import { IWebWorkerRequest, IError, ISelect, IInsert, IDelete } from "./interfaces";
+import { table_name } from "./common_logic";
+
 namespace KeyStore {
 
     /**

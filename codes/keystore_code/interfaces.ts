@@ -1,3 +1,5 @@
+import { Connection_Status } from "./enums";
+
 export interface ISelect {
     From: any;
     Where: any;
@@ -6,12 +8,6 @@ export interface ISelect {
 export interface IDelete {
     From: string;
     Where: any;
-}
-
-export enum Connection_Status {
-    Connected = "connected",
-    Closed = "closed",
-    NotStarted = "not_connected"
 }
 
 export interface IDbStatus {
@@ -34,16 +30,14 @@ export interface IWebWorkerRequest {
     OnError: (err: IError) => void;
 }
 
+export interface IError {
+    Name: string;
+    Value: string;
+}
+
+
 export interface IWebWorkerResult {
     ErrorOccured: boolean;
     ErrorDetails: any;
     ReturnedValue: any;
 }
-
-export var request_queue: IWebWorkerRequest[] = [],
-    table_name = "LocalStore",
-    is_code_executing = false,
-    db_status: IDbStatus = {
-        ConStatus: Connection_Status.NotStarted,
-        LastError: ""
-    };
