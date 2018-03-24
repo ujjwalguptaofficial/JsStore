@@ -10,11 +10,14 @@
         "preserveConstEnums": true,
         // "declaration": true,
         "module": "es6",
-        "outDir": "tsc_build"
+        "outDir": "tsc_build",
+        "lib": [
+            "ES2015",
+            "DOM"
+        ]
     },
     "exclude": [
         "node_namespaces",
         "tsc_build"
-    ],
-    "mapRoot": "./"
+    ]
 }

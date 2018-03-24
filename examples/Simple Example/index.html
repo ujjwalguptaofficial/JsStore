@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="style/font-awesome.min.css" />
     <script src="scripts/jsstore.js "></script>
     <script>
-        var DbConnection = new JsStore.Instance();
+        var connection = new JsStore.Instance(new Worker('scripts/jsstore.worker.js'));
         window.onload = function () {
             initiateDb();
             $('#btnAddStudent').click(function () {
@@ -31,7 +31,7 @@
         };
 
         function deleteData(studentId) {
-            DbConnection.remove({
+            connection.remove({
                 From: 'Student',
                 Where: {
                     Id: Number(studentId)
@@ -48,24 +48,24 @@
 
         function initiateDb() {
             var DbName = "Students";
-            JsStore.isDbExist(DbName, function (isExist) {
+            connection.isDbExist(DbName).then(function (isExist) {
                 if (isExist) {
-                    DbConnection.openDb(DbName);
+                    connection.openDb(DbName);
                     showTableData();
                 } else {
                     var DataBase = getDatabase();
-                    DbConnection.createDb(DataBase);
+                    connection.createDb(DataBase);
                     insertStudents();
                     showTableData();
                 }
-            }, function (err) {
+            }).catch(function (err) {
                 alert(err._message);
             });
         }
 
         function insertStudents() {
             var Students = getStudents();
-            DbConnection.insert({
+            connection.insert({
                 Into: "Student",
                 Values: Students
             }, function (rowsAdded) {
@@ -117,7 +117,7 @@
 
         //This function refreshes the table
         function showTableData() {
-            DbConnection.select({
+            connection.select({
                 From: "Student"
             }, function (students) {
                 var HtmlString = "";

@@ -1,16 +1,4 @@
-import { Error_Type } from "./enums";
-
-export interface IError {
-    _type: Error_Type;
-    _message: string;
-}
-
-export interface IWebWorkerRequest {
-    Name: string;
-    Query: any;
-    OnSuccess?: (results) => void;
-    OnError?: (err: IError) => void;
-}
+import { Error_Type, Connection_Status } from "./enums";
 
 export interface IDbInfo {
     DbName: string;
@@ -57,14 +45,6 @@ export interface ISelect {
     Distinct?: boolean;
 }
 
-export interface IAggregate {
-    Max?: any[];
-    Min?: any[];
-    Sum?: any[];
-    Count?: any[];
-    Avg?: any[];
-}
-
 export interface IOrder {
     By: string; // Column name
     Type: string;
@@ -104,9 +84,84 @@ export interface IInsert {
     SkipDataCheck?: boolean;
 }
 
+export interface ICondition {
+    Column: string;
+    Value: string;
+    Op: string;
+}
+
+export interface ITableJoin {
+    Column: string;
+    Table: string;
+    Where?: any;
+    Order?: IOrder;
+    JoinType?: string;
+    NextJoin?: INextJoin;
+}
+
+export interface ISelectJoin {
+    From: IJoin; // IJoin
+    Count?: boolean;
+    Skip?: number;
+    Limit?: number;
+    OnSuccess?: (results) => void;
+    OnError?: (err: IError) => void;
+}
+
+export interface IJoin {
+    Table1: ITableJoin;
+    Join: string; // inner,left,right,outer
+    Table2: ITableJoin;
+}
+
+export interface INextJoin {
+    Table: string;
+    Column: string;
+}
+
+export interface IDbStatus {
+    ConStatus: Connection_Status;
+    LastError: Error_Type;
+}
+
+export interface IWebWorkerRequest {
+    Name: string;
+    Query: any;
+    OnSuccess: (results) => void;
+    OnError: (err: IError) => void;
+}
+
 export interface IWebWorkerResult {
     ErrorOccured: boolean;
     ErrorDetails: any;
     ReturnedValue: any;
     ThrowError: boolean;
+}
+
+export interface IAggregate {
+    Max?: any[];
+    Min?: any[];
+    Sum?: any[];
+    Count?: any[];
+    Avg?: any[];
+}
+
+export interface ITranscationQry {
+    TableNames: string[];
+    Logic: string;
+    Data: any;
+    AbortOnError?: boolean;
+    OnSuccess?: (results: any[]) => void;
+    OnError?: (err: IError) => void;
+}
+
+export interface IConfig {
+    EnableLog?: boolean;
+    OnDbDroppedByBrowser?: string;
+    FileName?: string;
+}
+
+export interface IError {
+    _type: Error_Type;
+    _message: string;
 }

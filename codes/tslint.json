@@ -9,7 +9,7 @@
         "no-namespace": false,
         "no-var-keyword": false,
         "quotemark": false,
-        "only-arrow-functions": false,
+        "only-arrow-functions": true,
         "space-before-function-paren": false,
         "one-variable-per-declaration": false,
         "no-eval": false,
@@ -29,7 +29,8 @@
         "trailing-comma": false,
         "prefer-const": false,
         "no-console": false,
-        "one-line": false
+        "one-line": false,
+        "member-ordering": false
     },
     "rulesDirectory": []
 }
