@@ -16,12 +16,12 @@ export class Instance extends Base {
         this._onError = onError;
         this._query = query;
         this._onSuccess = onSuccess;
-        this._tableName = this._query.Into;
+        this._tableName = this._query.into;
     }
 
     execute() {
         var table = this.getTable(this._tableName);
-        if (!Array.isArray(this._query.Values)) {
+        if (!Array.isArray(this._query.values)) {
             this.onErrorOccured(
                 new LogHelper(Error_Type.NotArray).get(),
                 true
@@ -29,11 +29,11 @@ export class Instance extends Base {
         }
         else if (table) {
             try {
-                if (this._query.SkipDataCheck) {
-                    this.insertData(this._query.Values);
+                if (this._query.skipDataCheck) {
+                    this.insertData(this._query.values);
                 }
                 else {
-                    var value_checker_obj = new ValuesChecker(table, this._query.Values);
+                    var value_checker_obj = new ValuesChecker(table, this._query.values);
                     value_checker_obj.checkAndModifyValues(function (isError) {
                         if (isError) {
                             this.onErrorOccured(value_checker_obj._error, true);
@@ -45,7 +45,7 @@ export class Instance extends Base {
                     }.bind(this));
                 }
                 // remove values from query
-                this._query.Values = undefined;
+                this._query.values = undefined;
             }
             catch (ex) {
                 this.onExceptionOccured(ex, { TableName: this._tableName });
@@ -58,7 +58,7 @@ export class Instance extends Base {
 
     private onTransactionCompleted() {
         if (this._errorOccured === false) {
-            this._onSuccess(this._query.Return ? this._valuesAffected : this._rowAffected);
+            this._onSuccess(this._query.return ? this._valuesAffected : this._rowAffected);
         }
     }
 
@@ -71,7 +71,7 @@ export class Instance extends Base {
     private insertData(values) {
         var value_index = 0,
             insertDataIntoTable: (value: object) => void;
-        if (this._query.Return) {
+        if (this._query.return) {
             insertDataIntoTable = function (value) {
                 if (value) {
                     var add_result = object_store.add(value);
@@ -101,8 +101,8 @@ export class Instance extends Base {
                 }
             };
         }
-        IdbHelper.createTransaction([this._query.Into], this.onTransactionCompleted.bind(this));
-        var object_store = IdbHelper._transaction.objectStore(this._query.Into);
+        IdbHelper.createTransaction([this._query.into], this.onTransactionCompleted.bind(this));
+        var object_store = IdbHelper._transaction.objectStore(this._query.into);
         insertDataIntoTable.call(this, values[value_index++]);
     }
 }

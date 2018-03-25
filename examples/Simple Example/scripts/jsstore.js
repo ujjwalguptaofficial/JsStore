@@ -356,7 +356,7 @@ var Instance = /** @class */ (function (_super) {
         var onSuccess = function (url) {
             var link = document.createElement("a");
             link.href = url;
-            link.download = query.From + ".json";
+            link.download = query.from + ".json";
             link.click();
         };
         return new Promise(function (resolve, reject) {
@@ -448,6 +448,7 @@ var InstanceHelper = /** @class */ (function () {
         this._isDbOpened = false;
         this._requestQueue = [];
         this._isCodeExecuting = false;
+        this._whiteListApi = [];
         if (worker) {
             this._worker = worker;
             this._worker.onmessage = this.onMessageFromWorker.bind(this);
@@ -502,26 +503,26 @@ var InstanceHelper = /** @class */ (function () {
         });
     };
     InstanceHelper.prototype.prcoessExecutionOfQry = function (request) {
-        if (this._isDbOpened === false) {
-            switch (request.Name) {
-                case 'create_db':
-                case 'is_db_exist':
-                case 'get_db_version':
-                case 'get_db_list':
-                case 'open_db':
-                    this._requestQueue.splice(0, 0, request);
-                    this._isDbOpened = true;
-                    this.executeQry();
-                    break;
-                default: this._requestQueue.push(request);
-            }
+        // if (this._isDbOpened === false) {
+        //     switch (request.Name) {
+        //         case 'create_db':
+        //         case 'is_db_exist':
+        //         case 'get_db_version':
+        //         case 'get_db_list':
+        //         case 'open_db':
+        //             this._requestQueue.splice(0, 0, request);
+        //             this._isDbOpened = true;
+        //             this.executeQry();
+        //             break;
+        //         default: this._requestQueue.push(request);
+        //     }
+        // }
+        // else {
+        this._requestQueue.push(request);
+        if (this._requestQueue.length === 1) {
+            this.executeQry();
         }
-        else {
-            this._requestQueue.push(request);
-            if (this._requestQueue.length === 1) {
-                this.executeQry();
-            }
-        }
+        // }
         _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request pushed: " + request.Name);
     };
     return InstanceHelper;

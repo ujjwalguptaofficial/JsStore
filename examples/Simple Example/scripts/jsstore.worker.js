@@ -759,6 +759,285 @@ var IdbHelper = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "./web_worker/business/insert/index.ts":
+/*!*********************************************!*\
+  !*** ./web_worker/business/insert/index.ts ***!
+  \*********************************************/
+/*! exports provided: Instance */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _instance__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./instance */ "./web_worker/business/insert/instance.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return _instance__WEBPACK_IMPORTED_MODULE_0__["Instance"]; });
+
+
+
+
+/***/ }),
+
+/***/ "./web_worker/business/insert/instance.ts":
+/*!************************************************!*\
+  !*** ./web_worker/business/insert/instance.ts ***!
+  \************************************************/
+/*! exports provided: Instance */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return Instance; });
+/* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../base */ "./web_worker/business/base.ts");
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../enums */ "./web_worker/enums.ts");
+/* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../log_helper */ "./web_worker/log_helper.ts");
+/* harmony import */ var _values_checker__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./values_checker */ "./web_worker/business/insert/values_checker.ts");
+/* harmony import */ var _idb_helper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../idb_helper */ "./web_worker/business/idb_helper.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
+
+var Instance = /** @class */ (function (_super) {
+    __extends(Instance, _super);
+    function Instance(query, onSuccess, onError) {
+        var _this = _super.call(this) || this;
+        _this._valuesAffected = [];
+        _this._onError = onError;
+        _this._query = query;
+        _this._onSuccess = onSuccess;
+        _this._tableName = _this._query.into;
+        return _this;
+    }
+    Instance.prototype.execute = function () {
+        var table = this.getTable(this._tableName);
+        if (!Array.isArray(this._query.values)) {
+            this.onErrorOccured(new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"].NotArray).get(), true);
+        }
+        else if (table) {
+            try {
+                if (this._query.skipDataCheck) {
+                    this.insertData(this._query.values);
+                }
+                else {
+                    var value_checker_obj = new _values_checker__WEBPACK_IMPORTED_MODULE_3__["ValuesChecker"](table, this._query.values);
+                    value_checker_obj.checkAndModifyValues(function (isError) {
+                        if (isError) {
+                            this.onErrorOccured(value_checker_obj._error, true);
+                        }
+                        else {
+                            this.insertData(value_checker_obj._values);
+                        }
+                        value_checker_obj = undefined;
+                    }.bind(this));
+                }
+                // remove values from query
+                this._query.values = undefined;
+            }
+            catch (ex) {
+                this.onExceptionOccured(ex, { TableName: this._tableName });
+            }
+        }
+        else {
+            new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"].TableNotExist, { TableName: this._tableName }).throw();
+        }
+    };
+    Instance.prototype.onTransactionCompleted = function () {
+        if (this._errorOccured === false) {
+            this._onSuccess(this._query.return ? this._valuesAffected : this._rowAffected);
+        }
+    };
+    Instance.prototype.onQueryFinished = function () {
+        if (this._isTransaction === true) {
+            this.onTransactionCompleted();
+        }
+    };
+    Instance.prototype.insertData = function (values) {
+        var value_index = 0, insertDataIntoTable;
+        if (this._query.return) {
+            insertDataIntoTable = function (value) {
+                if (value) {
+                    var add_result = object_store.add(value);
+                    add_result.onerror = this.onErrorOccured.bind(this);
+                    add_result.onsuccess = function (e) {
+                        this._valuesAffected.push(value);
+                        insertDataIntoTable.call(this, values[value_index++]);
+                    }.bind(this);
+                }
+                else {
+                    this.onQueryFinished();
+                }
+            };
+        }
+        else {
+            insertDataIntoTable = function (value) {
+                if (value) {
+                    var add_result = object_store.add(value);
+                    add_result.onerror = this.onErrorOccured.bind(this);
+                    add_result.onsuccess = function (e) {
+                        ++this._rowAffected;
+                        insertDataIntoTable.call(this, values[value_index++]);
+                    }.bind(this);
+                }
+                else {
+                    this.onQueryFinished();
+                }
+            };
+        }
+        _idb_helper__WEBPACK_IMPORTED_MODULE_4__["IdbHelper"].createTransaction([this._query.into], this.onTransactionCompleted.bind(this));
+        var object_store = _idb_helper__WEBPACK_IMPORTED_MODULE_4__["IdbHelper"]._transaction.objectStore(this._query.into);
+        insertDataIntoTable.call(this, values[value_index++]);
+    };
+    return Instance;
+}(_base__WEBPACK_IMPORTED_MODULE_0__["Base"]));
+
+
+
+/***/ }),
+
+/***/ "./web_worker/business/insert/value_checker.ts":
+/*!*****************************************************!*\
+  !*** ./web_worker/business/insert/value_checker.ts ***!
+  \*****************************************************/
+/*! exports provided: ValueChecker */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ValueChecker", function() { return ValueChecker; });
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../util */ "./web_worker/util.ts");
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../enums */ "./web_worker/enums.ts");
+/* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../log_helper */ "./web_worker/log_helper.ts");
+
+
+
+var ValueChecker = /** @class */ (function () {
+    function ValueChecker(table, autoIncrementValue) {
+        this._errorOccured = false;
+        this._autoIncrementValue = {};
+        this._table = table;
+        this._autoIncrementValue = autoIncrementValue;
+    }
+    ValueChecker.prototype.checkAndModifyValue = function (value) {
+        this._value = value;
+        this._table._columns.every(function (column) {
+            this.checkAndModifyColumnValue(column, value);
+            return !this._errorOccured;
+        }, this);
+        return this._errorOccured;
+    };
+    ValueChecker.prototype.checkNotNullAndDataType = function (column) {
+        // check not null schema
+        if (column._notNull && _util__WEBPACK_IMPORTED_MODULE_0__["Util"].isNull(this._value[column._name])) {
+            this.onValidationError(_enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"].NullValue, { ColumnName: column._name });
+        }
+        else if (column._dataType && !_util__WEBPACK_IMPORTED_MODULE_0__["Util"].isNull(this._value[column._name]) &&
+            _util__WEBPACK_IMPORTED_MODULE_0__["Util"].getType(this._value[column._name]) !== column._dataType) {
+            this.onValidationError(_enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"].BadDataType, { ColumnName: column._name });
+        }
+    };
+    ValueChecker.prototype.checkAndModifyColumnValue = function (column) {
+        // check auto increment scheme
+        if (column._autoIncrement) {
+            this._value[column._name] = ++this._autoIncrementValue[column._name];
+        }
+        else if (column._default && _util__WEBPACK_IMPORTED_MODULE_0__["Util"].isNull(this._value[column._name])) {
+            this._value[column._name] = column._default;
+        }
+        this.checkNotNullAndDataType(column);
+    };
+    ValueChecker.prototype.onValidationError = function (error, details) {
+        this._errorOccured = true;
+        this._error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](error, details).get();
+    };
+    return ValueChecker;
+}());
+
+
+
+/***/ }),
+
+/***/ "./web_worker/business/insert/values_checker.ts":
+/*!******************************************************!*\
+  !*** ./web_worker/business/insert/values_checker.ts ***!
+  \******************************************************/
+/*! exports provided: ValuesChecker */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ValuesChecker", function() { return ValuesChecker; });
+/* harmony import */ var _value_checker__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./value_checker */ "./web_worker/business/insert/value_checker.ts");
+/* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../index */ "./web_worker/index.ts");
+/* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../keystore/index */ "./web_worker/keystore/index.ts");
+
+
+
+var ValuesChecker = /** @class */ (function () {
+    function ValuesChecker(table, values) {
+        this._table = table;
+        this._values = values;
+    }
+    ValuesChecker.prototype.checkAndModifyValues = function (onFinish) {
+        var _this = this;
+        this._onFinish = onFinish;
+        var auto_inc_columns = this._table._columns.filter(function (col) {
+            return col._autoIncrement;
+        });
+        var auto_inc_values = {};
+        auto_inc_columns.forEach(function (column) {
+            var auto_increment_key = "JsStore_" + _index__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"]._activeDb._name + "_" + _this._table._name + "_" + column._name + "_Value";
+            _keystore_index__WEBPACK_IMPORTED_MODULE_2__["get"](auto_increment_key, function (val) {
+                auto_inc_values[column._name] = val;
+            });
+        });
+        _keystore_index__WEBPACK_IMPORTED_MODULE_2__["get"]('dumy_key', function (val) {
+            _this._valueCheckerObj = new _value_checker__WEBPACK_IMPORTED_MODULE_0__["ValueChecker"](_this._table, auto_inc_values);
+            _this.startChecking();
+        }, function (err) {
+            _this._error = err;
+            _this._onFinish(true);
+        });
+    };
+    ValuesChecker.prototype.startChecking = function () {
+        var _this = this;
+        var is_error = false;
+        this._values.every(function (item) {
+            is_error = this._valueCheckerObj.checkAndModifyValue(item);
+            return !is_error;
+        }, this);
+        if (is_error) {
+            this._error = this._valueCheckerObj._error;
+            this._onFinish(true);
+        }
+        else {
+            for (var prop in this._valueCheckerObj._autoIncrementValue) {
+                var auto_increment_key = "JsStore_" + _index__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"]._activeDb._name + "_" + this._table._name + "_" + prop + "_Value";
+                _keystore_index__WEBPACK_IMPORTED_MODULE_2__["set"](auto_increment_key, this._valueCheckerObj._autoIncrementValue[prop]);
+            }
+            _keystore_index__WEBPACK_IMPORTED_MODULE_2__["get"]('dumy_key', function (val) {
+                _this._onFinish(false);
+            }, function (err) {
+                _this._error = err;
+                _this._onFinish(true);
+            });
+        }
+    };
+    return ValuesChecker;
+}());
+
+
+
+/***/ }),
+
 /***/ "./web_worker/business/open_db.ts":
 /*!****************************************!*\
   !*** ./web_worker/business/open_db.ts ***!
@@ -1622,9 +1901,9 @@ var Instance = /** @class */ (function (_super) {
         _this._onError = onError;
         _this._onSuccess = onSuccess;
         _this._query = query;
-        _this._skipRecord = _this._query.Skip;
-        _this._limitRecord = _this._query.Limit;
-        _this._tableName = _this._query.From;
+        _this._skipRecord = query.skip;
+        _this._limitRecord = query.limit;
+        _this._tableName = query.from;
         return _this;
     }
     Instance.prototype.execute = function () {
@@ -1856,8 +2135,8 @@ var Join = /** @class */ (function (_super) {
         var table_list = []; // used to open the multiple object store
         var convertQueryIntoStack = function (qry) {
             if (qry.hasOwnProperty('Table1')) {
-                qry.Table2['JoinType'] = qry.Join === undefined ?
-                    'inner' : qry.Join.toLowerCase();
+                qry.Table2['JoinType'] = qry.join === undefined ?
+                    'inner' : qry.join.toLowerCase();
                 this._queryStack.push(qry.Table2);
                 if (this._queryStack.length % 2 === 0) {
                     this._queryStack[this._queryStack.length - 1].NextJoin = qry.NextJoin;
@@ -1871,13 +2150,13 @@ var Join = /** @class */ (function (_super) {
                 return;
             }
         }.bind(_this);
-        convertQueryIntoStack(query.From);
+        convertQueryIntoStack(query.from);
         _this._queryStack.reverse();
         // get the data for first table
         if (!_this._errorOccured) {
             var select_object = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
-                From: _this._queryStack[0].Table,
-                Where: _this._queryStack[0].Where
+                from: _this._queryStack[0].table,
+                where: _this._queryStack[0].where
             }, function (results) {
                 var table_name = this._queryStack[0].Table;
                 results.forEach(function (item, index) {
@@ -1911,18 +2190,18 @@ var Join = /** @class */ (function (_super) {
         }
     };
     Join.prototype.executeWhereJoinLogic = function (joinQuery, query) {
-        var results = [], join_index = 0, column = query.Column, tmp_results = this._results, item, result_length = tmp_results.length;
+        var results = [], join_index = 0, column = query.column, tmp_results = this._results, item, result_length = tmp_results.length;
         // get the data from query table
         var select_object = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
-            From: query.Table,
-            Order: query.Order,
-            Where: query.Where
+            from: query.table,
+            order: query.order,
+            where: query.where
         }, function (selectResults) {
             // perform join
             selectResults.forEach(function (value, index) {
                 // search item through each global result
                 for (var i = 0; i < result_length; i++) {
-                    item = tmp_results[i][joinQuery.Table][joinQuery.Column];
+                    item = tmp_results[i][joinQuery.table][joinQuery.column];
                     doJoin(item, value, i);
                 }
             });
@@ -1938,8 +2217,8 @@ var Join = /** @class */ (function (_super) {
         select_object.execute();
         var doJoin = function (value1, value2, itemIndex) {
             results[join_index] = {};
-            if (value1 === value2[query.Column]) {
-                results[join_index][query.Table] = value2;
+            if (value1 === value2[query.column]) {
+                results[join_index][query.table] = value2;
                 // copy other relative data into current result
                 for (var j = 0; j < this._currentQueryStackIndex; j++) {
                     results[join_index][this._queryStack[j].Table] =
@@ -1947,10 +2226,10 @@ var Join = /** @class */ (function (_super) {
                 }
                 ++join_index;
             }
-            else if (query.JoinType === 'left') {
+            else if (query.joinType === 'left') {
                 // left join
                 results[join_index] = {};
-                results[join_index][query.Table] = null;
+                results[join_index][query.table] = null;
                 // copy other relative data into current result
                 for (var j = 0; j < this._currentQueryStackIndex; j++) {
                     results[join_index][this._queryStack[j].Table] =
@@ -1962,7 +2241,8 @@ var Join = /** @class */ (function (_super) {
         }.bind(this);
     };
     Join.prototype.executeRightJoin = function (joinQuery, query) {
-        var join_results = [], join_index = 0, column = query.Column, tmp_results = this._results, result_length = tmp_results.length, item_index = 0, where = {}, onExecutionFinished = function () {
+        var _this = this;
+        var join_results = [], join_index = 0, column = query.column, tmp_results = this._results, result_length = tmp_results.length, item_index = 0, where = {}, onExecutionFinished = function () {
             this._results = join_results;
             // check if further execution needed
             if (this._queryStack.length > this._currentQueryStackIndex + 1) {
@@ -1975,14 +2255,14 @@ var Join = /** @class */ (function (_super) {
             var value_found = false;
             results.forEach(function (item, index) {
                 for (item_index = 0; item_index < result_length; item_index++) {
-                    if (item[query.Column] ===
-                        tmp_results[item_index][joinQuery.Table][joinQuery.Column]) {
+                    if (item[query.column] ===
+                        tmp_results[item_index][joinQuery.table][joinQuery.column]) {
                         value_found = true;
                         break;
                     }
                 }
                 join_results[index] = {};
-                join_results[index][query.Table] = item;
+                join_results[index][query.table] = item;
                 if (value_found) {
                     value_found = false;
                     for (var j = 0; j < this._currentQueryStackIndex; j++) {
@@ -1998,19 +2278,19 @@ var Join = /** @class */ (function (_super) {
             }, this);
         }.bind(this), executeLogic = function () {
             var select_object = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
-                From: query.Table,
-                Order: query.Order,
-                Where: query.Where
+                from: query.table,
+                order: query.order,
+                where: query.where
             }, function (results) {
                 doRightJoin(results);
                 onExecutionFinished();
-            }.bind(this), this.onErrorOccured.bind(this));
+            }, _this.onErrorOccured.bind(_this));
             select_object.execute();
-        }.bind(this);
+        };
         executeLogic();
     };
     Join.prototype.executeWhereUndefinedLogicForJoin = function (joinQuery, query) {
-        var join_results = [], join_index = 0, column = query.Column, tmp_results = this._results, 
+        var join_results = [], join_index = 0, column = query.column, tmp_results = this._results, 
         // Item,
         result_length = tmp_results.length, item_index = 0, where = {}, onExecutionFinished = function () {
             this._results = join_results;
@@ -2025,7 +2305,7 @@ var Join = /** @class */ (function (_super) {
             if (results.length > 0) {
                 results.forEach(function (value) {
                     join_results[join_index] = {};
-                    join_results[join_index][query.Table] = value;
+                    join_results[join_index][query.table] = value;
                     // copy other relative data into current result
                     for (var k = 0; k < this._currentQueryStackIndex; k++) {
                         join_results[join_index][this._queryStack[k].Table] =
@@ -2034,10 +2314,10 @@ var Join = /** @class */ (function (_super) {
                     ++join_index;
                 }, this);
             }
-            else if (query.JoinType === 'left') {
+            else if (query.joinType === 'left') {
                 // left join
                 join_results[join_index] = {};
-                join_results[join_index][query.Table] = null;
+                join_results[join_index][query.table] = null;
                 // copy other relative data into current result
                 for (var j = 0; j < this._currentQueryStackIndex; j++) {
                     join_results[join_index][this._queryStack[j].Table] =
@@ -2048,16 +2328,16 @@ var Join = /** @class */ (function (_super) {
         }.bind(this), executeLogic = function () {
             if (item_index < result_length) {
                 if (!this._errorOccured) {
-                    where[query.Column] = tmp_results[item_index][joinQuery.Table][joinQuery.Column];
+                    where[query.column] = tmp_results[item_index][joinQuery.table][joinQuery.column];
                     var select_object = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
-                        From: query.Table,
-                        Order: query.Order,
-                        Where: where
+                        from: query.table,
+                        order: query.order,
+                        where: where
                     }, function (results) {
                         doJoin(results);
                         ++item_index;
                         executeLogic();
-                    }.bind(this), this.onErrorOccured.bind(this));
+                    }, this.onErrorOccured.bind(this));
                     select_object.execute();
                 }
             }
@@ -2071,8 +2351,8 @@ var Join = /** @class */ (function (_super) {
         var join_query;
         if (this._currentQueryStackIndex >= 1 && this._currentQueryStackIndex % 2 === 1) {
             join_query = {
-                Column: this._queryStack[this._currentQueryStackIndex].NextJoin.Column,
-                Table: this._queryStack[this._currentQueryStackIndex].NextJoin.Table
+                column: this._queryStack[this._currentQueryStackIndex].nextJoin.column,
+                table: this._queryStack[this._currentQueryStackIndex].nextJoin.table
             };
             this._currentQueryStackIndex++;
         }
@@ -2080,10 +2360,10 @@ var Join = /** @class */ (function (_super) {
             join_query = this._queryStack[this._currentQueryStackIndex++];
         }
         var query = this._queryStack[this._currentQueryStackIndex];
-        if (query.JoinType === 'right') {
+        if (query.joinType === 'right') {
             this.executeRightJoin(join_query, query);
         }
-        else if (query.Where) {
+        else if (query.where) {
             this.executeWhereJoinLogic(join_query, query);
         }
         else {
@@ -3465,6 +3745,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "remove", function() { return remove; });
 /* harmony import */ var _utils_logic__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils_logic */ "./web_worker/keystore/utils_logic.ts");
 /* harmony import */ var _query_executor__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./query_executor */ "./web_worker/keystore/query_executor.ts");
+var _this = undefined;
 
 
 /**
@@ -3496,7 +3777,7 @@ var get = function (key, onSuccess, onError) {
         OnSuccess: onSuccess,
         Query: key
     });
-    return this;
+    return _this;
 };
 /**
  * insert or update value
@@ -3518,7 +3799,7 @@ var set = function (key, value, onSuccess, onError) {
         OnSuccess: onSuccess,
         Query: query
     });
-    return this;
+    return _this;
 };
 /**
  * delete value
@@ -3537,7 +3818,7 @@ var remove = function (key, onSuccess, onError) {
         OnSuccess: onSuccess,
         Query: key
     });
-    return this;
+    return _this;
 };
 
 
@@ -3966,8 +4247,9 @@ var TableHelper = /** @class */ (function () {
     TableHelper.prototype.setDbVersion = function (dbName) {
         _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"]._dbVersion = _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"]._dbVersion > this._version ? _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"]._dbVersion : this._version;
         // setting db version
-        _keystore_index__WEBPACK_IMPORTED_MODULE_0__["set"]('JsStore_' + dbName + '_IdbHelper._dbVersion', _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"]._dbVersion)
-            .set("JsStore_" + dbName + "_" + this._name + "_Version", _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"]._dbVersion, this._callback);
+        _keystore_index__WEBPACK_IMPORTED_MODULE_0__["set"]("JsStore_" + dbName + "_Db_Version", _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"]._dbVersion);
+        // setting table version
+        _keystore_index__WEBPACK_IMPORTED_MODULE_0__["set"]("JsStore_" + dbName + "_" + this._name + "_Version", _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"]._dbVersion, this._callback);
         this._version = _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"]._dbVersion;
     };
     return TableHelper;
@@ -3998,7 +4280,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _business_create_db__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./business/create_db */ "./web_worker/business/create_db.ts");
 /* harmony import */ var _model_database__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./model/database */ "./web_worker/model/database.ts");
 /* harmony import */ var _business_select_index__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./business/select/index */ "./web_worker/business/select/index.ts");
-/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./util */ "./web_worker/util.ts");
+/* harmony import */ var _business_insert_index__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./business/insert/index */ "./web_worker/business/insert/index.ts");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./util */ "./web_worker/util.ts");
+
 
 
 
@@ -4028,9 +4312,6 @@ var QueryExecutor = /** @class */ (function () {
             case 'change_log_status':
                 this.changeLogStatus(request.Query['logging']);
                 break;
-            case 'set_config':
-                this.setConfig(request.Query);
-                break;
             default:
                 switch (_business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"]._dbStatus.ConStatus) {
                     case _enums__WEBPACK_IMPORTED_MODULE_2__["Connection_Status"].Connected:
@@ -4058,21 +4339,6 @@ var QueryExecutor = /** @class */ (function () {
     };
     QueryExecutor.prototype.changeLogStatus = function (enableLog) {
         _config__WEBPACK_IMPORTED_MODULE_3__["Config"]._isLogEnabled = enableLog;
-    };
-    QueryExecutor.prototype.setConfig = function (config) {
-        for (var prop in config) {
-            switch (prop) {
-                case 'EnableLog':
-                    this.changeLogStatus(config[prop]);
-                    break;
-                case 'OnDbDroppedByBrowser':
-                    eval("on_db_dropped_by_browser=" + config.OnDbDroppedByBrowser);
-                    break;
-                default:
-                    var err = new _log_helper__WEBPACK_IMPORTED_MODULE_1__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["Error_Type"].InvalidConfig, { Config: prop });
-                    err.logError();
-            }
-        }
     };
     QueryExecutor.prototype.returnResult = function (result) {
         self.postMessage(result);
@@ -4182,8 +4448,8 @@ var QueryExecutor = /** @class */ (function () {
         // update_db_object.execute();
     };
     QueryExecutor.prototype.insert = function (query, onSuccess, onError) {
-        // var insert_object = new Business.Insert.Instance(query, onSuccess, onError);
-        // insert_object.execute();
+        var insert_object = new _business_insert_index__WEBPACK_IMPORTED_MODULE_11__["Instance"](query, onSuccess, onError);
+        insert_object.execute();
     };
     QueryExecutor.prototype.bulkInsert = function (query, onSuccess, onError) {
         // var bulk_insert_object = new BulkInsert(query, onSuccess, onError);
@@ -4250,7 +4516,7 @@ var QueryExecutor = /** @class */ (function () {
     };
     QueryExecutor.prototype.isDbExist = function (dbInfo, onSuccess, onError) {
         if (_business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"]._dbStatus.ConStatus !== _enums__WEBPACK_IMPORTED_MODULE_2__["Connection_Status"].UnableToStart) {
-            if (_util__WEBPACK_IMPORTED_MODULE_11__["Util"].getType(dbInfo) === _enums__WEBPACK_IMPORTED_MODULE_2__["Data_Type"].String) {
+            if (_util__WEBPACK_IMPORTED_MODULE_12__["Util"].getType(dbInfo) === _enums__WEBPACK_IMPORTED_MODULE_2__["Data_Type"].String) {
                 this.getDbVersion(dbInfo, function (dbVersion) {
                     onSuccess(Boolean(dbVersion));
                 });

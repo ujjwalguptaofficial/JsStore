@@ -32,8 +32,8 @@
 
         function deleteData(studentId) {
             connection.remove({
-                From: 'Student',
-                Where: {
+                from: 'Student',
+                where: {
                     Id: Number(studentId)
                 }
             }, function (rowsDeleted) {
@@ -66,16 +66,16 @@
         function insertStudents() {
             var Students = getStudents();
             connection.insert({
-                Into: "Student",
-                Values: Students
-            }, function (rowsAdded) {
+                into: "Student",
+                values: Students
+            }).then(function (rowsAdded) {
                 if (rowsAdded > 0) {
                     alert('Successfully added');
                 }
-            }, function (err) {
+            }).catch(function (err) {
                 console.log(err);
                 alert('Error Occured while adding data')
-            })
+            });
         }
 
         function getDatabase() {
@@ -118,8 +118,8 @@
         //This function refreshes the table
         function showTableData() {
             connection.select({
-                From: "Student"
-            }, function (students) {
+                from: "Student"
+            }).then(function (students) {
                 var HtmlString = "";
                 students.forEach(function (student) {
                     HtmlString += "<tr ItemId=" + student.Id + "><td>" +
@@ -129,9 +129,9 @@
                         student.City + "</td><td>" +
                         "<a href='#' class='edit'>Edit</a></td>" +
                         "<td><a href='#' class='delete''>Delete</a></td>";
-                }, function (error) {
+                }).catch(function (error) {
                     console.log(error);
-                })
+                });
                 $('#tblGrid tbody').html(HtmlString);
             });
         }

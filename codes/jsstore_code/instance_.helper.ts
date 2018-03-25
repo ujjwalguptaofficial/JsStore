@@ -7,6 +7,7 @@ export class InstanceHelper {
     private _isDbOpened: boolean = false;
     private _requestQueue: IWebWorkerRequest[] = [];
     private _isCodeExecuting = false;
+    private _whiteListApi = []
     constructor(worker: Worker) {
         if (worker) {
             this._worker = worker;
@@ -67,26 +68,26 @@ export class InstanceHelper {
     }
 
     private prcoessExecutionOfQry(request: IWebWorkerRequest) {
-        if (this._isDbOpened === false) {
-            switch (request.Name) {
-                case 'create_db':
-                case 'is_db_exist':
-                case 'get_db_version':
-                case 'get_db_list':
-                case 'open_db':
-                    this._requestQueue.splice(0, 0, request);
-                    this._isDbOpened = true;
-                    this.executeQry();
-                    break;
-                default: this._requestQueue.push(request);
-            }
+        // if (this._isDbOpened === false) {
+        //     switch (request.Name) {
+        //         case 'create_db':
+        //         case 'is_db_exist':
+        //         case 'get_db_version':
+        //         case 'get_db_list':
+        //         case 'open_db':
+        //             this._requestQueue.splice(0, 0, request);
+        //             this._isDbOpened = true;
+        //             this.executeQry();
+        //             break;
+        //         default: this._requestQueue.push(request);
+        //     }
+        // }
+        // else {
+        this._requestQueue.push(request);
+        if (this._requestQueue.length === 1) {
+            this.executeQry();
         }
-        else {
-            this._requestQueue.push(request);
-            if (this._requestQueue.length === 1) {
-                this.executeQry();
-            }
-        }
+        // }
         LogHelper.log("request pushed: " + request.Name);
     }
 }

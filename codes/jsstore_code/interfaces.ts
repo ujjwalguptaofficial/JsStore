@@ -44,64 +44,87 @@ export interface IColumnOption {
 }
 
 export interface ISelect {
-    From: any;
-    Where?: any;
-    Skip?: number;
-    Limit?: number;
-    OnSuccess?: (results: any[]) => void;
-    OnError?: (error: IError) => void;
-    Order?: IOrder;
-    GroupBy?: any;
-    Aggregate?: IAggregate;
-    IgnoreCase?: boolean;
-    Distinct?: boolean;
-}
-
-export interface IAggregate {
-    Max?: any[];
-    Min?: any[];
-    Sum?: any[];
-    Count?: any[];
-    Avg?: any[];
+    from: any;
+    where?: any;
+    skip?: number;
+    limit?: number;
+    order?: IOrder;
+    groupBy?: any;
+    aggregate?: IAggregate;
+    ignoreCase?: boolean;
+    distinct?: boolean;
 }
 
 export interface IOrder {
-    By: string; // Column name
-    Type: string;
+    by: string; // Column name
+    type: string;
 }
 
 export interface ICount {
-    From: any;
-    IgnoreCase?: boolean;
-    Where?: any;
-    OnSuccess?: (noOfRecord: number) => void;
-    OnError?: (error: IError) => void;
+    from: any;
+    ignoreCase?: boolean;
+    where?: any;
 }
 
 export interface IRemove {
-    From: string;
-    IgnoreCase?: boolean;
-    Where?: any;
-    OnSuccess?: (rowsDeleted: number) => void;
-    OnError?: (error: IError) => void;
+    from: string;
+    ignoreCase?: boolean;
+    where?: any;
 }
 
 export interface IUpdate {
-    In: string;
-    IgnoreCase?: boolean;
-    Set: any;
-    Where?: any;
-    OnSuccess?: (rowsUpdated: number) => void;
-    OnError?: (error: IError) => void;
+    in: string;
+    ignoreCase?: boolean;
+    set: any;
+    where?: any;
 }
 
 export interface IInsert {
-    Into: string;
-    Values: any[];
-    Return?: boolean;
-    OnSuccess?: (rowsInserted: number) => void;
-    OnError?: (error: IError) => void;
-    SkipDataCheck?: boolean;
+    into: string;
+    values: any[];
+    return?: boolean;
+    skipDataCheck?: boolean;
+}
+
+export interface ICondition {
+    column: string;
+    value: string;
+    op: string;
+}
+
+export interface ITableJoin {
+    column: string;
+    table: string;
+    where?: any;
+    order?: IOrder;
+    joinType?: string;
+    nextJoin?: INextJoin;
+}
+
+export interface ISelectJoin {
+    from: IJoin; // IJoin
+    count?: boolean;
+    skip?: number;
+    limit?: number;
+}
+
+export interface IJoin {
+    table1: ITableJoin;
+    join: string; // inner,left,right,outer
+    table2: ITableJoin;
+}
+
+export interface INextJoin {
+    table: string;
+    column: string;
+}
+
+export interface IAggregate {
+    max?: any[];
+    min?: any[];
+    sum?: any[];
+    count?: any[];
+    avg?: any[];
 }
 
 export interface IWebWorkerResult {

@@ -12,15 +12,15 @@ export class Instance extends Helper {
         this._onError = onError;
         this._onSuccess = onSuccess;
         this._query = query;
-        this._skipRecord = this._query.Skip;
-        this._limitRecord = this._query.Limit;
-        this._tableName = this._query.From;
+        this._skipRecord = query.skip;
+        this._limitRecord = query.limit;
+        this._tableName = query.from;
     }
 
     execute() {
         if (this.isTableExist(this._tableName) === true) {
             try {
-                if (this._query.Where !== undefined) {
+                if (this._query.where !== undefined) {
                     this.addGreatAndLessToNotOp();
                     this.initTransaction();
                     if (Array.isArray(this._query.Where)) {
@@ -142,12 +142,12 @@ export class Instance extends Helper {
     }
 
     private initTransaction() {
-        IdbHelper.createTransaction([this._query.From], this.onTransactionCompleted.bind(this), 'readonly');
-        this._objectStore = IdbHelper._transaction.objectStore(this._query.From);
+        IdbHelper.createTransaction([this._tableName], this.onTransactionCompleted.bind(this), 'readonly');
+        this._objectStore = IdbHelper._transaction.objectStore(this._tableName);
     }
 
     private processWhere() {
-        if (this._query.Where.Or) {
+        if (this._query.where.or) {
             this.processOrLogic();
         }
         this.goToWhereLogic();

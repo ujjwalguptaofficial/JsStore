@@ -161,7 +161,7 @@ export class Instance extends InstanceHelper {
         var onSuccess = (url) => {
             var link = document.createElement("a");
             link.href = url;
-            link.download = query.From + ".json";
+            link.download = query.from + ".json";
             link.click();
         };
 

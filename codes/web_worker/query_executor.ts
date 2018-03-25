@@ -1,7 +1,7 @@
 import { IdbHelper } from "./business/idb_helper";
 import { LogHelper } from "./log_helper";
 import {
-    IWebWorkerRequest, IConfig, IWebWorkerResult,
+    IWebWorkerRequest, IWebWorkerResult,
     ITranscationQry, IError, IUpdate,
     IInsert, IRemove, IDataBaseOption, ISelect, ISelectJoin, IDbInfo
 } from "./interfaces";
@@ -32,8 +32,6 @@ export class QueryExecutor {
                 break;
             case 'change_log_status':
                 this.changeLogStatus(request.Query['logging']); break;
-            case 'set_config':
-                this.setConfig(request.Query); break;
             default:
                 switch (IdbHelper._dbStatus.ConStatus) {
                     case Connection_Status.Connected: {
@@ -58,19 +56,6 @@ export class QueryExecutor {
 
     private changeLogStatus(enableLog) {
         Config._isLogEnabled = enableLog;
-    }
-
-    private setConfig(config: IConfig) {
-        for (var prop in config) {
-            switch (prop) {
-                case 'EnableLog': this.changeLogStatus(config[prop]); break;
-                case 'OnDbDroppedByBrowser': eval("on_db_dropped_by_browser=" + config.OnDbDroppedByBrowser);
-                    break;
-                default:
-                    var err = new LogHelper(Error_Type.InvalidConfig, { Config: prop });
-                    err.logError();
-            }
-        }
     }
 
     private returnResult(result) {

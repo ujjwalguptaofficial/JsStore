@@ -49,9 +49,9 @@ export class TableHelper {
     private setDbVersion(dbName: string) {
         IdbHelper._dbVersion = IdbHelper._dbVersion > this._version ? IdbHelper._dbVersion : this._version;
         // setting db version
-        KeyStore.set('JsStore_' + dbName + '_IdbHelper._dbVersion', IdbHelper._dbVersion)
-            // setting table version
-            .set("JsStore_" + dbName + "_" + this._name + "_Version", IdbHelper._dbVersion, this._callback);
+        KeyStore.set(`JsStore_${dbName}_Db_Version`, IdbHelper._dbVersion);
+        // setting table version
+        KeyStore.set(`JsStore_${dbName}_${this._name}_Version`, IdbHelper._dbVersion, this._callback);
         this._version = IdbHelper._dbVersion;
     }
 }

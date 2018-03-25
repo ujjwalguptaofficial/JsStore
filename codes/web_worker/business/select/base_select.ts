@@ -14,7 +14,7 @@ export class BaseSelect extends Base {
         var datas = this._results;
         // free results memory
         this._results = undefined;
-        var key = this.getPrimaryKey(this._query.From);
+        var key = this.getPrimaryKey(this._query.from);
         var lookupObject = {};
         for (var i in datas) {
             lookupObject[datas[i][key]] = datas[i];
