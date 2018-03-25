@@ -109,17 +109,17 @@ var Base = /** @class */ (function (_super) {
         _this._errorCount = 0;
         _this._rowAffected = 0;
         _this.goToWhereLogic = function () {
-            var column_name = _util__WEBPACK_IMPORTED_MODULE_4__["Util"].getObjectFirstKey(this._query.Where);
+            var column_name = _util__WEBPACK_IMPORTED_MODULE_4__["Util"].getObjectFirstKey(this._query.where);
             if (this._query.IgnoreCase === true) {
-                this._query.Where = this.makeQryInCaseSensitive(this._query.Where);
+                this._query.where = this.makeQryInCaseSensitive(this._query.where);
             }
             if (this._objectStore.indexNames.contains(column_name)) {
-                var value = this._query.Where[column_name];
+                var value = this._query.where[column_name];
                 if (typeof value === 'object') {
                     this._checkFlag = Boolean(Object.keys(value).length > 1 ||
-                        Object.keys(this._query.Where).length > 1);
+                        Object.keys(this._query.where).length > 1);
                     if (this._checkFlag === true) {
-                        this._whereChecker = new _where_checker__WEBPACK_IMPORTED_MODULE_1__["WhereChecker"](this._query.Where);
+                        this._whereChecker = new _where_checker__WEBPACK_IMPORTED_MODULE_1__["WhereChecker"](this._query.where);
                     }
                     var key = _util__WEBPACK_IMPORTED_MODULE_4__["Util"].getObjectFirstKey(value);
                     switch (key) {
@@ -138,7 +138,7 @@ var Base = /** @class */ (function (_super) {
                                     this.getAllCombinationOfWord(filter_value).forEach(function (item) {
                                         this.executeWhereLogic(column_name, { '-': { Low: item, High: item + '\uffff' } }, '-');
                                     }, this);
-                                    delete this._query.Where[column_name]['Like'];
+                                    delete this._query.where[column_name]['Like'];
                                 }
                                 else {
                                     this.executeLikeLogic(column_name, filter_value, occurence);
@@ -160,9 +160,9 @@ var Base = /** @class */ (function (_super) {
                     }
                 }
                 else {
-                    this._checkFlag = Boolean(Object.keys(this._query.Where).length > 1);
+                    this._checkFlag = Boolean(Object.keys(this._query.where).length > 1);
                     if (this._checkFlag === true) {
-                        this._whereChecker = new _where_checker__WEBPACK_IMPORTED_MODULE_1__["WhereChecker"](this._query.Where);
+                        this._whereChecker = new _where_checker__WEBPACK_IMPORTED_MODULE_1__["WhereChecker"](this._query.where);
                     }
                     this.executeWhereLogic(column_name, value);
                 }
@@ -259,7 +259,7 @@ var Base = /** @class */ (function (_super) {
                     }
                     where_tmp.push(tmp_qry);
                 });
-                this._query.Where = where_tmp;
+                this._query.where = where_tmp;
             }
         }
     };
@@ -2964,7 +2964,7 @@ var Instance = /** @class */ (function (_super) {
                 if (this._query.where !== undefined) {
                     this.addGreatAndLessToNotOp();
                     this.initTransaction();
-                    if (Array.isArray(this._query.Where)) {
+                    if (Array.isArray(this._query.where)) {
                         this.processWhereArrayQry();
                     }
                     else {

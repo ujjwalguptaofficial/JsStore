@@ -104,25 +104,25 @@ export class Base extends BaseHelper {
                     }
                     where_tmp.push(tmp_qry);
                 });
-                this._query.Where = where_tmp;
+                this._query.where = where_tmp;
             }
         }
     }
 
     protected goToWhereLogic = function () {
-        var column_name = Util.getObjectFirstKey(this._query.Where);
+        var column_name = Util.getObjectFirstKey(this._query.where);
         if (this._query.IgnoreCase === true) {
-            this._query.Where = this.makeQryInCaseSensitive(this._query.Where);
+            this._query.where = this.makeQryInCaseSensitive(this._query.where);
         }
         if (this._objectStore.indexNames.contains(column_name)) {
-            var value = this._query.Where[column_name];
+            var value = this._query.where[column_name];
             if (typeof value === 'object') {
                 this._checkFlag = Boolean(
                     Object.keys(value).length > 1 ||
-                    Object.keys(this._query.Where).length > 1
+                    Object.keys(this._query.where).length > 1
                 );
                 if (this._checkFlag === true) {
-                    this._whereChecker = new WhereChecker(this._query.Where);
+                    this._whereChecker = new WhereChecker(this._query.where);
                 }
                 var key = Util.getObjectFirstKey(value);
                 switch (key) {
@@ -144,7 +144,7 @@ export class Base extends BaseHelper {
                                     { '-': { Low: item, High: item + '\uffff' } },
                                     '-');
                             }, this);
-                            delete this._query.Where[column_name]['Like'];
+                            delete this._query.where[column_name]['Like'];
                         }
                         else {
                             this.executeLikeLogic(column_name, filter_value, occurence);
@@ -165,9 +165,9 @@ export class Base extends BaseHelper {
                 }
             }
             else {
-                this._checkFlag = Boolean(Object.keys(this._query.Where).length > 1);
+                this._checkFlag = Boolean(Object.keys(this._query.where).length > 1);
                 if (this._checkFlag === true) {
-                    this._whereChecker = new WhereChecker(this._query.Where);
+                    this._whereChecker = new WhereChecker(this._query.where);
                 }
                 this.executeWhereLogic(column_name, value);
             }

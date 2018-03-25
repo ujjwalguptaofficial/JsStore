@@ -461,7 +461,7 @@ var InstanceHelper = /** @class */ (function () {
         this._isDbOpened = false;
         this._requestQueue = [];
         this._isCodeExecuting = false;
-        this._whiteListApi = [];
+        this._whiteListApi = ['create_db', 'is_db_exist', 'get_db_version', 'get_db_list', 'open_db'];
         if (worker) {
             this._worker = worker;
             this._worker.onmessage = this.onMessageFromWorker.bind(this);
@@ -471,17 +471,6 @@ var InstanceHelper = /** @class */ (function () {
             err.throw();
         }
     }
-    InstanceHelper.prototype.executeQry = function () {
-        if (!this._isCodeExecuting && this._requestQueue.length > 0) {
-            this._isCodeExecuting = true;
-            var first_request = this._requestQueue[0], request = {
-                Name: first_request.Name,
-                Query: first_request.Query
-            };
-            _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request executing : " + first_request.Name);
-            this._worker.postMessage(request);
-        }
-    };
     InstanceHelper.prototype.onMessageFromWorker = function (msg) {
         this.processFinishedQuery(msg.data);
     };
@@ -497,6 +486,10 @@ var InstanceHelper = /** @class */ (function () {
             }
             else {
                 if (finished_request.OnSuccess) {
+                    var open_db_queries = ['open_db', 'create_db'];
+                    if (open_db_queries.indexOf(finished_request.Name) >= 0) {
+                        this._isDbOpened = true;
+                    }
                     finished_request.OnSuccess(message.ReturnedValue);
                 }
             }
@@ -517,26 +510,57 @@ var InstanceHelper = /** @class */ (function () {
     };
     InstanceHelper.prototype.prcoessExecutionOfQry = function (request) {
         // if (this._isDbOpened === false) {
-        //     switch (request.Name) {
-        //         case 'create_db':
-        //         case 'is_db_exist':
-        //         case 'get_db_version':
-        //         case 'get_db_list':
-        //         case 'open_db':
-        //             this._requestQueue.splice(0, 0, request);
-        //             this._isDbOpened = true;
-        //             this.executeQry();
-        //             break;
-        //         default: this._requestQueue.push(request);
-        //     }
+        // switch (request.Name) {
+        //     case 'create_db':
+        //     case 'is_db_exist':
+        //     case 'get_db_version':
+        //     case 'get_db_list':
+        //     case 'open_db':
+        //         this._requestQueue.splice(0, 0, request);
+        //         // this._isDbOpened = true;
+        //         // this.executeQry();
+        //         break;
+        //     default: this._requestQueue.push(request);
+        // }
         // }
         // else {
         this._requestQueue.push(request);
-        if (this._requestQueue.length === 1) {
-            this.executeQry();
-        }
+        // if (this._requestQueue.length === 1) {
+        this.executeQry();
+        // }
         // }
         _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request pushed: " + request.Name);
+    };
+    InstanceHelper.prototype.executeQry = function () {
+        var _this = this;
+        if (!this._isCodeExecuting && this._requestQueue.length > 0) {
+            if (this._isDbOpened) {
+                this.sendRequestToWorker(this._requestQueue[0]);
+                return;
+            }
+            var allowed_query_index = -1;
+            this._requestQueue.every(function (item, index) {
+                if (_this._whiteListApi.indexOf(item.Name) >= 0) {
+                    allowed_query_index = 0;
+                    return false;
+                }
+                return true;
+            });
+            // shift allowed query to zeroth index
+            if (allowed_query_index >= 0) {
+                this._requestQueue.splice(0, 0, this._requestQueue.splice(allowed_query_index, 1)[0]);
+                this.sendRequestToWorker(this._requestQueue[0]);
+            }
+        }
+    };
+    InstanceHelper.prototype.sendRequestToWorker = function (firsrtRequest) {
+        this._isCodeExecuting = true;
+        var request = {
+            Name: firsrtRequest.Name,
+            Query: firsrtRequest.Query
+        };
+        _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request executing : " + firsrtRequest.Name);
+        this._worker.postMessage(request);
     };
     return InstanceHelper;
 }());

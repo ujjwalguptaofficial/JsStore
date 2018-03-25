@@ -23,7 +23,7 @@ export class Instance extends Helper {
                 if (this._query.where !== undefined) {
                     this.addGreatAndLessToNotOp();
                     this.initTransaction();
-                    if (Array.isArray(this._query.Where)) {
+                    if (Array.isArray(this._query.where)) {
                         this.processWhereArrayQry();
                     }
                     else {
