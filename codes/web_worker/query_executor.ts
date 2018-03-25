@@ -15,8 +15,13 @@ import { TableHelper } from "./model/table_helper";
 import { CreateDb } from "./business/create_db";
 import { DataBase } from "./model/database";
 import * as Select from './business/select/index';
+import * as Count from './business/count/index';
 import * as Insert from './business/insert/index';
+import * as Remove from './business/remove/index';
+import * as Update from './business/update/index';
 import { Util } from "./util";
+import { Clear } from "./business/clear";
+import { BulkInsert } from "./business/bulk_insert";
 
 export class QueryExecutor {
 
@@ -27,6 +32,7 @@ export class QueryExecutor {
             case 'is_db_exist':
             case 'get_db_version':
             case 'get_db_list':
+            case 'get_db_schema':
             case 'open_db':
                 this.executeLogic(request);
                 break;
@@ -88,10 +94,13 @@ export class QueryExecutor {
             case 'is_db_exist': this.isDbExist(request.Query, onSuccess, onError);
                 break;
             case 'get_db_version':
-                this.getDbVersion(request.Query, onSuccess);
+                IdbHelper.getDbVersion(request.Query, onSuccess);
                 break;
             case 'get_db_list':
-                this.getDbList(onSuccess);
+                IdbHelper.getDbList(onSuccess);
+                break;
+            case 'get_db_schema':
+                IdbHelper.getDbSchema(request.Query, onSuccess);
                 break;
             case 'open_db':
                 if (IdbHelper._isDbDeletedByBrowser === true) {
@@ -114,25 +123,20 @@ export class QueryExecutor {
                 break;
             case 'bulk_insert': this.bulkInsert(request.Query, onSuccess, onError);
                 break;
-            case 'transaction': this.transaction(request.Query, onSuccess, onError);
-                break;
             case 'export_json': this.exportJson(request.Query, onSuccess, onError);
                 break;
             default: console.error('The Api:-' + request.Name + ' does not support.');
         }
     }
 
-    private transaction(qry: ITranscationQry, onSuccess, onError) {
-        // var transaction_obj = new Transaction(qry, onSuccess, onError);
-        // transaction_obj.execute();
-    }
-
     private openDb(dbName, onSuccess: () => void, onError: (err: IError) => void) {
         IdbHelper.getDbVersion(dbName, (dbVersion) => {
             if (dbVersion !== 0) {
+                IdbHelper._dbVersion = dbVersion;
                 IdbHelper.getDbSchema(dbName, (result) => {
                     IdbHelper._activeDb = result;
-                    var open_db_object = new OpenDb(dbVersion, onSuccess, onError);
+                    var open_db_object = new OpenDb(onSuccess, onError);
+                    open_db_object.execute();
                 });
             }
             else {
@@ -157,8 +161,8 @@ export class QueryExecutor {
     }
 
     private update(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void) {
-        // var update_db_object = new Update.Instance(query, onSuccess, onError);
-        // update_db_object.execute();
+        var update_db_object = new Update.Instance(query, onSuccess, onError);
+        update_db_object.execute();
     }
 
     private insert(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
@@ -167,13 +171,13 @@ export class QueryExecutor {
     }
 
     private bulkInsert(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
-        // var bulk_insert_object = new BulkInsert(query, onSuccess, onError);
-        // bulk_insert_object.execute();
+        var bulk_insert_object = new BulkInsert(query, onSuccess, onError);
+        bulk_insert_object.execute();
     }
 
     private remove(query: IRemove, onSuccess: () => void, onError: (err: IError) => void) {
-        // var delete_object = new Remove.Instance(query, onSuccess, onError);
-        // delete_object.execute();
+        var delete_object = new Remove.Instance(query, onSuccess, onError);
+        delete_object.execute();
     }
 
     private select(query, onSuccess: (result) => void, onError: (err: IError) => void) {
@@ -187,14 +191,14 @@ export class QueryExecutor {
     }
 
     private count(query, onSuccess: () => void, onError: (err: IError) => void) {
-        // if (typeof query.From === 'object') {
-        //     query['Count'] = true;
-        //     var select_join_object = new Select.Join(query, onSuccess, onError);
-        // }
-        // else {
-        //     var count_object = new Count.Instance(query, onSuccess, onError);
-        //     count_object.execute();
-        // }
+        if (typeof query.From === 'object') {
+            query['Count'] = true;
+            var select_join_object = new Select.Join(query, onSuccess, onError);
+        }
+        else {
+            var count_object = new Count.Instance(query, onSuccess, onError);
+            count_object.execute();
+        }
     }
 
     private createDb(
@@ -223,30 +227,30 @@ export class QueryExecutor {
     }
 
     private clear(tableName: string, onSuccess: () => void, onError: (err: IError) => void) {
-        // var clear_object = new Clear(tableName, onSuccess, onError);
-        // clear_object.execute();
+        var clear_object = new Clear(tableName, onSuccess, onError);
+        clear_object.execute();
     }
 
     private exportJson(query: ISelect, onSuccess: (url: string) => void, onError: (err: IError) => void) {
-        // this.select(query, function (results) {
-        //     var url = URL.createObjectURL(new Blob([JSON.stringify(results)], {
-        //         type: "text/json"
-        //     }));
-        //     onSuccess(url);
-        // }, function (err) {
-        //     onError(err);
-        // });
+        this.select(query, (results) => {
+            var url = URL.createObjectURL(new Blob([JSON.stringify(results)], {
+                type: "text/json"
+            }));
+            onSuccess(url);
+        }, (err) => {
+            onError(err);
+        });
     }
 
     private isDbExist(dbInfo: any, onSuccess: (isExist: boolean) => void, onError: (err: IError) => void) {
         if (IdbHelper._dbStatus.ConStatus !== Connection_Status.UnableToStart) {
             if (Util.getType(dbInfo) === Data_Type.String) {
-                this.getDbVersion(dbInfo, (dbVersion) => {
+                IdbHelper.getDbVersion(dbInfo, (dbVersion) => {
                     onSuccess(Boolean(dbVersion));
                 });
             }
             else {
-                this.getDbVersion(dbInfo.DbName, (dbVersion) => {
+                IdbHelper.getDbVersion(dbInfo.DbName, (dbVersion) => {
                     onSuccess(dbInfo.Table.Version <= dbVersion);
                 });
             }
@@ -264,20 +268,5 @@ export class QueryExecutor {
             }
             onError(error);
         }
-    }
-
-    private getDbVersion(dbName: string, callback: (version: number) => void) {
-        KeyStore.get(`JsStore_${dbName}_Db_Version`, (dbVersion) => {
-            callback(Number(dbVersion));
-        });
-    }
-
-    private getDbList(callback: (dbList: string[]) => void) {
-        KeyStore.get('database_list', (result) => {
-            if (result == null) {
-                result = [];
-            }
-            callback(result);
-        });
     }
 }

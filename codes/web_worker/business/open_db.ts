@@ -9,7 +9,7 @@ export class OpenDb {
     _onSuccess: () => void;
     _onError: (err: IError) => void;
 
-    constructor(dbVersion, onSuccess: () => void, onError: (err: IError) => void) {
+    constructor(onSuccess: () => void, onError: (err: IError) => void) {
         this._dbName = IdbHelper._activeDb._name;
         this._onSuccess = onSuccess;
         this._onError = onError;

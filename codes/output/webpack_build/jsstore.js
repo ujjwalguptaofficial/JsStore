@@ -195,7 +195,7 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return Instance; });
-/* harmony import */ var _instance_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./instance_.helper */ "./jsstore_code/instance_.helper.ts");
+/* harmony import */ var _instance_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./instance_helper */ "./jsstore_code/instance_helper.ts");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./jsstore_code/config.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -422,6 +422,19 @@ var Instance = /** @class */ (function (_super) {
             Query: null
         });
     };
+    /**
+     * get Database Schema
+     *
+     * @param {string} dbName
+     * @returns
+     * @memberof Instance
+     */
+    Instance.prototype.getDbSchema = function (dbName) {
+        return this.pushApi({
+            Name: 'get_db_schema',
+            Query: dbName
+        });
+    };
     return Instance;
 }(_instance_helper__WEBPACK_IMPORTED_MODULE_0__["InstanceHelper"]));
 
@@ -429,10 +442,10 @@ var Instance = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./jsstore_code/instance_.helper.ts":
-/*!******************************************!*\
-  !*** ./jsstore_code/instance_.helper.ts ***!
-  \******************************************/
+/***/ "./jsstore_code/instance_helper.ts":
+/*!*****************************************!*\
+  !*** ./jsstore_code/instance_helper.ts ***!
+  \*****************************************/
 /*! exports provided: InstanceHelper */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 

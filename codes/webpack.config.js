@@ -29,7 +29,7 @@ module.exports = [{
         name: "jsstore.worker",
         mode: mode,
         devtool: 'source-map',
-        entry: "./web_worker/index.ts",
+        entry: "./web_worker/start.ts",
         output: {
             path: path.join(__dirname, "output/webpack_build"),
             filename: "jsstore.worker.js"

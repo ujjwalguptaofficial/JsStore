@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="style/font-awesome.min.css" />
     <script src="scripts/jsstore.js "></script>
     <script>
-        var DbConnection = new JsStore.Instance(),
+        var connection = new JsStore.Instance(new Worker('scripts/jsstore.worker.js')),
             StudentId;
         window.onload = function () {
             initiateDb();
@@ -20,13 +20,13 @@
 
         function initiateDb() {
             var DbName = "Students";
-            JsStore.isDbExist(DbName, function (isExist) {
+            connection.isDbExist(DbName).then(function (isExist) {
                 if (isExist) {
-                    DbConnection.openDb(DbName);
+                    connection.openDb(DbName);
                 } else {
                     window.location.href = "index.html";
                 }
-            }, function (err) {
+            }).catch(function (err) {
                 alert(err._message);
             });
         }
@@ -35,12 +35,12 @@
             StudentId = getQsValueByName('id');
             //check if Query string param exist
             if (StudentId) {
-                DbConnection.select({
-                    From: 'Student',
-                    Where: {
+                connection.select({
+                    from: 'Student',
+                    where: {
                         Id: Number(StudentId)
                     }
-                }, function (results) {
+                }).then(function (results) {
                     if (results.length > 0) {
                         var Student = results[0];
                         $('#txtName').val(Student.Name);
@@ -51,7 +51,7 @@
                         alert('Invalid student id');
                     }
 
-                }, function (error) {
+                }).catch(function (error) {
                     alert(error._message);
                 })
             }
@@ -73,18 +73,17 @@
                 Country: $('#txtCountry').val(),
                 City: $('#txtCity').val()
             };
-            DbConnection.update({
-                In: 'Student',
-                Set: Value,
-                Where: {
+            connection.update({ in: 'Student',
+                set: Value,
+                where: {
                     Id: Number(StudentId)
                 }
-            }, function (rowsAffected) {
+            }).then(function (rowsAffected) {
                 alert(rowsAffected + " record Updated");
                 if (rowsAffected > 0) {
                     window.location.href = "index.html";
                 }
-            }, function (error) {
+            }).catch(function (error) {
                 alert(error._message);
             })
         }
@@ -97,13 +96,13 @@
                 City: $('#txtCity').val()
             };
 
-            DbConnection.insert({
-                Into: "Student",
-                Values: [Value]
-            }, function (rowsAdded) {
+            connection.insert({
+                into: "Student",
+                values: [Value]
+            }).then(function (rowsAdded) {
                 alert(rowsAdded + " record Added");
                 window.location.href = "index.html";
-            }, function (error) {
+            }).catch(function (error) {
                 alert(error._message);
             })
 

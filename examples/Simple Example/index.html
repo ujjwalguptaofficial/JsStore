@@ -129,10 +129,10 @@
                         student.City + "</td><td>" +
                         "<a href='#' class='edit'>Edit</a></td>" +
                         "<td><a href='#' class='delete''>Delete</a></td>";
-                }).catch(function (error) {
-                    console.log(error);
-                });
+                })
                 $('#tblGrid tbody').html(HtmlString);
+            }).catch(function (error) {
+                console.log(error);
             });
         }
 

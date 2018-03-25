@@ -12,7 +12,7 @@ export class Helper extends GroupByHelper {
             Order.Type = Order.Type ? Order.Type.toLowerCase() : 'asc';
             var order_column = Order.By,
                 sortNumberInAsc = function () {
-                    this._results.sort(function (a, b) {
+                    this._results.sort((a, b) => {
                         return a[order_column] - b[order_column];
                     });
                 }.bind(this),

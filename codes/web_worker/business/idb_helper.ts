@@ -59,7 +59,7 @@ export class IdbHelper {
     }
 
     static getDbList(callback: (dbList: string[]) => void) {
-        KeyStore.get('database_list', (result) => {
+        KeyStore.get('Database_List', (result) => {
             result = result == null ? [] : result;
             callback(result);
         });

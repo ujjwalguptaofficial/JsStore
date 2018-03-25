@@ -1,6 +1,6 @@
 import { LogHelper } from "./log_helper";
 import { Error_Type } from "./enums";
-import { InstanceHelper } from "./instance_.helper";
+import { InstanceHelper } from "./instance_helper";
 import { IDataBaseOption, ISelect, ICount, IInsert, IUpdate, IRemove, IDbInfo } from "./interfaces";
 import { Config } from "./config";
 
@@ -230,6 +230,20 @@ export class Instance extends InstanceHelper {
         return this.pushApi<string[]>({
             Name: 'get_db_list',
             Query: null
+        });
+    }
+
+    /**
+     * get Database Schema
+     * 
+     * @param {string} dbName 
+     * @returns 
+     * @memberof Instance
+     */
+    getDbSchema(dbName: string) {
+        return this.pushApi<string[]>({
+            Name: 'get_db_schema',
+            Query: dbName
         });
     }
 
