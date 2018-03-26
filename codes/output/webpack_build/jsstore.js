@@ -476,7 +476,6 @@ var InstanceHelper = /** @class */ (function () {
     };
     InstanceHelper.prototype.processFinishedQuery = function (message) {
         var finished_request = this._requestQueue.shift();
-        this._isCodeExecuting = false;
         if (finished_request) {
             _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request finished : " + finished_request.Name);
             if (message.ErrorOccured) {
@@ -493,6 +492,7 @@ var InstanceHelper = /** @class */ (function () {
                     finished_request.OnSuccess(message.ReturnedValue);
                 }
             }
+            this._isCodeExecuting = false;
             this.executeQry();
         }
     };
@@ -541,7 +541,7 @@ var InstanceHelper = /** @class */ (function () {
             var allowed_query_index = -1;
             this._requestQueue.every(function (item, index) {
                 if (_this._whiteListApi.indexOf(item.Name) >= 0) {
-                    allowed_query_index = 0;
+                    allowed_query_index = index;
                     return false;
                 }
                 return true;

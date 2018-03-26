@@ -52,7 +52,7 @@ export class Instance extends Helper {
     private processWhereArrayQry() {
         this._isArrayQry = true;
         var is_first_where = true,
-            where_query = this._query.Where,
+            where_query = this._query.where,
             output = [], operation,
             pKey = this.getPrimaryKey(this._query.From),
             isItemExist = (keyValue) => {
@@ -108,11 +108,11 @@ export class Instance extends Helper {
                 is_first_where = false;
             }.bind(this),
             processFirstQry = function () {
-                this._query.Where = where_query.shift();
-                if (this._query.Where['Or']) {
-                    if (Object.keys(this._query.Where).length === 1) {
+                this._query.where = where_query.shift();
+                if (this._query.where['or']) {
+                    if (Object.keys(this._query.where).length === 1) {
                         operation = 'or';
-                        this._query.Where = this._query.Where['Or'];
+                        this._query.where = this._query.where['or'];
                         this._onWhereArrayQrySuccess = onSuccess;
                     }
                     else {
@@ -200,7 +200,7 @@ export class Instance extends Helper {
                 var where = {};
                 where[key] = (this as any)._orInfo.OrQuery[key];
                 delete (this as any)._orInfo.OrQuery[key];
-                this._query.Where = where;
+                this._query.where = where;
                 this.goToWhereLogic();
             }
             else {
@@ -215,10 +215,10 @@ export class Instance extends Helper {
     private processOrLogic() {
         this._isOr = true;
         (this as any)._orInfo = {
-            OrQuery: this._query.Where.Or,
+            OrQuery: this._query.where.or,
             Results: []
         };
         // free or memory
-        delete this._query.Where.Or;
+        delete this._query.where.or;
     }
 }

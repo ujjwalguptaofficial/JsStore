@@ -25,7 +25,6 @@ export class InstanceHelper {
 
     private processFinishedQuery(message: IWebWorkerResult) {
         var finished_request: IWebWorkerRequest = this._requestQueue.shift();
-        this._isCodeExecuting = false;
         if (finished_request) {
             LogHelper.log("request finished : " + finished_request.Name);
             if (message.ErrorOccured) {
@@ -42,6 +41,7 @@ export class InstanceHelper {
                     finished_request.OnSuccess(message.ReturnedValue);
                 }
             }
+            this._isCodeExecuting = false;
             this.executeQry();
         }
     }
@@ -76,7 +76,7 @@ export class InstanceHelper {
         // else {
         this._requestQueue.push(request);
         // if (this._requestQueue.length === 1) {
-        this.executeQry();
+            this.executeQry();
         // }
         // }
         LogHelper.log("request pushed: " + request.Name);
@@ -91,7 +91,7 @@ export class InstanceHelper {
             var allowed_query_index = -1;
             this._requestQueue.every((item, index) => {
                 if (this._whiteListApi.indexOf(item.Name) >= 0) {
-                    allowed_query_index = 0;
+                    allowed_query_index = index;
                     return false;
                 }
                 return true;

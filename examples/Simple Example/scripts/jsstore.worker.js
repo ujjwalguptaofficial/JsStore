@@ -220,7 +220,7 @@ var Base = /** @class */ (function (_super) {
         return column_info;
     };
     Base.prototype.addGreatAndLessToNotOp = function () {
-        var where_query = this._query.Where, value;
+        var where_query = this._query.where, value;
         if (this.containsNot(where_query)) {
             var query_keys = Object.keys(where_query);
             if (query_keys.length === 1) {
@@ -239,7 +239,7 @@ var Base = /** @class */ (function (_super) {
                         delete where_query[prop]['!='];
                     }
                 });
-                this._query.Where = where_query;
+                this._query.where = where_query;
             }
             else {
                 var where_tmp = [];
@@ -2988,7 +2988,7 @@ var Instance = /** @class */ (function (_super) {
     };
     Instance.prototype.processWhereArrayQry = function () {
         this._isArrayQry = true;
-        var is_first_where = true, where_query = this._query.Where, output = [], operation, pKey = this.getPrimaryKey(this._query.From), isItemExist = function (keyValue) {
+        var is_first_where = true, where_query = this._query.where, output = [], operation, pKey = this.getPrimaryKey(this._query.From), isItemExist = function (keyValue) {
             var is_exist = false;
             output.every(function (item) {
                 if (item[pKey] === keyValue) {
@@ -3039,11 +3039,11 @@ var Instance = /** @class */ (function (_super) {
             }
             is_first_where = false;
         }.bind(this), processFirstQry = function () {
-            this._query.Where = where_query.shift();
-            if (this._query.Where['Or']) {
-                if (Object.keys(this._query.Where).length === 1) {
+            this._query.where = where_query.shift();
+            if (this._query.where['or']) {
+                if (Object.keys(this._query.where).length === 1) {
                     operation = 'or';
-                    this._query.Where = this._query.Where['Or'];
+                    this._query.where = this._query.where['or'];
                     this._onWhereArrayQrySuccess = onSuccess;
                 }
                 else {
@@ -3124,7 +3124,7 @@ var Instance = /** @class */ (function (_super) {
                 var where = {};
                 where[key] = this._orInfo.OrQuery[key];
                 delete this._orInfo.OrQuery[key];
-                this._query.Where = where;
+                this._query.where = where;
                 this.goToWhereLogic();
             }
             else {
@@ -3138,11 +3138,11 @@ var Instance = /** @class */ (function (_super) {
     Instance.prototype.processOrLogic = function () {
         this._isOr = true;
         this._orInfo = {
-            OrQuery: this._query.Where.Or,
+            OrQuery: this._query.where.or,
             Results: []
         };
         // free or memory
-        delete this._query.Where.Or;
+        delete this._query.where.or;
     };
     return Instance;
 }(_helper__WEBPACK_IMPORTED_MODULE_1__["Helper"]));

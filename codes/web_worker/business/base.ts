@@ -62,7 +62,7 @@ export class Base extends BaseHelper {
     }
 
     protected addGreatAndLessToNotOp() {
-        var where_query = this._query.Where,
+        var where_query = this._query.where,
             value;
         if (this.containsNot(where_query)) {
             var query_keys = Object.keys(where_query);
@@ -82,7 +82,7 @@ export class Base extends BaseHelper {
                         delete where_query[prop]['!='];
                     }
                 });
-                this._query.Where = where_query;
+                this._query.where = where_query;
             }
             else {
                 var where_tmp = [];
