@@ -13,12 +13,12 @@ export class Instance extends Where {
 
     execute() {
         try {
-            this._error = new SchemaChecker(this.getTable(this._query.In)).
-                check(this._query.Set, this._query.In);
+            this._error = new SchemaChecker(this.getTable(this._query.in)).
+                check(this._query.set, this._query.in);
             if (!this._error) {
-                if (this._query.Where !== undefined) {
+                if (this._query.where !== undefined) {
                     this.addGreatAndLessToNotOp();
-                    if (this._query.Where.Or || Array.isArray(this._query.Where)) {
+                    if (this._query.where.or || Array.isArray(this._query.where)) {
                         this.executeComplexLogic();
                     }
                     else {
@@ -38,7 +38,7 @@ export class Instance extends Where {
         }
         catch (ex) {
             this._errorOccured = true;
-            this.onExceptionOccured.call(this, ex, { TableName: this._query.In });
+            this.onExceptionOccured.call(this, ex, { TableName: this._query.in });
         }
     }
 
@@ -47,7 +47,7 @@ export class Instance extends Where {
             from: this._query.in,
             where: this._query.where
         } as ISelect, (results: any[]) => {
-            var key = this.getPrimaryKey(this._query.In),
+            var key = this.getPrimaryKey(this._query.in),
                 in_query = [],
                 where_qry = {};
             results.forEach((value) => {
@@ -55,7 +55,7 @@ export class Instance extends Where {
             });
             results = null;
             where_qry[key] = { In: in_query };
-            this._query['Where'] = where_qry;
+            this._query['where'] = where_qry;
             this.initTransaction();
             this.goToWhereLogic();
         }, this._onError.bind(this));

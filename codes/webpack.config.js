@@ -1,9 +1,10 @@
 const path = require('path');
-const mode = "production";
+const SmartBannerPlugin = require('smart-banner-webpack-plugin');
+const banner = require('./license');
+
 // console.log(process.argv[1]);
 module.exports = [{
         name: "jsstore",
-        mode: mode,
         entry: "./jsstore_code/index.ts",
         devtool: 'source-map',
         output: {
@@ -27,7 +28,6 @@ module.exports = [{
     },
     {
         name: "jsstore.worker",
-        mode: mode,
         devtool: 'source-map',
         entry: "./web_worker/start.ts",
         output: {
@@ -45,6 +45,9 @@ module.exports = [{
         },
         resolve: {
             extensions: ['.ts'] // '' is needed to find modules like "jquery"
-        }
+        },
+        plugins: [
+            new SmartBannerPlugin(banner)
+        ]
     }
 ];

@@ -29,14 +29,11 @@ export class SchemaChecker {
                 }, this);
             }
             else {
-                error = new LogHelper(
-                    Error_Type.TableNotExist,
-                    { TableName: tblName }
-                ).get();
+                error = new LogHelper(Error_Type.TableNotExist, { TableName: tblName });
             }
         }
         else {
-            error = new LogHelper(Error_Type.NotObject).get();
+            error = new LogHelper(Error_Type.NotObject);
         }
         return error;
     }
@@ -45,18 +42,14 @@ export class SchemaChecker {
         var error: IError = null;
         // check not null schema
         if (column._notNull && Util.isNull(value)) {
-            error = new LogHelper(
-                Error_Type.NullValue, { ColumnName: column._name }
-            ).get();
+            error = new LogHelper(Error_Type.NullValue, { ColumnName: column._name });
         }
 
         // check datatype
         var type = Util.getType(value);
         if (column._dataType) {
             if (type !== column._dataType && type !== 'object') {
-                error = new LogHelper(Error_Type.BadDataType,
-                    { ColumnName: column._name }
-                ).get();
+                error = new LogHelper(Error_Type.BadDataType, { ColumnName: column._name });
             }
         }
 
@@ -65,9 +58,7 @@ export class SchemaChecker {
             var allowed_prop = ['+', '-', '*', '/'];
             for (var prop in value) {
                 if (allowed_prop.indexOf(prop) < 0 && column._dataType && type !== column._dataType) {
-                    error = new LogHelper(Error_Type.BadDataType,
-                        { ColumnName: column._name }
-                    ).get();
+                    error = new LogHelper(Error_Type.BadDataType, { ColumnName: column._name }).get();
                 }
                 break;
             }

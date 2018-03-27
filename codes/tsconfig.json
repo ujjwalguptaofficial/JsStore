@@ -12,8 +12,8 @@
         "module": "es6",
         "outDir": "tsc_build",
         "lib": [
-            "ES2015",
-            "DOM"
+            "es2015",
+            "dom"
         ]
     },
     "exclude": [

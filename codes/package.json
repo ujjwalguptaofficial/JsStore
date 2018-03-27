@@ -1,6 +1,6 @@
 {
   "name": "jsstore",
-  "version": "1.6.1",
+  "version": "2.0.0",
   "description": "JsStore is an IndexedDB Wrapper. It makes IndexedDB super easy with its SQL like apis.",
   "main": "index.js",
   "scripts": {
@@ -39,6 +39,7 @@
     "karma-mocha-reporter": "^2.2.5",
     "mocha": "^4.1.0",
     "puppeteer": "^0.13.0",
+    "smart-banner-webpack-plugin": "^3.0.1",
     "ts-loader": "^4.1.0",
     "tsconfig-paths-webpack-plugin": "^3.0.2",
     "tslint": "^5.9.1",

@@ -19,7 +19,7 @@ export class Instance extends Where {
 
     execute() {
         try {
-            if (this._query.Where !== undefined) {
+            if (this._query.where !== undefined) {
                 this.addGreatAndLessToNotOp();
                 this.initTransaction();
                 if (Array.isArray(this._query.where)) {
@@ -50,15 +50,15 @@ export class Instance extends Where {
                     key_list.push(item[p_key]);
                 });
                 results = null;
-                this._query.Where = {};
-                this._query.Where[p_key] = { In: key_list };
+                this._query.where = {};
+                this._query.where[p_key] = { In: key_list };
                 this.processWhere(false);
             }.bind(this), this._onError);
         select_object.execute();
     }
 
     private processWhere() {
-        if (this._query.Where.Or) {
+        if (this._query.where.or) {
             this.processOrLogic();
         }
         this.goToWhereLogic();
@@ -90,7 +90,7 @@ export class Instance extends Where {
             var where = {};
             where[key] = (this as any)._orInfo.OrQuery[key];
             delete (this as any)._orInfo.OrQuery[key];
-            this._query.Where = where;
+            this._query.where = where;
             this.goToWhereLogic();
         }
         else {

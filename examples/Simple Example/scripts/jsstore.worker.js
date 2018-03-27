@@ -1,3 +1,8 @@
+/*!
+ * @license :jsstore - V2.0.0 - 27/03/2018
+ * https://github.com/ujjwalguptaofficial/JsStore
+ * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
+ */
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -1886,7 +1891,7 @@ var Instance = /** @class */ (function (_super) {
     }
     Instance.prototype.execute = function () {
         try {
-            if (this._query.Where !== undefined) {
+            if (this._query.where !== undefined) {
                 this.addGreatAndLessToNotOp();
                 this.initTransaction();
                 if (Array.isArray(this._query.where)) {
@@ -1913,14 +1918,14 @@ var Instance = /** @class */ (function (_super) {
                 key_list.push(item[p_key]);
             });
             results = null;
-            this._query.Where = {};
-            this._query.Where[p_key] = { In: key_list };
+            this._query.where = {};
+            this._query.where[p_key] = { In: key_list };
             this.processWhere(false);
         }.bind(this), this._onError);
         select_object.execute();
     };
     Instance.prototype.processWhere = function () {
-        if (this._query.Where.Or) {
+        if (this._query.where.or) {
             this.processOrLogic();
         }
         this.goToWhereLogic();
@@ -1948,7 +1953,7 @@ var Instance = /** @class */ (function (_super) {
             var where = {};
             where[key] = this._orInfo.OrQuery[key];
             delete this._orInfo.OrQuery[key];
-            this._query.Where = where;
+            this._query.where = where;
             this.goToWhereLogic();
         }
         else {
@@ -4175,12 +4180,12 @@ var Instance = /** @class */ (function (_super) {
     }
     Instance.prototype.execute = function () {
         try {
-            this._error = new _schema_checker__WEBPACK_IMPORTED_MODULE_2__["SchemaChecker"](this.getTable(this._query.In)).
-                check(this._query.Set, this._query.In);
+            this._error = new _schema_checker__WEBPACK_IMPORTED_MODULE_2__["SchemaChecker"](this.getTable(this._query.in)).
+                check(this._query.set, this._query.in);
             if (!this._error) {
-                if (this._query.Where !== undefined) {
+                if (this._query.where !== undefined) {
                     this.addGreatAndLessToNotOp();
-                    if (this._query.Where.Or || Array.isArray(this._query.Where)) {
+                    if (this._query.where.or || Array.isArray(this._query.where)) {
                         this.executeComplexLogic();
                     }
                     else {
@@ -4200,7 +4205,7 @@ var Instance = /** @class */ (function (_super) {
         }
         catch (ex) {
             this._errorOccured = true;
-            this.onExceptionOccured.call(this, ex, { TableName: this._query.In });
+            this.onExceptionOccured.call(this, ex, { TableName: this._query.in });
         }
     };
     Instance.prototype.executeComplexLogic = function () {
@@ -4209,13 +4214,13 @@ var Instance = /** @class */ (function (_super) {
             from: this._query.in,
             where: this._query.where
         }, function (results) {
-            var key = _this.getPrimaryKey(_this._query.In), in_query = [], where_qry = {};
+            var key = _this.getPrimaryKey(_this._query.in), in_query = [], where_qry = {};
             results.forEach(function (value) {
                 in_query.push(value[key]);
             });
             results = null;
             where_qry[key] = { In: in_query };
-            _this._query['Where'] = where_qry;
+            _this._query['where'] = where_qry;
             _this.initTransaction();
             _this.goToWhereLogic();
         }, this._onError.bind(this));
@@ -4397,11 +4402,11 @@ var SchemaChecker = /** @class */ (function () {
                 }, this);
             }
             else {
-                error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"].TableNotExist, { TableName: tblName }).get();
+                error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"].TableNotExist, { TableName: tblName });
             }
         }
         else {
-            error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"].NotObject).get();
+            error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"].NotObject);
         }
         return error;
     };
@@ -4409,13 +4414,13 @@ var SchemaChecker = /** @class */ (function () {
         var error = null;
         // check not null schema
         if (column._notNull && _util__WEBPACK_IMPORTED_MODULE_2__["Util"].isNull(value)) {
-            error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"].NullValue, { ColumnName: column._name }).get();
+            error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"].NullValue, { ColumnName: column._name });
         }
         // check datatype
         var type = _util__WEBPACK_IMPORTED_MODULE_2__["Util"].getType(value);
         if (column._dataType) {
             if (type !== column._dataType && type !== 'object') {
-                error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"].BadDataType, { ColumnName: column._name }).get();
+                error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"].BadDataType, { ColumnName: column._name });
             }
         }
         // check allowed operators
