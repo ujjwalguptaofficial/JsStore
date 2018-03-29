@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.0.0 - 27/03/2018
+ * @license :jsstore - V2.0.0 - 28/03/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -1130,8 +1130,7 @@ var CreateDb = /** @class */ (function () {
                                 options['multiEntry'] = column._multiEntry;
                                 store.createIndex(column._name, column._name, options);
                                 if (column._autoIncrement) {
-                                    _keystore_index__WEBPACK_IMPORTED_MODULE_2__["set"]("JsStore_" + _this._dbName + "_" + item._name +
-                                        "_" + column._name + "_Value", 0);
+                                    _keystore_index__WEBPACK_IMPORTED_MODULE_2__["set"]("JsStore_" + _this._dbName + "_" + item._name + "_" + column._name + "_Value", 0);
                                 }
                             }
                         });
@@ -5259,8 +5258,8 @@ var Set = /** @class */ (function (_super) {
             cursor_request.onsuccess = function (e) {
                 var cursor = e.target.result;
                 if (cursor) {
-                    cursor.value['Value'] = _this._query;
-                    cursor.update(cursor.value);
+                    // cursor.value['Value'] = this._query['Value'];
+                    cursor.update(_this._query);
                 }
                 else {
                     insertData();

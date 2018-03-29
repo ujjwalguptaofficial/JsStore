@@ -25,8 +25,7 @@ export class Set extends Base {
             cursor_request.onsuccess = (e) => {
                 var cursor: IDBCursorWithValue = (e as any).target.result;
                 if (cursor) {
-                    cursor.value['Value'] = this._query;
-                    cursor.update(cursor.value);
+                    cursor.update(this._query);
                 }
                 else {
                     insertData();

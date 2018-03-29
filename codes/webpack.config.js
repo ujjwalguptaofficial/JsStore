@@ -8,7 +8,7 @@ module.exports = [{
         entry: "./jsstore_code/index.ts",
         devtool: 'source-map',
         output: {
-            path: path.join(__dirname, "output/webpack_build"),
+            path: path.join(__dirname, "output"),
             filename: "jsstore.js",
             library: 'JsStore'
             // libraryTarget: 'umd',
@@ -31,7 +31,7 @@ module.exports = [{
         devtool: 'source-map',
         entry: "./web_worker/start.ts",
         output: {
-            path: path.join(__dirname, "output/webpack_build"),
+            path: path.join(__dirname, "output"),
             filename: "jsstore.worker.js"
         },
         module: {

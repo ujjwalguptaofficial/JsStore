@@ -36,14 +36,14 @@
                 where: {
                     Id: Number(studentId)
                 }
-            }, function (rowsDeleted) {
+            }).then(function (rowsDeleted) {
                 console.log(rowsDeleted + ' rows deleted');
                 if (rowsDeleted > 0) {
                     showTableData();
                 }
-            }, function (error) {
+            }).catch(function (error) {
                 alert(error._message);
-            })
+            });
         }
 
         function initiateDb() {

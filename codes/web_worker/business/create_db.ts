@@ -67,11 +67,7 @@ export class CreateDb {
                                 options['multiEntry'] = column._multiEntry;
                                 store.createIndex(column._name, column._name, options);
                                 if (column._autoIncrement) {
-                                    KeyStore.set(
-                                        "JsStore_" + this._dbName + "_" + item._name +
-                                        "_" + column._name + "_Value",
-                                        0
-                                    );
+                                    KeyStore.set(`JsStore_${this._dbName}_${item._name}_${column._name}_Value`, 0);
                                 }
                             }
                         });
@@ -84,16 +80,13 @@ export class CreateDb {
                             var options = { unique: column._unique, multiEntry: column._multiEntry };
                             store.createIndex(column._name, column._name, options);
                             if (column._autoIncrement) {
-                                KeyStore.set(
-                                    "JsStore_" + this._dbName + "_" + item._name + "_" + column._name + "_Value",
-                                    0
-                                );
+                                KeyStore.set(`JsStore_${this._dbName}_${item._name}_${column._name}_Value`, 0);
                             }
                         });
                     }
                     table_created_list.push(item._name);
                     // setting the table version
-                    KeyStore.set("JsStore_" + this._dbName + "_" + item._name + "_Version", item._version);
+                    KeyStore.set(`JsStore_${this._dbName}_${item._name}_Version`, item._version);
                 }
                 catch (e) {
                     console.error(e);
