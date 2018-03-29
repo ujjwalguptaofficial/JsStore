@@ -1,0 +1,1 @@
+{"version":3,"file":"config.js","sourceRoot":"","sources":["../../web_worker/config.ts"],"names":[],"mappings":"AAAA;IAAA;IAEA,CAAC;IADU,oBAAa,GAAG,KAAK,CAAC;IACjC,aAAC;CAAA,AAFD,IAEC;SAFY,MAAM","sourcesContent":["export class Config {\r\n    static _isLogEnabled = false;\r\n}"]}

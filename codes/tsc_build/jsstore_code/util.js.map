@@ -1,0 +1,1 @@
+{"version":3,"file":"util.js","sourceRoot":"","sources":["../../jsstore_code/util.ts"],"names":[],"mappings":"AAAA;IAAA;QACI,kBAAa,GAAG,KAAK,CAAC;IAG1B,CAAC;IAAD,WAAC;AAAD,CAAC,AAJD,IAIC","sourcesContent":["export class Util {\r\n    _isLogEnabled = false;\r\n\r\n    \r\n}"]}

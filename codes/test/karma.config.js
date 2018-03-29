@@ -2,17 +2,20 @@ process.env.CHROME_BIN = require('puppeteer').executablePath();
 var files = require('./files');
 module.exports = function (config) {
     config.set({
-        basePath: '',
+        basePath: '../',
         frameworks: ['mocha', 'chai'],
         client: {
             mocha: {
                 timeout: 5000 // 6 seconds - upped from 2 seconds
             }
         },
-        files: ['../output/jsstore.js', ...files.list_of_files],
+        files: ['output/jsstore.js', ...files.list_of_files],
         proxies: {
-            '/static/': '/base/static/',
-            '/cases/': '/base/cases/'
+            '/test/': '/base/test/',
+            // '/scripts/': 'base/test/scripts/',
+            // '/static/': 'base/test/static/',
+            // '/cases/': 'base/cases/',
+            '/output/': '/base/output/'
         },
         reporters: ['mocha'],
         port: 9876, // karma web server port
@@ -33,9 +36,9 @@ module.exports = function (config) {
             }
         },
         autoWatch: false,
-        // concurrency: Infinity,
-        // singleRun: false,
-        singleRun: true,
+        concurrency: Infinity,
+        singleRun: false,
+        // singleRun: true,
         browserNoActivityTimeout: 120000,
     })
 }

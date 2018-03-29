@@ -1,6 +1,6 @@
 describe('Test bulkInsert', function () {
     it('insert OrderDetails - using bulk insert', function (done) {
-        $.getJSON("static/OrderDetails.json", function (results) {
+        $.getJSON("test/static/OrderDetails.json", function (results) {
             Con.bulkInsert({
                 Into: 'OrderDetails',
                 Values: results,

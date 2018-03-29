@@ -1,7 +1,7 @@
 describe('Test insert', function () {
     it('wrong table test', function (done) {
         Con.insert({
-            Into: 'Customer'
+            into: 'Customer'
         }).
         catch(function (err) {
             console.log(err);
@@ -14,11 +14,11 @@ describe('Test insert', function () {
         })
     });
 
-    it('insert customers using promise', function (done) {
-        $.getJSON("static/Customers.json", function (results) {
+    it('insert customers', function (done) {
+        $.getJSON("test/static/Customers.json", function (results) {
             Con.insert({
-                Into: 'Customers',
-                Values: results
+                into: 'Customers',
+                values: results
             }).then(function (results) {
                 expect(results).to.be.an('number').to.equal(93);
                 done();
@@ -29,75 +29,68 @@ describe('Test insert', function () {
         });
     });
 
-    it('insert Orders using without promise', function (done) {
-        $.getJSON("static/Orders.json", function (results) {
+    it('insert Orders', function (done) {
+        $.getJSON("test/static/Orders.json", function (results) {
             Con.insert({
-                Into: 'Orders',
-                Values: results,
-                OnSuccess: function (results) {
-                    expect(results).to.be.an('number').to.equal(196);
-                    done();
-                },
-                OnError: function (err) {
-                    done(err);
-                }
+                into: 'Orders',
+                values: results
+            }).then(function (results) {
+                expect(results).to.be.an('number').to.equal(196);
+                done();
+            }).catch(function (err) {
+                done(err);
             });
         });
     });
 
-    it('insert Shippers using without promise', function (done) {
-        $.getJSON("static/Shippers.json", function (results) {
+    it('insert Shippers ', function (done) {
+        $.getJSON("test/static/Shippers.json", function (results) {
             Con.insert({
-                Into: 'Shippers',
-                Values: results,
-                OnSuccess: function (results) {
-                    expect(results).to.be.an('number').to.equal(3);
-                    done();
-                },
-                OnError: function (err) {
-                    done(err);
-                }
+                into: 'Shippers',
+                values: results
+            }).then(function (results) {
+                expect(results).to.be.an('number').to.equal(3);
+                done();
+            }).catch(function (err) {
+                done(err);
             });
         });
     });
 
     it('insert products - using Skip Data', function (done) {
-        $.getJSON("static/Products.json", function (results) {
+        $.getJSON("test/static/Products.json", function (results) {
             Con.insert({
-                Into: 'Products',
-                Values: results,
-                SkipDataCheck: true,
-                OnSuccess: function (results) {
-                    expect(results).to.be.an('number').to.equal(77);
-                    done();
-                },
-                OnError: function (err) {
-                    done(err);
-                }
+                into: 'Products',
+                values: results,
+                skipDataCheck: true
+            }).
+            then(function (results) {
+                expect(results).to.be.an('number').to.equal(77);
+                done();
+            }).catch(function (err) {
+                done(err);
             });
         });
     });
 
     it('insert suppliers - using return Data', function (done) {
-        $.getJSON("static/Suppliers.json", function (results) {
+        $.getJSON("test/static/Suppliers.json", function (results) {
             Con.insert({
-                Into: 'Suppliers',
-                Values: results,
-                Return: true,
-                OnSuccess: function (results) {
-                    expect(results).to.be.an('array').length(29);
-                    done();
-                },
-                OnError: function (err) {
-                    done(err);
-                }
+                into: 'Suppliers',
+                values: results,
+                return: true
+            }).then(function (results) {
+                expect(results).to.be.an('array').length(29);
+                done();
+            }).catch(function (err) {
+                done(err);
             });
         });
     });
 
     it('insert without values Option', function (done) {
         Con.insert({
-            Into: 'Customers',
+            into: 'Customers',
             OnSuccess: function (results) {
                 expect(results).to.be.an('number').to.equal(196);
                 done();
