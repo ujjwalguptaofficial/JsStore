@@ -5,7 +5,7 @@ export class Where extends Like {
         var record_skipped = false,
             cursor;
         if (this._checkFlag) {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     if (record_skipped && this._results.length !== this._limitRecord) {
@@ -25,7 +25,7 @@ export class Where extends Like {
             }.bind(this);
         }
         else {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     if (record_skipped && this._results.length !== this._limitRecord) {
@@ -48,7 +48,7 @@ export class Where extends Like {
         var record_skipped = false,
             cursor;
         if (this._checkFlag) {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     if (record_skipped) {
@@ -68,7 +68,7 @@ export class Where extends Like {
             }.bind(this);
         }
         else {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     if (record_skipped) {
@@ -90,7 +90,7 @@ export class Where extends Like {
     private executeLimitForWhere() {
         var cursor;
         if (this._checkFlag) {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor && this._results.length !== this._limitRecord &&
                     this._whereChecker.check(cursor.value)) {
@@ -103,7 +103,7 @@ export class Where extends Like {
             }.bind(this);
         }
         else {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor && this._results.length !== this._limitRecord) {
                     this._results.push(cursor.value);
@@ -119,7 +119,7 @@ export class Where extends Like {
     private executeSimpleForWhere() {
         var cursor;
         if (this._checkFlag) {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this._whereChecker.check(cursor.value)) {
@@ -133,7 +133,7 @@ export class Where extends Like {
             }.bind(this);
         }
         else {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     this._results.push(cursor.value);
@@ -147,12 +147,12 @@ export class Where extends Like {
 
     private executeWhereLogic(column, value, op, dir) {
         value = op ? value[op] : value;
-        this._cursorOpenRequest = this._objectStore.index(column).openCursor(
+        this.cursorOpenRequest = this.objectStore.index(column).openCursor(
             this.getKeyRange(value, op),
             dir
         );
 
-        this._cursorOpenRequest.onerror = function (e) {
+        this.cursorOpenRequest.onerror = function (e) {
             this._errorOccured = true;
             this.onErrorOccured(e);
         }.bind(this);

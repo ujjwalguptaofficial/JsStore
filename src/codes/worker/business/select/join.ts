@@ -3,15 +3,15 @@ import { ISelectJoin, ITableJoin, IError, IJoin, ISelect } from "../../interface
 import * as Select from './instance';
 
 export class Join extends BaseSelect {
-    _query: ISelectJoin;
+    query: ISelectJoin;
     _queryStack: ITableJoin[] = [];
     _currentQueryStackIndex = 0;
 
     constructor(query: ISelectJoin, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
         super();
-        this._onSuccess = onSuccess;
-        this._onError = onError;
-        this._query = query;
+        this.onSuccess = onSuccess;
+        this.onError = onError;
+        this.query = query;
         var table_list = []; // used to open the multiple object store
 
         var convertQueryIntoStack = function (qry) {
@@ -34,7 +34,7 @@ export class Join extends BaseSelect {
         convertQueryIntoStack(query.from);
         this._queryStack.reverse();
         // get the data for first table
-        if (!this._errorOccured) {
+        if (!this.errorOccured) {
             var select_object = new Select.Instance({
                 from: this._queryStack[0].table,
                 where: this._queryStack[0].where
@@ -51,22 +51,22 @@ export class Join extends BaseSelect {
     }
 
     private onTransactionCompleted(e) {
-        if (this._onSuccess != null && (this._queryStack.length === this._currentQueryStackIndex + 1)) {
-            if (this._query['Count']) {
-                this._onSuccess(this._results.length);
+        if (this.onSuccess != null && (this._queryStack.length === this._currentQueryStackIndex + 1)) {
+            if (this.query['Count']) {
+                this.onSuccess(this._results.length);
             }
             else {
-                if (this._query['Skip'] && this._query['Limit']) {
-                    this._results.splice(0, this._query['Skip']);
-                    this._results.splice(this._query['Limit'] - 1, this._results.length);
+                if (this.query['Skip'] && this.query['Limit']) {
+                    this._results.splice(0, this.query['Skip']);
+                    this._results.splice(this.query['Limit'] - 1, this._results.length);
                 }
-                else if (this._query['Skip']) {
-                    this._results.splice(0, this._query['Skip']);
+                else if (this.query['Skip']) {
+                    this._results.splice(0, this.query['Skip']);
                 }
-                else if (this._query['Limit']) {
-                    this._results.splice(this._query['Limit'] - 1, this._results.length);
+                else if (this.query['Limit']) {
+                    this._results.splice(this.query['Limit'] - 1, this._results.length);
                 }
-                this._onSuccess(this._results);
+                this.onSuccess(this._results);
             }
 
         }

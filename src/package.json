@@ -9,6 +9,7 @@
     "build_test": "npm run pretest && npm run minify && karma start test/karma_build.config.js",
     "minify": "uglifyjs output/jsstore.js --compress sequences=true,dead_code=true,conditionals=true,booleans=true,unused=true,if_return=true,join_vars=true --source-map --mangle --output output/jsstore.min.js",
     "build": "npm run build_test",
+    "build:test": "tslint codes/**/*.ts && npm run webpack:dev",
     "webpack:dev": "webpack --mode development",
     "webpack:prod": "webpack production"
   },

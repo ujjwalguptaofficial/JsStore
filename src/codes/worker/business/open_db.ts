@@ -1,73 +1,99 @@
 import { IdbHelper } from "./idb_helper";
 import { IError } from "../interfaces";
-import { Connection_Status, Error_Type } from "../enums";
+import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
 import { LogHelper } from "../log_helper";
 import { Table } from "../model/table";
 
 export class OpenDb {
-    _dbName: string;
-    _onSuccess: () => void;
-    _onError: (err: IError) => void;
+    private dbName_: string;
+    private onSuccess_: () => void;
+    private onError_: (err: IError) => void;
 
     constructor(onSuccess: () => void, onError: (err: IError) => void) {
-        this._dbName = IdbHelper._activeDb._name;
-        this._onSuccess = onSuccess;
-        this._onError = onError;
+        this.dbName_ = IdbHelper.activeDb.name;
+        this.onSuccess_ = onSuccess;
+        this.onError_ = onError;
+    }
+
+    private get dbStatus_() {
+        return IdbHelper.dbStatus;
+    }
+
+    private set dbConnection_(value) {
+        IdbHelper.dbConnection = value;
+    }
+
+    private get dbConnection_() {
+        return IdbHelper.dbConnection;
+    }
+
+    private updateDbStatus_(status: CONNECTION_STATUS, err?: ERROR_TYPE) {
+        IdbHelper.updateDbStatus(status, err);
+    }
+
+    private onDbDroppedByBrowser_(deleteMetaData?: boolean) {
+        IdbHelper.callDbDroppedByBrowser(deleteMetaData);
     }
 
     execute() {
-        if (this._dbName.length > 0) {
-            var db_request = indexedDB.open(this._dbName, IdbHelper._dbVersion);
+        if (this.dbName_.length > 0) {
+            const dbRequest = indexedDB.open(this.dbName_, IdbHelper.activeDbVersion);
 
-            db_request.onerror = (event) => {
-                if (this._onError != null) {
-                    this._onError((event as any).target.error);
+            dbRequest.onerror = (event: any) => {
+                if (this.onError_ != null) {
+                    this.onError_(event.target.error);
                 }
             };
 
-            db_request.onsuccess = (event) => {
-                IdbHelper._dbStatus.ConStatus = Connection_Status.Connected;
-                IdbHelper._dbConnection = db_request.result;
-                (IdbHelper._dbConnection as any).onclose = (e) => {
-                    IdbHelper.callDbDroppedByBrowser();
-                    IdbHelper.updateDbStatus(Connection_Status.Closed, Error_Type.ConnectionClosed);
+            dbRequest.onsuccess = (event) => {
+                this.dbStatus_.conStatus = CONNECTION_STATUS.Connected;
+                this.dbConnection_ = dbRequest.result;
+                (this.dbConnection_ as any).onclose = (e) => {
+                    this.onDbDroppedByBrowser_();
+                    this.updateDbStatus_(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
                 };
 
-                IdbHelper._dbConnection.onversionchange = (e) => {
+                this.dbConnection_.onversionchange = (e: IDBVersionChangeEvent) => {
                     if (e.newVersion === null) { // An attempt is made to delete the db
                         if (e.newVersion === null) { // An attempt is made to delete the db
                             (e.target as any).close(); // Manually close our connection to the db
-                            IdbHelper.callDbDroppedByBrowser(true);
-                            IdbHelper.updateDbStatus(Connection_Status.Closed, Error_Type.ConnectionClosed);
+                            this.onDbDroppedByBrowser_(true);
+                            this.updateDbStatus_(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
                         }
                     }
                 };
 
-                IdbHelper._dbConnection.onerror = (e) => {
-                    IdbHelper._dbStatus.LastError = ("Error occured in connection :" + (e.target as any).result) as any;
+                IdbHelper.dbConnection.onerror = (e) => {
+                    IdbHelper.dbStatus.lastError = ("Error occured in connection :" + (e.target as any).result) as any;
                 };
 
-                IdbHelper._dbConnection.onabort = (e) => {
-                    IdbHelper._dbStatus.ConStatus = Connection_Status.Closed;
-                    IdbHelper._dbStatus.LastError = Error_Type.ConnectionAborted;
+                IdbHelper.dbConnection.onabort = (e) => {
+                    IdbHelper.dbStatus = {
+                        conStatus: CONNECTION_STATUS.Closed,
+                        lastError: ERROR_TYPE.ConnectionAborted
+                    };
                 };
-                if (this._onSuccess != null) {
-                    this._onSuccess();
+                if (this.onSuccess_ != null) {
+                    this.onSuccess_();
                 }
-                this.setPrimaryKey();
+                this.setPrimaryKey_();
             };
         }
         else {
-            var error = new LogHelper(Error_Type.UndefinedDbName);
+            const error = new LogHelper(ERROR_TYPE.UndefinedDbName);
             error.throw();
         }
     }
 
-    private setPrimaryKey() {
-        IdbHelper._activeDb._tables.forEach((table: Table, index) => {
-            table._columns.every(item => {
-                IdbHelper._activeDb._tables[index]._primaryKey = item._primaryKey ? item._name : "";
-                return !item._primaryKey;
+    private get activeDb_() {
+        return IdbHelper.activeDb;
+    }
+
+    private setPrimaryKey_() {
+        this.activeDb_.tables.forEach((table, index) => {
+            table.columns.every(item => {
+                IdbHelper.activeDb.tables[index].primaryKey = item.primaryKey ? item.name : "";
+                return !item.primaryKey;
             });
         });
     }

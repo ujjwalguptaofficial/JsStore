@@ -2,9 +2,9 @@ import { IdbHelper } from "./business/idb_helper";
 import { LogHelper } from "./log_helper";
 import {
     ITranscationQry, IError, IUpdate,
-    IInsert, IRemove, IDataBaseOption, ISelect, ISelectJoin, IDbInfo
+    IInsert, IRemove, IDataBase, ISelect, ISelectJoin, IDbInfo, ITable
 } from "./interfaces";
-import { Connection_Status, Error_Type, Data_Type } from "./enums";
+import { CONNECTION_STATUS, ERROR_TYPE, DATA_TYPE } from "./enums";
 import { Config } from "./config";
 import { OpenDb } from "./business/open_db";
 import { DropDb } from "./business/drop_db";
@@ -21,219 +21,262 @@ import * as Update from './business/update/index';
 import { Util } from "./util";
 import { Clear } from "./business/clear";
 import { BulkInsert } from "./business/bulk_insert";
-import { IWebWorkerResult, IWebWorkerRequest } from "./inner_interfaces";
+import { IWebWorkerResult, IWebWorkerRequest } from "./interfaces";
+import { Data_Type } from "../main/enums";
 
 export class QueryExecutor {
 
-    public checkConnectionAndExecuteLogic(request: IWebWorkerRequest) {
-        LogHelper.log('checking connection and executing request:' + request.Name);
-        switch (request.Name) {
+    checkConnectionAndExecuteLogic(request: IWebWorkerRequest) {
+        LogHelper.log('checking connection and executing request:' + request.name);
+        switch (request.name) {
             case 'create_db':
             case 'is_db_exist':
             case 'get_db_version':
             case 'get_db_list':
             case 'get_db_schema':
             case 'open_db':
-                this.executeLogic(request);
+                this.executeLogic_(request);
                 break;
             case 'change_log_status':
-                this.changeLogStatus(request.Query['logging']); break;
+                this.changeLogStatus_(request.query['logging']); break;
             default:
-                switch (IdbHelper._dbStatus.ConStatus) {
-                    case Connection_Status.Connected: {
-                        this.executeLogic(request);
+                switch (this.dbStatus_.conStatus) {
+                    case CONNECTION_STATUS.Connected: {
+                        this.executeLogic_(request);
                     } break;
-                    case Connection_Status.Closed: {
-                        if (IdbHelper._isDbDeletedByBrowser === true) {
-                            this.createDb(null, function () {
-                                IdbHelper._isDbDeletedByBrowser = false;
+                    case CONNECTION_STATUS.Closed: {
+                        if (this.isDbDeletedByBrowser_ === true) {
+                            this.createDb_(null, () => {
+                                this.isDbDeletedByBrowser_ = false;
                                 this.checkConnectionAndExecuteLogic(request);
-                            }.bind(this), request.OnError);
+                            }, request.onError);
                         }
                         else {
-                            this.openDb(IdbHelper._activeDb._name, () => {
+                            this.openDb_(this.activeDb_.name, () => {
                                 this.checkConnectionAndExecuteLogic(request);
-                            }, request.OnError);
+                            }, request.onError);
                         }
                     } break;
+                    default:
+                        break;
                 }
         }
     }
 
-    private changeLogStatus(enableLog) {
+    private changeLogStatus_(enableLog) {
         Config._isLogEnabled = enableLog;
     }
 
-    private returnResult(result) {
-        (self as any).postMessage(result);
+    private returnResult_(result) {
+        (self as DedicatedWorkerGlobalScope).postMessage(result);
     }
 
-    private executeLogic(request: IWebWorkerRequest) {
-        var onSuccess = (results?) => {
-            this.returnResult({
-                ReturnedValue: results
+    private executeLogic_(request: IWebWorkerRequest) {
+        const onSuccess = (results?) => {
+            this.returnResult_({
+                returnedValue: results
             } as IWebWorkerResult);
         };
-        var onError = (err) => {
-            this.returnResult({
-                ErrorDetails: err,
-                ErrorOccured: true
+        const onError = (err) => {
+            this.returnResult_({
+                errorDetails: err,
+                errorOccured: true
             } as IWebWorkerResult);
         };
 
-        switch (request.Name) {
+        switch (request.name) {
             case 'select':
-                this.select(request.Query, onSuccess, onError);
+                this.select_(request.query, onSuccess, onError);
                 break;
-            case 'insert': this.insert(request.Query, onSuccess, onError);
+            case 'insert': this.insert_(request.query as IInsert, onSuccess, onError);
                 break;
-            case 'update': this.update(request.Query, onSuccess, onError);
+            case 'update': this.update_(request.query as IUpdate, onSuccess, onError);
                 break;
-            case 'remove': this.remove(request.Query, onSuccess, onError);
+            case 'remove': this.remove_(request.query as IRemove, onSuccess, onError);
                 break;
-            case 'is_db_exist': this.isDbExist(request.Query, onSuccess, onError);
+            case 'is_db_exist': this.isDbExist_(request.query, onSuccess, onError);
                 break;
             case 'get_db_version':
-                IdbHelper.getDbVersion(request.Query, onSuccess);
+                this.getDbVersion_(request.query as string, onSuccess);
                 break;
             case 'get_db_list':
-                IdbHelper.getDbList(onSuccess);
+                this.getDbList_(onSuccess);
                 break;
             case 'get_db_schema':
-                IdbHelper.getDbSchema(request.Query, onSuccess);
+                this.getDbSchema_(request.query as string, onSuccess);
                 break;
             case 'open_db':
-                if (IdbHelper._isDbDeletedByBrowser === true) {
-                    this.createDb(null, () => {
-                        IdbHelper._isDbDeletedByBrowser = false;
+                if (this.isDbDeletedByBrowser_ === true) {
+                    this.createDb_(null, () => {
+                        this.isDbDeletedByBrowser_ = false;
                         onSuccess();
                     }, onError);
                 }
                 else {
-                    this.openDb(request.Query, onSuccess, onError);
+                    this.openDb_(request.query, onSuccess, onError);
                 }
                 break;
-            case 'create_db': this.createDb(request.Query, onSuccess, onError);
+            case 'create_db': this.createDb_(request.query as IDataBase, onSuccess, onError);
                 break;
-            case 'clear': this.clear(request.Query, onSuccess, onError);
+            case 'clear': this.clear_(request.query as string, onSuccess, onError);
                 break;
-            case 'drop_db': this.dropDb(onSuccess, onError);
+            case 'drop_db': this.dropDb_(onSuccess, onError);
                 break;
-            case 'count': this.count(request.Query, onSuccess, onError);
+            case 'count': this.count_(request.query, onSuccess, onError);
                 break;
-            case 'bulk_insert': this.bulkInsert(request.Query, onSuccess, onError);
+            case 'bulk_insert': this.bulkInsert_(request.query as IInsert, onSuccess, onError);
                 break;
-            case 'export_json': this.exportJson(request.Query, onSuccess, onError);
+            case 'export_json': this.exportJson_(request.query as ISelect, onSuccess, onError);
                 break;
-            default: console.error('The Api:-' + request.Name + ' does not support.');
+            default: console.error('The Api:-' + request.name + ' does not support.');
         }
     }
 
-    private openDb(dbName, onSuccess: () => void, onError: (err: IError) => void) {
-        IdbHelper.getDbVersion(dbName, (dbVersion) => {
+    private getDbSchema_(dbName: string, callback: (schema: DataBase) => void) {
+        IdbHelper.getDbSchema(dbName, callback);
+    }
+
+    private get isDbDeletedByBrowser_() {
+        return IdbHelper.isDbDeletedByBrowser;
+    }
+
+    private set isDbDeletedByBrowser_(value) {
+        IdbHelper.isDbDeletedByBrowser = value;
+    }
+
+    private getDbList_(callback: (dbList: string[]) => void) {
+        IdbHelper.getDbList(callback);
+    }
+
+    private get activeDb_() {
+        return IdbHelper.activeDb;
+    }
+
+    private set activeDb_(value) {
+        IdbHelper.activeDb = value;
+    }
+
+    private openDb_(dbName, onSuccess: () => void, onError: (err: IError) => void) {
+        this.getDbVersion_(dbName, (dbVersion) => {
             if (dbVersion !== 0) {
-                IdbHelper._dbVersion = dbVersion;
-                IdbHelper.getDbSchema(dbName, (result) => {
-                    IdbHelper._activeDb = result;
-                    var open_db_object = new OpenDb(onSuccess, onError);
-                    open_db_object.execute();
+                IdbHelper.activeDbVersion = dbVersion;
+                this.getDbSchema_(dbName, (result) => {
+                    this.activeDb_ = result;
+                    const openDbProject = new OpenDb(onSuccess, onError);
+                    openDbProject.execute();
                 });
             }
             else {
-                var err = new LogHelper(Error_Type.DbNotExist, { DbName: dbName });
+                const err = new LogHelper(ERROR_TYPE.DbNotExist, { DbName: dbName });
                 err.logError();
                 onError(err.get());
             }
         });
     }
 
-    private closeDb() {
-        if (IdbHelper._dbStatus.ConStatus === Connection_Status.Connected) {
-            IdbHelper._dbStatus.ConStatus = Connection_Status.ClosedByJsStore;
-            IdbHelper._dbConnection.close();
+    private closeDb_() {
+        if (IdbHelper.dbStatus.conStatus === CONNECTION_STATUS.Connected) {
+            IdbHelper.dbStatus.conStatus = CONNECTION_STATUS.ClosedByJsStore;
+            IdbHelper.dbConnection.close();
         }
     }
 
-    private dropDb(onSuccess: () => void, onError: (err: IError) => void) {
-        this.closeDb();
-        var drop_db_object = new DropDb(onSuccess, onError);
-        drop_db_object.deleteDb();
+    private dropDb_(onSuccess: () => void, onError: (err: IError) => void) {
+        this.closeDb_();
+        const dropDbInstance = new DropDb(onSuccess, onError);
+        dropDbInstance.deleteDb();
     }
 
-    private update(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void) {
-        var update_db_object = new Update.Instance(query, onSuccess, onError);
-        update_db_object.execute();
+    private update_(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void) {
+        const updateDbInstance = new Update.Instance(query, onSuccess, onError);
+        updateDbInstance.execute();
     }
 
-    private insert(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
-        var insert_object = new Insert.Instance(query, onSuccess, onError);
-        insert_object.execute();
+    private insert_(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
+        const insertInstance = new Insert.Instance(query, onSuccess, onError);
+        insertInstance.execute();
     }
 
-    private bulkInsert(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
-        var bulk_insert_object = new BulkInsert(query, onSuccess, onError);
-        bulk_insert_object.execute();
+    private bulkInsert_(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
+        const bulkInsertInstance = new BulkInsert(query, onSuccess, onError);
+        bulkInsertInstance.execute();
     }
 
-    private remove(query: IRemove, onSuccess: () => void, onError: (err: IError) => void) {
-        var delete_object = new Remove.Instance(query, onSuccess, onError);
-        delete_object.execute();
+    private remove_(query: IRemove, onSuccess: () => void, onError: (err: IError) => void) {
+        const deleteObject = new Remove.Instance(query, onSuccess, onError);
+        deleteObject.execute();
     }
 
-    private select(query, onSuccess: (result) => void, onError: (err: IError) => void) {
+    private select_(query, onSuccess: (result) => void, onError: (err: IError) => void) {
         if (typeof query.From === 'object') {
-            var select_join_object = new Select.Join(query as ISelectJoin, onSuccess, onError);
+            const selectJoinInstance = new Select.Join(query as ISelectJoin, onSuccess, onError);
         }
         else {
-            var select_instance = new Select.Instance(query, onSuccess, onError);
-            select_instance.execute();
+            const selectInstance = new Select.Instance(query, onSuccess, onError);
+            selectInstance.execute();
         }
     }
 
-    private count(query, onSuccess: () => void, onError: (err: IError) => void) {
+    private count_(query, onSuccess: () => void, onError: (err: IError) => void) {
         if (typeof query.From === 'object') {
             query['Count'] = true;
-            var select_join_object = new Select.Join(query, onSuccess, onError);
+            const selectJoinInstance = new Select.Join(query, onSuccess, onError);
         }
         else {
-            var count_object = new Count.Instance(query, onSuccess, onError);
-            count_object.execute();
+            const countInstance = new Count.Instance(query, onSuccess, onError);
+            countInstance.execute();
         }
     }
 
-    private createDb(
-        dataBase: IDataBaseOption, onSuccess: () => void, onError: (err: IError) => void
+    private createDb_(
+        dataBase: IDataBase, onSuccess: () => void, onError: (err: IError) => void
     ) {
-        var processCreateDb = () => {
+        const processCreateDb = () => {
             // save dbSchema in keystore
-            KeyStore.set("JsStore_" + IdbHelper._activeDb._name + "_Schema", IdbHelper._activeDb);
+            KeyStore.set("JsStore_" + this.activeDb_.name + "_Schema", this.activeDb_);
             // create meta data
-            var db_helper = new DbHelper(IdbHelper._activeDb);
-            db_helper.createMetaData((tablesMetaData: TableHelper[]) => {
-                var create_db_object = new CreateDb(tablesMetaData, onSuccess, onError);
+            const dbHelper = new DbHelper(IdbHelper.activeDb);
+            dbHelper.createMetaData((tablesMetaData: TableHelper[]) => {
+                const createDbInstance = new CreateDb(tablesMetaData, onSuccess, onError);
             });
         };
         if (dataBase == null) {
             processCreateDb();
         }
         else {
-            this.closeDb();
-            IdbHelper.getDbVersion(dataBase.Name, (version) => {
-                IdbHelper._dbVersion = version ? version : 1;
-                IdbHelper._activeDb = new DataBase(dataBase);
+            this.closeDb_();
+            this.getDbVersion_(dataBase.name, (version) => {
+                this.activeDbVersion_ = version ? version : 1;
+                IdbHelper.activeDb = new DataBase(dataBase);
                 processCreateDb();
             });
         }
     }
 
-    private clear(tableName: string, onSuccess: () => void, onError: (err: IError) => void) {
-        var clear_object = new Clear(tableName, onSuccess, onError);
-        clear_object.execute();
+    private get activeDbVersion_() {
+        return IdbHelper.activeDbVersion;
     }
 
-    private exportJson(query: ISelect, onSuccess: (url: string) => void, onError: (err: IError) => void) {
-        this.select(query, (results) => {
-            var url = URL.createObjectURL(new Blob([JSON.stringify(results)], {
+    private set activeDbVersion_(value) {
+        IdbHelper.activeDbVersion = value;
+    }
+
+    private getDbVersion_(dbName: string, callback: (version: number) => void) {
+        IdbHelper.getDbVersion(dbName, callback);
+    }
+
+    private get dbStatus_() {
+        return IdbHelper.dbStatus;
+    }
+
+    private clear_(tableName: string, onSuccess: () => void, onError: (err: IError) => void) {
+        const clearInstance = new Clear(tableName, onSuccess, onError);
+        clearInstance.execute();
+    }
+
+    private exportJson_(query: ISelect, onSuccess: (url: string) => void, onError: (err: IError) => void) {
+        this.select_(query, (results) => {
+            const url = URL.createObjectURL(new Blob([JSON.stringify(results)], {
                 type: "text/json"
             }));
             onSuccess(url);
@@ -242,29 +285,34 @@ export class QueryExecutor {
         });
     }
 
-    private isDbExist(dbInfo: any, onSuccess: (isExist: boolean) => void, onError: (err: IError) => void) {
-        if (IdbHelper._dbStatus.ConStatus !== Connection_Status.UnableToStart) {
-            if (Util.getType(dbInfo) === Data_Type.String) {
-                IdbHelper.getDbVersion(dbInfo, (dbVersion) => {
+    private getType(value) {
+        return Util.getType(value);
+    }
+
+    private isDbExist_(dbInfo, onSuccess: (isExist: boolean) => void, onError: (err: IError) => void) {
+        if (this.dbStatus_.conStatus !== CONNECTION_STATUS.UnableToStart) {
+            if (this.getType(dbInfo) === Data_Type.String) {
+                this.getDbVersion_(dbInfo, (dbVersion) => {
                     onSuccess(Boolean(dbVersion));
                 });
             }
             else {
-                IdbHelper.getDbVersion(dbInfo.dbName, (dbVersion) => {
+                this.getDbVersion_(dbInfo.dbName, (dbVersion) => {
                     onSuccess(dbInfo.table.version <= dbVersion);
                 });
             }
         }
         else {
-            var error = {
-                _message: null,
-                _type: IdbHelper._dbStatus.LastError,
+            const error = {
+                message: null,
+                type: this.dbStatus_.lastError,
             } as IError;
-            switch (error._type) {
-                case Error_Type.IndexedDbBlocked:
-                    error._message = "IndexedDB is blocked"; break;
-                case Error_Type.IndexedDbUndefined:
-                    error._message = "IndexedDB is not supported"; break;
+            switch (error.type) {
+                case ERROR_TYPE.IndexedDbBlocked:
+                    error.message = "IndexedDB is blocked"; break;
+                case ERROR_TYPE.IndexedDbUndefined:
+                    error.message = "IndexedDB is not supported"; break;
+                default: break;
             }
             onError(error);
         }

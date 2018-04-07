@@ -4,12 +4,12 @@ export class NotWhere extends BaseUpdate {
 
     protected executeWhereUndefinedLogic() {
         var cursor,
-            cursor_request = this._objectStore.openCursor();
+            cursor_request = this.objectStore.openCursor();
         cursor_request.onsuccess = (e) => {
             cursor = (e as any).target.result;
             if (cursor) {
-                cursor.update(updateValue(this._query.Set, cursor.value));
-                ++this._rowAffected;
+                cursor.update(updateValue(this.query.Set, cursor.value));
+                ++this.rowAffected;
                 (cursor as any).continue();
             }
             else {
@@ -18,7 +18,7 @@ export class NotWhere extends BaseUpdate {
 
         };
         cursor_request.onerror = (e) => {
-            this._errorOccured = true;
+            this.errorOccured = true;
             this.onErrorOccured(e);
         };
     }

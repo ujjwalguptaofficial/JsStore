@@ -6,7 +6,7 @@ export class Where extends Like {
         var cursor: IDBCursorWithValue,
             cursor_request;
         value = op ? value[op] : value;
-        cursor_request = this._objectStore.index(column).openCursor(this.getKeyRange(value, op));
+        cursor_request = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
         if (this._checkFlag) {
             cursor_request.onsuccess = function (e) {
                 cursor = e.target.result;

@@ -3,14 +3,14 @@ import { Error_Type } from "./enums";
 import { Config } from "./config";
 
 export class LogHelper implements IError {
-    _type: Error_Type;
-    _message: string;
+    type: Error_Type;
+    message: string;
     private _info: any;
 
     constructor(type: Error_Type, info: any = null) {
-        this._type = type;
+        this.type = type;
         this._info = info;
-        this._message = this.getMsg();
+        this.message = this.getMsg();
     }
 
     public throw() {
@@ -33,14 +33,14 @@ export class LogHelper implements IError {
 
     public get() {
         return {
-            _message: this._message,
-            _type: this._type
+            message: this.message,
+            type: this.type
         } as IError;
     }
 
     private getMsg() {
         var err_msg: string;
-        switch (this._type) {
+        switch (this.type) {
             case Error_Type.WorkerNotSupplied:
                 err_msg = "Worker object is not passed in instance constructor";
                 break;
@@ -48,7 +48,7 @@ export class LogHelper implements IError {
                 err_msg = "Browser does not support indexeddb";
                 break;
             default:
-                err_msg = this._message;
+                err_msg = this.message;
                 break;
         }
         return err_msg;

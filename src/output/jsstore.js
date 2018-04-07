@@ -223,21 +223,21 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.openDb = function (dbName) {
         return this.pushApi({
-            Name: 'open_db',
-            Query: dbName
+            name: 'open_db',
+            query: dbName
         });
     };
     /**
      * creates DataBase
      *
-     * @param {IDataBaseOption} dataBase
+     * @param {IDataBase} dataBase
      * @returns
      * @memberof Instance
      */
     Instance.prototype.createDb = function (dataBase) {
         return this.pushApi({
-            Name: 'create_db',
-            Query: dataBase
+            name: 'create_db',
+            query: dataBase
         });
     };
     /**
@@ -248,8 +248,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.dropDb = function () {
         return this.pushApi({
-            Name: 'drop_db',
-            Query: null
+            name: 'drop_db',
+            query: null
         });
     };
     /**
@@ -262,8 +262,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.select = function (query) {
         return this.pushApi({
-            Name: 'select',
-            Query: query
+            name: 'select',
+            query: query
         });
     };
     /**
@@ -275,8 +275,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.count = function (query) {
         return this.pushApi({
-            Name: 'count',
-            Query: query
+            name: 'count',
+            query: query
         });
     };
     /**
@@ -288,8 +288,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.insert = function (query) {
         return this.pushApi({
-            Name: 'insert',
-            Query: query
+            name: 'insert',
+            query: query
         });
     };
     /**
@@ -301,8 +301,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.update = function (query) {
         return this.pushApi({
-            Name: 'update',
-            Query: query
+            name: 'update',
+            query: query
         });
     };
     /**
@@ -314,8 +314,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.remove = function (query) {
         return this.pushApi({
-            Name: 'remove',
-            Query: query
+            name: 'remove',
+            query: query
         });
     };
     /**
@@ -327,8 +327,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.clear = function (tableName) {
         return this.pushApi({
-            Name: 'clear',
-            Query: tableName
+            name: 'clear',
+            query: tableName
         });
     };
     /**
@@ -340,8 +340,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.bulkInsert = function (query) {
         return this.pushApi({
-            Name: 'bulk_insert',
-            Query: query
+            name: 'bulk_insert',
+            query: query
         });
     };
     /**
@@ -361,8 +361,8 @@ var Instance = /** @class */ (function (_super) {
         };
         return new Promise(function (resolve, reject) {
             _this.pushApi({
-                Name: 'export_json',
-                Query: query
+                name: 'export_json',
+                query: query
             }).then(function (url) {
                 onSuccess(url);
                 resolve();
@@ -380,8 +380,8 @@ var Instance = /** @class */ (function (_super) {
     Instance.prototype.setLogStatus = function (status) {
         _config__WEBPACK_IMPORTED_MODULE_1__["Config"]._isLogEnabled = status ? status : _config__WEBPACK_IMPORTED_MODULE_1__["Config"]._isLogEnabled;
         this.pushApi({
-            Name: 'enable_log',
-            Query: _config__WEBPACK_IMPORTED_MODULE_1__["Config"]._isLogEnabled
+            name: 'enable_log',
+            query: _config__WEBPACK_IMPORTED_MODULE_1__["Config"]._isLogEnabled
         });
     };
     /**
@@ -393,8 +393,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.getDbVersion = function (dbName) {
         return this.pushApi({
-            Name: 'get_db_version',
-            Query: dbName
+            name: 'get_db_version',
+            query: dbName
         });
     };
     /**
@@ -406,8 +406,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.isDbExist = function (dbInfo) {
         return this.pushApi({
-            Name: 'is_db_exist',
-            Query: dbInfo
+            name: 'is_db_exist',
+            query: dbInfo
         });
     };
     /**
@@ -418,8 +418,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.getDbList = function () {
         return this.pushApi({
-            Name: 'get_db_list',
-            Query: null
+            name: 'get_db_list',
+            query: null
         });
     };
     /**
@@ -431,8 +431,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.getDbSchema = function (dbName) {
         return this.pushApi({
-            Name: 'get_db_schema',
-            Query: dbName
+            name: 'get_db_schema',
+            query: dbName
         });
     };
     return Instance;
@@ -477,19 +477,19 @@ var InstanceHelper = /** @class */ (function () {
     InstanceHelper.prototype.processFinishedQuery = function (message) {
         var finished_request = this._requestQueue.shift();
         if (finished_request) {
-            _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request finished : " + finished_request.Name);
-            if (message.ErrorOccured) {
-                if (finished_request.OnError) {
-                    finished_request.OnError(message.ErrorDetails);
+            _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request finished : " + finished_request.name);
+            if (message.errorOccured) {
+                if (finished_request.onError) {
+                    finished_request.onError(message.errorDetails);
                 }
             }
             else {
-                if (finished_request.OnSuccess) {
+                if (finished_request.onSuccess) {
                     var open_db_queries = ['open_db', 'create_db'];
-                    if (open_db_queries.indexOf(finished_request.Name) >= 0) {
+                    if (open_db_queries.indexOf(finished_request.name) >= 0) {
                         this._isDbOpened = true;
                     }
-                    finished_request.OnSuccess(message.ReturnedValue);
+                    finished_request.onSuccess(message.returnedValue);
                 }
             }
             this._isCodeExecuting = false;
@@ -499,10 +499,10 @@ var InstanceHelper = /** @class */ (function () {
     InstanceHelper.prototype.pushApi = function (request) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            request.OnSuccess = function (result) {
+            request.onSuccess = function (result) {
                 resolve(result);
             };
-            request.OnError = function (error) {
+            request.onError = function (error) {
                 reject(error);
             };
             _this.prcoessExecutionOfQry(request);
@@ -511,7 +511,7 @@ var InstanceHelper = /** @class */ (function () {
     InstanceHelper.prototype.prcoessExecutionOfQry = function (request) {
         this._requestQueue.push(request);
         this.executeQry();
-        _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request pushed: " + request.Name);
+        _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request pushed: " + request.name);
     };
     InstanceHelper.prototype.executeQry = function () {
         var _this = this;
@@ -522,7 +522,7 @@ var InstanceHelper = /** @class */ (function () {
             }
             var allowed_query_index = -1;
             this._requestQueue.every(function (item, index) {
-                if (_this._whiteListApi.indexOf(item.Name) >= 0) {
+                if (_this._whiteListApi.indexOf(item.name) >= 0) {
                     allowed_query_index = index;
                     return false;
                 }
@@ -538,10 +538,10 @@ var InstanceHelper = /** @class */ (function () {
     InstanceHelper.prototype.sendRequestToWorker = function (firsrtRequest) {
         this._isCodeExecuting = true;
         var request = {
-            Name: firsrtRequest.Name,
-            Query: firsrtRequest.Query
+            name: firsrtRequest.name,
+            query: firsrtRequest.query
         };
-        _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request executing : " + firsrtRequest.Name);
+        _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request executing : " + firsrtRequest.name);
         this._worker.postMessage(request);
     };
     return InstanceHelper;
@@ -568,9 +568,9 @@ __webpack_require__.r(__webpack_exports__);
 var LogHelper = /** @class */ (function () {
     function LogHelper(type, info) {
         if (info === void 0) { info = null; }
-        this._type = type;
+        this.type = type;
         this._info = info;
-        this._message = this.getMsg();
+        this.message = this.getMsg();
     }
     LogHelper.prototype.throw = function () {
         throw this.get();
@@ -588,13 +588,13 @@ var LogHelper = /** @class */ (function () {
     };
     LogHelper.prototype.get = function () {
         return {
-            _message: this._message,
-            _type: this._type
+            message: this.message,
+            type: this.type
         };
     };
     LogHelper.prototype.getMsg = function () {
         var err_msg;
-        switch (this._type) {
+        switch (this.type) {
             case _enums__WEBPACK_IMPORTED_MODULE_0__["Error_Type"].WorkerNotSupplied:
                 err_msg = "Worker object is not passed in instance constructor";
                 break;
@@ -602,7 +602,7 @@ var LogHelper = /** @class */ (function () {
                 err_msg = "Browser does not support indexeddb";
                 break;
             default:
-                err_msg = this._message;
+                err_msg = this.message;
                 break;
         }
         return err_msg;

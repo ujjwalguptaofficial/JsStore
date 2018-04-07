@@ -7,7 +7,7 @@ export class Helper extends GroupByHelper {
     }
 
     processOrderBy() {
-        var order = this._query.order;
+        var order = this.query.order;
         if (order && this._results.length > 0 && !this._sorted && order.by) {
             order.Type = order.Type ? order.Type.toLowerCase() : 'asc';
             var order_column = order.by,
@@ -56,7 +56,7 @@ export class Helper extends GroupByHelper {
             column_to_aggregate;
         // free results memory
         this._results = undefined;
-        for (var prop in this._query.Aggregate) {
+        for (var prop in this.query.Aggregate) {
             switch (prop) {
                 case 'count':
                     var getCount = () => {
@@ -66,13 +66,13 @@ export class Helper extends GroupByHelper {
                         }
                         return result;
                     };
-                    if (typeof this._query.Aggregate[prop] === 'string') {
-                        column_to_aggregate = this._query.Aggregate[prop];
+                    if (typeof this.query.Aggregate[prop] === 'string') {
+                        column_to_aggregate = this.query.Aggregate[prop];
                         results["count(" + column_to_aggregate + ")"] = getCount();
                     }
-                    else if (Array.isArray(this._query.Aggregate[prop])) {
-                        for (var key in this._query.Aggregate[prop]) {
-                            column_to_aggregate = this._query.Aggregate[prop][key];
+                    else if (Array.isArray(this.query.Aggregate[prop])) {
+                        for (var key in this.query.Aggregate[prop]) {
+                            column_to_aggregate = this.query.Aggregate[prop][key];
                             results["count(" + column_to_aggregate + ")"] = getCount();
                         }
                     }
@@ -86,13 +86,13 @@ export class Helper extends GroupByHelper {
                         }
                         return result;
                     };
-                    if (typeof this._query.Aggregate[prop] === 'string') {
-                        column_to_aggregate = this._query.Aggregate[prop];
+                    if (typeof this.query.Aggregate[prop] === 'string') {
+                        column_to_aggregate = this.query.Aggregate[prop];
                         results["max(" + column_to_aggregate + ")"] = getMax();
                     }
-                    else if (Array.isArray(this._query.Aggregate[prop])) {
-                        for (var key in this._query.Aggregate[prop]) {
-                            column_to_aggregate = this._query.Aggregate[prop][key];
+                    else if (Array.isArray(this.query.Aggregate[prop])) {
+                        for (var key in this.query.Aggregate[prop]) {
+                            column_to_aggregate = this.query.Aggregate[prop][key];
                             results["max(" + column_to_aggregate + ")"] = getMax();
                         }
                     }
@@ -107,13 +107,13 @@ export class Helper extends GroupByHelper {
                         }
                         return result;
                     };
-                    if (typeof this._query.Aggregate[prop] === 'string') {
-                        column_to_aggregate = this._query.Aggregate[prop];
+                    if (typeof this.query.Aggregate[prop] === 'string') {
+                        column_to_aggregate = this.query.Aggregate[prop];
                         results["min(" + column_to_aggregate + ")"] = getMin();
                     }
-                    else if (Array.isArray(this._query.Aggregate[prop])) {
-                        for (var key in this._query.Aggregate[prop]) {
-                            column_to_aggregate = this._query.Aggregate[prop][key];
+                    else if (Array.isArray(this.query.Aggregate[prop])) {
+                        for (var key in this.query.Aggregate[prop]) {
+                            column_to_aggregate = this.query.Aggregate[prop][key];
                             results["min(" + column_to_aggregate + ")"] = getMin();
                         }
                     }
@@ -126,13 +126,13 @@ export class Helper extends GroupByHelper {
                         }
                         return result;
                     };
-                    if (typeof this._query.Aggregate[prop] === 'string') {
-                        column_to_aggregate = this._query.Aggregate[prop];
+                    if (typeof this.query.Aggregate[prop] === 'string') {
+                        column_to_aggregate = this.query.Aggregate[prop];
                         results["sum(" + column_to_aggregate + ")"] = getSum();
                     }
-                    else if (Array.isArray(this._query.Aggregate[prop])) {
-                        for (var key in this._query.Aggregate[prop]) {
-                            column_to_aggregate = this._query.Aggregate[prop][key];
+                    else if (Array.isArray(this.query.Aggregate[prop])) {
+                        for (var key in this.query.Aggregate[prop]) {
+                            column_to_aggregate = this.query.Aggregate[prop][key];
                             results["sum(" + column_to_aggregate + ")"] = getSum();
                         }
                     }
@@ -145,13 +145,13 @@ export class Helper extends GroupByHelper {
                         }
                         return result / datas.length;
                     };
-                    if (typeof this._query.Aggregate[prop] === 'string') {
-                        column_to_aggregate = this._query.Aggregate[prop];
+                    if (typeof this.query.Aggregate[prop] === 'string') {
+                        column_to_aggregate = this.query.Aggregate[prop];
                         results["avg(" + column_to_aggregate + ")"] = getAvg();
                     }
-                    else if (Array.isArray(this._query.Aggregate[prop])) {
-                        for (var key in this._query.Aggregate[prop]) {
-                            column_to_aggregate = this._query.Aggregate[prop][key];
+                    else if (Array.isArray(this.query.Aggregate[prop])) {
+                        for (var key in this.query.Aggregate[prop]) {
+                            column_to_aggregate = this.query.Aggregate[prop][key];
                             results["avg(" + column_to_aggregate + ")"] = getAvg();
                         }
                     }

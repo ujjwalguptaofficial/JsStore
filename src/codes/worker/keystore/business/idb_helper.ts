@@ -1,5 +1,5 @@
 import { QueryExecutor } from '../query_executor';
-import { Connection_Status } from '../enums';
+import { CONNECTION_STATUS } from '../enums';
 
 export class IdbHelper {
     static _dbConnection;
@@ -7,7 +7,7 @@ export class IdbHelper {
     static _transaction: IDBTransaction = null;
 
     static callDbDroppedByBrowser() {
-        this._isDbDeletedByBrowser = QueryExecutor._dbStatus.ConStatus === Connection_Status.Connected ? true : false;
+        this._isDbDeletedByBrowser = QueryExecutor.dbStatus.conStatus === CONNECTION_STATUS.Connected ? true : false;
     }
 
     static createTransaction(tableNames, callBack: () => void, mode?) {

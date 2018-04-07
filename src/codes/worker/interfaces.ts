@@ -1,43 +1,67 @@
-import { Error_Type, Connection_Status } from "./enums";
+import { ERROR_TYPE, CONNECTION_STATUS } from "./enums";
+
+export interface IError {
+    type: ERROR_TYPE;
+    message: string;
+}
+
+export interface IWebWorkerRequest {
+    name: string;
+    query: string | object;
+    onSuccess: (results) => void;
+    onError: (err: IError) => void;
+}
+
+export interface IWebWorkerResult {
+    errorOccured: boolean;
+    errorDetails: object;
+    returnedValue: number | string | object[];
+    throwError: boolean;
+}
+
+export interface IDbStatus {
+    conStatus: CONNECTION_STATUS;
+    lastError: ERROR_TYPE;
+}
 
 export interface IDbInfo {
-    DbName: string;
-    Table: {
-        Name: string,
-        Version: number
+    dbName: string;
+    table: {
+        name: string,
+        version: number
     };
 }
 
-export interface IDataBaseOption {
-    Name: string;
-    Tables: ITableOption[];
+export interface IDataBase {
+    name: string;
+    tables: ITable[];
 }
 
-export interface ITableOption {
-    Name: string;
-    Columns: IColumnOption[];
-    Version?: number;
+export interface ITable {
+    name: string;
+    columns: IColumn[];
+    version?: number;
 }
 
-export interface IColumnOption {
-    Name: string;
-    PrimaryKey?: boolean;
-    AutoIncrement?: boolean;
-    Unique?: boolean;
-    NotNull?: boolean;
-    DataType?: string;
-    Default?: any;
-    MultiEntry?: boolean;
-    EnableSearch?: boolean;
+export interface IColumn {
+    name: string;
+    primaryKey?: boolean;
+    autoIncrement?: boolean;
+    unique?: boolean;
+    notNull?: boolean;
+    dataType?: string;
+    default?;
+    multiEntry?: boolean;
+    enableSearch?: boolean;
 }
 
 export interface ISelect {
-    from: any;
-    where?: any;
+    from: string | object;
+    where?;
     skip?: number;
     limit?: number;
     order?: IOrder;
-    groupBy?: any;
+    groupBy?: string | string[];
     aggregate?: IAggregate;
     ignoreCase?: boolean;
     distinct?: boolean;
@@ -49,27 +73,27 @@ export interface IOrder {
 }
 
 export interface ICount {
-    from: any;
+    from: string | object;
     ignoreCase?: boolean;
-    where?: any;
+    where?;
 }
 
 export interface IRemove {
     from: string;
     ignoreCase?: boolean;
-    where?: any;
+    where?: object;
 }
 
 export interface IUpdate {
     in: string;
     ignoreCase?: boolean;
-    set: any;
-    where?: any;
+    set: object;
+    where?;
 }
 
 export interface IInsert {
     into: string;
-    values: any[];
+    values: object[];
     return?: boolean;
     skipDataCheck?: boolean;
 }
@@ -83,7 +107,7 @@ export interface ICondition {
 export interface ITableJoin {
     column: string;
     table: string;
-    where?: any;
+    where?: object;
     order?: IOrder;
     joinType?: string;
     nextJoin?: INextJoin;
@@ -108,23 +132,17 @@ export interface INextJoin {
 }
 
 export interface IAggregate {
-    max?: any[];
-    min?: any[];
-    sum?: any[];
-    count?: any[];
-    avg?: any[];
+    max?: string | string[];
+    min?: string | string[];
+    sum?: string | string[];
+    count?: string | string[];
+    avg?: string | string[];
 }
 
 export interface ITranscationQry {
-    TableNames: string[];
-    Logic: string;
-    Data: any;
-    AbortOnError?: boolean;
-    OnSuccess?: (results: any[]) => void;
-    OnError?: (err: IError) => void;
+    tableNames: string[];
+    logic: string;
+    data: object;
+    abortOnError?: boolean;
 }
 
-export interface IError {
-    _type: Error_Type;
-    _message: string;
-}

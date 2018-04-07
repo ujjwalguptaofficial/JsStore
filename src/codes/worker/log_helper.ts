@@ -1,16 +1,16 @@
 import { IError } from "./interfaces";
-import { Error_Type } from "./enums";
+import { ERROR_TYPE } from "./enums";
 import { Config } from "./config";
 
 export class LogHelper implements IError {
-    _type: Error_Type;
-    _message: string;
+    type: ERROR_TYPE;
+    message: string;
     private _info: any;
 
-    constructor(type: Error_Type, info: any = null) {
-        this._type = type;
+    constructor(type: ERROR_TYPE, info: any = null) {
+        this.type = type;
         this._info = info;
-        this._message = this.getMsg();
+        this.message = this.getMsg();
     }
 
     public throw() {
@@ -33,68 +33,68 @@ export class LogHelper implements IError {
 
     public get() {
         return {
-            _message: this._message,
-            _type: this._type
+            message: this.message,
+            type: this.type
         } as IError;
     }
 
     private getMsg() {
         var err_msg: string;
-        switch (this._type) {
-            case Error_Type.NotArray:
+        switch (this.type) {
+            case ERROR_TYPE.NotArray:
                 err_msg = "Supplied value is not an array";
                 break;
-            case Error_Type.UndefinedColumn:
+            case ERROR_TYPE.UndefinedColumn:
                 err_msg = "Column is undefined in Where";
                 break;
-            case Error_Type.UndefinedValue:
+            case ERROR_TYPE.UndefinedValue:
                 err_msg = "Value is undefined in Where";
                 break;
-            case Error_Type.UndefinedColumnName:
+            case ERROR_TYPE.UndefinedColumnName:
                 err_msg = "Column name is undefined '" + this._info['TableName'] + "'";
                 break;
-            case Error_Type.UndefinedDbName:
+            case ERROR_TYPE.UndefinedDbName:
                 err_msg = "Database name is not supplied";
                 break;
-            case Error_Type.UndefinedColumnValue:
+            case ERROR_TYPE.UndefinedColumnValue:
                 err_msg = "Column value is undefined";
                 break;
-            case Error_Type.NoValueSupplied:
+            case ERROR_TYPE.NoValueSupplied:
                 err_msg = "No value supplied";
                 break;
-            case Error_Type.InvalidOp:
+            case ERROR_TYPE.InvalidOp:
                 err_msg = "Invalid Op Value '" + this._info['Op'] + "'";
                 break;
-            case Error_Type.ColumnNotExist:
+            case ERROR_TYPE.ColumnNotExist:
                 err_msg = "Column '" + this._info['ColumnName'] + "' does not exist";
                 break;
-            case Error_Type.EnableSearchOff:
+            case ERROR_TYPE.EnableSearchOff:
                 err_msg = "Search is turned off for the Column '" + this._info['ColumnName'] + "'";
                 break;
-            case Error_Type.NullValue:
+            case ERROR_TYPE.NullValue:
                 err_msg = "Null value is not allowed for column '" + this._info['ColumnName'] + "'";
                 break;
-            case Error_Type.BadDataType:
+            case ERROR_TYPE.BadDataType:
                 err_msg = "Supplied value for column '" + this._info['ColumnName'] +
                     "' does not have valid type";
                 break;
-            case Error_Type.NextJoinNotExist: err_msg = "Next join details not supplied";
+            case ERROR_TYPE.NextJoinNotExist: err_msg = "Next join details not supplied";
                 break;
-            case Error_Type.TableNotExist:
+            case ERROR_TYPE.TableNotExist:
                 err_msg = "Table '" + this._info['TableName'] + "' does not exist";
                 break;
-            case Error_Type.DbNotExist:
+            case ERROR_TYPE.DbNotExist:
                 err_msg = "Database '" + this._info['DbName'] + "' does not exist";
                 break;
-            case Error_Type.NotObject:
+            case ERROR_TYPE.NotObject:
                 err_msg = "supplied value is not object";
                 break;
-            case Error_Type.InvalidOp:
+            case ERROR_TYPE.InvalidOp:
                 err_msg = "Invalid Config '" + this._info['Config'] + " '";
-            case Error_Type.DbBlocked:
+            case ERROR_TYPE.DbBlocked:
                 err_msg = `database is blocked, cant be deleted right now`;
             default:
-                err_msg = this._message;
+                err_msg = this.message;
                 break;
         }
         return err_msg;

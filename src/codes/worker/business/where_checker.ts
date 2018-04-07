@@ -1,5 +1,5 @@
-import { Occurence } from "../enums";
-import { QueryOption } from "../inner_enums";
+import { OCCURENCE } from "../enums";
+import { QUERY_OPTION } from "../enums";
 
 
 /**
@@ -26,14 +26,14 @@ export class WhereChecker {
           for (var key in column_value) {
             if (this._status) {
               switch (key) {
-                case QueryOption.In: this.checkIn(columnName, rowValue[columnName]); break;
-                case QueryOption.Like: this.checkLike(columnName, rowValue[columnName]); break;
-                case QueryOption.Between:
-                case QueryOption.Greater_Than:
-                case QueryOption.Less_Than:
-                case QueryOption.Greater_Than_Equal_To:
-                case QueryOption.Less_Than_Equal_To:
-                case QueryOption.Not_Equal_To:
+                case QUERY_OPTION.In: this.checkIn(columnName, rowValue[columnName]); break;
+                case QUERY_OPTION.Like: this.checkLike(columnName, rowValue[columnName]); break;
+                case QUERY_OPTION.Between:
+                case QUERY_OPTION.GreaterThan:
+                case QUERY_OPTION.LessThan:
+                case QUERY_OPTION.GreaterThanEqualTo:
+                case QUERY_OPTION.LessThanEqualTo:
+                case QUERY_OPTION.NotEqualTo:
                   this.checkComparisionOp(columnName, rowValue[columnName], key);
                   break;
               }
@@ -58,7 +58,7 @@ export class WhereChecker {
   }
 
   private checkIn(column, value) {
-    for (var i = 0, values = this._where[column][QueryOption.In], length = values.length; i < length; i++) {
+    for (var i = 0, values = this._where[column][QUERY_OPTION.In], length = values.length; i < length; i++) {
       if (values[i] === value) {
         this._status = true;
         break;
@@ -70,27 +70,27 @@ export class WhereChecker {
   }
 
   private checkLike(column, value) {
-    var values = this._where[column][QueryOption.Like].split('%'),
-      comp_symbol: Occurence,
+    var values = this._where[column][QUERY_OPTION.Like].split('%'),
+      comp_symbol: OCCURENCE,
       comp_value,
       symbol_index;
     if (values[1]) {
       comp_value = values[1];
-      comp_symbol = values.length > 2 ? Occurence.Any : Occurence.Last;
+      comp_symbol = values.length > 2 ? OCCURENCE.Any : OCCURENCE.Last;
     }
     else {
       comp_value = values[0];
-      comp_symbol = Occurence.First;
+      comp_symbol = OCCURENCE.First;
     }
     value = value.toLowerCase();
 
     switch (comp_symbol) {
-      case Occurence.Any:
+      case OCCURENCE.Any:
         symbol_index = value.indexOf(comp_value.toLowerCase());
         if (symbol_index < 0) {
           this._status = false;
         } break;
-      case Occurence.First:
+      case OCCURENCE.First:
         symbol_index = value.indexOf(comp_value.toLowerCase());
         if (symbol_index > 0 || symbol_index < 0) {
           this._status = false;
@@ -107,27 +107,27 @@ export class WhereChecker {
     var compare_value = this._where[column][symbol];
     switch (symbol) {
       // greater than
-      case QueryOption.Greater_Than: if (value <= compare_value) {
+      case QUERY_OPTION.GreaterThan: if (value <= compare_value) {
         this._status = false;
       } break;
       // less than
-      case QueryOption.Less_Than: if (value >= compare_value) {
+      case QUERY_OPTION.LessThan: if (value >= compare_value) {
         this._status = false;
       } break;
       // less than equal
-      case QueryOption.Less_Than_Equal_To: if (value > compare_value) {
+      case QUERY_OPTION.LessThanEqualTo: if (value > compare_value) {
         this._status = false;
       } break;
       // greather than equal
-      case QueryOption.Greater_Than_Equal_To: if (value < compare_value) {
+      case QUERY_OPTION.GreaterThanEqualTo: if (value < compare_value) {
         this._status = false;
       } break;
       // between
-      case QueryOption.Between: if (value < compare_value.Low || value > compare_value.High) {
+      case QUERY_OPTION.Between: if (value < compare_value.Low || value > compare_value.High) {
         this._status = false;
       } break;
       // Not equal to
-      case QueryOption.Not_Equal_To: if (value === compare_value) {
+      case QUERY_OPTION.NotEqualTo: if (value === compare_value) {
         this._status = false;
       } break;
     }

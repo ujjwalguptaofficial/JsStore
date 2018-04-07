@@ -1,34 +1,34 @@
-import { IColumnOption } from "../interfaces";
+import { IColumn } from "../interfaces";
 import { LogHelper } from "../log_helper";
-import { Error_Type } from "../enums";
+import { ERROR_TYPE } from "../enums";
 
-export class Column {
-    _name: string;
-    _autoIncrement: boolean;
-    _primaryKey: boolean;
-    _unique: boolean;
-    _notNull: boolean;
-    _dataType: string;
-    _default: any;
-    _multiEntry: boolean;
-    _enableSearch: boolean;
+export class Column implements IColumn {
+    name: string;
+    autoIncrement: boolean;
+    primaryKey: boolean;
+    unique: boolean;
+    notNull: boolean;
+    dataType: string;
+    default;
+    multiEntry: boolean;
+    enableSearch: boolean;
 
-    constructor(key: IColumnOption, tableName: string) {
-        if (key.Name != null) {
-            this._name = key.Name;
+    constructor(key: IColumn, tableName: string) {
+        if (key.name != null) {
+            this.name = key.name;
         }
         else {
-            var err = new LogHelper(Error_Type.UndefinedColumnName, { TableName: tableName });
+            const err = new LogHelper(ERROR_TYPE.UndefinedColumnName, { TableName: tableName });
             err.throw();
         }
-        this._autoIncrement = key.AutoIncrement != null ? key.AutoIncrement : false;
-        this._primaryKey = key.PrimaryKey != null ? key.PrimaryKey : false;
-        this._unique = key.Unique != null ? key.Unique : false;
-        this._notNull = key.NotNull != null ? key.NotNull : false;
-        this._dataType = key.DataType != null ? key.DataType : (key.AutoIncrement ? 'number' : null);
-        this._default = key.Default;
-        this._multiEntry = key.MultiEntry == null ? false : key.MultiEntry;
-        this._enableSearch = key.EnableSearch == null ? true : key.EnableSearch;
+        this.autoIncrement = key.autoIncrement != null ? key.autoIncrement : false;
+        this.primaryKey = key.primaryKey != null ? key.primaryKey : false;
+        this.unique = key.unique != null ? key.unique : false;
+        this.notNull = key.notNull != null ? key.notNull : false;
+        this.dataType = key.dataType != null ? key.dataType : (key.autoIncrement ? 'number' : null);
+        this.default = key.default;
+        this.multiEntry = key.multiEntry == null ? false : key.multiEntry;
+        this.enableSearch = key.enableSearch == null ? true : key.enableSearch;
     }
 
 }

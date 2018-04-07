@@ -1,5 +1,5 @@
 import * as JsStore from '../index';
-import { Connection_Status } from './enums';
+import { CONNECTION_STATUS } from './enums';
 import { QueryExecutor } from './query_executor';
 
 export class Utils {
@@ -21,21 +21,21 @@ export class Utils {
                 (self as any).webkitIDBKeyRange || (self as any).msIDBKeyRange;
         }
         else {
-            JsStore.IdbHelper._dbStatus = {
-                ConStatus: JsStore.Connection_Status.UnableToStart,
-                LastError: JsStore.Error_Type.IndexedDbUndefined
+            JsStore.IdbHelper.dbStatus = {
+                conStatus: JsStore.CONNECTION_STATUS.UnableToStart,
+                lastError: JsStore.ERROR_TYPE.IndexedDbUndefined
             };
         }
     }
 
-    static updateDbStatus(status: Connection_Status, err?: JsStore.Error_Type) {
+    static updateDbStatus(status: CONNECTION_STATUS, err?: JsStore.ERROR_TYPE) {
         if (err === undefined) {
-            QueryExecutor._dbStatus.ConStatus = status;
+            QueryExecutor.dbStatus.conStatus = status;
         }
         else {
-            QueryExecutor._dbStatus = {
-                ConStatus: status,
-                LastError: err
+            QueryExecutor.dbStatus = {
+                conStatus: status,
+                lastError: err
             };
         }
     }

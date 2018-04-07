@@ -7,29 +7,29 @@ import * as KeyStore from "../keystore/index";
 export class Clear extends Base {
     constructor(tableName: string, onSuccess: () => void, onError: (err: IError) => void) {
         super();
-        this._query = tableName;
-        this._onSuccess = onSuccess;
-        this._onError = onError;
+        this.query = tableName;
+        this.onSuccess = onSuccess;
+        this.onError = onError;
     }
 
     execute() {
-        IdbHelper.createTransaction([this._query], () => {
-            if (this._errorOccured === false) {
-                this._onSuccess();
+        this.createTransaction([this.query], () => {
+            if (this.errorOccured === false) {
+                this.onSuccess();
             }
         });
-        var clear_request: IDBRequest = IdbHelper._transaction.objectStore(this._query).clear();
-        clear_request.onsuccess = (e) => {
-            var current_table = this.getTable(this._query);
-            current_table._columns.forEach((column: Column) => {
-                if (column._autoIncrement) {
-                    KeyStore.set(`JsStore_${IdbHelper._activeDb._name}_${this._query}_${column._name}_Value`, 0);
+        const clearRequest: IDBRequest = this.transaction.objectStore(this.query).clear();
+        clearRequest.onsuccess = (e) => {
+            const currentTable = this.getTable(this.query);
+            currentTable.columns.forEach((column: Column) => {
+                if (column.autoIncrement) {
+                    KeyStore.set(`JsStore_${this.activeDb.name}_${this.query}_${column.name}_Value`, 0);
                 }
             });
         };
 
-        clear_request.onerror = (e) => {
-            this._errorOccured = true;
+        clearRequest.onerror = (e) => {
+            this.errorOccured = true;
             this.onErrorOccured(e);
         };
     }

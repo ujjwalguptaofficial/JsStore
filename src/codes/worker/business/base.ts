@@ -3,37 +3,36 @@ import { IError } from "../interfaces";
 import { WhereChecker } from "./where_checker";
 import { IdbHelper } from "./idb_helper";
 import { LogHelper } from "../log_helper";
-import { Error_Type, Occurence } from "../enums";
+import { ERROR_TYPE, OCCURENCE } from "../enums";
 import { Column } from "../model/column";
-import { Util } from "../util";
-import { QueryOption } from "../inner_enums";
+import { QUERY_OPTION } from "../enums";
 
 export class Base extends BaseHelper {
-    _error: IError;
-    _errorOccured: boolean = false;
-    _errorCount = 0;
-    _rowAffected = 0;
-    _onSuccess: (result?) => void;
-    _onError: (err: IError) => void;
-    _objectStore: IDBObjectStore;
-    _query;
-    _whereChecker: WhereChecker;
-    _tableName: string;
-    _isTransaction: boolean;
-    _cursorOpenRequest: IDBRequest;
+    error: IError;
+    errorOccured = false;
+    errorCount = 0;
+    rowAffected = 0;
+    onSuccess: (result?) => void;
+    onError: (err: IError) => void;
+    objectStore: IDBObjectStore;
+    query;
+    whereCheckerInstance: WhereChecker;
+    tableName: string;
+    isTransaction: boolean;
+    cursorOpenRequest: IDBRequest;
 
     protected onErrorOccured(e, customError = false) {
-        ++this._errorCount;
-        if (this._errorCount === 1) {
+        ++this.errorCount;
+        if (this.errorCount === 1) {
             if (customError) {
                 e.logError();
-                this._onError((e as LogHelper).get());
+                this.onError((e as LogHelper).get());
             }
             else {
-                var error = new LogHelper((e as any).target.error.name);
-                error._message = (e as any).target.error.message;
+                const error = new LogHelper((e as any).target.error.name);
+                error.message = (e as any).target.error.message;
                 error.logError();
-                this._onError(error.get());
+                this.onError(error.get());
             }
         }
     }
@@ -41,7 +40,7 @@ export class Base extends BaseHelper {
     protected onExceptionOccured(ex: DOMException, info) {
         switch (ex.name) {
             case 'NotFoundError':
-                var error = new LogHelper(Error_Type.TableNotExist, info);
+                const error = new LogHelper(ERROR_TYPE.TableNotExist, info);
                 this.onErrorOccured(error, true);
                 break;
             default: console.error(ex);
@@ -49,64 +48,64 @@ export class Base extends BaseHelper {
     }
 
     protected getColumnInfo(columnName) {
-        var column_info: Column;
-        this.getTable(this._tableName)._columns.every((column) => {
-            if (column._name === columnName) {
-                column_info = column;
+        let columnInfo: Column;
+        this.getTable(this.tableName).columns.every((column) => {
+            if (column.name === columnName) {
+                columnInfo = column;
                 return false;
             }
             return true;
         });
-        return column_info;
+        return columnInfo;
     }
 
     protected addGreatAndLessToNotOp() {
-        var where_query = this._query.where,
-            value;
-        if (this.containsNot(where_query)) {
-            var query_keys = Object.keys(where_query);
-            if (query_keys.length === 1) {
-                query_keys.forEach((prop) => {
-                    value = where_query[prop];
-                    if (value[QueryOption.Not_Equal_To]) {
-                        where_query[prop][QueryOption.Greater_Than] = value[QueryOption.Not_Equal_To];
-                        if (where_query[QueryOption.Or] === undefined) {
-                            where_query[QueryOption.Or] = {};
-                            where_query[QueryOption.Or][prop] = {};
+        const whereQuery = this.query.where;
+        let value;
+        if (this.containsNot(whereQuery)) {
+            const queryKeys = Object.keys(whereQuery);
+            if (queryKeys.length === 1) {
+                queryKeys.forEach((prop) => {
+                    value = whereQuery[prop];
+                    if (value[QUERY_OPTION.NotEqualTo]) {
+                        whereQuery[prop][QUERY_OPTION.GreaterThan] = value[QUERY_OPTION.NotEqualTo];
+                        if (whereQuery[QUERY_OPTION.Or] === undefined) {
+                            whereQuery[QUERY_OPTION.Or] = {};
+                            whereQuery[QUERY_OPTION.Or][prop] = {};
                         }
-                        else if (where_query[QueryOption.Or][prop] === undefined) {
-                            where_query[QueryOption.Or][prop] = {};
+                        else if (whereQuery[QUERY_OPTION.Or][prop] === undefined) {
+                            whereQuery[QUERY_OPTION.Or][prop] = {};
                         }
-                        where_query[QueryOption.Or][prop][QueryOption.Less_Than] = value[QueryOption.Not_Equal_To];
-                        delete where_query[prop][QueryOption.Not_Equal_To];
+                        whereQuery[QUERY_OPTION.Or][prop][QUERY_OPTION.LessThan] = value[QUERY_OPTION.NotEqualTo];
+                        delete whereQuery[prop][QUERY_OPTION.NotEqualTo];
                     }
                 });
-                this._query.where = where_query;
+                this.query.where = whereQuery;
             }
             else {
                 var where_tmp = [];
-                query_keys.forEach((prop) => {
-                    value = where_query[prop];
+                queryKeys.forEach((prop) => {
+                    value = whereQuery[prop];
                     var tmp_qry = {};
-                    if (value[QueryOption.Not_Equal_To]) {
+                    if (value[QUERY_OPTION.NotEqualTo]) {
                         tmp_qry[prop] = {};
-                        tmp_qry[prop][QueryOption.Greater_Than] = value[QueryOption.Not_Equal_To];
-                        tmp_qry[prop][QueryOption.Or] = {};
-                        tmp_qry[prop][QueryOption.Or][prop] = {};
-                        tmp_qry[prop][QueryOption.Or][prop][QueryOption.Less_Than] = value[QueryOption.Not_Equal_To];
+                        tmp_qry[prop][QUERY_OPTION.GreaterThan] = value[QUERY_OPTION.NotEqualTo];
+                        tmp_qry[prop][QUERY_OPTION.Or] = {};
+                        tmp_qry[prop][QUERY_OPTION.Or][prop] = {};
+                        tmp_qry[prop][QUERY_OPTION.Or][prop][QUERY_OPTION.LessThan] = value[QUERY_OPTION.NotEqualTo];
                     }
                     else {
                         tmp_qry[prop] = value;
                     }
                     where_tmp.push(tmp_qry);
                 });
-                this._query.where = where_tmp;
+                this.query.where = where_tmp;
             }
         }
     }
 
     protected goToWhereLogic = function () {
-        var column_name = Util.getObjectFirstKey(this._query.where);
+        var column_name = this.getObjectFirstKey(this._query.where);
         if (this._query.IgnoreCase === true) {
             this._query.where = this.makeQryInCaseSensitive(this._query.where);
         }
@@ -120,43 +119,43 @@ export class Base extends BaseHelper {
                 if (this._checkFlag === true) {
                     this._whereChecker = new WhereChecker(this._query.where);
                 }
-                var key = Util.getObjectFirstKey(value);
+                var key = this.getObjectFirstKey(value);
                 switch (key) {
-                    case QueryOption.Like: {
-                        var filter_values = value[QueryOption.Like].split('%'),
+                    case QUERY_OPTION.Like: {
+                        var filter_values = value[QUERY_OPTION.Like].split('%'),
                             filter_value: string,
-                            occurence: Occurence;
+                            occurence: OCCURENCE;
                         if (filter_values[1]) {
                             filter_value = filter_values[1];
-                            occurence = filter_values.length > 2 ? Occurence.Any : Occurence.Last;
+                            occurence = filter_values.length > 2 ? OCCURENCE.Any : OCCURENCE.Last;
                         }
                         else {
                             filter_value = filter_values[0];
-                            occurence = Occurence.First;
+                            occurence = OCCURENCE.First;
                         }
-                        if (occurence === Occurence.First) {
+                        if (occurence === OCCURENCE.First) {
                             this.getAllCombinationOfWord(filter_value).forEach((item) => {
                                 this.executeWhereLogic(column_name,
                                     { '-': { low: item, high: item + '\uffff' } },
                                     '-');
                             });
-                            delete this._query.where[column_name][QueryOption.Like];
+                            delete this._query.where[column_name][QUERY_OPTION.Like];
                         }
                         else {
                             this.executeLikeLogic(column_name, filter_value, occurence);
                         }
                     } break;
-                    case QueryOption.In:
-                        this.executeInLogic(column_name, value[QueryOption.In]);
+                    case QUERY_OPTION.In:
+                        this.executeInLogic(column_name, value[QUERY_OPTION.In]);
                         break;
-                    case QueryOption.Between:
-                    case QueryOption.Greater_Than:
-                    case QueryOption.Less_Than:
-                    case QueryOption.Greater_Than_Equal_To:
-                    case QueryOption.Less_Than_Equal_To:
+                    case QUERY_OPTION.Between:
+                    case QUERY_OPTION.GreaterThan:
+                    case QUERY_OPTION.LessThan:
+                    case QUERY_OPTION.GreaterThanEqualTo:
+                    case QUERY_OPTION.LessThanEqualTo:
                         this.executeWhereLogic(column_name, value, key);
                         break;
-                    case QueryOption.Aggregate: break;
+                    case QUERY_OPTION.Aggregate: break;
                     default: this.executeWhereLogic(column_name, value);
                 }
             }
@@ -172,8 +171,8 @@ export class Base extends BaseHelper {
             this._errorOccured = true;
             var column: Column = this.getColumnInfo(column_name),
                 error = column == null ?
-                    new LogHelper(Error_Type.ColumnNotExist, { ColumnName: column_name }) :
-                    new LogHelper(Error_Type.EnableSearchOff, { ColumnName: column_name });
+                    new LogHelper(ERROR_TYPE.ColumnNotExist, { ColumnName: column_name }) :
+                    new LogHelper(ERROR_TYPE.EnableSearchOff, { ColumnName: column_name });
 
             this.onErrorOccured(error, true);
         }
@@ -189,21 +188,21 @@ export class Base extends BaseHelper {
                 for (var key in column_value) {
                     key_value = column_value[key];
                     switch (key) {
-                        case QueryOption.In:
+                        case QUERY_OPTION.In:
                             results = results.concat(this.getAllCombinationOfWord(key_value, true));
                             break;
-                        case QueryOption.Like:
+                        case QUERY_OPTION.Like:
                             break;
                         default:
                             results = results.concat(this.getAllCombinationOfWord(key_value));
                     }
                 }
-                qry[column][QueryOption.In] = results;
+                qry[column][QUERY_OPTION.In] = results;
             }
             else {
                 results = results.concat(this.getAllCombinationOfWord(column_value));
                 qry[column] = {};
-                qry[column][QueryOption.In] = results;
+                qry[column][QUERY_OPTION.In] = results;
             }
         }
         return qry;

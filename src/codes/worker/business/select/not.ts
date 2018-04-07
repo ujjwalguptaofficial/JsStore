@@ -4,8 +4,8 @@ export class Not extends NotWhere {
     _compValue: string;
     protected executeLikeLogic(column, value: string) {
         this._compValue = value.toLowerCase();
-        this._cursorOpenRequest = this._objectStore.index(column).openCursor();
-        this._cursorOpenRequest.onerror = function (e) {
+        this.cursorOpenRequest = this.objectStore.index(column).openCursor();
+        this.cursorOpenRequest.onerror = function (e) {
             this._errorOccured = true;
             this.onErrorOccured(e);
         }.bind(this);
@@ -35,7 +35,7 @@ export class Not extends NotWhere {
                 }
             }.bind(this);
         if (this._checkFlag) {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (this._results.length !== this._limitRecord && cursor) {
                     if (this.filterOnOccurence(cursor.key) &&
@@ -49,7 +49,7 @@ export class Not extends NotWhere {
             }.bind(this);
         }
         else {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (this._results.length !== this._limitRecord && cursor) {
                     if (this.filterOnOccurence(cursor.key)) {
@@ -75,7 +75,7 @@ export class Not extends NotWhere {
                 }
             }.bind(this);
         if (this._checkFlag) {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key) &&
@@ -89,7 +89,7 @@ export class Not extends NotWhere {
             }.bind(this);
         }
         else {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key)) {
@@ -106,7 +106,7 @@ export class Not extends NotWhere {
     private executeLimit() {
         var cursor: IDBCursorWithValue;
         if (this._checkFlag) {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (this._results.length !== this._limitRecord && cursor) {
                     if (this.filterOnOccurence(cursor.key) &&
@@ -120,7 +120,7 @@ export class Not extends NotWhere {
             }.bind(this);
         }
         else {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (this._results.length !== this._limitRecord && cursor) {
                     if (this.filterOnOccurence(cursor.key)) {
@@ -137,7 +137,7 @@ export class Not extends NotWhere {
     private executeSimple() {
         var cursor: IDBCursorWithValue;
         if (this._checkFlag) {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key) &&
@@ -151,7 +151,7 @@ export class Not extends NotWhere {
             }.bind(this);
         }
         else {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key)) {

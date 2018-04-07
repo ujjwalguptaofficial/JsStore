@@ -2,24 +2,24 @@ import { Table } from "../../model/table";
 import { IError } from "../../interfaces";
 import { Column } from "../../model/column";
 import { LogHelper } from "../../log_helper";
-import { Error_Type } from "../../enums";
+import { ERROR_TYPE } from "../../enums";
 import { Util } from "../../util";
 
 export class SchemaChecker {
-    _table: Table;
+    table: Table;
     constructor(table: Table) {
-        this._table = table;
+        this.table = table;
     }
 
     check(setValue, tblName) {
-        var error: IError = null;
+        let error: IError = null;
         if (typeof setValue === 'object') {
-            if (this._table) {
+            if (this.table) {
                 // loop through table column and find data is valid
-                this._table._columns.every(function (column: Column) {
+                this.table.columns.every(function (column: Column) {
                     if (error === null) {
-                        if (column._name in setValue) {
-                            error = this.checkByColumn(column, setValue[column._name]);
+                        if (column.name in setValue) {
+                            error = this.checkByColumn(column, setValue[column.name]);
                         }
                         return true;
                     }
@@ -29,36 +29,44 @@ export class SchemaChecker {
                 }, this);
             }
             else {
-                error = new LogHelper(Error_Type.TableNotExist, { TableName: tblName });
+                error = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: tblName });
             }
         }
         else {
-            error = new LogHelper(Error_Type.NotObject);
+            error = new LogHelper(ERROR_TYPE.NotObject);
         }
         return error;
     }
 
+    private isNull_(value) {
+        return Util.isNull(value);
+    }
+
+    private getType_(value) {
+        return Util.getType(value);
+    }
+
     private checkByColumn(column, value) {
-        var error: IError = null;
+        let error: IError = null;
         // check not null schema
-        if (column._notNull && Util.isNull(value)) {
-            error = new LogHelper(Error_Type.NullValue, { ColumnName: column._name });
+        if (column._notNull && this.isNull_(value)) {
+            error = new LogHelper(ERROR_TYPE.NullValue, { ColumnName: column.name });
         }
 
         // check datatype
-        var type = Util.getType(value);
+        const type = this.getType_(value);
         if (column._dataType) {
             if (type !== column._dataType && type !== 'object') {
-                error = new LogHelper(Error_Type.BadDataType, { ColumnName: column._name });
+                error = new LogHelper(ERROR_TYPE.BadDataType, { ColumnName: column.name });
             }
         }
 
         // check allowed operators
         if (type === 'object') {
-            var allowed_prop = ['+', '-', '*', '/'];
-            for (var prop in value) {
-                if (allowed_prop.indexOf(prop) < 0 && column._dataType && type !== column._dataType) {
-                    error = new LogHelper(Error_Type.BadDataType, { ColumnName: column._name });
+            const allowedOp = ['+', '-', '*', '/'];
+            for (const prop of Object.keys(value)) {
+                if (allowedOp.indexOf(prop) < 0 && column._dataType && type !== column._dataType) {
+                    error = new LogHelper(ERROR_TYPE.BadDataType, { ColumnName: column.name });
                 }
                 break;
             }

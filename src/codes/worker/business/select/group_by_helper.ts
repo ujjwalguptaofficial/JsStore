@@ -1,4 +1,5 @@
 import { Where } from "./where";
+import { DATA_TYPE } from "../../enums";
 
 export class GroupByHelper extends Where {
     constructor() {
@@ -6,154 +7,157 @@ export class GroupByHelper extends Where {
     }
 
     protected processGroupBy() {
-        var grp_qry = this._query.GroupBy,
-            datas = this._results,
-            look_up_obj = {};
+        const grpQry = this.query.GroupBy;
+        let datas = this._results;
+        const lookUpObj = {};
         // free results memory
-        this._results = this._query.GroupBy = undefined;
-        if (typeof grp_qry === 'string') {
-            for (var i in datas) {
-                look_up_obj[datas[i][grp_qry]] = datas[i];
+        this._results = this.query.GroupBy = undefined;
+        if (typeof grpQry === 'string') {
+            for (const i of Object.keys(datas)) {
+                lookUpObj[datas[i][grpQry]] = datas[i];
             }
         }
         else {
-            var obj_key;
-            for (var i in datas) {
-                obj_key = "";
-                for (var column in grp_qry) {
-                    obj_key += datas[i][grp_qry[column]];
+            let objKey;
+            for (const i of Object.keys(datas)) {
+                objKey = "";
+                for (const column of Object.keys(grpQry)) {
+                    objKey += datas[i][grpQry[column]];
                 }
-                look_up_obj[obj_key] = datas[i];
+                lookUpObj[objKey] = datas[i];
             }
         }
         // free datas memory
         datas = [];
-        for (i in look_up_obj) {
-            datas.push(look_up_obj[i]);
+        for (const i of Object.keys(lookUpObj)) {
+            datas.push(lookUpObj[i]);
         }
         this._results = datas;
     }
 
     protected executeAggregateGroupBy() {
-        var grp_qry = this._query.GroupBy,
-            datas = this._results,
-            look_up_obj = {},
-            // assign aggregate and free aggregate memory
-            aggregate_qry = this._query.aggregate;
-        this._query.aggregate = undefined;
+        const grpQry = this.query.GroupBy;
+        let datas = this._results;
+        const lookUpObj = {};
+        // assign aggregate and free aggregate memory
+        const aggregateQry = this.query.aggregate;
+        this.query.aggregate = undefined;
         // free results memory
         this._results = undefined;
 
-        var index, obj_Key, value, aggr_column;
-        var calculateAggregate = () => {
-            for (var prop in aggregate_qry) {
+        let index;
+        let objKey;
+        let value;
+        let aggrColumn;
+        const calculateAggregate = () => {
+            for (const prop of Object.keys(aggregateQry)) {
                 switch (prop) {
                     case 'Count':
-                        var getCount = () => {
-                            value = look_up_obj[obj_Key];
+                        const getCount = () => {
+                            value = lookUpObj[objKey];
                             // get old value
-                            value = value ? value["Count(" + aggr_column + ")"] : 0;
+                            value = value ? value["Count(" + aggrColumn + ")"] : 0;
                             // add with old value if data exist
-                            value += datas[index][aggr_column] ? 1 : 0;
+                            value += datas[index][aggrColumn] ? 1 : 0;
                             return value;
                         };
-                        if (typeof aggregate_qry[prop] === 'string') {
-                            aggr_column = aggregate_qry[prop];
-                            datas[index]["Count(" + aggr_column + ")"] = getCount();
+                        if (typeof aggregateQry[prop] === 'string') {
+                            aggrColumn = aggregateQry[prop];
+                            datas[index]["Count(" + aggrColumn + ")"] = getCount();
                         }
-                        else if (Array.isArray(aggregate_qry[prop])) {
-                            for (var item in aggregate_qry[prop]) {
-                                aggr_column = aggregate_qry[prop][item];
-                                datas[index]["Count(" + aggr_column + ")"] = getCount();
+                        else if (Array.isArray(aggregateQry[prop])) {
+                            for (const item in aggregateQry[prop]) {
+                                aggrColumn = aggregateQry[prop][item];
+                                datas[index]["Count(" + aggrColumn + ")"] = getCount();
                             }
                         }
                         break;
                     case 'max':
-                        var getMax = () => {
-                            value = look_up_obj[obj_Key];
+                        const getMax = () => {
+                            value = lookUpObj[objKey];
                             // get old value
-                            value = value ? value["max(" + aggr_column + ")"] : 0;
-                            datas[index][aggr_column] = datas[index][aggr_column] ?
-                                datas[index][aggr_column] : 0;
+                            value = value ? value["max(" + aggrColumn + ")"] : 0;
+                            datas[index][aggrColumn] = datas[index][aggrColumn] ?
+                                datas[index][aggrColumn] : 0;
                             // compare between old value and new value
-                            return value > datas[index][aggr_column] ? value : datas[index][aggr_column];
+                            return value > datas[index][aggrColumn] ? value : datas[index][aggrColumn];
                         };
 
-                        if (typeof aggregate_qry[prop] === 'string') {
-                            aggr_column = aggregate_qry[prop];
-                            datas[index]["max(" + aggr_column + ")"] = getMax();
+                        if (typeof aggregateQry[prop] === 'string') {
+                            aggrColumn = aggregateQry[prop];
+                            datas[index]["max(" + aggrColumn + ")"] = getMax();
                         }
-                        else if (Array.isArray(aggregate_qry[prop])) {
-                            for (var item in aggregate_qry[prop]) {
-                                aggr_column = aggregate_qry[prop][item];
-                                datas[index]["max(" + aggr_column + ")"] = getMax();
+                        else if (Array.isArray(aggregateQry[prop])) {
+                            for (const item in aggregateQry[prop]) {
+                                aggrColumn = aggregateQry[prop][item];
+                                datas[index]["max(" + aggrColumn + ")"] = getMax();
                             }
                         }
                         break;
                     case 'min':
-                        var getMin = () => {
-                            value = look_up_obj[obj_Key];
+                        const getMin = () => {
+                            value = lookUpObj[objKey];
                             // get old value
-                            value = value ? value["min(" + aggr_column + ")"] : Infinity;
-                            datas[index][aggr_column] = datas[index][aggr_column] ?
-                                datas[index][aggr_column] : Infinity;
+                            value = value ? value["min(" + aggrColumn + ")"] : Infinity;
+                            datas[index][aggrColumn] = datas[index][aggrColumn] ?
+                                datas[index][aggrColumn] : Infinity;
                             // compare between old value and new value
-                            return value < datas[index][aggr_column] ? value : datas[index][aggr_column];
+                            return value < datas[index][aggrColumn] ? value : datas[index][aggrColumn];
                         };
 
-                        if (typeof aggregate_qry[prop] === 'string') {
-                            aggr_column = aggregate_qry[prop];
-                            datas[index]["min(" + aggr_column + ")"] = getMin();
+                        if (typeof aggregateQry[prop] === 'string') {
+                            aggrColumn = aggregateQry[prop];
+                            datas[index]["min(" + aggrColumn + ")"] = getMin();
                         }
-                        else if (Array.isArray(aggregate_qry[prop])) {
-                            for (var item in aggregate_qry[prop]) {
-                                aggr_column = aggregate_qry[prop][item];
-                                datas[index]["min(" + aggr_column + ")"] = getMin();
+                        else if (Array.isArray(aggregateQry[prop])) {
+                            for (const item in aggregateQry[prop]) {
+                                aggrColumn = aggregateQry[prop][item];
+                                datas[index]["min(" + aggrColumn + ")"] = getMin();
                             }
                         }
                         break;
                     case 'Sum':
-                        var getSum = () => {
-                            value = look_up_obj[obj_Key];
+                        const getSum = () => {
+                            value = lookUpObj[objKey];
                             // get old value
-                            value = value ? value["Sum(" + aggr_column + ")"] : 0;
+                            value = value ? value["Sum(" + aggrColumn + ")"] : 0;
                             // add with old value if data exist
-                            value += datas[index][aggr_column] ? datas[index][aggr_column] : 0;
+                            value += datas[index][aggrColumn] ? datas[index][aggrColumn] : 0;
                             return value;
                         };
-                        if (typeof aggregate_qry[prop] === 'string') {
-                            aggr_column = aggregate_qry[prop];
-                            datas[index]["Sum(" + aggr_column + ")"] = getSum();
+                        if (typeof aggregateQry[prop] === 'string') {
+                            aggrColumn = aggregateQry[prop];
+                            datas[index]["Sum(" + aggrColumn + ")"] = getSum();
                         }
-                        else if (Array.isArray(aggregate_qry[prop])) {
-                            for (var item in aggregate_qry[prop]) {
-                                aggr_column = aggregate_qry[prop][item];
-                                datas[index]["Sum(" + aggr_column + ")"] = getSum();
+                        else if (this.getType(aggregateQry[prop]) === DATA_TYPE.Array) {
+                            for (const item in aggregateQry[prop]) {
+                                aggrColumn = aggregateQry[prop][item];
+                                datas[index]["Sum(" + aggrColumn + ")"] = getSum();
                             }
                         }
                         break;
                     case 'Avg':
-                        var getAvg = () => {
-                            value = look_up_obj[obj_Key];
+                        const getAvg = () => {
+                            value = lookUpObj[objKey];
                             // get old sum value
-                            var sum_of_column = value ? value["Sum(" + aggr_column + ")"] : 0;
+                            let sumOfColumn = value ? value["Sum(" + aggrColumn + ")"] : 0;
                             // add with old value if data exist
-                            sum_of_column += datas[index][aggr_column] ? datas[index][aggr_column] : 0;
-                            datas[index]["Sum(" + aggr_column + ")"] = sum_of_column;
+                            sumOfColumn += datas[index][aggrColumn] ? datas[index][aggrColumn] : 0;
+                            datas[index]["Sum(" + aggrColumn + ")"] = sumOfColumn;
                             // get old count value
-                            value = value ? value["Count(" + aggr_column + ")"] : 0;
+                            value = value ? value["Count(" + aggrColumn + ")"] : 0;
                             // add with old value if data exist
-                            value += datas[index][aggr_column] ? 1 : 0;
-                            datas[index]["Count(" + aggr_column + ")"] = value;
+                            value += datas[index][aggrColumn] ? 1 : 0;
+                            datas[index]["Count(" + aggrColumn + ")"] = value;
                         };
 
-                        if (typeof aggregate_qry[prop] === 'string') {
-                            aggr_column = aggregate_qry[prop];
+                        if (typeof aggregateQry[prop] === 'string') {
+                            aggrColumn = aggregateQry[prop];
                             getAvg();
                         }
-                        else if (Array.isArray(aggregate_qry[prop])) {
-                            for (var item in aggregate_qry[prop]) {
-                                aggr_column = aggregate_qry[prop][item];
+                        else if (this.getType(aggregateQry[prop]) === DATA_TYPE.Array) {
+                            for (const item of Object.keys(aggregateQry[prop])) {
+                                aggrColumn = aggregateQry[prop][item];
                                 getAvg();
                             }
                         }
@@ -162,69 +166,69 @@ export class GroupByHelper extends Where {
             }
         };
 
-        if (typeof grp_qry === 'string') {
+        if (this.getType(grpQry) === DATA_TYPE.String) {
             for (index in datas) {
-                obj_Key = datas[index][grp_qry];
+                objKey = datas[index][grpQry];
                 calculateAggregate();
-                look_up_obj[obj_Key] = datas[index];
+                lookUpObj[objKey] = datas[index];
             }
         }
         else {
             for (index in datas) {
-                obj_Key = "";
-                for (var column in grp_qry) {
-                    obj_Key += datas[index][grp_qry[column]];
+                objKey = "";
+                for (const column in grpQry) {
+                    objKey += datas[index][grpQry[column]];
                 }
                 calculateAggregate();
-                look_up_obj[obj_Key] = datas[index];
+                lookUpObj[objKey] = datas[index];
             }
 
         }
         // free datas memory
         datas = [];
-        for (var i in look_up_obj) {
-            datas.push(look_up_obj[i]);
+        for (const i in lookUpObj) {
+            datas.push(lookUpObj[i]);
         }
         // Checking for avg and if exist then fill the datas;
-        if (aggregate_qry.Avg) {
-            if (typeof aggregate_qry.Avg === 'string') {
+        if (aggregateQry.Avg) {
+            if (this.getType(aggregateQry.Avg) === DATA_TYPE.String) {
                 for (index in datas) {
-                    var sum_for_avg = datas[index]["Sum(" + aggregate_qry.Avg + ")"],
-                        count_for_avg = datas[index]["Count(" + aggregate_qry.Avg + ")"];
-                    datas[index]["Avg(" + aggregate_qry.Avg + ")"] = sum_for_avg / count_for_avg;
-                    if (aggregate_qry.Count !== aggregate_qry.Avg) {
-                        delete datas[index]["Count(" + aggregate_qry.Avg + ")"];
+                    const sumForAvg = datas[index]["Sum(" + aggregateQry.Avg + ")"],
+                        countForAvg = datas[index]["Count(" + aggregateQry.Avg + ")"];
+                    datas[index]["Avg(" + aggregateQry.Avg + ")"] = sumForAvg / countForAvg;
+                    if (aggregateQry.Count !== aggregateQry.Avg) {
+                        delete datas[index]["Count(" + aggregateQry.Avg + ")"];
                     }
-                    if (aggregate_qry.Sum !== aggregate_qry.Avg) {
-                        delete datas[index]["Sum(" + aggregate_qry.Avg + ")"];
+                    if (aggregateQry.Sum !== aggregateQry.Avg) {
+                        delete datas[index]["Sum(" + aggregateQry.Avg + ")"];
                     }
                 }
             }
             else {
-                var is_count_type_string = typeof aggregate_qry.Count,
-                    is_sum_type_string = typeof aggregate_qry.Count;
+                const isCountTypeString = this.getType(aggregateQry.Count) === DATA_TYPE.String;
+                const isSumTypeString = this.getType(aggregateQry.Count) === DATA_TYPE.String;
                 for (index in datas) {
-                    for (var column in aggregate_qry.Avg) {
-                        var avg_column = aggregate_qry.Avg[column],
-                            sum = datas[index]["Sum(" + avg_column + ")"],
-                            count = datas[index]["Count(" + avg_column + ")"];
-                        datas[index]["Avg(" + avg_column + ")"] = sum / count;
+                    for (const column in aggregateQry.Avg) {
+                        const avgColumn = aggregateQry.Avg[column],
+                            sum = datas[index]["Sum(" + avgColumn + ")"],
+                            count = datas[index]["Count(" + avgColumn + ")"];
+                        datas[index]["Avg(" + avgColumn + ")"] = sum / count;
 
-                        if (is_count_type_string) {
-                            if (aggregate_qry.Count !== avg_column) {
-                                delete datas[index]["Count(" + avg_column + ")"];
+                        if (isCountTypeString) {
+                            if (aggregateQry.Count !== avgColumn) {
+                                delete datas[index]["Count(" + avgColumn + ")"];
                             }
-                            else if (aggregate_qry.Count.indexOf(avg_column) === -1) {
-                                delete datas[index]["Count(" + avg_column + ")"];
+                            else if (aggregateQry.Count.indexOf(avgColumn) === -1) {
+                                delete datas[index]["Count(" + avgColumn + ")"];
                             }
                         }
 
-                        if (is_sum_type_string) {
-                            if (aggregate_qry.Sum !== avg_column) {
-                                delete datas[index]["Sum(" + avg_column + ")"];
+                        if (isSumTypeString) {
+                            if (aggregateQry.Sum !== avgColumn) {
+                                delete datas[index]["Sum(" + avgColumn + ")"];
                             }
-                            else if (aggregate_qry.Sum.indexOf(avg_column) === -1) {
-                                delete datas[index]["Sum(" + avg_column + ")"];
+                            else if (aggregateQry.Sum.indexOf(avgColumn) === -1) {
+                                delete datas[index]["Sum(" + avgColumn + ")"];
                             }
                         }
                     }

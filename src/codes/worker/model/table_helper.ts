@@ -4,54 +4,54 @@ import * as KeyStore from "../keystore/index";
 import { IdbHelper } from "../business/idb_helper";
 
 export class TableHelper {
-    _name: string;
-    _columns: Column[] = [];
+    name: string;
+    columns: Column[] = [];
 
     // internal Members
-    _primaryKey: string;
-    _version: number;
-    _requireDelete: boolean = false;
-    _requireCreation: boolean = false;
-    _callback: () => void;
+    primaryKey: string;
+    version: number;
+    requireDelete = false;
+    requireCreation = false;
+    callback: () => void;
 
     constructor(table: Table) {
-        this._name = table._name;
-        this._version = table._version;
-        this._columns = table._columns;
-        this.setPrimaryKey();
+        this.name = table.name;
+        this.version = table.version;
+        this.columns = table.columns;
+        this.setPrimaryKey_();
     }
 
-    public createMetaData(dbName: string, callBack: () => void) {
-        this._callback = callBack;
-        this.setRequireDelete(dbName);
-        this.setDbVersion(dbName);
+    createMetaData(dbName: string, callBack: () => void) {
+        this.callback = callBack;
+        this.setRequireDelete_(dbName);
+        this.setDbVersion_(dbName);
     }
 
-    private setPrimaryKey() {
-        this._columns.every(function (item) {
-            this._primaryKey = item._primaryKey ? item._name : "";
-            return !item._primaryKey;
-        }, this);
+    private setPrimaryKey_() {
+        this.columns.every((item) => {
+            this.primaryKey = item.primaryKey ? item.name : "";
+            return !item.primaryKey;
+        });
     }
 
-    private setRequireDelete(dbName: string) {
-        KeyStore.get("JsStore_" + dbName + "_" + this._name + "_Version", function (tableVersion) {
+    private setRequireDelete_(dbName: string) {
+        KeyStore.get(`JsStore_${dbName}_${this.name}_Version`, (tableVersion) => {
             if (tableVersion == null) {
-                this._requireCreation = true;
+                this.requireCreation = true;
             }
             // mark only table which has version greater than store version
-            else if (tableVersion < this._version) {
-                this._requireDelete = true;
+            else if (tableVersion < this.version) {
+                this.requireDelete = true;
             }
-        }.bind(this));
+        });
     }
 
-    private setDbVersion(dbName: string) {
-        IdbHelper._dbVersion = IdbHelper._dbVersion > this._version ? IdbHelper._dbVersion : this._version;
+    private setDbVersion_(dbName: string) {
+        IdbHelper.activeDbVersion = IdbHelper.activeDbVersion > this.version ? IdbHelper.activeDbVersion : this.version;
         // setting db version
-        KeyStore.set(`JsStore_${dbName}_Db_Version`, IdbHelper._dbVersion);
+        KeyStore.set(`JsStore_${dbName}_Db_Version`, IdbHelper.activeDbVersion);
         // setting table version
-        KeyStore.set(`JsStore_${dbName}_${this._name}_Version`, IdbHelper._dbVersion, this._callback);
-        this._version = IdbHelper._dbVersion;
+        KeyStore.set(`JsStore_${dbName}_${this.name}_Version`, IdbHelper.activeDbVersion, this.callback);
+        this.version = IdbHelper.activeDbVersion;
     }
 }

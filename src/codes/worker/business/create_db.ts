@@ -1,116 +1,141 @@
 import { TableHelper } from "../model/table_helper";
 import { IError } from "../interfaces";
 import { IdbHelper } from "./idb_helper";
-import { Connection_Status, Error_Type } from "../enums";
+import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
 import { Column } from "../model/column";
 import * as KeyStore from "../keystore/index";
 
 export class CreateDb {
-    _dbName: string;
-    constructor(tablesMetaData: TableHelper[], onSuccess: (listOf) => void, onError: (err: IError) => void) {
-        this._dbName = IdbHelper._activeDb._name;
-        var table_created_list = [],
-            db_request = indexedDB.open(this._dbName, IdbHelper._dbVersion);
+    private dbName_: string;
 
-        db_request.onerror = (event) => {
+    private get activeDb_() {
+        return IdbHelper.activeDb;
+    }
+
+    private get dbVersion_() {
+        return IdbHelper.activeDbVersion;
+    }
+
+    private get dbStatus_() {
+        return IdbHelper.dbStatus;
+    }
+
+    private set dbStatus_(value) {
+        IdbHelper.dbStatus = value;
+    }
+
+    private set dbConnection_(value) {
+        IdbHelper.dbConnection = value;
+    }
+
+    constructor(tablesMetaData: TableHelper[], onSuccess: (listOf) => void, onError: (err: IError) => void) {
+        this.dbName_ = this.activeDb_.name;
+        const listofTableCreated = [];
+        const dbRequest = indexedDB.open(this.dbName_, this.dbVersion_);
+
+        dbRequest.onerror = (event) => {
             if (onError != null) {
                 onError((event as any).target.error);
             }
         };
 
-        db_request.onsuccess = (event) => {
-            IdbHelper._dbStatus.ConStatus = Connection_Status.Connected;
-            IdbHelper._dbConnection = db_request.result;
-            (IdbHelper._dbConnection as any).onclose = (e) => {
+        dbRequest.onsuccess = (event) => {
+            this.dbStatus_.conStatus = CONNECTION_STATUS.Connected;
+            this.dbConnection_ = dbRequest.result;
+            (this.dbConnection_ as any).onclose = (e) => {
                 IdbHelper.callDbDroppedByBrowser();
-                IdbHelper.updateDbStatus(Connection_Status.Closed, Error_Type.ConnectionClosed);
+                IdbHelper.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
             };
 
-            IdbHelper._dbConnection.onversionchange = (e) => {
+            this.dbConnection_.onversionchange = (e: IDBVersionChangeEvent) => {
                 if (e.newVersion === null) { // An attempt is made to delete the db
                     (e.target as any).close(); // Manually close our connection to the db
                     IdbHelper.callDbDroppedByBrowser(true);
-                    IdbHelper.updateDbStatus(Connection_Status.Closed, Error_Type.ConnectionClosed);
+                    IdbHelper.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
                 }
             };
 
-            IdbHelper._dbConnection.onerror = (e) => {
-                IdbHelper._dbStatus.LastError = ("Error occured in connection :" + (e.target as any).result) as any;
+            this.dbConnection_.onerror = (e) => {
+                IdbHelper.dbStatus.lastError = ("Error occured in connection :" + (e.target as any).result) as any;
             };
 
-            IdbHelper._dbConnection.onabort = (e) => {
-                IdbHelper._dbStatus = {
-                    ConStatus: Connection_Status.Closed,
-                    LastError: Error_Type.ConnectionAborted
+            this.dbConnection_.onabort = (e) => {
+                this.dbStatus_ = {
+                    conStatus: CONNECTION_STATUS.Closed,
+                    lastError: ERROR_TYPE.ConnectionAborted
                 };
             };
 
             // save in database list
             this.saveDbName();
             if (onSuccess != null) {
-                onSuccess(table_created_list);
+                onSuccess(listofTableCreated);
             }
         };
 
-        db_request.onupgradeneeded = (event) => {
-            var db_connection = (event as any).target.result;
-            var createObjectStore = (item: TableHelper, index) => {
+        dbRequest.onupgradeneeded = (event) => {
+            const dbConnection = (event as any).target.result;
+            const createObjectStore = (item: TableHelper, index) => {
                 try {
-                    if (item._primaryKey.length > 0) {
-                        IdbHelper._activeDb._tables[index]._primaryKey = item._primaryKey;
-                        var store = db_connection.createObjectStore(item._name, {
-                            keyPath: item._primaryKey
+                    if (item.primaryKey.length > 0) {
+                        IdbHelper.activeDb.tables[index].primaryKey = item.primaryKey;
+                        const store = dbConnection.createObjectStore(item.name, {
+                            keyPath: item.primaryKey
                         });
-                        item._columns.forEach((column: Column) => {
-                            if (column._enableSearch === true) {
-                                var options = column._primaryKey ? { unique: true } : { unique: column._unique };
-                                options['multiEntry'] = column._multiEntry;
-                                store.createIndex(column._name, column._name, options);
-                                if (column._autoIncrement) {
-                                    KeyStore.set(`JsStore_${this._dbName}_${item._name}_${column._name}_Value`, 0);
+                        item.columns.forEach((column: Column) => {
+                            if (column.enableSearch === true) {
+                                const options = column.primaryKey ? { unique: true } : { unique: column.unique };
+                                options['multiEntry'] = column.multiEntry;
+                                store.createIndex(column.name, column.name, options);
+                                if (column.autoIncrement) {
+                                    KeyStore.set(`JsStore_${this.dbName_}_${item.name}_${column.name}_Value`, 0);
                                 }
                             }
                         });
                     }
                     else {
-                        var store = db_connection.createObjectStore(item._name, {
+                        const store = dbConnection.createObjectStore(item.name, {
                             autoIncrement: true
                         });
-                        item._columns.forEach((column: Column) => {
-                            var options = { unique: column._unique, multiEntry: column._multiEntry };
-                            store.createIndex(column._name, column._name, options);
-                            if (column._autoIncrement) {
-                                KeyStore.set(`JsStore_${this._dbName}_${item._name}_${column._name}_Value`, 0);
+                        item.columns.forEach((column: Column) => {
+                            const options = { unique: column.unique, multiEntry: column.multiEntry };
+                            store.createIndex(column.name, column.name, options);
+                            if (column.autoIncrement) {
+                                KeyStore.set(`JsStore_${this.dbName_}_${item.name}_${column.name}_Value`, 0);
                             }
                         });
                     }
-                    table_created_list.push(item._name);
+                    listofTableCreated.push(item.name);
                     // setting the table version
-                    KeyStore.set(`JsStore_${this._dbName}_${item._name}_Version`, item._version);
+                    KeyStore.set(`JsStore_${this.dbName_}_${item.name}_Version`, item.version);
                 }
                 catch (e) {
                     console.error(e);
                 }
             };
             tablesMetaData.forEach((item: TableHelper, index) => {
-                if (item._requireDelete) {
+                if (item.requireDelete) {
                     // Delete the old datastore.    
-                    if (db_connection.objectStoreNames.contains(item._name)) {
-                        db_connection.deleteObjectStore(item._name);
+                    if (dbConnection.objectStoreNames.contains(item.name)) {
+                        dbConnection.deleteObjectStore(item.name);
                     }
                     createObjectStore(item, index);
                 }
-                else if (item._requireCreation) {
+                else if (item.requireCreation) {
                     createObjectStore(item, index);
                 }
             });
         };
     }
 
+    private getDbList_(callback: (dbList: string[]) => void) {
+        IdbHelper.getDbList(callback);
+    }
+
     private saveDbName() {
-        IdbHelper.getDbList((result) => {
-            if (result.indexOf(this._dbName) < 0) {
-                result.push(this._dbName);
+        this.getDbList_((result) => {
+            if (result.indexOf(this.dbName_) < 0) {
+                result.push(this.dbName_);
                 IdbHelper.setDbList(result);
             }
         });

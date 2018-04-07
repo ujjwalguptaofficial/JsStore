@@ -1,9 +1,8 @@
 import { Where } from "./where";
 import { IRemove, IError } from "../../interfaces";
 import { IdbHelper } from "../idb_helper";
-import { Util } from "../../util";
 import * as Select from '../select/index';
-import { QueryOption } from "../../inner_enums";
+import { QUERY_OPTION } from "../../enums";
 
 export class Instance extends Where {
     _isOr: boolean;
@@ -13,67 +12,67 @@ export class Instance extends Where {
         onError: (err: IError) => void
     ) {
         super();
-        this._query = query;
-        this._onSuccess = onSuccess;
-        this._onError = onError;
+        this.query = query;
+        this.onSuccess = onSuccess;
+        this.onError = onError;
     }
 
     execute() {
         try {
-            if (this._query.where !== undefined) {
+            if (this.query.where !== undefined) {
                 this.addGreatAndLessToNotOp();
-                this.initTransaction();
-                if (Array.isArray(this._query.where)) {
+                this.initTransaction_();
+                if (Array.isArray(this.query.where)) {
                     this.processWhereArrayQry();
                 }
                 else {
-                    this.processWhere();
+                    this.processWhere_();
                 }
             }
             else {
-                this.initTransaction();
+                this.initTransaction_();
                 this.executeWhereUndefinedLogic();
             }
 
         }
         catch (ex) {
-            this._errorOccured = true;
-            this.onExceptionOccured(ex, { TableName: this._query.from });
+            this.errorOccured = true;
+            this.onExceptionOccured(ex, { TableName: this.query.from });
         }
     }
 
     private processWhereArrayQry() {
-        var select_object = new Select.Instance(this._query as any,
+        const selectObject = new Select.Instance(this.query,
             function (results) {
-                var key_list = [],
-                    p_key = this.getPrimaryKey(this._query.from);
+                const keyList = [];
+                const pkey = this.getPrimaryKey(this._query.from);
                 results.forEach((item) => {
-                    key_list.push(item[p_key]);
+                    keyList.push(item[pkey]);
                 });
                 results = null;
                 this._query.where = {};
-                this._query.where[p_key] = {};
-                this._query.where[p_key][QueryOption.In] = key_list;
+                this._query.where[pkey] = {};
+                this._query.where[pkey][QUERY_OPTION.In] = keyList;
                 this.processWhere(false);
-            }.bind(this), this._onError);
-        select_object.execute();
+            }.bind(this), this.onError);
+        selectObject.execute();
     }
 
-    private processWhere() {
-        if (this._query.where.or) {
+    private processWhere_() {
+        if (this.query.where.or) {
             this.processOrLogic();
         }
         this.goToWhereLogic();
     }
 
-    private initTransaction() {
-        IdbHelper.createTransaction([this._query.from], this.onTransactionCompleted.bind(this));
-        this._objectStore = IdbHelper._transaction.objectStore(this._query.from);
+    private initTransaction_() {
+        IdbHelper.createTransaction([this.query.from], this.onTransactionCompleted_);
+        this.objectStore = IdbHelper.transaction.objectStore(this.query.from);
     }
 
-    private onTransactionCompleted() {
-        if (this._errorOccured === false) {
-            this._onSuccess(this._rowAffected);
+    private onTransactionCompleted_() {
+        if (this.errorOccured === false) {
+            this.onSuccess(this.rowAffected);
         }
     }
 
@@ -81,18 +80,18 @@ export class Instance extends Where {
         if (this._isOr === true) {
             this.orQuerySuccess();
         }
-        else if (this._isTransaction === true) {
-            this.onTransactionCompleted();
+        else if (this.isTransaction === true) {
+            this.onTransactionCompleted_();
         }
     }
 
     private orQuerySuccess() {
-        var key = Util.getObjectFirstKey((this as any)._orInfo.OrQuery);
+        let key = this.getObjectFirstKey((this as any)._orInfo.OrQuery);
         if (key != null) {
-            var where = {};
+            let where = {};
             where[key] = (this as any)._orInfo.OrQuery[key];
             delete (this as any)._orInfo.OrQuery[key];
-            this._query.where = where;
+            this.query.where = where;
             this.goToWhereLogic();
         }
         else {
@@ -103,10 +102,10 @@ export class Instance extends Where {
     private processOrLogic() {
         this._isOr = true;
         (this as any)._orInfo = {
-            OrQuery: this._query.where.Or
+            OrQuery: this.query.where.Or
         };
 
         // free or memory
-        delete this._query.where.Or;
+        delete this.query.where.Or;
     }
 }

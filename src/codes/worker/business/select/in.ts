@@ -19,7 +19,7 @@ export class In extends NotWhere {
     private executeSkipAndLimitForIn(column, values) {
         var cursor: IDBCursorWithValue,
             skip = this._skipRecord,
-            column_store = this._objectStore.index(column),
+            column_store = this.objectStore.index(column),
             cursor_request: IDBRequest,
             skipOrPush = function (value) {
                 if (skip === 0) {
@@ -35,7 +35,7 @@ export class In extends NotWhere {
             }.bind(this);
         if (this._checkFlag) {
             for (var i = 0, length = values.length; i < length; i++) {
-                if (!this._errorOccured) {
+                if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
                     cursor_request.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -55,7 +55,7 @@ export class In extends NotWhere {
         }
         else {
             for (var i = 0, length = values.length; i < length; i++) {
-                if (!this._errorOccured) {
+                if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
                     cursor_request.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -77,7 +77,7 @@ export class In extends NotWhere {
         var cursor: IDBCursorWithValue,
             skip = this._skipRecord,
             cursor_request: IDBRequest,
-            column_store = this._objectStore.index(column),
+            column_store = this.objectStore.index(column),
             skipOrPush = function (value) {
                 if (skip === 0) {
                     this._results.push(value);
@@ -92,7 +92,7 @@ export class In extends NotWhere {
             }.bind(this);
         if (this._checkFlag) {
             for (var i = 0, length = values.length; i < length; i++) {
-                if (!this._errorOccured) {
+                if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
                     cursor_request.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -112,7 +112,7 @@ export class In extends NotWhere {
         }
         else {
             for (var i = 0, length = values.length; i < length; i++) {
-                if (!this._errorOccured) {
+                if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
                     cursor_request.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -133,14 +133,14 @@ export class In extends NotWhere {
     private executeLimitForIn(column, values) {
         var cursor: IDBCursorWithValue,
             cursor_request: IDBRequest,
-            column_store = this._objectStore.index(column),
+            column_store = this.objectStore.index(column),
             onCursorError = function (e) {
                 this._errorOccured = true;
                 this.onErrorOccured(e);
             }.bind(this);
         if (this._checkFlag) {
             for (var i = 0, length = values.length; i < length; i++) {
-                if (!this._errorOccured) {
+                if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
                     cursor_request.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -160,7 +160,7 @@ export class In extends NotWhere {
         }
         else {
             for (var i = 0, length = values.length; i < length; i++) {
-                if (!this._errorOccured) {
+                if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
                     cursor_request.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -181,14 +181,14 @@ export class In extends NotWhere {
     private executeSimpleForIn(column, values) {
         var cursor: IDBCursorWithValue,
             cursor_request: IDBRequest,
-            column_store = this._objectStore.index(column),
+            column_store = this.objectStore.index(column),
             onCursorError = function (e) {
                 this._errorOccured = true;
                 this.onErrorOccured(e);
             }.bind(this);
         if (this._checkFlag) {
             for (var i = 0, length = values.length; i < length; i++) {
-                if (!this._errorOccured) {
+                if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
                     cursor_request.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -208,7 +208,7 @@ export class In extends NotWhere {
         }
         else {
             for (var i = 0, length = values.length; i < length; i++) {
-                if (!this._errorOccured) {
+                if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
                     cursor_request.onsuccess = function (e) {
                         cursor = e.target.result;

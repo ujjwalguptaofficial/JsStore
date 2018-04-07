@@ -1,4 +1,4 @@
-import { Data_Type } from "./enums";
+import { DATA_TYPE } from "./enums";
 
 export class Util {
     static isNull(value) {
@@ -30,13 +30,13 @@ export class Util {
      */
     static getType(value) {
         if (value === null) {
-            return Data_Type.Null;
+            return DATA_TYPE.Null;
         }
         var type = typeof value;
         switch (type) {
             case 'object':
                 if (Array.isArray(value)) {
-                    return Data_Type.Array;
+                    return DATA_TYPE.Array;
                 }
             default:
                 return type;

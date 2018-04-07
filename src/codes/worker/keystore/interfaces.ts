@@ -1,8 +1,8 @@
-import { Connection_Status } from "./enums";
+import { CONNECTION_STATUS } from "./enums";
 
 export interface IDbStatus {
-    ConStatus: Connection_Status;
-    LastError: string;
+    conStatus: CONNECTION_STATUS;
+    lastError: string;
 }
 
 export interface IInsert {

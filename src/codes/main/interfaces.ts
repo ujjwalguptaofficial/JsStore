@@ -1,46 +1,46 @@
 import { Error_Type } from "./enums";
 
 export interface IError {
-    _type: Error_Type;
-    _message: string;
+    type: Error_Type;
+    message: string;
 }
 
 export interface IWebWorkerRequest {
-    Name: string;
-    Query: any;
-    OnSuccess?: (results) => void;
-    OnError?: (err: IError) => void;
+    name: string;
+    query: any;
+    onSuccess?: (results) => void;
+    onError?: (err: IError) => void;
 }
 
 export interface IDbInfo {
-    DbName: string;
-    Table: {
-        Name: string,
-        Version: number
+    dbName: string;
+    table: {
+        name: string,
+        version: number
     };
 }
 
-export interface IDataBaseOption {
-    Name: string;
-    Tables: ITableOption[];
+export interface IDataBase {
+    name: string;
+    tables: ITable[];
 }
 
-export interface ITableOption {
-    Name: string;
-    Columns: IColumnOption[];
-    Version?: number;
+export interface ITable {
+    name: string;
+    columns: IColumn[];
+    version?: number;
 }
 
-export interface IColumnOption {
-    Name: string;
-    PrimaryKey?: boolean;
-    AutoIncrement?: boolean;
-    Unique?: boolean;
-    NotNull?: boolean;
-    DataType?: string;
-    Default?: any;
-    MultiEntry?: boolean;
-    EnableSearch?: boolean;
+export interface IColumn {
+    name: string;
+    primaryKey?: boolean;
+    autoIncrement?: boolean;
+    unique?: boolean;
+    notNull?: boolean;
+    dataType?: string;
+    default?: any;
+    multiEntry?: boolean;
+    enableSearch?: boolean;
 }
 
 export interface ISelect {
@@ -128,8 +128,8 @@ export interface IAggregate {
 }
 
 export interface IWebWorkerResult {
-    ErrorOccured: boolean;
-    ErrorDetails: any;
-    ReturnedValue: any;
-    ThrowError: boolean;
+    errorOccured: boolean;
+    errorDetails: any;
+    returnedValue: any;
+    throwError: boolean;
 }

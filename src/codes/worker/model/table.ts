@@ -1,17 +1,17 @@
-import { ITableOption } from "../interfaces";
+import { ITable } from "../interfaces";
 import { Column } from "./column";
 
-export class Table {
-    _name: string;
-    _columns: Column[] = [];
-    _version: number;
-    _primaryKey: string;
+export class Table implements ITable {
+    name: string;
+    columns: Column[] = [];
+    version: number;
+    primaryKey: string;
 
-    constructor(table: ITableOption) {
-        this._name = table.Name;
-        this._version = table.Version == null ? 1 : table.Version;
-        table.Columns.forEach(function (item) {
-            this._columns.push(new Column(item, table.Name));
-        }, this);
+    constructor(table: ITable) {
+        this.name = table.name;
+        this.version = table.version == null ? 1 : table.version;
+        table.columns.forEach((item) => {
+            this.columns.push(new Column(item, table.name));
+        });
     }
 }

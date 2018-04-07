@@ -3,32 +3,32 @@ import { TableHelper } from "./table_helper";
 import { Table } from "./table";
 
 export class DbHelper {
-    _name: string;
-    _tables: Table[] = [];
+    name: string;
+    tables: Table[] = [];
 
     constructor(dataBase: DataBase) {
-        this._name = dataBase._name;
-        this._tables = dataBase._tables;
+        this.name = dataBase.name;
+        this.tables = dataBase.tables;
     }
 
-    public createMetaData(callBack: (tablesMetaData: TableHelper[]) => void) {
-        var index = 0,
-            table_helpers: TableHelper[] = [],
-            createMetaDataForTable = () => {
-                if (index < this._tables.length) {
-                    var table: Table = this._tables[index],
-                        table_helper: TableHelper = new TableHelper(table);
-                    table_helper.createMetaData(this._name, () => {
-                        table_helper._callback = null;
-                        table_helpers.push(table_helper);
-                        createMetaDataForTable();
-                    });
-                    ++index;
-                }
-                else {
-                    callBack(table_helpers);
-                }
-            };
+    createMetaData(callBack: (tablesMetaData: TableHelper[]) => void) {
+        let index = 0;
+        const tableHelperList: TableHelper[] = [];
+        const createMetaDataForTable = () => {
+            if (index < this.tables.length) {
+                const table: Table = this.tables[index],
+                    tableHelperInstance: TableHelper = new TableHelper(table);
+                tableHelperInstance.createMetaData(this.name, () => {
+                    tableHelperInstance.callback = null;
+                    tableHelperList.push(tableHelperInstance);
+                    createMetaDataForTable();
+                });
+                ++index;
+            }
+            else {
+                callBack(tableHelperList);
+            }
+        };
         createMetaDataForTable();
     }
 }

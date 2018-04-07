@@ -4,15 +4,15 @@ import { updateValue } from "./base_update";
 export class In extends NotWhere {
     private executeInLogic(column, values) {
         var cursor: IDBCursorWithValue,
-            column_store = this._objectStore.index(column),
+            column_store = this.objectStore.index(column),
             cursor_request,
             onCursorError = (e) => {
-                this._errorOccured = true;
+                this.errorOccured = true;
                 this.onErrorOccured(e);
             };
         if (this._checkFlag) {
             for (var i = 0, length = values.length; i < length; i++) {
-                if (!this._errorOccured) {
+                if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
                     cursor_request.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -33,7 +33,7 @@ export class In extends NotWhere {
         }
         else {
             for (var i = 0, length = values.length; i < length; i++) {
-                if (!this._errorOccured) {
+                if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
                     cursor_request.onsuccess = function (e) {
                         cursor = e.target.result;

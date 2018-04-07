@@ -1,17 +1,17 @@
 import { In } from "./in";
-import { Occurence } from "../../enums";
+import { OCCURENCE } from "../../enums";
 
 export class Like extends In {
-    _compSymbol: Occurence;
+    _compSymbol: OCCURENCE;
     _compValue;
     _compValueLength: number;
 
-    protected executeLikeLogic(column, value: string, symbol: Occurence) {
+    protected executeLikeLogic(column, value: string, symbol: OCCURENCE) {
         this._compValue = value.toLowerCase();
         this._compValueLength = this._compValue.length;
         this._compSymbol = symbol;
-        this._cursorOpenRequest = this._objectStore.index(column).openCursor();
-        this._cursorOpenRequest.onerror = function (e) {
+        this.cursorOpenRequest = this.objectStore.index(column).openCursor();
+        this.cursorOpenRequest.onerror = function (e) {
             this._errorOccured = true;
             this.onErrorOccured(e);
         }.bind(this);
@@ -41,7 +41,7 @@ export class Like extends In {
                 }
             }.bind(this);
         if (this._checkFlag) {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (this._results.length !== this._limitRecord && cursor) {
                     if (this.filterOnOccurence(cursor.key) &&
@@ -55,7 +55,7 @@ export class Like extends In {
             }.bind(this);
         }
         else {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (this._results.length !== this._limitRecord && cursor) {
                     if (this.filterOnOccurence(cursor.key)) {
@@ -81,7 +81,7 @@ export class Like extends In {
                 }
             }.bind(this);
         if (this._checkFlag) {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key) &&
@@ -95,7 +95,7 @@ export class Like extends In {
             }.bind(this);
         }
         else {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key)) {
@@ -112,7 +112,7 @@ export class Like extends In {
     private executeLimit() {
         var cursor: IDBCursorWithValue;
         if (this._checkFlag) {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (this._results.length !== this._limitRecord && cursor) {
                     if (this.filterOnOccurence(cursor.key) &&
@@ -126,7 +126,7 @@ export class Like extends In {
             }.bind(this);
         }
         else {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (this._results.length !== this._limitRecord && cursor) {
                     if (this.filterOnOccurence(cursor.key)) {
@@ -143,7 +143,7 @@ export class Like extends In {
     private executeSimple() {
         var cursor: IDBCursorWithValue;
         if (this._checkFlag) {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key) &&
@@ -157,7 +157,7 @@ export class Like extends In {
             }.bind(this);
         }
         else {
-            this._cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key)) {

@@ -3,7 +3,7 @@ import { NotWhere } from "./not_where";
 export class In extends NotWhere {
     private executeInLogic(column, values) {
         var cursor: IDBCursorWithValue,
-            column_store = this._objectStore.index(column),
+            column_store = this.objectStore.index(column),
             cursor_request,
             onCursorError = function (e) {
                 this._errorOccured = true;
@@ -11,7 +11,7 @@ export class In extends NotWhere {
             }.bind(this);
         if (this._checkFlag) {
             for (var i = 0, length = values.length; i < length; i++) {
-                if (!this._errorOccured) {
+                if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
                     cursor_request.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -30,9 +30,9 @@ export class In extends NotWhere {
             }
         }
         else {
-            if (this._objectStore.count) {
+            if (this.objectStore.count) {
                 for (var i = 0, length = values.length; i < length; i++) {
-                    if (!this._errorOccured) {
+                    if (!this.errorOccured) {
                         cursor_request = column_store.count(IDBKeyRange.only(values[i]));
                         cursor_request.onsuccess = function (e) {
                             this._resultCount += e.target.result;
@@ -46,7 +46,7 @@ export class In extends NotWhere {
             }
             else {
                 for (var i = 0, length = values.length; i < length; i++) {
-                    if (!this._errorOccured) {
+                    if (!this.errorOccured) {
                         cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
                         cursor_request.onsuccess = function (e) {
                             cursor = e.target.result;

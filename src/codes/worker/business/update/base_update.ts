@@ -25,19 +25,19 @@ export var updateValue = (suppliedValue, storedValue) => {
 export class BaseUpdate extends Base {
     _checkFlag = false;
     protected initTransaction() {
-        IdbHelper.createTransaction([this._query.in], this.onTransactionCompleted.bind(this));
-        this._objectStore = IdbHelper._transaction.objectStore(this._query.in);
+        IdbHelper.createTransaction([this.query.in], this.onTransactionCompleted.bind(this));
+        this.objectStore = IdbHelper.transaction.objectStore(this.query.in);
     }
 
     protected onQueryFinished() {
-        if (this._isTransaction === true) {
+        if (this.isTransaction === true) {
             this.onTransactionCompleted();
         }
     }
 
     private onTransactionCompleted() {
-        if (this._errorOccured === false) {
-            this._onSuccess(this._rowAffected);
+        if (this.errorOccured === false) {
+            this.onSuccess(this.rowAffected);
         }
     }
 }

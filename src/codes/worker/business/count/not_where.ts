@@ -2,8 +2,8 @@ import { BaseCount } from "./base_count";
 
 export class NotWhere extends BaseCount {
     protected executeWhereUndefinedLogic() {
-        if (this._objectStore.count) {
-            var count_request = this._objectStore.count();
+        if (this.objectStore.count) {
+            var count_request = this.objectStore.count();
             count_request.onsuccess = function () {
                 this._resultCount = count_request.result;
                 this.onQueryFinished();
@@ -15,7 +15,7 @@ export class NotWhere extends BaseCount {
         }
         else {
             var cursor,
-                cursor_request = this._objectStore.openCursor();
+                cursor_request = this.objectStore.openCursor();
             cursor_request.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {

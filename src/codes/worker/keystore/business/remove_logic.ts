@@ -4,46 +4,46 @@ import { QueryExecutor } from "../query_executor";
 import { IdbHelper } from "./idb_helper";
 
 export class Remove extends Base {
-    _key: string;
-    _rowAffected: number = 0;
+    key: string;
+    rowAffected = 0;
     constructor(key: string, onSuccess: (recordRemoved: number) => void, onError: (err: IError) => void) {
         super();
-        this._key = key;
-        this._onSuccess = onSuccess;
-        this._onError = onError;
+        this.key = key;
+        this.onSuccess = onSuccess;
+        this.onError = onError;
     }
 
-    public execute() {
+    execute() {
         this.initTransaction();
-        var removeData = function (column, value) {
-            var cursor_request = this._objectStore.index(column).openCursor(IDBKeyRange.only(value));
-            cursor_request.onerror = (e) => {
-                this._errorOccured = true;
+        const removeData = (column, value) => {
+            const cursorRequest = this.objectStore.index(column).openCursor(IDBKeyRange.only(value));
+            cursorRequest.onerror = (e) => {
+                this.errorOccured = true;
                 this.onErrorOccured(e);
             };
-            cursor_request.onsuccess = (e) => {
-                var cursor: IDBCursorWithValue = e.target.result;
+            cursorRequest.onsuccess = (e: any) => {
+                const cursor: IDBCursorWithValue = e.target.result;
                 if (cursor) {
                     cursor.delete();
-                    ++this._rowAffected;
+                    ++this.rowAffected;
                     cursor.continue();
                 }
             };
-        }.bind(this);
+        };
 
-        if (!this._errorOccured) {
-            removeData(QueryExecutor._columnName, this._key);
+        if (!this.errorOccured) {
+            removeData(QueryExecutor.columnName, this.key);
         }
     }
 
     private initTransaction() {
-        IdbHelper.createTransaction([QueryExecutor._tableName], this.onTransactionCompleted.bind(this));
-        this._objectStore = IdbHelper._transaction.objectStore(QueryExecutor._tableName);
+        IdbHelper.createTransaction([QueryExecutor.tableName], this.onTransactionCompleted.bind(this));
+        this.objectStore = IdbHelper._transaction.objectStore(QueryExecutor.tableName);
     }
 
     private onTransactionCompleted() {
-        if (this._errorOccured === false) {
-            this._onSuccess(this._rowAffected);
+        if (this.errorOccured === false) {
+            this.onSuccess(this.rowAffected);
         }
     }
 }

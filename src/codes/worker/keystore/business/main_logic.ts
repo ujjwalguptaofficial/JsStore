@@ -1,5 +1,5 @@
 import { QueryExecutor } from '../query_executor';
-import { Connection_Status } from "../enums";
+import { CONNECTION_STATUS } from "../enums";
 import { IInsert, IError, IQueryRequest, IQueryResult } from "../interfaces";
 import { Remove } from "./remove_logic";
 import { Set } from "./set_logic";
@@ -13,38 +13,38 @@ export class Main {
         this._onSuccess = onSuccess;
     }
 
-    public set(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
-        var obj_insert = new Set(query, onSuccess, onError);
-        obj_insert.execute();
+    set(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
+        const insertInstance = new Set(query, onSuccess, onError);
+        insertInstance.execute();
     }
 
-    public remove(key: string, onSuccess: (result) => void, onError: (err: IError) => void) {
-        var obj_delete = new Remove(key, onSuccess, onError);
-        obj_delete.execute();
+    remove(key: string, onSuccess: (result) => void, onError: (err: IError) => void) {
+        const deleteInstance = new Remove(key, onSuccess, onError);
+        deleteInstance.execute();
     }
 
-    public get(key: string, onSuccess: (result) => void, onError: (err: IError) => void) {
-        var get_object = new Get(key, onSuccess, onError);
-        get_object.execute();
+    get(key: string, onSuccess: (result) => void, onError: (err: IError) => void) {
+        const getInstance = new Get(key, onSuccess, onError);
+        getInstance.execute();
     }
 
-    public createDb(onSuccess: () => void, onError: (err: IError) => void) {
-        var db_name = "KeyStore";
-        var init_db_object = new InitDb(db_name, onSuccess, onError);
+    createDb(onSuccess: () => void, onError: (err: IError) => void) {
+        const dbName = "KeyStore";
+        const initDbInstance = new InitDb(dbName, onSuccess, onError);
     }
 
-    public checkConnectionAndExecuteLogic(request: IQueryRequest) {
+    checkConnectionAndExecuteLogic(request: IQueryRequest) {
         if (request.Name === 'create_db' || request.Name === 'open_db') {
             this.executeLogic(request);
         }
         else {
-            switch (QueryExecutor._dbStatus.ConStatus) {
-                case Connection_Status.Connected: this.executeLogic(request); break;
-                case Connection_Status.NotStarted:
+            switch (QueryExecutor.dbStatus.conStatus) {
+                case CONNECTION_STATUS.Connected: this.executeLogic(request); break;
+                case CONNECTION_STATUS.NotStarted:
                     setTimeout(function () {
                         this.checkConnectionAndExecuteLogic(request);
                     }.bind(this), 100); break;
-                case Connection_Status.Closed:
+                case CONNECTION_STATUS.Closed:
                     if (IdbHelper._isDbDeletedByBrowser) {
                         this.createDb(() => {
                             IdbHelper._isDbDeletedByBrowser = false;

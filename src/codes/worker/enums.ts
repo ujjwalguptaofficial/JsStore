@@ -1,16 +1,16 @@
-export enum Occurence {
+export enum OCCURENCE {
     First = 'f',
     Last = 'l',
     Any = 'a'
 }
 
-export enum WebWorker_Status {
+export enum WEBWORKER_STATUS {
     Registered = "registerd",
     Failed = "failed",
     NotStarted = "not_started"
 }
 
-export enum Connection_Status {
+export enum CONNECTION_STATUS {
     Connected = "connected",
     Closed = "closed",
     NotStarted = "not_started",
@@ -18,8 +18,7 @@ export enum Connection_Status {
     ClosedByJsStore = "closed_by_jsstore"
 }
 
-
-export enum Data_Type {
+export enum DATA_TYPE {
     String = "string",
     Object = "object",
     Array = "array",
@@ -28,7 +27,7 @@ export enum Data_Type {
     Null = "null"
 }
 
-export enum Error_Type {
+export enum ERROR_TYPE {
     UndefinedColumn = "undefined_column",
     UndefinedValue = "undefined_value",
     UndefinedColumnName = "undefined_column_name",
@@ -51,4 +50,18 @@ export enum Error_Type {
     DbBlocked = "Db_blocked",
     IndexedDbUndefined = "indexeddb_undefined",
     IndexedDbBlocked = "indexeddb_blocked",
+}
+
+export enum QUERY_OPTION {
+    Where = "where",
+    Like = 'like',
+    In = 'in',
+    Between = '-',
+    GreaterThan = '>',
+    LessThan = '<',
+    GreaterThanEqualTo = ">=",
+    LessThanEqualTo = "<=",
+    NotEqualTo = "!=",
+    Aggregate = "aggregate",
+    Or = "or"
 }

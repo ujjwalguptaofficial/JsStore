@@ -10,8 +10,8 @@ export class In extends NotWhere {
             }.bind(this);
         if (this._checkFlag) {
             for (var i = 0, length = values.length; i < length; i++) {
-                if (!this._errorOccured) {
-                    cursor_request = this._objectStore.index(column).
+                if (!this.errorOccured) {
+                    cursor_request = this.objectStore.index(column).
                         openCursor(IDBKeyRange.only(values[i]));
                     cursor_request.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -32,8 +32,8 @@ export class In extends NotWhere {
         }
         else {
             for (var i = 0, length = values.length; i < length; i++) {
-                if (!this._errorOccured) {
-                    cursor_request = this._objectStore.index(column).
+                if (!this.errorOccured) {
+                    cursor_request = this.objectStore.index(column).
                         openCursor(IDBKeyRange.only(values[i]));
                     cursor_request.onsuccess = function (e) {
                         cursor = e.target.result;

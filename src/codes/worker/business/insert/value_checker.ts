@@ -2,56 +2,64 @@ import { Table } from "../../model/table";
 import { IError } from "../../interfaces";
 import { Column } from "../../model/column";
 import { Util } from "../../util";
-import { Error_Type } from "../../enums";
+import { ERROR_TYPE } from "../../enums";
 import { LogHelper } from "../../log_helper";
 
 export class ValueChecker {
-    _table: Table;
-    _value: object;
-    _errorOccured: boolean = false;
-    _error: IError;
-    _autoIncrementValue = {};
+    table: Table;
+    value: object;
+    errorOccured = false;
+    error: IError;
+    autoIncrementValue = {};
 
     constructor(table: Table, autoIncrementValue) {
-        this._table = table;
-        this._autoIncrementValue = autoIncrementValue;
+        this.table = table;
+        this.autoIncrementValue = autoIncrementValue;
     }
 
-    public checkAndModifyValue(value) {
-        this._value = value;
-        this._table._columns.every(function (column) {
-            this.checkAndModifyColumnValue(column, value);
-            return !this._errorOccured;
-        }, this);
-        return this._errorOccured;
+    checkAndModifyValue(value) {
+        this.value = value;
+        this.table.columns.every((column) => {
+            this.checkAndModifyColumnValue_(column);
+            return !this.errorOccured;
+        });
+        return this.errorOccured;
     }
 
-    private checkNotNullAndDataType(column: Column) {
+    private isNull_(value) {
+        return Util.isNull(value);
+    }
+
+    private getType_(value) {
+        return Util.getType(value);
+    }
+
+    private checkNotNullAndDataType_(column: Column) {
         // check not null schema
-        if (column._notNull && Util.isNull(this._value[column._name])) {
-            this.onValidationError(Error_Type.NullValue, { ColumnName: column._name });
+        if (column.notNull && this.isNull_(this.value[column.name])) {
+            this.onValidationError_(ERROR_TYPE.NullValue, { ColumnName: column.name });
         }
         // check datatype
-        else if (column._dataType && !Util.isNull(this._value[column._name]) &&
-            Util.getType(this._value[column._name]) !== column._dataType) {
-            this.onValidationError(Error_Type.BadDataType, { ColumnName: column._name });
+        else if (column.dataType && !this.isNull_(this.value[column.name]) &&
+            this.getType_(this.value[column.name]) !== column.dataType) {
+            this.onValidationError_(ERROR_TYPE.BadDataType, { ColumnName: column.name });
         }
     }
 
-    private checkAndModifyColumnValue(column: Column) {
+    private checkAndModifyColumnValue_(column: Column) {
         // check auto increment scheme
-        if (column._autoIncrement) {
-            this._value[column._name] = ++this._autoIncrementValue[column._name];
+        if (column.autoIncrement) {
+            this.value[column.name] = ++this.autoIncrementValue[column.name];
         }
         // check Default Schema
-        else if (column._default && Util.isNull(this._value[column._name])) {
-            this._value[column._name] = column._default;
+        else if (column.default && this.isNull_(this.value[column.name])) {
+            this.value[column.name] = column.default;
         }
-        this.checkNotNullAndDataType(column);
+        this.checkNotNullAndDataType_(column);
     }
 
-    private onValidationError(error: Error_Type, details: any) {
-        this._errorOccured = true;
-        this._error = new LogHelper(error, details);
+    private onValidationError_(error: ERROR_TYPE, details: object) {
+        this.errorOccured = true;
+        this.error = new LogHelper(error, details);
     }
 }

@@ -1,4 +1,4 @@
-export enum Connection_Status {
+export enum CONNECTION_STATUS {
     Connected = "connected",
     Closed = "closed",
     NotStarted = "not_connected"

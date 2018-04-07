@@ -26,19 +26,19 @@ export class InstanceHelper {
     private processFinishedQuery(message: IWebWorkerResult) {
         var finished_request: IWebWorkerRequest = this._requestQueue.shift();
         if (finished_request) {
-            LogHelper.log("request finished : " + finished_request.Name);
-            if (message.ErrorOccured) {
-                if (finished_request.OnError) {
-                    finished_request.OnError(message.ErrorDetails);
+            LogHelper.log("request finished : " + finished_request.name);
+            if (message.errorOccured) {
+                if (finished_request.onError) {
+                    finished_request.onError(message.errorDetails);
                 }
             }
             else {
-                if (finished_request.OnSuccess) {
+                if (finished_request.onSuccess) {
                     var open_db_queries = ['open_db', 'create_db'];
-                    if (open_db_queries.indexOf(finished_request.Name) >= 0) {
+                    if (open_db_queries.indexOf(finished_request.name) >= 0) {
                         this._isDbOpened = true;
                     }
-                    finished_request.OnSuccess(message.ReturnedValue);
+                    finished_request.onSuccess(message.returnedValue);
                 }
             }
             this._isCodeExecuting = false;
@@ -48,10 +48,10 @@ export class InstanceHelper {
 
     protected pushApi<T>(request: IWebWorkerRequest): Promise<T> {
         return new Promise((resolve, reject) => {
-            request.OnSuccess = (result) => {
+            request.onSuccess = (result) => {
                 resolve(result as T);
             };
-            request.OnError = (error) => {
+            request.onError = (error) => {
                 reject(error);
             };
             this.prcoessExecutionOfQry(request);
@@ -61,7 +61,7 @@ export class InstanceHelper {
     private prcoessExecutionOfQry(request: IWebWorkerRequest) {
         this._requestQueue.push(request);
         this.executeQry();
-        LogHelper.log("request pushed: " + request.Name);
+        LogHelper.log("request pushed: " + request.name);
     }
 
     private executeQry() {
@@ -72,7 +72,7 @@ export class InstanceHelper {
             }
             var allowed_query_index = -1;
             this._requestQueue.every((item, index) => {
-                if (this._whiteListApi.indexOf(item.Name) >= 0) {
+                if (this._whiteListApi.indexOf(item.name) >= 0) {
                     allowed_query_index = index;
                     return false;
                 }
@@ -89,10 +89,10 @@ export class InstanceHelper {
     private sendRequestToWorker(firsrtRequest: IWebWorkerRequest) {
         this._isCodeExecuting = true;
         var request = {
-            Name: firsrtRequest.Name,
-            Query: firsrtRequest.Query
+            name: firsrtRequest.name,
+            query: firsrtRequest.query
         } as IWebWorkerRequest;
-        LogHelper.log("request executing : " + firsrtRequest.Name);
+        LogHelper.log("request executing : " + firsrtRequest.name);
         this._worker.postMessage(request);
     }
 }

@@ -1,12 +1,44 @@
-import { Occurence } from "../enums";
+import { OCCURENCE } from "../enums";
 import { IdbHelper } from "./idb_helper";
 import { Table } from "../model/table";
-import { QueryOption } from "../inner_enums";
+import { QUERY_OPTION } from "../enums";
+import { Util } from "../util";
 
 export class BaseHelper {
+
+    // static method helpers
+
+    protected get activeDb() {
+        return IdbHelper.activeDb;
+    }
+
+    protected get dbConnection() {
+        return IdbHelper.dbConnection;
+    }
+
+    protected getObjectFirstKey(value: object) {
+        return Util.getObjectFirstKey(value);
+    }
+
+    protected isNull(value) {
+        return Util.isNull(value);
+    }
+
+    protected getType(value) {
+        return Util.getType(value);
+    }
+
+    protected get transaction() {
+        return IdbHelper.transaction;
+    }
+
+    protected createTransaction(tableNames: string[], callBack: () => void, mode?) {
+        IdbHelper.createTransaction(tableNames, callBack);
+    }
+
     protected containsNot(whereQry: object) {
-        var status = false,
-            value;
+        let status = false;
+        let value;
         Object.keys(whereQry).every((key) => {
             value = whereQry[key];
             if (value['!=']) {
@@ -18,16 +50,16 @@ export class BaseHelper {
     }
 
     protected filterOnOccurence = function (value) {
-        var found = false;
+        let found = false;
         value = value.toLowerCase();
         switch (this._compSymbol) {
-            case Occurence.Any: if (value.indexOf(this._compValue) >= 0) {
+            case OCCURENCE.Any: if (value.indexOf(this._compValue) >= 0) {
                 found = true;
             } break;
-            case Occurence.First: if (value.indexOf(this._compValue) === 0) {
+            case OCCURENCE.First: if (value.indexOf(this._compValue) === 0) {
                 found = true;
             } break;
-            case Occurence.Last:
+            case OCCURENCE.Last:
                 if (value.lastIndexOf(this._compValue) === value.length - this._compValueLength) {
                     found = true;
                 } break;
@@ -38,52 +70,54 @@ export class BaseHelper {
         return found;
     };
 
+
+
     protected isTableExist(tableName: string) {
-        var is_exist: boolean = false;
-        IdbHelper._activeDb._tables.every((table) => {
-            if (table._name === tableName) {
-                is_exist = true;
+        let isExist = false;
+        this.activeDb.tables.every((table) => {
+            if (table.name === tableName) {
+                isExist = true;
                 return false;
             }
             return true;
         });
-        return is_exist;
+        return isExist;
     }
 
     protected getTable(tableName: string) {
-        var current_table: Table;
-        IdbHelper._activeDb._tables.every((table) => {
-            if (table._name === tableName) {
-                current_table = table;
+        let currentTable: Table;
+        this.activeDb.tables.every((table) => {
+            if (table.name === tableName) {
+                currentTable = table;
                 return false;
             }
             return true;
         });
-        return current_table;
+        return currentTable;
     }
 
     protected getKeyRange(value, op) {
-        var key_range: IDBKeyRange;
+        let keyRange: IDBKeyRange;
         switch (op) {
-            case QueryOption.Between: key_range = IDBKeyRange.bound(value.low, value.high, false, false); break;
-            case QueryOption.Greater_Than: key_range = IDBKeyRange.lowerBound(value, true); break;
-            case QueryOption.Greater_Than_Equal_To: key_range = IDBKeyRange.lowerBound(value); break;
-            case QueryOption.Less_Than: key_range = IDBKeyRange.upperBound(value, true); break;
-            case QueryOption.Less_Than_Equal_To: key_range = IDBKeyRange.upperBound(value); break;
-            default: key_range = IDBKeyRange.only(value); break;
+            case QUERY_OPTION.Between: keyRange = IDBKeyRange.bound(value.low, value.high, false, false); break;
+            case QUERY_OPTION.GreaterThan: keyRange = IDBKeyRange.lowerBound(value, true); break;
+            case QUERY_OPTION.GreaterThanEqualTo: keyRange = IDBKeyRange.lowerBound(value); break;
+            case QUERY_OPTION.LessThan: keyRange = IDBKeyRange.upperBound(value, true); break;
+            case QUERY_OPTION.LessThanEqualTo: keyRange = IDBKeyRange.upperBound(value); break;
+            default: keyRange = IDBKeyRange.only(value); break;
         }
-        return key_range;
+        return keyRange;
     }
 
     protected getPrimaryKey(tableName): string {
-        var primary_key: string = (this.getTable(tableName) as Table)._primaryKey;
-        return primary_key ? primary_key : this.getKeyPath(tableName);
+        const primaryKey: string = this.getTable(tableName).primaryKey;
+        return primaryKey ? primaryKey : this.getKeyPath(tableName);
     }
 
     protected getKeyPath(tableName) {
-        var transaction: IDBTransaction = IdbHelper._dbConnection.transaction([tableName], "readonly"),
-            object_store = transaction.objectStore(tableName);
-        return object_store.keyPath as string;
+        const transaction: IDBTransaction = this.dbConnection.transaction([tableName], "readonly"),
+            objectStore = transaction.objectStore(tableName);
+        return objectStore.keyPath as string;
     }
 
     protected sortNumberInAsc(values) {
@@ -116,30 +150,30 @@ export class BaseHelper {
 
     protected getAllCombinationOfWord(word: string, isArray?: boolean) {
         if (isArray) {
-            var results = [];
-            for (var i = 0, length = word.length; i < length; i++) {
-                results = results.concat(this.getCombination(word[i]));
+            let results = [];
+            for (let i = 0, length = word.length; i < length; i++) {
+                results = results.concat(this._getCombination(word[i]));
             }
             return results;
         }
         else {
-            return this.getCombination(word);
+            return this._getCombination(word);
         }
     }
 
-    private getCombination(word: string) {
-        var results = [],
-            doAndPushCombination = (subWord: string, chars, index: number) => {
-                if (index === subWord.length) {
-                    results.push(chars.join(""));
-                } else {
-                    var ch = subWord.charAt(index);
-                    chars[index] = ch.toLowerCase();
-                    doAndPushCombination(subWord, chars, index + 1);
-                    chars[index] = ch.toUpperCase();
-                    doAndPushCombination(subWord, chars, index + 1);
-                }
-            };
+    private _getCombination(word: string) {
+        const results = [];
+        const doAndPushCombination = (subWord: string, chars, index: number) => {
+            if (index === subWord.length) {
+                results.push(chars.join(""));
+            } else {
+                const ch = subWord.charAt(index);
+                chars[index] = ch.toLowerCase();
+                doAndPushCombination(subWord, chars, index + 1);
+                chars[index] = ch.toUpperCase();
+                doAndPushCombination(subWord, chars, index + 1);
+            }
+        };
         doAndPushCombination(word, [], 0);
         return results;
     }

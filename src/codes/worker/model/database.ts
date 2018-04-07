@@ -1,14 +1,14 @@
-import { IDataBaseOption } from "../interfaces";
+import { IDataBase } from "../interfaces";
 import { Table } from "./table";
 
 export class DataBase {
-    _name: string;
-    _tables: Table[] = [];
+    name: string;
+    tables: Table[] = [];
 
-    constructor(dataBase: IDataBaseOption) {
-        this._name = dataBase.Name;
-        dataBase.Tables.forEach(function (item) {
-            this._tables.push(new Table(item));
-        }, this);
+    constructor(dataBase: IDataBase) {
+        this.name = dataBase.name;
+        dataBase.tables.forEach((item) => {
+            this.tables.push(new Table(item));
+        });
     }
 }

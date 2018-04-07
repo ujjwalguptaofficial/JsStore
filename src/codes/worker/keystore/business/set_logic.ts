@@ -4,44 +4,44 @@ import { IdbHelper } from "./idb_helper";
 import { QueryExecutor } from "../query_executor";
 
 export class Set extends Base {
-    _query: IInsert;
+    query: IInsert;
     constructor(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
         super();
         try {
-            this._query = query;
-            this._onSuccess = onSuccess;
-            this._onError = onError;
+            this.query = query;
+            this.onSuccess = onSuccess;
+            this.onError = onError;
         }
         catch (ex) {
             console.error(ex);
         }
     }
 
-    public execute() {
-        var updateIfExistElseInsert = () => {
-            var cursor_request = this._objectStore.index(QueryExecutor._columnName).openCursor(
-                IDBKeyRange.only(this._query[QueryExecutor._columnName])
+    execute() {
+        const updateIfExistElseInsert = () => {
+            const cursorRequest = this.objectStore.index(QueryExecutor.columnName).openCursor(
+                IDBKeyRange.only(this.query[QueryExecutor.columnName])
             );
-            cursor_request.onsuccess = (e) => {
-                var cursor: IDBCursorWithValue = (e as any).target.result;
+            cursorRequest.onsuccess = (e) => {
+                const cursor: IDBCursorWithValue = (e as any).target.result;
                 if (cursor) {
-                    cursor.update(this._query);
+                    cursor.update(this.query);
                 }
                 else {
                     insertData();
                 }
             };
 
-            cursor_request.onerror = (e) => {
-                this._errorOccured = true;
+            cursorRequest.onerror = (e) => {
+                this.errorOccured = true;
                 this.onErrorOccured(e);
             };
 
         };
-        var insertData = () => {
-            var add_result = this._objectStore.add(this._query);
-            add_result.onerror = (e) => {
-                this._errorOccured = true;
+        const insertData = () => {
+            const addResult = this.objectStore.add(this.query);
+            addResult.onerror = (e) => {
+                this.errorOccured = true;
                 this.onErrorOccured(e);
             };
         };
@@ -50,13 +50,13 @@ export class Set extends Base {
     }
 
     private initTransaction() {
-        IdbHelper.createTransaction([QueryExecutor._tableName], this.onTransactionCompleted.bind(this));
-        this._objectStore = IdbHelper._transaction.objectStore(QueryExecutor._tableName);
+        IdbHelper.createTransaction([QueryExecutor.tableName], this.onTransactionCompleted.bind(this));
+        this.objectStore = IdbHelper._transaction.objectStore(QueryExecutor.tableName);
     }
 
     private onTransactionCompleted() {
-        if (this._errorOccured === false && this._onSuccess) {
-            this._onSuccess(null);
+        if (this.errorOccured === false && this.onSuccess) {
+            this.onSuccess(null);
         }
     }
 }

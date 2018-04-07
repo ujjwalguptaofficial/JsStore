@@ -2,29 +2,29 @@ import { Where } from "./where";
 import { ICount, IError } from "../../interfaces";
 import * as Select from '../select/index';
 import { LogHelper } from "../../log_helper";
-import { Error_Type } from "../../enums";
+import { ERROR_TYPE } from "../../enums";
 import { IdbHelper } from '../idb_helper';
 
 export class Instance extends Where {
 
     constructor(query: ICount, onSuccess: (noOfRecord: number) => void, onError: (error: IError) => void) {
         super();
-        this._onError = onError;
-        this._onSuccess = onSuccess;
-        this._query = query;
+        this.onError = onError;
+        this.onSuccess = onSuccess;
+        this.query = query;
     }
 
     execute() {
-        if (this.isTableExist(this._query.from)) {
+        if (this.isTableExist(this.query.from)) {
             try {
-                if (this._query.where !== undefined) {
+                if (this.query.where !== undefined) {
                     this.addGreatAndLessToNotOp();
-                    if (this._query.where.Or || Array.isArray(this._query.where)) {
-                        var select_object = new Select.Instance(this._query as any,
+                    if (this.query.where.Or || Array.isArray(this.query.where)) {
+                        var select_object = new Select.Instance(this.query as any,
                             (results) => {
                                 this._resultCount = results.length;
                                 this.onTransactionCompleted();
-                            }, this._onError);
+                            }, this.onError);
                         select_object.execute();
                     }
                     else {
@@ -38,32 +38,32 @@ export class Instance extends Where {
                 }
             }
             catch (ex) {
-                this.onExceptionOccured(ex, { TableName: this._query.from });
+                this.onExceptionOccured(ex, { TableName: this.query.from });
             }
         }
         else {
-            this._errorOccured = true;
+            this.errorOccured = true;
             this.onErrorOccured(
-                new LogHelper(Error_Type.TableNotExist, { TableName: this._query.From }),
+                new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.query.From }),
                 true
             );
         }
     }
 
     private initTransaction() {
-        IdbHelper.createTransaction([this._query.From], this.onTransactionCompleted.bind(this), 'readonly');
-        this._objectStore = IdbHelper._transaction.objectStore(this._query.From);
+        IdbHelper.createTransaction([this.query.From], this.onTransactionCompleted.bind(this), 'readonly');
+        this.objectStore = IdbHelper.transaction.objectStore(this.query.From);
     }
 
     private onQueryFinished() {
-        if (this._isTransaction === true) {
+        if (this.isTransaction === true) {
             this.onTransactionCompleted();
         }
     }
 
     private onTransactionCompleted() {
-        if (this._errorOccured === false) {
-            this._onSuccess(this._resultCount);
+        if (this.errorOccured === false) {
+            this.onSuccess(this._resultCount);
         }
     }
 }
