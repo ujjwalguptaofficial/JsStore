@@ -2,7 +2,7 @@ import { Config } from "./config";
 
 export class Helper {
     static getObjectFirstKey(value) {
-        for (var key in value) {
+        for (const key in value) {
             return key;
         }
         return null;

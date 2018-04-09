@@ -6,7 +6,7 @@ export class Where extends Like {
             cursor_request;
         value = op ? value[op] : value;
         cursor_request = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             cursor_request.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {

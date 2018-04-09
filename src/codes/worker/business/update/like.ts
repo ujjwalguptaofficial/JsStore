@@ -3,29 +3,29 @@ import { In } from "./in";
 import { updateValue } from "./base_update";
 
 export class Like extends In {
-    _compSymbol: OCCURENCE;
-    _compValue;
-    _compValueLength: number;
+    compSymbol: OCCURENCE;
+    compValue;
+    compValueLength: number;
 
     protected executeLikeLogic(column, value, symbol: OCCURENCE) {
-        var cursor: IDBCursorWithValue;
-        this._compValue = (value as string).toLowerCase();
-        this._compValueLength = this._compValue.length;
-        this._compSymbol = symbol;
-        var cursor_open_request = this.objectStore.index(column).openCursor();
-        cursor_open_request.onerror = function (e) {
-            this._errorOccured = true;
+        let cursor: IDBCursorWithValue;
+        this.compValue = (value as string).toLowerCase();
+        this.compValueLength = this.compValue.length;
+        this.compSymbol = symbol;
+        const cursorOpenRequest = this.objectStore.index(column).openCursor();
+        cursorOpenRequest.onerror =  (e)=> {
+            this.errorOccured = true;
             this.onErrorOccured(e);
-        }.bind(this);
+        };
 
-        if (this._checkFlag) {
-            cursor_open_request.onsuccess = function (e) {
+        if (this.checkFlag) {
+            cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key) &&
-                        this._whereChecker.check(cursor.value)) {
-                        cursor.update(updateValue(this._query.Set, cursor.value));
-                        ++this._rowAffected;
+                        this.whereCheckerInstance.check(cursor.value)) {
+                        cursor.update(updateValue(this.query.Set, cursor.value));
+                        ++this.rowAffected;
                     }
                     cursor.continue();
                 }
@@ -33,22 +33,22 @@ export class Like extends In {
                     this.onQueryFinished();
                 }
 
-            }.bind(this);
+            };
         }
         else {
-            cursor_open_request.onsuccess = function (e) {
+            cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key)) {
-                        cursor.update(updateValue(this._query.Set, cursor.value));
-                        ++this._rowAffected;
+                        cursor.update(updateValue(this.query.Set, cursor.value));
+                        ++this.rowAffected;
                     }
                     cursor.continue();
                 }
                 else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     }
 }

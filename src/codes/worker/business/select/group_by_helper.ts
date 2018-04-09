@@ -8,10 +8,10 @@ export class GroupByHelper extends Where {
 
     protected processGroupBy() {
         const grpQry = this.query.GroupBy;
-        let datas = this._results;
+        let datas = this.results;
         const lookUpObj = {};
         // free results memory
-        this._results = this.query.GroupBy = undefined;
+        this.results = this.query.GroupBy = undefined;
         if (typeof grpQry === 'string') {
             for (const i of Object.keys(datas)) {
                 lookUpObj[datas[i][grpQry]] = datas[i];
@@ -32,18 +32,18 @@ export class GroupByHelper extends Where {
         for (const i of Object.keys(lookUpObj)) {
             datas.push(lookUpObj[i]);
         }
-        this._results = datas;
+        this.results = datas;
     }
 
     protected executeAggregateGroupBy() {
         const grpQry = this.query.GroupBy;
-        let datas = this._results;
+        let datas = this.results;
         const lookUpObj = {};
         // assign aggregate and free aggregate memory
         const aggregateQry = this.query.aggregate;
         this.query.aggregate = undefined;
         // free results memory
-        this._results = undefined;
+        this.results = undefined;
 
         let index;
         let objKey;
@@ -235,6 +235,6 @@ export class GroupByHelper extends Where {
                 }
             }
         }
-        this._results = datas;
+        this.results = datas;
     }
 }

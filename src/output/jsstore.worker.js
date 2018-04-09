@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.0.0 - 07/04/2018
+ * @license :jsstore - V2.0.0 - 09/04/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -148,71 +148,73 @@ var Base = /** @class */ (function (_super) {
         _this.errorOccured = false;
         _this.errorCount = 0;
         _this.rowAffected = 0;
+        _this.checkFlag = false;
         _this.goToWhereLogic = function () {
             var _this = this;
-            var column_name = this.getObjectFirstKey(this._query.where);
-            if (this._query.IgnoreCase === true) {
-                this._query.where = this.makeQryInCaseSensitive(this._query.where);
+            var columnName = this.getObjectFirstKey(this.query.where);
+            if (this.query.IgnoreCase === true) {
+                this.query.where = this.makeQryInCaseSensitive(this.query.where);
             }
-            if (this._objectStore.indexNames.contains(column_name)) {
-                var value = this._query.where[column_name];
+            if (this.objectStore.indexNames.contains(columnName)) {
+                var value = this.query.where[columnName];
                 if (typeof value === 'object') {
-                    this._checkFlag = Boolean(Object.keys(value).length > 1 ||
-                        Object.keys(this._query.where).length > 1);
-                    if (this._checkFlag === true) {
-                        this._whereChecker = new _where_checker__WEBPACK_IMPORTED_MODULE_1__["WhereChecker"](this._query.where);
+                    this.checkFlag = Boolean(Object.keys(value).length > 1 ||
+                        Object.keys(this.query.where).length > 1);
+                    if (this.checkFlag === true) {
+                        this.whereCheckerInstance = new _where_checker__WEBPACK_IMPORTED_MODULE_1__["WhereChecker"](this.query.where);
                     }
                     var key = this.getObjectFirstKey(value);
                     switch (key) {
                         case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Like:
                             {
-                                var filter_values = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Like].split('%'), filter_value, occurence;
-                                if (filter_values[1]) {
-                                    filter_value = filter_values[1];
-                                    occurence = filter_values.length > 2 ? _enums__WEBPACK_IMPORTED_MODULE_3__["OCCURENCE"].Any : _enums__WEBPACK_IMPORTED_MODULE_3__["OCCURENCE"].Last;
+                                var filterValues = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Like].split('%');
+                                var filterValue = void 0, occurence = void 0;
+                                if (filterValues[1]) {
+                                    filterValue = filterValues[1];
+                                    occurence = filterValues.length > 2 ? _enums__WEBPACK_IMPORTED_MODULE_3__["OCCURENCE"].Any : _enums__WEBPACK_IMPORTED_MODULE_3__["OCCURENCE"].Last;
                                 }
                                 else {
-                                    filter_value = filter_values[0];
+                                    filterValue = filterValues[0];
                                     occurence = _enums__WEBPACK_IMPORTED_MODULE_3__["OCCURENCE"].First;
                                 }
                                 if (occurence === _enums__WEBPACK_IMPORTED_MODULE_3__["OCCURENCE"].First) {
-                                    this.getAllCombinationOfWord(filter_value).forEach(function (item) {
-                                        _this.executeWhereLogic(column_name, { '-': { low: item, high: item + '\uffff' } }, '-');
+                                    this.getAllCombinationOfWord(filterValue).forEach(function (item) {
+                                        _this.executeWhereLogic(columnName, { '-': { low: item, high: item + '\uffff' } }, '-');
                                     });
-                                    delete this._query.where[column_name][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Like];
+                                    delete this.query.where[columnName][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Like];
                                 }
                                 else {
-                                    this.executeLikeLogic(column_name, filter_value, occurence);
+                                    this.executeLikeLogic(columnName, filterValue, occurence);
                                 }
                             }
                             break;
                         case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In:
-                            this.executeInLogic(column_name, value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In]);
+                            this.executeInLogic(columnName, value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In]);
                             break;
                         case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Between:
                         case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].GreaterThan:
                         case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].LessThan:
                         case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].GreaterThanEqualTo:
                         case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].LessThanEqualTo:
-                            this.executeWhereLogic(column_name, value, key);
+                            this.executeWhereLogic(columnName, value, key);
                             break;
                         case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Aggregate: break;
-                        default: this.executeWhereLogic(column_name, value);
+                        default: this.executeWhereLogic(columnName, value);
                     }
                 }
                 else {
-                    this._checkFlag = Boolean(Object.keys(this._query.where).length > 1);
-                    if (this._checkFlag === true) {
-                        this._whereChecker = new _where_checker__WEBPACK_IMPORTED_MODULE_1__["WhereChecker"](this._query.where);
+                    this.checkFlag = Boolean(Object.keys(this.query.where).length > 1);
+                    if (this.checkFlag === true) {
+                        this.whereCheckerInstance = new _where_checker__WEBPACK_IMPORTED_MODULE_1__["WhereChecker"](this.query.where);
                     }
-                    this.executeWhereLogic(column_name, value);
+                    this.executeWhereLogic(columnName, value);
                 }
             }
             else {
-                this._errorOccured = true;
-                var column = this.getColumnInfo(column_name), error = column == null ?
-                    new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].ColumnNotExist, { ColumnName: column_name }) :
-                    new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].EnableSearchOff, { ColumnName: column_name });
+                this.errorOccured = true;
+                var column = this.getColumnInfo(columnName), error = column == null ?
+                    new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].ColumnNotExist, { ColumnName: columnName }) :
+                    new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].EnableSearchOff, { ColumnName: columnName });
                 this.onErrorOccured(error, true);
             }
         };
@@ -278,47 +280,48 @@ var Base = /** @class */ (function (_super) {
                 this.query.where = whereQuery;
             }
             else {
-                var where_tmp = [];
+                var whereTmp_1 = [];
                 queryKeys.forEach(function (prop) {
                     value = whereQuery[prop];
-                    var tmp_qry = {};
+                    var tmpQry = {};
                     if (value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo]) {
-                        tmp_qry[prop] = {};
-                        tmp_qry[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].GreaterThan] = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
-                        tmp_qry[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or] = {};
-                        tmp_qry[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop] = {};
-                        tmp_qry[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].LessThan] = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
+                        tmpQry[prop] = {};
+                        tmpQry[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].GreaterThan] = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
+                        tmpQry[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or] = {};
+                        tmpQry[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop] = {};
+                        tmpQry[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].LessThan] = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
                     }
                     else {
-                        tmp_qry[prop] = value;
+                        tmpQry[prop] = value;
                     }
-                    where_tmp.push(tmp_qry);
+                    whereTmp_1.push(tmpQry);
                 });
-                this.query.where = where_tmp;
+                this.query.where = whereTmp_1;
             }
         }
     };
     Base.prototype.makeQryInCaseSensitive = function (qry) {
-        var results = [], column_value, key_value;
+        var results = [];
+        var columnValue, keyValue;
         for (var column in qry) {
-            column_value = qry[column];
-            if (typeof column_value === 'object') {
-                for (var key in column_value) {
-                    key_value = column_value[key];
+            columnValue = qry[column];
+            if (typeof columnValue === 'object') {
+                for (var key in columnValue) {
+                    keyValue = columnValue[key];
                     switch (key) {
                         case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In:
-                            results = results.concat(this.getAllCombinationOfWord(key_value, true));
+                            results = results.concat(this.getAllCombinationOfWord(keyValue, true));
                             break;
                         case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Like:
                             break;
                         default:
-                            results = results.concat(this.getAllCombinationOfWord(key_value));
+                            results = results.concat(this.getAllCombinationOfWord(keyValue));
                     }
                 }
                 qry[column][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In] = results;
             }
             else {
-                results = results.concat(this.getAllCombinationOfWord(column_value));
+                results = results.concat(this.getAllCombinationOfWord(columnValue));
                 qry[column] = {};
                 qry[column][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In] = results;
             }
@@ -477,12 +480,6 @@ var BaseHelper = /** @class */ (function () {
         var transaction = this.dbConnection.transaction([tableName], "readonly"), objectStore = transaction.objectStore(tableName);
         return objectStore.keyPath;
     };
-    BaseHelper.prototype.sortNumberInAsc = function (values) {
-        values.sort(function (a, b) {
-            return a - b;
-        });
-        return values;
-    };
     BaseHelper.prototype.sortNumberInDesc = function (values) {
         values.sort(function (a, b) {
             return b - a;
@@ -505,15 +502,15 @@ var BaseHelper = /** @class */ (function () {
         if (isArray) {
             var results = [];
             for (var i = 0, length_1 = word.length; i < length_1; i++) {
-                results = results.concat(this._getCombination(word[i]));
+                results = results.concat(this.getCombination_(word[i]));
             }
             return results;
         }
         else {
-            return this._getCombination(word);
+            return this.getCombination_(word);
         }
     };
-    BaseHelper.prototype._getCombination = function (word) {
+    BaseHelper.prototype.getCombination_ = function (word) {
         var results = [];
         var doAndPushCombination = function (subWord, chars, index) {
             if (index === subWord.length) {
@@ -696,7 +693,7 @@ var BaseCount = /** @class */ (function (_super) {
     function BaseCount() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this._resultCount = 0;
-        _this._checkFlag = false;
+        _this.checkFlag = false;
         return _this;
     }
     return BaseCount;
@@ -738,7 +735,7 @@ var In = /** @class */ (function (_super) {
             this._errorOccured = true;
             this.onErrorOccured(e);
         }.bind(this);
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             for (var i = 0, length = values.length; i < length; i++) {
                 if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
@@ -946,7 +943,7 @@ var Like = /** @class */ (function (_super) {
             this._errorOccured = true;
             this.onErrorOccured(e);
         }.bind(this);
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             cursor_request.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
@@ -1077,7 +1074,7 @@ var Where = /** @class */ (function (_super) {
     Where.prototype.executeWhereLogic = function (column, value, op) {
         value = op ? value[op] : value;
         var cursor_request, cursor;
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             cursor_request = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
             cursor_request.onsuccess = function (e) {
                 cursor = e.target.result;
@@ -1884,7 +1881,7 @@ var BaseRemove = /** @class */ (function (_super) {
     __extends(BaseRemove, _super);
     function BaseRemove() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this._checkFlag = false;
+        _this.checkFlag = false;
         return _this;
     }
     BaseRemove.prototype.onQueryFinished = function () {
@@ -1929,7 +1926,7 @@ var In = /** @class */ (function (_super) {
             this._errorOccured = true;
             this.onErrorOccured(e);
         }.bind(this);
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             for (var i = 0, length = values.length; i < length; i++) {
                 if (!this.errorOccured) {
                     cursor_request = this.objectStore.index(column).
@@ -2158,7 +2155,7 @@ var Like = /** @class */ (function (_super) {
             this._errorOccured = true;
             this.onErrorOccured(e);
         }.bind(this);
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             cursor_request.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
@@ -2281,7 +2278,7 @@ var Where = /** @class */ (function (_super) {
         var cursor, cursor_request;
         value = op ? value[op] : value;
         cursor_request = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             cursor_request.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
@@ -2347,15 +2344,14 @@ var BaseSelect = /** @class */ (function (_super) {
     __extends(BaseSelect, _super);
     function BaseSelect() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this._results = [];
-        _this._sorted = false;
-        _this._checkFlag = false;
+        _this.results = [];
+        _this.sorted = false;
         return _this;
     }
     BaseSelect.prototype.removeDuplicates = function () {
-        var datas = this._results;
+        var datas = this.results;
         // free results memory
-        this._results = undefined;
+        this.results = undefined;
         var key = this.getPrimaryKey(this.query.from);
         var lookupObject = {};
         for (var i in datas) {
@@ -2363,10 +2359,10 @@ var BaseSelect = /** @class */ (function (_super) {
         }
         // free datas memory
         datas = [];
-        for (i in lookupObject) {
+        for (var i in lookupObject) {
             datas.push(lookupObject[i]);
         }
-        this._results = datas;
+        this.results = datas;
     };
     BaseSelect.prototype.onQueryFinished = function () {
         // ff
@@ -2409,10 +2405,10 @@ var GroupByHelper = /** @class */ (function (_super) {
     }
     GroupByHelper.prototype.processGroupBy = function () {
         var grpQry = this.query.GroupBy;
-        var datas = this._results;
+        var datas = this.results;
         var lookUpObj = {};
         // free results memory
-        this._results = this.query.GroupBy = undefined;
+        this.results = this.query.GroupBy = undefined;
         if (typeof grpQry === 'string') {
             for (var _i = 0, _a = Object.keys(datas); _i < _a.length; _i++) {
                 var i = _a[_i];
@@ -2437,18 +2433,18 @@ var GroupByHelper = /** @class */ (function (_super) {
             var i = _g[_f];
             datas.push(lookUpObj[i]);
         }
-        this._results = datas;
+        this.results = datas;
     };
     GroupByHelper.prototype.executeAggregateGroupBy = function () {
         var _this = this;
         var grpQry = this.query.GroupBy;
-        var datas = this._results;
+        var datas = this.results;
         var lookUpObj = {};
         // assign aggregate and free aggregate memory
         var aggregateQry = this.query.aggregate;
         this.query.aggregate = undefined;
         // free results memory
-        this._results = undefined;
+        this.results = undefined;
         var index;
         var objKey;
         var value;
@@ -2631,7 +2627,7 @@ var GroupByHelper = /** @class */ (function (_super) {
                 }
             }
         }
-        this._results = datas;
+        this.results = datas;
     };
     return GroupByHelper;
 }(_where__WEBPACK_IMPORTED_MODULE_0__["Where"]));
@@ -2651,6 +2647,7 @@ var GroupByHelper = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Helper", function() { return Helper; });
 /* harmony import */ var _group_by_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./group_by_helper */ "./codes/worker/business/select/group_by_helper.ts");
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../enums */ "./codes/worker/enums.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2662,6 +2659,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
+
 var Helper = /** @class */ (function (_super) {
     __extends(Helper, _super);
     function Helper() {
@@ -2670,26 +2668,26 @@ var Helper = /** @class */ (function (_super) {
     Helper.prototype.processOrderBy = function () {
         var _this = this;
         var order = this.query.order;
-        if (order && this._results.length > 0 && !this._sorted && order.by) {
+        if (order && this.results.length > 0 && !this.sorted && order.by) {
             order.Type = order.Type ? order.Type.toLowerCase() : 'asc';
-            var order_column = order.by, sortNumberInAsc = function () {
-                _this._results.sort(function (a, b) {
-                    return a[order_column] - b[order_column];
+            var orderColumn_1 = order.by, sortNumberInAsc = function () {
+                _this.results.sort(function (a, b) {
+                    return a[orderColumn_1] - b[orderColumn_1];
                 });
             }, sortNumberInDesc = function () {
-                _this._results.sort(function (a, b) {
-                    return b[order_column] - a[order_column];
+                _this.results.sort(function (a, b) {
+                    return b[orderColumn_1] - a[orderColumn_1];
                 });
             }, sortAlphabetInAsc = function () {
-                _this._results.sort(function (a, b) {
-                    return a[order_column].toLowerCase().localeCompare(b[order_column].toLowerCase());
+                _this.results.sort(function (a, b) {
+                    return a[orderColumn_1].toLowerCase().localeCompare(b[orderColumn_1].toLowerCase());
                 });
             }, sortAlphabetInDesc = function () {
-                _this._results.sort(function (a, b) {
-                    return b[order_column].toLowerCase().localeCompare(a[order_column].toLowerCase());
+                _this.results.sort(function (a, b) {
+                    return b[orderColumn_1].toLowerCase().localeCompare(a[orderColumn_1].toLowerCase());
                 });
             };
-            if (typeof this._results[0][order_column] === 'string') {
+            if (typeof this.results[0][orderColumn_1] === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
                 if (order.Type === 'asc') {
                     sortAlphabetInAsc();
                 }
@@ -2697,7 +2695,7 @@ var Helper = /** @class */ (function (_super) {
                     sortAlphabetInDesc();
                 }
             }
-            else if (typeof this._results[0][order_column] === 'number') {
+            else if (typeof this.results[0][orderColumn_1] === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Number) {
                 if (order.Type === 'asc') {
                     sortNumberInAsc();
                 }
@@ -2708,9 +2706,9 @@ var Helper = /** @class */ (function (_super) {
         }
     };
     Helper.prototype.processAggregateQry = function () {
-        var datas = this._results, results = {}, column_to_aggregate;
+        var datas = this.results, results = {}, column_to_aggregate;
         // free results memory
-        this._results = undefined;
+        this.results = undefined;
         for (var prop in this.query.Aggregate) {
             switch (prop) {
                 case 'count':
@@ -2817,7 +2815,7 @@ var Helper = /** @class */ (function (_super) {
         for (var prop in results) {
             datas[0][prop] = results[prop];
         }
-        this._results = datas;
+        this.results = datas;
     };
     return Helper;
 }(_group_by_helper__WEBPACK_IMPORTED_MODULE_0__["GroupByHelper"]));
@@ -2854,13 +2852,13 @@ var In = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     In.prototype.executeInLogic = function (column, values) {
-        if (this._skipRecord && this._limitRecord) {
+        if (this.skipRecord && this.limitRecord) {
             this.executeSkipAndLimitForIn(column, values);
         }
-        else if (this._skipRecord) {
+        else if (this.skipRecord) {
             this.executeSkipForIn(column, values);
         }
-        else if (this._limitRecord) {
+        else if (this.limitRecord) {
             this.executeLimitForIn(column, values);
         }
         else {
@@ -2868,7 +2866,7 @@ var In = /** @class */ (function (_super) {
         }
     };
     In.prototype.executeSkipAndLimitForIn = function (column, values) {
-        var cursor, skip = this._skipRecord, column_store = this.objectStore.index(column), cursor_request, skipOrPush = function (value) {
+        var cursor, skip = this.skipRecord, column_store = this.objectStore.index(column), cursor_request, skipOrPush = function (value) {
             if (skip === 0) {
                 this._results.push(value);
             }
@@ -2879,7 +2877,7 @@ var In = /** @class */ (function (_super) {
             this._errorOccured = true;
             this.onErrorOccured(e);
         }.bind(this);
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             for (var i = 0, length = values.length; i < length; i++) {
                 if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
@@ -2919,7 +2917,7 @@ var In = /** @class */ (function (_super) {
         }
     };
     In.prototype.executeSkipForIn = function (column, values) {
-        var cursor, skip = this._skipRecord, cursor_request, column_store = this.objectStore.index(column), skipOrPush = function (value) {
+        var cursor, skip = this.skipRecord, cursor_request, column_store = this.objectStore.index(column), skipOrPush = function (value) {
             if (skip === 0) {
                 this._results.push(value);
             }
@@ -2930,7 +2928,7 @@ var In = /** @class */ (function (_super) {
             this._errorOccured = true;
             this.onErrorOccured(e);
         }.bind(this);
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             for (var i = 0, length = values.length; i < length; i++) {
                 if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
@@ -2974,7 +2972,7 @@ var In = /** @class */ (function (_super) {
             this._errorOccured = true;
             this.onErrorOccured(e);
         }.bind(this);
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             for (var i = 0, length = values.length; i < length; i++) {
                 if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
@@ -3018,7 +3016,7 @@ var In = /** @class */ (function (_super) {
             this._errorOccured = true;
             this.onErrorOccured(e);
         }.bind(this);
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             for (var i = 0, length = values.length; i < length; i++) {
                 if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
@@ -3120,8 +3118,8 @@ var Instance = /** @class */ (function (_super) {
         _this.onError = onError;
         _this.onSuccess = onSuccess;
         _this.query = query;
-        _this._skipRecord = query.skip;
-        _this._limitRecord = query.limit;
+        _this.skipRecord = query.skip;
+        _this.limitRecord = query.limit;
         _this.tableName = query.from;
         return _this;
     }
@@ -3154,7 +3152,7 @@ var Instance = /** @class */ (function (_super) {
         }
     };
     Instance.prototype.processWhereArrayQry = function () {
-        this._isArrayQry = true;
+        this.isArrayQry = true;
         var is_first_where = true, where_query = this.query.where, output = [], operation, pKey = this.getPrimaryKey(this.query.from), isItemExist = function (keyValue) {
             var is_exist = false;
             output.every(function (item) {
@@ -3227,11 +3225,11 @@ var Instance = /** @class */ (function (_super) {
         processFirstQry();
     };
     Instance.prototype.onQueryFinished = function () {
-        if (this._isOr === true) {
+        if (this.isOr === true) {
             this.orQuerySuccess();
         }
-        else if (this._isArrayQry === true) {
-            this._onWhereArrayQrySuccess();
+        else if (this.isArrayQry === true) {
+            this.onWhereArrayQrySuccess();
         }
         else if (this.isTransaction === true) {
             this.onTransactionCompleted();
@@ -3252,7 +3250,7 @@ var Instance = /** @class */ (function (_super) {
             this.processOrderBy();
             if (this.query.distinct) {
                 var group_by = [];
-                var result = this._results[0];
+                var result = this.results[0];
                 for (var key in result) {
                     group_by.push(key);
                 }
@@ -3271,21 +3269,21 @@ var Instance = /** @class */ (function (_super) {
             else if (this.query.aggregate) {
                 this.processAggregateQry();
             }
-            this.onSuccess(this._results);
+            this.onSuccess(this.results);
         }
     };
     Instance.prototype.orQueryFinish = function () {
-        this._isOr = false;
-        this._results = this._orInfo.Results;
+        this.isOr = false;
+        this.results = this._orInfo.Results;
         // free or info memory
         this._orInfo = undefined;
         this.removeDuplicates();
         this.onQueryFinished();
     };
     Instance.prototype.orQuerySuccess = function () {
-        this._orInfo.Results = this._orInfo.Results.concat(this._results);
+        this._orInfo.Results = this._orInfo.Results.concat(this.results);
         if (!this.query.limit || (this.query.limit > this._orInfo.Results.length)) {
-            this._results = [];
+            this.results = [];
             var key = this.getObjectFirstKey(this._orInfo.OrQuery);
             if (key != null) {
                 var where = {};
@@ -3303,7 +3301,7 @@ var Instance = /** @class */ (function (_super) {
         }
     };
     Instance.prototype.processOrLogic = function () {
-        this._isOr = true;
+        this.isOr = true;
         this._orInfo = {
             OrQuery: this.query.where.or,
             Results: []
@@ -3330,6 +3328,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Join", function() { return Join; });
 /* harmony import */ var _base_select__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./base_select */ "./codes/worker/business/select/base_select.ts");
 /* harmony import */ var _instance__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./instance */ "./codes/worker/business/select/instance.ts");
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../enums */ "./codes/worker/enums.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -3342,76 +3341,78 @@ var __extends = (undefined && undefined.__extends) || (function () {
 })();
 
 
+
 var Join = /** @class */ (function (_super) {
     __extends(Join, _super);
     function Join(query, onSuccess, onError) {
         var _this = _super.call(this) || this;
-        _this._queryStack = [];
-        _this._currentQueryStackIndex = 0;
+        _this.queryStack = [];
+        _this.currentQueryStackIndex = 0;
         _this.onSuccess = onSuccess;
         _this.onError = onError;
         _this.query = query;
-        var table_list = []; // used to open the multiple object store
+        var tableList = []; // used to open the multiple object store
         var convertQueryIntoStack = function (qry) {
-            if (qry.hasOwnProperty('Table1')) {
-                qry.Table2['JoinType'] = qry.join === undefined ?
-                    'inner' : qry.join.toLowerCase();
-                this._queryStack.push(qry.Table2);
-                if (this._queryStack.length % 2 === 0) {
-                    this._queryStack[this._queryStack.length - 1].NextJoin = qry.NextJoin;
+            if (qry.table1 !== undefined) {
+                qry.table2['JoinType'] = qry.join === undefined ? 'inner' : qry.join.toLowerCase();
+                _this.queryStack.push(qry.table2);
+                if (_this.queryStack.length % 2 === 0) {
+                    _this.queryStack[_this.queryStack.length - 1].nextJoin = qry.nextJoin;
                 }
-                table_list.push(qry.Table2.Table);
-                return convertQueryIntoStack(qry.Table1);
+                tableList.push(qry.table2.table);
+                return convertQueryIntoStack(qry.table1);
             }
             else {
-                this._queryStack.push(qry);
-                table_list.push(qry.Table);
+                _this.queryStack.push(qry);
+                tableList.push(qry.table);
                 return;
             }
-        }.bind(_this);
+        };
         convertQueryIntoStack(query.from);
-        _this._queryStack.reverse();
+        _this.queryStack.reverse();
         // get the data for first table
         if (!_this.errorOccured) {
-            var select_object = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
-                from: _this._queryStack[0].table,
-                where: _this._queryStack[0].where
+            var selectObject = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
+                from: _this.queryStack[0].table,
+                where: _this.queryStack[0].where
             }, function (results) {
-                var table_name = this._queryStack[0].Table;
+                var tableName = _this.queryStack[0].table;
                 results.forEach(function (item, index) {
-                    this._results[index] = {};
-                    this._results[index][table_name] = item;
-                }, this);
-                this.startExecutionJoinLogic();
-            }.bind(_this), _this.onErrorOccured.bind(_this));
-            select_object.execute();
+                    _this.results[index] = {};
+                    _this.results[index][tableName] = item;
+                });
+                _this.startExecutionJoinLogic_();
+            }, _this.onErrorOccured);
+            selectObject.execute();
         }
         return _this;
     }
-    Join.prototype.onTransactionCompleted = function (e) {
-        if (this.onSuccess != null && (this._queryStack.length === this._currentQueryStackIndex + 1)) {
-            if (this.query['Count']) {
-                this.onSuccess(this._results.length);
+    Join.prototype.onTransactionCompleted_ = function (e) {
+        if (this.onSuccess != null && (this.queryStack.length === this.currentQueryStackIndex + 1)) {
+            if (this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Count]) {
+                this.onSuccess(this.results.length);
             }
             else {
-                if (this.query['Skip'] && this.query['Limit']) {
-                    this._results.splice(0, this.query['Skip']);
-                    this._results.splice(this.query['Limit'] - 1, this._results.length);
+                if (this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Skip] && this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Limit]) {
+                    this.results.splice(0, this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Skip]);
+                    this.results.splice(this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Limit] - 1, this.results.length);
                 }
-                else if (this.query['Skip']) {
-                    this._results.splice(0, this.query['Skip']);
+                else if (this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Skip]) {
+                    this.results.splice(0, this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Skip]);
                 }
-                else if (this.query['Limit']) {
-                    this._results.splice(this.query['Limit'] - 1, this._results.length);
+                else if (this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Limit]) {
+                    this.results.splice(this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Limit] - 1, this.results.length);
                 }
-                this.onSuccess(this._results);
+                this.onSuccess(this.results);
             }
         }
     };
-    Join.prototype.executeWhereJoinLogic = function (joinQuery, query) {
-        var results = [], join_index = 0, column = query.column, tmp_results = this._results, item, result_length = tmp_results.length;
+    Join.prototype.executeWhereJoinLogic_ = function (joinQuery, query) {
+        var _this = this;
+        var results = [], column = query.column, tmpresults = this.results, resultLength = tmpresults.length;
+        var item, joinIndex = 0;
         // get the data from query table
-        var select_object = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
+        var selectObject = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
             from: query.table,
             order: query.order,
             where: query.where
@@ -3419,174 +3420,182 @@ var Join = /** @class */ (function (_super) {
             // perform join
             selectResults.forEach(function (value, index) {
                 // search item through each global result
-                for (var i = 0; i < result_length; i++) {
-                    item = tmp_results[i][joinQuery.table][joinQuery.column];
+                for (var i = 0; i < resultLength; i++) {
+                    item = tmpresults[i][joinQuery.table][joinQuery.column];
                     doJoin(item, value, i);
                 }
             });
-            this._results = results;
+            _this.results = results;
             // check if further execution needed
-            if (this._queryStack.length > this._currentQueryStackIndex + 1) {
-                this.startExecutionJoinLogic();
+            if (_this.queryStack.length > _this.currentQueryStackIndex + 1) {
+                _this.startExecutionJoinLogic_();
             }
             else {
-                this.onTransactionCompleted(null);
+                _this.onTransactionCompleted_(null);
             }
-        }.bind(this), this.onErrorOccured.bind(this));
-        select_object.execute();
+        }, this.onErrorOccured);
+        selectObject.execute();
         var doJoin = function (value1, value2, itemIndex) {
-            results[join_index] = {};
+            results[joinIndex] = {};
             if (value1 === value2[query.column]) {
-                results[join_index][query.table] = value2;
+                results[joinIndex][query.table] = value2;
                 // copy other relative data into current result
-                for (var j = 0; j < this._currentQueryStackIndex; j++) {
-                    results[join_index][this._queryStack[j].Table] =
-                        tmp_results[itemIndex][this._queryStack[j].Table];
+                for (var j = 0; j < _this.currentQueryStackIndex; j++) {
+                    results[joinIndex][_this.queryStack[j].table] =
+                        tmpresults[itemIndex][_this.queryStack[j].table];
                 }
-                ++join_index;
+                ++joinIndex;
             }
             else if (query.joinType === 'left') {
                 // left join
-                results[join_index] = {};
-                results[join_index][query.table] = null;
+                results[joinIndex] = {};
+                results[joinIndex][query.table] = null;
                 // copy other relative data into current result
-                for (var j = 0; j < this._currentQueryStackIndex; j++) {
-                    results[join_index][this._queryStack[j].Table] =
-                        tmp_results[itemIndex][this._queryStack[j].Table];
+                for (var j = 0; j < _this.currentQueryStackIndex; j++) {
+                    results[joinIndex][_this.queryStack[j].table] =
+                        tmpresults[itemIndex][_this.queryStack[j].table];
                 }
-                // results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
-                ++join_index;
+                ++joinIndex;
             }
-        }.bind(this);
+        };
     };
-    Join.prototype.executeRightJoin = function (joinQuery, query) {
+    Join.prototype.executeRightJoin_ = function (joinQuery, query) {
         var _this = this;
-        var join_results = [], join_index = 0, column = query.column, tmp_results = this._results, result_length = tmp_results.length, item_index = 0, where = {}, onExecutionFinished = function () {
-            this._results = join_results;
+        var joinresults = [], joinIndex = 0, column = query.column, tmpresults = this.results, resultLength = tmpresults.length, where = {};
+        var itemIndex = 0;
+        var onExecutionFinished = function () {
+            _this.results = joinresults;
             // check if further execution needed
-            if (this._queryStack.length > this._currentQueryStackIndex + 1) {
-                this.startExecutionJoinLogic();
+            if (_this.queryStack.length > _this.currentQueryStackIndex + 1) {
+                _this.startExecutionJoinLogic_();
             }
             else {
-                this.onTransactionCompleted(null);
+                _this.onTransactionCompleted_(null);
             }
-        }.bind(this), doRightJoin = function (results) {
-            var value_found = false;
+        };
+        var doRightJoin = function (results) {
+            var valueFound = false;
             results.forEach(function (item, index) {
-                for (item_index = 0; item_index < result_length; item_index++) {
+                for (itemIndex = 0; itemIndex < resultLength; itemIndex++) {
                     if (item[query.column] ===
-                        tmp_results[item_index][joinQuery.table][joinQuery.column]) {
-                        value_found = true;
+                        tmpresults[itemIndex][joinQuery.table][joinQuery.column]) {
+                        valueFound = true;
                         break;
                     }
                 }
-                join_results[index] = {};
-                join_results[index][query.table] = item;
-                if (value_found) {
-                    value_found = false;
-                    for (var j = 0; j < this._currentQueryStackIndex; j++) {
-                        join_results[index][this._queryStack[j].Table] =
-                            tmp_results[item_index][this._queryStack[j].Table];
+                joinresults[index] = {};
+                joinresults[index][query.table] = item;
+                if (valueFound) {
+                    valueFound = false;
+                    for (var j = 0; j < this.currentQueryStackIndex; j++) {
+                        joinresults[index][this.queryStack[j].table] =
+                            tmpresults[itemIndex][this.queryStack[j].table];
                     }
                 }
                 else {
-                    for (var j = 0; j < this._currentQueryStackIndex; j++) {
-                        join_results[index][this._queryStack[j].Table] = null;
+                    for (var j = 0; j < this.currentQueryStackIndex; j++) {
+                        joinresults[index][this.queryStack[j].table] = null;
                     }
                 }
-            }, this);
-        }.bind(this), executeLogic = function () {
-            var select_object = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
+            }, _this);
+        };
+        var executeLogic = function () {
+            var selectObject = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
                 from: query.table,
                 order: query.order,
                 where: query.where
             }, function (results) {
                 doRightJoin(results);
                 onExecutionFinished();
-            }, _this.onErrorOccured.bind(_this));
-            select_object.execute();
+            }, _this.onErrorOccured);
+            selectObject.execute();
         };
         executeLogic();
     };
-    Join.prototype.executeWhereUndefinedLogicForJoin = function (joinQuery, query) {
-        var join_results = [], join_index = 0, column = query.column, tmp_results = this._results, 
+    Join.prototype.executeWhereUndefinedLogicForJoin_ = function (joinQuery, query) {
+        var _this = this;
+        var joinresults = [], column = query.column, tmpresults = this.results, where = {}, 
         // Item,
-        result_length = tmp_results.length, item_index = 0, where = {}, onExecutionFinished = function () {
-            this._results = join_results;
+        resultLength = tmpresults.length;
+        var joinIndex = 0, itemIndex = 0;
+        var onExecutionFinished = function () {
+            _this.results = joinresults;
             // check if further execution needed
-            if (this._queryStack.length > this._currentQueryStackIndex + 1) {
-                this.startExecutionJoinLogic();
+            if (_this.queryStack.length > _this.currentQueryStackIndex + 1) {
+                _this.startExecutionJoinLogic_();
             }
             else {
-                this.onTransactionCompleted(null);
+                _this.onTransactionCompleted_(null);
             }
-        }.bind(this), doJoin = function (results) {
+        };
+        var doJoin = function (results) {
             if (results.length > 0) {
                 results.forEach(function (value) {
-                    join_results[join_index] = {};
-                    join_results[join_index][query.table] = value;
+                    joinresults[joinIndex] = {};
+                    joinresults[joinIndex][query.table] = value;
                     // copy other relative data into current result
-                    for (var k = 0; k < this._currentQueryStackIndex; k++) {
-                        join_results[join_index][this._queryStack[k].Table] =
-                            tmp_results[item_index][this._queryStack[k].Table];
+                    for (var k = 0; k < _this.currentQueryStackIndex; k++) {
+                        joinresults[joinIndex][_this.queryStack[k].table] =
+                            tmpresults[itemIndex][_this.queryStack[k].table];
                     }
-                    ++join_index;
-                }, this);
+                    ++joinIndex;
+                });
             }
             else if (query.joinType === 'left') {
                 // left join
-                join_results[join_index] = {};
-                join_results[join_index][query.table] = null;
+                joinresults[joinIndex] = {};
+                joinresults[joinIndex][query.table] = null;
                 // copy other relative data into current result
-                for (var j = 0; j < this._currentQueryStackIndex; j++) {
-                    join_results[join_index][this._queryStack[j].Table] =
-                        tmp_results[item_index][this._queryStack[j].Table];
+                for (var j = 0; j < _this.currentQueryStackIndex; j++) {
+                    joinresults[joinIndex][_this.queryStack[j].table] =
+                        tmpresults[itemIndex][_this.queryStack[j].table];
                 }
-                ++join_index;
+                ++joinIndex;
             }
-        }.bind(this), executeLogic = function () {
-            if (item_index < result_length) {
-                if (!this._errorOccured) {
-                    where[query.column] = tmp_results[item_index][joinQuery.table][joinQuery.column];
-                    var select_object = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
+        };
+        var executeLogic = function () {
+            if (itemIndex < resultLength) {
+                if (!_this.errorOccured) {
+                    where[query.column] = tmpresults[itemIndex][joinQuery.table][joinQuery.column];
+                    var selectInstance = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
                         from: query.table,
                         order: query.order,
                         where: where
                     }, function (results) {
                         doJoin(results);
-                        ++item_index;
+                        ++itemIndex;
                         executeLogic();
-                    }, this.onErrorOccured.bind(this));
-                    select_object.execute();
+                    }, _this.onErrorOccured.bind(_this));
+                    selectInstance.execute();
                 }
             }
             else {
                 onExecutionFinished();
             }
-        }.bind(this);
+        };
         executeLogic();
     };
-    Join.prototype.startExecutionJoinLogic = function () {
-        var join_query;
-        if (this._currentQueryStackIndex >= 1 && this._currentQueryStackIndex % 2 === 1) {
-            join_query = {
-                column: this._queryStack[this._currentQueryStackIndex].nextJoin.column,
-                table: this._queryStack[this._currentQueryStackIndex].nextJoin.table
+    Join.prototype.startExecutionJoinLogic_ = function () {
+        var joinQuery;
+        if (this.currentQueryStackIndex >= 1 && this.currentQueryStackIndex % 2 === 1) {
+            joinQuery = {
+                column: this.queryStack[this.currentQueryStackIndex].nextJoin.column,
+                table: this.queryStack[this.currentQueryStackIndex].nextJoin.table
             };
-            this._currentQueryStackIndex++;
+            this.currentQueryStackIndex++;
         }
         else {
-            join_query = this._queryStack[this._currentQueryStackIndex++];
+            joinQuery = this.queryStack[this.currentQueryStackIndex++];
         }
-        var query = this._queryStack[this._currentQueryStackIndex];
+        var query = this.queryStack[this.currentQueryStackIndex];
         if (query.joinType === 'right') {
-            this.executeRightJoin(join_query, query);
+            this.executeRightJoin_(joinQuery, query);
         }
         else if (query.where) {
-            this.executeWhereJoinLogic(join_query, query);
+            this.executeWhereJoinLogic_(joinQuery, query);
         }
         else {
-            this.executeWhereUndefinedLogicForJoin(join_query, query);
+            this.executeWhereUndefinedLogicForJoin_(joinQuery, query);
         }
     };
     return Join;
@@ -3632,13 +3641,13 @@ var Like = /** @class */ (function (_super) {
             this._errorOccured = true;
             this.onErrorOccured(e);
         }.bind(this);
-        if (this._skipRecord && this._limitRecord) {
+        if (this.skipRecord && this.limitRecord) {
             this.executeSkipAndLimit();
         }
-        else if (this._skipRecord) {
+        else if (this.skipRecord) {
             this.executeSkip();
         }
-        else if (this._limitRecord) {
+        else if (this.limitRecord) {
             this.executeLimit();
         }
         else {
@@ -3646,7 +3655,7 @@ var Like = /** @class */ (function (_super) {
         }
     };
     Like.prototype.executeSkipAndLimit = function () {
-        var cursor, skip = this._skipRecord, skipOrPush = function (value) {
+        var cursor, skip = this.skipRecord, skipOrPush = function (value) {
             if (skip === 0) {
                 this._results.push(value);
             }
@@ -3654,7 +3663,7 @@ var Like = /** @class */ (function (_super) {
                 --skip;
             }
         }.bind(this);
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (this._results.length !== this._limitRecord && cursor) {
@@ -3685,7 +3694,7 @@ var Like = /** @class */ (function (_super) {
         }
     };
     Like.prototype.executeSkip = function () {
-        var cursor, skip = this._skipRecord, skipOrPush = function (value) {
+        var cursor, skip = this.skipRecord, skipOrPush = function (value) {
             if (skip === 0) {
                 this._results.push(value);
             }
@@ -3693,7 +3702,7 @@ var Like = /** @class */ (function (_super) {
                 --skip;
             }
         }.bind(this);
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
@@ -3725,7 +3734,7 @@ var Like = /** @class */ (function (_super) {
     };
     Like.prototype.executeLimit = function () {
         var cursor;
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (this._results.length !== this._limitRecord && cursor) {
@@ -3757,7 +3766,7 @@ var Like = /** @class */ (function (_super) {
     };
     Like.prototype.executeSimple = function () {
         var cursor;
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
@@ -3828,11 +3837,11 @@ var NotWhere = /** @class */ (function (_super) {
     NotWhere.prototype.executeWhereUndefinedLogic = function () {
         if (this.query.order && this.query.order.by) {
             if (this.objectStore.indexNames.contains(this.query.order.by)) {
-                var order_type = this.query.order.Type &&
+                var orderType = this.query.order.Type &&
                     this.query.order.Type.toLowerCase() === 'desc' ? 'prev' : 'next';
-                this._sorted = true;
+                this.sorted = true;
                 this.cursorOpenRequest = this.objectStore.index(this.query.order.by).
-                    openCursor(null, order_type);
+                    openCursor(null, orderType);
             }
             else {
                 var error = new _log_helper__WEBPACK_IMPORTED_MODULE_1__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["ERROR_TYPE"].ColumnNotExist, { ColumnName: this.query.order.by });
@@ -3842,36 +3851,36 @@ var NotWhere = /** @class */ (function (_super) {
         else {
             this.cursorOpenRequest = this.objectStore.openCursor();
         }
-        if (this._skipRecord && this._limitRecord) {
-            this.executeSkipAndLimitForNoWhere();
+        if (this.skipRecord && this.limitRecord) {
+            this.executeSkipAndLimitForNoWhere_();
         }
-        else if (this._skipRecord) {
-            this.executeSkipForNoWhere();
+        else if (this.skipRecord) {
+            this.executeSkipForNoWhere_();
         }
-        else if (this._limitRecord) {
-            this.executeLimitForNotWhere();
+        else if (this.limitRecord) {
+            this.executeLimitForNotWhere_();
         }
         else {
-            this.executeSimpleForNotWhere();
+            this.executeSimpleForNotWhere_();
         }
         this.cursorOpenRequest.onerror = function (e) {
             this._errorOccured = true;
             this.onErrorOccured(e);
         }.bind(this);
     };
-    NotWhere.prototype.executeSkipAndLimitForNoWhere = function () {
+    NotWhere.prototype.executeSkipAndLimitForNoWhere_ = function () {
         var _this = this;
-        var record_skipped = false, cursor;
+        var recordSkipped = false, cursor;
         this.cursorOpenRequest.onsuccess = function (e) {
             cursor = e.target.result;
             if (cursor) {
-                if (record_skipped && _this._results.length !== _this._limitRecord) {
-                    _this._results.push(cursor.value);
+                if (recordSkipped && _this.results.length !== _this.limitRecord) {
+                    _this.results.push(cursor.value);
                     cursor.continue();
                 }
                 else {
-                    record_skipped = true;
-                    cursor.advance(_this._skipRecord);
+                    recordSkipped = true;
+                    cursor.advance(_this.skipRecord);
                 }
             }
             else {
@@ -3879,31 +3888,32 @@ var NotWhere = /** @class */ (function (_super) {
             }
         };
     };
-    NotWhere.prototype.executeSkipForNoWhere = function () {
-        var record_skipped = false, cursor;
+    NotWhere.prototype.executeSkipForNoWhere_ = function () {
+        var _this = this;
+        var recordSkipped = false, cursor;
         this.cursorOpenRequest.onsuccess = function (e) {
             cursor = e.target.result;
             if (cursor) {
-                if (record_skipped) {
-                    this._results.push(cursor.value);
+                if (recordSkipped) {
+                    _this.results.push(cursor.value);
                     cursor.continue();
                 }
                 else {
-                    record_skipped = true;
-                    cursor.advance(this._skipRecord);
+                    recordSkipped = true;
+                    cursor.advance(_this.skipRecord);
                 }
             }
             else {
-                this.onQueryFinished();
+                _this.onQueryFinished();
             }
-        }.bind(this);
+        };
     };
-    NotWhere.prototype.executeSimpleForNotWhere = function () {
+    NotWhere.prototype.executeSimpleForNotWhere_ = function () {
         var cursor;
         this.cursorOpenRequest.onsuccess = function (e) {
             cursor = e.target.result;
             if (cursor) {
-                this._results.push(cursor.value);
+                this.results.push(cursor.value);
                 cursor.continue();
             }
             else {
@@ -3911,18 +3921,19 @@ var NotWhere = /** @class */ (function (_super) {
             }
         }.bind(this);
     };
-    NotWhere.prototype.executeLimitForNotWhere = function () {
+    NotWhere.prototype.executeLimitForNotWhere_ = function () {
+        var _this = this;
         var cursor;
         this.cursorOpenRequest.onsuccess = function (e) {
             cursor = e.target.result;
-            if (cursor && this._results.length !== this._limitRecord) {
-                this._results.push(cursor.value);
+            if (cursor && _this.results.length !== _this.limitRecord) {
+                _this.results.push(cursor.value);
                 cursor.continue();
             }
             else {
-                this.onQueryFinished();
+                _this.onQueryFinished();
             }
-        }.bind(this);
+        };
     };
     return NotWhere;
 }(_base_select__WEBPACK_IMPORTED_MODULE_0__["BaseSelect"]));
@@ -3958,163 +3969,169 @@ var Where = /** @class */ (function (_super) {
     function Where() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    Where.prototype.executeSkipAndLimitForWhere = function () {
-        var record_skipped = false, cursor;
-        if (this._checkFlag) {
+    Where.prototype.executeSkipAndLimitForWhere_ = function () {
+        var _this = this;
+        var recordSkipped = false;
+        var cursor;
+        if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (record_skipped && this._results.length !== this._limitRecord) {
-                        if (this._whereChecker.check(cursor.value)) {
-                            this._results.push(cursor.value);
+                    if (recordSkipped && _this.results.length !== _this.limitRecord) {
+                        if (_this.whereCheckerInstance.check(cursor.value)) {
+                            _this.results.push(cursor.value);
                         }
                         cursor.continue();
                     }
                     else {
-                        record_skipped = true;
-                        cursor.advance(this._skipRecord);
+                        recordSkipped = true;
+                        cursor.advance(_this.skipRecord);
                     }
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (record_skipped && this._results.length !== this._limitRecord) {
-                        this._results.push(cursor.value);
+                    if (recordSkipped && _this.results.length !== _this.limitRecord) {
+                        _this.results.push(cursor.value);
                         cursor.continue();
                     }
                     else {
-                        record_skipped = true;
-                        cursor.advance(this._skipRecord);
+                        recordSkipped = true;
+                        cursor.advance(_this.skipRecord);
                     }
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     };
-    Where.prototype.executeSkipForWhere = function () {
-        var record_skipped = false, cursor;
-        if (this._checkFlag) {
+    Where.prototype.executeSkipForWhere_ = function () {
+        var _this = this;
+        var recordSkipped = false, cursor;
+        if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (record_skipped) {
-                        if (this._whereChecker.check(cursor.value)) {
-                            this._results.push(cursor.value);
+                    if (recordSkipped) {
+                        if (_this.whereCheckerInstance.check(cursor.value)) {
+                            _this.results.push(cursor.value);
                         }
                         cursor.continue();
                     }
                     else {
-                        record_skipped = true;
-                        cursor.advance(this._skipRecord);
+                        recordSkipped = true;
+                        cursor.advance(_this.skipRecord);
                     }
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (record_skipped) {
-                        this._results.push(cursor.value);
+                    if (recordSkipped) {
+                        _this.results.push(cursor.value);
                         cursor.continue();
                     }
                     else {
-                        record_skipped = true;
-                        cursor.advance(this._skipRecord);
+                        recordSkipped = true;
+                        cursor.advance(_this.skipRecord);
                     }
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     };
-    Where.prototype.executeLimitForWhere = function () {
+    Where.prototype.executeLimitForWhere_ = function () {
+        var _this = this;
         var cursor;
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
-                if (cursor && this._results.length !== this._limitRecord &&
-                    this._whereChecker.check(cursor.value)) {
-                    this._results.push(cursor.value);
+                if (cursor && _this.results.length !== _this.limitRecord &&
+                    _this.whereCheckerInstance.check(cursor.value)) {
+                    _this.results.push(cursor.value);
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
-                if (cursor && this._results.length !== this._limitRecord) {
-                    this._results.push(cursor.value);
+                if (cursor && _this.results.length !== _this.limitRecord) {
+                    _this.results.push(cursor.value);
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     };
-    Where.prototype.executeSimpleForWhere = function () {
+    Where.prototype.executeSimpleForWhere_ = function () {
+        var _this = this;
         var cursor;
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this._whereChecker.check(cursor.value)) {
-                        this._results.push(cursor.value);
+                    if (_this.whereCheckerInstance.check(cursor.value)) {
+                        _this.results.push(cursor.value);
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    this._results.push(cursor.value);
+                    _this.results.push(cursor.value);
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     };
-    Where.prototype.executeWhereLogic = function (column, value, op, dir) {
+    Where.prototype.executeWhereLogic_ = function (column, value, op, dir) {
+        var _this = this;
         value = op ? value[op] : value;
         this.cursorOpenRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op), dir);
         this.cursorOpenRequest.onerror = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
-        if (this._skipRecord && this._limitRecord) {
-            this.executeSkipAndLimitForWhere();
+            _this.errorOccured = true;
+            _this.onErrorOccured(e);
+        };
+        if (this.skipRecord && this.limitRecord) {
+            this.executeSkipAndLimitForWhere_();
         }
-        else if (this._skipRecord) {
-            this.executeSkipForWhere();
+        else if (this.skipRecord) {
+            this.executeSkipForWhere_();
         }
-        else if (this._limitRecord) {
-            this.executeLimitForWhere();
+        else if (this.limitRecord) {
+            this.executeLimitForWhere_();
         }
         else {
-            this.executeSimpleForWhere();
+            this.executeSimpleForWhere_();
         }
     };
     return Where;
@@ -4181,19 +4198,19 @@ var BaseUpdate = /** @class */ (function (_super) {
     __extends(BaseUpdate, _super);
     function BaseUpdate() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this._checkFlag = false;
+        _this.checkFlag = false;
         return _this;
     }
     BaseUpdate.prototype.initTransaction = function () {
-        _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].createTransaction([this.query.in], this.onTransactionCompleted.bind(this));
+        _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].createTransaction([this.query.in], this.onTransactionCompleted_);
         this.objectStore = _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].transaction.objectStore(this.query.in);
     };
     BaseUpdate.prototype.onQueryFinished = function () {
         if (this.isTransaction === true) {
-            this.onTransactionCompleted();
+            this.onTransactionCompleted_();
         }
     };
-    BaseUpdate.prototype.onTransactionCompleted = function () {
+    BaseUpdate.prototype.onTransactionCompleted_ = function () {
         if (this.errorOccured === false) {
             this.onSuccess(this.rowAffected);
         }
@@ -4236,48 +4253,59 @@ var In = /** @class */ (function (_super) {
     }
     In.prototype.executeInLogic = function (column, values) {
         var _this = this;
-        var cursor, column_store = this.objectStore.index(column), cursor_request, onCursorError = function (e) {
+        var cursor;
+        var columnStore = this.objectStore.index(column);
+        var cursorRequest;
+        var onCursorError = function (e) {
             _this.errorOccured = true;
             _this.onErrorOccured(e);
         };
-        if (this._checkFlag) {
-            for (var i = 0, length = values.length; i < length; i++) {
-                if (!this.errorOccured) {
-                    cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
-                    cursor_request.onsuccess = function (e) {
+        if (this.checkFlag) {
+            var _loop_1 = function (i, length_1) {
+                if (!this_1.errorOccured) {
+                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+                    cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
                         if (cursor) {
-                            if (this._whereChecker.check(cursor.value)) {
-                                cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(this._query.Set, cursor.value));
-                                ++this._rowAffected;
+                            if (_this.whereCheckerInstance.check(cursor.value)) {
+                                cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.Set, cursor.value));
+                                ++_this.rowAffected;
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else if (i + 1 === length_1) {
+                            _this.onQueryFinished();
                         }
-                    }.bind(this);
-                    cursor_request.onerror = onCursorError;
+                    };
+                    cursorRequest.onerror = onCursorError;
                 }
+            };
+            var this_1 = this;
+            for (var i = 0, length_1 = values.length; i < length_1; i++) {
+                _loop_1(i, length_1);
             }
         }
         else {
-            for (var i = 0, length = values.length; i < length; i++) {
-                if (!this.errorOccured) {
-                    cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
-                    cursor_request.onsuccess = function (e) {
+            var _loop_2 = function (i, length_2) {
+                if (!this_2.errorOccured) {
+                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+                    cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
                         if (cursor) {
-                            cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(this._query.Set, cursor.value));
-                            ++this._rowAffected;
+                            cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.Set, cursor.value));
+                            ++_this.rowAffected;
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else if (i + 1 === length_2) {
+                            _this.onQueryFinished();
                         }
-                    }.bind(this);
-                    cursor_request.onerror = onCursorError;
+                    };
+                    cursorRequest.onerror = onCursorError;
                 }
+            };
+            var this_2 = this;
+            for (var i = 0, length_2 = values.length; i < length_2; i++) {
+                _loop_2(i, length_2);
             }
         }
     };
@@ -4350,7 +4378,7 @@ var Instance = /** @class */ (function (_super) {
                 if (this.query.where !== undefined) {
                     this.addGreatAndLessToNotOp();
                     if (this.query.where.or || Array.isArray(this.query.where)) {
-                        this.executeComplexLogic();
+                        this.executeComplexLogic_();
                     }
                     else {
                         this.initTransaction();
@@ -4372,24 +4400,24 @@ var Instance = /** @class */ (function (_super) {
             this.onExceptionOccured.call(this, ex, { TableName: this.query.in });
         }
     };
-    Instance.prototype.executeComplexLogic = function () {
+    Instance.prototype.executeComplexLogic_ = function () {
         var _this = this;
-        var select_object = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
+        var selectObject = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
             from: this.query.in,
             where: this.query.where
         }, function (results) {
-            var key = _this.getPrimaryKey(_this.query.in), in_query = [], where_qry = {};
+            var key = _this.getPrimaryKey(_this.query.in), inQuery = [], whereQry = {};
             results.forEach(function (value) {
-                in_query.push(value[key]);
+                inQuery.push(value[key]);
             });
             results = null;
-            where_qry[key] = (_a = {}, _a[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In] = in_query, _a);
-            _this.query[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Where] = where_qry;
+            whereQry[key] = (_a = {}, _a[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In] = inQuery, _a);
+            _this.query[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Where] = whereQry;
             _this.initTransaction();
             _this.goToWhereLogic();
             var _a;
-        }, this.onError.bind(this));
-        select_object.execute();
+        }, this.onError);
+        selectObject.execute();
     };
     return Instance;
 }(_where__WEBPACK_IMPORTED_MODULE_0__["Where"]));
@@ -4428,45 +4456,46 @@ var Like = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     Like.prototype.executeLikeLogic = function (column, value, symbol) {
+        var _this = this;
         var cursor;
-        this._compValue = value.toLowerCase();
-        this._compValueLength = this._compValue.length;
-        this._compSymbol = symbol;
-        var cursor_open_request = this.objectStore.index(column).openCursor();
-        cursor_open_request.onerror = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
-        if (this._checkFlag) {
-            cursor_open_request.onsuccess = function (e) {
+        this.compValue = value.toLowerCase();
+        this.compValueLength = this.compValue.length;
+        this.compSymbol = symbol;
+        var cursorOpenRequest = this.objectStore.index(column).openCursor();
+        cursorOpenRequest.onerror = function (e) {
+            _this.errorOccured = true;
+            _this.onErrorOccured(e);
+        };
+        if (this.checkFlag) {
+            cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this.filterOnOccurence(cursor.key) &&
-                        this._whereChecker.check(cursor.value)) {
-                        cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(this._query.Set, cursor.value));
-                        ++this._rowAffected;
+                    if (_this.filterOnOccurence(cursor.key) &&
+                        _this.whereCheckerInstance.check(cursor.value)) {
+                        cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.Set, cursor.value));
+                        ++_this.rowAffected;
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
-            cursor_open_request.onsuccess = function (e) {
+            cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this.filterOnOccurence(cursor.key)) {
-                        cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(this._query.Set, cursor.value));
-                        ++this._rowAffected;
+                    if (_this.filterOnOccurence(cursor.key)) {
+                        cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.Set, cursor.value));
+                        ++_this.rowAffected;
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     };
     return Like;
@@ -4643,42 +4672,43 @@ var Where = /** @class */ (function (_super) {
     function Where() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    Where.prototype.executeWhereLogic = function (column, value, op) {
-        var cursor, cursor_request;
+    Where.prototype.executeWhereLogic_ = function (column, value, op) {
+        var _this = this;
+        var cursor, cursorRequest;
         value = op ? value[op] : value;
-        cursor_request = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
-        if (this._checkFlag) {
-            cursor_request.onsuccess = function (e) {
+        cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
+        if (this.checkFlag) {
+            cursorRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this._whereChecker.check(cursor.value)) {
-                        cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_0__["updateValue"])(this._query.Set, cursor.value));
-                        ++this._rowAffected;
+                    if (_this.whereCheckerInstance.check(cursor.value)) {
+                        cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_0__["updateValue"])(_this.query.Set, cursor.value));
+                        ++_this.rowAffected;
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
-            cursor_request.onsuccess = function (e) {
+            cursorRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_0__["updateValue"])(this._query.Set, cursor.value));
-                    ++this._rowAffected;
+                    cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_0__["updateValue"])(_this.query.Set, cursor.value));
+                    ++_this.rowAffected;
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
-        cursor_request.onerror = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
+        cursorRequest.onerror = function (e) {
+            _this.errorOccured = true;
+            _this.onErrorOccured(e);
+        };
     };
     return Where;
 }(_like__WEBPACK_IMPORTED_MODULE_1__["Like"]));
@@ -4699,7 +4729,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WhereChecker", function() { return WhereChecker; });
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../enums */ "./codes/worker/enums.ts");
 
-
 /**
  * For matching the different column value existance for where option
  *
@@ -4708,17 +4737,17 @@ __webpack_require__.r(__webpack_exports__);
  */
 var WhereChecker = /** @class */ (function () {
     function WhereChecker(where) {
-        this._where = where;
+        this.where = where;
     }
     WhereChecker.prototype.check = function (rowValue) {
-        this._status = true;
-        var column_value;
-        for (var columnName in this._where) {
-            if (this._status) {
-                column_value = this._where[columnName];
-                if (typeof column_value === 'object') {
-                    for (var key in column_value) {
-                        if (this._status) {
+        this.status = true;
+        var columnValue;
+        for (var columnName in this.where) {
+            if (this.status) {
+                columnValue = this.where[columnName];
+                if (typeof columnValue === 'object') {
+                    for (var key in columnValue) {
+                        if (this.status) {
                             switch (key) {
                                 case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].In:
                                     this.checkIn(columnName, rowValue[columnName]);
@@ -4742,8 +4771,8 @@ var WhereChecker = /** @class */ (function () {
                     }
                 }
                 else {
-                    if (column_value !== rowValue[columnName]) {
-                        this._status = false;
+                    if (columnValue !== rowValue[columnName]) {
+                        this.status = false;
                         break;
                     }
                 }
@@ -4752,87 +4781,88 @@ var WhereChecker = /** @class */ (function () {
                 break;
             }
         }
-        return this._status;
+        return this.status;
     };
     WhereChecker.prototype.checkIn = function (column, value) {
-        for (var i = 0, values = this._where[column][_enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].In], length = values.length; i < length; i++) {
+        for (var i = 0, values = this.where[column][_enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].In], length_1 = values.length; i < length_1; i++) {
             if (values[i] === value) {
-                this._status = true;
+                this.status = true;
                 break;
             }
             else {
-                this._status = false;
+                this.status = false;
             }
         }
     };
     WhereChecker.prototype.checkLike = function (column, value) {
-        var values = this._where[column][_enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].Like].split('%'), comp_symbol, comp_value, symbol_index;
+        var values = this.where[column][_enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].Like].split('%');
+        var compSymbol, compValue, symbolIndex;
         if (values[1]) {
-            comp_value = values[1];
-            comp_symbol = values.length > 2 ? _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"].Any : _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"].Last;
+            compValue = values[1];
+            compSymbol = values.length > 2 ? _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"].Any : _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"].Last;
         }
         else {
-            comp_value = values[0];
-            comp_symbol = _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"].First;
+            compValue = values[0];
+            compSymbol = _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"].First;
         }
         value = value.toLowerCase();
-        switch (comp_symbol) {
+        switch (compSymbol) {
             case _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"].Any:
-                symbol_index = value.indexOf(comp_value.toLowerCase());
-                if (symbol_index < 0) {
-                    this._status = false;
+                symbolIndex = value.indexOf(compValue.toLowerCase());
+                if (symbolIndex < 0) {
+                    this.status = false;
                 }
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"].First:
-                symbol_index = value.indexOf(comp_value.toLowerCase());
-                if (symbol_index > 0 || symbol_index < 0) {
-                    this._status = false;
+                symbolIndex = value.indexOf(compValue.toLowerCase());
+                if (symbolIndex > 0 || symbolIndex < 0) {
+                    this.status = false;
                 }
                 break;
             default:
-                symbol_index = value.lastIndexOf(comp_value.toLowerCase());
-                if (symbol_index < value.length - comp_value.length) {
-                    this._status = false;
+                symbolIndex = value.lastIndexOf(compValue.toLowerCase());
+                if (symbolIndex < value.length - compValue.length) {
+                    this.status = false;
                 }
         }
     };
     WhereChecker.prototype.checkComparisionOp = function (column, value, symbol) {
-        var compare_value = this._where[column][symbol];
+        var compareValue = this.where[column][symbol];
         switch (symbol) {
             // greater than
             case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].GreaterThan:
-                if (value <= compare_value) {
-                    this._status = false;
+                if (value <= compareValue) {
+                    this.status = false;
                 }
                 break;
             // less than
             case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].LessThan:
-                if (value >= compare_value) {
-                    this._status = false;
+                if (value >= compareValue) {
+                    this.status = false;
                 }
                 break;
             // less than equal
             case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].LessThanEqualTo:
-                if (value > compare_value) {
-                    this._status = false;
+                if (value > compareValue) {
+                    this.status = false;
                 }
                 break;
             // greather than equal
             case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].GreaterThanEqualTo:
-                if (value < compare_value) {
-                    this._status = false;
+                if (value < compareValue) {
+                    this.status = false;
                 }
                 break;
             // between
             case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].Between:
-                if (value < compare_value.Low || value > compare_value.High) {
-                    this._status = false;
+                if (value < compareValue.Low || value > compareValue.High) {
+                    this.status = false;
                 }
                 break;
             // Not equal to
             case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].NotEqualTo:
-                if (value === compare_value) {
-                    this._status = false;
+                if (value === compareValue) {
+                    this.status = false;
                 }
                 break;
         }
@@ -4947,6 +4977,9 @@ var QUERY_OPTION;
     QUERY_OPTION["NotEqualTo"] = "!=";
     QUERY_OPTION["Aggregate"] = "aggregate";
     QUERY_OPTION["Or"] = "or";
+    QUERY_OPTION["Count"] = "count";
+    QUERY_OPTION["Skip"] = "skip";
+    QUERY_OPTION["Limit"] = "limit";
 })(QUERY_OPTION || (QUERY_OPTION = {}));
 
 
@@ -5135,12 +5168,12 @@ var IdbHelper = /** @class */ (function () {
 /*!*********************************************************!*\
   !*** ./codes/worker/keystore/business/init_db_logic.ts ***!
   \*********************************************************/
-/*! exports provided: temp_datas, InitDb */
+/*! exports provided: tempDatas, InitDb */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "temp_datas", function() { return temp_datas; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "tempDatas", function() { return tempDatas; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InitDb", function() { return InitDb; });
 /* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../index */ "./codes/worker/index.ts");
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../enums */ "./codes/worker/keystore/enums.ts");
@@ -5152,12 +5185,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var temp_datas;
+var tempDatas;
 var InitDb = /** @class */ (function () {
     function InitDb(dbName, onSuccess, onError) {
-        var db_request = self.indexedDB.open(dbName, 1);
+        var dbRequest = self.indexedDB.open(dbName, 1);
         _idb_helper__WEBPACK_IMPORTED_MODULE_3__["IdbHelper"]._isDbDeletedByBrowser = false;
-        db_request.onerror = function (event) {
+        dbRequest.onerror = function (event) {
             if (event.target.error.name === 'InvalidStateError') {
                 _index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbStatus = {
                     conStatus: _index__WEBPACK_IMPORTED_MODULE_0__["CONNECTION_STATUS"].UnableToStart,
@@ -5168,9 +5201,9 @@ var InitDb = /** @class */ (function () {
                 onError(event.target.error);
             }
         };
-        db_request.onsuccess = function (event) {
+        dbRequest.onsuccess = function (event) {
             _query_executor__WEBPACK_IMPORTED_MODULE_4__["QueryExecutor"].dbStatus.conStatus = _enums__WEBPACK_IMPORTED_MODULE_1__["CONNECTION_STATUS"].Connected;
-            _idb_helper__WEBPACK_IMPORTED_MODULE_3__["IdbHelper"]._dbConnection = db_request.result;
+            _idb_helper__WEBPACK_IMPORTED_MODULE_3__["IdbHelper"]._dbConnection = dbRequest.result;
             _idb_helper__WEBPACK_IMPORTED_MODULE_3__["IdbHelper"]._dbConnection.onclose = function () {
                 _idb_helper__WEBPACK_IMPORTED_MODULE_3__["IdbHelper"].callDbDroppedByBrowser();
                 _utils_logic__WEBPACK_IMPORTED_MODULE_2__["Utils"].updateDbStatus(_enums__WEBPACK_IMPORTED_MODULE_1__["CONNECTION_STATUS"].Closed, _index__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].ConnectionClosed);
@@ -5195,7 +5228,7 @@ var InitDb = /** @class */ (function () {
                 onSuccess();
             }
         };
-        db_request.onupgradeneeded = function (event) {
+        dbRequest.onupgradeneeded = function (event) {
             var db = event.target.result, column = "Key";
             db.createObjectStore(_query_executor__WEBPACK_IMPORTED_MODULE_4__["QueryExecutor"].tableName, {
                 keyPath: column
@@ -5236,7 +5269,7 @@ __webpack_require__.r(__webpack_exports__);
 var Main = /** @class */ (function () {
     function Main(onSuccess) {
         if (onSuccess === void 0) { onSuccess = null; }
-        this._onSuccess = onSuccess;
+        this.onSuccess = onSuccess;
     }
     Main.prototype.set = function (query, onSuccess, onError) {
         var insertInstance = new _set_logic__WEBPACK_IMPORTED_MODULE_3__["Set"](query, onSuccess, onError);
@@ -5282,21 +5315,23 @@ var Main = /** @class */ (function () {
         }
     };
     Main.prototype.returnResult = function (result) {
-        if (this._onSuccess) {
-            this._onSuccess(result);
+        if (this.onSuccess) {
+            this.onSuccess(result);
         }
     };
     Main.prototype.executeLogic = function (request) {
+        var _this = this;
         var onSuccess = function (results) {
-            this.returnResult({
+            _this.returnResult({
                 ReturnedValue: results
             });
-        }.bind(this), onError = function (err) {
-            this.returnResult({
+        };
+        var onError = function (err) {
+            _this.returnResult({
                 ErrorDetails: err,
                 ErrorOccured: true
             });
-        }.bind(this);
+        };
         switch (request.Name) {
             case 'get':
                 this.get(request.Query, onSuccess, onError);
@@ -5349,32 +5384,32 @@ var Remove = /** @class */ (function (_super) {
     __extends(Remove, _super);
     function Remove(key, onSuccess, onError) {
         var _this = _super.call(this) || this;
-        _this._rowAffected = 0;
-        _this._key = key;
+        _this.rowAffected = 0;
+        _this.key = key;
         _this.onSuccess = onSuccess;
         _this.onError = onError;
         return _this;
     }
     Remove.prototype.execute = function () {
+        var _this = this;
         this.initTransaction();
         var removeData = function (column, value) {
-            var _this = this;
-            var cursor_request = this._objectStore.index(column).openCursor(IDBKeyRange.only(value));
-            cursor_request.onerror = function (e) {
-                _this._errorOccured = true;
+            var cursorRequest = _this.objectStore.index(column).openCursor(IDBKeyRange.only(value));
+            cursorRequest.onerror = function (e) {
+                _this.errorOccured = true;
                 _this.onErrorOccured(e);
             };
-            cursor_request.onsuccess = function (e) {
+            cursorRequest.onsuccess = function (e) {
                 var cursor = e.target.result;
                 if (cursor) {
                     cursor.delete();
-                    ++_this._rowAffected;
+                    ++_this.rowAffected;
                     cursor.continue();
                 }
             };
-        }.bind(this);
+        };
         if (!this.errorOccured) {
-            removeData(_query_executor__WEBPACK_IMPORTED_MODULE_1__["QueryExecutor"].columnName, this._key);
+            removeData(_query_executor__WEBPACK_IMPORTED_MODULE_1__["QueryExecutor"].columnName, this.key);
         }
     };
     Remove.prototype.initTransaction = function () {
@@ -5383,7 +5418,7 @@ var Remove = /** @class */ (function (_super) {
     };
     Remove.prototype.onTransactionCompleted = function () {
         if (this.errorOccured === false) {
-            this.onSuccess(this._rowAffected);
+            this.onSuccess(this.rowAffected);
         }
     };
     return Remove;
@@ -5758,8 +5793,8 @@ var LogHelper = /** @class */ (function () {
     function LogHelper(type, info) {
         if (info === void 0) { info = null; }
         this.type = type;
-        this._info = info;
-        this.message = this.getMsg();
+        this.info_ = info;
+        this.message = this.getMsg_();
     }
     LogHelper.prototype.throw = function () {
         throw this.get();
@@ -5781,67 +5816,67 @@ var LogHelper = /** @class */ (function () {
             type: this.type
         };
     };
-    LogHelper.prototype.getMsg = function () {
-        var err_msg;
+    LogHelper.prototype.getMsg_ = function () {
+        var errMsg;
         switch (this.type) {
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].NotArray:
-                err_msg = "Supplied value is not an array";
+                errMsg = "Supplied value is not an array";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].UndefinedColumn:
-                err_msg = "Column is undefined in Where";
+                errMsg = "Column is undefined in Where";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].UndefinedValue:
-                err_msg = "Value is undefined in Where";
+                errMsg = "Value is undefined in Where";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].UndefinedColumnName:
-                err_msg = "Column name is undefined '" + this._info['TableName'] + "'";
+                errMsg = "Column name is undefined '" + this.info_['TableName'] + "'";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].UndefinedDbName:
-                err_msg = "Database name is not supplied";
+                errMsg = "Database name is not supplied";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].UndefinedColumnValue:
-                err_msg = "Column value is undefined";
+                errMsg = "Column value is undefined";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].NoValueSupplied:
-                err_msg = "No value supplied";
+                errMsg = "No value supplied";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].InvalidOp:
-                err_msg = "Invalid Op Value '" + this._info['Op'] + "'";
+                errMsg = "Invalid Op Value '" + this.info_['Op'] + "'";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].ColumnNotExist:
-                err_msg = "Column '" + this._info['ColumnName'] + "' does not exist";
+                errMsg = "Column '" + this.info_['ColumnName'] + "' does not exist";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].EnableSearchOff:
-                err_msg = "Search is turned off for the Column '" + this._info['ColumnName'] + "'";
+                errMsg = "Search is turned off for the Column '" + this.info_['ColumnName'] + "'";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].NullValue:
-                err_msg = "Null value is not allowed for column '" + this._info['ColumnName'] + "'";
+                errMsg = "Null value is not allowed for column '" + this.info_['ColumnName'] + "'";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].BadDataType:
-                err_msg = "Supplied value for column '" + this._info['ColumnName'] +
+                errMsg = "Supplied value for column '" + this.info_['ColumnName'] +
                     "' does not have valid type";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].NextJoinNotExist:
-                err_msg = "Next join details not supplied";
+                errMsg = "Next join details not supplied";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].TableNotExist:
-                err_msg = "Table '" + this._info['TableName'] + "' does not exist";
+                errMsg = "Table '" + this.info_['TableName'] + "' does not exist";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].DbNotExist:
-                err_msg = "Database '" + this._info['DbName'] + "' does not exist";
+                errMsg = "Database '" + this.info_['DbName'] + "' does not exist";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].NotObject:
-                err_msg = "supplied value is not object";
+                errMsg = "supplied value is not object";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].InvalidOp:
-                err_msg = "Invalid Config '" + this._info['Config'] + " '";
+                errMsg = "Invalid Config '" + this.info_['Config'] + " '";
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].DbBlocked:
-                err_msg = "database is blocked, cant be deleted right now";
+                errMsg = "database is blocked, cant be deleted right now";
             default:
-                err_msg = this.message;
+                errMsg = this.message;
                 break;
         }
-        return err_msg;
+        return errMsg;
     };
     return LogHelper;
 }());

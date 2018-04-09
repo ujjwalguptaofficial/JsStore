@@ -1,173 +1,173 @@
 import { Like } from "./like";
 
 export class Where extends Like {
-    private executeSkipAndLimitForWhere() {
-        var record_skipped = false,
-            cursor;
-        if (this._checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
+    private executeSkipAndLimitForWhere_() {
+        let recordSkipped = false;
+        let cursor;
+        if (this.checkFlag) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (record_skipped && this._results.length !== this._limitRecord) {
-                        if (this._whereChecker.check(cursor.value)) {
-                            this._results.push(cursor.value);
+                    if (recordSkipped && this.results.length !== this.limitRecord) {
+                        if (this.whereCheckerInstance.check(cursor.value)) {
+                            this.results.push(cursor.value);
                         }
                         cursor.continue();
                     }
                     else {
-                        record_skipped = true;
-                        cursor.advance(this._skipRecord);
+                        recordSkipped = true;
+                        cursor.advance(this.skipRecord);
                     }
                 }
                 else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
-            this.cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (record_skipped && this._results.length !== this._limitRecord) {
-                        this._results.push(cursor.value);
+                    if (recordSkipped && this.results.length !== this.limitRecord) {
+                        this.results.push(cursor.value);
                         cursor.continue();
                     }
                     else {
-                        record_skipped = true;
-                        cursor.advance(this._skipRecord);
+                        recordSkipped = true;
+                        cursor.advance(this.skipRecord);
                     }
                 }
                 else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     }
 
-    private executeSkipForWhere() {
-        var record_skipped = false,
+    private executeSkipForWhere_() {
+        let recordSkipped = false,
             cursor;
-        if (this._checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
+        if (this.checkFlag) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (record_skipped) {
-                        if (this._whereChecker.check(cursor.value)) {
-                            this._results.push(cursor.value);
+                    if (recordSkipped) {
+                        if (this.whereCheckerInstance.check(cursor.value)) {
+                            this.results.push(cursor.value);
                         }
                         cursor.continue();
                     }
                     else {
-                        record_skipped = true;
-                        cursor.advance(this._skipRecord);
+                        recordSkipped = true;
+                        cursor.advance(this.skipRecord);
                     }
                 }
                 else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
-            this.cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (record_skipped) {
-                        this._results.push(cursor.value);
+                    if (recordSkipped) {
+                        this.results.push(cursor.value);
                         cursor.continue();
                     }
                     else {
-                        record_skipped = true;
-                        cursor.advance(this._skipRecord);
+                        recordSkipped = true;
+                        cursor.advance(this.skipRecord);
                     }
                 }
                 else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     }
 
-    private executeLimitForWhere() {
-        var cursor;
-        if (this._checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
+    private executeLimitForWhere_() {
+        let cursor;
+        if (this.checkFlag) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
-                if (cursor && this._results.length !== this._limitRecord &&
-                    this._whereChecker.check(cursor.value)) {
-                    this._results.push(cursor.value);
+                if (cursor && this.results.length !== this.limitRecord &&
+                    this.whereCheckerInstance.check(cursor.value)) {
+                    this.results.push(cursor.value);
                     cursor.continue();
                 }
                 else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
-            this.cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
-                if (cursor && this._results.length !== this._limitRecord) {
-                    this._results.push(cursor.value);
+                if (cursor && this.results.length !== this.limitRecord) {
+                    this.results.push(cursor.value);
                     cursor.continue();
                 }
                 else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     }
 
-    private executeSimpleForWhere() {
-        var cursor;
-        if (this._checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
+    private executeSimpleForWhere_() {
+        let cursor;
+        if (this.checkFlag) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this._whereChecker.check(cursor.value)) {
-                        this._results.push(cursor.value);
+                    if (this.whereCheckerInstance.check(cursor.value)) {
+                        this.results.push(cursor.value);
                     }
                     cursor.continue();
                 }
                 else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
-            this.cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
                 if (cursor) {
-                    this._results.push(cursor.value);
+                    this.results.push(cursor.value);
                     cursor.continue();
                 } else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     }
 
-    private executeWhereLogic(column, value, op, dir) {
+    private executeWhereLogic_(column, value, op, dir) {
         value = op ? value[op] : value;
         this.cursorOpenRequest = this.objectStore.index(column).openCursor(
             this.getKeyRange(value, op),
             dir
         );
 
-        this.cursorOpenRequest.onerror = function (e) {
-            this._errorOccured = true;
+        this.cursorOpenRequest.onerror = (e) => {
+            this.errorOccured = true;
             this.onErrorOccured(e);
-        }.bind(this);
+        };
 
-        if (this._skipRecord && this._limitRecord) {
-            this.executeSkipAndLimitForWhere();
+        if (this.skipRecord && this.limitRecord) {
+            this.executeSkipAndLimitForWhere_();
         }
-        else if (this._skipRecord) {
-            this.executeSkipForWhere();
+        else if (this.skipRecord) {
+            this.executeSkipForWhere_();
         }
-        else if (this._limitRecord) {
-            this.executeLimitForWhere();
+        else if (this.limitRecord) {
+            this.executeLimitForWhere_();
         }
         else {
-            this.executeSimpleForWhere();
+            this.executeSimpleForWhere_();
         }
     }
 }

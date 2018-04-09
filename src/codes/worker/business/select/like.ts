@@ -15,13 +15,13 @@ export class Like extends In {
             this._errorOccured = true;
             this.onErrorOccured(e);
         }.bind(this);
-        if (this._skipRecord && this._limitRecord) {
+        if (this.skipRecord && this.limitRecord) {
             this.executeSkipAndLimit();
         }
-        else if (this._skipRecord) {
+        else if (this.skipRecord) {
             this.executeSkip();
         }
-        else if (this._limitRecord) {
+        else if (this.limitRecord) {
             this.executeLimit();
         }
         else {
@@ -31,7 +31,7 @@ export class Like extends In {
 
     private executeSkipAndLimit() {
         var cursor: IDBCursorWithValue,
-            skip = this._skipRecord,
+            skip = this.skipRecord,
             skipOrPush = function (value) {
                 if (skip === 0) {
                     this._results.push(value);
@@ -40,7 +40,7 @@ export class Like extends In {
                     --skip;
                 }
             }.bind(this);
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (this._results.length !== this._limitRecord && cursor) {
@@ -71,7 +71,7 @@ export class Like extends In {
 
     private executeSkip() {
         var cursor: IDBCursorWithValue,
-            skip = this._skipRecord,
+            skip = this.skipRecord,
             skipOrPush = function (value) {
                 if (skip === 0) {
                     this._results.push(value);
@@ -80,7 +80,7 @@ export class Like extends In {
                     --skip;
                 }
             }.bind(this);
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
@@ -111,7 +111,7 @@ export class Like extends In {
 
     private executeLimit() {
         var cursor: IDBCursorWithValue;
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (this._results.length !== this._limitRecord && cursor) {
@@ -142,7 +142,7 @@ export class Like extends In {
 
     private executeSimple() {
         var cursor: IDBCursorWithValue;
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {

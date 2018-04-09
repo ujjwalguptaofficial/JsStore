@@ -8,12 +8,12 @@ import { Get } from "./get_logic";
 import { IdbHelper } from './idb_helper';
 
 export class Main {
-    _onSuccess: (result) => void;
+    onSuccess: (result) => void;
     constructor(onSuccess = null) {
-        this._onSuccess = onSuccess;
+        this.onSuccess = onSuccess;
     }
 
-    set(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
+    set(query: IInsert, onSuccess: (result) => void, onError: (err: IError) => void) {
         const insertInstance = new Set(query, onSuccess, onError);
         insertInstance.execute();
     }
@@ -58,23 +58,23 @@ export class Main {
     }
 
     private returnResult(result) {
-        if (this._onSuccess) {
-            this._onSuccess(result);
+        if (this.onSuccess) {
+            this.onSuccess(result);
         }
     }
 
     private executeLogic(request: IQueryRequest) {
-        var onSuccess = function (results) {
+        const onSuccess = (results?) => {
             this.returnResult({
                 ReturnedValue: results
             } as IQueryResult);
-        }.bind(this),
-            onError = function (err) {
-                this.returnResult({
-                    ErrorDetails: err,
-                    ErrorOccured: true
-                } as IQueryResult);
-            }.bind(this);
+        };
+        const onError = (err) => {
+            this.returnResult({
+                ErrorDetails: err,
+                ErrorOccured: true
+            } as IQueryResult);
+        };
 
         switch (request.Name) {
             case 'get':

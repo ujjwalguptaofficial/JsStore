@@ -152,16 +152,16 @@ export class BaseHelper {
         if (isArray) {
             let results = [];
             for (let i = 0, length = word.length; i < length; i++) {
-                results = results.concat(this._getCombination(word[i]));
+                results = results.concat(this.getCombination_(word[i]));
             }
             return results;
         }
         else {
-            return this._getCombination(word);
+            return this.getCombination_(word);
         }
     }
 
-    private _getCombination(word: string) {
+    private getCombination_(word: string) {
         const results = [];
         const doAndPushCombination = (subWord: string, chars, index: number) => {
             if (index === subWord.length) {

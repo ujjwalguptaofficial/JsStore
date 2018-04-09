@@ -6,14 +6,14 @@ export class NotWhere extends BaseSelect {
     protected executeWhereUndefinedLogic() {
         if (this.query.order && this.query.order.by) {
             if (this.objectStore.indexNames.contains(this.query.order.by)) {
-                var order_type: IDBCursorDirection = this.query.order.Type &&
+                const orderType: IDBCursorDirection = this.query.order.Type &&
                     this.query.order.Type.toLowerCase() === 'desc' ? 'prev' : 'next';
-                this._sorted = true;
+                this.sorted = true;
                 this.cursorOpenRequest = this.objectStore.index(this.query.order.by).
-                    openCursor(null, order_type);
+                    openCursor(null, orderType);
             }
             else {
-                var error = new LogHelper(ERROR_TYPE.ColumnNotExist, { ColumnName: this.query.order.by });
+                const error = new LogHelper(ERROR_TYPE.ColumnNotExist, { ColumnName: this.query.order.by });
                 error.throw();
             }
         }
@@ -21,17 +21,17 @@ export class NotWhere extends BaseSelect {
             this.cursorOpenRequest = this.objectStore.openCursor();
         }
 
-        if (this._skipRecord && this._limitRecord) {
-            this.executeSkipAndLimitForNoWhere();
+        if (this.skipRecord && this.limitRecord) {
+            this.executeSkipAndLimitForNoWhere_();
         }
-        else if (this._skipRecord) {
-            this.executeSkipForNoWhere();
+        else if (this.skipRecord) {
+            this.executeSkipForNoWhere_();
         }
-        else if (this._limitRecord) {
-            this.executeLimitForNotWhere();
+        else if (this.limitRecord) {
+            this.executeLimitForNotWhere_();
         }
         else {
-            this.executeSimpleForNotWhere();
+            this.executeSimpleForNotWhere_();
         }
 
         this.cursorOpenRequest.onerror = function (e) {
@@ -41,19 +41,19 @@ export class NotWhere extends BaseSelect {
 
     }
 
-    private executeSkipAndLimitForNoWhere() {
-        var record_skipped = false,
+    private executeSkipAndLimitForNoWhere_() {
+        let recordSkipped = false,
             cursor: IDBCursorWithValue;
         this.cursorOpenRequest.onsuccess = (e) => {
             cursor = (e as any).target.result;
             if (cursor) {
-                if (record_skipped && this._results.length !== this._limitRecord) {
-                    this._results.push(cursor.value);
+                if (recordSkipped && this.results.length !== this.limitRecord) {
+                    this.results.push(cursor.value);
                     cursor.continue();
                 }
                 else {
-                    record_skipped = true;
-                    cursor.advance(this._skipRecord);
+                    recordSkipped = true;
+                    cursor.advance(this.skipRecord);
                 }
             } else {
                 this.onQueryFinished();
@@ -61,32 +61,32 @@ export class NotWhere extends BaseSelect {
         };
     }
 
-    private executeSkipForNoWhere() {
-        var record_skipped = false,
+    private executeSkipForNoWhere_() {
+        let recordSkipped = false,
             cursor;
-        this.cursorOpenRequest.onsuccess = function (e) {
+        this.cursorOpenRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (cursor) {
-                if (record_skipped) {
-                    this._results.push(cursor.value);
+                if (recordSkipped) {
+                    this.results.push(cursor.value);
                     cursor.continue();
                 }
                 else {
-                    record_skipped = true;
-                    cursor.advance(this._skipRecord);
+                    recordSkipped = true;
+                    cursor.advance(this.skipRecord);
                 }
             } else {
                 this.onQueryFinished();
             }
-        }.bind(this);
+        };
     }
 
-    private executeSimpleForNotWhere() {
-        var cursor;
+    private executeSimpleForNotWhere_() {
+        let cursor;
         this.cursorOpenRequest.onsuccess = function (e) {
             cursor = e.target.result;
             if (cursor) {
-                this._results.push(cursor.value);
+                this.results.push(cursor.value);
                 (cursor as any).continue();
             }
             else {
@@ -95,16 +95,16 @@ export class NotWhere extends BaseSelect {
         }.bind(this);
     }
 
-    private executeLimitForNotWhere() {
-        var cursor;
-        this.cursorOpenRequest.onsuccess = function (e) {
+    private executeLimitForNotWhere_() {
+        let cursor;
+        this.cursorOpenRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
-            if (cursor && this._results.length !== this._limitRecord) {
-                this._results.push(cursor.value);
+            if (cursor && this.results.length !== this.limitRecord) {
+                this.results.push(cursor.value);
                 cursor.continue();
             } else {
                 this.onQueryFinished();
             }
-        }.bind(this);
+        };
     }
 }

@@ -1,4 +1,5 @@
 import { GroupByHelper } from "./group_by_helper";
+import { DATA_TYPE } from "../../enums";
 
 export class Helper extends GroupByHelper {
 
@@ -7,31 +8,31 @@ export class Helper extends GroupByHelper {
     }
 
     processOrderBy() {
-        var order = this.query.order;
-        if (order && this._results.length > 0 && !this._sorted && order.by) {
+        const order = this.query.order;
+        if (order && this.results.length > 0 && !this.sorted && order.by) {
             order.Type = order.Type ? order.Type.toLowerCase() : 'asc';
-            var order_column = order.by,
+            const orderColumn = order.by,
                 sortNumberInAsc = () => {
-                    this._results.sort((a, b) => {
-                        return a[order_column] - b[order_column];
+                    this.results.sort((a, b) => {
+                        return a[orderColumn] - b[orderColumn];
                     });
                 },
                 sortNumberInDesc = () => {
-                    this._results.sort((a, b) => {
-                        return b[order_column] - a[order_column];
+                    this.results.sort((a, b) => {
+                        return b[orderColumn] - a[orderColumn];
                     });
                 },
                 sortAlphabetInAsc = () => {
-                    this._results.sort((a, b) => {
-                        return a[order_column].toLowerCase().localeCompare(b[order_column].toLowerCase());
+                    this.results.sort((a, b) => {
+                        return a[orderColumn].toLowerCase().localeCompare(b[orderColumn].toLowerCase());
                     });
                 },
                 sortAlphabetInDesc = () => {
-                    this._results.sort((a, b) => {
-                        return b[order_column].toLowerCase().localeCompare(a[order_column].toLowerCase());
+                    this.results.sort((a, b) => {
+                        return b[orderColumn].toLowerCase().localeCompare(a[orderColumn].toLowerCase());
                     });
                 };
-            if (typeof this._results[0][order_column] === 'string') {
+            if (typeof this.results[0][orderColumn] === DATA_TYPE.String) {
                 if (order.Type === 'asc') {
                     sortAlphabetInAsc();
                 }
@@ -39,7 +40,7 @@ export class Helper extends GroupByHelper {
                     sortAlphabetInDesc();
                 }
             }
-            else if (typeof this._results[0][order_column] === 'number') {
+            else if (typeof this.results[0][orderColumn] === DATA_TYPE.Number) {
                 if (order.Type === 'asc') {
                     sortNumberInAsc();
                 }
@@ -51,11 +52,11 @@ export class Helper extends GroupByHelper {
     }
 
     protected processAggregateQry() {
-        var datas = this._results,
+        var datas = this.results,
             results = {},
             column_to_aggregate;
         // free results memory
-        this._results = undefined;
+        this.results = undefined;
         for (var prop in this.query.Aggregate) {
             switch (prop) {
                 case 'count':
@@ -163,6 +164,6 @@ export class Helper extends GroupByHelper {
         for (var prop in results) {
             datas[0][prop] = results[prop];
         }
-        this._results = datas;
+        this.results = datas;
     }
 }

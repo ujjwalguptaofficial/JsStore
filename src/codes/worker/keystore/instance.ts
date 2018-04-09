@@ -6,7 +6,7 @@ import { IQueryRequest, IError, IInsert } from "./interfaces";
  * Initialize KeyStore
  * 
  */
-export var init = () => {
+export const init = () => {
     Utils.setDbType();
     if (indexedDB) {
         QueryExecutor.prcoessQuery({
@@ -24,7 +24,7 @@ export var init = () => {
  * @param {(err: IError) => void} [onError=null] 
  * @returns 
  */
-export var get = (key: string, onSuccess: (result) => void, onError: (err: IError) => void = null) => {
+export const get = (key: string, onSuccess: (result) => void, onError: (err: IError) => void = null) => {
     QueryExecutor.prcoessQuery({
         Name: 'get',
         OnError: onError,
@@ -43,8 +43,8 @@ export var get = (key: string, onSuccess: (result) => void, onError: (err: IErro
  * @param {(err: IError) => void} [onError] 
  * @returns 
  */
-export var set = (key, value, onSuccess?: (result) => void, onError?: (err: IError) => void) => {
-    var query = {
+export const set = (key, value, onSuccess?: (result) => void, onError?: (err: IError) => void) => {
+    const query = {
         Key: key,
         Value: value
     } as IInsert;
@@ -65,7 +65,7 @@ export var set = (key, value, onSuccess?: (result) => void, onError?: (err: IErr
  * @param {(err: IError) => void} [onError=null] 
  * @returns 
  */
-export var remove = (key: string, onSuccess: (result) => void = null, onError: (err: IError) => void = null) => {
+export const remove = (key: string, onSuccess: (result) => void = null, onError: (err: IError) => void = null) => {
     QueryExecutor.prcoessQuery({
         Name: 'remove',
         OnError: onError,

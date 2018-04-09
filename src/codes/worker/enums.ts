@@ -63,5 +63,8 @@ export enum QUERY_OPTION {
     LessThanEqualTo = "<=",
     NotEqualTo = "!=",
     Aggregate = "aggregate",
-    Or = "or"
+    Or = "or",
+    Count = "count",
+    Skip = "skip",
+    Limit = "limit"
 }

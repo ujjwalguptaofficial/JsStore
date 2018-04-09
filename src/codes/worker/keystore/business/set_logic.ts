@@ -5,7 +5,7 @@ import { QueryExecutor } from "../query_executor";
 
 export class Set extends Base {
     query: IInsert;
-    constructor(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
+    constructor(query: IInsert, onSuccess: (result) => void, onError: (err: IError) => void) {
         super();
         try {
             this.query = query;

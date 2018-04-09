@@ -9,7 +9,7 @@ export class In extends NotWhere {
                 this._errorOccured = true;
                 this.onErrorOccured(e);
             }.bind(this);
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             for (var i = 0, length = values.length; i < length; i++) {
                 if (!this.errorOccured) {
                     cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));

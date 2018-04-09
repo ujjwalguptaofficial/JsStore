@@ -5,12 +5,12 @@ import { Utils } from "../utils_logic";
 import { IdbHelper } from "./idb_helper";
 import { QueryExecutor } from "../query_executor";
 
-export var temp_datas;
+export let tempDatas;
 export class InitDb {
     constructor(dbName: string, onSuccess: () => void, onError: (err: IError) => void) {
-        var db_request = self.indexedDB.open(dbName, 1);
+        const dbRequest = self.indexedDB.open(dbName, 1);
         IdbHelper._isDbDeletedByBrowser = false;
-        db_request.onerror = (event) => {
+        dbRequest.onerror = (event) => {
             if ((event as any).target.error.name === 'InvalidStateError') {
                 JsStore.IdbHelper.dbStatus = {
                     conStatus: JsStore.CONNECTION_STATUS.UnableToStart,
@@ -22,9 +22,9 @@ export class InitDb {
             }
         };
 
-        db_request.onsuccess = (event) => {
+        dbRequest.onsuccess = (event) => {
             QueryExecutor.dbStatus.conStatus = CONNECTION_STATUS.Connected;
-            IdbHelper._dbConnection = db_request.result;
+            IdbHelper._dbConnection = dbRequest.result;
             IdbHelper._dbConnection.onclose = () => {
                 IdbHelper.callDbDroppedByBrowser();
                 Utils.updateDbStatus(CONNECTION_STATUS.Closed, JsStore.ERROR_TYPE.ConnectionClosed);
@@ -54,8 +54,8 @@ export class InitDb {
             }
         };
 
-        db_request.onupgradeneeded = (event: any) => {
-            var db = event.target.result,
+        dbRequest.onupgradeneeded = (event: any) => {
+            const db = event.target.result,
                 column = "Key";
             db.createObjectStore(QueryExecutor.tableName, {
                 keyPath: column

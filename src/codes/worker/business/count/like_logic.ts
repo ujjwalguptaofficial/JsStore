@@ -16,7 +16,7 @@ export class Like extends In {
             this._errorOccured = true;
             this.onErrorOccured(e);
         }.bind(this);
-        if (this._checkFlag) {
+        if (this.checkFlag) {
             cursor_request.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {

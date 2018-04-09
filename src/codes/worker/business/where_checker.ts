@@ -1,6 +1,4 @@
-import { OCCURENCE } from "../enums";
-import { QUERY_OPTION } from "../enums";
-
+import { OCCURENCE, QUERY_OPTION } from "../enums";
 
 /**
  * For matching the different column value existance for where option
@@ -9,22 +7,22 @@ import { QUERY_OPTION } from "../enums";
  * @class WhereChecker
  */
 export class WhereChecker {
-  _where: object;
-  _status: boolean;
+  where: object;
+  status: boolean;
 
   constructor(where: object) {
-    this._where = where;
+    this.where = where;
   }
 
   check(rowValue) {
-    this._status = true;
-    var column_value;
-    for (var columnName in this._where) {
-      if (this._status) {
-        column_value = this._where[columnName];
-        if (typeof column_value === 'object') {
-          for (var key in column_value) {
-            if (this._status) {
+    this.status = true;
+    let columnValue;
+    for (const columnName in this.where) {
+      if (this.status) {
+        columnValue = this.where[columnName];
+        if (typeof columnValue === 'object') {
+          for (const key in columnValue) {
+            if (this.status) {
               switch (key) {
                 case QUERY_OPTION.In: this.checkIn(columnName, rowValue[columnName]); break;
                 case QUERY_OPTION.Like: this.checkLike(columnName, rowValue[columnName]); break;
@@ -44,8 +42,8 @@ export class WhereChecker {
           }
         }
         else {
-          if (column_value !== rowValue[columnName]) {
-            this._status = false;
+          if (columnValue !== rowValue[columnName]) {
+            this.status = false;
             break;
           }
         }
@@ -54,81 +52,81 @@ export class WhereChecker {
         break;
       }
     }
-    return this._status;
+    return this.status;
   }
 
   private checkIn(column, value) {
-    for (var i = 0, values = this._where[column][QUERY_OPTION.In], length = values.length; i < length; i++) {
+    for (let i = 0, values = this.where[column][QUERY_OPTION.In], length = values.length; i < length; i++) {
       if (values[i] === value) {
-        this._status = true;
+        this.status = true;
         break;
       }
       else {
-        this._status = false;
+        this.status = false;
       }
     }
   }
 
   private checkLike(column, value) {
-    var values = this._where[column][QUERY_OPTION.Like].split('%'),
-      comp_symbol: OCCURENCE,
-      comp_value,
-      symbol_index;
+    const values = this.where[column][QUERY_OPTION.Like].split('%');
+    let compSymbol: OCCURENCE,
+      compValue,
+      symbolIndex;
     if (values[1]) {
-      comp_value = values[1];
-      comp_symbol = values.length > 2 ? OCCURENCE.Any : OCCURENCE.Last;
+      compValue = values[1];
+      compSymbol = values.length > 2 ? OCCURENCE.Any : OCCURENCE.Last;
     }
     else {
-      comp_value = values[0];
-      comp_symbol = OCCURENCE.First;
+      compValue = values[0];
+      compSymbol = OCCURENCE.First;
     }
     value = value.toLowerCase();
 
-    switch (comp_symbol) {
+    switch (compSymbol) {
       case OCCURENCE.Any:
-        symbol_index = value.indexOf(comp_value.toLowerCase());
-        if (symbol_index < 0) {
-          this._status = false;
+        symbolIndex = value.indexOf(compValue.toLowerCase());
+        if (symbolIndex < 0) {
+          this.status = false;
         } break;
       case OCCURENCE.First:
-        symbol_index = value.indexOf(comp_value.toLowerCase());
-        if (symbol_index > 0 || symbol_index < 0) {
-          this._status = false;
+        symbolIndex = value.indexOf(compValue.toLowerCase());
+        if (symbolIndex > 0 || symbolIndex < 0) {
+          this.status = false;
         } break;
       default:
-        symbol_index = value.lastIndexOf(comp_value.toLowerCase());
-        if (symbol_index < value.length - comp_value.length) {
-          this._status = false;
+        symbolIndex = value.lastIndexOf(compValue.toLowerCase());
+        if (symbolIndex < value.length - compValue.length) {
+          this.status = false;
         }
     }
   }
 
   private checkComparisionOp(column, value, symbol) {
-    var compare_value = this._where[column][symbol];
+    const compareValue = this.where[column][symbol];
     switch (symbol) {
       // greater than
-      case QUERY_OPTION.GreaterThan: if (value <= compare_value) {
-        this._status = false;
+      case QUERY_OPTION.GreaterThan: if (value <= compareValue) {
+        this.status = false;
       } break;
       // less than
-      case QUERY_OPTION.LessThan: if (value >= compare_value) {
-        this._status = false;
+      case QUERY_OPTION.LessThan: if (value >= compareValue) {
+        this.status = false;
       } break;
       // less than equal
-      case QUERY_OPTION.LessThanEqualTo: if (value > compare_value) {
-        this._status = false;
+      case QUERY_OPTION.LessThanEqualTo: if (value > compareValue) {
+        this.status = false;
       } break;
       // greather than equal
-      case QUERY_OPTION.GreaterThanEqualTo: if (value < compare_value) {
-        this._status = false;
+      case QUERY_OPTION.GreaterThanEqualTo: if (value < compareValue) {
+        this.status = false;
       } break;
       // between
-      case QUERY_OPTION.Between: if (value < compare_value.Low || value > compare_value.High) {
-        this._status = false;
+      case QUERY_OPTION.Between: if (value < compareValue.Low || value > compareValue.High) {
+        this.status = false;
       } break;
       // Not equal to
-      case QUERY_OPTION.NotEqualTo: if (value === compare_value) {
-        this._status = false;
+      case QUERY_OPTION.NotEqualTo: if (value === compareValue) {
+        this.status = false;
       } break;
     }
   }

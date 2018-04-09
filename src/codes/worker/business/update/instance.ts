@@ -21,7 +21,7 @@ export class Instance extends Where {
                 if (this.query.where !== undefined) {
                     this.addGreatAndLessToNotOp();
                     if (this.query.where.or || Array.isArray(this.query.where)) {
-                        this.executeComplexLogic();
+                        this.executeComplexLogic_();
                     }
                     else {
                         this.initTransaction();
@@ -44,23 +44,23 @@ export class Instance extends Where {
         }
     }
 
-    private executeComplexLogic() {
-        var select_object = new Select.Instance({
+    private executeComplexLogic_() {
+        const selectObject = new Select.Instance({
             from: this.query.in,
             where: this.query.where
         } as ISelect, (results: any[]) => {
-            var key = this.getPrimaryKey(this.query.in),
-                in_query = [],
-                where_qry = {};
+            const key = this.getPrimaryKey(this.query.in),
+                inQuery = [],
+                whereQry = {};
             results.forEach((value) => {
-                in_query.push(value[key]);
+                inQuery.push(value[key]);
             });
             results = null;
-            where_qry[key] = { [QUERY_OPTION.In]: in_query };
-            this.query[QUERY_OPTION.Where] = where_qry;
+            whereQry[key] = { [QUERY_OPTION.In]: inQuery };
+            this.query[QUERY_OPTION.Where] = whereQry;
             this.initTransaction();
             this.goToWhereLogic();
-        }, this.onError.bind(this));
-        select_object.execute();
+        }, this.onError);
+        selectObject.execute();
     }
 }

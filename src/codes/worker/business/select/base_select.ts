@@ -1,34 +1,32 @@
 import { Base } from "../base";
 
 export class BaseSelect extends Base {
-    _results = [];
-    _sorted: boolean = false;
-    _skipRecord;
-    _limitRecord;
-    _checkFlag = false;
-    _isOr: boolean;
-    _isArrayQry: boolean;
-    _onWhereArrayQrySuccess: () => void;
+    results = [];
+    sorted = false;
+    skipRecord;
+    limitRecord;
+    isOr: boolean;
+    isArrayQry: boolean;
+    onWhereArrayQrySuccess: () => void;
 
     protected removeDuplicates() {
-        var datas = this._results;
+        let datas = this.results;
         // free results memory
-        this._results = undefined;
-        var key = this.getPrimaryKey(this.query.from);
-        var lookupObject = {};
-        for (var i in datas) {
+        this.results = undefined;
+        const key = this.getPrimaryKey(this.query.from);
+        const lookupObject = {};
+        for (const i in datas) {
             lookupObject[datas[i][key]] = datas[i];
         }
         // free datas memory
         datas = [];
-        for (i in lookupObject) {
+        for (const i in lookupObject) {
             datas.push(lookupObject[i]);
         }
-        this._results = datas;
+        this.results = datas;
     }
-    
-    protected onQueryFinished()
-    {
+
+    protected onQueryFinished() {
         // ff
     }
 }

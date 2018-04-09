@@ -2,43 +2,43 @@ import { updateValue } from "./base_update";
 import { Like } from "./like";
 
 export class Where extends Like {
-    private executeWhereLogic(column, value, op) {
-        var cursor: IDBCursorWithValue,
-            cursor_request;
+    private executeWhereLogic_(column, value, op) {
+        let cursor: IDBCursorWithValue,
+            cursorRequest;
         value = op ? value[op] : value;
-        cursor_request = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
-        if (this._checkFlag) {
-            cursor_request.onsuccess = function (e) {
+        cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
+        if (this.checkFlag) {
+            cursorRequest.onsuccess = (e) => {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this._whereChecker.check(cursor.value)) {
-                        cursor.update(updateValue(this._query.Set, cursor.value));
-                        ++this._rowAffected;
+                    if (this.whereCheckerInstance.check(cursor.value)) {
+                        cursor.update(updateValue(this.query.Set, cursor.value));
+                        ++this.rowAffected;
                     }
                     cursor.continue();
                 }
                 else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
-            cursor_request.onsuccess = function (e) {
+            cursorRequest.onsuccess = (e) => {
                 cursor = e.target.result;
                 if (cursor) {
-                    cursor.update(updateValue(this._query.Set, cursor.value));
-                    ++this._rowAffected;
+                    cursor.update(updateValue(this.query.Set, cursor.value));
+                    ++this.rowAffected;
                     cursor.continue();
                 }
                 else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
 
-        cursor_request.onerror = function (e) {
-            this._errorOccured = true;
+        cursorRequest.onerror = (e) => {
+            this.errorOccured = true;
             this.onErrorOccured(e);
-        }.bind(this);
+        };
     }
 }

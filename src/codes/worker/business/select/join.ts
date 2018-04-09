@@ -1,284 +1,285 @@
 import { BaseSelect } from "./base_select";
 import { ISelectJoin, ITableJoin, IError, IJoin, ISelect } from "../../interfaces";
 import * as Select from './instance';
+import { QUERY_OPTION } from "../../enums";
 
 export class Join extends BaseSelect {
     query: ISelectJoin;
-    _queryStack: ITableJoin[] = [];
-    _currentQueryStackIndex = 0;
+    queryStack: ITableJoin[] = [];
+    currentQueryStackIndex = 0;
 
     constructor(query: ISelectJoin, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
         super();
         this.onSuccess = onSuccess;
         this.onError = onError;
         this.query = query;
-        var table_list = []; // used to open the multiple object store
+        const tableList = []; // used to open the multiple object store
 
-        var convertQueryIntoStack = function (qry) {
-            if (qry.hasOwnProperty('Table1')) {
-                qry.Table2['JoinType'] = (qry as IJoin).join === undefined ?
-                    'inner' : (qry as IJoin).join.toLowerCase();
-                this._queryStack.push(qry.Table2);
-                if (this._queryStack.length % 2 === 0) {
-                    this._queryStack[this._queryStack.length - 1].NextJoin = qry.NextJoin;
+        const convertQueryIntoStack = (qry: IJoin) => {
+            if (qry.table1 !== undefined) {
+                qry.table2['JoinType'] = qry.join === undefined ? 'inner' : qry.join.toLowerCase();
+                this.queryStack.push(qry.table2);
+                if (this.queryStack.length % 2 === 0) {
+                    this.queryStack[this.queryStack.length - 1].nextJoin = (qry as any).nextJoin;
                 }
-                table_list.push(qry.Table2.Table);
-                return convertQueryIntoStack(qry.Table1);
+                tableList.push(qry.table2.table);
+                return convertQueryIntoStack(qry.table1 as any);
             }
             else {
-                this._queryStack.push(qry);
-                table_list.push(qry.Table);
+                this.queryStack.push(qry as any);
+                tableList.push((qry as any).table);
                 return;
             }
-        }.bind(this);
+        };
         convertQueryIntoStack(query.from);
-        this._queryStack.reverse();
+        this.queryStack.reverse();
         // get the data for first table
         if (!this.errorOccured) {
-            var select_object = new Select.Instance({
-                from: this._queryStack[0].table,
-                where: this._queryStack[0].where
-            } as ISelect, function (results) {
-                var table_name = this._queryStack[0].Table;
-                results.forEach(function (item, index) {
-                    this._results[index] = {};
-                    this._results[index][table_name] = item;
-                }, this);
-                this.startExecutionJoinLogic();
-            }.bind(this), this.onErrorOccured.bind(this));
-            select_object.execute();
+            const selectObject = new Select.Instance({
+                from: this.queryStack[0].table,
+                where: this.queryStack[0].where
+            } as ISelect, (results) => {
+                const tableName = this.queryStack[0].table;
+                results.forEach((item, index) => {
+                    this.results[index] = {};
+                    this.results[index][tableName] = item;
+                });
+                this.startExecutionJoinLogic_();
+            }, this.onErrorOccured);
+            selectObject.execute();
         }
     }
 
-    private onTransactionCompleted(e) {
-        if (this.onSuccess != null && (this._queryStack.length === this._currentQueryStackIndex + 1)) {
-            if (this.query['Count']) {
-                this.onSuccess(this._results.length);
+    private onTransactionCompleted_(e) {
+        if (this.onSuccess != null && (this.queryStack.length === this.currentQueryStackIndex + 1)) {
+            if (this.query[QUERY_OPTION.Count]) {
+                this.onSuccess(this.results.length);
             }
             else {
-                if (this.query['Skip'] && this.query['Limit']) {
-                    this._results.splice(0, this.query['Skip']);
-                    this._results.splice(this.query['Limit'] - 1, this._results.length);
+                if (this.query[QUERY_OPTION.Skip] && this.query[QUERY_OPTION.Limit]) {
+                    this.results.splice(0, this.query[QUERY_OPTION.Skip]);
+                    this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
                 }
-                else if (this.query['Skip']) {
-                    this._results.splice(0, this.query['Skip']);
+                else if (this.query[QUERY_OPTION.Skip]) {
+                    this.results.splice(0, this.query[QUERY_OPTION.Skip]);
                 }
-                else if (this.query['Limit']) {
-                    this._results.splice(this.query['Limit'] - 1, this._results.length);
+                else if (this.query[QUERY_OPTION.Limit]) {
+                    this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
                 }
-                this.onSuccess(this._results);
+                this.onSuccess(this.results);
             }
 
         }
     }
 
-    private executeWhereJoinLogic(joinQuery: ITableJoin, query: ITableJoin) {
-        var results = [],
-            join_index = 0,
+    private executeWhereJoinLogic_(joinQuery: ITableJoin, query: ITableJoin) {
+        const results = [],
             column = query.column,
-            tmp_results = this._results,
-            item,
-            result_length = tmp_results.length;
+            tmpresults = this.results,
+            resultLength = tmpresults.length;
+        let item, joinIndex = 0;
 
         // get the data from query table
-        var select_object = new Select.Instance({
+        const selectObject = new Select.Instance({
             from: query.table,
             order: query.order,
             where: query.where
-        } as ISelect, function (selectResults) {
+        } as ISelect, (selectResults) => {
             // perform join
             selectResults.forEach((value, index) => {
                 // search item through each global result
-                for (var i = 0; i < result_length; i++) {
-                    item = tmp_results[i][joinQuery.table][joinQuery.column];
+                for (let i = 0; i < resultLength; i++) {
+                    item = tmpresults[i][joinQuery.table][joinQuery.column];
                     doJoin(item, value, i);
                 }
             });
-            this._results = results;
+            this.results = results;
             // check if further execution needed
-            if (this._queryStack.length > this._currentQueryStackIndex + 1) {
-                this.startExecutionJoinLogic();
+            if (this.queryStack.length > this.currentQueryStackIndex + 1) {
+                this.startExecutionJoinLogic_();
             }
             else {
-                this.onTransactionCompleted(null);
+                this.onTransactionCompleted_(null);
             }
 
-        }.bind(this), this.onErrorOccured.bind(this));
-        select_object.execute();
+        }, this.onErrorOccured);
+        selectObject.execute();
 
-        var doJoin = function (value1, value2, itemIndex) {
-            results[join_index] = {};
+        const doJoin = (value1, value2, itemIndex) => {
+            results[joinIndex] = {};
             if (value1 === value2[query.column]) {
-                results[join_index][query.table] = value2;
+                results[joinIndex][query.table] = value2;
                 // copy other relative data into current result
-                for (var j = 0; j < this._currentQueryStackIndex; j++) {
-                    results[join_index][this._queryStack[j].Table] =
-                        tmp_results[itemIndex][this._queryStack[j].Table];
+                for (let j = 0; j < this.currentQueryStackIndex; j++) {
+                    results[joinIndex][this.queryStack[j].table] =
+                        tmpresults[itemIndex][this.queryStack[j].table];
                 }
-                ++join_index;
+                ++joinIndex;
             }
             else if (query.joinType === 'left') {
                 // left join
-                results[join_index] = {};
-                results[join_index][query.table] = null;
+                results[joinIndex] = {};
+                results[joinIndex][query.table] = null;
                 // copy other relative data into current result
-                for (var j = 0; j < this._currentQueryStackIndex; j++) {
-                    results[join_index][this._queryStack[j].Table] =
-                        tmp_results[itemIndex][this._queryStack[j].Table];
+                for (let j = 0; j < this.currentQueryStackIndex; j++) {
+                    results[joinIndex][this.queryStack[j].table] =
+                        tmpresults[itemIndex][this.queryStack[j].table];
                 }
-                // results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
-                ++join_index;
+                ++joinIndex;
             }
-        }.bind(this);
+        };
     }
 
-    private executeRightJoin(joinQuery: ITableJoin, query: ITableJoin) {
-        var join_results = [],
-            join_index = 0,
+    private executeRightJoin_(joinQuery: ITableJoin, query: ITableJoin) {
+        const joinresults = [],
+            joinIndex = 0,
             column = query.column,
-            tmp_results = this._results,
-            result_length = tmp_results.length,
-            item_index = 0,
-            where = {},
-            onExecutionFinished = function () {
-                this._results = join_results;
-                // check if further execution needed
-                if (this._queryStack.length > this._currentQueryStackIndex + 1) {
-                    this.startExecutionJoinLogic();
+            tmpresults = this.results,
+            resultLength = tmpresults.length,
+            where = {};
+
+        let itemIndex = 0;
+
+        const onExecutionFinished = () => {
+            this.results = joinresults;
+            // check if further execution needed
+            if (this.queryStack.length > this.currentQueryStackIndex + 1) {
+                this.startExecutionJoinLogic_();
+            }
+            else {
+                this.onTransactionCompleted_(null);
+            }
+        };
+        const doRightJoin = (results) => {
+            let valueFound = false;
+            results.forEach(function (item, index) {
+                for (itemIndex = 0; itemIndex < resultLength; itemIndex++) {
+                    if (item[query.column] ===
+                        tmpresults[itemIndex][joinQuery.table][joinQuery.column]) {
+                        valueFound = true;
+                        break;
+                    }
+                }
+                joinresults[index] = {};
+                joinresults[index][query.table] = item;
+                if (valueFound) {
+                    valueFound = false;
+                    for (let j = 0; j < this.currentQueryStackIndex; j++) {
+                        joinresults[index][this.queryStack[j].table] =
+                            tmpresults[itemIndex][this.queryStack[j].table];
+                    }
                 }
                 else {
-                    this.onTransactionCompleted(null);
+                    for (let j = 0; j < this.currentQueryStackIndex; j++) {
+                        joinresults[index][this.queryStack[j].table] = null;
+                    }
                 }
-            }.bind(this),
-            doRightJoin = function (results) {
-                var value_found = false;
-                results.forEach(function (item, index) {
-                    for (item_index = 0; item_index < result_length; item_index++) {
-                        if (item[query.column] ===
-                            tmp_results[item_index][joinQuery.table][joinQuery.column]) {
-                            value_found = true;
-                            break;
-                        }
-                    }
-                    join_results[index] = {};
-                    join_results[index][query.table] = item;
-                    if (value_found) {
-                        value_found = false;
-                        for (var j = 0; j < this._currentQueryStackIndex; j++) {
-                            join_results[index][this._queryStack[j].Table] =
-                                tmp_results[item_index][this._queryStack[j].Table];
-                        }
-                    }
-                    else {
-                        for (var j = 0; j < this._currentQueryStackIndex; j++) {
-                            join_results[index][this._queryStack[j].Table] = null;
-                        }
-                    }
-                }, this);
-            }.bind(this),
-            executeLogic = () => {
-                var select_object = new Select.Instance({
-                    from: query.table,
-                    order: query.order,
-                    where: query.where
-                } as ISelect, (results) => {
-                    doRightJoin(results);
-                    onExecutionFinished();
-                }, this.onErrorOccured.bind(this));
-                select_object.execute();
-            };
+            }, this);
+        };
+        const executeLogic = () => {
+            const selectObject = new Select.Instance({
+                from: query.table,
+                order: query.order,
+                where: query.where
+            } as ISelect, (results) => {
+                doRightJoin(results);
+                onExecutionFinished();
+            }, this.onErrorOccured);
+            selectObject.execute();
+        };
         executeLogic();
     }
 
-    private executeWhereUndefinedLogicForJoin(joinQuery: ITableJoin, query: ITableJoin) {
-        var join_results = [],
-            join_index = 0,
+    private executeWhereUndefinedLogicForJoin_(joinQuery: ITableJoin, query: ITableJoin) {
+        const joinresults = [],
             column = query.column,
-            tmp_results = this._results,
+            tmpresults = this.results,
+            where = {},
             // Item,
-            result_length = tmp_results.length,
-            item_index = 0,
-            where = {},
-            onExecutionFinished = function () {
-                this._results = join_results;
-                // check if further execution needed
-                if (this._queryStack.length > this._currentQueryStackIndex + 1) {
-                    this.startExecutionJoinLogic();
-                }
-                else {
-                    this.onTransactionCompleted(null);
-                }
-            }.bind(this),
-            doJoin = function (results) {
-                if (results.length > 0) {
-                    results.forEach(function (value) {
-                        join_results[join_index] = {};
-                        join_results[join_index][query.table] = value;
-                        // copy other relative data into current result
-                        for (var k = 0; k < this._currentQueryStackIndex; k++) {
-                            join_results[join_index][this._queryStack[k].Table] =
-                                tmp_results[item_index][this._queryStack[k].Table];
-                        }
-                        ++join_index;
-                    }, this);
-                }
-                else if (query.joinType === 'left') {
-                    // left join
-                    join_results[join_index] = {};
-                    join_results[join_index][query.table] = null;
+            resultLength = tmpresults.length;
+
+        let joinIndex = 0,
+            itemIndex = 0;
+        const onExecutionFinished = () => {
+            this.results = joinresults;
+            // check if further execution needed
+            if (this.queryStack.length > this.currentQueryStackIndex + 1) {
+                this.startExecutionJoinLogic_();
+            }
+            else {
+                this.onTransactionCompleted_(null);
+            }
+        };
+        const doJoin = (results) => {
+            if (results.length > 0) {
+                results.forEach((value) => {
+                    joinresults[joinIndex] = {};
+                    joinresults[joinIndex][query.table] = value;
                     // copy other relative data into current result
-                    for (var j = 0; j < this._currentQueryStackIndex; j++) {
-                        join_results[join_index][this._queryStack[j].Table] =
-                            tmp_results[item_index][this._queryStack[j].Table];
+                    for (let k = 0; k < this.currentQueryStackIndex; k++) {
+                        joinresults[joinIndex][this.queryStack[k].table] =
+                            tmpresults[itemIndex][this.queryStack[k].table];
                     }
-                    ++join_index;
+                    ++joinIndex;
+                });
+            }
+            else if (query.joinType === 'left') {
+                // left join
+                joinresults[joinIndex] = {};
+                joinresults[joinIndex][query.table] = null;
+                // copy other relative data into current result
+                for (let j = 0; j < this.currentQueryStackIndex; j++) {
+                    joinresults[joinIndex][this.queryStack[j].table] =
+                        tmpresults[itemIndex][this.queryStack[j].table];
                 }
-            }.bind(this),
-            executeLogic = function () {
-                if (item_index < result_length) {
-                    if (!this._errorOccured) {
-                        where[query.column] = tmp_results[item_index][joinQuery.table][joinQuery.column];
-                        var select_object = new Select.Instance({
-                            from: query.table,
-                            order: query.order,
-                            where: where
-                        } as ISelect, (results) => {
-                            doJoin(results);
-                            ++item_index;
-                            executeLogic();
-                        }, this.onErrorOccured.bind(this));
-                        select_object.execute();
-                    }
+                ++joinIndex;
+            }
+        };
+        const executeLogic = () => {
+            if (itemIndex < resultLength) {
+                if (!this.errorOccured) {
+                    where[query.column] = tmpresults[itemIndex][joinQuery.table][joinQuery.column];
+                    const selectInstance = new Select.Instance({
+                        from: query.table,
+                        order: query.order,
+                        where: where
+                    } as ISelect, (results) => {
+                        doJoin(results);
+                        ++itemIndex;
+                        executeLogic();
+                    }, this.onErrorOccured.bind(this));
+                    selectInstance.execute();
                 }
-                else {
-                    onExecutionFinished();
-                }
-            }.bind(this);
+            }
+            else {
+                onExecutionFinished();
+            }
+        };
         executeLogic();
     }
 
-    private startExecutionJoinLogic() {
-        var join_query;
-        if (this._currentQueryStackIndex >= 1 && this._currentQueryStackIndex % 2 === 1) {
-            join_query = {
-                column: this._queryStack[this._currentQueryStackIndex].nextJoin.column,
-                table: this._queryStack[this._currentQueryStackIndex].nextJoin.table
+    private startExecutionJoinLogic_() {
+        let joinQuery;
+        if (this.currentQueryStackIndex >= 1 && this.currentQueryStackIndex % 2 === 1) {
+            joinQuery = {
+                column: this.queryStack[this.currentQueryStackIndex].nextJoin.column,
+                table: this.queryStack[this.currentQueryStackIndex].nextJoin.table
             } as ITableJoin;
-            this._currentQueryStackIndex++;
+            this.currentQueryStackIndex++;
         }
         else {
-            join_query = this._queryStack[this._currentQueryStackIndex++];
+            joinQuery = this.queryStack[this.currentQueryStackIndex++];
         }
 
-        var query = this._queryStack[this._currentQueryStackIndex];
+        const query = this.queryStack[this.currentQueryStackIndex];
         if (query.joinType === 'right') {
-            this.executeRightJoin(join_query, query);
+            this.executeRightJoin_(joinQuery, query);
         }
         else if (query.where) {
-            this.executeWhereJoinLogic(join_query, query);
+            this.executeWhereJoinLogic_(joinQuery, query);
         }
         else {
-            this.executeWhereUndefinedLogicForJoin(join_query, query);
+            this.executeWhereUndefinedLogicForJoin_(joinQuery, query);
         }
     }
 }

@@ -14,7 +14,7 @@ export class Util {
     }
 
     static getObjectFirstKey(value) {
-        for (var key in value) {
+        for (const key in value) {
             return key;
         }
         return null;
@@ -32,7 +32,7 @@ export class Util {
         if (value === null) {
             return DATA_TYPE.Null;
         }
-        var type = typeof value;
+        const type = typeof value;
         switch (type) {
             case 'object':
                 if (Array.isArray(value)) {

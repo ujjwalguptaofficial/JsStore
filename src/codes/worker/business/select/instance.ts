@@ -11,8 +11,8 @@ export class Instance extends Helper {
         this.onError = onError;
         this.onSuccess = onSuccess;
         this.query = query;
-        this._skipRecord = query.skip;
-        this._limitRecord = query.limit;
+        this.skipRecord = query.skip;
+        this.limitRecord = query.limit;
         this.tableName = query.from as string; 
     }
 
@@ -49,7 +49,7 @@ export class Instance extends Helper {
     }
 
     private processWhereArrayQry() {
-        this._isArrayQry = true;
+        this.isArrayQry = true;
         var is_first_where = true,
             where_query = this.query.where,
             output = [], operation,
@@ -129,11 +129,11 @@ export class Instance extends Helper {
     }
 
     protected onQueryFinished() {
-        if (this._isOr === true) {
+        if (this.isOr === true) {
             this.orQuerySuccess();
         }
-        else if (this._isArrayQry === true) {
-            this._onWhereArrayQrySuccess();
+        else if (this.isArrayQry === true) {
+            this.onWhereArrayQrySuccess();
         }
         else if (this.isTransaction === true) {
             this.onTransactionCompleted();
@@ -157,7 +157,7 @@ export class Instance extends Helper {
             this.processOrderBy();
             if (this.query.distinct) {
                 var group_by = [];
-                var result = this._results[0];
+                var result = this.results[0];
                 for (var key in result) {
                     group_by.push(key);
                 }
@@ -177,13 +177,13 @@ export class Instance extends Helper {
             else if (this.query.aggregate) {
                 this.processAggregateQry();
             }
-            this.onSuccess(this._results);
+            this.onSuccess(this.results);
         }
     }
 
     private orQueryFinish() {
-        this._isOr = false;
-        this._results = (this as any)._orInfo.Results;
+        this.isOr = false;
+        this.results = (this as any)._orInfo.Results;
         // free or info memory
         (this as any)._orInfo = undefined;
         this.removeDuplicates();
@@ -191,9 +191,9 @@ export class Instance extends Helper {
     }
 
     private orQuerySuccess() {
-        (this as any)._orInfo.Results = (this as any)._orInfo.Results.concat(this._results);
+        (this as any)._orInfo.Results = (this as any)._orInfo.Results.concat(this.results);
         if (!this.query.limit || (this.query.limit > (this as any)._orInfo.Results.length)) {
-            this._results = [];
+            this.results = [];
             var key = this.getObjectFirstKey((this as any)._orInfo.OrQuery);
             if (key != null) {
                 var where = {};
@@ -212,7 +212,7 @@ export class Instance extends Helper {
     }
 
     private processOrLogic() {
-        this._isOr = true;
+        this.isOr = true;
         (this as any)._orInfo = {
             OrQuery: this.query.where.or,
             Results: []

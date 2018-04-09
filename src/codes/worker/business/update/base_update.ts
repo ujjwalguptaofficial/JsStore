@@ -1,13 +1,13 @@
 import { Base } from "../base";
 import { IdbHelper } from "../idb_helper";
 
-export var updateValue = (suppliedValue, storedValue) => {
-    for (var key in suppliedValue) {
+export const updateValue = (suppliedValue, storedValue) => {
+    for (const key in suppliedValue) {
         if (typeof suppliedValue[key] !== 'object') {
             storedValue[key] = suppliedValue[key];
         }
         else {
-            for (var op in suppliedValue[key]) {
+            for (const op in suppliedValue[key]) {
                 switch (op as any) {
                     case '+': storedValue[key] += suppliedValue[key][op]; break;
                     case '-': storedValue[key] -= suppliedValue[key][op]; break;
@@ -23,19 +23,19 @@ export var updateValue = (suppliedValue, storedValue) => {
 };
 
 export class BaseUpdate extends Base {
-    _checkFlag = false;
+    checkFlag = false;
     protected initTransaction() {
-        IdbHelper.createTransaction([this.query.in], this.onTransactionCompleted.bind(this));
+        IdbHelper.createTransaction([this.query.in], this.onTransactionCompleted_);
         this.objectStore = IdbHelper.transaction.objectStore(this.query.in);
     }
 
     protected onQueryFinished() {
         if (this.isTransaction === true) {
-            this.onTransactionCompleted();
+            this.onTransactionCompleted_();
         }
     }
 
-    private onTransactionCompleted() {
+    private onTransactionCompleted_() {
         if (this.errorOccured === false) {
             this.onSuccess(this.rowAffected);
         }
