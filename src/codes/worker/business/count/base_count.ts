@@ -1,9 +1,9 @@
 import { Base } from "../base";
 
 export class BaseCount extends Base {
-    _resultCount = 0;
-    _skipRecord;
-    _limitRecord;
+    resultCount = 0;
+    skipRecord;
+    limitRecord;
     checkFlag = false;
 
     protected onQueryFinished() {
@@ -14,7 +14,7 @@ export class BaseCount extends Base {
 
     protected onTransactionCompleted() {
         if (this.errorOccured === false) {
-            this.onSuccess(this._resultCount);
+            this.onSuccess(this.resultCount);
         }
     }
 }

@@ -1,5 +1,4 @@
 import { Base } from "../base";
-import { IdbHelper } from "../idb_helper";
 
 export const updateValue = (suppliedValue, storedValue) => {
     for (const key in suppliedValue) {
@@ -25,8 +24,8 @@ export const updateValue = (suppliedValue, storedValue) => {
 export class BaseUpdate extends Base {
     checkFlag = false;
     protected initTransaction() {
-        IdbHelper.createTransaction([this.query.in], this.onTransactionCompleted_);
-        this.objectStore = IdbHelper.transaction.objectStore(this.query.in);
+        this.createTransaction([this.query.in], this.onTransactionCompleted_);
+        this.objectStore = this.transaction.objectStore(this.query.in);
     }
 
     protected onQueryFinished() {

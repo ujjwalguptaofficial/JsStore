@@ -22,7 +22,7 @@ export class Instance extends Where {
                     if (this.query.where.Or || Array.isArray(this.query.where)) {
                         const selectInstance = new Select.Instance(this.query as any,
                             (results) => {
-                                this._resultCount = results.length;
+                                this.resultCount = results.length;
                                 this.onTransactionCompleted();
                             }, this.onError);
                         selectInstance.execute();

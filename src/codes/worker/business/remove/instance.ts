@@ -1,6 +1,5 @@
 import { Where } from "./where";
 import { IRemove, IError } from "../../interfaces";
-import { IdbHelper } from "../idb_helper";
 import * as Select from '../select/index';
 import { QUERY_OPTION } from "../../enums";
 
@@ -65,8 +64,8 @@ export class Instance extends Where {
     }
 
     private initTransaction_() {
-        IdbHelper.createTransaction([this.query.from], this.onTransactionCompleted_);
-        this.objectStore = IdbHelper.transaction.objectStore(this.query.from);
+        this.createTransaction([this.query.from], this.onTransactionCompleted_);
+        this.objectStore = this.transaction.objectStore(this.query.from);
     }
 
     private onTransactionCompleted_() {

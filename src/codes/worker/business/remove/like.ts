@@ -2,15 +2,15 @@ import { In } from "./in";
 import { OCCURENCE } from "../../enums";
 
 export class Like extends In {
-    _compSymbol: OCCURENCE;
-    _compValue;
-    _compValueLength: number;
+    compSymbol: OCCURENCE;
+    compValue;
+    compValueLength: number;
 
     protected executeLikeLogic(column, value, symbol: OCCURENCE) {
         let cursor: IDBCursorWithValue;
-        this._compValue = (value as string).toLowerCase();
-        this._compValueLength = this._compValue.length;
-        this._compSymbol = symbol;
+        this.compValue = (value as string).toLowerCase();
+        this.compValueLength = this.compValue.length;
+        this.compSymbol = symbol;
         const cursorRequest = this.objectStore.index(column).openCursor();
         cursorRequest.onerror = (e) => {
             this.errorOccured = true;

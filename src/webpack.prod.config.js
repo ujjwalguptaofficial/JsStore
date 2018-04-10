@@ -1,53 +1,21 @@
 const path = require('path');
 const SmartBannerPlugin = require('smart-banner-webpack-plugin');
 const banner = require('./license');
-
-// console.log(process.argv[1]);
-module.exports = [{
-        name: "jsstore",
-        entry: "./codes/main/index.ts",
-        devtool: 'source-map',
+const baseConfig = require('./webpack.base.config');
+const merge = require('webpack-merge');
+module.exports = [merge(baseConfig[0], {
         output: {
             path: path.join(__dirname, "output"),
-            filename: "jsstore.js",
+            filename: "jsstore.min.js",
             library: 'JsStore'
-            // libraryTarget: 'umd',
         },
-        module: {
-            rules: [{
-                test: /\.ts$/,
-                exclude: /node_modules/,
-                use: {
-                    loader: 'ts-loader'
-                }
-            }]
-        },
-        resolve: {
-            extensions: ['.ts'] // '' is needed to find modules like "jquery"
-        }
-    },
-    {
-        name: "jsstore.worker",
-        devtool: 'source-map',
-        entry: "./codes/worker/start.ts",
+        mode: 'production'
+    }),
+    merge(baseConfig[1], {
         output: {
             path: path.join(__dirname, "output"),
-            filename: "jsstore.worker.js"
+            filename: "jsstore.worker.min.js"
         },
-        module: {
-            rules: [{
-                test: /\.ts$/,
-                exclude: /node_modules/,
-                use: {
-                    loader: 'ts-loader'
-                }
-            }]
-        },
-        resolve: {
-            extensions: ['.ts'] // '' is needed to find modules like "jquery"
-        },
-        plugins: [
-            new SmartBannerPlugin(banner)
-        ]
-    }
-];
+        mode: 'production'
+    })
+]

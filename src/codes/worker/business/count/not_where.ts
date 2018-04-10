@@ -5,7 +5,7 @@ export class NotWhere extends BaseCount {
         if (this.objectStore.count) {
             const countRequest = this.objectStore.count();
             countRequest.onsuccess = () => {
-                this._resultCount = countRequest.result;
+                this.resultCount = countRequest.result;
                 this.onQueryFinished();
             };
             countRequest.onerror = this.onCursorError;

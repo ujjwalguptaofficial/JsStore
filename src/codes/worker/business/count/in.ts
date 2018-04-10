@@ -11,7 +11,7 @@ export class In extends NotWhere {
                     cursor = e.target.result;
                     if (cursor) {
                         if (this.whereCheckerInstance.check(cursor.value)) {
-                            ++this._resultCount;
+                            ++this.resultCount;
                         }
                         cursor.continue();
                     }
@@ -27,7 +27,7 @@ export class In extends NotWhere {
                 for (let i = 0, length = values.length; i < length; i++) {
                     cursorRequest = columnStore.count(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = (e) => {
-                        this._resultCount += e.target.result;
+                        this.resultCount += e.target.result;
                         if (i + 1 === length) {
                             this.onQueryFinished();
                         }
@@ -41,7 +41,7 @@ export class In extends NotWhere {
                     cursorRequest.onsuccess = (e) => {
                         cursor = e.target.result;
                         if (cursor) {
-                            ++this._resultCount;
+                            ++this.resultCount;
                             cursor.continue();
                         }
                         else if (i + 1 === length) {

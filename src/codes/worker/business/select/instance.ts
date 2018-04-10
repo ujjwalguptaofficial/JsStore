@@ -1,5 +1,4 @@
 import { ISelect, IError } from "../../interfaces";
-import { IdbHelper } from "../idb_helper";
 import { Helper } from "./helper";
 import { LogHelper } from "../../log_helper";
 import { ERROR_TYPE, Idb_Mode, QUERY_OPTION } from "../../enums";
@@ -145,8 +144,8 @@ export class Instance extends Helper {
     }
 
     private initTransaction_() {
-        IdbHelper.createTransaction([this.tableName], this.onTransactionCompleted_, Idb_Mode.ReadOnly);
-        this.objectStore = IdbHelper.transaction.objectStore(this.tableName);
+        this.createTransaction([this.tableName], this.onTransactionCompleted_, Idb_Mode.ReadOnly);
+        this.objectStore = this.transaction.objectStore(this.tableName);
     }
 
     private processWhere_() {

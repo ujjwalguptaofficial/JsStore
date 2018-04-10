@@ -1,3 +1,8 @@
+/*!
+ * @license :jsstore - V2.0.0 - 10/04/2018
+ * https://github.com/ujjwalguptaofficial/JsStore
+ * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
+ */
 var JsStore =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -67,114 +72,29 @@ var JsStore =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./codes/main/index.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
 /******/ })
 /************************************************************************/
-/******/ ({
-
-/***/ "./codes/main/config.ts":
-/*!******************************!*\
-  !*** ./codes/main/config.ts ***!
-  \******************************/
-/*! exports provided: Config */
+/******/ ([
+/* 0 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Config", function() { return Config; });
-var Config = /** @class */ (function () {
-    function Config() {
-    }
-    Config._isLogEnabled = false;
-    return Config;
-}());
-
-
-
-/***/ }),
-
-/***/ "./codes/main/enums.ts":
-/*!*****************************!*\
-  !*** ./codes/main/enums.ts ***!
-  \*****************************/
-/*! exports provided: Error_Type, WebWorker_Status, Data_Type */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Error_Type", function() { return Error_Type; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WebWorker_Status", function() { return WebWorker_Status; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Data_Type", function() { return Data_Type; });
-var Error_Type;
-(function (Error_Type) {
-    Error_Type["WorkerNotSupplied"] = "worker_not_supplied";
-    Error_Type["IndexedDbUndefined"] = "indexeddb_undefined";
-})(Error_Type || (Error_Type = {}));
-var WebWorker_Status;
-(function (WebWorker_Status) {
-    WebWorker_Status["Registered"] = "registerd";
-    WebWorker_Status["Failed"] = "failed";
-    WebWorker_Status["NotStarted"] = "not_started";
-})(WebWorker_Status || (WebWorker_Status = {}));
-var Data_Type;
-(function (Data_Type) {
-    Data_Type["String"] = "string";
-    Data_Type["Object"] = "object";
-    Data_Type["Array"] = "array";
-    Data_Type["Number"] = "number";
-    Data_Type["Boolean"] = "boolean";
-    Data_Type["Null"] = "null";
-})(Data_Type || (Data_Type = {}));
-
-
-/***/ }),
-
-/***/ "./codes/main/helper.ts":
-/*!******************************!*\
-  !*** ./codes/main/helper.ts ***!
-  \******************************/
-/*! exports provided: enableLog */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enableLog", function() { return enableLog; });
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./config */ "./codes/main/config.ts");
-
-/**
- * Enable log
- *
- */
-var enableLog = function () {
-    _config__WEBPACK_IMPORTED_MODULE_0__["Config"]._isLogEnabled = true;
-};
-
-
-/***/ }),
-
-/***/ "./codes/main/index.ts":
-/*!*****************************!*\
-  !*** ./codes/main/index.ts ***!
-  \*****************************/
-/*! exports provided: Instance, Error_Type, WebWorker_Status, Data_Type, Config, enableLog */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _instance__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./instance */ "./codes/main/instance.ts");
+/* harmony import */ var _instance__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return _instance__WEBPACK_IMPORTED_MODULE_0__["Instance"]; });
 
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./enums */ "./codes/main/enums.ts");
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Error_Type", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WebWorker_Status", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["WebWorker_Status"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Data_Type", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["Data_Type"]; });
 
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./config */ "./codes/main/config.ts");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Config", function() { return _config__WEBPACK_IMPORTED_MODULE_2__["Config"]; });
 
-/* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./helper */ "./codes/main/helper.ts");
+/* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "enableLog", function() { return _helper__WEBPACK_IMPORTED_MODULE_3__["enableLog"]; });
 
 
@@ -184,19 +104,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /***/ }),
-
-/***/ "./codes/main/instance.ts":
-/*!********************************!*\
-  !*** ./codes/main/instance.ts ***!
-  \********************************/
-/*! exports provided: Instance */
+/* 1 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return Instance; });
-/* harmony import */ var _instance_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./instance_helper */ "./codes/main/instance_helper.ts");
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./codes/main/config.ts");
+/* harmony import */ var _instance_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5);
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -441,19 +356,14 @@ var Instance = /** @class */ (function (_super) {
 
 
 /***/ }),
-
-/***/ "./codes/main/instance_helper.ts":
-/*!***************************************!*\
-  !*** ./codes/main/instance_helper.ts ***!
-  \***************************************/
-/*! exports provided: InstanceHelper */
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InstanceHelper", function() { return InstanceHelper; });
-/* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./log_helper */ "./codes/main/log_helper.ts");
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./enums */ "./codes/main/enums.ts");
+/* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3);
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4);
 
 
 var InstanceHelper = /** @class */ (function () {
@@ -550,19 +460,14 @@ var InstanceHelper = /** @class */ (function () {
 
 
 /***/ }),
-
-/***/ "./codes/main/log_helper.ts":
-/*!**********************************!*\
-  !*** ./codes/main/log_helper.ts ***!
-  \**********************************/
-/*! exports provided: LogHelper */
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LogHelper", function() { return LogHelper; });
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./enums */ "./codes/main/enums.ts");
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./codes/main/config.ts");
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4);
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5);
 
 
 var LogHelper = /** @class */ (function () {
@@ -612,7 +517,71 @@ var LogHelper = /** @class */ (function () {
 
 
 
-/***/ })
+/***/ }),
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-/******/ });
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Error_Type", function() { return Error_Type; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WebWorker_Status", function() { return WebWorker_Status; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Data_Type", function() { return Data_Type; });
+var Error_Type;
+(function (Error_Type) {
+    Error_Type["WorkerNotSupplied"] = "worker_not_supplied";
+    Error_Type["IndexedDbUndefined"] = "indexeddb_undefined";
+})(Error_Type || (Error_Type = {}));
+var WebWorker_Status;
+(function (WebWorker_Status) {
+    WebWorker_Status["Registered"] = "registerd";
+    WebWorker_Status["Failed"] = "failed";
+    WebWorker_Status["NotStarted"] = "not_started";
+})(WebWorker_Status || (WebWorker_Status = {}));
+var Data_Type;
+(function (Data_Type) {
+    Data_Type["String"] = "string";
+    Data_Type["Object"] = "object";
+    Data_Type["Array"] = "array";
+    Data_Type["Number"] = "number";
+    Data_Type["Boolean"] = "boolean";
+    Data_Type["Null"] = "null";
+})(Data_Type || (Data_Type = {}));
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Config", function() { return Config; });
+var Config = /** @class */ (function () {
+    function Config() {
+    }
+    Config._isLogEnabled = false;
+    return Config;
+}());
+
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enableLog", function() { return enableLog; });
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5);
+
+/**
+ * Enable log
+ *
+ */
+var enableLog = function () {
+    _config__WEBPACK_IMPORTED_MODULE_0__["Config"]._isLogEnabled = true;
+};
+
+
+/***/ })
+/******/ ]);
 //# sourceMappingURL=jsstore.js.map
