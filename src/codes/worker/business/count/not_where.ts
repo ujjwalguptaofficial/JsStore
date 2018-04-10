@@ -3,20 +3,17 @@ import { BaseCount } from "./base_count";
 export class NotWhere extends BaseCount {
     protected executeWhereUndefinedLogic() {
         if (this.objectStore.count) {
-            var count_request = this.objectStore.count();
-            count_request.onsuccess = function () {
-                this._resultCount = count_request.result;
+            const countRequest = this.objectStore.count();
+            countRequest.onsuccess = () => {
+                this._resultCount = countRequest.result;
                 this.onQueryFinished();
-            }.bind(this);
-            count_request.onerror = function (e) {
-                this._errorOccured = true;
-                this.onErrorOccured(e);
-            }.bind(this);
+            };
+            countRequest.onerror = this.onCursorError;
         }
         else {
-            var cursor,
-                cursor_request = this.objectStore.openCursor();
-            cursor_request.onsuccess = function (e) {
+            let cursor;
+            const cursorRequest = this.objectStore.openCursor();
+            cursorRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     ++this._resultCount;
@@ -26,10 +23,7 @@ export class NotWhere extends BaseCount {
                     this.onQueryFinished();
                 }
             }.bind(this);
-            cursor_request.onerror = function (e) {
-                this._errorOccured = true;
-                this.onErrorOccured(e);
-            }.bind(this);
+            cursorRequest.onerror = this.onCursorError;
         }
     }
 }

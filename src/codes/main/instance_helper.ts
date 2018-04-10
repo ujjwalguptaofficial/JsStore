@@ -4,17 +4,17 @@ import { IWebWorkerRequest, IWebWorkerResult } from "./interfaces";
 
 export class InstanceHelper {
     private _worker: Worker;
-    private _isDbOpened: boolean = false;
-    private _requestQueue: IWebWorkerRequest[] = [];
-    private _isCodeExecuting = false;
-    private _whiteListApi = ['create_db', 'is_db_exist', 'get_db_version', 'get_db_list', 'open_db'];
+    private isDbOpened = false;
+    private requestQueue: IWebWorkerRequest[] = [];
+    private isCodeExecuting = false;
+    private whiteListApi = ['create_db', 'is_db_exist', 'get_db_version', 'get_db_list', 'open_db'];
     constructor(worker: Worker) {
         if (worker) {
             this._worker = worker;
             this._worker.onmessage = this.onMessageFromWorker.bind(this);
         }
         else {
-            var err = new LogHelper(Error_Type.WorkerNotSupplied);
+            const err = new LogHelper(Error_Type.WorkerNotSupplied);
             err.throw();
         }
     }
@@ -24,24 +24,24 @@ export class InstanceHelper {
     }
 
     private processFinishedQuery(message: IWebWorkerResult) {
-        var finished_request: IWebWorkerRequest = this._requestQueue.shift();
-        if (finished_request) {
-            LogHelper.log("request finished : " + finished_request.name);
+        const finishedRequest: IWebWorkerRequest = this.requestQueue.shift();
+        if (finishedRequest) {
+            LogHelper.log("request finished : " + finishedRequest.name);
             if (message.errorOccured) {
-                if (finished_request.onError) {
-                    finished_request.onError(message.errorDetails);
+                if (finishedRequest.onError) {
+                    finishedRequest.onError(message.errorDetails);
                 }
             }
             else {
-                if (finished_request.onSuccess) {
-                    var open_db_queries = ['open_db', 'create_db'];
-                    if (open_db_queries.indexOf(finished_request.name) >= 0) {
-                        this._isDbOpened = true;
+                if (finishedRequest.onSuccess) {
+                    const openDbQueries = ['open_db', 'create_db'];
+                    if (openDbQueries.indexOf(finishedRequest.name) >= 0) {
+                        this.isDbOpened = true;
                     }
-                    finished_request.onSuccess(message.returnedValue);
+                    finishedRequest.onSuccess(message.returnedValue);
                 }
             }
-            this._isCodeExecuting = false;
+            this.isCodeExecuting = false;
             this.executeQry();
         }
     }
@@ -59,40 +59,40 @@ export class InstanceHelper {
     }
 
     private prcoessExecutionOfQry(request: IWebWorkerRequest) {
-        this._requestQueue.push(request);
+        this.requestQueue.push(request);
         this.executeQry();
         LogHelper.log("request pushed: " + request.name);
     }
 
     private executeQry() {
-        if (!this._isCodeExecuting && this._requestQueue.length > 0) {
-            if (this._isDbOpened) {
-                this.sendRequestToWorker(this._requestQueue[0]);
+        if (!this.isCodeExecuting && this.requestQueue.length > 0) {
+            if (this.isDbOpened) {
+                this.sendRequestToWorker(this.requestQueue[0]);
                 return;
             }
-            var allowed_query_index = -1;
-            this._requestQueue.every((item, index) => {
-                if (this._whiteListApi.indexOf(item.name) >= 0) {
-                    allowed_query_index = index;
+            let allowedQueryIndex = -1;
+            this.requestQueue.every((item, index) => {
+                if (this.whiteListApi.indexOf(item.name) >= 0) {
+                    allowedQueryIndex = index;
                     return false;
                 }
                 return true;
             });
             // shift allowed query to zeroth index
-            if (allowed_query_index >= 0) {
-                this._requestQueue.splice(0, 0, this._requestQueue.splice(allowed_query_index, 1)[0]);
-                this.sendRequestToWorker(this._requestQueue[0]);
+            if (allowedQueryIndex >= 0) {
+                this.requestQueue.splice(0, 0, this.requestQueue.splice(allowedQueryIndex, 1)[0]);
+                this.sendRequestToWorker(this.requestQueue[0]);
             }
         }
     }
 
-    private sendRequestToWorker(firsrtRequest: IWebWorkerRequest) {
-        this._isCodeExecuting = true;
-        var request = {
-            name: firsrtRequest.name,
-            query: firsrtRequest.query
+    private sendRequestToWorker(firstRequest: IWebWorkerRequest) {
+        this.isCodeExecuting = true;
+        const request = {
+            name: firstRequest.name,
+            query: firstRequest.query
         } as IWebWorkerRequest;
-        LogHelper.log("request executing : " + firsrtRequest.name);
+        LogHelper.log("request executing : " + firstRequest.name);
         this._worker.postMessage(request);
     }
 }

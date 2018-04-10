@@ -66,5 +66,11 @@ export enum QUERY_OPTION {
     Or = "or",
     Count = "count",
     Skip = "skip",
-    Limit = "limit"
+    Limit = "limit",
+    And = "and"
+}
+
+export enum Idb_Mode {
+    ReadOnly = "readonly",
+    ReadWrite = "readwrite"
 }

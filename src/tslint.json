@@ -35,7 +35,7 @@
       "no-string-throw": true,
       "no-unused-expression": true,
       "no-var-keyword": true,
-      "object-literal-shorthand": true,
+      "object-literal-shorthand": false,
       "only-arrow-functions": [true],
       "prefer-const": true,
       "radix": true,
@@ -49,6 +49,7 @@
         "ban-keywords",
         "allow-leading-underscore",
         "allow-trailing-underscore"
-      ]
+      ],
+      "no-shadowed-variable":true
     }
   }

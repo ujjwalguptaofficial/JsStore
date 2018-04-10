@@ -6,58 +6,55 @@ export class Like extends In {
     _compValue;
     _compValueLength: number;
 
-    protected executeLikeLogic(column, value: string, symbol: OCCURENCE) {
+    protected executeLikeLogic_(column, value: string, symbol: OCCURENCE) {
         this._compValue = value.toLowerCase();
         this._compValueLength = this._compValue.length;
         this._compSymbol = symbol;
         this.cursorOpenRequest = this.objectStore.index(column).openCursor();
-        this.cursorOpenRequest.onerror = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
+        this.cursorOpenRequest.onerror = this.onCursorError;
         if (this.skipRecord && this.limitRecord) {
-            this.executeSkipAndLimit();
+            this.executeSkipAndLimit_();
         }
         else if (this.skipRecord) {
-            this.executeSkip();
+            this.executeSkip_();
         }
         else if (this.limitRecord) {
-            this.executeLimit();
+            this.executeLimit_();
         }
         else {
-            this.executeSimple();
+            this.executeSimple_();
         }
     }
 
-    private executeSkipAndLimit() {
-        var cursor: IDBCursorWithValue,
-            skip = this.skipRecord,
-            skipOrPush = function (value) {
-                if (skip === 0) {
-                    this._results.push(value);
-                }
-                else {
-                    --skip;
-                }
-            }.bind(this);
+    private executeSkipAndLimit_() {
+        let cursor: IDBCursorWithValue;
+        const skipOrPush = (value) => {
+            if (skip === 0) {
+                this.results.push(value);
+            }
+            else {
+                --skip;
+            }
+        };
+        let skip = this.skipRecord;
         if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
-                if (this._results.length !== this._limitRecord && cursor) {
+                if (this.results.length !== this.limitRecord && cursor) {
                     if (this.filterOnOccurence(cursor.key) &&
-                        this._whereChecker.check(cursor.value)) {
+                        this.whereCheckerInstance.check(cursor.value)) {
                         skipOrPush(cursor.value);
                     }
                     cursor.continue();
                 } else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
-            this.cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
-                if (this._results.length !== this._limitRecord && cursor) {
+                if (this.results.length !== this.limitRecord && cursor) {
                     if (this.filterOnOccurence(cursor.key)) {
                         skipOrPush(cursor.value);
                     }
@@ -65,37 +62,37 @@ export class Like extends In {
                 } else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     }
 
-    private executeSkip() {
-        var cursor: IDBCursorWithValue,
-            skip = this.skipRecord,
-            skipOrPush = function (value) {
-                if (skip === 0) {
-                    this._results.push(value);
-                }
-                else {
-                    --skip;
-                }
-            }.bind(this);
+    private executeSkip_() {
+        let cursor: IDBCursorWithValue,
+            skip = this.skipRecord;
+        const skipOrPush = (value) => {
+            if (skip === 0) {
+                this.results.push(value);
+            }
+            else {
+                --skip;
+            }
+        };
         if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key) &&
-                        this._whereChecker.check(cursor.value)) {
+                        this.whereCheckerInstance.check(cursor.value)) {
                         skipOrPush((cursor.value));
                     }
                     cursor.continue();
                 } else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
-            this.cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key)) {
@@ -105,69 +102,69 @@ export class Like extends In {
                 } else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     }
 
-    private executeLimit() {
-        var cursor: IDBCursorWithValue;
+    private executeLimit_() {
+        let cursor: IDBCursorWithValue;
         if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
-                if (this._results.length !== this._limitRecord && cursor) {
+                if (this.results.length !== this.limitRecord && cursor) {
                     if (this.filterOnOccurence(cursor.key) &&
-                        this._whereChecker.check(cursor.value)) {
-                        this._results.push(cursor.value);
+                        this.whereCheckerInstance.check(cursor.value)) {
+                        this.results.push(cursor.value);
                     }
                     cursor.continue();
                 } else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
-            this.cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
-                if (this._results.length !== this._limitRecord && cursor) {
+                if (this.results.length !== this.limitRecord && cursor) {
                     if (this.filterOnOccurence(cursor.key)) {
-                        this._results.push(cursor.value);
+                        this.results.push(cursor.value);
                     }
                     cursor.continue();
                 } else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     }
 
-    private executeSimple() {
-        var cursor: IDBCursorWithValue;
+    private executeSimple_() {
+        let cursor: IDBCursorWithValue;
         if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key) &&
-                        this._whereChecker.check(cursor.value)) {
-                        this._results.push(cursor.value);
+                        this.whereCheckerInstance.check(cursor.value)) {
+                        this.results.push(cursor.value);
                     }
                     cursor.continue();
                 } else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
-            this.cursorOpenRequest.onsuccess = function (e) {
+            this.cursorOpenRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key)) {
-                        this._results.push(cursor.value);
+                        this.results.push(cursor.value);
                     }
                     cursor.continue();
                 } else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     }
 }

@@ -120,34 +120,6 @@ export class BaseHelper {
         return objectStore.keyPath as string;
     }
 
-    protected sortNumberInAsc(values) {
-        values.sort((a, b) => {
-            return a - b;
-        });
-        return values;
-    }
-
-    protected sortNumberInDesc(values) {
-        values.sort((a, b) => {
-            return b - a;
-        });
-        return values;
-    }
-
-    protected sortAlphabetInAsc(values) {
-        values.sort((a, b) => {
-            return a.toLowerCase().localeCompare(b.toLowerCase());
-        });
-        return values;
-    }
-
-    protected sortAlphabetInDesc(values) {
-        values.sort((a, b) => {
-            return b.toLowerCase().localeCompare(a.toLowerCase());
-        });
-        return values;
-    }
-
     protected getAllCombinationOfWord(word: string, isArray?: boolean) {
         if (isArray) {
             let results = [];

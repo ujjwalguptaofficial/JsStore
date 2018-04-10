@@ -22,6 +22,12 @@ export class Base extends BaseHelper {
     cursorOpenRequest: IDBRequest;
     checkFlag = false;
 
+    protected onCursorError = (e) => {
+        this.errorOccured = true;
+        this.onErrorOccured(e);
+    }
+
+
     protected onErrorOccured(e, customError = false) {
         ++this.errorCount;
         if (this.errorCount === 1) {

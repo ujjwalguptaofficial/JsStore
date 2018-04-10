@@ -20,20 +20,20 @@ export class Instance extends Where {
                 if (this.query.where !== undefined) {
                     this.addGreatAndLessToNotOp();
                     if (this.query.where.Or || Array.isArray(this.query.where)) {
-                        var select_object = new Select.Instance(this.query as any,
+                        const selectInstance = new Select.Instance(this.query as any,
                             (results) => {
                                 this._resultCount = results.length;
                                 this.onTransactionCompleted();
                             }, this.onError);
-                        select_object.execute();
+                        selectInstance.execute();
                     }
                     else {
-                        this.initTransaction();
+                        this.initTransaction_();
                         this.goToWhereLogic();
                     }
                 }
                 else {
-                    this.initTransaction();
+                    this.initTransaction_();
                     this.executeWhereUndefinedLogic();
                 }
             }
@@ -50,20 +50,8 @@ export class Instance extends Where {
         }
     }
 
-    private initTransaction() {
-        IdbHelper.createTransaction([this.query.From], this.onTransactionCompleted.bind(this), 'readonly');
-        this.objectStore = IdbHelper.transaction.objectStore(this.query.From);
-    }
-
-    private onQueryFinished() {
-        if (this.isTransaction === true) {
-            this.onTransactionCompleted();
-        }
-    }
-
-    private onTransactionCompleted() {
-        if (this.errorOccured === false) {
-            this.onSuccess(this._resultCount);
-        }
+    private initTransaction_() {
+        this.createTransaction([this.query.From], this.onTransactionCompleted, 'readonly');
+        this.objectStore = this.transaction.objectStore(this.query.From);
     }
 }

@@ -1,16 +1,16 @@
-import { Like } from "./like_logic";
+import { Like } from "./like";
 
 export class Where extends Like {
     private executeWhereLogic(column, value, op) {
         value = op ? value[op] : value;
-        var cursor_request,
+        let cursorRequest,
             cursor: IDBCursorWithValue;
         if (this.checkFlag) {
-            cursor_request = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
-            cursor_request.onsuccess = function (e) {
+            cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
+            cursorRequest.onsuccess = (e) => {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this._whereChecker.check(cursor.value)) {
+                    if (this.whereCheckerInstance.check(cursor.value)) {
                         ++this._resultCount;
                     }
                     cursor.continue();
@@ -18,19 +18,19 @@ export class Where extends Like {
                 else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
             if (this.objectStore.count) {
-                cursor_request = this.objectStore.index(column).count(this.getKeyRange(value, op));
-                cursor_request.onsuccess = function () {
-                    this._resultCount = cursor_request.result;
+                cursorRequest = this.objectStore.index(column).count(this.getKeyRange(value, op));
+                cursorRequest.onsuccess = () => {
+                    this._resultCount = cursorRequest.result;
                     this.onQueryFinished();
-                }.bind(this);
+                };
             }
             else {
-                cursor_request = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
-                cursor_request.onsuccess = function (e) {
+                cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
+                cursorRequest.onsuccess = (e) => {
                     cursor = e.target.result;
                     if (cursor) {
                         ++this._resultCount;
@@ -39,12 +39,12 @@ export class Where extends Like {
                     else {
                         this.onQueryFinished();
                     }
-                }.bind(this);
+                };
             }
         }
-        cursor_request.onerror = function (e) {
-            this._errorOccured = true;
+        cursorRequest.onerror = (e) => {
+            this.errorOccured = true;
             this.onErrorOccured(e);
-        }.bind(this);
+        };
     }
 }

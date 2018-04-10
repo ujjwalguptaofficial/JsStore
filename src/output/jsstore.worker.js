@@ -149,6 +149,10 @@ var Base = /** @class */ (function (_super) {
         _this.errorCount = 0;
         _this.rowAffected = 0;
         _this.checkFlag = false;
+        _this.onCursorError = function (e) {
+            _this.errorOccured = true;
+            _this.onErrorOccured(e);
+        };
         _this.goToWhereLogic = function () {
             var _this = this;
             var columnName = this.getObjectFirstKey(this.query.where);
@@ -480,24 +484,6 @@ var BaseHelper = /** @class */ (function () {
         var transaction = this.dbConnection.transaction([tableName], "readonly"), objectStore = transaction.objectStore(tableName);
         return objectStore.keyPath;
     };
-    BaseHelper.prototype.sortNumberInDesc = function (values) {
-        values.sort(function (a, b) {
-            return b - a;
-        });
-        return values;
-    };
-    BaseHelper.prototype.sortAlphabetInAsc = function (values) {
-        values.sort(function (a, b) {
-            return a.toLowerCase().localeCompare(b.toLowerCase());
-        });
-        return values;
-    };
-    BaseHelper.prototype.sortAlphabetInDesc = function (values) {
-        values.sort(function (a, b) {
-            return b.toLowerCase().localeCompare(a.toLowerCase());
-        });
-        return values;
-    };
     BaseHelper.prototype.getAllCombinationOfWord = function (word, isArray) {
         if (isArray) {
             var results = [];
@@ -547,7 +533,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./base */ "./codes/worker/business/base.ts");
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../enums */ "./codes/worker/enums.ts");
 /* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../log_helper */ "./codes/worker/log_helper.ts");
-/* harmony import */ var _idb_helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./idb_helper */ "./codes/worker/business/idb_helper.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -558,7 +543,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-
 
 
 
@@ -577,7 +561,8 @@ var BulkInsert = /** @class */ (function (_super) {
         }
         else if (this.isTableExist(this.query.into) === true) {
             try {
-                this.bulkinsertData();
+                this.bulkinsertData(this.query.values);
+                this.query.values = null;
             }
             catch (ex) {
                 this.onExceptionOccured(ex, { TableName: this.query.into });
@@ -588,15 +573,15 @@ var BulkInsert = /** @class */ (function (_super) {
             error.throw();
         }
     };
-    BulkInsert.prototype.bulkinsertData = function () {
+    BulkInsert.prototype.bulkinsertData = function (values) {
         var _this = this;
-        _idb_helper__WEBPACK_IMPORTED_MODULE_3__["IdbHelper"].createTransaction([this.query.into], function () {
+        this.createTransaction([this.query.into], function () {
             _this.onSuccess();
         });
-        this.objectStore = _idb_helper__WEBPACK_IMPORTED_MODULE_3__["IdbHelper"].transaction.objectStore(this.query.into);
-        this.query.values.forEach(function (value) {
-            this._objectStore.add(value);
-        }, this);
+        this.objectStore = this.transaction.objectStore(this.query.into);
+        for (var i = 0, length_1 = values.length; i < length_1; i++) {
+            this.objectStore.add(values[i]);
+        }
     };
     return BulkInsert;
 }(_base__WEBPACK_IMPORTED_MODULE_0__["Base"]));
@@ -696,6 +681,16 @@ var BaseCount = /** @class */ (function (_super) {
         _this.checkFlag = false;
         return _this;
     }
+    BaseCount.prototype.onQueryFinished = function () {
+        if (this.isTransaction === true) {
+            this.onTransactionCompleted();
+        }
+    };
+    BaseCount.prototype.onTransactionCompleted = function () {
+        if (this.errorOccured === false) {
+            this.onSuccess(this._resultCount);
+        }
+    };
     return BaseCount;
 }(_base__WEBPACK_IMPORTED_MODULE_0__["Base"]));
 
@@ -703,10 +698,10 @@ var BaseCount = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./codes/worker/business/count/in_logic.ts":
-/*!*************************************************!*\
-  !*** ./codes/worker/business/count/in_logic.ts ***!
-  \*************************************************/
+/***/ "./codes/worker/business/count/in.ts":
+/*!*******************************************!*\
+  !*** ./codes/worker/business/count/in.ts ***!
+  \*******************************************/
 /*! exports provided: In */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -731,61 +726,66 @@ var In = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     In.prototype.executeInLogic = function (column, values) {
-        var cursor, column_store = this.objectStore.index(column), cursor_request, onCursorError = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
+        var _this = this;
+        var cursor, cursorRequest;
+        var columnStore = this.objectStore.index(column);
         if (this.checkFlag) {
-            for (var i = 0, length = values.length; i < length; i++) {
-                if (!this.errorOccured) {
-                    cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
-                    cursor_request.onsuccess = function (e) {
-                        cursor = e.target.result;
-                        if (cursor) {
-                            if (this._whereChecker.check(cursor.value)) {
-                                ++this._resultCount;
-                            }
-                            cursor.continue();
+            var _loop_1 = function (i, length_1) {
+                cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+                cursorRequest.onsuccess = function (e) {
+                    cursor = e.target.result;
+                    if (cursor) {
+                        if (_this.whereCheckerInstance.check(cursor.value)) {
+                            ++_this._resultCount;
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
-                        }
-                    }.bind(this);
-                    cursor_request.onerror = onCursorError;
-                }
+                        cursor.continue();
+                    }
+                    else if (i + 1 === length_1) {
+                        _this.onQueryFinished();
+                    }
+                };
+                cursorRequest.onerror = this_1.onCursorError;
+            };
+            var this_1 = this;
+            for (var i = 0, length_1 = values.length; i < length_1; i++) {
+                _loop_1(i, length_1);
             }
         }
         else {
             if (this.objectStore.count) {
-                for (var i = 0, length = values.length; i < length; i++) {
-                    if (!this.errorOccured) {
-                        cursor_request = column_store.count(IDBKeyRange.only(values[i]));
-                        cursor_request.onsuccess = function (e) {
-                            this._resultCount += e.target.result;
-                            if (i + 1 === length) {
-                                this.onQueryFinished();
-                            }
-                        }.bind(this);
-                        cursor_request.onerror = onCursorError;
-                    }
+                var _loop_2 = function (i, length_2) {
+                    cursorRequest = columnStore.count(IDBKeyRange.only(values[i]));
+                    cursorRequest.onsuccess = function (e) {
+                        _this._resultCount += e.target.result;
+                        if (i + 1 === length_2) {
+                            _this.onQueryFinished();
+                        }
+                    };
+                    cursorRequest.onerror = this_2.onCursorError;
+                };
+                var this_2 = this;
+                for (var i = 0, length_2 = values.length; i < length_2; i++) {
+                    _loop_2(i, length_2);
                 }
             }
             else {
-                for (var i = 0, length = values.length; i < length; i++) {
-                    if (!this.errorOccured) {
-                        cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
-                        cursor_request.onsuccess = function (e) {
-                            cursor = e.target.result;
-                            if (cursor) {
-                                ++this._resultCount;
-                                cursor.continue();
-                            }
-                            else if (i + 1 === length) {
-                                this.onQueryFinished();
-                            }
-                        }.bind(this);
-                        cursor_request.onerror = onCursorError;
-                    }
+                var _loop_3 = function (i, length_3) {
+                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+                    cursorRequest.onsuccess = function (e) {
+                        cursor = e.target.result;
+                        if (cursor) {
+                            ++_this._resultCount;
+                            cursor.continue();
+                        }
+                        else if (i + 1 === length_3) {
+                            _this.onQueryFinished();
+                        }
+                    };
+                    cursorRequest.onerror = this_3.onCursorError;
+                };
+                var this_3 = this;
+                for (var i = 0, length_3 = values.length; i < length_3; i++) {
+                    _loop_3(i, length_3);
                 }
             }
         }
@@ -828,7 +828,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _select_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../select/index */ "./codes/worker/business/select/index.ts");
 /* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../log_helper */ "./codes/worker/log_helper.ts");
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../enums */ "./codes/worker/enums.ts");
-/* harmony import */ var _idb_helper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../idb_helper */ "./codes/worker/business/idb_helper.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -839,7 +838,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-
 
 
 
@@ -860,19 +858,19 @@ var Instance = /** @class */ (function (_super) {
                 if (this.query.where !== undefined) {
                     this.addGreatAndLessToNotOp();
                     if (this.query.where.Or || Array.isArray(this.query.where)) {
-                        var select_object = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](this.query, function (results) {
+                        var selectInstance = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](this.query, function (results) {
                             _this._resultCount = results.length;
                             _this.onTransactionCompleted();
                         }, this.onError);
-                        select_object.execute();
+                        selectInstance.execute();
                     }
                     else {
-                        this.initTransaction();
+                        this.initTransaction_();
                         this.goToWhereLogic();
                     }
                 }
                 else {
-                    this.initTransaction();
+                    this.initTransaction_();
                     this.executeWhereUndefinedLogic();
                 }
             }
@@ -885,19 +883,9 @@ var Instance = /** @class */ (function (_super) {
             this.onErrorOccured(new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].TableNotExist, { TableName: this.query.From }), true);
         }
     };
-    Instance.prototype.initTransaction = function () {
-        _idb_helper__WEBPACK_IMPORTED_MODULE_4__["IdbHelper"].createTransaction([this.query.From], this.onTransactionCompleted.bind(this), 'readonly');
-        this.objectStore = _idb_helper__WEBPACK_IMPORTED_MODULE_4__["IdbHelper"].transaction.objectStore(this.query.From);
-    };
-    Instance.prototype.onQueryFinished = function () {
-        if (this.isTransaction === true) {
-            this.onTransactionCompleted();
-        }
-    };
-    Instance.prototype.onTransactionCompleted = function () {
-        if (this.errorOccured === false) {
-            this.onSuccess(this._resultCount);
-        }
+    Instance.prototype.initTransaction_ = function () {
+        this.createTransaction([this.query.From], this.onTransactionCompleted, 'readonly');
+        this.objectStore = this.transaction.objectStore(this.query.From);
     };
     return Instance;
 }(_where__WEBPACK_IMPORTED_MODULE_0__["Where"]));
@@ -906,17 +894,17 @@ var Instance = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./codes/worker/business/count/like_logic.ts":
-/*!***************************************************!*\
-  !*** ./codes/worker/business/count/like_logic.ts ***!
-  \***************************************************/
+/***/ "./codes/worker/business/count/like.ts":
+/*!*********************************************!*\
+  !*** ./codes/worker/business/count/like.ts ***!
+  \*********************************************/
 /*! exports provided: Like */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Like", function() { return Like; });
-/* harmony import */ var _in_logic__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./in_logic */ "./codes/worker/business/count/in_logic.ts");
+/* harmony import */ var _in__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./in */ "./codes/worker/business/count/in.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -934,47 +922,45 @@ var Like = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     Like.prototype.executeLikeLogic = function (column, value, symbol) {
+        var _this = this;
         var cursor;
         this._compValue = value.toLowerCase();
         this._compValueLength = this._compValue.length;
         this._compSymbol = symbol;
-        var cursor_request = this.objectStore.index(column).openCursor();
-        cursor_request.onerror = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
+        var cursorRequest = this.objectStore.index(column).openCursor();
+        cursorRequest.onerror = this.onCursorError;
         if (this.checkFlag) {
-            cursor_request.onsuccess = function (e) {
+            cursorRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this.filterOnOccurence(cursor.key) &&
-                        this._whereChecker.check(cursor.value)) {
-                        ++this._resultCount;
+                    if (_this.filterOnOccurence(cursor.key) &&
+                        _this.whereCheckerInstance.check(cursor.value)) {
+                        ++_this._resultCount;
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
-            cursor_request.onsuccess = function (e) {
+            cursorRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this.filterOnOccurence(cursor.key)) {
-                        ++this._resultCount;
+                    if (_this.filterOnOccurence(cursor.key)) {
+                        ++_this._resultCount;
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     };
     return Like;
-}(_in_logic__WEBPACK_IMPORTED_MODULE_0__["In"]));
+}(_in__WEBPACK_IMPORTED_MODULE_0__["In"]));
 
 
 
@@ -1008,33 +994,29 @@ var NotWhere = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     NotWhere.prototype.executeWhereUndefinedLogic = function () {
+        var _this = this;
         if (this.objectStore.count) {
-            var count_request = this.objectStore.count();
-            count_request.onsuccess = function () {
-                this._resultCount = count_request.result;
-                this.onQueryFinished();
-            }.bind(this);
-            count_request.onerror = function (e) {
-                this._errorOccured = true;
-                this.onErrorOccured(e);
-            }.bind(this);
+            var countRequest_1 = this.objectStore.count();
+            countRequest_1.onsuccess = function () {
+                _this._resultCount = countRequest_1.result;
+                _this.onQueryFinished();
+            };
+            countRequest_1.onerror = this.onCursorError;
         }
         else {
-            var cursor, cursor_request = this.objectStore.openCursor();
-            cursor_request.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
+            var cursor_1;
+            var cursorRequest = this.objectStore.openCursor();
+            cursorRequest.onsuccess = function (e) {
+                cursor_1 = e.target.result;
+                if (cursor_1) {
                     ++this._resultCount;
-                    cursor.continue();
+                    cursor_1.continue();
                 }
                 else {
                     this.onQueryFinished();
                 }
             }.bind(this);
-            cursor_request.onerror = function (e) {
-                this._errorOccured = true;
-                this.onErrorOccured(e);
-            }.bind(this);
+            cursorRequest.onerror = this.onCursorError;
         }
     };
     return NotWhere;
@@ -1054,7 +1036,7 @@ var NotWhere = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Where", function() { return Where; });
-/* harmony import */ var _like_logic__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./like_logic */ "./codes/worker/business/count/like_logic.ts");
+/* harmony import */ var _like__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./like */ "./codes/worker/business/count/like.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1072,52 +1054,53 @@ var Where = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     Where.prototype.executeWhereLogic = function (column, value, op) {
+        var _this = this;
         value = op ? value[op] : value;
-        var cursor_request, cursor;
+        var cursorRequest, cursor;
         if (this.checkFlag) {
-            cursor_request = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
-            cursor_request.onsuccess = function (e) {
+            cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
+            cursorRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this._whereChecker.check(cursor.value)) {
-                        ++this._resultCount;
+                    if (_this.whereCheckerInstance.check(cursor.value)) {
+                        ++_this._resultCount;
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
             if (this.objectStore.count) {
-                cursor_request = this.objectStore.index(column).count(this.getKeyRange(value, op));
-                cursor_request.onsuccess = function () {
-                    this._resultCount = cursor_request.result;
-                    this.onQueryFinished();
-                }.bind(this);
+                cursorRequest = this.objectStore.index(column).count(this.getKeyRange(value, op));
+                cursorRequest.onsuccess = function () {
+                    _this._resultCount = cursorRequest.result;
+                    _this.onQueryFinished();
+                };
             }
             else {
-                cursor_request = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
-                cursor_request.onsuccess = function (e) {
+                cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
+                cursorRequest.onsuccess = function (e) {
                     cursor = e.target.result;
                     if (cursor) {
-                        ++this._resultCount;
+                        ++_this._resultCount;
                         cursor.continue();
                     }
                     else {
-                        this.onQueryFinished();
+                        _this.onQueryFinished();
                     }
-                }.bind(this);
+                };
             }
         }
-        cursor_request.onerror = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
+        cursorRequest.onerror = function (e) {
+            _this.errorOccured = true;
+            _this.onErrorOccured(e);
+        };
     };
     return Where;
-}(_like_logic__WEBPACK_IMPORTED_MODULE_0__["Like"]));
+}(_like__WEBPACK_IMPORTED_MODULE_0__["Like"]));
 
 
 
@@ -1367,9 +1350,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IdbHelper", function() { return IdbHelper; });
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../enums */ "./codes/worker/enums.ts");
 /* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../keystore/index */ "./codes/worker/keystore/index.ts");
-/* harmony import */ var _model_database__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../model/database */ "./codes/worker/model/database.ts");
-/* harmony import */ var _drop_db__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./drop_db */ "./codes/worker/business/drop_db.ts");
-
+/* harmony import */ var _drop_db__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./drop_db */ "./codes/worker/business/drop_db.ts");
 
 
 
@@ -1380,7 +1361,7 @@ var IdbHelper = /** @class */ (function () {
         if (this.dbStatus.conStatus === _enums__WEBPACK_IMPORTED_MODULE_0__["CONNECTION_STATUS"].Connected) {
             this.isDbDeletedByBrowser = true;
             if (deleteMetaData === true) {
-                var dropDbObject = new _drop_db__WEBPACK_IMPORTED_MODULE_3__["DropDb"](this.onDbDroppedByBrowser, null);
+                var dropDbObject = new _drop_db__WEBPACK_IMPORTED_MODULE_2__["DropDb"](this.onDbDroppedByBrowser, null);
                 dropDbObject.deleteMetaData();
             }
         }
@@ -1388,7 +1369,7 @@ var IdbHelper = /** @class */ (function () {
     IdbHelper.createTransaction = function (tableNames, callBack, mode) {
         var _this = this;
         if (this.transaction === null) {
-            mode = mode ? mode : "readwrite";
+            mode = mode ? mode : _enums__WEBPACK_IMPORTED_MODULE_0__["Idb_Mode"].ReadWrite;
             this.transaction = this.dbConnection.transaction(tableNames, mode);
             this.transaction.oncomplete = function () {
                 _this.transaction = null;
@@ -1427,19 +1408,7 @@ var IdbHelper = /** @class */ (function () {
     };
     IdbHelper.getDbSchema = function (dbName, callback) {
         _keystore_index__WEBPACK_IMPORTED_MODULE_1__["get"]("JsStore_" + dbName + "_Schema", function (result) {
-            if (result) {
-                if (result._name) {
-                    callback(result);
-                }
-                else {
-                    var db_schema = new _model_database__WEBPACK_IMPORTED_MODULE_2__["DataBase"](result);
-                    _keystore_index__WEBPACK_IMPORTED_MODULE_1__["set"]("JsStore_" + dbName + "_Schema", db_schema);
-                    callback(db_schema);
-                }
-            }
-            else {
-                callback(result);
-            }
+            callback(result);
         });
     };
     IdbHelper.transaction = null;
@@ -1486,7 +1455,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../enums */ "./codes/worker/enums.ts");
 /* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../log_helper */ "./codes/worker/log_helper.ts");
 /* harmony import */ var _values_checker__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./values_checker */ "./codes/worker/business/insert/values_checker.ts");
-/* harmony import */ var _idb_helper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../idb_helper */ "./codes/worker/business/idb_helper.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1497,7 +1465,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-
 
 
 
@@ -1558,40 +1525,41 @@ var Instance = /** @class */ (function (_super) {
         }
     };
     Instance.prototype.insertData = function (values) {
-        var value_index = 0, insertDataIntoTable;
+        var _this = this;
+        var valueIndex = 0, insertDataIntoTable;
         if (this.query.return) {
             insertDataIntoTable = function (value) {
                 if (value) {
-                    var add_result = object_store.add(value);
-                    add_result.onerror = this.onErrorOccured.bind(this);
-                    add_result.onsuccess = function (e) {
-                        this._valuesAffected.push(value);
-                        insertDataIntoTable.call(this, values[value_index++]);
-                    }.bind(this);
+                    var addResult = objectStore.add(value);
+                    addResult.onerror = _this.onErrorOccured.bind(_this);
+                    addResult.onsuccess = function (e) {
+                        _this._valuesAffected.push(value);
+                        insertDataIntoTable.call(_this, values[valueIndex++]);
+                    };
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
             };
         }
         else {
             insertDataIntoTable = function (value) {
                 if (value) {
-                    var add_result = object_store.add(value);
-                    add_result.onerror = this.onErrorOccured.bind(this);
-                    add_result.onsuccess = function (e) {
-                        ++this._rowAffected;
-                        insertDataIntoTable.call(this, values[value_index++]);
-                    }.bind(this);
+                    var addResult = objectStore.add(value);
+                    addResult.onerror = _this.onErrorOccured.bind(_this);
+                    addResult.onsuccess = function (e) {
+                        ++_this.rowAffected;
+                        insertDataIntoTable.call(_this, values[valueIndex++]);
+                    };
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
             };
         }
-        _idb_helper__WEBPACK_IMPORTED_MODULE_4__["IdbHelper"].createTransaction([this.query.into], this.onTransactionCompleted.bind(this));
-        var object_store = _idb_helper__WEBPACK_IMPORTED_MODULE_4__["IdbHelper"].transaction.objectStore(this.query.into);
-        insertDataIntoTable.call(this, values[value_index++]);
+        this.createTransaction([this.query.into], this.onTransactionCompleted);
+        var objectStore = this.transaction.objectStore(this.query.into);
+        insertDataIntoTable(values[valueIndex++]);
     };
     return Instance;
 }(_base__WEBPACK_IMPORTED_MODULE_0__["Base"]));
@@ -1922,50 +1890,56 @@ var In = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     In.prototype.executeInLogic = function (column, values) {
-        var cursor, cursor_request, onCursorError = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
+        var _this = this;
+        var cursor, cursorRequest;
         if (this.checkFlag) {
-            for (var i = 0, length = values.length; i < length; i++) {
-                if (!this.errorOccured) {
-                    cursor_request = this.objectStore.index(column).
+            var _loop_1 = function (i, length_1) {
+                if (!this_1.errorOccured) {
+                    cursorRequest = this_1.objectStore.index(column).
                         openCursor(IDBKeyRange.only(values[i]));
-                    cursor_request.onsuccess = function (e) {
+                    cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
                         if (cursor) {
-                            if (this._whereChecker.check(cursor.value)) {
+                            if (_this.whereCheckerInstance.check(cursor.value)) {
                                 cursor.delete();
-                                ++this._rowAffected;
+                                ++_this.rowAffected;
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else if (i + 1 === length_1) {
+                            _this.onQueryFinished();
                         }
-                    }.bind(this);
-                    cursor_request.onerror = onCursorError;
+                    };
+                    cursorRequest.onerror = this_1.onCursorError;
                 }
+            };
+            var this_1 = this;
+            for (var i = 0, length_1 = values.length; i < length_1; i++) {
+                _loop_1(i, length_1);
             }
         }
         else {
-            for (var i = 0, length = values.length; i < length; i++) {
-                if (!this.errorOccured) {
-                    cursor_request = this.objectStore.index(column).
+            var _loop_2 = function (i, length_2) {
+                if (!this_2.errorOccured) {
+                    cursorRequest = this_2.objectStore.index(column).
                         openCursor(IDBKeyRange.only(values[i]));
-                    cursor_request.onsuccess = function (e) {
+                    cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
                         if (cursor) {
                             cursor.delete();
-                            ++this._rowAffected;
+                            ++_this.rowAffected;
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else if (i + 1 === length_2) {
+                            _this.onQueryFinished();
                         }
-                    }.bind(this);
-                    cursor_request.onerror = onCursorError;
+                    };
+                    cursorRequest.onerror = this_2.onCursorError;
                 }
+            };
+            var this_2 = this;
+            for (var i = 0, length_2 = values.length; i < length_2; i++) {
+                _loop_2(i, length_2);
             }
         }
     };
@@ -2053,18 +2027,19 @@ var Instance = /** @class */ (function (_super) {
         }
     };
     Instance.prototype.processWhereArrayQry = function () {
+        var _this = this;
         var selectObject = new _select_index__WEBPACK_IMPORTED_MODULE_2__["Instance"](this.query, function (results) {
             var keyList = [];
-            var pkey = this.getPrimaryKey(this._query.from);
+            var pkey = _this.getPrimaryKey(_this.query.from);
             results.forEach(function (item) {
                 keyList.push(item[pkey]);
             });
             results = null;
-            this._query.where = {};
-            this._query.where[pkey] = {};
-            this._query.where[pkey][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In] = keyList;
-            this.processWhere(false);
-        }.bind(this), this.onError);
+            _this.query.where = {};
+            _this.query.where[pkey] = {};
+            _this.query.where[pkey][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In] = keyList;
+            _this.processWhere_();
+        }, this.onError);
         selectObject.execute();
     };
     Instance.prototype.processWhere_ = function () {
@@ -2083,14 +2058,14 @@ var Instance = /** @class */ (function (_super) {
         }
     };
     Instance.prototype.onQueryFinished = function () {
-        if (this._isOr === true) {
-            this.orQuerySuccess();
+        if (this.isOr === true) {
+            this.orQuerySuccess_();
         }
         else if (this.isTransaction === true) {
             this.onTransactionCompleted_();
         }
     };
-    Instance.prototype.orQuerySuccess = function () {
+    Instance.prototype.orQuerySuccess_ = function () {
         var key = this.getObjectFirstKey(this._orInfo.OrQuery);
         if (key != null) {
             var where = {};
@@ -2100,11 +2075,11 @@ var Instance = /** @class */ (function (_super) {
             this.goToWhereLogic();
         }
         else {
-            this._isOr = true;
+            this.isOr = true;
         }
     };
     Instance.prototype.processOrLogic = function () {
-        this._isOr = true;
+        this.isOr = true;
         this._orInfo = {
             OrQuery: this.query.where.Or
         };
@@ -2146,45 +2121,46 @@ var Like = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     Like.prototype.executeLikeLogic = function (column, value, symbol) {
+        var _this = this;
         var cursor;
         this._compValue = value.toLowerCase();
         this._compValueLength = this._compValue.length;
         this._compSymbol = symbol;
-        var cursor_request = this.objectStore.index(column).openCursor();
-        cursor_request.onerror = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
+        var cursorRequest = this.objectStore.index(column).openCursor();
+        cursorRequest.onerror = function (e) {
+            _this.errorOccured = true;
+            _this.onErrorOccured(e);
+        };
         if (this.checkFlag) {
-            cursor_request.onsuccess = function (e) {
+            cursorRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this.filterOnOccurence(cursor.key) &&
-                        this._whereChecker.check(cursor.value)) {
+                    if (_this.filterOnOccurence(cursor.key) &&
+                        _this.whereCheckerInstance.check(cursor.value)) {
                         cursor.delete();
-                        ++this._rowAffected;
+                        ++_this.rowAffected;
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
-            cursor_request.onsuccess = function (e) {
+            cursorRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this.filterOnOccurence(cursor.key)) {
+                    if (_this.filterOnOccurence(cursor.key)) {
                         cursor.delete();
-                        ++this._rowAffected;
+                        ++_this.rowAffected;
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     };
     return Like;
@@ -2223,8 +2199,9 @@ var NotWhere = /** @class */ (function (_super) {
     }
     NotWhere.prototype.executeWhereUndefinedLogic = function () {
         var _this = this;
-        var cursor, cursor_request = this.objectStore.openCursor();
-        cursor_request.onsuccess = function (e) {
+        var cursor;
+        var cursorRequest = this.objectStore.openCursor();
+        cursorRequest.onsuccess = function (e) {
             cursor = e.target.result;
             if (cursor) {
                 cursor.delete();
@@ -2235,7 +2212,7 @@ var NotWhere = /** @class */ (function (_super) {
                 _this.onQueryFinished();
             }
         };
-        cursor_request.onerror = function (e) {
+        cursorRequest.onerror = function (e) {
             _this.errorOccured = true;
             _this.onErrorOccured(e);
         };
@@ -2275,41 +2252,42 @@ var Where = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     Where.prototype.executeWhereLogic = function (column, value, op) {
-        var cursor, cursor_request;
+        var _this = this;
+        var cursor, cursorRequest;
         value = op ? value[op] : value;
-        cursor_request = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
+        cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
         if (this.checkFlag) {
-            cursor_request.onsuccess = function (e) {
+            cursorRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this._whereChecker.check(cursor.value)) {
+                    if (_this.whereCheckerInstance.check(cursor.value)) {
                         cursor.delete();
-                        ++this._rowAffected;
+                        ++_this.rowAffected;
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
-            cursor_request.onsuccess = function (e) {
+            cursorRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
                     cursor.delete();
-                    ++this._rowAffected;
+                    ++_this.rowAffected;
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
-        cursor_request.onerror = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
+        cursorRequest.onerror = function (e) {
+            _this.errorOccured = true;
+            _this.onErrorOccured(e);
+        };
     };
     return Where;
 }(_like__WEBPACK_IMPORTED_MODULE_0__["Like"]));
@@ -2706,7 +2684,8 @@ var Helper = /** @class */ (function (_super) {
         }
     };
     Helper.prototype.processAggregateQry = function () {
-        var datas = this.results, results = {}, column_to_aggregate;
+        var datas = this.results, results = {};
+        var columnToAggregate;
         // free results memory
         this.results = undefined;
         for (var prop in this.query.Aggregate) {
@@ -2715,18 +2694,18 @@ var Helper = /** @class */ (function (_super) {
                     var getCount = function () {
                         var result = 0;
                         for (var i in datas) {
-                            result += datas[i][column_to_aggregate] ? 1 : 0;
+                            result += datas[i][columnToAggregate] ? 1 : 0;
                         }
                         return result;
                     };
-                    if (typeof this.query.Aggregate[prop] === 'string') {
-                        column_to_aggregate = this.query.Aggregate[prop];
-                        results["count(" + column_to_aggregate + ")"] = getCount();
+                    if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                        columnToAggregate = this.query.Aggregate[prop];
+                        results["count(" + columnToAggregate + ")"] = getCount();
                     }
-                    else if (Array.isArray(this.query.Aggregate[prop])) {
+                    else if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
                         for (var key in this.query.Aggregate[prop]) {
-                            column_to_aggregate = this.query.Aggregate[prop][key];
-                            results["count(" + column_to_aggregate + ")"] = getCount();
+                            columnToAggregate = this.query.Aggregate[prop][key];
+                            results["count(" + columnToAggregate + ")"] = getCount();
                         }
                     }
                     break;
@@ -2734,19 +2713,19 @@ var Helper = /** @class */ (function (_super) {
                     var getMax = function () {
                         var result = 0;
                         for (var i in datas) {
-                            result = result > datas[i][column_to_aggregate] ?
-                                result : datas[i][column_to_aggregate];
+                            result = result > datas[i][columnToAggregate] ?
+                                result : datas[i][columnToAggregate];
                         }
                         return result;
                     };
-                    if (typeof this.query.Aggregate[prop] === 'string') {
-                        column_to_aggregate = this.query.Aggregate[prop];
-                        results["max(" + column_to_aggregate + ")"] = getMax();
+                    if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                        columnToAggregate = this.query.Aggregate[prop];
+                        results["max(" + columnToAggregate + ")"] = getMax();
                     }
-                    else if (Array.isArray(this.query.Aggregate[prop])) {
+                    else if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
                         for (var key in this.query.Aggregate[prop]) {
-                            column_to_aggregate = this.query.Aggregate[prop][key];
-                            results["max(" + column_to_aggregate + ")"] = getMax();
+                            columnToAggregate = this.query.Aggregate[prop][key];
+                            results["max(" + columnToAggregate + ")"] = getMax();
                         }
                     }
                     break;
@@ -2754,20 +2733,20 @@ var Helper = /** @class */ (function (_super) {
                     var getMin = function () {
                         var result = Infinity, value = Infinity;
                         for (var i in datas) {
-                            value = datas[i][column_to_aggregate] ?
-                                datas[i][column_to_aggregate] : Infinity;
+                            value = datas[i][columnToAggregate] ?
+                                datas[i][columnToAggregate] : Infinity;
                             result = result < value ? result : value;
                         }
                         return result;
                     };
-                    if (typeof this.query.Aggregate[prop] === 'string') {
-                        column_to_aggregate = this.query.Aggregate[prop];
-                        results["min(" + column_to_aggregate + ")"] = getMin();
+                    if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                        columnToAggregate = this.query.Aggregate[prop];
+                        results["min(" + columnToAggregate + ")"] = getMin();
                     }
-                    else if (Array.isArray(this.query.Aggregate[prop])) {
+                    else if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
                         for (var key in this.query.Aggregate[prop]) {
-                            column_to_aggregate = this.query.Aggregate[prop][key];
-                            results["min(" + column_to_aggregate + ")"] = getMin();
+                            columnToAggregate = this.query.Aggregate[prop][key];
+                            results["min(" + columnToAggregate + ")"] = getMin();
                         }
                     }
                     break;
@@ -2775,18 +2754,18 @@ var Helper = /** @class */ (function (_super) {
                     var getSum = function () {
                         var result = 0;
                         for (var i in datas) {
-                            result += datas[i][column_to_aggregate];
+                            result += datas[i][columnToAggregate];
                         }
                         return result;
                     };
-                    if (typeof this.query.Aggregate[prop] === 'string') {
-                        column_to_aggregate = this.query.Aggregate[prop];
-                        results["sum(" + column_to_aggregate + ")"] = getSum();
+                    if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                        columnToAggregate = this.query.Aggregate[prop];
+                        results["sum(" + columnToAggregate + ")"] = getSum();
                     }
-                    else if (Array.isArray(this.query.Aggregate[prop])) {
+                    else if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
                         for (var key in this.query.Aggregate[prop]) {
-                            column_to_aggregate = this.query.Aggregate[prop][key];
-                            results["sum(" + column_to_aggregate + ")"] = getSum();
+                            columnToAggregate = this.query.Aggregate[prop][key];
+                            results["sum(" + columnToAggregate + ")"] = getSum();
                         }
                     }
                     break;
@@ -2794,18 +2773,18 @@ var Helper = /** @class */ (function (_super) {
                     var getAvg = function () {
                         var result = 0;
                         for (var i in datas) {
-                            result += datas[i][column_to_aggregate];
+                            result += datas[i][columnToAggregate];
                         }
                         return result / datas.length;
                     };
-                    if (typeof this.query.Aggregate[prop] === 'string') {
-                        column_to_aggregate = this.query.Aggregate[prop];
-                        results["avg(" + column_to_aggregate + ")"] = getAvg();
+                    if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                        columnToAggregate = this.query.Aggregate[prop];
+                        results["avg(" + columnToAggregate + ")"] = getAvg();
                     }
-                    else if (Array.isArray(this.query.Aggregate[prop])) {
+                    else if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
                         for (var key in this.query.Aggregate[prop]) {
-                            column_to_aggregate = this.query.Aggregate[prop][key];
-                            results["avg(" + column_to_aggregate + ")"] = getAvg();
+                            columnToAggregate = this.query.Aggregate[prop][key];
+                            results["avg(" + columnToAggregate + ")"] = getAvg();
                         }
                     }
                     break;
@@ -2853,205 +2832,250 @@ var In = /** @class */ (function (_super) {
     }
     In.prototype.executeInLogic = function (column, values) {
         if (this.skipRecord && this.limitRecord) {
-            this.executeSkipAndLimitForIn(column, values);
+            this.executeSkipAndLimitForIn_(column, values);
         }
         else if (this.skipRecord) {
-            this.executeSkipForIn(column, values);
+            this.executeSkipForIn_(column, values);
         }
         else if (this.limitRecord) {
-            this.executeLimitForIn(column, values);
+            this.executeLimitForIn_(column, values);
         }
         else {
-            this.executeSimpleForIn(column, values);
+            this.executeSimpleForIn_(column, values);
         }
     };
-    In.prototype.executeSkipAndLimitForIn = function (column, values) {
-        var cursor, skip = this.skipRecord, column_store = this.objectStore.index(column), cursor_request, skipOrPush = function (value) {
+    In.prototype.executeSkipAndLimitForIn_ = function (column, values) {
+        var _this = this;
+        var cursor, cursorRequest, skip = this.skipRecord;
+        var columnStore = this.objectStore.index(column);
+        var skipOrPush = function (value) {
             if (skip === 0) {
-                this._results.push(value);
+                _this.results.push(value);
             }
             else {
                 --skip;
             }
-        }.bind(this), onCursorError = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
+        };
+        var onCursorError = function (e) {
+            _this.errorOccured = true;
+            _this.onErrorOccured(e);
+        };
         if (this.checkFlag) {
-            for (var i = 0, length = values.length; i < length; i++) {
-                if (!this.errorOccured) {
-                    cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
-                    cursor_request.onsuccess = function (e) {
+            var _loop_1 = function (i, length_1) {
+                if (!this_1.errorOccured) {
+                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+                    cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
-                        if (this._results.length !== this._limitRecord && cursor) {
-                            if (this._whereChecker.check(cursor.value)) {
+                        if (_this.results.length !== _this.limitRecord && cursor) {
+                            if (_this.whereCheckerInstance.check(cursor.value)) {
                                 skipOrPush(cursor.value);
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else if (i + 1 === length_1) {
+                            _this.onQueryFinished();
                         }
-                    }.bind(this);
-                    cursor_request.onerror = onCursorError;
+                    };
+                    cursorRequest.onerror = onCursorError;
                 }
+            };
+            var this_1 = this;
+            for (var i = 0, length_1 = values.length; i < length_1; i++) {
+                _loop_1(i, length_1);
             }
         }
         else {
-            for (var i = 0, length = values.length; i < length; i++) {
-                if (!this.errorOccured) {
-                    cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
-                    cursor_request.onsuccess = function (e) {
+            var _loop_2 = function (i, length_2) {
+                if (!this_2.errorOccured) {
+                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+                    cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
-                        if (this._results.length !== this._limitRecord && cursor) {
+                        if (_this.results.length !== _this.limitRecord && cursor) {
                             skipOrPush(cursor.value);
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else if (i + 1 === length_2) {
+                            _this.onQueryFinished();
                         }
-                    }.bind(this);
-                    cursor_request.onerror = onCursorError;
+                    };
+                    cursorRequest.onerror = onCursorError;
                 }
+            };
+            var this_2 = this;
+            for (var i = 0, length_2 = values.length; i < length_2; i++) {
+                _loop_2(i, length_2);
             }
         }
     };
-    In.prototype.executeSkipForIn = function (column, values) {
-        var cursor, skip = this.skipRecord, cursor_request, column_store = this.objectStore.index(column), skipOrPush = function (value) {
+    In.prototype.executeSkipForIn_ = function (column, values) {
+        var _this = this;
+        var cursor, skip = this.skipRecord, cursorRequest;
+        var columnStore = this.objectStore.index(column);
+        var skipOrPush = function (value) {
             if (skip === 0) {
-                this._results.push(value);
+                _this.results.push(value);
             }
             else {
                 --skip;
             }
-        }.bind(this), onCursorError = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
+        };
+        var onCursorError = function (e) {
+            _this.errorOccured = true;
+            _this.onErrorOccured(e);
+        };
         if (this.checkFlag) {
-            for (var i = 0, length = values.length; i < length; i++) {
-                if (!this.errorOccured) {
-                    cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
-                    cursor_request.onsuccess = function (e) {
+            var _loop_3 = function (i, length_3) {
+                if (!this_3.errorOccured) {
+                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+                    cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
                         if (cursor) {
-                            if (this._whereChecker.check(cursor.value)) {
+                            if (_this.whereCheckerInstance.check(cursor.value)) {
                                 skipOrPush((cursor.value));
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else if (i + 1 === length_3) {
+                            _this.onQueryFinished();
                         }
-                    }.bind(this);
-                    cursor_request.onerror = onCursorError;
+                    };
+                    cursorRequest.onerror = onCursorError;
                 }
+            };
+            var this_3 = this;
+            for (var i = 0, length_3 = values.length; i < length_3; i++) {
+                _loop_3(i, length_3);
             }
         }
         else {
-            for (var i = 0, length = values.length; i < length; i++) {
-                if (!this.errorOccured) {
-                    cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
-                    cursor_request.onsuccess = function (e) {
+            var _loop_4 = function (i, length_4) {
+                if (!this_4.errorOccured) {
+                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+                    cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
                         if (cursor) {
                             skipOrPush((cursor.value));
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else if (i + 1 === length_4) {
+                            _this.onQueryFinished();
                         }
-                    }.bind(this);
-                    cursor_request.onerror = onCursorError;
+                    };
+                    cursorRequest.onerror = onCursorError;
                 }
+            };
+            var this_4 = this;
+            for (var i = 0, length_4 = values.length; i < length_4; i++) {
+                _loop_4(i, length_4);
             }
         }
     };
-    In.prototype.executeLimitForIn = function (column, values) {
-        var cursor, cursor_request, column_store = this.objectStore.index(column), onCursorError = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
+    In.prototype.executeLimitForIn_ = function (column, values) {
+        var _this = this;
+        var cursor, cursorRequest;
+        var columnStore = this.objectStore.index(column);
+        var onCursorError = function (e) {
+            _this.errorOccured = true;
+            _this.onErrorOccured(e);
+        };
         if (this.checkFlag) {
-            for (var i = 0, length = values.length; i < length; i++) {
-                if (!this.errorOccured) {
-                    cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
-                    cursor_request.onsuccess = function (e) {
+            var _loop_5 = function (i, length_5) {
+                if (!this_5.errorOccured) {
+                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+                    cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
-                        if (cursor && this._results.length !== this._limitRecord) {
-                            if (this._whereChecker.check(cursor.value)) {
-                                this._results.push(cursor.value);
+                        if (cursor && _this.results.length !== _this.limitRecord) {
+                            if (_this.whereCheckerInstance.check(cursor.value)) {
+                                _this.results.push(cursor.value);
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else if (i + 1 === length_5) {
+                            _this.onQueryFinished();
                         }
-                    }.bind(this);
-                    cursor_request.onerror = onCursorError;
+                    };
+                    cursorRequest.onerror = onCursorError;
                 }
+            };
+            var this_5 = this;
+            for (var i = 0, length_5 = values.length; i < length_5; i++) {
+                _loop_5(i, length_5);
             }
         }
         else {
-            for (var i = 0, length = values.length; i < length; i++) {
-                if (!this.errorOccured) {
-                    cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
-                    cursor_request.onsuccess = function (e) {
+            var _loop_6 = function (i, length_6) {
+                if (!this_6.errorOccured) {
+                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+                    cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
-                        if (cursor && this._results.length !== this._limitRecord) {
-                            this._results.push(cursor.value);
+                        if (cursor && _this.results.length !== _this.limitRecord) {
+                            _this.results.push(cursor.value);
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else if (i + 1 === length_6) {
+                            _this.onQueryFinished();
                         }
-                    }.bind(this);
-                    cursor_request.onerror = onCursorError;
+                    };
+                    cursorRequest.onerror = onCursorError;
                 }
+            };
+            var this_6 = this;
+            for (var i = 0, length_6 = values.length; i < length_6; i++) {
+                _loop_6(i, length_6);
             }
         }
     };
-    In.prototype.executeSimpleForIn = function (column, values) {
-        var cursor, cursor_request, column_store = this.objectStore.index(column), onCursorError = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
+    In.prototype.executeSimpleForIn_ = function (column, values) {
+        var _this = this;
+        var cursor, cursorRequest;
+        var columnStore = this.objectStore.index(column), onCursorError = function (e) {
+            _this.errorOccured = true;
+            _this.onErrorOccured(e);
+        };
         if (this.checkFlag) {
-            for (var i = 0, length = values.length; i < length; i++) {
-                if (!this.errorOccured) {
-                    cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
-                    cursor_request.onsuccess = function (e) {
+            var _loop_7 = function (i, length_7) {
+                if (!this_7.errorOccured) {
+                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+                    cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
                         if (cursor) {
-                            if (this._whereChecker.check(cursor.value)) {
-                                this._results.push(cursor.value);
+                            if (_this.whereCheckerInstance.check(cursor.value)) {
+                                _this.results.push(cursor.value);
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else if (i + 1 === length_7) {
+                            _this.onQueryFinished();
                         }
-                    }.bind(this);
-                    cursor_request.onerror = onCursorError;
+                    };
+                    cursorRequest.onerror = onCursorError;
                 }
+            };
+            var this_7 = this;
+            for (var i = 0, length_7 = values.length; i < length_7; i++) {
+                _loop_7(i, length_7);
             }
         }
         else {
-            for (var i = 0, length = values.length; i < length; i++) {
-                if (!this.errorOccured) {
-                    cursor_request = column_store.openCursor(IDBKeyRange.only(values[i]));
-                    cursor_request.onsuccess = function (e) {
+            var _loop_8 = function (i, length_8) {
+                if (!this_8.errorOccured) {
+                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+                    cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
                         if (cursor) {
-                            this._results.push(cursor.value);
+                            _this.results.push(cursor.value);
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else if (i + 1 === length_8) {
+                            _this.onQueryFinished();
                         }
-                    }.bind(this);
-                    cursor_request.onerror = onCursorError;
+                    };
+                    cursorRequest.onerror = onCursorError;
                 }
+            };
+            var this_8 = this;
+            for (var i = 0, length_8 = values.length; i < length_8; i++) {
+                _loop_8(i, length_8);
             }
         }
     };
@@ -3128,16 +3152,16 @@ var Instance = /** @class */ (function (_super) {
             try {
                 if (this.query.where !== undefined) {
                     this.addGreatAndLessToNotOp();
-                    this.initTransaction();
+                    this.initTransaction_();
                     if (Array.isArray(this.query.where)) {
                         this.processWhereArrayQry();
                     }
                     else {
-                        this.processWhere();
+                        this.processWhere_();
                     }
                 }
                 else {
-                    this.initTransaction();
+                    this.initTransaction_();
                     this.executeWhereUndefinedLogic();
                 }
             }
@@ -3152,34 +3176,38 @@ var Instance = /** @class */ (function (_super) {
         }
     };
     Instance.prototype.processWhereArrayQry = function () {
+        var _this = this;
         this.isArrayQry = true;
-        var is_first_where = true, where_query = this.query.where, output = [], operation, pKey = this.getPrimaryKey(this.query.from), isItemExist = function (keyValue) {
-            var is_exist = false;
+        var wherequery = this.query.where, pKey = this.getPrimaryKey(this.query.from);
+        var isFirstWhere = true, output = [], operation;
+        var isItemExist = function (keyValue) {
+            var isExist = false;
             output.every(function (item) {
                 if (item[pKey] === keyValue) {
-                    is_exist = true;
+                    isExist = true;
                     return false;
                 }
                 return true;
             });
-            return is_exist;
-        }, onSuccess = function () {
-            if (operation === 'and') {
+            return isExist;
+        };
+        var onSuccess = function () {
+            if (operation === _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].And) {
                 var doAnd = function () {
-                    var and_results = [];
-                    this._results.forEach(function (item) {
+                    var andResults = [];
+                    _this.results.forEach(function (item) {
                         if (isItemExist(item[pKey])) {
-                            and_results.push(item);
+                            andResults.push(item);
                         }
                     });
-                    output = and_results;
-                    and_results = null;
-                }.bind(this);
+                    output = andResults;
+                    andResults = null;
+                };
                 if (output.length > 0) {
                     doAnd();
                 }
-                else if (is_first_where === true) {
-                    output = this._results;
+                else if (isFirstWhere === true) {
+                    output = _this.results;
                 }
                 else {
                     doAnd();
@@ -3187,76 +3215,77 @@ var Instance = /** @class */ (function (_super) {
             }
             else {
                 if (output.length > 0) {
-                    this._results = output.concat(this._results);
-                    this.removeDuplicates();
-                    output = this._results;
+                    _this.results = output.concat(_this.results);
+                    _this.removeDuplicates();
+                    output = _this.results;
                 }
                 else {
-                    output = this._results;
+                    output = _this.results;
                 }
             }
-            if (where_query.length > 0) {
-                this._results = [];
+            if (wherequery.length > 0) {
+                _this.results = [];
                 processFirstQry();
             }
             else {
-                this._results = output;
+                _this.results = output;
             }
-            is_first_where = false;
-        }.bind(this), processFirstQry = function () {
-            this._query.where = where_query.shift();
-            if (this._query.where['or']) {
-                if (Object.keys(this._query.where).length === 1) {
+            isFirstWhere = false;
+        };
+        var processFirstQry = function () {
+            _this.query.where = wherequery.shift();
+            if (_this.query.where['or']) {
+                if (Object.keys(_this.query.where).length === 1) {
                     operation = 'or';
-                    this._query.where = this._query.where['or'];
-                    this._onWhereArrayQrySuccess = onSuccess;
+                    _this.query.where = _this.query.where['or'];
+                    _this.onWhereArrayQrySuccess = onSuccess;
                 }
                 else {
                     operation = 'and';
-                    this._onWhereArrayQrySuccess = onSuccess;
+                    _this.onWhereArrayQrySuccess = onSuccess;
                 }
             }
             else {
                 operation = 'and';
-                this._onWhereArrayQrySuccess = onSuccess;
+                _this.onWhereArrayQrySuccess = onSuccess;
             }
-            this.processWhere();
-        }.bind(this);
+            _this.processWhere_();
+        };
         processFirstQry();
     };
     Instance.prototype.onQueryFinished = function () {
         if (this.isOr === true) {
-            this.orQuerySuccess();
+            this.orQuerySuccess_();
         }
         else if (this.isArrayQry === true) {
             this.onWhereArrayQrySuccess();
         }
         else if (this.isTransaction === true) {
-            this.onTransactionCompleted();
+            this.onTransactionCompleted_();
         }
     };
-    Instance.prototype.initTransaction = function () {
-        _idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].createTransaction([this.tableName], this.onTransactionCompleted.bind(this), 'readonly');
+    Instance.prototype.initTransaction_ = function () {
+        _idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].createTransaction([this.tableName], this.onTransactionCompleted_, _enums__WEBPACK_IMPORTED_MODULE_3__["Idb_Mode"].ReadOnly);
         this.objectStore = _idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].transaction.objectStore(this.tableName);
     };
-    Instance.prototype.processWhere = function () {
+    Instance.prototype.processWhere_ = function () {
         if (this.query.where.or) {
-            this.processOrLogic();
+            this.processOrLogic_();
         }
         this.goToWhereLogic();
     };
-    Instance.prototype.onTransactionCompleted = function () {
+    Instance.prototype.onTransactionCompleted_ = function () {
         if (this.errorOccured === false) {
             this.processOrderBy();
             if (this.query.distinct) {
-                var group_by = [];
+                var groupBy = [];
                 var result = this.results[0];
                 for (var key in result) {
-                    group_by.push(key);
+                    groupBy.push(key);
                 }
-                var primary_key = this.getPrimaryKey(this.query.from), index = group_by.indexOf(primary_key);
-                group_by.splice(index, 1);
-                this.query.groupBy = group_by.length > 0 ? group_by : null;
+                var primaryKey = this.getPrimaryKey(this.query.from), index = groupBy.indexOf(primaryKey);
+                groupBy.splice(index, 1);
+                this.query.groupBy = groupBy.length > 0 ? groupBy : null;
             }
             if (this.query.from) {
                 if (this.query.aggregate) {
@@ -3272,39 +3301,39 @@ var Instance = /** @class */ (function (_super) {
             this.onSuccess(this.results);
         }
     };
-    Instance.prototype.orQueryFinish = function () {
+    Instance.prototype.orQueryFinish_ = function () {
         this.isOr = false;
-        this.results = this._orInfo.Results;
+        this.results = this.orInfo.results;
         // free or info memory
-        this._orInfo = undefined;
+        this.orInfo = undefined;
         this.removeDuplicates();
         this.onQueryFinished();
     };
-    Instance.prototype.orQuerySuccess = function () {
-        this._orInfo.Results = this._orInfo.Results.concat(this.results);
-        if (!this.query.limit || (this.query.limit > this._orInfo.Results.length)) {
+    Instance.prototype.orQuerySuccess_ = function () {
+        this.orInfo.results = this.orInfo.results.concat(this.orInfo.results);
+        if (!this.query.limit || (this.query.limit > this.orInfo.results.length)) {
             this.results = [];
-            var key = this.getObjectFirstKey(this._orInfo.OrQuery);
+            var key = this.getObjectFirstKey(this.orInfo.orQuery);
             if (key != null) {
                 var where = {};
-                where[key] = this._orInfo.OrQuery[key];
-                delete this._orInfo.OrQuery[key];
+                where[key] = this.orInfo.orQuery[key];
+                delete this.orInfo.orQuery[key];
                 this.query.where = where;
                 this.goToWhereLogic();
             }
             else {
-                this.orQueryFinish();
+                this.orQueryFinish_();
             }
         }
         else {
-            this.orQueryFinish();
+            this.orQueryFinish_();
         }
     };
-    Instance.prototype.processOrLogic = function () {
+    Instance.prototype.processOrLogic_ = function () {
         this.isOr = true;
-        this._orInfo = {
-            OrQuery: this.query.where.or,
-            Results: []
+        this.orInfo = {
+            orQuery: this.query.where.or,
+            results: []
         };
         // free or memory
         delete this.query.where.or;
@@ -3632,168 +3661,172 @@ var Like = /** @class */ (function (_super) {
     function Like() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    Like.prototype.executeLikeLogic = function (column, value, symbol) {
+    Like.prototype.executeLikeLogic_ = function (column, value, symbol) {
         this._compValue = value.toLowerCase();
         this._compValueLength = this._compValue.length;
         this._compSymbol = symbol;
         this.cursorOpenRequest = this.objectStore.index(column).openCursor();
-        this.cursorOpenRequest.onerror = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
+        this.cursorOpenRequest.onerror = this.onCursorError;
         if (this.skipRecord && this.limitRecord) {
-            this.executeSkipAndLimit();
+            this.executeSkipAndLimit_();
         }
         else if (this.skipRecord) {
-            this.executeSkip();
+            this.executeSkip_();
         }
         else if (this.limitRecord) {
-            this.executeLimit();
+            this.executeLimit_();
         }
         else {
-            this.executeSimple();
+            this.executeSimple_();
         }
     };
-    Like.prototype.executeSkipAndLimit = function () {
-        var cursor, skip = this.skipRecord, skipOrPush = function (value) {
+    Like.prototype.executeSkipAndLimit_ = function () {
+        var _this = this;
+        var cursor;
+        var skipOrPush = function (value) {
             if (skip === 0) {
-                this._results.push(value);
+                _this.results.push(value);
             }
             else {
                 --skip;
             }
-        }.bind(this);
+        };
+        var skip = this.skipRecord;
         if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
-                if (this._results.length !== this._limitRecord && cursor) {
-                    if (this.filterOnOccurence(cursor.key) &&
-                        this._whereChecker.check(cursor.value)) {
+                if (_this.results.length !== _this.limitRecord && cursor) {
+                    if (_this.filterOnOccurence(cursor.key) &&
+                        _this.whereCheckerInstance.check(cursor.value)) {
                         skipOrPush(cursor.value);
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
-                if (this._results.length !== this._limitRecord && cursor) {
-                    if (this.filterOnOccurence(cursor.key)) {
+                if (_this.results.length !== _this.limitRecord && cursor) {
+                    if (_this.filterOnOccurence(cursor.key)) {
                         skipOrPush(cursor.value);
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     };
-    Like.prototype.executeSkip = function () {
-        var cursor, skip = this.skipRecord, skipOrPush = function (value) {
+    Like.prototype.executeSkip_ = function () {
+        var _this = this;
+        var cursor, skip = this.skipRecord;
+        var skipOrPush = function (value) {
             if (skip === 0) {
-                this._results.push(value);
+                _this.results.push(value);
             }
             else {
                 --skip;
             }
-        }.bind(this);
+        };
         if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this.filterOnOccurence(cursor.key) &&
-                        this._whereChecker.check(cursor.value)) {
+                    if (_this.filterOnOccurence(cursor.key) &&
+                        _this.whereCheckerInstance.check(cursor.value)) {
                         skipOrPush((cursor.value));
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this.filterOnOccurence(cursor.key)) {
+                    if (_this.filterOnOccurence(cursor.key)) {
                         skipOrPush((cursor.value));
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     };
-    Like.prototype.executeLimit = function () {
+    Like.prototype.executeLimit_ = function () {
+        var _this = this;
         var cursor;
         if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
-                if (this._results.length !== this._limitRecord && cursor) {
-                    if (this.filterOnOccurence(cursor.key) &&
-                        this._whereChecker.check(cursor.value)) {
-                        this._results.push(cursor.value);
+                if (_this.results.length !== _this.limitRecord && cursor) {
+                    if (_this.filterOnOccurence(cursor.key) &&
+                        _this.whereCheckerInstance.check(cursor.value)) {
+                        _this.results.push(cursor.value);
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
-                if (this._results.length !== this._limitRecord && cursor) {
-                    if (this.filterOnOccurence(cursor.key)) {
-                        this._results.push(cursor.value);
+                if (_this.results.length !== _this.limitRecord && cursor) {
+                    if (_this.filterOnOccurence(cursor.key)) {
+                        _this.results.push(cursor.value);
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     };
-    Like.prototype.executeSimple = function () {
+    Like.prototype.executeSimple_ = function () {
+        var _this = this;
         var cursor;
         if (this.checkFlag) {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this.filterOnOccurence(cursor.key) &&
-                        this._whereChecker.check(cursor.value)) {
-                        this._results.push(cursor.value);
+                    if (_this.filterOnOccurence(cursor.key) &&
+                        _this.whereCheckerInstance.check(cursor.value)) {
+                        _this.results.push(cursor.value);
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
             this.cursorOpenRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this.filterOnOccurence(cursor.key)) {
-                        this._results.push(cursor.value);
+                    if (_this.filterOnOccurence(cursor.key)) {
+                        _this.results.push(cursor.value);
                     }
                     cursor.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
     };
     return Like;
@@ -4534,8 +4567,9 @@ var NotWhere = /** @class */ (function (_super) {
     }
     NotWhere.prototype.executeWhereUndefinedLogic = function () {
         var _this = this;
-        var cursor, cursor_request = this.objectStore.openCursor();
-        cursor_request.onsuccess = function (e) {
+        var cursor;
+        var cursorRequest = this.objectStore.openCursor();
+        cursorRequest.onsuccess = function (e) {
             cursor = e.target.result;
             if (cursor) {
                 cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_0__["updateValue"])(_this.query.Set, cursor.value));
@@ -4546,7 +4580,7 @@ var NotWhere = /** @class */ (function (_super) {
                 _this.onQueryFinished();
             }
         };
-        cursor_request.onerror = function (e) {
+        cursorRequest.onerror = function (e) {
             _this.errorOccured = true;
             _this.onErrorOccured(e);
         };
@@ -4899,7 +4933,7 @@ var Config = /** @class */ (function () {
 /*!*******************************!*\
   !*** ./codes/worker/enums.ts ***!
   \*******************************/
-/*! exports provided: OCCURENCE, WEBWORKER_STATUS, CONNECTION_STATUS, DATA_TYPE, ERROR_TYPE, QUERY_OPTION */
+/*! exports provided: OCCURENCE, WEBWORKER_STATUS, CONNECTION_STATUS, DATA_TYPE, ERROR_TYPE, QUERY_OPTION, Idb_Mode */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4910,6 +4944,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return DATA_TYPE; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ERROR_TYPE", function() { return ERROR_TYPE; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "QUERY_OPTION", function() { return QUERY_OPTION; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Idb_Mode", function() { return Idb_Mode; });
 var OCCURENCE;
 (function (OCCURENCE) {
     OCCURENCE["First"] = "f";
@@ -4980,7 +5015,13 @@ var QUERY_OPTION;
     QUERY_OPTION["Count"] = "count";
     QUERY_OPTION["Skip"] = "skip";
     QUERY_OPTION["Limit"] = "limit";
+    QUERY_OPTION["And"] = "and";
 })(QUERY_OPTION || (QUERY_OPTION = {}));
+var Idb_Mode;
+(function (Idb_Mode) {
+    Idb_Mode["ReadOnly"] = "readonly";
+    Idb_Mode["ReadWrite"] = "readwrite";
+})(Idb_Mode || (Idb_Mode = {}));
 
 
 /***/ }),
@@ -4989,7 +5030,7 @@ var QUERY_OPTION;
 /*!*******************************!*\
   !*** ./codes/worker/index.ts ***!
   \*******************************/
-/*! exports provided: IdbHelper, OCCURENCE, WEBWORKER_STATUS, CONNECTION_STATUS, DATA_TYPE, ERROR_TYPE, QUERY_OPTION, registerEvents */
+/*! exports provided: IdbHelper, OCCURENCE, WEBWORKER_STATUS, CONNECTION_STATUS, DATA_TYPE, ERROR_TYPE, QUERY_OPTION, Idb_Mode, registerEvents */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5009,6 +5050,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ERROR_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "QUERY_OPTION", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Idb_Mode", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["Idb_Mode"]; });
 
 /* harmony import */ var _start__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./start */ "./codes/worker/start.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "registerEvents", function() { return _start__WEBPACK_IMPORTED_MODULE_2__["registerEvents"]; });
@@ -6460,9 +6503,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-function log(value) {
+var log = function (value) {
     _log_helper__WEBPACK_IMPORTED_MODULE_1__["LogHelper"].log(value);
-}
+};
 var registerEvents = function () {
     self.onmessage = function (e) {
         log("Request executing from WebWorker, request name: " + e.data.Name);

@@ -23,25 +23,26 @@ export class BulkInsert extends Base {
         }
         else if (this.isTableExist(this.query.into) === true) {
             try {
-                this.bulkinsertData();
+                this.bulkinsertData(this.query.values);
+                this.query.values = null;
             }
             catch (ex) {
                 this.onExceptionOccured(ex, { TableName: this.query.into });
             }
         }
         else {
-            var error = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.query.into });
+            const error = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.query.into });
             error.throw();
         }
     }
 
-    private bulkinsertData() {
-        IdbHelper.createTransaction([this.query.into], () => {
+    private bulkinsertData(values) {
+        this.createTransaction([this.query.into], () => {
             this.onSuccess();
         });
-        this.objectStore = IdbHelper.transaction.objectStore(this.query.into);
-        this.query.values.forEach(function (value) {
-            this._objectStore.add(value);
-        }, this);
+        this.objectStore = this.transaction.objectStore(this.query.into);
+        for (let i = 0, length = values.length; i < length; i++) {
+            this.objectStore.add(values[i]);
+        }
     }
 }

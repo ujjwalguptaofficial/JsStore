@@ -20,7 +20,7 @@ export class Instance extends Base {
     }
 
     execute() {
-        var table = this.getTable(this.tableName);
+        const table = this.getTable(this.tableName);
         if (!Array.isArray(this.query.values)) {
             this.onErrorOccured(
                 new LogHelper(ERROR_TYPE.NotArray),
@@ -69,17 +69,17 @@ export class Instance extends Base {
     }
 
     private insertData(values) {
-        var value_index = 0,
+        let valueIndex = 0,
             insertDataIntoTable: (value: object) => void;
         if (this.query.return) {
-            insertDataIntoTable = function (value) {
+            insertDataIntoTable = (value) => {
                 if (value) {
-                    var add_result = object_store.add(value);
-                    add_result.onerror = this.onErrorOccured.bind(this);
-                    add_result.onsuccess = function (e) {
+                    const addResult = objectStore.add(value);
+                    addResult.onerror = this.onErrorOccured.bind(this);
+                    addResult.onsuccess = (e) => {
                         this._valuesAffected.push(value);
-                        insertDataIntoTable.call(this, values[value_index++]);
-                    }.bind(this);
+                        insertDataIntoTable.call(this, values[valueIndex++]);
+                    };
                 }
                 else {
                     this.onQueryFinished();
@@ -87,22 +87,22 @@ export class Instance extends Base {
             };
         }
         else {
-            insertDataIntoTable = function (value) {
+            insertDataIntoTable = (value) => {
                 if (value) {
-                    var add_result = object_store.add(value);
-                    add_result.onerror = this.onErrorOccured.bind(this);
-                    add_result.onsuccess = function (e) {
-                        ++this._rowAffected;
-                        insertDataIntoTable.call(this, values[value_index++]);
-                    }.bind(this);
+                    const addResult = objectStore.add(value);
+                    addResult.onerror = this.onErrorOccured.bind(this);
+                    addResult.onsuccess = (e) => {
+                        ++this.rowAffected;
+                        insertDataIntoTable.call(this, values[valueIndex++]);
+                    };
                 }
                 else {
                     this.onQueryFinished();
                 }
             };
         }
-        IdbHelper.createTransaction([this.query.into], this.onTransactionCompleted.bind(this));
-        var object_store = IdbHelper.transaction.objectStore(this.query.into);
-        insertDataIntoTable.call(this, values[value_index++]);
+        this.createTransaction([this.query.into], this.onTransactionCompleted);
+        const objectStore = this.transaction.objectStore(this.query.into);
+        insertDataIntoTable(values[valueIndex++]);
     }
 }

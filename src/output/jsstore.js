@@ -458,10 +458,10 @@ __webpack_require__.r(__webpack_exports__);
 
 var InstanceHelper = /** @class */ (function () {
     function InstanceHelper(worker) {
-        this._isDbOpened = false;
-        this._requestQueue = [];
-        this._isCodeExecuting = false;
-        this._whiteListApi = ['create_db', 'is_db_exist', 'get_db_version', 'get_db_list', 'open_db'];
+        this.isDbOpened = false;
+        this.requestQueue = [];
+        this.isCodeExecuting = false;
+        this.whiteListApi = ['create_db', 'is_db_exist', 'get_db_version', 'get_db_list', 'open_db'];
         if (worker) {
             this._worker = worker;
             this._worker.onmessage = this.onMessageFromWorker.bind(this);
@@ -475,24 +475,24 @@ var InstanceHelper = /** @class */ (function () {
         this.processFinishedQuery(msg.data);
     };
     InstanceHelper.prototype.processFinishedQuery = function (message) {
-        var finished_request = this._requestQueue.shift();
-        if (finished_request) {
-            _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request finished : " + finished_request.name);
+        var finishedRequest = this.requestQueue.shift();
+        if (finishedRequest) {
+            _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request finished : " + finishedRequest.name);
             if (message.errorOccured) {
-                if (finished_request.onError) {
-                    finished_request.onError(message.errorDetails);
+                if (finishedRequest.onError) {
+                    finishedRequest.onError(message.errorDetails);
                 }
             }
             else {
-                if (finished_request.onSuccess) {
-                    var open_db_queries = ['open_db', 'create_db'];
-                    if (open_db_queries.indexOf(finished_request.name) >= 0) {
-                        this._isDbOpened = true;
+                if (finishedRequest.onSuccess) {
+                    var openDbQueries = ['open_db', 'create_db'];
+                    if (openDbQueries.indexOf(finishedRequest.name) >= 0) {
+                        this.isDbOpened = true;
                     }
-                    finished_request.onSuccess(message.returnedValue);
+                    finishedRequest.onSuccess(message.returnedValue);
                 }
             }
-            this._isCodeExecuting = false;
+            this.isCodeExecuting = false;
             this.executeQry();
         }
     };
@@ -509,39 +509,39 @@ var InstanceHelper = /** @class */ (function () {
         });
     };
     InstanceHelper.prototype.prcoessExecutionOfQry = function (request) {
-        this._requestQueue.push(request);
+        this.requestQueue.push(request);
         this.executeQry();
         _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request pushed: " + request.name);
     };
     InstanceHelper.prototype.executeQry = function () {
         var _this = this;
-        if (!this._isCodeExecuting && this._requestQueue.length > 0) {
-            if (this._isDbOpened) {
-                this.sendRequestToWorker(this._requestQueue[0]);
+        if (!this.isCodeExecuting && this.requestQueue.length > 0) {
+            if (this.isDbOpened) {
+                this.sendRequestToWorker(this.requestQueue[0]);
                 return;
             }
-            var allowed_query_index = -1;
-            this._requestQueue.every(function (item, index) {
-                if (_this._whiteListApi.indexOf(item.name) >= 0) {
-                    allowed_query_index = index;
+            var allowedQueryIndex_1 = -1;
+            this.requestQueue.every(function (item, index) {
+                if (_this.whiteListApi.indexOf(item.name) >= 0) {
+                    allowedQueryIndex_1 = index;
                     return false;
                 }
                 return true;
             });
             // shift allowed query to zeroth index
-            if (allowed_query_index >= 0) {
-                this._requestQueue.splice(0, 0, this._requestQueue.splice(allowed_query_index, 1)[0]);
-                this.sendRequestToWorker(this._requestQueue[0]);
+            if (allowedQueryIndex_1 >= 0) {
+                this.requestQueue.splice(0, 0, this.requestQueue.splice(allowedQueryIndex_1, 1)[0]);
+                this.sendRequestToWorker(this.requestQueue[0]);
             }
         }
     };
-    InstanceHelper.prototype.sendRequestToWorker = function (firsrtRequest) {
-        this._isCodeExecuting = true;
+    InstanceHelper.prototype.sendRequestToWorker = function (firstRequest) {
+        this.isCodeExecuting = true;
         var request = {
-            name: firsrtRequest.name,
-            query: firsrtRequest.query
+            name: firstRequest.name,
+            query: firstRequest.query
         };
-        _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request executing : " + firsrtRequest.name);
+        _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request executing : " + firstRequest.name);
         this._worker.postMessage(request);
     };
     return InstanceHelper;
@@ -593,19 +593,19 @@ var LogHelper = /** @class */ (function () {
         };
     };
     LogHelper.prototype.getMsg = function () {
-        var err_msg;
+        var errMsg;
         switch (this.type) {
             case _enums__WEBPACK_IMPORTED_MODULE_0__["Error_Type"].WorkerNotSupplied:
-                err_msg = "Worker object is not passed in instance constructor";
+                errMsg = "Worker object is not passed in instance constructor";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["Error_Type"].IndexedDbUndefined:
-                err_msg = "Browser does not support indexeddb";
+                errMsg = "Browser does not support indexeddb";
                 break;
             default:
-                err_msg = this.message;
+                errMsg = this.message;
                 break;
         }
-        return err_msg;
+        return errMsg;
     };
     return LogHelper;
 }());

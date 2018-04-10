@@ -5,7 +5,7 @@ import * as Select from '../select/index';
 import { QUERY_OPTION } from "../../enums";
 
 export class Instance extends Where {
-    _isOr: boolean;
+    isOr: boolean;
 
     constructor(
         query: IRemove, onSuccess: (recordRemoved: number) => void,
@@ -42,19 +42,18 @@ export class Instance extends Where {
     }
 
     private processWhereArrayQry() {
-        const selectObject = new Select.Instance(this.query,
-            function (results) {
-                const keyList = [];
-                const pkey = this.getPrimaryKey(this._query.from);
-                results.forEach((item) => {
-                    keyList.push(item[pkey]);
-                });
-                results = null;
-                this._query.where = {};
-                this._query.where[pkey] = {};
-                this._query.where[pkey][QUERY_OPTION.In] = keyList;
-                this.processWhere(false);
-            }.bind(this), this.onError);
+        const selectObject = new Select.Instance(this.query, (results) => {
+            const keyList = [];
+            const pkey = this.getPrimaryKey(this.query.from);
+            results.forEach((item) => {
+                keyList.push(item[pkey]);
+            });
+            results = null;
+            this.query.where = {};
+            this.query.where[pkey] = {};
+            this.query.where[pkey][QUERY_OPTION.In] = keyList;
+            this.processWhere_();
+        }, this.onError);
         selectObject.execute();
     }
 
@@ -77,30 +76,30 @@ export class Instance extends Where {
     }
 
     protected onQueryFinished() {
-        if (this._isOr === true) {
-            this.orQuerySuccess();
+        if (this.isOr === true) {
+            this.orQuerySuccess_();
         }
         else if (this.isTransaction === true) {
             this.onTransactionCompleted_();
         }
     }
 
-    private orQuerySuccess() {
-        let key = this.getObjectFirstKey((this as any)._orInfo.OrQuery);
+    private orQuerySuccess_() {
+        const key = this.getObjectFirstKey((this as any)._orInfo.OrQuery);
         if (key != null) {
-            let where = {};
+            const where = {};
             where[key] = (this as any)._orInfo.OrQuery[key];
             delete (this as any)._orInfo.OrQuery[key];
             this.query.where = where;
             this.goToWhereLogic();
         }
         else {
-            this._isOr = true;
+            this.isOr = true;
         }
     }
 
     private processOrLogic() {
-        this._isOr = true;
+        this.isOr = true;
         (this as any)._orInfo = {
             OrQuery: this.query.where.Or
         };

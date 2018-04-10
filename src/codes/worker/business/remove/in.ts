@@ -2,51 +2,46 @@ import { NotWhere } from "./not_where";
 
 export class In extends NotWhere {
     private executeInLogic(column, values) {
-        var cursor: IDBCursorWithValue,
-            cursor_request,
-            onCursorError = function (e) {
-                this._errorOccured = true;
-                this.onErrorOccured(e);
-            }.bind(this);
+        let cursor: IDBCursorWithValue, cursorRequest;
         if (this.checkFlag) {
-            for (var i = 0, length = values.length; i < length; i++) {
+            for (let i = 0, length = values.length; i < length; i++) {
                 if (!this.errorOccured) {
-                    cursor_request = this.objectStore.index(column).
+                    cursorRequest = this.objectStore.index(column).
                         openCursor(IDBKeyRange.only(values[i]));
-                    cursor_request.onsuccess = function (e) {
+                    cursorRequest.onsuccess = (e) => {
                         cursor = e.target.result;
                         if (cursor) {
-                            if (this._whereChecker.check(cursor.value)) {
+                            if (this.whereCheckerInstance.check(cursor.value)) {
                                 cursor.delete();
-                                ++this._rowAffected;
+                                ++this.rowAffected;
                             }
                             cursor.continue();
                         }
                         else if (i + 1 === length) {
                             this.onQueryFinished();
                         }
-                    }.bind(this);
-                    cursor_request.onerror = onCursorError;
+                    };
+                    cursorRequest.onerror = this.onCursorError;
                 }
             }
         }
         else {
-            for (var i = 0, length = values.length; i < length; i++) {
+            for (let i = 0, length = values.length; i < length; i++) {
                 if (!this.errorOccured) {
-                    cursor_request = this.objectStore.index(column).
+                    cursorRequest = this.objectStore.index(column).
                         openCursor(IDBKeyRange.only(values[i]));
-                    cursor_request.onsuccess = function (e) {
+                    cursorRequest.onsuccess = (e) => {
                         cursor = e.target.result;
                         if (cursor) {
                             cursor.delete();
-                            ++this._rowAffected;
+                            ++this.rowAffected;
                             cursor.continue();
                         }
                         else if (i + 1 === length) {
                             this.onQueryFinished();
                         }
-                    }.bind(this);
-                    cursor_request.onerror = onCursorError;
+                    };
+                    cursorRequest.onerror = this.onCursorError;
                 }
             }
         }

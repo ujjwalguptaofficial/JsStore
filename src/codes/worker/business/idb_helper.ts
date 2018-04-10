@@ -1,4 +1,4 @@
-import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
+import { CONNECTION_STATUS, ERROR_TYPE, Idb_Mode } from "../enums";
 import * as KeyStore from "../keystore/index";
 import { IDbStatus, ITable, IDataBase } from "../interfaces";
 import { DataBase } from "../model/database";
@@ -29,7 +29,7 @@ export class IdbHelper {
 
     static createTransaction(tableNames: string[], callBack: () => void, mode?) {
         if (this.transaction === null) {
-            mode = mode ? mode : "readwrite";
+            mode = mode ? mode : Idb_Mode.ReadWrite;
             this.transaction = this.dbConnection.transaction(tableNames, mode);
             this.transaction.oncomplete = () => {
                 this.transaction = null;
@@ -73,19 +73,7 @@ export class IdbHelper {
 
     static getDbSchema(dbName: string, callback: (schema: IDataBase) => void) {
         KeyStore.get(`JsStore_${dbName}_Schema`, (result) => {
-            if (result) {
-                if (result._name) {
-                    callback(result);
-                }
-                else {
-                    var db_schema = new DataBase(result);
-                    KeyStore.set(`JsStore_${dbName}_Schema`, db_schema);
-                    callback(db_schema);
-                }
-            }
-            else {
-                callback(result);
-            }
+            callback(result);
         });
     }
 }

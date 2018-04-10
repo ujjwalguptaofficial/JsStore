@@ -2,42 +2,42 @@ import { Like } from "./like";
 
 export class Where extends Like {
     private executeWhereLogic(column, value, op) {
-        var cursor: IDBCursorWithValue,
-            cursor_request;
+        let cursor: IDBCursorWithValue,
+            cursorRequest;
         value = op ? value[op] : value;
-        cursor_request = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
+        cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
         if (this.checkFlag) {
-            cursor_request.onsuccess = function (e) {
+            cursorRequest.onsuccess = (e) => {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this._whereChecker.check(cursor.value)) {
+                    if (this.whereCheckerInstance.check(cursor.value)) {
                         cursor.delete();
-                        ++this._rowAffected;
+                        ++this.rowAffected;
                     }
                     cursor.continue();
                 }
                 else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
         else {
-            cursor_request.onsuccess = function (e) {
+            cursorRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
                 if (cursor) {
                     cursor.delete();
-                    ++this._rowAffected;
+                    ++this.rowAffected;
                     cursor.continue();
                 }
                 else {
                     this.onQueryFinished();
                 }
-            }.bind(this);
+            };
         }
 
-        cursor_request.onerror = function (e) {
-            this._errorOccured = true;
+        cursorRequest.onerror = (e) => {
+            this.errorOccured = true;
             this.onErrorOccured(e);
-        }.bind(this);
+        };
     }
 }

@@ -13,7 +13,7 @@ export class LogHelper implements IError {
         this.message = this.getMsg();
     }
 
-    public throw() {
+    throw() {
         throw this.get();
     }
 
@@ -31,7 +31,7 @@ export class LogHelper implements IError {
         console.warn(this.get());
     }
 
-    public get() {
+    get() {
         return {
             message: this.message,
             type: this.type
@@ -39,18 +39,18 @@ export class LogHelper implements IError {
     }
 
     private getMsg() {
-        var err_msg: string;
+        let errMsg: string;
         switch (this.type) {
             case Error_Type.WorkerNotSupplied:
-                err_msg = "Worker object is not passed in instance constructor";
+                errMsg = "Worker object is not passed in instance constructor";
                 break;
             case Error_Type.IndexedDbUndefined:
-                err_msg = "Browser does not support indexeddb";
+                errMsg = "Browser does not support indexeddb";
                 break;
             default:
-                err_msg = this.message;
+                errMsg = this.message;
                 break;
         }
-        return err_msg;
+        return errMsg;
     }
 }

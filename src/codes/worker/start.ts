@@ -1,9 +1,9 @@
 import * as KeyStore from "./keystore/index";
 import { LogHelper } from "./log_helper";
 import { QueryExecutor } from "./query_executor";
-function log(value) {
+const log = (value) => {
     LogHelper.log(value);
-}
+};
 export const registerEvents = () => {
     (self as DedicatedWorkerGlobalScope).onmessage = (e) => {
         log("Request executing from WebWorker, request name: " + e.data.Name);

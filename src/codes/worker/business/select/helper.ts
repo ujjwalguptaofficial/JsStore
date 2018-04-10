@@ -52,108 +52,108 @@ export class Helper extends GroupByHelper {
     }
 
     protected processAggregateQry() {
-        var datas = this.results,
-            results = {},
-            column_to_aggregate;
+        const datas = this.results,
+            results = {};
+        let columnToAggregate;
         // free results memory
         this.results = undefined;
-        for (var prop in this.query.Aggregate) {
+        for (const prop in this.query.Aggregate) {
             switch (prop) {
                 case 'count':
-                    var getCount = () => {
-                        var result = 0;
-                        for (var i in datas) {
-                            result += datas[i][column_to_aggregate] ? 1 : 0;
+                    const getCount = () => {
+                        let result = 0;
+                        for (const i in datas) {
+                            result += datas[i][columnToAggregate] ? 1 : 0;
                         }
                         return result;
                     };
-                    if (typeof this.query.Aggregate[prop] === 'string') {
-                        column_to_aggregate = this.query.Aggregate[prop];
-                        results["count(" + column_to_aggregate + ")"] = getCount();
+                    if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.String) {
+                        columnToAggregate = this.query.Aggregate[prop];
+                        results["count(" + columnToAggregate + ")"] = getCount();
                     }
-                    else if (Array.isArray(this.query.Aggregate[prop])) {
-                        for (var key in this.query.Aggregate[prop]) {
-                            column_to_aggregate = this.query.Aggregate[prop][key];
-                            results["count(" + column_to_aggregate + ")"] = getCount();
+                    else if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.Array) {
+                        for (const key in this.query.Aggregate[prop]) {
+                            columnToAggregate = this.query.Aggregate[prop][key];
+                            results["count(" + columnToAggregate + ")"] = getCount();
                         }
                     }
                     break;
                 case 'max':
-                    var getMax = () => {
-                        var result = 0;
-                        for (var i in datas) {
-                            result = result > datas[i][column_to_aggregate] ?
-                                result : datas[i][column_to_aggregate];
+                    const getMax = () => {
+                        let result = 0;
+                        for (const i in datas) {
+                            result = result > datas[i][columnToAggregate] ?
+                                result : datas[i][columnToAggregate];
                         }
                         return result;
                     };
-                    if (typeof this.query.Aggregate[prop] === 'string') {
-                        column_to_aggregate = this.query.Aggregate[prop];
-                        results["max(" + column_to_aggregate + ")"] = getMax();
+                    if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.String) {
+                        columnToAggregate = this.query.Aggregate[prop];
+                        results["max(" + columnToAggregate + ")"] = getMax();
                     }
-                    else if (Array.isArray(this.query.Aggregate[prop])) {
-                        for (var key in this.query.Aggregate[prop]) {
-                            column_to_aggregate = this.query.Aggregate[prop][key];
-                            results["max(" + column_to_aggregate + ")"] = getMax();
+                    else if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.Array) {
+                        for (const key in this.query.Aggregate[prop]) {
+                            columnToAggregate = this.query.Aggregate[prop][key];
+                            results["max(" + columnToAggregate + ")"] = getMax();
                         }
                     }
                     break;
                 case 'min':
-                    var getMin = () => {
-                        var result = Infinity, value = Infinity;
-                        for (var i in datas) {
-                            value = datas[i][column_to_aggregate] ?
-                                datas[i][column_to_aggregate] : Infinity;
+                    const getMin = () => {
+                        let result = Infinity, value = Infinity;
+                        for (const i in datas) {
+                            value = datas[i][columnToAggregate] ?
+                                datas[i][columnToAggregate] : Infinity;
                             result = result < value ? result : value;
                         }
                         return result;
                     };
-                    if (typeof this.query.Aggregate[prop] === 'string') {
-                        column_to_aggregate = this.query.Aggregate[prop];
-                        results["min(" + column_to_aggregate + ")"] = getMin();
+                    if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.String) {
+                        columnToAggregate = this.query.Aggregate[prop];
+                        results["min(" + columnToAggregate + ")"] = getMin();
                     }
-                    else if (Array.isArray(this.query.Aggregate[prop])) {
-                        for (var key in this.query.Aggregate[prop]) {
-                            column_to_aggregate = this.query.Aggregate[prop][key];
-                            results["min(" + column_to_aggregate + ")"] = getMin();
+                    else if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.Array) {
+                        for (const key in this.query.Aggregate[prop]) {
+                            columnToAggregate = this.query.Aggregate[prop][key];
+                            results["min(" + columnToAggregate + ")"] = getMin();
                         }
                     }
                     break;
                 case 'sum':
-                    var getSum = () => {
-                        var result = 0;
-                        for (var i in datas) {
-                            result += datas[i][column_to_aggregate];
+                    const getSum = () => {
+                        let result = 0;
+                        for (const i in datas) {
+                            result += datas[i][columnToAggregate];
                         }
                         return result;
                     };
-                    if (typeof this.query.Aggregate[prop] === 'string') {
-                        column_to_aggregate = this.query.Aggregate[prop];
-                        results["sum(" + column_to_aggregate + ")"] = getSum();
+                    if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.String) {
+                        columnToAggregate = this.query.Aggregate[prop];
+                        results["sum(" + columnToAggregate + ")"] = getSum();
                     }
-                    else if (Array.isArray(this.query.Aggregate[prop])) {
-                        for (var key in this.query.Aggregate[prop]) {
-                            column_to_aggregate = this.query.Aggregate[prop][key];
-                            results["sum(" + column_to_aggregate + ")"] = getSum();
+                    else if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.Array) {
+                        for (const key in this.query.Aggregate[prop]) {
+                            columnToAggregate = this.query.Aggregate[prop][key];
+                            results["sum(" + columnToAggregate + ")"] = getSum();
                         }
                     }
                     break;
                 case 'avg':
-                    var getAvg = () => {
-                        var result = 0;
-                        for (var i in datas) {
-                            result += datas[i][column_to_aggregate];
+                    const getAvg = () => {
+                        let result = 0;
+                        for (const i in datas) {
+                            result += datas[i][columnToAggregate];
                         }
                         return result / datas.length;
                     };
-                    if (typeof this.query.Aggregate[prop] === 'string') {
-                        column_to_aggregate = this.query.Aggregate[prop];
-                        results["avg(" + column_to_aggregate + ")"] = getAvg();
+                    if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.String) {
+                        columnToAggregate = this.query.Aggregate[prop];
+                        results["avg(" + columnToAggregate + ")"] = getAvg();
                     }
-                    else if (Array.isArray(this.query.Aggregate[prop])) {
-                        for (var key in this.query.Aggregate[prop]) {
-                            column_to_aggregate = this.query.Aggregate[prop][key];
-                            results["avg(" + column_to_aggregate + ")"] = getAvg();
+                    else if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.Array) {
+                        for (const key in this.query.Aggregate[prop]) {
+                            columnToAggregate = this.query.Aggregate[prop][key];
+                            results["avg(" + columnToAggregate + ")"] = getAvg();
                         }
                     }
                     break;
@@ -161,7 +161,7 @@ export class Helper extends GroupByHelper {
         }
 
         // add results to the first index of result
-        for (var prop in results) {
+        for (const prop in results) {
             datas[0][prop] = results[prop];
         }
         this.results = datas;

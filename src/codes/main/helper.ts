@@ -4,6 +4,6 @@ import { Config } from "./config";
  * Enable log
  * 
  */
-export var enableLog = () => {
+export const enableLog = () => {
     Config._isLogEnabled = true;
 };
