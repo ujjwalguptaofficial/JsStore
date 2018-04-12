@@ -67,7 +67,7 @@ describe('Test count Api', function () {
             from: 'Customers',
             where: {
                 Country: 'Mexico',
-                Or: {
+                or: {
                     City: 'Madrid'
                 }
             }
@@ -288,8 +288,8 @@ describe('Test count Api', function () {
         }).
         catch(function (err) {
             var error = {
-                "_message": "Table 'Cusdtomers' does not exist",
-                "_type": "table_not_exist"
+                "message": "Table 'Cusdtomers' does not exist",
+                "type": "table_not_exist"
             };
             expect(err).to.be.an('object').eql(error);
             done();

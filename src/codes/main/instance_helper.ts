@@ -1,5 +1,5 @@
 import { LogHelper } from "./log_helper";
-import { Error_Type } from "./enums";
+import { ERROR_TYPE } from "./enums";
 import { IWebWorkerRequest, IWebWorkerResult } from "./interfaces";
 
 export class InstanceHelper {
@@ -14,7 +14,7 @@ export class InstanceHelper {
             this._worker.onmessage = this.onMessageFromWorker.bind(this);
         }
         else {
-            const err = new LogHelper(Error_Type.WorkerNotSupplied);
+            const err = new LogHelper(ERROR_TYPE.WorkerNotSupplied);
             err.throw();
         }
     }

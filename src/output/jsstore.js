@@ -1,9 +1,9 @@
 /*!
- * @license :jsstore - V2.0.0 - 10/04/2018
+ * @license :jsstore - V2.0.0 - 12/04/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
-var JsStore =
+var jsStore =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -85,11 +85,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return _instance__WEBPACK_IMPORTED_MODULE_0__["Instance"]; });
 
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4);
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Error_Type", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ERROR_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WebWorker_Status", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["WebWorker_Status"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WORKER_STATUS", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["WORKER_STATUS"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Data_Type", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["Data_Type"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"]; });
 
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Config", function() { return _config__WEBPACK_IMPORTED_MODULE_2__["Config"]; });
@@ -377,7 +377,7 @@ var InstanceHelper = /** @class */ (function () {
             this._worker.onmessage = this.onMessageFromWorker.bind(this);
         }
         else {
-            var err = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"].WorkerNotSupplied);
+            var err = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].WorkerNotSupplied);
             err.throw();
         }
     }
@@ -500,10 +500,10 @@ var LogHelper = /** @class */ (function () {
     LogHelper.prototype.getMsg = function () {
         var errMsg;
         switch (this.type) {
-            case _enums__WEBPACK_IMPORTED_MODULE_0__["Error_Type"].WorkerNotSupplied:
+            case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].WorkerNotSupplied:
                 errMsg = "Worker object is not passed in instance constructor";
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_0__["Error_Type"].IndexedDbUndefined:
+            case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].IndexedDbUndefined:
                 errMsg = "Browser does not support indexeddb";
                 break;
             default:
@@ -523,29 +523,29 @@ var LogHelper = /** @class */ (function () {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Error_Type", function() { return Error_Type; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WebWorker_Status", function() { return WebWorker_Status; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Data_Type", function() { return Data_Type; });
-var Error_Type;
-(function (Error_Type) {
-    Error_Type["WorkerNotSupplied"] = "worker_not_supplied";
-    Error_Type["IndexedDbUndefined"] = "indexeddb_undefined";
-})(Error_Type || (Error_Type = {}));
-var WebWorker_Status;
-(function (WebWorker_Status) {
-    WebWorker_Status["Registered"] = "registerd";
-    WebWorker_Status["Failed"] = "failed";
-    WebWorker_Status["NotStarted"] = "not_started";
-})(WebWorker_Status || (WebWorker_Status = {}));
-var Data_Type;
-(function (Data_Type) {
-    Data_Type["String"] = "string";
-    Data_Type["Object"] = "object";
-    Data_Type["Array"] = "array";
-    Data_Type["Number"] = "number";
-    Data_Type["Boolean"] = "boolean";
-    Data_Type["Null"] = "null";
-})(Data_Type || (Data_Type = {}));
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ERROR_TYPE", function() { return ERROR_TYPE; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WORKER_STATUS", function() { return WORKER_STATUS; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return DATA_TYPE; });
+var ERROR_TYPE;
+(function (ERROR_TYPE) {
+    ERROR_TYPE["WorkerNotSupplied"] = "worker_not_supplied";
+    ERROR_TYPE["IndexedDbUndefined"] = "indexeddb_undefined";
+})(ERROR_TYPE || (ERROR_TYPE = {}));
+var WORKER_STATUS;
+(function (WORKER_STATUS) {
+    WORKER_STATUS["Registered"] = "registerd";
+    WORKER_STATUS["Failed"] = "failed";
+    WORKER_STATUS["NotStarted"] = "not_started";
+})(WORKER_STATUS || (WORKER_STATUS = {}));
+var DATA_TYPE;
+(function (DATA_TYPE) {
+    DATA_TYPE["String"] = "string";
+    DATA_TYPE["Object"] = "object";
+    DATA_TYPE["Array"] = "array";
+    DATA_TYPE["Number"] = "number";
+    DATA_TYPE["Boolean"] = "boolean";
+    DATA_TYPE["Null"] = "null";
+})(DATA_TYPE || (DATA_TYPE = {}));
 
 
 /***/ }),

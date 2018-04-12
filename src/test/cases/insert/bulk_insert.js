@@ -21,8 +21,8 @@ describe('Test bulkInsert', function () {
         catch(function (err) {
             console.log(err);
             var error = {
-                _type: "not_array",
-                _message: "Supplied value is not an array"
+                type: "not_array",
+                message: "Supplied value is not an array"
             };
             expect(err).to.be.an('object').eql(error);
             done();

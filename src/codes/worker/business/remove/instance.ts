@@ -4,7 +4,7 @@ import * as Select from '../select/index';
 import { QUERY_OPTION } from "../../enums";
 
 export class Instance extends Where {
-    isOr: boolean;
+    
 
     constructor(
         query: IRemove, onSuccess: (recordRemoved: number) => void,
@@ -68,7 +68,7 @@ export class Instance extends Where {
         this.objectStore = this.transaction.objectStore(this.query.from);
     }
 
-    private onTransactionCompleted_() {
+    private onTransactionCompleted_ = () => {
         if (this.errorOccured === false) {
             this.onSuccess(this.rowAffected);
         }
@@ -100,10 +100,10 @@ export class Instance extends Where {
     private processOrLogic() {
         this.isOr = true;
         (this as any)._orInfo = {
-            OrQuery: this.query.where.Or
+            OrQuery: this.query.where.or
         };
 
         // free or memory
-        delete this.query.where.Or;
+        delete this.query.where.or;
     }
 }

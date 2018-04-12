@@ -6,7 +6,7 @@ export class Like extends In {
     compValue;
     compValueLength: number;
 
-    protected executeLikeLogic_(column, value: string, symbol: OCCURENCE) {
+    protected executeLikeLogic(column, value: string, symbol: OCCURENCE) {
         this.compValue = value.toLowerCase();
         this.compValueLength = this.compValue.length;
         this.compSymbol = symbol;

@@ -1,4 +1,5 @@
 import { Base } from "../base";
+import { IUpdate } from "../../interfaces";
 
 export const updateValue = (suppliedValue, storedValue) => {
     for (const key in suppliedValue) {
@@ -22,6 +23,7 @@ export const updateValue = (suppliedValue, storedValue) => {
 };
 
 export class BaseUpdate extends Base {
+    query: IUpdate;
     checkFlag = false;
     protected initTransaction() {
         this.createTransaction([this.query.in], this.onTransactionCompleted_);
@@ -34,7 +36,7 @@ export class BaseUpdate extends Base {
         }
     }
 
-    private onTransactionCompleted_() {
+    private onTransactionCompleted_ = () => {
         if (this.errorOccured === false) {
             this.onSuccess(this.rowAffected);
         }

@@ -9,6 +9,7 @@
     "build_test": "npm run pretest && npm run minify && karma start test/karma_build.config.js",
     "minify": "uglifyjs output/jsstore.js --compress sequences=true,dead_code=true,conditionals=true,booleans=true,unused=true,if_return=true,join_vars=true --source-map --mangle --output output/jsstore.min.js",
     "build": "npm run build_test",
+    "test:dev": "npm run build:dev && karma start test/karma.config.dev.js",
     "build:dev": "tslint codes/**/*.ts && npm run webpack:dev",
     "build:prod": "tslint codes/**/*.ts && npm run webpack:prod",
     "webpack:dev": "webpack --config webpack.dev.config.js",
@@ -33,6 +34,7 @@
   "homepage": "https://github.com/ujjwalguptaofficial/JsStore#readme",
   "devDependencies": {
     "chai": "^4.1.2",
+    "copy-webpack-plugin": "^4.5.1",
     "karma": "^1.7.1",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",

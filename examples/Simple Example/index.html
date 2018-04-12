@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="style/font-awesome.min.css" />
     <script src="scripts/jsstore.js "></script>
     <script>
-        var connection = new JsStore.Instance(new Worker('scripts/jsstore.worker.js'));
+        var connection = new jsStore.Instance(new Worker('scripts/jsstore.worker.js'));
         window.onload = function () {
             initiateDb();
             $('#btnAddStudent').click(function () {
@@ -42,7 +42,8 @@
                     showTableData();
                 }
             }).catch(function (error) {
-                alert(error._message);
+                console.log(err);
+                alert(error.message);
             });
         }
 
@@ -59,7 +60,8 @@
                     showTableData();
                 }
             }).catch(function (err) {
-                alert(err._message);
+                console.log(err);
+                alert(err.message);
             });
         }
 
@@ -79,40 +81,40 @@
         }
 
         function getDatabase() {
-            var TblStudent = {
-                Name: "Student",
-                Columns: [{
-                        Name: "Id",
-                        PrimaryKey: true,
-                        AutoIncrement: true
+            var tblStudent = {
+                name: "Student",
+                columns: [{
+                        name: "Id",
+                        primaryKey: true,
+                        autoIncrement: true
                     },
                     {
-                        Name: "Name",
-                        NotNull: true,
-                        DataType: "string"
+                        name: "Name",
+                        notNull: true,
+                        dataType: "string"
                     },
                     {
-                        Name: "Gender",
-                        DataType: "string",
-                        Default: 'male'
+                        name: "Gender",
+                        dataType: "string",
+                        default: 'male'
                     },
                     {
-                        Name: "Country",
-                        NotNull: true,
-                        DataType: "string"
+                        name: "Country",
+                        notNull: true,
+                        dataType: "string"
                     },
                     {
-                        Name: "City",
-                        NotNull: true
+                        name: "City",
+                        notNull: true
                     }
                 ]
             }
-            var DataBase = {
-                Name: "Students",
-                Tables: [TblStudent]
+            var dataBase = {
+                name: "Students",
+                tables: [tblStudent]
             }
 
-            return DataBase;
+            return dataBase;
         }
 
         //This function refreshes the table

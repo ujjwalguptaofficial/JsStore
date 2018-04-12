@@ -1,13 +1,13 @@
 import { IError } from "./interfaces";
-import { Error_Type } from "./enums";
+import { ERROR_TYPE } from "./enums";
 import { Config } from "./config";
 
 export class LogHelper implements IError {
-    type: Error_Type;
+    type: ERROR_TYPE;
     message: string;
     private _info: any;
 
-    constructor(type: Error_Type, info: any = null) {
+    constructor(type: ERROR_TYPE, info: any = null) {
         this.type = type;
         this._info = info;
         this.message = this.getMsg();
@@ -41,10 +41,10 @@ export class LogHelper implements IError {
     private getMsg() {
         let errMsg: string;
         switch (this.type) {
-            case Error_Type.WorkerNotSupplied:
+            case ERROR_TYPE.WorkerNotSupplied:
                 errMsg = "Worker object is not passed in instance constructor";
                 break;
-            case Error_Type.IndexedDbUndefined:
+            case ERROR_TYPE.IndexedDbUndefined:
                 errMsg = "Browser does not support indexeddb";
                 break;
             default:

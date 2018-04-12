@@ -10,7 +10,7 @@ export class Helper extends GroupByHelper {
     processOrderBy() {
         const order = this.query.order;
         if (order && this.results.length > 0 && !this.sorted && order.by) {
-            order.Type = order.Type ? order.Type.toLowerCase() : 'asc';
+            order.type = order.type ? order.type.toLowerCase() : 'asc';
             const orderColumn = order.by,
                 sortNumberInAsc = () => {
                     this.results.sort((a, b) => {
@@ -33,7 +33,7 @@ export class Helper extends GroupByHelper {
                     });
                 };
             if (typeof this.results[0][orderColumn] === DATA_TYPE.String) {
-                if (order.Type === 'asc') {
+                if (order.type === 'asc') {
                     sortAlphabetInAsc();
                 }
                 else {
@@ -41,7 +41,7 @@ export class Helper extends GroupByHelper {
                 }
             }
             else if (typeof this.results[0][orderColumn] === DATA_TYPE.Number) {
-                if (order.Type === 'asc') {
+                if (order.type === 'asc') {
                     sortNumberInAsc();
                 }
                 else {
@@ -57,7 +57,9 @@ export class Helper extends GroupByHelper {
         let columnToAggregate;
         // free results memory
         this.results = undefined;
-        for (const prop in this.query.Aggregate) {
+        for (const prop in this.query.aggregate) {
+            const aggregateColumn = this.query.aggregate[prop];
+            const aggregateValType = this.getType(aggregateColumn);
             switch (prop) {
                 case 'count':
                     const getCount = () => {
@@ -67,13 +69,13 @@ export class Helper extends GroupByHelper {
                         }
                         return result;
                     };
-                    if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.String) {
-                        columnToAggregate = this.query.Aggregate[prop];
+                    if (aggregateValType === DATA_TYPE.String) {
+                        columnToAggregate = aggregateColumn;
                         results["count(" + columnToAggregate + ")"] = getCount();
                     }
-                    else if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.Array) {
-                        for (const key in this.query.Aggregate[prop]) {
-                            columnToAggregate = this.query.Aggregate[prop][key];
+                    else if (aggregateValType === DATA_TYPE.Array) {
+                        for (const key in aggregateColumn) {
+                            columnToAggregate = aggregateColumn[key];
                             results["count(" + columnToAggregate + ")"] = getCount();
                         }
                     }
@@ -87,13 +89,13 @@ export class Helper extends GroupByHelper {
                         }
                         return result;
                     };
-                    if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.String) {
-                        columnToAggregate = this.query.Aggregate[prop];
+                    if (aggregateValType === DATA_TYPE.String) {
+                        columnToAggregate = aggregateColumn;
                         results["max(" + columnToAggregate + ")"] = getMax();
                     }
-                    else if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.Array) {
-                        for (const key in this.query.Aggregate[prop]) {
-                            columnToAggregate = this.query.Aggregate[prop][key];
+                    else if (aggregateValType === DATA_TYPE.Array) {
+                        for (const key in aggregateColumn) {
+                            columnToAggregate = aggregateColumn[key];
                             results["max(" + columnToAggregate + ")"] = getMax();
                         }
                     }
@@ -108,13 +110,13 @@ export class Helper extends GroupByHelper {
                         }
                         return result;
                     };
-                    if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.String) {
-                        columnToAggregate = this.query.Aggregate[prop];
+                    if (aggregateValType === DATA_TYPE.String) {
+                        columnToAggregate = aggregateColumn;
                         results["min(" + columnToAggregate + ")"] = getMin();
                     }
-                    else if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.Array) {
-                        for (const key in this.query.Aggregate[prop]) {
-                            columnToAggregate = this.query.Aggregate[prop][key];
+                    else if (aggregateValType === DATA_TYPE.Array) {
+                        for (const key in aggregateColumn) {
+                            columnToAggregate = aggregateColumn[key];
                             results["min(" + columnToAggregate + ")"] = getMin();
                         }
                     }
@@ -127,13 +129,13 @@ export class Helper extends GroupByHelper {
                         }
                         return result;
                     };
-                    if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.String) {
-                        columnToAggregate = this.query.Aggregate[prop];
+                    if (aggregateValType === DATA_TYPE.String) {
+                        columnToAggregate = aggregateColumn;
                         results["sum(" + columnToAggregate + ")"] = getSum();
                     }
-                    else if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.Array) {
-                        for (const key in this.query.Aggregate[prop]) {
-                            columnToAggregate = this.query.Aggregate[prop][key];
+                    else if (aggregateValType === DATA_TYPE.Array) {
+                        for (const key in aggregateColumn) {
+                            columnToAggregate = aggregateColumn[key];
                             results["sum(" + columnToAggregate + ")"] = getSum();
                         }
                     }
@@ -146,13 +148,13 @@ export class Helper extends GroupByHelper {
                         }
                         return result / datas.length;
                     };
-                    if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.String) {
-                        columnToAggregate = this.query.Aggregate[prop];
+                    if (aggregateValType === DATA_TYPE.String) {
+                        columnToAggregate = aggregateColumn;
                         results["avg(" + columnToAggregate + ")"] = getAvg();
                     }
-                    else if (this.getType(this.query.Aggregate[prop]) === DATA_TYPE.Array) {
-                        for (const key in this.query.Aggregate[prop]) {
-                            columnToAggregate = this.query.Aggregate[prop][key];
+                    else if (aggregateValType === DATA_TYPE.Array) {
+                        for (const key in aggregateColumn) {
+                            columnToAggregate = aggregateColumn[key];
                             results["avg(" + columnToAggregate + ")"] = getAvg();
                         }
                     }

@@ -6,8 +6,8 @@ export class NotWhere extends BaseSelect {
     protected executeWhereUndefinedLogic() {
         if (this.query.order && this.query.order.by) {
             if (this.objectStore.indexNames.contains(this.query.order.by)) {
-                const orderType: IDBCursorDirection = this.query.order.Type &&
-                    this.query.order.Type.toLowerCase() === 'desc' ? 'prev' : 'next';
+                const orderType: IDBCursorDirection = this.query.order.type &&
+                    this.query.order.type.toLowerCase() === 'desc' ? 'prev' : 'next';
                 this.sorted = true;
                 this.cursorOpenRequest = this.objectStore.index(this.query.order.by).
                     openCursor(null, orderType);

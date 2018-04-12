@@ -31,8 +31,8 @@ describe('Test update Api', function () {
         }).
         catch(function (err) {
             var error = {
-                "_message": "Table 'Customerss' does not exist",
-                "_type": "table_not_exist"
+                "message": "Table 'Customerss' does not exist",
+                "type": "table_not_exist"
             };
             expect(err).to.be.an('object').eql(error);
             done();
@@ -47,8 +47,8 @@ describe('Test update Api', function () {
         }).
         catch(function (err) {
             var error = {
-                "_message": "supplied value is not object",
-                "_type": "not_object"
+                "message": "supplied value is not object",
+                "type": "not_object"
             };
             expect(err).to.be.an('object').eql(error);
             done();
@@ -64,8 +64,8 @@ describe('Test update Api', function () {
         }).
         catch(function (err) {
             var error = {
-                "_message": "supplied value is not object",
-                "_type": "not_object"
+                "message": "supplied value is not object",
+                "type": "not_object"
             };
             expect(err).to.be.an('object').eql(error);
             done();
@@ -190,7 +190,7 @@ describe('Test update Api', function () {
             from: 'Customers',
             where: {
                 Country: 'Mexico',
-                Or: {
+                or: {
                     City: 'Madrid'
                 }
             }
@@ -207,7 +207,7 @@ describe('Test update Api', function () {
         Con.update({ in: 'Customers',
             where: {
                 Country: 'Mexico',
-                Or: {
+                or: {
                     City: 'Madrid'
                 }
             },

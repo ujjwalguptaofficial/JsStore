@@ -1,7 +1,7 @@
 describe('Test helper Api', function () {
 
     it('isDbExist with promise', function (done) {
-        Con.isDbExist(DataBase.Name).then(function (isExist) {
+        Con.isDbExist("Demo").then(function (isExist) {
             expect(isExist).to.be.an('boolean').to.equal(true);
         });
         Con.isDbExist("Marvel").then(function (isExist) {
@@ -11,14 +11,14 @@ describe('Test helper Api', function () {
     });
 
     it('getDbVersion', function (done) {
-        Con.getDbVersion(DataBase.Name).then(function (version) {
+        Con.getDbVersion("Demo").then(function (version) {
             expect(version).to.be.an('number').to.equal(1);
             done();
         });
     });
 
     it('getDbSchema', function (done) {
-        Con.getDbSchema(DataBase.Name).then(function (schema) {
+        Con.getDbSchema("Demo").then(function (schema) {
             expect(schema).to.be.an('object');
             done();
         });

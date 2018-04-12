@@ -65,8 +65,8 @@ describe('Multi Entry Test', function () {
                 done();
             } else {
                 var Db = MultiEntryTest.getDbSchema();
-                Db.Tables[0].Version = 2;
-                Db.Tables[0].Columns[1].MultiEntry = true;
+                Db.tables[0].version = 2;
+                Db.tables[0].columns[1].multiEntry = true;
                 Con.createDb(Db).then(function (tableList) {
                     expect(tableList).to.be.an('array').length(1);
                     console.log('Database created');
@@ -143,8 +143,8 @@ describe('Multi Entry Test', function () {
         }).
         catch(function (err) {
             var error = {
-                "_message": "Supplied value for column 'tags' does not have valid type",
-                "_type": "bad_data_type"
+                "message": "Supplied value for column 'tags' does not have valid type",
+                "type": "bad_data_type"
             };
             expect(err).to.be.an('object').eql(error);
             done();
@@ -156,23 +156,23 @@ describe('Multi Entry Test', function () {
 var MultiEntryTest = {
     getDbSchema: function () {
         var people = {
-                Name: 'people',
-                Columns: [{
-                        Name: 'name',
-                        Unique: true,
-                        DataType: JsStore.Data_Type.String
+                name: 'people',
+                columns: [{
+                        name: 'name',
+                        unique: true,
+                        dataType: jsStore.DATA_TYPE.String
                     },
                     {
-                        Name: 'tags',
-                        DataType: JsStore.Data_Type.Array
+                        name: 'tags',
+                        dataType: jsStore.DATA_TYPE.Array
                     }
                 ]
             },
-            data_base = {
-                Name: 'MultiEntryTest',
-                Tables: [people]
+            dataBase = {
+                name: 'MultiEntryTest',
+                tables: [people]
             };
-        return data_base;
+        return dataBase;
     },
     getValues: function () {
         var values = [{

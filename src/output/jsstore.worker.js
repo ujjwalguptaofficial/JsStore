@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.0.0 - 10/04/2018
+ * @license :jsstore - V2.0.0 - 12/04/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -999,6 +999,11 @@ var Set = /** @class */ (function (_super) {
     __extends(Set, _super);
     function Set(query, onSuccess, onError) {
         var _this = _super.call(this) || this;
+        _this.onTransactionCompleted_ = function () {
+            if (_this.errorOccured === false && _this.onSuccess) {
+                _this.onSuccess(null);
+            }
+        };
         try {
             _this.query = query;
             _this.onSuccess = onSuccess;
@@ -1038,13 +1043,8 @@ var Set = /** @class */ (function (_super) {
         updateIfExistElseInsert();
     };
     Set.prototype.initTransaction = function () {
-        _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].createTransaction([_query_executor__WEBPACK_IMPORTED_MODULE_2__["QueryExecutor"].tableName], this.onTransactionCompleted.bind(this));
+        _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].createTransaction([_query_executor__WEBPACK_IMPORTED_MODULE_2__["QueryExecutor"].tableName], this.onTransactionCompleted_);
         this.objectStore = _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"]._transaction.objectStore(_query_executor__WEBPACK_IMPORTED_MODULE_2__["QueryExecutor"].tableName);
-    };
-    Set.prototype.onTransactionCompleted = function () {
-        if (this.errorOccured === false && this.onSuccess) {
-            this.onSuccess(null);
-        }
     };
     return Set;
 }(_base_logic__WEBPACK_IMPORTED_MODULE_0__["Base"]));
@@ -1151,6 +1151,11 @@ var Get = /** @class */ (function (_super) {
     __extends(Get, _super);
     function Get(key, onSuccess, onError) {
         var _this = _super.call(this) || this;
+        _this.onTransactionCompleted_ = function () {
+            if (_this.errorOccured === false) {
+                _this.onSuccess(_this.results);
+            }
+        };
         _this.key = key;
         _this.onSuccess = onSuccess;
         _this.onError = onError;
@@ -1177,11 +1182,6 @@ var Get = /** @class */ (function (_super) {
     Get.prototype.initTransaction_ = function () {
         _idb_helper__WEBPACK_IMPORTED_MODULE_2__["IdbHelper"].createTransaction([_query_executor__WEBPACK_IMPORTED_MODULE_1__["QueryExecutor"].tableName], this.onTransactionCompleted_, 'readonly');
         this.objectStore = _idb_helper__WEBPACK_IMPORTED_MODULE_2__["IdbHelper"]._transaction.objectStore(_query_executor__WEBPACK_IMPORTED_MODULE_1__["QueryExecutor"].tableName);
-    };
-    Get.prototype.onTransactionCompleted_ = function () {
-        if (this.errorOccured === false) {
-            this.onSuccess(this.results);
-        }
     };
     return Get;
 }(_base_logic__WEBPACK_IMPORTED_MODULE_0__["Base"]));
@@ -1213,8 +1213,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(38);
 /* harmony import */ var _business_clear__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(67);
 /* harmony import */ var _business_bulk_insert__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(68);
-/* harmony import */ var _main_enums__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(69);
-
 
 
 
@@ -1506,7 +1504,7 @@ var QueryExecutor = /** @class */ (function () {
     };
     QueryExecutor.prototype.isDbExist_ = function (dbInfo, onSuccess, onError) {
         if (this.dbStatus_.conStatus !== _enums__WEBPACK_IMPORTED_MODULE_2__["CONNECTION_STATUS"].UnableToStart) {
-            if (this.getType(dbInfo) === _main_enums__WEBPACK_IMPORTED_MODULE_18__["Data_Type"].String) {
+            if (this.getType(dbInfo) === _enums__WEBPACK_IMPORTED_MODULE_2__["DATA_TYPE"].String) {
                 this.getDbVersion_(dbInfo, function (dbVersion) {
                     onSuccess(Boolean(dbVersion));
                 });
@@ -1791,7 +1789,7 @@ var CreateDb = /** @class */ (function () {
                 };
             };
             // save in database list
-            _this.saveDbName();
+            _this.saveDbName_();
             if (onSuccess != null) {
                 onSuccess(listofTableCreated);
             }
@@ -1875,6 +1873,9 @@ var CreateDb = /** @class */ (function () {
         configurable: true
     });
     Object.defineProperty(CreateDb.prototype, "dbConnection_", {
+        get: function () {
+            return _idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbConnection;
+        },
         set: function (value) {
             _idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbConnection = value;
         },
@@ -1884,7 +1885,7 @@ var CreateDb = /** @class */ (function () {
     CreateDb.prototype.getDbList_ = function (callback) {
         _idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].getDbList(callback);
     };
-    CreateDb.prototype.saveDbName = function () {
+    CreateDb.prototype.saveDbName_ = function () {
         var _this = this;
         this.getDbList_(function (result) {
             if (result.indexOf(_this.dbName_) < 0) {
@@ -2022,6 +2023,33 @@ var Instance = /** @class */ (function (_super) {
     __extends(Instance, _super);
     function Instance(query, onSuccess, onError) {
         var _this = _super.call(this) || this;
+        _this.onTransactionCompleted_ = function () {
+            if (_this.errorOccured === false) {
+                _this.processOrderBy();
+                if (_this.query.distinct) {
+                    var groupBy = [];
+                    var result = _this.results[0];
+                    for (var key in result) {
+                        groupBy.push(key);
+                    }
+                    var primaryKey = _this.getPrimaryKey(_this.query.from), index = groupBy.indexOf(primaryKey);
+                    groupBy.splice(index, 1);
+                    _this.query.groupBy = groupBy.length > 0 ? groupBy : null;
+                }
+                if (_this.query.groupBy) {
+                    if (_this.query.aggregate) {
+                        _this.executeAggregateGroupBy();
+                    }
+                    else {
+                        _this.processGroupBy();
+                    }
+                }
+                else if (_this.query.aggregate) {
+                    _this.processAggregateQry();
+                }
+                _this.onSuccess(_this.results);
+            }
+        };
         _this.onError = onError;
         _this.onSuccess = onSuccess;
         _this.query = query;
@@ -2157,33 +2185,6 @@ var Instance = /** @class */ (function (_super) {
         }
         this.goToWhereLogic();
     };
-    Instance.prototype.onTransactionCompleted_ = function () {
-        if (this.errorOccured === false) {
-            this.processOrderBy();
-            if (this.query.distinct) {
-                var groupBy = [];
-                var result = this.results[0];
-                for (var key in result) {
-                    groupBy.push(key);
-                }
-                var primaryKey = this.getPrimaryKey(this.query.from), index = groupBy.indexOf(primaryKey);
-                groupBy.splice(index, 1);
-                this.query.groupBy = groupBy.length > 0 ? groupBy : null;
-            }
-            if (this.query.from) {
-                if (this.query.aggregate) {
-                    this.executeAggregateGroupBy();
-                }
-                else {
-                    this.processGroupBy();
-                }
-            }
-            else if (this.query.aggregate) {
-                this.processAggregateQry();
-            }
-            this.onSuccess(this.results);
-        }
-    };
     Instance.prototype.orQueryFinish_ = function () {
         this.isOr = false;
         this.results = this.orInfo.results;
@@ -2256,7 +2257,7 @@ var Helper = /** @class */ (function (_super) {
         var _this = this;
         var order = this.query.order;
         if (order && this.results.length > 0 && !this.sorted && order.by) {
-            order.Type = order.Type ? order.Type.toLowerCase() : 'asc';
+            order.type = order.type ? order.type.toLowerCase() : 'asc';
             var orderColumn_1 = order.by, sortNumberInAsc = function () {
                 _this.results.sort(function (a, b) {
                     return a[orderColumn_1] - b[orderColumn_1];
@@ -2275,7 +2276,7 @@ var Helper = /** @class */ (function (_super) {
                 });
             };
             if (typeof this.results[0][orderColumn_1] === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                if (order.Type === 'asc') {
+                if (order.type === 'asc') {
                     sortAlphabetInAsc();
                 }
                 else {
@@ -2283,7 +2284,7 @@ var Helper = /** @class */ (function (_super) {
                 }
             }
             else if (typeof this.results[0][orderColumn_1] === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Number) {
-                if (order.Type === 'asc') {
+                if (order.type === 'asc') {
                     sortNumberInAsc();
                 }
                 else {
@@ -2297,7 +2298,9 @@ var Helper = /** @class */ (function (_super) {
         var columnToAggregate;
         // free results memory
         this.results = undefined;
-        for (var prop in this.query.Aggregate) {
+        for (var prop in this.query.aggregate) {
+            var aggregateColumn = this.query.aggregate[prop];
+            var aggregateValType = this.getType(aggregateColumn);
             switch (prop) {
                 case 'count':
                     var getCount = function () {
@@ -2307,13 +2310,13 @@ var Helper = /** @class */ (function (_super) {
                         }
                         return result;
                     };
-                    if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                        columnToAggregate = this.query.Aggregate[prop];
+                    if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                        columnToAggregate = aggregateColumn;
                         results["count(" + columnToAggregate + ")"] = getCount();
                     }
-                    else if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                        for (var key in this.query.Aggregate[prop]) {
-                            columnToAggregate = this.query.Aggregate[prop][key];
+                    else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
+                        for (var key in aggregateColumn) {
+                            columnToAggregate = aggregateColumn[key];
                             results["count(" + columnToAggregate + ")"] = getCount();
                         }
                     }
@@ -2327,13 +2330,13 @@ var Helper = /** @class */ (function (_super) {
                         }
                         return result;
                     };
-                    if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                        columnToAggregate = this.query.Aggregate[prop];
+                    if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                        columnToAggregate = aggregateColumn;
                         results["max(" + columnToAggregate + ")"] = getMax();
                     }
-                    else if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                        for (var key in this.query.Aggregate[prop]) {
-                            columnToAggregate = this.query.Aggregate[prop][key];
+                    else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
+                        for (var key in aggregateColumn) {
+                            columnToAggregate = aggregateColumn[key];
                             results["max(" + columnToAggregate + ")"] = getMax();
                         }
                     }
@@ -2348,13 +2351,13 @@ var Helper = /** @class */ (function (_super) {
                         }
                         return result;
                     };
-                    if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                        columnToAggregate = this.query.Aggregate[prop];
+                    if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                        columnToAggregate = aggregateColumn;
                         results["min(" + columnToAggregate + ")"] = getMin();
                     }
-                    else if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                        for (var key in this.query.Aggregate[prop]) {
-                            columnToAggregate = this.query.Aggregate[prop][key];
+                    else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
+                        for (var key in aggregateColumn) {
+                            columnToAggregate = aggregateColumn[key];
                             results["min(" + columnToAggregate + ")"] = getMin();
                         }
                     }
@@ -2367,13 +2370,13 @@ var Helper = /** @class */ (function (_super) {
                         }
                         return result;
                     };
-                    if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                        columnToAggregate = this.query.Aggregate[prop];
+                    if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                        columnToAggregate = aggregateColumn;
                         results["sum(" + columnToAggregate + ")"] = getSum();
                     }
-                    else if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                        for (var key in this.query.Aggregate[prop]) {
-                            columnToAggregate = this.query.Aggregate[prop][key];
+                    else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
+                        for (var key in aggregateColumn) {
+                            columnToAggregate = aggregateColumn[key];
                             results["sum(" + columnToAggregate + ")"] = getSum();
                         }
                     }
@@ -2386,13 +2389,13 @@ var Helper = /** @class */ (function (_super) {
                         }
                         return result / datas.length;
                     };
-                    if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                        columnToAggregate = this.query.Aggregate[prop];
+                    if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                        columnToAggregate = aggregateColumn;
                         results["avg(" + columnToAggregate + ")"] = getAvg();
                     }
-                    else if (this.getType(this.query.Aggregate[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                        for (var key in this.query.Aggregate[prop]) {
-                            columnToAggregate = this.query.Aggregate[prop][key];
+                    else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
+                        for (var key in aggregateColumn) {
+                            columnToAggregate = aggregateColumn[key];
                             results["avg(" + columnToAggregate + ")"] = getAvg();
                         }
                     }
@@ -2437,12 +2440,12 @@ var GroupByHelper = /** @class */ (function (_super) {
         return _super.call(this) || this;
     }
     GroupByHelper.prototype.processGroupBy = function () {
-        var grpQry = this.query.GroupBy;
+        var grpQry = this.query.groupBy;
         var datas = this.results;
         var lookUpObj = {};
         // free results memory
-        this.results = this.query.GroupBy = undefined;
-        if (typeof grpQry === 'string') {
+        this.results = this.query.groupBy = undefined;
+        if (this.getType(grpQry) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
             for (var _i = 0, _a = Object.keys(datas); _i < _a.length; _i++) {
                 var i = _a[_i];
                 lookUpObj[datas[i][grpQry]] = datas[i];
@@ -2470,7 +2473,7 @@ var GroupByHelper = /** @class */ (function (_super) {
     };
     GroupByHelper.prototype.executeAggregateGroupBy = function () {
         var _this = this;
-        var grpQry = this.query.GroupBy;
+        var grpQry = this.query.groupBy;
         var datas = this.results;
         var lookUpObj = {};
         // assign aggregate and free aggregate memory
@@ -2481,28 +2484,29 @@ var GroupByHelper = /** @class */ (function (_super) {
         var index;
         var objKey;
         var value;
-        var aggrColumn;
+        var columnToAggregate;
         var calculateAggregate = function () {
-            for (var _i = 0, _a = Object.keys(aggregateQry); _i < _a.length; _i++) {
-                var prop = _a[_i];
+            for (var prop in aggregateQry) {
+                var aggregateColumn = aggregateQry[prop];
+                var aggregateValType = _this.getType(aggregateColumn);
                 switch (prop) {
-                    case 'Count':
+                    case 'count':
                         var getCount = function () {
                             value = lookUpObj[objKey];
                             // get old value
-                            value = value ? value["Count(" + aggrColumn + ")"] : 0;
+                            value = value ? value["count(" + columnToAggregate + ")"] : 0;
                             // add with old value if data exist
-                            value += datas[index][aggrColumn] ? 1 : 0;
+                            value += datas[index][columnToAggregate] ? 1 : 0;
                             return value;
                         };
-                        if (typeof aggregateQry[prop] === 'string') {
-                            aggrColumn = aggregateQry[prop];
-                            datas[index]["Count(" + aggrColumn + ")"] = getCount();
+                        if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                            columnToAggregate = aggregateColumn;
+                            datas[index]["count(" + columnToAggregate + ")"] = getCount();
                         }
-                        else if (Array.isArray(aggregateQry[prop])) {
-                            for (var item in aggregateQry[prop]) {
-                                aggrColumn = aggregateQry[prop][item];
-                                datas[index]["Count(" + aggrColumn + ")"] = getCount();
+                        else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
+                            for (var item in aggregateColumn) {
+                                columnToAggregate = aggregateColumn[item];
+                                datas[index]["count(" + columnToAggregate + ")"] = getCount();
                             }
                         }
                         break;
@@ -2510,20 +2514,20 @@ var GroupByHelper = /** @class */ (function (_super) {
                         var getMax = function () {
                             value = lookUpObj[objKey];
                             // get old value
-                            value = value ? value["max(" + aggrColumn + ")"] : 0;
-                            datas[index][aggrColumn] = datas[index][aggrColumn] ?
-                                datas[index][aggrColumn] : 0;
+                            value = value ? value["max(" + columnToAggregate + ")"] : 0;
+                            datas[index][columnToAggregate] = datas[index][columnToAggregate] ?
+                                datas[index][columnToAggregate] : 0;
                             // compare between old value and new value
-                            return value > datas[index][aggrColumn] ? value : datas[index][aggrColumn];
+                            return value > datas[index][columnToAggregate] ? value : datas[index][columnToAggregate];
                         };
-                        if (typeof aggregateQry[prop] === 'string') {
-                            aggrColumn = aggregateQry[prop];
-                            datas[index]["max(" + aggrColumn + ")"] = getMax();
+                        if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                            columnToAggregate = aggregateColumn;
+                            datas[index]["max(" + columnToAggregate + ")"] = getMax();
                         }
-                        else if (Array.isArray(aggregateQry[prop])) {
-                            for (var item in aggregateQry[prop]) {
-                                aggrColumn = aggregateQry[prop][item];
-                                datas[index]["max(" + aggrColumn + ")"] = getMax();
+                        else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
+                            for (var item in aggregateColumn) {
+                                columnToAggregate = aggregateColumn[item];
+                                datas[index]["max(" + columnToAggregate + ")"] = getMax();
                             }
                         }
                         break;
@@ -2531,65 +2535,65 @@ var GroupByHelper = /** @class */ (function (_super) {
                         var getMin = function () {
                             value = lookUpObj[objKey];
                             // get old value
-                            value = value ? value["min(" + aggrColumn + ")"] : Infinity;
-                            datas[index][aggrColumn] = datas[index][aggrColumn] ?
-                                datas[index][aggrColumn] : Infinity;
+                            value = value ? value["min(" + columnToAggregate + ")"] : Infinity;
+                            datas[index][columnToAggregate] = datas[index][columnToAggregate] ?
+                                datas[index][columnToAggregate] : Infinity;
                             // compare between old value and new value
-                            return value < datas[index][aggrColumn] ? value : datas[index][aggrColumn];
+                            return value < datas[index][columnToAggregate] ? value : datas[index][columnToAggregate];
                         };
-                        if (typeof aggregateQry[prop] === 'string') {
-                            aggrColumn = aggregateQry[prop];
-                            datas[index]["min(" + aggrColumn + ")"] = getMin();
+                        if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                            columnToAggregate = aggregateColumn;
+                            datas[index]["min(" + columnToAggregate + ")"] = getMin();
                         }
-                        else if (Array.isArray(aggregateQry[prop])) {
-                            for (var item in aggregateQry[prop]) {
-                                aggrColumn = aggregateQry[prop][item];
-                                datas[index]["min(" + aggrColumn + ")"] = getMin();
+                        else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
+                            for (var item in aggregateColumn) {
+                                columnToAggregate = aggregateColumn[item];
+                                datas[index]["min(" + columnToAggregate + ")"] = getMin();
                             }
                         }
                         break;
-                    case 'Sum':
+                    case 'sum':
                         var getSum = function () {
                             value = lookUpObj[objKey];
                             // get old value
-                            value = value ? value["Sum(" + aggrColumn + ")"] : 0;
+                            value = value ? value["sum(" + columnToAggregate + ")"] : 0;
                             // add with old value if data exist
-                            value += datas[index][aggrColumn] ? datas[index][aggrColumn] : 0;
+                            value += datas[index][columnToAggregate] ? datas[index][columnToAggregate] : 0;
                             return value;
                         };
-                        if (typeof aggregateQry[prop] === 'string') {
-                            aggrColumn = aggregateQry[prop];
-                            datas[index]["Sum(" + aggrColumn + ")"] = getSum();
+                        if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                            columnToAggregate = aggregateColumn;
+                            datas[index]["sum(" + columnToAggregate + ")"] = getSum();
                         }
-                        else if (_this.getType(aggregateQry[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                            for (var item in aggregateQry[prop]) {
-                                aggrColumn = aggregateQry[prop][item];
-                                datas[index]["Sum(" + aggrColumn + ")"] = getSum();
+                        else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
+                            for (var item in aggregateColumn) {
+                                columnToAggregate = aggregateColumn[item];
+                                datas[index]["sum(" + columnToAggregate + ")"] = getSum();
                             }
                         }
                         break;
-                    case 'Avg':
+                    case 'avg':
                         var getAvg = function () {
                             value = lookUpObj[objKey];
                             // get old sum value
-                            var sumOfColumn = value ? value["Sum(" + aggrColumn + ")"] : 0;
+                            var sumOfColumn = value ? value["sum(" + columnToAggregate + ")"] : 0;
                             // add with old value if data exist
-                            sumOfColumn += datas[index][aggrColumn] ? datas[index][aggrColumn] : 0;
-                            datas[index]["Sum(" + aggrColumn + ")"] = sumOfColumn;
+                            sumOfColumn += datas[index][columnToAggregate] ? datas[index][columnToAggregate] : 0;
+                            datas[index]["sum(" + columnToAggregate + ")"] = sumOfColumn;
                             // get old count value
-                            value = value ? value["Count(" + aggrColumn + ")"] : 0;
+                            value = value ? value["count(" + columnToAggregate + ")"] : 0;
                             // add with old value if data exist
-                            value += datas[index][aggrColumn] ? 1 : 0;
-                            datas[index]["Count(" + aggrColumn + ")"] = value;
+                            value += datas[index][columnToAggregate] ? 1 : 0;
+                            datas[index]["count(" + columnToAggregate + ")"] = value;
                         };
-                        if (typeof aggregateQry[prop] === 'string') {
-                            aggrColumn = aggregateQry[prop];
+                        if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                            columnToAggregate = aggregateColumn;
                             getAvg();
                         }
-                        else if (_this.getType(aggregateQry[prop]) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                            for (var _b = 0, _c = Object.keys(aggregateQry[prop]); _b < _c.length; _b++) {
-                                var item = _c[_b];
-                                aggrColumn = aggregateQry[prop][item];
+                        else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
+                            for (var _i = 0, _a = Object.keys(aggregateColumn); _i < _a.length; _i++) {
+                                var item = _a[_i];
+                                columnToAggregate = aggregateColumn[item];
                                 getAvg();
                             }
                         }
@@ -2620,40 +2624,40 @@ var GroupByHelper = /** @class */ (function (_super) {
             datas.push(lookUpObj[i]);
         }
         // Checking for avg and if exist then fill the datas;
-        if (aggregateQry.Avg) {
-            if (this.getType(aggregateQry.Avg) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+        if (aggregateQry.avg) {
+            if (this.getType(aggregateQry.avg) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
                 for (index in datas) {
-                    var sumForAvg = datas[index]["Sum(" + aggregateQry.Avg + ")"], countForAvg = datas[index]["Count(" + aggregateQry.Avg + ")"];
-                    datas[index]["Avg(" + aggregateQry.Avg + ")"] = sumForAvg / countForAvg;
-                    if (aggregateQry.Count !== aggregateQry.Avg) {
-                        delete datas[index]["Count(" + aggregateQry.Avg + ")"];
+                    var sumForAvg = datas[index]["sum(" + aggregateQry.avg + ")"], countForAvg = datas[index]["count(" + aggregateQry.avg + ")"];
+                    datas[index]["avg(" + aggregateQry.avg + ")"] = sumForAvg / countForAvg;
+                    if (aggregateQry.count !== aggregateQry.avg) {
+                        delete datas[index]["count(" + aggregateQry.avg + ")"];
                     }
-                    if (aggregateQry.Sum !== aggregateQry.Avg) {
-                        delete datas[index]["Sum(" + aggregateQry.Avg + ")"];
+                    if (aggregateQry.sum !== aggregateQry.avg) {
+                        delete datas[index]["sum(" + aggregateQry.avg + ")"];
                     }
                 }
             }
             else {
-                var isCountTypeString = this.getType(aggregateQry.Count) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String;
-                var isSumTypeString = this.getType(aggregateQry.Count) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String;
+                var isCountTypeString = this.getType(aggregateQry.count) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String;
+                var isSumTypeString = this.getType(aggregateQry.sum) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String;
                 for (index in datas) {
-                    for (var column in aggregateQry.Avg) {
-                        var avgColumn = aggregateQry.Avg[column], sum = datas[index]["Sum(" + avgColumn + ")"], count = datas[index]["Count(" + avgColumn + ")"];
-                        datas[index]["Avg(" + avgColumn + ")"] = sum / count;
+                    for (var column in aggregateQry.avg) {
+                        var avgColumn = aggregateQry.avg[column], sum = datas[index]["sum(" + avgColumn + ")"], count = datas[index]["count(" + avgColumn + ")"];
+                        datas[index]["avg(" + avgColumn + ")"] = sum / count;
                         if (isCountTypeString) {
-                            if (aggregateQry.Count !== avgColumn) {
-                                delete datas[index]["Count(" + avgColumn + ")"];
+                            if (aggregateQry.count !== avgColumn) {
+                                delete datas[index]["count(" + avgColumn + ")"];
                             }
-                            else if (aggregateQry.Count.indexOf(avgColumn) === -1) {
-                                delete datas[index]["Count(" + avgColumn + ")"];
+                            else if (aggregateQry.count.indexOf(avgColumn) === -1) {
+                                delete datas[index]["count(" + avgColumn + ")"];
                             }
                         }
                         if (isSumTypeString) {
-                            if (aggregateQry.Sum !== avgColumn) {
-                                delete datas[index]["Sum(" + avgColumn + ")"];
+                            if (aggregateQry.sum !== avgColumn) {
+                                delete datas[index]["sum(" + avgColumn + ")"];
                             }
-                            else if (aggregateQry.Sum.indexOf(avgColumn) === -1) {
-                                delete datas[index]["Sum(" + avgColumn + ")"];
+                            else if (aggregateQry.sum.indexOf(avgColumn) === -1) {
+                                delete datas[index]["sum(" + avgColumn + ")"];
                             }
                         }
                     }
@@ -2835,7 +2839,7 @@ var Where = /** @class */ (function (_super) {
             };
         }
     };
-    Where.prototype.executeWhereLogic_ = function (column, value, op, dir) {
+    Where.prototype.executeWhereLogic = function (column, value, op, dir) {
         var _this = this;
         value = op ? value[op] : value;
         this.cursorOpenRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op), dir);
@@ -2885,7 +2889,7 @@ var Like = /** @class */ (function (_super) {
     function Like() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    Like.prototype.executeLikeLogic_ = function (column, value, symbol) {
+    Like.prototype.executeLikeLogic = function (column, value, symbol) {
         this.compValue = value.toLowerCase();
         this.compValueLength = this.compValue.length;
         this.compSymbol = symbol;
@@ -3367,8 +3371,8 @@ var NotWhere = /** @class */ (function (_super) {
     NotWhere.prototype.executeWhereUndefinedLogic = function () {
         if (this.query.order && this.query.order.by) {
             if (this.objectStore.indexNames.contains(this.query.order.by)) {
-                var orderType = this.query.order.Type &&
-                    this.query.order.Type.toLowerCase() === 'desc' ? 'prev' : 'next';
+                var orderType = this.query.order.type &&
+                    this.query.order.type.toLowerCase() === 'desc' ? 'prev' : 'next';
                 this.sorted = true;
                 this.cursorOpenRequest = this.objectStore.index(this.query.order.by).
                     openCursor(null, orderType);
@@ -3562,7 +3566,7 @@ var Base = /** @class */ (function (_super) {
         _this.goToWhereLogic = function () {
             var _this = this;
             var columnName = this.getObjectFirstKey(this.query.where);
-            if (this.query.IgnoreCase === true) {
+            if (this.query.ignoreCase === true) {
                 this.query.where = this.makeQryInCaseSensitive(this.query.where);
             }
             if (this.objectStore.indexNames.contains(columnName)) {
@@ -4464,10 +4468,10 @@ var Instance = /** @class */ (function (_super) {
             try {
                 if (this.query.where !== undefined) {
                     this.addGreatAndLessToNotOp();
-                    if (this.query.where.Or || Array.isArray(this.query.where)) {
+                    if (this.query.where.or || Array.isArray(this.query.where)) {
                         var selectInstance = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](this.query, function (results) {
                             _this.resultCount = results.length;
-                            _this.onTransactionCompleted();
+                            _this.onTransactionCompleted_();
                         }, this.onError);
                         selectInstance.execute();
                     }
@@ -4491,7 +4495,7 @@ var Instance = /** @class */ (function (_super) {
         }
     };
     Instance.prototype.initTransaction_ = function () {
-        this.createTransaction([this.query.From], this.onTransactionCompleted, 'readonly');
+        this.createTransaction([this.query.From], this.onTransactionCompleted_, _enums__WEBPACK_IMPORTED_MODULE_3__["Idb_Mode"].ReadOnly);
         this.objectStore = this.transaction.objectStore(this.query.From);
     };
     return Instance;
@@ -4815,16 +4819,16 @@ var BaseCount = /** @class */ (function (_super) {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.resultCount = 0;
         _this.checkFlag = false;
+        _this.onTransactionCompleted_ = function () {
+            if (_this.errorOccured === false) {
+                _this.onSuccess(_this.resultCount);
+            }
+        };
         return _this;
     }
     BaseCount.prototype.onQueryFinished = function () {
         if (this.isTransaction === true) {
-            this.onTransactionCompleted();
-        }
-    };
-    BaseCount.prototype.onTransactionCompleted = function () {
-        if (this.errorOccured === false) {
-            this.onSuccess(this.resultCount);
+            this.onTransactionCompleted_();
         }
     };
     return BaseCount;
@@ -4874,6 +4878,11 @@ var Instance = /** @class */ (function (_super) {
     function Instance(query, onSuccess, onError) {
         var _this = _super.call(this) || this;
         _this._valuesAffected = [];
+        _this.onTransactionCompleted_ = function () {
+            if (_this.errorOccured === false) {
+                _this.onSuccess(_this.query.return ? _this._valuesAffected : _this.rowAffected);
+            }
+        };
         _this.onError = onError;
         _this.query = query;
         _this.onSuccess = onSuccess;
@@ -4914,14 +4923,9 @@ var Instance = /** @class */ (function (_super) {
             new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].TableNotExist, { TableName: this.tableName }).throw();
         }
     };
-    Instance.prototype.onTransactionCompleted = function () {
-        if (this.errorOccured === false) {
-            this.onSuccess(this.query.return ? this._valuesAffected : this.rowAffected);
-        }
-    };
     Instance.prototype.onQueryFinished = function () {
         if (this.isTransaction === true) {
-            this.onTransactionCompleted();
+            this.onTransactionCompleted_();
         }
     };
     Instance.prototype.insertData = function (values) {
@@ -4957,7 +4961,7 @@ var Instance = /** @class */ (function (_super) {
                 }
             };
         }
-        this.createTransaction([this.query.into], this.onTransactionCompleted);
+        this.createTransaction([this.query.into], this.onTransactionCompleted_);
         var objectStore = this.transaction.objectStore(this.query.into);
         insertDataIntoTable(values[valueIndex++]);
     };
@@ -5138,6 +5142,11 @@ var Instance = /** @class */ (function (_super) {
     __extends(Instance, _super);
     function Instance(query, onSuccess, onError) {
         var _this = _super.call(this) || this;
+        _this.onTransactionCompleted_ = function () {
+            if (_this.errorOccured === false) {
+                _this.onSuccess(_this.rowAffected);
+            }
+        };
         _this.query = query;
         _this.onSuccess = onSuccess;
         _this.onError = onError;
@@ -5191,11 +5200,6 @@ var Instance = /** @class */ (function (_super) {
         this.createTransaction([this.query.from], this.onTransactionCompleted_);
         this.objectStore = this.transaction.objectStore(this.query.from);
     };
-    Instance.prototype.onTransactionCompleted_ = function () {
-        if (this.errorOccured === false) {
-            this.onSuccess(this.rowAffected);
-        }
-    };
     Instance.prototype.onQueryFinished = function () {
         if (this.isOr === true) {
             this.orQuerySuccess_();
@@ -5220,10 +5224,10 @@ var Instance = /** @class */ (function (_super) {
     Instance.prototype.processOrLogic = function () {
         this.isOr = true;
         this._orInfo = {
-            OrQuery: this.query.where.Or
+            OrQuery: this.query.where.or
         };
         // free or memory
-        delete this.query.where.Or;
+        delete this.query.where.or;
     };
     return Instance;
 }(_where__WEBPACK_IMPORTED_MODULE_0__["Where"]));
@@ -5661,7 +5665,7 @@ var Where = /** @class */ (function (_super) {
     function Where() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    Where.prototype.executeWhereLogic_ = function (column, value, op) {
+    Where.prototype.executeWhereLogic = function (column, value, op) {
         var _this = this;
         var cursor, cursorRequest;
         value = op ? value[op] : value;
@@ -5671,7 +5675,7 @@ var Where = /** @class */ (function (_super) {
                 cursor = e.target.result;
                 if (cursor) {
                     if (_this.whereCheckerInstance.check(cursor.value)) {
-                        cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_0__["updateValue"])(_this.query.Set, cursor.value));
+                        cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_0__["updateValue"])(_this.query.set, cursor.value));
                         ++_this.rowAffected;
                     }
                     cursor.continue();
@@ -5685,7 +5689,7 @@ var Where = /** @class */ (function (_super) {
             cursorRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_0__["updateValue"])(_this.query.Set, cursor.value));
+                    cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_0__["updateValue"])(_this.query.set, cursor.value));
                     ++_this.rowAffected;
                     cursor.continue();
                 }
@@ -5757,6 +5761,11 @@ var BaseUpdate = /** @class */ (function (_super) {
     function BaseUpdate() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.checkFlag = false;
+        _this.onTransactionCompleted_ = function () {
+            if (_this.errorOccured === false) {
+                _this.onSuccess(_this.rowAffected);
+            }
+        };
         return _this;
     }
     BaseUpdate.prototype.initTransaction = function () {
@@ -5766,11 +5775,6 @@ var BaseUpdate = /** @class */ (function (_super) {
     BaseUpdate.prototype.onQueryFinished = function () {
         if (this.isTransaction === true) {
             this.onTransactionCompleted_();
-        }
-    };
-    BaseUpdate.prototype.onTransactionCompleted_ = function () {
-        if (this.errorOccured === false) {
-            this.onSuccess(this.rowAffected);
         }
     };
     return BaseUpdate;
@@ -5821,7 +5825,7 @@ var Like = /** @class */ (function (_super) {
                 if (cursor) {
                     if (_this.filterOnOccurence(cursor.key) &&
                         _this.whereCheckerInstance.check(cursor.value)) {
-                        cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.Set, cursor.value));
+                        cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.set, cursor.value));
                         ++_this.rowAffected;
                     }
                     cursor.continue();
@@ -5836,7 +5840,7 @@ var Like = /** @class */ (function (_super) {
                 cursor = e.target.result;
                 if (cursor) {
                     if (_this.filterOnOccurence(cursor.key)) {
-                        cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.Set, cursor.value));
+                        cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.set, cursor.value));
                         ++_this.rowAffected;
                     }
                     cursor.continue();
@@ -5895,7 +5899,7 @@ var In = /** @class */ (function (_super) {
                         cursor = e.target.result;
                         if (cursor) {
                             if (_this.whereCheckerInstance.check(cursor.value)) {
-                                cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.Set, cursor.value));
+                                cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.set, cursor.value));
                                 ++_this.rowAffected;
                             }
                             cursor.continue();
@@ -5919,7 +5923,7 @@ var In = /** @class */ (function (_super) {
                     cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
                         if (cursor) {
-                            cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.Set, cursor.value));
+                            cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.set, cursor.value));
                             ++_this.rowAffected;
                             cursor.continue();
                         }
@@ -5972,7 +5976,7 @@ var NotWhere = /** @class */ (function (_super) {
         cursorRequest.onsuccess = function (e) {
             cursor = e.target.result;
             if (cursor) {
-                cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_0__["updateValue"])(_this.query.Set, cursor.value));
+                cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_0__["updateValue"])(_this.query.set, cursor.value));
                 ++_this.rowAffected;
                 cursor.continue();
             }
@@ -6189,37 +6193,6 @@ var BulkInsert = /** @class */ (function (_super) {
     return BulkInsert;
 }(_base__WEBPACK_IMPORTED_MODULE_0__["Base"]));
 
-
-
-/***/ }),
-/* 69 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Error_Type", function() { return Error_Type; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WebWorker_Status", function() { return WebWorker_Status; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Data_Type", function() { return Data_Type; });
-var Error_Type;
-(function (Error_Type) {
-    Error_Type["WorkerNotSupplied"] = "worker_not_supplied";
-    Error_Type["IndexedDbUndefined"] = "indexeddb_undefined";
-})(Error_Type || (Error_Type = {}));
-var WebWorker_Status;
-(function (WebWorker_Status) {
-    WebWorker_Status["Registered"] = "registerd";
-    WebWorker_Status["Failed"] = "failed";
-    WebWorker_Status["NotStarted"] = "not_started";
-})(WebWorker_Status || (WebWorker_Status = {}));
-var Data_Type;
-(function (Data_Type) {
-    Data_Type["String"] = "string";
-    Data_Type["Object"] = "object";
-    Data_Type["Array"] = "array";
-    Data_Type["Number"] = "number";
-    Data_Type["Boolean"] = "boolean";
-    Data_Type["Null"] = "null";
-})(Data_Type || (Data_Type = {}));
 
 
 /***/ })

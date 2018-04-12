@@ -7,14 +7,14 @@ export class GroupByHelper extends Where {
     }
 
     protected processGroupBy() {
-        const grpQry = this.query.GroupBy;
+        const grpQry = this.query.groupBy;
         let datas = this.results;
         const lookUpObj = {};
         // free results memory
-        this.results = this.query.GroupBy = undefined;
-        if (typeof grpQry === 'string') {
+        this.results = this.query.groupBy = undefined;
+        if (this.getType(grpQry) === DATA_TYPE.String) {
             for (const i of Object.keys(datas)) {
-                lookUpObj[datas[i][grpQry]] = datas[i];
+                lookUpObj[datas[i][grpQry as string]] = datas[i];
             }
         }
         else {
@@ -36,7 +36,7 @@ export class GroupByHelper extends Where {
     }
 
     protected executeAggregateGroupBy() {
-        const grpQry = this.query.GroupBy;
+        const grpQry = this.query.groupBy as any;
         let datas = this.results;
         const lookUpObj = {};
         // assign aggregate and free aggregate memory
@@ -48,27 +48,29 @@ export class GroupByHelper extends Where {
         let index;
         let objKey;
         let value;
-        let aggrColumn;
+        let columnToAggregate;
         const calculateAggregate = () => {
-            for (const prop of Object.keys(aggregateQry)) {
+            for (const prop in aggregateQry) {
+                const aggregateColumn = aggregateQry[prop];
+                const aggregateValType = this.getType(aggregateColumn);
                 switch (prop) {
-                    case 'Count':
+                    case 'count':
                         const getCount = () => {
                             value = lookUpObj[objKey];
                             // get old value
-                            value = value ? value["Count(" + aggrColumn + ")"] : 0;
+                            value = value ? value["count(" + columnToAggregate + ")"] : 0;
                             // add with old value if data exist
-                            value += datas[index][aggrColumn] ? 1 : 0;
+                            value += datas[index][columnToAggregate] ? 1 : 0;
                             return value;
                         };
-                        if (typeof aggregateQry[prop] === 'string') {
-                            aggrColumn = aggregateQry[prop];
-                            datas[index]["Count(" + aggrColumn + ")"] = getCount();
+                        if (aggregateValType === DATA_TYPE.String) {
+                            columnToAggregate = aggregateColumn;
+                            datas[index]["count(" + columnToAggregate + ")"] = getCount();
                         }
-                        else if (Array.isArray(aggregateQry[prop])) {
-                            for (const item in aggregateQry[prop]) {
-                                aggrColumn = aggregateQry[prop][item];
-                                datas[index]["Count(" + aggrColumn + ")"] = getCount();
+                        else if (aggregateValType === DATA_TYPE.Array) {
+                            for (const item in aggregateColumn) {
+                                columnToAggregate = aggregateColumn[item];
+                                datas[index]["count(" + columnToAggregate + ")"] = getCount();
                             }
                         }
                         break;
@@ -76,21 +78,21 @@ export class GroupByHelper extends Where {
                         const getMax = () => {
                             value = lookUpObj[objKey];
                             // get old value
-                            value = value ? value["max(" + aggrColumn + ")"] : 0;
-                            datas[index][aggrColumn] = datas[index][aggrColumn] ?
-                                datas[index][aggrColumn] : 0;
+                            value = value ? value["max(" + columnToAggregate + ")"] : 0;
+                            datas[index][columnToAggregate] = datas[index][columnToAggregate] ?
+                                datas[index][columnToAggregate] : 0;
                             // compare between old value and new value
-                            return value > datas[index][aggrColumn] ? value : datas[index][aggrColumn];
+                            return value > datas[index][columnToAggregate] ? value : datas[index][columnToAggregate];
                         };
 
-                        if (typeof aggregateQry[prop] === 'string') {
-                            aggrColumn = aggregateQry[prop];
-                            datas[index]["max(" + aggrColumn + ")"] = getMax();
+                        if (aggregateValType === DATA_TYPE.String) {
+                            columnToAggregate = aggregateColumn;
+                            datas[index]["max(" + columnToAggregate + ")"] = getMax();
                         }
-                        else if (Array.isArray(aggregateQry[prop])) {
-                            for (const item in aggregateQry[prop]) {
-                                aggrColumn = aggregateQry[prop][item];
-                                datas[index]["max(" + aggrColumn + ")"] = getMax();
+                        else if (aggregateValType === DATA_TYPE.Array) {
+                            for (const item in aggregateColumn) {
+                                columnToAggregate = aggregateColumn[item];
+                                datas[index]["max(" + columnToAggregate + ")"] = getMax();
                             }
                         }
                         break;
@@ -98,66 +100,66 @@ export class GroupByHelper extends Where {
                         const getMin = () => {
                             value = lookUpObj[objKey];
                             // get old value
-                            value = value ? value["min(" + aggrColumn + ")"] : Infinity;
-                            datas[index][aggrColumn] = datas[index][aggrColumn] ?
-                                datas[index][aggrColumn] : Infinity;
+                            value = value ? value["min(" + columnToAggregate + ")"] : Infinity;
+                            datas[index][columnToAggregate] = datas[index][columnToAggregate] ?
+                                datas[index][columnToAggregate] : Infinity;
                             // compare between old value and new value
-                            return value < datas[index][aggrColumn] ? value : datas[index][aggrColumn];
+                            return value < datas[index][columnToAggregate] ? value : datas[index][columnToAggregate];
                         };
 
-                        if (typeof aggregateQry[prop] === 'string') {
-                            aggrColumn = aggregateQry[prop];
-                            datas[index]["min(" + aggrColumn + ")"] = getMin();
+                        if (aggregateValType === DATA_TYPE.String) {
+                            columnToAggregate = aggregateColumn;
+                            datas[index]["min(" + columnToAggregate + ")"] = getMin();
                         }
-                        else if (Array.isArray(aggregateQry[prop])) {
-                            for (const item in aggregateQry[prop]) {
-                                aggrColumn = aggregateQry[prop][item];
-                                datas[index]["min(" + aggrColumn + ")"] = getMin();
+                        else if (aggregateValType === DATA_TYPE.Array) {
+                            for (const item in aggregateColumn) {
+                                columnToAggregate = aggregateColumn[item];
+                                datas[index]["min(" + columnToAggregate + ")"] = getMin();
                             }
                         }
                         break;
-                    case 'Sum':
+                    case 'sum':
                         const getSum = () => {
                             value = lookUpObj[objKey];
                             // get old value
-                            value = value ? value["Sum(" + aggrColumn + ")"] : 0;
+                            value = value ? value["sum(" + columnToAggregate + ")"] : 0;
                             // add with old value if data exist
-                            value += datas[index][aggrColumn] ? datas[index][aggrColumn] : 0;
+                            value += datas[index][columnToAggregate] ? datas[index][columnToAggregate] : 0;
                             return value;
                         };
-                        if (typeof aggregateQry[prop] === 'string') {
-                            aggrColumn = aggregateQry[prop];
-                            datas[index]["Sum(" + aggrColumn + ")"] = getSum();
+                        if (aggregateValType === DATA_TYPE.String) {
+                            columnToAggregate = aggregateColumn;
+                            datas[index]["sum(" + columnToAggregate + ")"] = getSum();
                         }
-                        else if (this.getType(aggregateQry[prop]) === DATA_TYPE.Array) {
-                            for (const item in aggregateQry[prop]) {
-                                aggrColumn = aggregateQry[prop][item];
-                                datas[index]["Sum(" + aggrColumn + ")"] = getSum();
+                        else if (aggregateValType === DATA_TYPE.Array) {
+                            for (const item in aggregateColumn) {
+                                columnToAggregate = aggregateColumn[item];
+                                datas[index]["sum(" + columnToAggregate + ")"] = getSum();
                             }
                         }
                         break;
-                    case 'Avg':
+                    case 'avg':
                         const getAvg = () => {
                             value = lookUpObj[objKey];
                             // get old sum value
-                            let sumOfColumn = value ? value["Sum(" + aggrColumn + ")"] : 0;
+                            let sumOfColumn = value ? value["sum(" + columnToAggregate + ")"] : 0;
                             // add with old value if data exist
-                            sumOfColumn += datas[index][aggrColumn] ? datas[index][aggrColumn] : 0;
-                            datas[index]["Sum(" + aggrColumn + ")"] = sumOfColumn;
+                            sumOfColumn += datas[index][columnToAggregate] ? datas[index][columnToAggregate] : 0;
+                            datas[index]["sum(" + columnToAggregate + ")"] = sumOfColumn;
                             // get old count value
-                            value = value ? value["Count(" + aggrColumn + ")"] : 0;
+                            value = value ? value["count(" + columnToAggregate + ")"] : 0;
                             // add with old value if data exist
-                            value += datas[index][aggrColumn] ? 1 : 0;
-                            datas[index]["Count(" + aggrColumn + ")"] = value;
+                            value += datas[index][columnToAggregate] ? 1 : 0;
+                            datas[index]["count(" + columnToAggregate + ")"] = value;
                         };
 
-                        if (typeof aggregateQry[prop] === 'string') {
-                            aggrColumn = aggregateQry[prop];
+                        if (aggregateValType === DATA_TYPE.String) {
+                            columnToAggregate = aggregateColumn;
                             getAvg();
                         }
-                        else if (this.getType(aggregateQry[prop]) === DATA_TYPE.Array) {
-                            for (const item of Object.keys(aggregateQry[prop])) {
-                                aggrColumn = aggregateQry[prop][item];
+                        else if (aggregateValType === DATA_TYPE.Array) {
+                            for (const item of Object.keys(aggregateColumn)) {
+                                columnToAggregate = aggregateColumn[item];
                                 getAvg();
                             }
                         }
@@ -190,45 +192,45 @@ export class GroupByHelper extends Where {
             datas.push(lookUpObj[i]);
         }
         // Checking for avg and if exist then fill the datas;
-        if (aggregateQry.Avg) {
-            if (this.getType(aggregateQry.Avg) === DATA_TYPE.String) {
+        if (aggregateQry.avg) {
+            if (this.getType(aggregateQry.avg) === DATA_TYPE.String) {
                 for (index in datas) {
-                    const sumForAvg = datas[index]["Sum(" + aggregateQry.Avg + ")"],
-                        countForAvg = datas[index]["Count(" + aggregateQry.Avg + ")"];
-                    datas[index]["Avg(" + aggregateQry.Avg + ")"] = sumForAvg / countForAvg;
-                    if (aggregateQry.Count !== aggregateQry.Avg) {
-                        delete datas[index]["Count(" + aggregateQry.Avg + ")"];
+                    const sumForAvg = datas[index]["sum(" + aggregateQry.avg + ")"],
+                        countForAvg = datas[index]["count(" + aggregateQry.avg + ")"];
+                    datas[index]["avg(" + aggregateQry.avg + ")"] = sumForAvg / countForAvg;
+                    if (aggregateQry.count !== aggregateQry.avg) {
+                        delete datas[index]["count(" + aggregateQry.avg + ")"];
                     }
-                    if (aggregateQry.Sum !== aggregateQry.Avg) {
-                        delete datas[index]["Sum(" + aggregateQry.Avg + ")"];
+                    if (aggregateQry.sum !== aggregateQry.avg) {
+                        delete datas[index]["sum(" + aggregateQry.avg + ")"];
                     }
                 }
             }
             else {
-                const isCountTypeString = this.getType(aggregateQry.Count) === DATA_TYPE.String;
-                const isSumTypeString = this.getType(aggregateQry.Count) === DATA_TYPE.String;
+                const isCountTypeString = this.getType(aggregateQry.count) === DATA_TYPE.String;
+                const isSumTypeString = this.getType(aggregateQry.sum) === DATA_TYPE.String;
                 for (index in datas) {
-                    for (const column in aggregateQry.Avg) {
-                        const avgColumn = aggregateQry.Avg[column],
-                            sum = datas[index]["Sum(" + avgColumn + ")"],
-                            count = datas[index]["Count(" + avgColumn + ")"];
-                        datas[index]["Avg(" + avgColumn + ")"] = sum / count;
+                    for (const column in aggregateQry.avg as any) {
+                        const avgColumn = aggregateQry.avg[column],
+                            sum = datas[index]["sum(" + avgColumn + ")"],
+                            count = datas[index]["count(" + avgColumn + ")"];
+                        datas[index]["avg(" + avgColumn + ")"] = sum / count;
 
                         if (isCountTypeString) {
-                            if (aggregateQry.Count !== avgColumn) {
-                                delete datas[index]["Count(" + avgColumn + ")"];
+                            if (aggregateQry.count !== avgColumn) {
+                                delete datas[index]["count(" + avgColumn + ")"];
                             }
-                            else if (aggregateQry.Count.indexOf(avgColumn) === -1) {
-                                delete datas[index]["Count(" + avgColumn + ")"];
+                            else if (aggregateQry.count.indexOf(avgColumn) === -1) {
+                                delete datas[index]["count(" + avgColumn + ")"];
                             }
                         }
 
                         if (isSumTypeString) {
-                            if (aggregateQry.Sum !== avgColumn) {
-                                delete datas[index]["Sum(" + avgColumn + ")"];
+                            if (aggregateQry.sum !== avgColumn) {
+                                delete datas[index]["sum(" + avgColumn + ")"];
                             }
-                            else if (aggregateQry.Sum.indexOf(avgColumn) === -1) {
-                                delete datas[index]["Sum(" + avgColumn + ")"];
+                            else if (aggregateQry.sum.indexOf(avgColumn) === -1) {
+                                delete datas[index]["sum(" + avgColumn + ")"];
                             }
                         }
                     }

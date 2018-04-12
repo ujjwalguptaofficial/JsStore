@@ -4,11 +4,7 @@ import { LogHelper } from "../../log_helper";
 import { ERROR_TYPE, Idb_Mode, QUERY_OPTION } from "../../enums";
 
 export class Instance extends Helper {
-    query: ISelect;
-    orInfo: {
-        results?: any[];
-        orQuery: object
-    };
+   
     constructor(query: ISelect, onSuccess: (results: object[]) => void, onError: (err: IError) => void) {
         super();
         this.onError = onError;
@@ -155,7 +151,7 @@ export class Instance extends Helper {
         this.goToWhereLogic();
     }
 
-    private onTransactionCompleted_() {
+    private onTransactionCompleted_ = () => {
         if (this.errorOccured === false) {
             this.processOrderBy();
             if (this.query.distinct) {
@@ -169,7 +165,7 @@ export class Instance extends Helper {
                 groupBy.splice(index, 1);
                 this.query.groupBy = groupBy.length > 0 ? groupBy : null;
             }
-            if (this.query.from) {
+            if (this.query.groupBy) {
                 if (this.query.aggregate) {
                     this.executeAggregateGroupBy();
                 }

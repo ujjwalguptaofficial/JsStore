@@ -9,7 +9,7 @@ module.exports = [merge(baseConfig[0], {
         output: {
             path: path.join(__dirname, "output"),
             filename: "jsstore.js",
-            library: 'JsStore'
+            library: 'jsStore'
         }
     }),
     merge(baseConfig[1], {

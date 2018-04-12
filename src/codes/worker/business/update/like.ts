@@ -24,7 +24,7 @@ export class Like extends In {
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key) &&
                         this.whereCheckerInstance.check(cursor.value)) {
-                        cursor.update(updateValue(this.query.Set, cursor.value));
+                        cursor.update(updateValue(this.query.set, cursor.value));
                         ++this.rowAffected;
                     }
                     cursor.continue();
@@ -40,7 +40,7 @@ export class Like extends In {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.filterOnOccurence(cursor.key)) {
-                        cursor.update(updateValue(this.query.Set, cursor.value));
+                        cursor.update(updateValue(this.query.set, cursor.value));
                         ++this.rowAffected;
                     }
                     cursor.continue();

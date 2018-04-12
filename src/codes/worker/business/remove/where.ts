@@ -1,7 +1,7 @@
 import { Like } from "./like";
 
 export class Where extends Like {
-    private executeWhereLogic(column, value, op) {
+    protected executeWhereLogic(column, value, op) {
         let cursor: IDBCursorWithValue,
             cursorRequest;
         value = op ? value[op] : value;

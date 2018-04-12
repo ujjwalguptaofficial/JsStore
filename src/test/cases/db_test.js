@@ -9,15 +9,6 @@ describe('Db Test', function () {
         })
     });
 
-    it('drop db without promise', function (done) {
-        Con.dropDb(function (results) {
-                done();
-            },
-            function (err) {
-                done(err);
-            })
-    });
-
     it('getDbList api test', function (done) {
         Con.getDbList().then(result => {
             console.log(result);
@@ -29,9 +20,7 @@ describe('Db Test', function () {
     });
 
     it('drop db with promise', function (done) {
-        Con.openDb('Demo').then(function () {
-            dropDb()
-        }).then(function (results) {
+        Con.openDb('Demo').then(Con.dropDb).then(function (results) {
             done();
         }).catch(function (err) {
             done(err);
@@ -52,8 +41,8 @@ describe('Db Test', function () {
             done();
         }).catch(err => {
             var error = {
-                "_message": "Database 'invalid_db' does not exist",
-                "_type": "db_not_exist"
+                "message": "Database 'invalid_db' does not exist",
+                "type": "db_not_exist"
             };
             expect(err).to.be.an('object').eql(error);
             done();

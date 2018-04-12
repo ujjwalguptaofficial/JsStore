@@ -113,7 +113,7 @@ export class Base extends BaseHelper {
 
     protected goToWhereLogic = function () {
         const columnName = this.getObjectFirstKey(this.query.where);
-        if (this.query.IgnoreCase === true) {
+        if (this.query.ignoreCase === true) {
             this.query.where = this.makeQryInCaseSensitive(this.query.where);
         }
         if (this.objectStore.indexNames.contains(columnName)) {

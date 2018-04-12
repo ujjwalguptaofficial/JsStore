@@ -56,7 +56,7 @@ export class Instance extends Base {
         }
     }
 
-    private onTransactionCompleted() {
+    private onTransactionCompleted_ = () => {
         if (this.errorOccured === false) {
             this.onSuccess(this.query.return ? this._valuesAffected : this.rowAffected);
         }
@@ -64,7 +64,7 @@ export class Instance extends Base {
 
     private onQueryFinished() {
         if (this.isTransaction === true) {
-            this.onTransactionCompleted();
+            this.onTransactionCompleted_();
         }
     }
 
@@ -101,7 +101,7 @@ export class Instance extends Base {
                 }
             };
         }
-        this.createTransaction([this.query.into], this.onTransactionCompleted);
+        this.createTransaction([this.query.into], this.onTransactionCompleted_);
         const objectStore = this.transaction.objectStore(this.query.into);
         insertDataIntoTable(values[valueIndex++]);
     }

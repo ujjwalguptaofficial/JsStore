@@ -22,7 +22,6 @@ import { Util } from "./util";
 import { Clear } from "./business/clear";
 import { BulkInsert } from "./business/bulk_insert";
 import { IWebWorkerResult, IWebWorkerRequest } from "./interfaces";
-import { Data_Type } from "../main/enums";
 
 export class QueryExecutor {
 
@@ -291,7 +290,7 @@ export class QueryExecutor {
 
     private isDbExist_(dbInfo, onSuccess: (isExist: boolean) => void, onError: (err: IError) => void) {
         if (this.dbStatus_.conStatus !== CONNECTION_STATUS.UnableToStart) {
-            if (this.getType(dbInfo) === Data_Type.String) {
+            if (this.getType(dbInfo) === DATA_TYPE.String) {
                 this.getDbVersion_(dbInfo, (dbVersion) => {
                     onSuccess(Boolean(dbVersion));
                 });

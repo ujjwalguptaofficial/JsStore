@@ -8,7 +8,7 @@ export class NotWhere extends BaseUpdate {
         cursorRequest.onsuccess = (e) => {
             cursor = (e as any).target.result;
             if (cursor) {
-                cursor.update(updateValue(this.query.Set, cursor.value));
+                cursor.update(updateValue(this.query.set, cursor.value));
                 ++this.rowAffected;
                 (cursor as any).continue();
             }

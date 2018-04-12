@@ -145,7 +145,7 @@ export class Where extends Like {
         }
     }
 
-    private executeWhereLogic_(column, value, op, dir) {
+    protected executeWhereLogic(column, value, op, dir) {
         value = op ? value[op] : value;
         this.cursorOpenRequest = this.objectStore.index(column).openCursor(
             this.getKeyRange(value, op),

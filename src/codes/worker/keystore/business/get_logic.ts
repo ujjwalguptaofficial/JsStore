@@ -36,7 +36,7 @@ export class Get extends Base {
         this.objectStore = IdbHelper._transaction.objectStore(QueryExecutor.tableName);
     }
 
-    private onTransactionCompleted_() {
+    private onTransactionCompleted_ = () => {
         if (this.errorOccured === false) {
             this.onSuccess(this.results);
         }

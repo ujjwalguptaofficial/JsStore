@@ -1,4 +1,9 @@
-var JsStore =
+/*!
+ * @license :jsstore - V2.0.0 - 11/04/2018
+ * https://github.com/ujjwalguptaofficial/JsStore
+ * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
+ */
+var jsStore =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -67,114 +72,29 @@ var JsStore =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./jsstore_code/index.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
 /******/ })
 /************************************************************************/
-/******/ ({
-
-/***/ "./jsstore_code/config.ts":
-/*!********************************!*\
-  !*** ./jsstore_code/config.ts ***!
-  \********************************/
-/*! exports provided: Config */
+/******/ ([
+/* 0 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Config", function() { return Config; });
-var Config = /** @class */ (function () {
-    function Config() {
-    }
-    Config._isLogEnabled = false;
-    return Config;
-}());
-
-
-
-/***/ }),
-
-/***/ "./jsstore_code/enums.ts":
-/*!*******************************!*\
-  !*** ./jsstore_code/enums.ts ***!
-  \*******************************/
-/*! exports provided: Error_Type, WebWorker_Status, Data_Type */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Error_Type", function() { return Error_Type; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WebWorker_Status", function() { return WebWorker_Status; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Data_Type", function() { return Data_Type; });
-var Error_Type;
-(function (Error_Type) {
-    Error_Type["WorkerNotSupplied"] = "worker_not_supplied";
-    Error_Type["IndexedDbUndefined"] = "indexeddb_undefined";
-})(Error_Type || (Error_Type = {}));
-var WebWorker_Status;
-(function (WebWorker_Status) {
-    WebWorker_Status["Registered"] = "registerd";
-    WebWorker_Status["Failed"] = "failed";
-    WebWorker_Status["NotStarted"] = "not_started";
-})(WebWorker_Status || (WebWorker_Status = {}));
-var Data_Type;
-(function (Data_Type) {
-    Data_Type["String"] = "string";
-    Data_Type["Object"] = "object";
-    Data_Type["Array"] = "array";
-    Data_Type["Number"] = "number";
-    Data_Type["Boolean"] = "boolean";
-    Data_Type["Null"] = "null";
-})(Data_Type || (Data_Type = {}));
-
-
-/***/ }),
-
-/***/ "./jsstore_code/helper.ts":
-/*!********************************!*\
-  !*** ./jsstore_code/helper.ts ***!
-  \********************************/
-/*! exports provided: enableLog */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enableLog", function() { return enableLog; });
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./config */ "./jsstore_code/config.ts");
-
-/**
- * Enable log
- *
- */
-var enableLog = function () {
-    _config__WEBPACK_IMPORTED_MODULE_0__["Config"]._isLogEnabled = true;
-};
-
-
-/***/ }),
-
-/***/ "./jsstore_code/index.ts":
-/*!*******************************!*\
-  !*** ./jsstore_code/index.ts ***!
-  \*******************************/
-/*! exports provided: Instance, Error_Type, WebWorker_Status, Data_Type, Config, enableLog */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _instance__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./instance */ "./jsstore_code/instance.ts");
+/* harmony import */ var _instance__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return _instance__WEBPACK_IMPORTED_MODULE_0__["Instance"]; });
 
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./enums */ "./jsstore_code/enums.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Error_Type", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"]; });
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4);
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ERROR_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WebWorker_Status", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["WebWorker_Status"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WORKER_STATUS", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["WORKER_STATUS"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Data_Type", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["Data_Type"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"]; });
 
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./config */ "./jsstore_code/config.ts");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Config", function() { return _config__WEBPACK_IMPORTED_MODULE_2__["Config"]; });
 
-/* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./helper */ "./jsstore_code/helper.ts");
+/* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "enableLog", function() { return _helper__WEBPACK_IMPORTED_MODULE_3__["enableLog"]; });
 
 
@@ -184,19 +104,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /***/ }),
-
-/***/ "./jsstore_code/instance.ts":
-/*!**********************************!*\
-  !*** ./jsstore_code/instance.ts ***!
-  \**********************************/
-/*! exports provided: Instance */
+/* 1 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return Instance; });
-/* harmony import */ var _instance_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./instance_helper */ "./jsstore_code/instance_helper.ts");
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./jsstore_code/config.ts");
+/* harmony import */ var _instance_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5);
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -223,21 +138,21 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.openDb = function (dbName) {
         return this.pushApi({
-            Name: 'open_db',
-            Query: dbName
+            name: 'open_db',
+            query: dbName
         });
     };
     /**
      * creates DataBase
      *
-     * @param {IDataBaseOption} dataBase
+     * @param {IDataBase} dataBase
      * @returns
      * @memberof Instance
      */
     Instance.prototype.createDb = function (dataBase) {
         return this.pushApi({
-            Name: 'create_db',
-            Query: dataBase
+            name: 'create_db',
+            query: dataBase
         });
     };
     /**
@@ -248,8 +163,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.dropDb = function () {
         return this.pushApi({
-            Name: 'drop_db',
-            Query: null
+            name: 'drop_db',
+            query: null
         });
     };
     /**
@@ -262,8 +177,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.select = function (query) {
         return this.pushApi({
-            Name: 'select',
-            Query: query
+            name: 'select',
+            query: query
         });
     };
     /**
@@ -275,8 +190,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.count = function (query) {
         return this.pushApi({
-            Name: 'count',
-            Query: query
+            name: 'count',
+            query: query
         });
     };
     /**
@@ -288,8 +203,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.insert = function (query) {
         return this.pushApi({
-            Name: 'insert',
-            Query: query
+            name: 'insert',
+            query: query
         });
     };
     /**
@@ -301,8 +216,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.update = function (query) {
         return this.pushApi({
-            Name: 'update',
-            Query: query
+            name: 'update',
+            query: query
         });
     };
     /**
@@ -314,8 +229,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.remove = function (query) {
         return this.pushApi({
-            Name: 'remove',
-            Query: query
+            name: 'remove',
+            query: query
         });
     };
     /**
@@ -327,8 +242,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.clear = function (tableName) {
         return this.pushApi({
-            Name: 'clear',
-            Query: tableName
+            name: 'clear',
+            query: tableName
         });
     };
     /**
@@ -340,8 +255,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.bulkInsert = function (query) {
         return this.pushApi({
-            Name: 'bulk_insert',
-            Query: query
+            name: 'bulk_insert',
+            query: query
         });
     };
     /**
@@ -361,8 +276,8 @@ var Instance = /** @class */ (function (_super) {
         };
         return new Promise(function (resolve, reject) {
             _this.pushApi({
-                Name: 'export_json',
-                Query: query
+                name: 'export_json',
+                query: query
             }).then(function (url) {
                 onSuccess(url);
                 resolve();
@@ -380,8 +295,8 @@ var Instance = /** @class */ (function (_super) {
     Instance.prototype.setLogStatus = function (status) {
         _config__WEBPACK_IMPORTED_MODULE_1__["Config"]._isLogEnabled = status ? status : _config__WEBPACK_IMPORTED_MODULE_1__["Config"]._isLogEnabled;
         this.pushApi({
-            Name: 'enable_log',
-            Query: _config__WEBPACK_IMPORTED_MODULE_1__["Config"]._isLogEnabled
+            name: 'enable_log',
+            query: _config__WEBPACK_IMPORTED_MODULE_1__["Config"]._isLogEnabled
         });
     };
     /**
@@ -393,8 +308,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.getDbVersion = function (dbName) {
         return this.pushApi({
-            Name: 'get_db_version',
-            Query: dbName
+            name: 'get_db_version',
+            query: dbName
         });
     };
     /**
@@ -406,8 +321,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.isDbExist = function (dbInfo) {
         return this.pushApi({
-            Name: 'is_db_exist',
-            Query: dbInfo
+            name: 'is_db_exist',
+            query: dbInfo
         });
     };
     /**
@@ -418,8 +333,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.getDbList = function () {
         return this.pushApi({
-            Name: 'get_db_list',
-            Query: null
+            name: 'get_db_list',
+            query: null
         });
     };
     /**
@@ -431,8 +346,8 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.getDbSchema = function (dbName) {
         return this.pushApi({
-            Name: 'get_db_schema',
-            Query: dbName
+            name: 'get_db_schema',
+            query: dbName
         });
     };
     return Instance;
@@ -441,33 +356,28 @@ var Instance = /** @class */ (function (_super) {
 
 
 /***/ }),
-
-/***/ "./jsstore_code/instance_helper.ts":
-/*!*****************************************!*\
-  !*** ./jsstore_code/instance_helper.ts ***!
-  \*****************************************/
-/*! exports provided: InstanceHelper */
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InstanceHelper", function() { return InstanceHelper; });
-/* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./log_helper */ "./jsstore_code/log_helper.ts");
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./enums */ "./jsstore_code/enums.ts");
+/* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3);
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4);
 
 
 var InstanceHelper = /** @class */ (function () {
     function InstanceHelper(worker) {
-        this._isDbOpened = false;
-        this._requestQueue = [];
-        this._isCodeExecuting = false;
-        this._whiteListApi = ['create_db', 'is_db_exist', 'get_db_version', 'get_db_list', 'open_db'];
+        this.isDbOpened = false;
+        this.requestQueue = [];
+        this.isCodeExecuting = false;
+        this.whiteListApi = ['create_db', 'is_db_exist', 'get_db_version', 'get_db_list', 'open_db'];
         if (worker) {
             this._worker = worker;
             this._worker.onmessage = this.onMessageFromWorker.bind(this);
         }
         else {
-            var err = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["Error_Type"].WorkerNotSupplied);
+            var err = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].WorkerNotSupplied);
             err.throw();
         }
     }
@@ -475,73 +385,73 @@ var InstanceHelper = /** @class */ (function () {
         this.processFinishedQuery(msg.data);
     };
     InstanceHelper.prototype.processFinishedQuery = function (message) {
-        var finished_request = this._requestQueue.shift();
-        if (finished_request) {
-            _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request finished : " + finished_request.Name);
-            if (message.ErrorOccured) {
-                if (finished_request.OnError) {
-                    finished_request.OnError(message.ErrorDetails);
+        var finishedRequest = this.requestQueue.shift();
+        if (finishedRequest) {
+            _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request finished : " + finishedRequest.name);
+            if (message.errorOccured) {
+                if (finishedRequest.onError) {
+                    finishedRequest.onError(message.errorDetails);
                 }
             }
             else {
-                if (finished_request.OnSuccess) {
-                    var open_db_queries = ['open_db', 'create_db'];
-                    if (open_db_queries.indexOf(finished_request.Name) >= 0) {
-                        this._isDbOpened = true;
+                if (finishedRequest.onSuccess) {
+                    var openDbQueries = ['open_db', 'create_db'];
+                    if (openDbQueries.indexOf(finishedRequest.name) >= 0) {
+                        this.isDbOpened = true;
                     }
-                    finished_request.OnSuccess(message.ReturnedValue);
+                    finishedRequest.onSuccess(message.returnedValue);
                 }
             }
-            this._isCodeExecuting = false;
+            this.isCodeExecuting = false;
             this.executeQry();
         }
     };
     InstanceHelper.prototype.pushApi = function (request) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            request.OnSuccess = function (result) {
+            request.onSuccess = function (result) {
                 resolve(result);
             };
-            request.OnError = function (error) {
+            request.onError = function (error) {
                 reject(error);
             };
             _this.prcoessExecutionOfQry(request);
         });
     };
     InstanceHelper.prototype.prcoessExecutionOfQry = function (request) {
-        this._requestQueue.push(request);
+        this.requestQueue.push(request);
         this.executeQry();
-        _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request pushed: " + request.Name);
+        _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request pushed: " + request.name);
     };
     InstanceHelper.prototype.executeQry = function () {
         var _this = this;
-        if (!this._isCodeExecuting && this._requestQueue.length > 0) {
-            if (this._isDbOpened) {
-                this.sendRequestToWorker(this._requestQueue[0]);
+        if (!this.isCodeExecuting && this.requestQueue.length > 0) {
+            if (this.isDbOpened) {
+                this.sendRequestToWorker(this.requestQueue[0]);
                 return;
             }
-            var allowed_query_index = -1;
-            this._requestQueue.every(function (item, index) {
-                if (_this._whiteListApi.indexOf(item.Name) >= 0) {
-                    allowed_query_index = index;
+            var allowedQueryIndex_1 = -1;
+            this.requestQueue.every(function (item, index) {
+                if (_this.whiteListApi.indexOf(item.name) >= 0) {
+                    allowedQueryIndex_1 = index;
                     return false;
                 }
                 return true;
             });
             // shift allowed query to zeroth index
-            if (allowed_query_index >= 0) {
-                this._requestQueue.splice(0, 0, this._requestQueue.splice(allowed_query_index, 1)[0]);
-                this.sendRequestToWorker(this._requestQueue[0]);
+            if (allowedQueryIndex_1 >= 0) {
+                this.requestQueue.splice(0, 0, this.requestQueue.splice(allowedQueryIndex_1, 1)[0]);
+                this.sendRequestToWorker(this.requestQueue[0]);
             }
         }
     };
-    InstanceHelper.prototype.sendRequestToWorker = function (firsrtRequest) {
-        this._isCodeExecuting = true;
+    InstanceHelper.prototype.sendRequestToWorker = function (firstRequest) {
+        this.isCodeExecuting = true;
         var request = {
-            Name: firsrtRequest.Name,
-            Query: firsrtRequest.Query
+            name: firstRequest.name,
+            query: firstRequest.query
         };
-        _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request executing : " + firsrtRequest.Name);
+        _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request executing : " + firstRequest.name);
         this._worker.postMessage(request);
     };
     return InstanceHelper;
@@ -550,27 +460,22 @@ var InstanceHelper = /** @class */ (function () {
 
 
 /***/ }),
-
-/***/ "./jsstore_code/log_helper.ts":
-/*!************************************!*\
-  !*** ./jsstore_code/log_helper.ts ***!
-  \************************************/
-/*! exports provided: LogHelper */
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LogHelper", function() { return LogHelper; });
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./enums */ "./jsstore_code/enums.ts");
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./jsstore_code/config.ts");
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4);
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5);
 
 
 var LogHelper = /** @class */ (function () {
     function LogHelper(type, info) {
         if (info === void 0) { info = null; }
-        this._type = type;
+        this.type = type;
         this._info = info;
-        this._message = this.getMsg();
+        this.message = this.getMsg();
     }
     LogHelper.prototype.throw = function () {
         throw this.get();
@@ -588,31 +493,95 @@ var LogHelper = /** @class */ (function () {
     };
     LogHelper.prototype.get = function () {
         return {
-            _message: this._message,
-            _type: this._type
+            message: this.message,
+            type: this.type
         };
     };
     LogHelper.prototype.getMsg = function () {
-        var err_msg;
-        switch (this._type) {
-            case _enums__WEBPACK_IMPORTED_MODULE_0__["Error_Type"].WorkerNotSupplied:
-                err_msg = "Worker object is not passed in instance constructor";
+        var errMsg;
+        switch (this.type) {
+            case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].WorkerNotSupplied:
+                errMsg = "Worker object is not passed in instance constructor";
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_0__["Error_Type"].IndexedDbUndefined:
-                err_msg = "Browser does not support indexeddb";
+            case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].IndexedDbUndefined:
+                errMsg = "Browser does not support indexeddb";
                 break;
             default:
-                err_msg = this._message;
+                errMsg = this.message;
                 break;
         }
-        return err_msg;
+        return errMsg;
     };
     return LogHelper;
 }());
 
 
 
-/***/ })
+/***/ }),
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-/******/ });
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ERROR_TYPE", function() { return ERROR_TYPE; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WORKER_STATUS", function() { return WORKER_STATUS; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return DATA_TYPE; });
+var ERROR_TYPE;
+(function (ERROR_TYPE) {
+    ERROR_TYPE["WorkerNotSupplied"] = "worker_not_supplied";
+    ERROR_TYPE["IndexedDbUndefined"] = "indexeddb_undefined";
+})(ERROR_TYPE || (ERROR_TYPE = {}));
+var WORKER_STATUS;
+(function (WORKER_STATUS) {
+    WORKER_STATUS["Registered"] = "registerd";
+    WORKER_STATUS["Failed"] = "failed";
+    WORKER_STATUS["NotStarted"] = "not_started";
+})(WORKER_STATUS || (WORKER_STATUS = {}));
+var DATA_TYPE;
+(function (DATA_TYPE) {
+    DATA_TYPE["String"] = "string";
+    DATA_TYPE["Object"] = "object";
+    DATA_TYPE["Array"] = "array";
+    DATA_TYPE["Number"] = "number";
+    DATA_TYPE["Boolean"] = "boolean";
+    DATA_TYPE["Null"] = "null";
+})(DATA_TYPE || (DATA_TYPE = {}));
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Config", function() { return Config; });
+var Config = /** @class */ (function () {
+    function Config() {
+    }
+    Config._isLogEnabled = false;
+    return Config;
+}());
+
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enableLog", function() { return enableLog; });
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5);
+
+/**
+ * Enable log
+ *
+ */
+var enableLog = function () {
+    _config__WEBPACK_IMPORTED_MODULE_0__["Config"]._isLogEnabled = true;
+};
+
+
+/***/ })
+/******/ ]);
 //# sourceMappingURL=jsstore.js.map

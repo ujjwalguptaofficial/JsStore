@@ -2,7 +2,7 @@ import { Where } from "./where";
 import { ICount, IError } from "../../interfaces";
 import * as Select from '../select/index';
 import { LogHelper } from "../../log_helper";
-import { ERROR_TYPE } from "../../enums";
+import { ERROR_TYPE, Idb_Mode } from "../../enums";
 import { IdbHelper } from '../idb_helper';
 
 export class Instance extends Where {
@@ -19,11 +19,11 @@ export class Instance extends Where {
             try {
                 if (this.query.where !== undefined) {
                     this.addGreatAndLessToNotOp();
-                    if (this.query.where.Or || Array.isArray(this.query.where)) {
+                    if (this.query.where.or || Array.isArray(this.query.where)) {
                         const selectInstance = new Select.Instance(this.query as any,
                             (results) => {
                                 this.resultCount = results.length;
-                                this.onTransactionCompleted();
+                                this.onTransactionCompleted_();
                             }, this.onError);
                         selectInstance.execute();
                     }
@@ -51,7 +51,7 @@ export class Instance extends Where {
     }
 
     private initTransaction_() {
-        this.createTransaction([this.query.From], this.onTransactionCompleted, 'readonly');
+        this.createTransaction([this.query.From], this.onTransactionCompleted_, Idb_Mode.ReadOnly);
         this.objectStore = this.transaction.objectStore(this.query.From);
     }
 }

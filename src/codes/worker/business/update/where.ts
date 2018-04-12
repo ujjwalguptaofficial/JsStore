@@ -2,7 +2,7 @@ import { updateValue } from "./base_update";
 import { Like } from "./like";
 
 export class Where extends Like {
-    private executeWhereLogic_(column, value, op) {
+    protected executeWhereLogic(column, value, op) {
         let cursor: IDBCursorWithValue,
             cursorRequest;
         value = op ? value[op] : value;
@@ -12,7 +12,7 @@ export class Where extends Like {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.whereCheckerInstance.check(cursor.value)) {
-                        cursor.update(updateValue(this.query.Set, cursor.value));
+                        cursor.update(updateValue(this.query.set, cursor.value));
                         ++this.rowAffected;
                     }
                     cursor.continue();
@@ -26,7 +26,7 @@ export class Where extends Like {
             cursorRequest.onsuccess = (e) => {
                 cursor = e.target.result;
                 if (cursor) {
-                    cursor.update(updateValue(this.query.Set, cursor.value));
+                    cursor.update(updateValue(this.query.set, cursor.value));
                     ++this.rowAffected;
                     cursor.continue();
                 }

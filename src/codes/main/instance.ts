@@ -1,5 +1,5 @@
 import { LogHelper } from "./log_helper";
-import { Error_Type } from "./enums";
+import { ERROR_TYPE } from "./enums";
 import { InstanceHelper } from "./instance_helper";
 import { IDataBase, ISelect, ICount, IInsert, IUpdate, IRemove, IDbInfo } from "./interfaces";
 import { Config } from "./config";

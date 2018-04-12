@@ -8,11 +8,11 @@ export class BaseCount extends Base {
 
     protected onQueryFinished() {
         if (this.isTransaction === true) {
-            this.onTransactionCompleted();
+            this.onTransactionCompleted_();
         }
     }
 
-    protected onTransactionCompleted() {
+    protected onTransactionCompleted_ = () => {
         if (this.errorOccured === false) {
             this.onSuccess(this.resultCount);
         }

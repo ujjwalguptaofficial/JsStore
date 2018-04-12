@@ -81,7 +81,7 @@ export interface ICount {
 export interface IRemove {
     from: string;
     ignoreCase?: boolean;
-    where?: object;
+    where?;
 }
 
 export interface IUpdate {

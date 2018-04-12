@@ -4,7 +4,7 @@ describe('Test update complex case', function () {
                 Price: {
                     '<': 10
                 },
-                Or: {
+                or: {
                     SupplierID: 1,
                     CategoryID: 3
                 }
@@ -44,7 +44,7 @@ describe('Test update complex case', function () {
                     Price: {
                         '<': 10
                     },
-                    Or: {
+                    or: {
                         SupplierID: 1
                     }
                 }
@@ -81,7 +81,7 @@ describe('Test update complex case', function () {
                     ProductName: 'Tea'
                 },
                 {
-                    Or: {
+                    or: {
                         SupplierID: 1,
                         CategoryID: 3
                     }

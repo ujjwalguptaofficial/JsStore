@@ -4,7 +4,7 @@ describe('Test select complex case', function () {
             from: 'Customers',
             where: {
                 Country: 'Mexico',
-                Or: {
+                or: {
                     City: 'Madrid',
                     Address: {
                         like: '%a%'
@@ -73,7 +73,7 @@ describe('Test select complex case', function () {
             from: 'Customers',
             where: {
                 Address: 'hisrtgb',
-                Or: {
+                or: {
                     City: 'London'
                 }
             }
@@ -91,7 +91,7 @@ describe('Test select complex case', function () {
             from: 'Customers',
             where: {
                 City: 'London',
-                Or: {
+                or: {
                     Address: {
                         like: 'a%'
                     }
@@ -110,7 +110,7 @@ describe('Test select complex case', function () {
             from: 'Customers',
             where: {
                 City: 'dsfgtbb',
-                Or: {
+                or: {
                     Address: {
                         like: 'a%'
                     }
@@ -132,7 +132,7 @@ describe('Test select complex case', function () {
                 },
                 {
                     City: 'London',
-                    Or: {
+                    or: {
                         Address: {
                             like: '%a%'
                         }
@@ -160,7 +160,7 @@ describe('Test select complex case', function () {
                 },
                 {
                     City: 'London',
-                    Or: {
+                    or: {
                         Address: {
                             like: '%a%'
                         }
@@ -182,7 +182,7 @@ describe('Test select complex case', function () {
                     Country: 'Mexico'
                 },
                 {
-                    Or: {
+                    or: {
                         City: 'London',
                         Address: {
                             like: '%a%'
@@ -210,7 +210,7 @@ describe('Test select complex case', function () {
                     Country: 'Mexico'
                 },
                 {
-                    Or: {
+                    or: {
                         City: 'London',
                         Address: {
                             like: '%adsfvbbbb%'
@@ -240,7 +240,7 @@ describe('Test select complex case', function () {
                 },
                 {
                     City: 'London',
-                    Or: {
+                    or: {
                         Address: {
                             like: '%a%'
                         }
@@ -268,14 +268,14 @@ describe('Test select complex case', function () {
                 },
                 {
                     City: 'London',
-                    Or: {
+                    or: {
                         Address: {
                             like: '%a%'
                         }
                     }
                 },
                 {
-                    Or: {
+                    or: {
                         ContactName: {
                             like: 'a%'
                         }

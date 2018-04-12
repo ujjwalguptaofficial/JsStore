@@ -6,8 +6,8 @@ describe('Test insert', function () {
         catch(function (err) {
             console.log(err);
             var error = {
-                _type: "not_array",
-                _message: "Supplied value is not an array"
+                type: "not_array",
+                message: "Supplied value is not an array"
             };
             expect(err).to.be.an('object').eql(error);
             done();
@@ -97,8 +97,8 @@ describe('Test insert', function () {
         }).catch(function (err) {
             console.log(err);
             var error = {
-                _type: "not_array",
-                _message: "Supplied value is not an array"
+                type: "not_array",
+                message: "Supplied value is not an array"
             };
             expect(err).to.be.an('object').eql(error);
             done();
@@ -115,8 +115,8 @@ describe('Test insert', function () {
         }).catch(function (err) {
             console.log(err);
             var error = {
-                "_message": "Null value is not allowed for column 'CustomerName'",
-                "_type": "null_value"
+                "message": "Null value is not allowed for column 'CustomerName'",
+                "type": "null_value"
             };
             expect(err).to.be.an('object').eql(error);
             done();
@@ -136,8 +136,8 @@ describe('Test insert', function () {
         }).catch(function (err) {
             console.log(err);
             var error = {
-                "_message": "Null value is not allowed for column 'Phone'",
-                "_type": "null_value"
+                "message": "Null value is not allowed for column 'Phone'",
+                "type": "null_value"
             };
             expect(err).to.be.an('object').eql(error);
             done();
@@ -157,8 +157,8 @@ describe('Test insert', function () {
             done();
         }).catch(function (err) {
             var error = {
-                "_message": "Supplied value for column 'Phone' does not have valid type",
-                "_type": "bad_data_type"
+                "message": "Supplied value for column 'Phone' does not have valid type",
+                "type": "bad_data_type"
             };
             expect(err).to.be.an('object').eql(error);
             done();
@@ -181,8 +181,8 @@ describe('Test insert', function () {
             done();
         }).catch(function (err) {
             var error = {
-                "_message": "Supplied value for column 'Unit' does not have valid type",
-                "_type": "bad_data_type"
+                "message": "Supplied value for column 'Unit' does not have valid type",
+                "type": "bad_data_type"
             };
             expect(err).to.be.an('object').eql(error);
             done();
@@ -231,8 +231,8 @@ describe('Test insert', function () {
         }).
         catch(function (err) {
             var error = {
-                "_message": "Supplied value for column 'Email' does not have valid type",
-                "_type": "bad_data_type"
+                "message": "Supplied value for column 'Email' does not have valid type",
+                "type": "bad_data_type"
             };
             expect(err).to.be.an('object').eql(error);
             done();

@@ -28,6 +28,14 @@ export class CreateDb {
         IdbHelper.dbConnection = value;
     }
 
+    private get dbConnection_() {
+        return IdbHelper.dbConnection;
+    }
+
+    private getDbList_(callback: (dbList: string[]) => void) {
+        IdbHelper.getDbList(callback);
+    }
+
     constructor(tablesMetaData: TableHelper[], onSuccess: (listOf) => void, onError: (err: IError) => void) {
         this.dbName_ = this.activeDb_.name;
         const listofTableCreated = [];
@@ -67,7 +75,7 @@ export class CreateDb {
             };
 
             // save in database list
-            this.saveDbName();
+            this.saveDbName_();
             if (onSuccess != null) {
                 onSuccess(listofTableCreated);
             }
@@ -128,11 +136,7 @@ export class CreateDb {
         };
     }
 
-    private getDbList_(callback: (dbList: string[]) => void) {
-        IdbHelper.getDbList(callback);
-    }
-
-    private saveDbName() {
+    private saveDbName_() {
         this.getDbList_((result) => {
             if (result.indexOf(this.dbName_) < 0) {
                 result.push(this.dbName_);

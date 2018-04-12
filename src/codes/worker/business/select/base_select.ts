@@ -1,4 +1,5 @@
 import { Base } from "../base";
+import { ISelect } from "../../interfaces";
 
 export class BaseSelect extends Base {
     results = [];
@@ -8,6 +9,11 @@ export class BaseSelect extends Base {
     isOr: boolean;
     isArrayQry: boolean;
     onWhereArrayQrySuccess: () => void;
+    query: ISelect;
+    orInfo: {
+        results?: any[];
+        orQuery: object
+    };
 
     protected removeDuplicates() {
         let datas = this.results;

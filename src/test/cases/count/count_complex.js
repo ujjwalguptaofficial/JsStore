@@ -4,7 +4,7 @@ describe('Test count complex case', function () {
             from: 'Customers',
             where: {
                 Country: 'Mexico',
-                Or: {
+                or: {
                     City: 'Madrid',
                     Address: {
                         like: '%a%'
@@ -29,7 +29,7 @@ describe('Test count complex case', function () {
                 },
                 {
                     City: 'London',
-                    Or: {
+                    or: {
                         Address: {
                             like: '%a%'
                         }
@@ -53,7 +53,7 @@ describe('Test count complex case', function () {
                     Country: 'Mexico'
                 },
                 {
-                    Or: {
+                    or: {
                         City: 'London',
                         Address: {
                             like: '%a%'

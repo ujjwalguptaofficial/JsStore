@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="style/font-awesome.min.css" />
     <script src="scripts/jsstore.js "></script>
     <script>
-        var connection = new JsStore.Instance(new Worker('scripts/jsstore.worker.js')),
+        var connection = new jsStore.Instance(new Worker('scripts/jsstore.worker.js')),
             StudentId;
         window.onload = function () {
             initiateDb();
@@ -27,7 +27,8 @@
                     window.location.href = "index.html";
                 }
             }).catch(function (err) {
-                alert(err._message);
+                console.log(err);
+                alert(err.message);
             });
         }
 
@@ -51,8 +52,9 @@
                         alert('Invalid student id');
                     }
 
-                }).catch(function (error) {
-                    alert(error._message);
+                }).catch(function (err) {
+                    console.log(err);
+                    alert(err.message);
                 })
             }
         }
@@ -83,8 +85,9 @@
                 if (rowsAffected > 0) {
                     window.location.href = "index.html";
                 }
-            }).catch(function (error) {
-                alert(error._message);
+            }).catch(function (err) {
+                console.log(err);
+                alert(err.message);
             })
         }
 
@@ -102,8 +105,9 @@
             }).then(function (rowsAdded) {
                 alert(rowsAdded + " record Added");
                 window.location.href = "index.html";
-            }).catch(function (error) {
-                alert(error._message);
+            }).catch(function (err) {
+                console.log(err);
+                alert(err.message);
             })
 
         }

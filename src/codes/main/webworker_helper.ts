@@ -1,5 +1,5 @@
-import { WebWorker_Status } from "./enums";
+import { WORKER_STATUS } from "./enums";
 
 export class WebWorkerHelper {
-    static _status: WebWorker_Status = WebWorker_Status.NotStarted;
+    static _status: WORKER_STATUS = WORKER_STATUS.NotStarted;
 }

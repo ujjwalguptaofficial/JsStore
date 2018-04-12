@@ -2,7 +2,7 @@ describe('Test remove complex case', function () {
     it('remove with multiple or', function (done) {
         var where_query = {
                 Country: 'Mexico',
-                Or: {
+                or: {
                     City: 'Madrid',
                     Address: {
                         like: '%a%'
@@ -36,7 +36,7 @@ describe('Test remove complex case', function () {
                 },
                 {
                     City: 'London',
-                    Or: {
+                    or: {
                         Address: {
                             like: '%a%'
                         }
@@ -69,7 +69,7 @@ describe('Test remove complex case', function () {
                     Country: 'Mexico'
                 },
                 {
-                    Or: {
+                    or: {
                         City: 'London',
                         Address: {
                             like: '%a%'

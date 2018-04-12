@@ -19,8 +19,8 @@ describe('Test Select Api', function () {
         catch(function (err) {
             console.log(err);
             var error = {
-                _type: "table_not_exist",
-                _message: "Table 'Customer' does not exist"
+                type: "table_not_exist",
+                message: "Table 'Customer' does not exist"
             };
             expect(err).to.be.an('object').eql(error);
             done();
@@ -54,8 +54,8 @@ describe('Test Select Api', function () {
         catch(function (err) {
             console.log(err);
             var error = {
-                "_message": "Search is turned off for the Column 'Email'",
-                "_type": "enable_search_off"
+                "message": "Search is turned off for the Column 'Email'",
+                "type": "enable_search_off"
             };
             expect(err).to.be.an('object').eql(error);
             done();
@@ -114,7 +114,7 @@ describe('Test Select Api', function () {
     it('select with distinct', function (done) {
         Con.select({
             from: 'Customers',
-            Distinct: true,
+            distinct: true,
             ignoreCase: true,
             where: {
                 City: 'bhubaneswar'
@@ -134,7 +134,7 @@ describe('Test Select Api', function () {
             from: 'Customers',
             where: {
                 Country: 'Mexico',
-                Or: {
+                or: {
                     City: 'Madrid'
                 }
             }
