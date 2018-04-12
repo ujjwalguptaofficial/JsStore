@@ -44,14 +44,14 @@ export class Instance extends Where {
         else {
             this.errorOccured = true;
             this.onErrorOccured(
-                new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.query.From }),
+                new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.query.from }),
                 true
             );
         }
     }
 
     private initTransaction_() {
-        this.createTransaction([this.query.From], this.onTransactionCompleted_, Idb_Mode.ReadOnly);
-        this.objectStore = this.transaction.objectStore(this.query.From);
+        this.createTransaction([this.query.from], this.onTransactionCompleted_, Idb_Mode.ReadOnly);
+        this.objectStore = this.transaction.objectStore(this.query.from);
     }
 }

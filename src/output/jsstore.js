@@ -368,24 +368,24 @@ __webpack_require__.r(__webpack_exports__);
 
 var InstanceHelper = /** @class */ (function () {
     function InstanceHelper(worker) {
-        this.isDbOpened = false;
-        this.requestQueue = [];
-        this.isCodeExecuting = false;
-        this.whiteListApi = ['create_db', 'is_db_exist', 'get_db_version', 'get_db_list', 'open_db'];
+        this.isDbOpened_ = false;
+        this.requestQueue_ = [];
+        this.isCodeExecuting_ = false;
+        this.whiteListApi_ = ['create_db', 'is_db_exist', 'get_db_version', 'get_db_list', 'open_db'];
         if (worker) {
-            this._worker = worker;
-            this._worker.onmessage = this.onMessageFromWorker.bind(this);
+            this.worker_ = worker;
+            this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
         }
         else {
             var err = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].WorkerNotSupplied);
             err.throw();
         }
     }
-    InstanceHelper.prototype.onMessageFromWorker = function (msg) {
-        this.processFinishedQuery(msg.data);
+    InstanceHelper.prototype.onMessageFromWorker_ = function (msg) {
+        this.processFinishedQuery_(msg.data);
     };
-    InstanceHelper.prototype.processFinishedQuery = function (message) {
-        var finishedRequest = this.requestQueue.shift();
+    InstanceHelper.prototype.processFinishedQuery_ = function (message) {
+        var finishedRequest = this.requestQueue_.shift();
         if (finishedRequest) {
             _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request finished : " + finishedRequest.name);
             if (message.errorOccured) {
@@ -397,13 +397,13 @@ var InstanceHelper = /** @class */ (function () {
                 if (finishedRequest.onSuccess) {
                     var openDbQueries = ['open_db', 'create_db'];
                     if (openDbQueries.indexOf(finishedRequest.name) >= 0) {
-                        this.isDbOpened = true;
+                        this.isDbOpened_ = true;
                     }
                     finishedRequest.onSuccess(message.returnedValue);
                 }
             }
-            this.isCodeExecuting = false;
-            this.executeQry();
+            this.isCodeExecuting_ = false;
+            this.executeQry_();
         }
     };
     InstanceHelper.prototype.pushApi = function (request) {
@@ -415,24 +415,24 @@ var InstanceHelper = /** @class */ (function () {
             request.onError = function (error) {
                 reject(error);
             };
-            _this.prcoessExecutionOfQry(request);
+            _this.prcoessExecutionOfQry_(request);
         });
     };
-    InstanceHelper.prototype.prcoessExecutionOfQry = function (request) {
-        this.requestQueue.push(request);
-        this.executeQry();
+    InstanceHelper.prototype.prcoessExecutionOfQry_ = function (request) {
+        this.requestQueue_.push(request);
+        this.executeQry_();
         _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request pushed: " + request.name);
     };
-    InstanceHelper.prototype.executeQry = function () {
+    InstanceHelper.prototype.executeQry_ = function () {
         var _this = this;
-        if (!this.isCodeExecuting && this.requestQueue.length > 0) {
-            if (this.isDbOpened) {
-                this.sendRequestToWorker(this.requestQueue[0]);
+        if (!this.isCodeExecuting_ && this.requestQueue_.length > 0) {
+            if (this.isDbOpened_) {
+                this.sendRequestToWorker_(this.requestQueue_[0]);
                 return;
             }
             var allowedQueryIndex_1 = -1;
-            this.requestQueue.every(function (item, index) {
-                if (_this.whiteListApi.indexOf(item.name) >= 0) {
+            this.requestQueue_.every(function (item, index) {
+                if (_this.whiteListApi_.indexOf(item.name) >= 0) {
                     allowedQueryIndex_1 = index;
                     return false;
                 }
@@ -440,19 +440,19 @@ var InstanceHelper = /** @class */ (function () {
             });
             // shift allowed query to zeroth index
             if (allowedQueryIndex_1 >= 0) {
-                this.requestQueue.splice(0, 0, this.requestQueue.splice(allowedQueryIndex_1, 1)[0]);
-                this.sendRequestToWorker(this.requestQueue[0]);
+                this.requestQueue_.splice(0, 0, this.requestQueue_.splice(allowedQueryIndex_1, 1)[0]);
+                this.sendRequestToWorker_(this.requestQueue_[0]);
             }
         }
     };
-    InstanceHelper.prototype.sendRequestToWorker = function (firstRequest) {
-        this.isCodeExecuting = true;
+    InstanceHelper.prototype.sendRequestToWorker_ = function (firstRequest) {
+        this.isCodeExecuting_ = true;
         var request = {
             name: firstRequest.name,
             query: firstRequest.query
         };
         _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request executing : " + firstRequest.name);
-        this._worker.postMessage(request);
+        this.worker_.postMessage(request);
     };
     return InstanceHelper;
 }());

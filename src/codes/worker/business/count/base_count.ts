@@ -1,10 +1,9 @@
 import { Base } from "../base";
+import { ICount } from "../../interfaces";
 
 export class BaseCount extends Base {
     resultCount = 0;
-    skipRecord;
-    limitRecord;
-    checkFlag = false;
+    query: ICount;
 
     protected onQueryFinished() {
         if (this.isTransaction === true) {

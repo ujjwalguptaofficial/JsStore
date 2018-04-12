@@ -17,7 +17,7 @@ export class Join extends BaseSelect {
 
         const convertQueryIntoStack = (qry: IJoin) => {
             if (qry.table1 !== undefined) {
-                qry.table2['JoinType'] = qry.join === undefined ? 'inner' : qry.join.toLowerCase();
+                qry.table2['joinType'] = qry.join === undefined ? 'inner' : qry.join.toLowerCase();
                 this.queryStack.push(qry.table2);
                 if (this.queryStack.length % 2 === 0) {
                     this.queryStack[this.queryStack.length - 1].nextJoin = (qry as any).nextJoin;

@@ -73,7 +73,7 @@ export interface IOrder {
 }
 
 export interface ICount {
-    from: string | object;
+    from: any;
     ignoreCase?: boolean;
     where?;
 }

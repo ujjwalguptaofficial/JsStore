@@ -1,18 +1,18 @@
 describe('Test join', function () {
     it('inner join', function (done) {
-        var JoinLogic = {
-            Table1: {
-                Table: 'Orders',
-                Column: 'CustomerID'
+        var joinLogic = {
+            table1: {
+                table: 'Orders',
+                column: 'CustomerID'
             },
-            Join: 'inner',
-            Table2: {
-                Table: 'Customers',
-                Column: 'CustomerID'
+            join: 'inner',
+            table2: {
+                table: 'Customers',
+                column: 'CustomerID'
             }
         };
         Con.select({
-            from: JoinLogic
+            from: joinLogic
         }).then(function (results) {
             expect(results).to.be.an('array').length(196);
             done();
@@ -22,19 +22,19 @@ describe('Test join', function () {
     });
 
     it('left join', function (done) {
-        var JoinLogic = {
-            Table1: {
-                Table: 'Orders',
-                Column: 'CustomerID'
+        var joinLogic = {
+            table1: {
+                table: 'Orders',
+                column: 'CustomerID'
             },
-            Join: 'left',
-            Table2: {
-                Table: 'Customers',
-                Column: 'CustomerID'
+            join: 'left',
+            table2: {
+                table: 'Customers',
+                column: 'CustomerID'
             }
         };
         Con.select({
-            from: JoinLogic
+            from: joinLogic
         }).then(function (results) {
             expect(results).to.be.an('array').length(196);
             done();
@@ -44,19 +44,19 @@ describe('Test join', function () {
     });
 
     it('right join', function (done) {
-        var JoinLogic = {
-            Table1: {
-                Table: 'Orders',
-                Column: 'CustomerID'
+        var joinLogic = {
+            table1: {
+                table: 'Orders',
+                column: 'CustomerID'
             },
-            Join: 'right',
-            Table2: {
-                Table: 'Customers',
-                Column: 'CustomerID'
+            join: 'right',
+            table2: {
+                table: 'Customers',
+                column: 'CustomerID'
             }
         };
         Con.select({
-            from: JoinLogic
+            from: joinLogic
         }).then(function (results) {
             expect(results).to.be.an('array').length(93);
             done();
@@ -66,19 +66,19 @@ describe('Test join', function () {
     });
 
     it('right join', function (done) {
-        var JoinLogic = {
-            Table1: {
-                Table: 'Orders',
-                Column: 'CustomerID'
+        var joinLogic = {
+            table1: {
+                table: 'Orders',
+                column: 'CustomerID'
             },
-            Join: 'right',
-            Table2: {
-                Table: 'Customers',
-                Column: 'CustomerID'
+            join: 'right',
+            table2: {
+                table: 'Customers',
+                column: 'CustomerID'
             }
         };
         Con.select({
-            from: JoinLogic
+            from: joinLogic
         }).then(function (results) {
             expect(results).to.be.an('array').length(93);
             done();
@@ -90,34 +90,34 @@ describe('Test join', function () {
 
     it('three table join', function (done) {
         //first join between two tables
-        var Join1 = {
-            Table1: {
-                Table: 'Orders',
-                Column: 'CustomerID'
+        var join1 = {
+            table1: {
+                table: 'Orders',
+                column: 'CustomerID'
             },
-            Join: 'inner',
-            Table2: {
-                Table: 'Customers',
-                Column: 'CustomerID'
+            join: 'inner',
+            table2: {
+                table: 'Customers',
+                column: 'CustomerID'
             },
-            NextJoin: { // Provide details for next join 
-                Table: 'Orders', // which table will be used from above two tables.,  
-                Column: 'ShipperID' // which column will be used from Table
+            nextJoin: { // Provide details for next join 
+                table: 'Orders', // which table will be used from above two tables.,  
+                column: 'ShipperID' // which column will be used from Table
             }
             // we have defined that table Orders will be used for next join on column ShippersID
         }
 
         //join with third tables
-        var Join2 = {
-            Table1: Join1,
-            Join: 'inner',
-            Table2: {
-                Table: 'Shippers',
-                Column: 'ShipperID'
+        var join2 = {
+            table1: join1,
+            join: 'inner',
+            table2: {
+                table: 'Shippers',
+                column: 'ShipperID'
             }
         }
         Con.select({
-            from: Join2
+            from: join2
         }).then(function (results) {
             expect(results).to.be.an('array').length(196);
             done();

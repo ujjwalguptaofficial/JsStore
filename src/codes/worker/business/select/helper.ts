@@ -7,7 +7,7 @@ export class Helper extends GroupByHelper {
         super();
     }
 
-    processOrderBy() {
+    protected processOrderBy() {
         const order = this.query.order;
         if (order && this.results.length > 0 && !this.sorted && order.by) {
             order.type = order.type ? order.type.toLowerCase() : 'asc';

@@ -1,5 +1,5 @@
 import { Where } from "./where";
-import { DATA_TYPE } from "../../enums";
+import { DATA_TYPE, QUERY_OPTION } from "../../enums";
 
 export class GroupByHelper extends Where {
     constructor() {
@@ -7,21 +7,21 @@ export class GroupByHelper extends Where {
     }
 
     protected processGroupBy() {
-        const grpQry = this.query.groupBy;
+        const grpQry = this.query.groupBy as any;
         let datas = this.results;
         const lookUpObj = {};
         // free results memory
         this.results = this.query.groupBy = undefined;
         if (this.getType(grpQry) === DATA_TYPE.String) {
-            for (const i of Object.keys(datas)) {
+            for (const i in datas) {
                 lookUpObj[datas[i][grpQry as string]] = datas[i];
             }
         }
         else {
             let objKey;
-            for (const i of Object.keys(datas)) {
+            for (const i in datas) {
                 objKey = "";
-                for (const column of Object.keys(grpQry)) {
+                for (const column in grpQry) {
                     objKey += datas[i][grpQry[column]];
                 }
                 lookUpObj[objKey] = datas[i];
@@ -29,7 +29,7 @@ export class GroupByHelper extends Where {
         }
         // free datas memory
         datas = [];
-        for (const i of Object.keys(lookUpObj)) {
+        for (const i in lookUpObj) {
             datas.push(lookUpObj[i]);
         }
         this.results = datas;
@@ -54,7 +54,7 @@ export class GroupByHelper extends Where {
                 const aggregateColumn = aggregateQry[prop];
                 const aggregateValType = this.getType(aggregateColumn);
                 switch (prop) {
-                    case 'count':
+                    case QUERY_OPTION.Count:
                         const getCount = () => {
                             value = lookUpObj[objKey];
                             // get old value
@@ -74,7 +74,7 @@ export class GroupByHelper extends Where {
                             }
                         }
                         break;
-                    case 'max':
+                    case QUERY_OPTION.Max:
                         const getMax = () => {
                             value = lookUpObj[objKey];
                             // get old value
@@ -96,7 +96,7 @@ export class GroupByHelper extends Where {
                             }
                         }
                         break;
-                    case 'min':
+                    case QUERY_OPTION.Min:
                         const getMin = () => {
                             value = lookUpObj[objKey];
                             // get old value
@@ -118,7 +118,7 @@ export class GroupByHelper extends Where {
                             }
                         }
                         break;
-                    case 'sum':
+                    case QUERY_OPTION.Sum:
                         const getSum = () => {
                             value = lookUpObj[objKey];
                             // get old value
@@ -138,7 +138,7 @@ export class GroupByHelper extends Where {
                             }
                         }
                         break;
-                    case 'avg':
+                    case QUERY_OPTION.Avg:
                         const getAvg = () => {
                             value = lookUpObj[objKey];
                             // get old sum value
@@ -158,7 +158,7 @@ export class GroupByHelper extends Where {
                             getAvg();
                         }
                         else if (aggregateValType === DATA_TYPE.Array) {
-                            for (const item of Object.keys(aggregateColumn)) {
+                            for (const item in aggregateColumn) {
                                 columnToAggregate = aggregateColumn[item];
                                 getAvg();
                             }

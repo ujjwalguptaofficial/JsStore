@@ -1,9 +1,10 @@
 import { Base } from "../base";
 import { IUpdate } from "../../interfaces";
+import { DATA_TYPE } from "../../enums";
 
 export const updateValue = (suppliedValue, storedValue) => {
     for (const key in suppliedValue) {
-        if (typeof suppliedValue[key] !== 'object') {
+        if (typeof suppliedValue[key] !== DATA_TYPE.Object) {
             storedValue[key] = suppliedValue[key];
         }
         else {
@@ -24,7 +25,6 @@ export const updateValue = (suppliedValue, storedValue) => {
 
 export class BaseUpdate extends Base {
     query: IUpdate;
-    checkFlag = false;
     protected initTransaction() {
         this.createTransaction([this.query.in], this.onTransactionCompleted_);
         this.objectStore = this.transaction.objectStore(this.query.in);

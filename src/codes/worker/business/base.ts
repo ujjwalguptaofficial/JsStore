@@ -21,6 +21,8 @@ export class Base extends BaseHelper {
     isTransaction: boolean;
     cursorOpenRequest: IDBRequest;
     checkFlag = false;
+    skipRecord;
+    limitRecord;
 
     protected onCursorError = (e) => {
         this.errorOccured = true;

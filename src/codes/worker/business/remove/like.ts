@@ -2,9 +2,6 @@ import { In } from "./in";
 import { OCCURENCE } from "../../enums";
 
 export class Like extends In {
-    compSymbol: OCCURENCE;
-    compValue;
-    compValueLength: number;
 
     protected executeLikeLogic(column, value, symbol: OCCURENCE) {
         let cursor: IDBCursorWithValue;

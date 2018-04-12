@@ -24,11 +24,4 @@ describe('Test helper Api', function () {
         });
     });
 
-    it('getDbList api test', function (done) {
-        Con.getDbList().then(function (result) {
-            expect(result).to.be.an('array').to.deep.equal(['Demo']);
-            done();
-        });
-    });
-
 });

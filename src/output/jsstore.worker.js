@@ -453,8 +453,12 @@ var QUERY_OPTION;
     QUERY_OPTION["LessThanEqualTo"] = "<=";
     QUERY_OPTION["NotEqualTo"] = "!=";
     QUERY_OPTION["Aggregate"] = "aggregate";
-    QUERY_OPTION["Or"] = "or";
+    QUERY_OPTION["Max"] = "max";
+    QUERY_OPTION["Min"] = "min";
+    QUERY_OPTION["Avg"] = "avg";
     QUERY_OPTION["Count"] = "count";
+    QUERY_OPTION["Sum"] = "sum";
+    QUERY_OPTION["Or"] = "or";
     QUERY_OPTION["Skip"] = "skip";
     QUERY_OPTION["Limit"] = "limit";
     QUERY_OPTION["And"] = "and";
@@ -1382,7 +1386,7 @@ var QueryExecutor = /** @class */ (function () {
         var _this = this;
         this.getDbVersion_(dbName, function (dbVersion) {
             if (dbVersion !== 0) {
-                _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDbVersion = dbVersion;
+                _this.activeDbVersion_ = dbVersion;
                 _this.getDbSchema_(dbName, function (result) {
                     _this.activeDb_ = result;
                     var openDbProject = new _business_open_db__WEBPACK_IMPORTED_MODULE_4__["OpenDb"](onSuccess, onError);
@@ -1424,7 +1428,7 @@ var QueryExecutor = /** @class */ (function () {
         deleteObject.execute();
     };
     QueryExecutor.prototype.select_ = function (query, onSuccess, onError) {
-        if (typeof query.From === 'object') {
+        if (typeof query.from === 'object') {
             var selectJoinInstance = new _business_select_index__WEBPACK_IMPORTED_MODULE_10__["Join"](query, onSuccess, onError);
         }
         else {
@@ -1433,8 +1437,8 @@ var QueryExecutor = /** @class */ (function () {
         }
     };
     QueryExecutor.prototype.count_ = function (query, onSuccess, onError) {
-        if (typeof query.From === 'object') {
-            query['Count'] = true;
+        if (typeof query.from === 'object') {
+            query['count'] = true;
             var selectJoinInstance = new _business_select_index__WEBPACK_IMPORTED_MODULE_10__["Join"](query, onSuccess, onError);
         }
         else {
@@ -1499,12 +1503,12 @@ var QueryExecutor = /** @class */ (function () {
             onError(err);
         });
     };
-    QueryExecutor.prototype.getType = function (value) {
+    QueryExecutor.prototype.getType_ = function (value) {
         return _util__WEBPACK_IMPORTED_MODULE_15__["Util"].getType(value);
     };
     QueryExecutor.prototype.isDbExist_ = function (dbInfo, onSuccess, onError) {
         if (this.dbStatus_.conStatus !== _enums__WEBPACK_IMPORTED_MODULE_2__["CONNECTION_STATUS"].UnableToStart) {
-            if (this.getType(dbInfo) === _enums__WEBPACK_IMPORTED_MODULE_2__["DATA_TYPE"].String) {
+            if (this.getType_(dbInfo) === _enums__WEBPACK_IMPORTED_MODULE_2__["DATA_TYPE"].String) {
                 this.getDbVersion_(dbInfo, function (dbVersion) {
                     onSuccess(Boolean(dbVersion));
                 });
@@ -2194,7 +2198,7 @@ var Instance = /** @class */ (function (_super) {
         this.onQueryFinished();
     };
     Instance.prototype.orQuerySuccess_ = function () {
-        this.orInfo.results = this.orInfo.results.concat(this.orInfo.results);
+        this.orInfo.results = this.orInfo.results.concat(this.results);
         if (!this.query.limit || (this.query.limit > this.orInfo.results.length)) {
             this.results = [];
             var key = this.getObjectFirstKey(this.orInfo.orQuery);
@@ -2446,18 +2450,15 @@ var GroupByHelper = /** @class */ (function (_super) {
         // free results memory
         this.results = this.query.groupBy = undefined;
         if (this.getType(grpQry) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-            for (var _i = 0, _a = Object.keys(datas); _i < _a.length; _i++) {
-                var i = _a[_i];
+            for (var i in datas) {
                 lookUpObj[datas[i][grpQry]] = datas[i];
             }
         }
         else {
             var objKey = void 0;
-            for (var _b = 0, _c = Object.keys(datas); _b < _c.length; _b++) {
-                var i = _c[_b];
+            for (var i in datas) {
                 objKey = "";
-                for (var _d = 0, _e = Object.keys(grpQry); _d < _e.length; _d++) {
-                    var column = _e[_d];
+                for (var column in grpQry) {
                     objKey += datas[i][grpQry[column]];
                 }
                 lookUpObj[objKey] = datas[i];
@@ -2465,8 +2466,7 @@ var GroupByHelper = /** @class */ (function (_super) {
         }
         // free datas memory
         datas = [];
-        for (var _f = 0, _g = Object.keys(lookUpObj); _f < _g.length; _f++) {
-            var i = _g[_f];
+        for (var i in lookUpObj) {
             datas.push(lookUpObj[i]);
         }
         this.results = datas;
@@ -2490,7 +2490,7 @@ var GroupByHelper = /** @class */ (function (_super) {
                 var aggregateColumn = aggregateQry[prop];
                 var aggregateValType = _this.getType(aggregateColumn);
                 switch (prop) {
-                    case 'count':
+                    case _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Count:
                         var getCount = function () {
                             value = lookUpObj[objKey];
                             // get old value
@@ -2510,7 +2510,7 @@ var GroupByHelper = /** @class */ (function (_super) {
                             }
                         }
                         break;
-                    case 'max':
+                    case _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Max:
                         var getMax = function () {
                             value = lookUpObj[objKey];
                             // get old value
@@ -2531,7 +2531,7 @@ var GroupByHelper = /** @class */ (function (_super) {
                             }
                         }
                         break;
-                    case 'min':
+                    case _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Min:
                         var getMin = function () {
                             value = lookUpObj[objKey];
                             // get old value
@@ -2552,7 +2552,7 @@ var GroupByHelper = /** @class */ (function (_super) {
                             }
                         }
                         break;
-                    case 'sum':
+                    case _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Sum:
                         var getSum = function () {
                             value = lookUpObj[objKey];
                             // get old value
@@ -2572,7 +2572,7 @@ var GroupByHelper = /** @class */ (function (_super) {
                             }
                         }
                         break;
-                    case 'avg':
+                    case _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Avg:
                         var getAvg = function () {
                             value = lookUpObj[objKey];
                             // get old sum value
@@ -2591,8 +2591,7 @@ var GroupByHelper = /** @class */ (function (_super) {
                             getAvg();
                         }
                         else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                            for (var _i = 0, _a = Object.keys(aggregateColumn); _i < _a.length; _i++) {
-                                var item = _a[_i];
+                            for (var item in aggregateColumn) {
                                 columnToAggregate = aggregateColumn[item];
                                 getAvg();
                             }
@@ -3763,34 +3762,9 @@ __webpack_require__.r(__webpack_exports__);
 
 var BaseHelper = /** @class */ (function () {
     function BaseHelper() {
-        // static method helpers
-        this.filterOnOccurence = function (value) {
-            var found = false;
-            value = value.toLowerCase();
-            switch (this._compSymbol) {
-                case _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"].Any:
-                    if (value.indexOf(this._compValue) >= 0) {
-                        found = true;
-                    }
-                    break;
-                case _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"].First:
-                    if (value.indexOf(this._compValue) === 0) {
-                        found = true;
-                    }
-                    break;
-                case _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"].Last:
-                    if (value.lastIndexOf(this._compValue) === value.length - this._compValueLength) {
-                        found = true;
-                    }
-                    break;
-                default: if (value !== this._compValue) {
-                    found = true;
-                }
-            }
-            return found;
-        };
     }
     Object.defineProperty(BaseHelper.prototype, "activeDb", {
+        // static method helpers
         get: function () {
             return _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDb;
         },
@@ -3834,6 +3808,31 @@ var BaseHelper = /** @class */ (function () {
             return !status;
         });
         return status;
+    };
+    BaseHelper.prototype.filterOnOccurence = function (value) {
+        var found = false;
+        value = value.toLowerCase();
+        switch (this.compSymbol) {
+            case _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"].Any:
+                if (value.indexOf(this.compValue) >= 0) {
+                    found = true;
+                }
+                break;
+            case _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"].First:
+                if (value.indexOf(this.compValue) === 0) {
+                    found = true;
+                }
+                break;
+            case _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"].Last:
+                if (value.lastIndexOf(this.compValue) === value.length - this.compValueLength) {
+                    found = true;
+                }
+                break;
+            default: if (value !== this.compValue) {
+                found = true;
+            }
+        }
+        return found;
     };
     BaseHelper.prototype.isTableExist = function (tableName) {
         var isExist = false;
@@ -4167,7 +4166,7 @@ var Join = /** @class */ (function (_super) {
         var tableList = []; // used to open the multiple object store
         var convertQueryIntoStack = function (qry) {
             if (qry.table1 !== undefined) {
-                qry.table2['JoinType'] = qry.join === undefined ? 'inner' : qry.join.toLowerCase();
+                qry.table2['joinType'] = qry.join === undefined ? 'inner' : qry.join.toLowerCase();
                 _this.queryStack.push(qry.table2);
                 if (_this.queryStack.length % 2 === 0) {
                     _this.queryStack[_this.queryStack.length - 1].nextJoin = qry.nextJoin;
@@ -4491,12 +4490,12 @@ var Instance = /** @class */ (function (_super) {
         }
         else {
             this.errorOccured = true;
-            this.onErrorOccured(new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].TableNotExist, { TableName: this.query.From }), true);
+            this.onErrorOccured(new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].TableNotExist, { TableName: this.query.from }), true);
         }
     };
     Instance.prototype.initTransaction_ = function () {
-        this.createTransaction([this.query.From], this.onTransactionCompleted_, _enums__WEBPACK_IMPORTED_MODULE_3__["Idb_Mode"].ReadOnly);
-        this.objectStore = this.transaction.objectStore(this.query.From);
+        this.createTransaction([this.query.from], this.onTransactionCompleted_, _enums__WEBPACK_IMPORTED_MODULE_3__["Idb_Mode"].ReadOnly);
+        this.objectStore = this.transaction.objectStore(this.query.from);
     };
     return Instance;
 }(_where__WEBPACK_IMPORTED_MODULE_0__["Where"]));
@@ -4818,7 +4817,6 @@ var BaseCount = /** @class */ (function (_super) {
     function BaseCount() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.resultCount = 0;
-        _this.checkFlag = false;
         _this.onTransactionCompleted_ = function () {
             if (_this.errorOccured === false) {
                 _this.onSuccess(_this.resultCount);
@@ -5527,9 +5525,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 var BaseRemove = /** @class */ (function (_super) {
     __extends(BaseRemove, _super);
     function BaseRemove() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.checkFlag = false;
-        return _this;
+        return _super !== null && _super.apply(this, arguments) || this;
     }
     BaseRemove.prototype.onQueryFinished = function () {
         // ff
@@ -5717,6 +5713,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "updateValue", function() { return updateValue; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BaseUpdate", function() { return BaseUpdate; });
 /* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(36);
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6);
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -5728,9 +5725,10 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
+
 var updateValue = function (suppliedValue, storedValue) {
     for (var key in suppliedValue) {
-        if (typeof suppliedValue[key] !== 'object') {
+        if (typeof suppliedValue[key] !== _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Object) {
             storedValue[key] = suppliedValue[key];
         }
         else {
@@ -5760,7 +5758,6 @@ var BaseUpdate = /** @class */ (function (_super) {
     __extends(BaseUpdate, _super);
     function BaseUpdate() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.checkFlag = false;
         _this.onTransactionCompleted_ = function () {
             if (_this.errorOccured === false) {
                 _this.onSuccess(_this.rowAffected);
@@ -6012,21 +6009,22 @@ var SchemaChecker = /** @class */ (function () {
         this.table = table;
     }
     SchemaChecker.prototype.check = function (setValue, tblName) {
+        var _this = this;
         var error = null;
-        if (typeof setValue === 'object') {
+        if (typeof setValue === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Object) {
             if (this.table) {
                 // loop through table column and find data is valid
                 this.table.columns.every(function (column) {
                     if (error === null) {
                         if (column.name in setValue) {
-                            error = this.checkByColumn(column, setValue[column.name]);
+                            error = _this.checkByColumn_(column, setValue[column.name]);
                         }
                         return true;
                     }
                     else {
                         return false;
                     }
-                }, this);
+                });
             }
             else {
                 error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].TableNotExist, { TableName: tblName });
@@ -6043,16 +6041,16 @@ var SchemaChecker = /** @class */ (function () {
     SchemaChecker.prototype.getType_ = function (value) {
         return _util__WEBPACK_IMPORTED_MODULE_2__["Util"].getType(value);
     };
-    SchemaChecker.prototype.checkByColumn = function (column, value) {
+    SchemaChecker.prototype.checkByColumn_ = function (column, value) {
         var error = null;
         // check not null schema
-        if (column._notNull && this.isNull_(value)) {
+        if (column.notNull && this.isNull_(value)) {
             error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].NullValue, { ColumnName: column.name });
         }
         // check datatype
         var type = this.getType_(value);
-        if (column._dataType) {
-            if (type !== column._dataType && type !== 'object') {
+        if (column.dataType) {
+            if (type !== column.dataType && type !== 'object') {
                 error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].BadDataType, { ColumnName: column.name });
             }
         }
@@ -6061,7 +6059,7 @@ var SchemaChecker = /** @class */ (function () {
             var allowedOp = ['+', '-', '*', '/'];
             for (var _i = 0, _a = Object.keys(value); _i < _a.length; _i++) {
                 var prop = _a[_i];
-                if (allowedOp.indexOf(prop) < 0 && column._dataType && type !== column._dataType) {
+                if (allowedOp.indexOf(prop) < 0 && column.dataType && type !== column.dataType) {
                     error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].BadDataType, { ColumnName: column.name });
                 }
                 break;

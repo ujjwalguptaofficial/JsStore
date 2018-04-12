@@ -233,7 +233,7 @@ describe('Test Select Api', function () {
     it('select with GroupBy', function (done) {
         Con.select({
             from: 'Customers',
-            GroupBy: "Country"
+            groupBy: "Country"
         }).
         then(function (results) {
             expect(results).to.be.an('array').length(22);

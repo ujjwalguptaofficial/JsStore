@@ -2,7 +2,7 @@ import { IdbHelper } from "./business/idb_helper";
 import { LogHelper } from "./log_helper";
 import {
     ITranscationQry, IError, IUpdate,
-    IInsert, IRemove, IDataBase, ISelect, ISelectJoin, IDbInfo, ITable
+    IInsert, IRemove, IDataBase, ISelect, ISelectJoin, IDbInfo, ITable, ICount
 } from "./interfaces";
 import { CONNECTION_STATUS, ERROR_TYPE, DATA_TYPE } from "./enums";
 import { Config } from "./config";
@@ -85,7 +85,7 @@ export class QueryExecutor {
 
         switch (request.name) {
             case 'select':
-                this.select_(request.query, onSuccess, onError);
+                this.select_(request.query as ISelect, onSuccess, onError);
                 break;
             case 'insert': this.insert_(request.query as IInsert, onSuccess, onError);
                 break;
@@ -121,7 +121,7 @@ export class QueryExecutor {
                 break;
             case 'drop_db': this.dropDb_(onSuccess, onError);
                 break;
-            case 'count': this.count_(request.query, onSuccess, onError);
+            case 'count': this.count_(request.query as ICount, onSuccess, onError);
                 break;
             case 'bulk_insert': this.bulkInsert_(request.query as IInsert, onSuccess, onError);
                 break;
@@ -158,7 +158,7 @@ export class QueryExecutor {
     private openDb_(dbName, onSuccess: () => void, onError: (err: IError) => void) {
         this.getDbVersion_(dbName, (dbVersion) => {
             if (dbVersion !== 0) {
-                IdbHelper.activeDbVersion = dbVersion;
+                this.activeDbVersion_ = dbVersion;
                 this.getDbSchema_(dbName, (result) => {
                     this.activeDb_ = result;
                     const openDbProject = new OpenDb(onSuccess, onError);
@@ -206,8 +206,8 @@ export class QueryExecutor {
         deleteObject.execute();
     }
 
-    private select_(query, onSuccess: (result) => void, onError: (err: IError) => void) {
-        if (typeof query.From === 'object') {
+    private select_(query: ISelect, onSuccess: (result) => void, onError: (err: IError) => void) {
+        if (typeof query.from === 'object') {
             const selectJoinInstance = new Select.Join(query as ISelectJoin, onSuccess, onError);
         }
         else {
@@ -216,10 +216,10 @@ export class QueryExecutor {
         }
     }
 
-    private count_(query, onSuccess: () => void, onError: (err: IError) => void) {
-        if (typeof query.From === 'object') {
-            query['Count'] = true;
-            const selectJoinInstance = new Select.Join(query, onSuccess, onError);
+    private count_(query: ICount, onSuccess: () => void, onError: (err: IError) => void) {
+        if (typeof query.from === 'object') {
+            query['count'] = true;
+            const selectJoinInstance = new Select.Join(query as ISelectJoin, onSuccess, onError);
         }
         else {
             const countInstance = new Count.Instance(query, onSuccess, onError);
@@ -284,13 +284,13 @@ export class QueryExecutor {
         });
     }
 
-    private getType(value) {
+    private getType_(value) {
         return Util.getType(value);
     }
 
     private isDbExist_(dbInfo, onSuccess: (isExist: boolean) => void, onError: (err: IError) => void) {
         if (this.dbStatus_.conStatus !== CONNECTION_STATUS.UnableToStart) {
-            if (this.getType(dbInfo) === DATA_TYPE.String) {
+            if (this.getType_(dbInfo) === DATA_TYPE.String) {
                 this.getDbVersion_(dbInfo, (dbVersion) => {
                     onSuccess(Boolean(dbVersion));
                 });

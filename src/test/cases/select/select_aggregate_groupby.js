@@ -4,13 +4,13 @@ describe('Test aggregate option with groupby', function () {
             from: 'Products',
             groupBy: 'CategoryID',
             aggregate: {
-                Min: "Price"
+                min: "Price"
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(8);
             var ExpectedResult = [4.5, 10, 9.2, 2.5, 7, 7.45, 10, 6];
             for (var i = 0; i < 8; i++) {
-                expect(results[i]).to.have.property('Min(Price)').to.equal(ExpectedResult[i]);
+                expect(results[i]).to.have.property('min(Price)').to.equal(ExpectedResult[i]);
             }
             done();
         }).
@@ -24,13 +24,13 @@ describe('Test aggregate option with groupby', function () {
             from: 'Products',
             groupBy: 'CategoryID',
             aggregate: {
-                Max: "Price"
+                max: "Price"
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(8);
             var ExpectedResult = [263.5, 43.9, 81, 55, 38, 123.79, 53, 62.5];
             for (var i = 0; i < 8; i++) {
-                expect(results[i]).to.have.property('Max(Price)').to.equal(ExpectedResult[i]);
+                expect(results[i]).to.have.property('max(Price)').to.equal(ExpectedResult[i]);
             }
             done();
         }).
@@ -44,13 +44,13 @@ describe('Test aggregate option with groupby', function () {
             from: 'Products',
             groupBy: 'CategoryID',
             aggregate: {
-                Sum: "Price"
+                sum: "Price"
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(8);
             var ExpectedResult = [455.75, 276.75, 327.08, 287.3, 141.75, 324.04, 161.85, 248.19];
             for (var i = 0; i < 8; i++) {
-                expect(results[i]).to.have.property('Sum(Price)').to.equal(ExpectedResult[i]);
+                expect(results[i]).to.have.property('sum(Price)').to.equal(ExpectedResult[i]);
             }
             done();
         }).
@@ -63,14 +63,14 @@ describe('Test aggregate option with groupby', function () {
         Con.select({
             from: 'Products',
             aggregate: {
-                Count: "Price"
+                count: "Price"
             },
             groupBy: 'CategoryID'
         }).then(function (results) {
             expect(results).to.be.an('array').length(8);
             var ExpectedResult = [12, 12, 13, 10, 7, 6, 5, 12];
             for (var i = 0; i < 8; i++) {
-                expect(results[i]).to.have.property('Count(Price)').to.equal(ExpectedResult[i]);
+                expect(results[i]).to.have.property('count(Price)').to.equal(ExpectedResult[i]);
             }
             done();
         }).catch(function (err) {

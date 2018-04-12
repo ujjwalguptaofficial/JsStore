@@ -3,17 +3,13 @@ import { In } from "./in";
 import { updateValue } from "./base_update";
 
 export class Like extends In {
-    compSymbol: OCCURENCE;
-    compValue;
-    compValueLength: number;
-
     protected executeLikeLogic(column, value, symbol: OCCURENCE) {
         let cursor: IDBCursorWithValue;
         this.compValue = (value as string).toLowerCase();
         this.compValueLength = this.compValue.length;
         this.compSymbol = symbol;
         const cursorOpenRequest = this.objectStore.index(column).openCursor();
-        cursorOpenRequest.onerror =  (e)=> {
+        cursorOpenRequest.onerror = (e) => {
             this.errorOccured = true;
             this.onErrorOccured(e);
         };

@@ -118,8 +118,7 @@ describe('Test remove Api', function () {
         Con.select({
             from: 'Customers',
             where: {
-                Country: {
-                    in: ['Germany', 'France', 'UK']
+                Country: { in: ['Germany', 'France', 'UK']
                 }
             }
         }).then(function (results) {
@@ -131,8 +130,7 @@ describe('Test remove Api', function () {
         Con.remove({
             from: 'Customers',
             where: {
-                Country: {
-                    in: ['Germany', 'France', 'UK']
+                Country: { in: ['Germany', 'France', 'UK']
                 }
             }
         }).then(function (results) {
@@ -395,18 +393,15 @@ describe('Test remove Api', function () {
     it('remove with like- "%or"', function (done) {
         var Count;
         Con.select({
-                from: 'Customers',
-                where: {
-                    CustomerName: {
-                        like: '%or'
-                    }
+            from: 'Customers',
+            where: {
+                CustomerName: {
+                    like: '%or'
                 }
-            }).then(function (results) {
-                Count = results.length;
-            }).catch(function (results) {
-                done(err);
-            })
-            .remove({
+            }
+        }).then(function (results) {
+            Count = results.length;
+            Con.remove({
                 from: 'Customers',
                 where: {
                     CustomerName: {
@@ -415,9 +410,14 @@ describe('Test remove Api', function () {
                 }
             }).then(function (results) {
                 expect(results).to.be.an('number').to.equal(Count);
+                done();
             }).catch(function (results) {
                 done(err);
             })
+        }).catch(function (results) {
+            done(err);
+        });
+
     });
 
     it('remove with like- "or%"', function (done) {

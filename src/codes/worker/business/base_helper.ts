@@ -5,7 +5,9 @@ import { QUERY_OPTION } from "../enums";
 import { Util } from "../util";
 
 export class BaseHelper {
-
+    compSymbol: OCCURENCE;
+    compValue;
+    compValueLength: number;
     // static method helpers
 
     protected get activeDb() {
@@ -49,28 +51,26 @@ export class BaseHelper {
         return status;
     }
 
-    protected filterOnOccurence = function (value) {
+    protected filterOnOccurence(value) {
         let found = false;
         value = value.toLowerCase();
-        switch (this._compSymbol) {
-            case OCCURENCE.Any: if (value.indexOf(this._compValue) >= 0) {
+        switch (this.compSymbol) {
+            case OCCURENCE.Any: if (value.indexOf(this.compValue) >= 0) {
                 found = true;
             } break;
-            case OCCURENCE.First: if (value.indexOf(this._compValue) === 0) {
+            case OCCURENCE.First: if (value.indexOf(this.compValue) === 0) {
                 found = true;
             } break;
             case OCCURENCE.Last:
-                if (value.lastIndexOf(this._compValue) === value.length - this._compValueLength) {
+                if (value.lastIndexOf(this.compValue) === value.length - this.compValueLength) {
                     found = true;
                 } break;
-            default: if (value !== this._compValue) {
+            default: if (value !== this.compValue) {
                 found = true;
             }
         }
         return found;
-    };
-
-
+    }
 
     protected isTableExist(tableName: string) {
         let isExist = false;

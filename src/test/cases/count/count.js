@@ -1,5 +1,5 @@
 describe('Test count Api', function () {
-    it('count all - using promise', function (done) {
+    it('count all', function (done) {
         Con.count({
             from: 'Customers'
         }).

@@ -4,8 +4,6 @@ import { ISelect } from "../../interfaces";
 export class BaseSelect extends Base {
     results = [];
     sorted = false;
-    skipRecord;
-    limitRecord;
     isOr: boolean;
     isArrayQry: boolean;
     onWhereArrayQrySuccess: () => void;

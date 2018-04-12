@@ -190,7 +190,7 @@ export class Instance extends Helper {
     }
 
     private orQuerySuccess_() {
-        this.orInfo.results = [... this.orInfo.results, ...this.orInfo.results];
+        this.orInfo.results = [... this.orInfo.results, ...this.results];
         if (!this.query.limit || (this.query.limit > this.orInfo.results.length)) {
             this.results = [];
             const key = this.getObjectFirstKey(this.orInfo.orQuery);
