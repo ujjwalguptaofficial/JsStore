@@ -7,7 +7,7 @@ module.exports = [merge(baseConfig[0], {
         output: {
             path: path.join(__dirname, "output"),
             filename: "jsstore.min.js",
-            library: 'jsStore'
+            library: 'JsStore'
         },
         mode: 'production'
     }),

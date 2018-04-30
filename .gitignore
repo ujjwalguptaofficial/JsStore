@@ -7,3 +7,4 @@ Code/output/
 Code/output/jsstore.d.ts
 
 node_modules/
+.nuxt/
