@@ -9,7 +9,8 @@ module.exports = [merge(baseConfig[0], {
         output: {
             path: path.join(__dirname, "output"),
             filename: "jsstore.js",
-            library: 'JsStore'
+            library: 'JsStore',
+            libraryTarget:'commonjs2'
         }
     }),
     merge(baseConfig[1], {

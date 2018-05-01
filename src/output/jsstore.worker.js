@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.0.0 - 12/04/2018
+ * @license :jsstore - V2.0.0 - 01/05/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -1097,7 +1097,7 @@ var InitDb = /** @class */ (function () {
                 _utils_logic__WEBPACK_IMPORTED_MODULE_2__["Utils"].updateDbStatus(_enums__WEBPACK_IMPORTED_MODULE_1__["CONNECTION_STATUS"].Closed, _index__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].ConnectionClosed);
             };
             _idb_helper__WEBPACK_IMPORTED_MODULE_3__["IdbHelper"]._dbConnection.onversionchange = function (e) {
-                if (e.newVersion === null) {
+                if (e.newVersion === null) { // An attempt is made to delete the db
                     e.target.close(); // Manually close our connection to the db
                     _idb_helper__WEBPACK_IMPORTED_MODULE_3__["IdbHelper"].callDbDroppedByBrowser();
                     _utils_logic__WEBPACK_IMPORTED_MODULE_2__["Utils"].updateDbStatus(_enums__WEBPACK_IMPORTED_MODULE_1__["CONNECTION_STATUS"].Closed, _index__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].ConnectionClosed);
@@ -1600,8 +1600,8 @@ var OpenDb = /** @class */ (function () {
                     _this.updateDbStatus_(_enums__WEBPACK_IMPORTED_MODULE_1__["CONNECTION_STATUS"].Closed, _enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].ConnectionClosed);
                 };
                 _this.dbConnection_.onversionchange = function (e) {
-                    if (e.newVersion === null) {
-                        if (e.newVersion === null) {
+                    if (e.newVersion === null) { // An attempt is made to delete the db
+                        if (e.newVersion === null) { // An attempt is made to delete the db
                             e.target.close(); // Manually close our connection to the db
                             _this.onDbDroppedByBrowser_(true);
                             _this.updateDbStatus_(_enums__WEBPACK_IMPORTED_MODULE_1__["CONNECTION_STATUS"].Closed, _enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].ConnectionClosed);
@@ -1727,6 +1727,7 @@ var TableHelper = /** @class */ (function () {
             if (tableVersion == null) {
                 _this.requireCreation = true;
             }
+            // mark only table which has version greater than store version
             else if (tableVersion < _this.version) {
                 _this.requireDelete = true;
             }
@@ -1777,7 +1778,7 @@ var CreateDb = /** @class */ (function () {
                 _idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].updateDbStatus(_enums__WEBPACK_IMPORTED_MODULE_1__["CONNECTION_STATUS"].Closed, _enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].ConnectionClosed);
             };
             _this.dbConnection_.onversionchange = function (e) {
-                if (e.newVersion === null) {
+                if (e.newVersion === null) { // An attempt is made to delete the db
                     e.target.close(); // Manually close our connection to the db
                     _idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].callDbDroppedByBrowser(true);
                     _idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].updateDbStatus(_enums__WEBPACK_IMPORTED_MODULE_1__["CONNECTION_STATUS"].Closed, _enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].ConnectionClosed);
@@ -5077,6 +5078,7 @@ var ValueChecker = /** @class */ (function () {
         if (column.notNull && this.isNull_(this.value[column.name])) {
             this.onValidationError_(_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].NullValue, { ColumnName: column.name });
         }
+        // check datatype
         else if (column.dataType && !this.isNull_(this.value[column.name]) &&
             this.getType_(this.value[column.name]) !== column.dataType) {
             this.onValidationError_(_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].BadDataType, { ColumnName: column.name });
@@ -5087,6 +5089,7 @@ var ValueChecker = /** @class */ (function () {
         if (column.autoIncrement) {
             this.value[column.name] = ++this.autoIncrementValue[column.name];
         }
+        // check Default Schema
         else if (column.default && this.isNull_(this.value[column.name])) {
             this.value[column.name] = column.default;
         }

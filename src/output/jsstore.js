@@ -1,9 +1,9 @@
 /*!
- * @license :jsstore - V2.0.0 - 12/04/2018
+ * @license :jsstore - V2.0.0 - 01/05/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
-var jsStore =
+module.exports =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};

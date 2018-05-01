@@ -1,8 +1,9 @@
-import { OCCURENCE } from "../enums";
+import { OCCURENCE, DATA_TYPE } from "../enums";
 import { IdbHelper } from "./idb_helper";
 import { Table } from "../model/table";
 import { QUERY_OPTION } from "../enums";
 import { Util } from "../util";
+import { DataBase } from "../model/database";
 
 export class BaseHelper {
     compSymbol: OCCURENCE;
@@ -10,7 +11,7 @@ export class BaseHelper {
     compValueLength: number;
     // static method helpers
 
-    protected get activeDb() {
+    protected get activeDb(): DataBase {
         return IdbHelper.activeDb;
     }
 
