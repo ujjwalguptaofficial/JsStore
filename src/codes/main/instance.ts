@@ -241,7 +241,7 @@ export class Instance extends InstanceHelper {
      * @memberof Instance
      */
     getDbSchema(dbName: string) {
-        return this.pushApi<string[]>({
+        return this.pushApi<IDataBase>({
             name: 'get_db_schema',
             query: dbName
         });

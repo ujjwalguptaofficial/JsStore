@@ -24,7 +24,8 @@ export enum DATA_TYPE {
     Array = "array",
     Number = "number",
     Boolean = "boolean",
-    Null = "null"
+    Null = "null",
+    DateTime = "date_time"
 }
 
 export enum ERROR_TYPE {

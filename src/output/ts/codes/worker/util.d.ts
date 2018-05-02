@@ -10,5 +10,5 @@ export declare class Util {
      * @returns
      * @memberof Util
      */
-    static getType(value: any): "string" | "number" | "boolean" | "symbol" | "undefined" | "object" | "function" | DATA_TYPE.Array | DATA_TYPE.Null;
+    static getType(value: any): "string" | "number" | "boolean" | "symbol" | "undefined" | "object" | "function" | DATA_TYPE.Array | DATA_TYPE.Null | DATA_TYPE.DateTime;
 }

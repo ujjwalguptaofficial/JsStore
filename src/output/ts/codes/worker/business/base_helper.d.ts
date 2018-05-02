@@ -9,7 +9,7 @@ export declare class BaseHelper {
     protected readonly dbConnection: IDBDatabase;
     protected getObjectFirstKey(value: object): string;
     protected isNull(value: any): boolean;
-    protected getType(value: any): "string" | "number" | "boolean" | "symbol" | "undefined" | "object" | "function" | DATA_TYPE.Array | DATA_TYPE.Null;
+    protected getType(value: any): "string" | "number" | "boolean" | "symbol" | "undefined" | "object" | "function" | DATA_TYPE.Array | DATA_TYPE.Null | DATA_TYPE.DateTime;
     protected readonly transaction: IDBTransaction;
     protected createTransaction(tableNames: string[], callBack: () => void, mode?: any): void;
     protected containsNot(whereQry: object): boolean;

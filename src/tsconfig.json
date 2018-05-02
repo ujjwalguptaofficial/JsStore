@@ -10,7 +10,7 @@
         "preserveConstEnums": true,
         "declaration": true,
         "module": "es6",
-        "outDir": "typescript",
+        "outDir": "ts",
         "lib": [
             "es2015",
             "dom",

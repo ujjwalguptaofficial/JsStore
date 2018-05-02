@@ -127,5 +127,5 @@ export declare class Instance extends InstanceHelper {
      * @returns
      * @memberof Instance
      */
-    getDbSchema(dbName: string): Promise<string[]>;
+    getDbSchema(dbName: string): Promise<IDataBase>;
 }

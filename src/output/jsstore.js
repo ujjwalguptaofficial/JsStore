@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.0.0 - 01/05/2018
+ * @license :jsstore - V2.0.0 - 02/05/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -91,11 +91,17 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "COL_OPTION", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["COL_OPTION"]; });
+
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Config", function() { return _config__WEBPACK_IMPORTED_MODULE_2__["Config"]; });
 
 /* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "enableLog", function() { return _helper__WEBPACK_IMPORTED_MODULE_3__["enableLog"]; });
+
+/* harmony import */ var _model_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(7);
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Column", function() { return _model_index__WEBPACK_IMPORTED_MODULE_4__["Column"]; });
+
 
 
 
@@ -526,6 +532,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ERROR_TYPE", function() { return ERROR_TYPE; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WORKER_STATUS", function() { return WORKER_STATUS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return DATA_TYPE; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "COL_OPTION", function() { return COL_OPTION; });
 var ERROR_TYPE;
 (function (ERROR_TYPE) {
     ERROR_TYPE["WorkerNotSupplied"] = "worker_not_supplied";
@@ -545,7 +552,16 @@ var DATA_TYPE;
     DATA_TYPE["Number"] = "number";
     DATA_TYPE["Boolean"] = "boolean";
     DATA_TYPE["Null"] = "null";
+    DATA_TYPE["DateTime"] = "date_time";
 })(DATA_TYPE || (DATA_TYPE = {}));
+var COL_OPTION;
+(function (COL_OPTION) {
+    COL_OPTION["PrimaryKey"] = "primary_key";
+    COL_OPTION["AutoIncrement"] = "auto_increment";
+    COL_OPTION["Unique"] = "unique";
+    COL_OPTION["NotNull"] = "not_null";
+    COL_OPTION["MultiEntry"] = "multi_entry";
+})(COL_OPTION || (COL_OPTION = {}));
 
 
 /***/ }),
@@ -580,6 +596,71 @@ __webpack_require__.r(__webpack_exports__);
 var enableLog = function () {
     _config__WEBPACK_IMPORTED_MODULE_0__["Config"]._isLogEnabled = true;
 };
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _column__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(8);
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Column", function() { return _column__WEBPACK_IMPORTED_MODULE_0__["Column"]; });
+
+
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Column", function() { return Column; });
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4);
+
+var Column = /** @class */ (function () {
+    function Column(name) {
+        this.name = name;
+    }
+    Column.prototype.options = function (columnOptions) {
+        var _this = this;
+        columnOptions.forEach(function (option) {
+            switch (option) {
+                case _enums__WEBPACK_IMPORTED_MODULE_0__["COL_OPTION"].AutoIncrement:
+                    _this.autoIncrement = true;
+                    break;
+                case _enums__WEBPACK_IMPORTED_MODULE_0__["COL_OPTION"].MultiEntry:
+                    _this.multiEntry = true;
+                    break;
+                case _enums__WEBPACK_IMPORTED_MODULE_0__["COL_OPTION"].NotNull:
+                    _this.notNull = true;
+                    break;
+                case _enums__WEBPACK_IMPORTED_MODULE_0__["COL_OPTION"].PrimaryKey:
+                    _this.primaryKey = true;
+                    break;
+                case _enums__WEBPACK_IMPORTED_MODULE_0__["COL_OPTION"].Unique:
+                    _this.unique = true;
+                    break;
+            }
+        });
+        return this;
+    };
+    Column.prototype.setDataType = function (type) {
+        this.dataType = type;
+        return this;
+    };
+    Column.prototype.setDefault = function (value) {
+        this.default = value;
+        return this;
+    };
+    Column.prototype.disableSearch = function () {
+        this.enableSearch = false;
+        return this;
+    };
+    return Column;
+}());
+
 
 
 /***/ })

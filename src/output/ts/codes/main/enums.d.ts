@@ -14,4 +14,12 @@ export declare enum DATA_TYPE {
     Number = "number",
     Boolean = "boolean",
     Null = "null",
+    DateTime = "date_time",
+}
+export declare enum COL_OPTION {
+    PrimaryKey = "primary_key",
+    AutoIncrement = "auto_increment",
+    Unique = "unique",
+    NotNull = "not_null",
+    MultiEntry = "multi_entry",
 }

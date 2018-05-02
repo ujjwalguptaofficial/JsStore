@@ -22,6 +22,7 @@ export declare enum DATA_TYPE {
     Number = "number",
     Boolean = "boolean",
     Null = "null",
+    DateTime = "date_time",
 }
 export declare enum ERROR_TYPE {
     UndefinedColumn = "undefined_column",

@@ -38,9 +38,12 @@ export class Util {
                 if (Array.isArray(value)) {
                     return DATA_TYPE.Array;
                 }
+                else if (value.getDate && value.getTime) {
+                    return DATA_TYPE.DateTime;
+                }
             default:
                 return type;
         }
     }
-    
+
 }

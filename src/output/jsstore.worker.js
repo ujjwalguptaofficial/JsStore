@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.0.0 - 01/05/2018
+ * @license :jsstore - V2.0.0 - 02/05/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -415,6 +415,7 @@ var DATA_TYPE;
     DATA_TYPE["Number"] = "number";
     DATA_TYPE["Boolean"] = "boolean";
     DATA_TYPE["Null"] = "null";
+    DATA_TYPE["DateTime"] = "date_time";
 })(DATA_TYPE || (DATA_TYPE = {}));
 var ERROR_TYPE;
 (function (ERROR_TYPE) {
@@ -3970,6 +3971,9 @@ var Util = /** @class */ (function () {
             case 'object':
                 if (Array.isArray(value)) {
                     return _enums__WEBPACK_IMPORTED_MODULE_0__["DATA_TYPE"].Array;
+                }
+                else if (value.getDate && value.getTime) {
+                    return _enums__WEBPACK_IMPORTED_MODULE_0__["DATA_TYPE"].DateTime;
                 }
             default:
                 return type;
