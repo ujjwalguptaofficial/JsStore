@@ -24,14 +24,16 @@ describe('Db Test', function () {
 
     });
 
-    it('drop db with promise', function (done) {
+    it('open db test', function (done) {
         Con.openDb('Demo').then(function () {
-            Con.dropDb().then(function () {
-                done();
-            }).catch(function (err) {
-                done(err);
-            });
-        }).then(function (results) {
+            done();
+        }).catch(function (err) {
+            done(err);
+        });
+    });
+
+    it('drop db test', function (done) {
+        Con.dropDb().then(function () {
             done();
         }).catch(function (err) {
             done(err);

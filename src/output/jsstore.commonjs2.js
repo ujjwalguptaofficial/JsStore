@@ -3,7 +3,7 @@
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
-var JsStore =
+module.exports =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -665,4 +665,4 @@ var Column = /** @class */ (function () {
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=jsstore.js.map
+//# sourceMappingURL=jsstore.commonjs2.js.map

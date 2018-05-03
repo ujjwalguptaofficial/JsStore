@@ -490,14 +490,8 @@ var DropDb = /** @class */ (function () {
     function DropDb(onSuccess, onError) {
         this.onSuccess_ = onSuccess;
         this.onError_ = onError;
+        this.dbName_ = _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDb.name;
     }
-    Object.defineProperty(DropDb.prototype, "dbName_", {
-        get: function () {
-            return _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDb.name;
-        },
-        enumerable: true,
-        configurable: true
-    });
     DropDb.prototype.deleteMetaData = function () {
         var _this = this;
         _keystore_index__WEBPACK_IMPORTED_MODULE_0__["remove"]("JsStore_" + this.dbName_ + "_Db_Version");
@@ -505,7 +499,7 @@ var DropDb = /** @class */ (function () {
             _keystore_index__WEBPACK_IMPORTED_MODULE_0__["remove"]("JsStore_" + _this.dbName_ + "_" + table.name + "_Version");
             table.columns.forEach(function (column) {
                 if (column.autoIncrement) {
-                    _keystore_index__WEBPACK_IMPORTED_MODULE_0__["remove"]("JsStore_" + _this.dbName_ + "_" + table.name + "_" + column.name + "_Value");
+                    _keystore_index__WEBPACK_IMPORTED_MODULE_0__["remove"]("JsStore_" + this._dbName + "_" + table.name + "_" + column.name + "_Value");
                 }
             });
         });

@@ -9,9 +9,9 @@
     <link rel="stylesheet" type="text/css" href="style/bootstrap.css" />
     <script src="scripts/bootstrap.js"></script>
     <link rel="stylesheet" href="style/font-awesome.min.css" />
-    <script src="scripts/jsstore.min.js "></script>
+    <script src="scripts/jsstore.js "></script>
     <script>
-        var connection = new JsStore.Instance(new Worker('scripts/jsstore.worker.min.js')),
+        var connection = new JsStore.Instance(new Worker('scripts/jsstore.worker.js')),
             StudentId;
         window.onload = function () {
             initiateDb();

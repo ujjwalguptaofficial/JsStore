@@ -9,9 +9,9 @@
     <link rel="stylesheet" type="text/css" href="style/bootstrap.css" />
     <script src="scripts/bootstrap.js"></script>
     <link rel="stylesheet" href="style/font-awesome.min.css" />
-    <script src="scripts/jsstore.min.js "></script>
+    <script src="scripts/jsstore.js "></script>
     <script>
-        var connection = new JsStore.Instance(new Worker('scripts/jsstore.worker.min.js'));
+        var connection = new JsStore.Instance(new Worker('scripts/jsstore.worker.js'));
         window.onload = function () {
             initiateDb();
             $('#btnAddStudent').click(function () {
@@ -51,11 +51,15 @@
             var DbName = "Students";
             connection.isDbExist(DbName).then(function (isExist) {
                 if (isExist) {
-                    connection.openDb(DbName);
+                    connection.openDb(DbName).then(function () {
+                        console.log('db opened');
+                    });
                     showTableData();
                 } else {
                     var DataBase = getDatabase();
-                    connection.createDb(DataBase);
+                    connection.createDb(DataBase).then(function (tables) {
+                        console.log(tables);
+                    });
                     insertStudents();
                     showTableData();
                 }

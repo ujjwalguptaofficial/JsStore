@@ -4,15 +4,35 @@ const banner = require('./license');
 const baseConfig = require('./webpack.base.config');
 const merge = require('webpack-merge');
 
-module.exports = [merge(baseConfig[0], {
+const libraryTarget = [{
+    type: "var",
+    name: 'jsstore.js'
+}, {
+    type: "commonjs2",
+    name: 'jsstore.commonjs2.js'
+}];
+
+function getConfigForTaget(target) {
+    return {
         devtool: 'source-map',
         output: {
             path: path.join(__dirname, "output"),
-            filename: "jsstore.js",
+            filename: target.name,
             library: 'JsStore',
-            libraryTarget:'commonjs2'
+            libraryTarget: target.type
         }
-    }),
+    }
+}
+
+function createConfigsForAllLibraryTarget() {
+    var configs = [];
+    libraryTarget.forEach(function (target) {
+        configs.push(merge(baseConfig[0], getConfigForTaget(target)));
+    })
+    return configs;
+}
+
+module.exports = [...createConfigsForAllLibraryTarget(),
     merge(baseConfig[1], {
         devtool: 'source-map',
         output: {

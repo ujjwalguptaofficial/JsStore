@@ -9,21 +9,23 @@ import { LogHelper } from "../log_helper";
 export class DropDb {
     private onSuccess_: () => void;
     private onError_: (err: IError) => void;
-    private dbName_: string;
+
+    private get dbName_() {
+        return IdbHelper.activeDb.name;
+    }
 
     constructor(onSuccess: () => void, onError: (err: IError) => void) {
         this.onSuccess_ = onSuccess;
         this.onError_ = onError;
-        this.dbName_ = IdbHelper.activeDb.name;
     }
 
     deleteMetaData() {
         KeyStore.remove(`JsStore_${this.dbName_}_Db_Version`);
         IdbHelper.activeDb.tables.forEach((table: Table) => {
             KeyStore.remove(`JsStore_${this.dbName_}_${table.name}_Version`);
-            table.columns.forEach(function (column: Column) {
+            table.columns.forEach((column: Column) => {
                 if (column.autoIncrement) {
-                    KeyStore.remove(`JsStore_${this._dbName}_${table.name}_${column.name}_Value`);
+                    KeyStore.remove(`JsStore_${this.dbName_}_${table.name}_${column.name}_Value`);
                 }
             });
         });
