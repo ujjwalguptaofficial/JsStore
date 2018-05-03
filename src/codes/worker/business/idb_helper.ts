@@ -43,7 +43,7 @@ export class IdbHelper {
     }
 
     static setDbList(list: string[]) {
-        KeyStore.set('database_list', list);
+        KeyStore.set('DataBase_List', list);
     }
 
     static updateDbStatus(status: CONNECTION_STATUS, err?: ERROR_TYPE) {
@@ -59,7 +59,7 @@ export class IdbHelper {
     }
 
     static getDbList(callback: (dbList: string[]) => void) {
-        KeyStore.get('Database_List', (result) => {
+        KeyStore.get('DataBase_List', (result) => {
             result = result == null ? [] : result;
             callback(result);
         });

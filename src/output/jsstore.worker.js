@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.0.0 - 02/05/2018
+ * @license :jsstore - V2.0.0 - 03/05/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -334,7 +334,7 @@ var IdbHelper = /** @class */ (function () {
         }
     };
     IdbHelper.setDbList = function (list) {
-        _keystore_index__WEBPACK_IMPORTED_MODULE_1__["set"]('database_list', list);
+        _keystore_index__WEBPACK_IMPORTED_MODULE_1__["set"]('DataBase_List', list);
     };
     IdbHelper.updateDbStatus = function (status, err) {
         if (err === undefined) {
@@ -348,7 +348,7 @@ var IdbHelper = /** @class */ (function () {
         }
     };
     IdbHelper.getDbList = function (callback) {
-        _keystore_index__WEBPACK_IMPORTED_MODULE_1__["get"]('Database_List', function (result) {
+        _keystore_index__WEBPACK_IMPORTED_MODULE_1__["get"]('DataBase_List', function (result) {
             result = result == null ? [] : result;
             callback(result);
         });

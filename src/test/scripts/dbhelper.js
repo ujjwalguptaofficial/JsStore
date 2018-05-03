@@ -1,5 +1,5 @@
-var Con = new jsStore.Instance(new Worker('../output/jsstore.worker.js'));
-// jsStore.enableLog();
+var Con = new JsStore.Instance(new Worker('../output/jsstore.worker.js'));
+// JsStore.enableLog();
 
 function initDb() {
     console.log('initiate database');

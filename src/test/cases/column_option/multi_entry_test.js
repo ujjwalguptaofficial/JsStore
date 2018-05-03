@@ -160,11 +160,11 @@ var MultiEntryTest = {
                 columns: [{
                         name: 'name',
                         unique: true,
-                        dataType: jsStore.DATA_TYPE.String
+                        dataType: JsStore.DATA_TYPE.String
                     },
                     {
                         name: 'tags',
-                        dataType: jsStore.DATA_TYPE.Array
+                        dataType: JsStore.DATA_TYPE.Array
                     }
                 ]
             },
