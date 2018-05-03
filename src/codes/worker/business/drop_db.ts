@@ -32,9 +32,12 @@ export class DropDb {
         // remove from database_list 
         this.getDbList_(result => {
             result.splice(result.indexOf(this.dbName_), 1);
-            IdbHelper.setDbList(result);
+            IdbHelper.setDbList(result).then(() => {
+                // remove db schema from keystore
+                KeyStore.remove(`JsStore_${this.dbName_}_Schema`, this.onSuccess_);
+            });
+
         });
-        KeyStore.remove(`JsStore_${this.dbName_}_Schema`, this.onSuccess_);
     }
 
     private getDbList_(callback: (dbList: string[]) => void) {

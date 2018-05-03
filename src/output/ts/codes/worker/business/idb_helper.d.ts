@@ -11,7 +11,7 @@ export declare class IdbHelper {
     static dbStatus: IDbStatus;
     static callDbDroppedByBrowser(deleteMetaData?: boolean): void;
     static createTransaction(tableNames: string[], callBack: () => void, mode?: any): void;
-    static setDbList(list: string[]): void;
+    static setDbList(list: string[]): Promise<{}>;
     static updateDbStatus(status: CONNECTION_STATUS, err?: ERROR_TYPE): void;
     static getDbList(callback: (dbList: string[]) => void): void;
     static getDbVersion(dbName: string, callback: (version: number) => void): void;

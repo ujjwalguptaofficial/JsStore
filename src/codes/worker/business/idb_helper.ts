@@ -43,7 +43,10 @@ export class IdbHelper {
     }
 
     static setDbList(list: string[]) {
-        KeyStore.set('DataBase_List', list);
+        return new Promise((resolve, reject) => {
+            KeyStore.set('DataBase_List', list, resolve, reject);
+        });
+
     }
 
     static updateDbStatus(status: CONNECTION_STATUS, err?: ERROR_TYPE) {

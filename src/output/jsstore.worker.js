@@ -334,7 +334,9 @@ var IdbHelper = /** @class */ (function () {
         }
     };
     IdbHelper.setDbList = function (list) {
-        _keystore_index__WEBPACK_IMPORTED_MODULE_1__["set"]('DataBase_List', list);
+        return new Promise(function (resolve, reject) {
+            _keystore_index__WEBPACK_IMPORTED_MODULE_1__["set"]('DataBase_List', list, resolve, reject);
+        });
     };
     IdbHelper.updateDbStatus = function (status, err) {
         if (err === undefined) {
@@ -512,9 +514,11 @@ var DropDb = /** @class */ (function () {
         // remove from database_list 
         this.getDbList_(function (result) {
             result.splice(result.indexOf(_this.dbName_), 1);
-            _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].setDbList(result);
+            _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].setDbList(result).then(function () {
+                // remove db schema from keystore
+                _keystore_index__WEBPACK_IMPORTED_MODULE_0__["remove"]("JsStore_" + _this.dbName_ + "_Schema", _this.onSuccess_);
+            });
         });
-        _keystore_index__WEBPACK_IMPORTED_MODULE_0__["remove"]("JsStore_" + this.dbName_ + "_Schema", this.onSuccess_);
     };
     DropDb.prototype.getDbList_ = function (callback) {
         _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].getDbList(callback);
