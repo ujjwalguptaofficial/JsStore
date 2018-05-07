@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.0.0 - 03/05/2018
+ * @license :jsstore - V2.0.0 - 04/05/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -377,7 +377,14 @@ var InstanceHelper = /** @class */ (function () {
         this.isDbOpened_ = false;
         this.requestQueue_ = [];
         this.isCodeExecuting_ = false;
-        this.whiteListApi_ = ['create_db', 'is_db_exist', 'get_db_version', 'get_db_list', 'open_db'];
+        this.whiteListApi_ = [
+            "create_db",
+            "is_db_exist",
+            "get_db_version",
+            "get_db_list",
+            "open_db",
+            "get_db_schema"
+        ];
         if (worker) {
             this.worker_ = worker;
             this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
@@ -401,7 +408,7 @@ var InstanceHelper = /** @class */ (function () {
             }
             else {
                 if (finishedRequest.onSuccess) {
-                    var openDbQueries = ['open_db', 'create_db'];
+                    var openDbQueries = ["open_db", "create_db"];
                     if (openDbQueries.indexOf(finishedRequest.name) >= 0) {
                         this.isDbOpened_ = true;
                     }
