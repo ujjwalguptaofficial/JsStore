@@ -128,4 +128,21 @@ export declare class Instance extends InstanceHelper {
      * @memberof Instance
      */
     getDbSchema(dbName: string): Promise<IDataBase>;
+    /**
+     * get the value from keystore table
+     *
+     * @param {string} key
+     * @returns
+     * @memberof Instance
+     */
+    get(key: string): Promise<any>;
+    /**
+     * set the value in keystore table
+     *
+     * @param {string} key
+     * @param {*} value
+     * @returns
+     * @memberof Instance
+     */
+    set(key: string, value: any): Promise<any>;
 }

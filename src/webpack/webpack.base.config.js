@@ -1,10 +1,10 @@
 const path = require('path');
 const SmartBannerPlugin = require('smart-banner-webpack-plugin');
-const banner = require('./license');
+const banner = require('./../license');
 
 module.exports = [{
         name: "jsstore",
-        entry: "./codes/main/index.ts",
+        entry: "./src/codes/main/index.ts",
         module: {
             rules: [{
                 test: /\.ts$/,
@@ -24,7 +24,7 @@ module.exports = [{
     },
     {
         name: "jsstore.worker",
-        entry: "./codes/worker/start.ts",
+        entry: "./src/codes/worker/start.ts",
         mode: 'none',
         module: {
             rules: [{

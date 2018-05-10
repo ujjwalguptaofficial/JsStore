@@ -1,0 +1,7 @@
+examples
+logos
+node_modules
+src
+
+#build tools
+.travis.yml

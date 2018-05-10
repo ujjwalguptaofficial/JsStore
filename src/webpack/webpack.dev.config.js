@@ -1,6 +1,4 @@
 const path = require('path');
-const SmartBannerPlugin = require('smart-banner-webpack-plugin');
-const banner = require('./license');
 const baseConfig = require('./webpack.base.config');
 const merge = require('webpack-merge');
 
@@ -16,7 +14,7 @@ function getConfigForTaget(target) {
     return {
         devtool: 'source-map',
         output: {
-            path: path.join(__dirname, "output"),
+            path: path.join(__dirname, "./../output"),
             filename: target.name,
             library: 'JsStore',
             libraryTarget: target.type
@@ -36,7 +34,7 @@ module.exports = [...createConfigsForAllLibraryTarget(),
     merge(baseConfig[1], {
         devtool: 'source-map',
         output: {
-            path: path.join(__dirname, "output"),
+            path: path.join(__dirname, "./../output"),
             filename: "jsstore.worker.js"
         }
     })

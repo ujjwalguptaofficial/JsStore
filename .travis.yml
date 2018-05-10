@@ -2,9 +2,9 @@ language: node_js
 node_js:
   - "8"
 before_install: 
-    cd Code
+   
 before_script:
     - npm install
 script:
   - npm update
-  - npm run test
+  - npm run build:ci

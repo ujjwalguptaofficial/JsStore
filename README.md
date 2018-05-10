@@ -11,12 +11,16 @@ JsStore is an IndexedDB Wrapper. It makes IndexedDB super easy with its SQL like
 
 # Features 
 
-* Executes in Web Worker
+* Executes In Web Worker
+* TypeScript Support
 * Join Support
 * DataType Support
-* Complex queries support
-* api sync support
-* TypeScript support
+* Complex Queries Support
+* Api Sync Support
+
+# Examples
+
+Check out examples in examples folder.
 
 # Demo
 

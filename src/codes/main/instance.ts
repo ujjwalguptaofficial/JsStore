@@ -3,6 +3,7 @@ import { ERROR_TYPE, API } from "./enums";
 import { InstanceHelper } from "./instance_helper";
 import { IDataBase, ISelect, ICount, IInsert, IUpdate, IRemove, IDbInfo } from "./interfaces";
 import { Config } from "./config";
+import { ISet } from "../worker/interfaces";
 
 export class Instance extends InstanceHelper {
 
@@ -244,6 +245,37 @@ export class Instance extends InstanceHelper {
         return this.pushApi<IDataBase>({
             name: API.GetDbSchema,
             query: dbName
+        });
+    }
+
+    /**
+     * get the value from keystore table
+     * 
+     * @param {string} key 
+     * @returns 
+     * @memberof Instance
+     */
+    get(key: string) {
+        return this.pushApi<any>({
+            name: API.Get,
+            query: key
+        });
+    }
+
+    /**
+     * set the value in keystore table 
+     * 
+     * @param {string} key 
+     * @param {*} value 
+     * @returns 
+     * @memberof Instance
+     */
+    set(key: string, value: any) {
+        return this.pushApi<any>({
+            name: API.Set,
+            query: {
+                key: key, value: value
+            } as ISet
         });
     }
 
