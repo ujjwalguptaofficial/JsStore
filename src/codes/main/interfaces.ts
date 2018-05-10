@@ -1,4 +1,4 @@
-import { ERROR_TYPE } from "./enums";
+import { ERROR_TYPE, API } from "./enums";
 
 export interface IError {
     type: ERROR_TYPE;
@@ -6,7 +6,7 @@ export interface IError {
 }
 
 export interface IWebWorkerRequest {
-    name: string;
+    name: API;
     query: any;
     onSuccess?: (results) => void;
     onError?: (err: IError) => void;

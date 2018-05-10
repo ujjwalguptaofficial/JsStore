@@ -1,7 +1,7 @@
 import { ISelect, IError } from "../../interfaces";
 import { Helper } from "./helper";
 import { LogHelper } from "../../log_helper";
-import { ERROR_TYPE, Idb_Mode, QUERY_OPTION } from "../../enums";
+import { ERROR_TYPE, IDB_MODE, QUERY_OPTION } from "../../enums";
 
 export class Instance extends Helper {
    
@@ -140,7 +140,7 @@ export class Instance extends Helper {
     }
 
     private initTransaction_() {
-        this.createTransaction([this.tableName], this.onTransactionCompleted_, Idb_Mode.ReadOnly);
+        this.createTransaction([this.tableName], this.onTransactionCompleted_, IDB_MODE.ReadOnly);
         this.objectStore = this.transaction.objectStore(this.tableName);
     }
 

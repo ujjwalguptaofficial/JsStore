@@ -25,4 +25,6 @@ export declare class QueryExecutor {
     private exportJson_(query, onSuccess, onError);
     private getType_(value);
     private isDbExist_(dbInfo, onSuccess, onError);
+    private get_(key, onSuccess, onError);
+    private set_(query, onSuccess, onError);
 }

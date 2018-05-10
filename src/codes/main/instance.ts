@@ -1,5 +1,5 @@
 import { LogHelper } from "./log_helper";
-import { ERROR_TYPE } from "./enums";
+import { ERROR_TYPE, API } from "./enums";
 import { InstanceHelper } from "./instance_helper";
 import { IDataBase, ISelect, ICount, IInsert, IUpdate, IRemove, IDbInfo } from "./interfaces";
 import { Config } from "./config";
@@ -19,7 +19,7 @@ export class Instance extends InstanceHelper {
      */
     openDb(dbName: string) {
         return this.pushApi<null>({
-            name: 'open_db',
+            name: API.OpenDb,
             query: dbName
         });
     }
@@ -33,7 +33,7 @@ export class Instance extends InstanceHelper {
      */
     createDb(dataBase: IDataBase) {
         return this.pushApi<string[]>({
-            name: 'create_db',
+            name: API.CreateDb,
             query: dataBase
         });
     }
@@ -46,7 +46,7 @@ export class Instance extends InstanceHelper {
      */
     dropDb() {
         return this.pushApi<null>({
-            name: 'drop_db',
+            name: API.DropDb,
             query: null
         });
     }
@@ -61,7 +61,7 @@ export class Instance extends InstanceHelper {
      */
     select<T>(query: ISelect) {
         return this.pushApi<T[]>({
-            name: 'select',
+            name: API.Select,
             query: query
         });
     }
@@ -75,7 +75,7 @@ export class Instance extends InstanceHelper {
      */
     count(query: ICount) {
         return this.pushApi<number>({
-            name: 'count',
+            name: API.Count,
             query: query
         });
     }
@@ -89,7 +89,7 @@ export class Instance extends InstanceHelper {
      */
     insert(query: IInsert) {
         return this.pushApi<number>({
-            name: 'insert',
+            name: API.Insert,
             query: query
         });
     }
@@ -103,7 +103,7 @@ export class Instance extends InstanceHelper {
      */
     update(query: IUpdate) {
         return this.pushApi<number>({
-            name: 'update',
+            name: API.Update,
             query: query
         });
     }
@@ -117,7 +117,7 @@ export class Instance extends InstanceHelper {
      */
     remove(query: IRemove) {
         return this.pushApi<number>({
-            name: 'remove',
+            name: API.Remove,
             query: query
         });
     }
@@ -131,7 +131,7 @@ export class Instance extends InstanceHelper {
      */
     clear(tableName: string) {
         return this.pushApi<null>({
-            name: 'clear',
+            name: API.Clear,
             query: tableName
         });
     }
@@ -145,7 +145,7 @@ export class Instance extends InstanceHelper {
      */
     bulkInsert(query: IInsert) {
         return this.pushApi<null>({
-            name: 'bulk_insert',
+            name: API.BulkInsert,
             query: query
         });
     }
@@ -167,7 +167,7 @@ export class Instance extends InstanceHelper {
 
         return new Promise<null>((resolve, reject) => {
             this.pushApi({
-                name: 'export_json',
+                name: API.ExportJson,
                 query: query
             }).then(url => {
                 onSuccess(url);
@@ -187,7 +187,7 @@ export class Instance extends InstanceHelper {
     setLogStatus(status: boolean) {
         Config._isLogEnabled = status ? status : Config._isLogEnabled;
         this.pushApi({
-            name: 'enable_log',
+            name: API.ChangeLogStatus,
             query: Config._isLogEnabled
         });
     }
@@ -201,7 +201,7 @@ export class Instance extends InstanceHelper {
      */
     getDbVersion(dbName: string | IDbInfo) {
         return this.pushApi<number>({
-            name: 'get_db_version',
+            name: API.GetDbVersion,
             query: dbName
         });
     }
@@ -215,7 +215,7 @@ export class Instance extends InstanceHelper {
      */
     isDbExist(dbInfo: IDbInfo | string) {
         return this.pushApi<boolean>({
-            name: 'is_db_exist',
+            name: API.IsDbExist,
             query: dbInfo
         });
     }
@@ -228,7 +228,7 @@ export class Instance extends InstanceHelper {
      */
     getDbList() {
         return this.pushApi<string[]>({
-            name: 'get_db_list',
+            name: API.GetDbList,
             query: null
         });
     }
@@ -242,7 +242,7 @@ export class Instance extends InstanceHelper {
      */
     getDbSchema(dbName: string) {
         return this.pushApi<IDataBase>({
-            name: 'get_db_schema',
+            name: API.GetDbSchema,
             query: dbName
         });
     }

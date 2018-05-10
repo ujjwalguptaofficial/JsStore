@@ -23,3 +23,23 @@ export declare enum COL_OPTION {
     NotNull = "not_null",
     MultiEntry = "multi_entry",
 }
+export declare enum API {
+    CreateDb = "create_db",
+    IsDbExist = "is_db_exist",
+    GetDbVersion = "get_db_version",
+    GetDbList = "get_db_list",
+    Get = "get",
+    Set = "set",
+    Select = "select",
+    Insert = "insert",
+    Update = "update",
+    Remove = "remove",
+    GetDbSchema = "get_db_schema",
+    OpenDb = "open_db",
+    Clear = "clear",
+    DropDb = "drop_db",
+    Count = "count",
+    BulkInsert = "bulk_insert",
+    ExportJson = "export_json",
+    ChangeLogStatus = "change_log_status",
+}

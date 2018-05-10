@@ -1,6 +1,7 @@
 import { LogHelper } from "./log_helper";
-import { ERROR_TYPE } from "./enums";
+import { ERROR_TYPE, API } from "./enums";
 import { IWebWorkerRequest, IWebWorkerResult } from "./interfaces";
+
 
 export class InstanceHelper {
   private worker_: Worker;
@@ -8,12 +9,15 @@ export class InstanceHelper {
   private requestQueue_: IWebWorkerRequest[] = [];
   private isCodeExecuting_ = false;
   private whiteListApi_ = [
-    "create_db",
-    "is_db_exist",
-    "get_db_version",
-    "get_db_list",
-    "open_db",
-    "get_db_schema"
+    API.CreateDb,
+    API.IsDbExist,
+    API.GetDbVersion,
+    API.GetDbList,
+    API.OpenDb,
+    API.GetDbSchema,
+    API.Get,
+    API.Set,
+    API.ChangeLogStatus
   ];
 
   constructor(worker: Worker) {

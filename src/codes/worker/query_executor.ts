@@ -2,9 +2,9 @@ import { IdbHelper } from "./business/idb_helper";
 import { LogHelper } from "./log_helper";
 import {
     ITranscationQry, IError, IUpdate,
-    IInsert, IRemove, IDataBase, ISelect, ISelectJoin, IDbInfo, ITable, ICount
+    IInsert, IRemove, IDataBase, ISelect, ISelectJoin, IDbInfo, ITable, ICount, ISet
 } from "./interfaces";
-import { CONNECTION_STATUS, ERROR_TYPE, DATA_TYPE } from "./enums";
+import { CONNECTION_STATUS, ERROR_TYPE, DATA_TYPE, API } from "./enums";
 import { Config } from "./config";
 import { OpenDb } from "./business/open_db";
 import { DropDb } from "./business/drop_db";
@@ -28,16 +28,18 @@ export class QueryExecutor {
     checkConnectionAndExecuteLogic(request: IWebWorkerRequest) {
         LogHelper.log('checking connection and executing request:' + request.name);
         switch (request.name) {
-            case 'create_db':
-            case 'is_db_exist':
-            case 'get_db_version':
-            case 'get_db_list':
-            case 'get_db_schema':
-            case 'open_db':
+            case API.CreateDb:
+            case API.IsDbExist:
+            case API.GetDbVersion:
+            case API.GetDbList:
+            case API.GetDbSchema:
+            case API.Get:
+            case API.Set:
+            case API.OpenDb:
                 this.executeLogic_(request);
                 break;
-            case 'change_log_status':
-                this.changeLogStatus_(request.query['logging']); break;
+            case API.ChangeLogStatus:
+                this.changeLogStatus_(request.query); break;
             default:
                 switch (this.dbStatus_.conStatus) {
                     case CONNECTION_STATUS.Connected: {
@@ -63,7 +65,7 @@ export class QueryExecutor {
     }
 
     private changeLogStatus_(enableLog) {
-        Config._isLogEnabled = enableLog;
+        Config.isLogEnabled = enableLog;
     }
 
     private returnResult_(result) {
@@ -84,27 +86,27 @@ export class QueryExecutor {
         };
 
         switch (request.name) {
-            case 'select':
+            case API.Select:
                 this.select_(request.query as ISelect, onSuccess, onError);
                 break;
-            case 'insert': this.insert_(request.query as IInsert, onSuccess, onError);
+            case API.Insert: this.insert_(request.query as IInsert, onSuccess, onError);
                 break;
-            case 'update': this.update_(request.query as IUpdate, onSuccess, onError);
+            case API.Update: this.update_(request.query as IUpdate, onSuccess, onError);
                 break;
-            case 'remove': this.remove_(request.query as IRemove, onSuccess, onError);
+            case API.Remove: this.remove_(request.query as IRemove, onSuccess, onError);
                 break;
-            case 'is_db_exist': this.isDbExist_(request.query, onSuccess, onError);
+            case API.IsDbExist: this.isDbExist_(request.query, onSuccess, onError);
                 break;
-            case 'get_db_version':
+            case API.GetDbVersion:
                 this.getDbVersion_(request.query as string, onSuccess);
                 break;
-            case 'get_db_list':
+            case API.GetDbList:
                 this.getDbList_(onSuccess);
                 break;
-            case 'get_db_schema':
+            case API.GetDbSchema:
                 this.getDbSchema_(request.query as string, onSuccess);
                 break;
-            case 'open_db':
+            case API.OpenDb:
                 if (this.isDbDeletedByBrowser_ === true) {
                     this.createDb_(null, () => {
                         this.isDbDeletedByBrowser_ = false;
@@ -115,19 +117,24 @@ export class QueryExecutor {
                     this.openDb_(request.query, onSuccess, onError);
                 }
                 break;
-            case 'create_db': this.createDb_(request.query as IDataBase, onSuccess, onError);
+            case API.CreateDb: this.createDb_(request.query as IDataBase, onSuccess, onError);
                 break;
-            case 'clear': this.clear_(request.query as string, onSuccess, onError);
+            case API.Clear: this.clear_(request.query as string, onSuccess, onError);
                 break;
-            case 'drop_db': this.dropDb_(onSuccess, onError);
+            case API.DropDb: this.dropDb_(onSuccess, onError);
                 break;
-            case 'count': this.count_(request.query as ICount, onSuccess, onError);
+            case API.Count: this.count_(request.query as ICount, onSuccess, onError);
                 break;
-            case 'bulk_insert': this.bulkInsert_(request.query as IInsert, onSuccess, onError);
+            case API.BulkInsert: this.bulkInsert_(request.query as IInsert, onSuccess, onError);
                 break;
-            case 'export_json': this.exportJson_(request.query as ISelect, onSuccess, onError);
+            case API.ExportJson: this.exportJson_(request.query as ISelect, onSuccess, onError);
                 break;
-            default: console.error('The Api:-' + request.name + ' does not support.');
+            case API.Get: this.get_(request.query as string, onSuccess, onError);
+                break;
+            case API.Set: this.set_(request.query as ISet, onSuccess, onError);
+                break;
+            default:
+                console.error('The Api:-' + request.name + ' does not support.');
         }
     }
 
@@ -315,5 +322,13 @@ export class QueryExecutor {
             }
             onError(error);
         }
+    }
+
+    private get_(key: string, onSuccess: (value) => void, onError: (err: IError) => void) {
+        KeyStore.get(key, onSuccess, onError as any);
+    }
+
+    private set_(query: ISet, onSuccess: (value) => void, onError: (err: IError) => void) {
+        KeyStore.set(query.key, query.value, onSuccess, onError as any);
     }
 }

@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.0.0 - 04/05/2018
+ * @license :jsstore - V2.0.0 - 10/05/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -283,7 +283,9 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "QUERY_OPTION", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Idb_Mode", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["Idb_Mode"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "IDB_MODE", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["IDB_MODE"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "API", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["API"]; });
 
 /* harmony import */ var _start__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(0);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "registerEvents", function() { return _start__WEBPACK_IMPORTED_MODULE_2__["registerEvents"]; });
@@ -321,7 +323,7 @@ var IdbHelper = /** @class */ (function () {
     IdbHelper.createTransaction = function (tableNames, callBack, mode) {
         var _this = this;
         if (this.transaction === null) {
-            mode = mode ? mode : _enums__WEBPACK_IMPORTED_MODULE_0__["Idb_Mode"].ReadWrite;
+            mode = mode ? mode : _enums__WEBPACK_IMPORTED_MODULE_0__["IDB_MODE"].ReadWrite;
             this.transaction = this.dbConnection.transaction(tableNames, mode);
             this.transaction.oncomplete = function () {
                 _this.transaction = null;
@@ -388,7 +390,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return DATA_TYPE; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ERROR_TYPE", function() { return ERROR_TYPE; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "QUERY_OPTION", function() { return QUERY_OPTION; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Idb_Mode", function() { return Idb_Mode; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IDB_MODE", function() { return IDB_MODE; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "API", function() { return API; });
 var OCCURENCE;
 (function (OCCURENCE) {
     OCCURENCE["First"] = "f";
@@ -466,11 +469,32 @@ var QUERY_OPTION;
     QUERY_OPTION["Limit"] = "limit";
     QUERY_OPTION["And"] = "and";
 })(QUERY_OPTION || (QUERY_OPTION = {}));
-var Idb_Mode;
-(function (Idb_Mode) {
-    Idb_Mode["ReadOnly"] = "readonly";
-    Idb_Mode["ReadWrite"] = "readwrite";
-})(Idb_Mode || (Idb_Mode = {}));
+var IDB_MODE;
+(function (IDB_MODE) {
+    IDB_MODE["ReadOnly"] = "readonly";
+    IDB_MODE["ReadWrite"] = "readwrite";
+})(IDB_MODE || (IDB_MODE = {}));
+var API;
+(function (API) {
+    API["CreateDb"] = "create_db";
+    API["IsDbExist"] = "is_db_exist";
+    API["GetDbVersion"] = "get_db_version";
+    API["GetDbList"] = "get_db_list";
+    API["Get"] = "get";
+    API["Set"] = "set";
+    API["Select"] = "select";
+    API["Insert"] = "insert";
+    API["Update"] = "update";
+    API["Remove"] = "remove";
+    API["GetDbSchema"] = "get_db_schema";
+    API["OpenDb"] = "open_db";
+    API["Clear"] = "clear";
+    API["DropDb"] = "drop_db";
+    API["Count"] = "count";
+    API["BulkInsert"] = "bulk_insert";
+    API["ExportJson"] = "export_json";
+    API["ChangeLogStatus"] = "change_log_status";
+})(API || (API = {}));
 
 
 /***/ }),
@@ -570,7 +594,7 @@ var LogHelper = /** @class */ (function () {
         throw this.get();
     };
     LogHelper.log = function (msg) {
-        if (_config__WEBPACK_IMPORTED_MODULE_1__["Config"]._isLogEnabled) {
+        if (_config__WEBPACK_IMPORTED_MODULE_1__["Config"].isLogEnabled) {
             console.log(msg);
         }
     };
@@ -663,7 +687,7 @@ __webpack_require__.r(__webpack_exports__);
 var Config = /** @class */ (function () {
     function Config() {
     }
-    Config._isLogEnabled = false;
+    Config.isLogEnabled = false;
     return Config;
 }());
 
@@ -1253,16 +1277,18 @@ var QueryExecutor = /** @class */ (function () {
         var _this = this;
         _log_helper__WEBPACK_IMPORTED_MODULE_1__["LogHelper"].log('checking connection and executing request:' + request.name);
         switch (request.name) {
-            case 'create_db':
-            case 'is_db_exist':
-            case 'get_db_version':
-            case 'get_db_list':
-            case 'get_db_schema':
-            case 'open_db':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].CreateDb:
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].IsDbExist:
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbVersion:
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbList:
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbSchema:
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Get:
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Set:
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].OpenDb:
                 this.executeLogic_(request);
                 break;
-            case 'change_log_status':
-                this.changeLogStatus_(request.query['logging']);
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].ChangeLogStatus:
+                this.changeLogStatus_(request.query);
                 break;
             default:
                 switch (this.dbStatus_.conStatus) {
@@ -1292,7 +1318,7 @@ var QueryExecutor = /** @class */ (function () {
         }
     };
     QueryExecutor.prototype.changeLogStatus_ = function (enableLog) {
-        _config__WEBPACK_IMPORTED_MODULE_3__["Config"]._isLogEnabled = enableLog;
+        _config__WEBPACK_IMPORTED_MODULE_3__["Config"].isLogEnabled = enableLog;
     };
     QueryExecutor.prototype.returnResult_ = function (result) {
         self.postMessage(result);
@@ -1311,31 +1337,31 @@ var QueryExecutor = /** @class */ (function () {
             });
         };
         switch (request.name) {
-            case 'select':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Select:
                 this.select_(request.query, onSuccess, onError);
                 break;
-            case 'insert':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Insert:
                 this.insert_(request.query, onSuccess, onError);
                 break;
-            case 'update':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Update:
                 this.update_(request.query, onSuccess, onError);
                 break;
-            case 'remove':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Remove:
                 this.remove_(request.query, onSuccess, onError);
                 break;
-            case 'is_db_exist':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].IsDbExist:
                 this.isDbExist_(request.query, onSuccess, onError);
                 break;
-            case 'get_db_version':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbVersion:
                 this.getDbVersion_(request.query, onSuccess);
                 break;
-            case 'get_db_list':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbList:
                 this.getDbList_(onSuccess);
                 break;
-            case 'get_db_schema':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbSchema:
                 this.getDbSchema_(request.query, onSuccess);
                 break;
-            case 'open_db':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].OpenDb:
                 if (this.isDbDeletedByBrowser_ === true) {
                     this.createDb_(null, function () {
                         _this.isDbDeletedByBrowser_ = false;
@@ -1346,25 +1372,32 @@ var QueryExecutor = /** @class */ (function () {
                     this.openDb_(request.query, onSuccess, onError);
                 }
                 break;
-            case 'create_db':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].CreateDb:
                 this.createDb_(request.query, onSuccess, onError);
                 break;
-            case 'clear':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Clear:
                 this.clear_(request.query, onSuccess, onError);
                 break;
-            case 'drop_db':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].DropDb:
                 this.dropDb_(onSuccess, onError);
                 break;
-            case 'count':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Count:
                 this.count_(request.query, onSuccess, onError);
                 break;
-            case 'bulk_insert':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].BulkInsert:
                 this.bulkInsert_(request.query, onSuccess, onError);
                 break;
-            case 'export_json':
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].ExportJson:
                 this.exportJson_(request.query, onSuccess, onError);
                 break;
-            default: console.error('The Api:-' + request.name + ' does not support.');
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Get:
+                this.get_(request.query, onSuccess, onError);
+                break;
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Set:
+                this.set_(request.query, onSuccess, onError);
+                break;
+            default:
+                console.error('The Api:-' + request.name + ' does not support.');
         }
     };
     QueryExecutor.prototype.getDbSchema_ = function (dbName, callback) {
@@ -1546,6 +1579,12 @@ var QueryExecutor = /** @class */ (function () {
             }
             onError(error);
         }
+    };
+    QueryExecutor.prototype.get_ = function (key, onSuccess, onError) {
+        _keystore_index__WEBPACK_IMPORTED_MODULE_6__["get"](key, onSuccess, onError);
+    };
+    QueryExecutor.prototype.set_ = function (query, onSuccess, onError) {
+        _keystore_index__WEBPACK_IMPORTED_MODULE_6__["set"](query.key, query.value, onSuccess, onError);
     };
     return QueryExecutor;
 }());
@@ -2192,7 +2231,7 @@ var Instance = /** @class */ (function (_super) {
         }
     };
     Instance.prototype.initTransaction_ = function () {
-        this.createTransaction([this.tableName], this.onTransactionCompleted_, _enums__WEBPACK_IMPORTED_MODULE_2__["Idb_Mode"].ReadOnly);
+        this.createTransaction([this.tableName], this.onTransactionCompleted_, _enums__WEBPACK_IMPORTED_MODULE_2__["IDB_MODE"].ReadOnly);
         this.objectStore = this.transaction.objectStore(this.tableName);
     };
     Instance.prototype.processWhere_ = function () {
@@ -4509,7 +4548,7 @@ var Instance = /** @class */ (function (_super) {
         }
     };
     Instance.prototype.initTransaction_ = function () {
-        this.createTransaction([this.query.from], this.onTransactionCompleted_, _enums__WEBPACK_IMPORTED_MODULE_3__["Idb_Mode"].ReadOnly);
+        this.createTransaction([this.query.from], this.onTransactionCompleted_, _enums__WEBPACK_IMPORTED_MODULE_3__["IDB_MODE"].ReadOnly);
         this.objectStore = this.transaction.objectStore(this.query.from);
     };
     return Instance;

@@ -2,7 +2,7 @@ import { Where } from "./where";
 import { ICount, IError } from "../../interfaces";
 import * as Select from '../select/index';
 import { LogHelper } from "../../log_helper";
-import { ERROR_TYPE, Idb_Mode } from "../../enums";
+import { ERROR_TYPE, IDB_MODE } from "../../enums";
 import { IdbHelper } from '../idb_helper';
 
 export class Instance extends Where {
@@ -51,7 +51,7 @@ export class Instance extends Where {
     }
 
     private initTransaction_() {
-        this.createTransaction([this.query.from], this.onTransactionCompleted_, Idb_Mode.ReadOnly);
+        this.createTransaction([this.query.from], this.onTransactionCompleted_, IDB_MODE.ReadOnly);
         this.objectStore = this.transaction.objectStore(this.query.from);
     }
 }

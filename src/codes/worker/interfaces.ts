@@ -1,4 +1,4 @@
-import { ERROR_TYPE, CONNECTION_STATUS } from "./enums";
+import { ERROR_TYPE, CONNECTION_STATUS, API } from "./enums";
 
 export interface IError {
     type: ERROR_TYPE;
@@ -6,7 +6,7 @@ export interface IError {
 }
 
 export interface IWebWorkerRequest {
-    name: string;
+    name: API;
     query: string | object;
     onSuccess: (results) => void;
     onError: (err: IError) => void;
@@ -146,3 +146,7 @@ export interface ITranscationQry {
     abortOnError?: boolean;
 }
 
+export interface ISet {
+    key: string;
+    value: any;
+}

@@ -9,13 +9,13 @@ export class Helper {
     }
 
     static log(msg) {
-        if (Config._isLogEnabled) {
+        if (Config.isLogEnabled) {
             console.log(msg);
         }
     }
 
     static logError(msg) {
-        if (Config._isLogEnabled) {
+        if (Config.isLogEnabled) {
             console.error(msg);
         }
     }
