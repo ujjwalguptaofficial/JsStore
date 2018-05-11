@@ -1,17 +1,19 @@
-import * as JsStore from "jsstore";
-const Worker = require("worker-loader?publicPath=/&name=jsstore.worker.js!../../node_modules/jsstore/dist/jsstore.worker");
-
-
 import {
     DATA_TYPE,
     COL_OPTION
 } from "jsstore";
+import {
+    IdbService
+} from "./idb_service";
 export class BaseService {
 
     constructor() {
         this.dbName = "students_db";
-        this.connection = new JsStore.Instance(new Worker());
         this.initJsStore();
+    }
+
+    get connection() {
+        return IdbService.idbCon;
     }
 
     initJsStore() {

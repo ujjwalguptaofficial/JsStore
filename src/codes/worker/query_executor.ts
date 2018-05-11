@@ -35,11 +35,10 @@ export class QueryExecutor {
             case API.GetDbSchema:
             case API.Get:
             case API.Set:
+            case API.ChangeLogStatus:
             case API.OpenDb:
                 this.executeLogic_(request);
                 break;
-            case API.ChangeLogStatus:
-                this.changeLogStatus_(request.query); break;
             default:
                 switch (this.dbStatus_.conStatus) {
                     case CONNECTION_STATUS.Connected: {
@@ -64,8 +63,9 @@ export class QueryExecutor {
         }
     }
 
-    private changeLogStatus_(enableLog) {
-        Config.isLogEnabled = enableLog;
+    private changeLogStatus_(status: boolean, onSuccess, onError) {
+        Config.isLogEnabled = status;
+        onSuccess();
     }
 
     private returnResult_(result) {
@@ -132,6 +132,9 @@ export class QueryExecutor {
             case API.Get: this.get_(request.query as string, onSuccess, onError);
                 break;
             case API.Set: this.set_(request.query as ISet, onSuccess, onError);
+                break;
+            case API.ChangeLogStatus:
+                this.changeLogStatus_(request.query as boolean, onSuccess, onError);
                 break;
             default:
                 console.error('The Api:-' + request.name + ' does not support.');

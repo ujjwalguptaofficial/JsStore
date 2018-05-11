@@ -7,7 +7,7 @@ export interface IError {
 
 export interface IWebWorkerRequest {
     name: API;
-    query: string | object;
+    query: any;
     onSuccess: (results) => void;
     onError: (err: IError) => void;
 }
