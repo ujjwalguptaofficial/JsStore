@@ -1,7 +1,7 @@
 import { IWebWorkerRequest } from "./interfaces";
 export declare class QueryExecutor {
     checkConnectionAndExecuteLogic(request: IWebWorkerRequest): void;
-    private changeLogStatus_(enableLog);
+    private changeLogStatus_(status, onSuccess, onError);
     private returnResult_(result);
     private executeLogic_(request);
     private getDbSchema_(dbName, callback);

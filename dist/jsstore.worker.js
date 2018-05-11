@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.0.0 - 10/05/2018
+ * @license :jsstore - V2.0.2 - 11/05/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -1284,11 +1284,9 @@ var QueryExecutor = /** @class */ (function () {
             case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbSchema:
             case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Get:
             case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Set:
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].ChangeLogStatus:
             case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].OpenDb:
                 this.executeLogic_(request);
-                break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].ChangeLogStatus:
-                this.changeLogStatus_(request.query);
                 break;
             default:
                 switch (this.dbStatus_.conStatus) {
@@ -1317,8 +1315,9 @@ var QueryExecutor = /** @class */ (function () {
                 }
         }
     };
-    QueryExecutor.prototype.changeLogStatus_ = function (enableLog) {
-        _config__WEBPACK_IMPORTED_MODULE_3__["Config"].isLogEnabled = enableLog;
+    QueryExecutor.prototype.changeLogStatus_ = function (status, onSuccess, onError) {
+        _config__WEBPACK_IMPORTED_MODULE_3__["Config"].isLogEnabled = status;
+        onSuccess();
     };
     QueryExecutor.prototype.returnResult_ = function (result) {
         self.postMessage(result);
@@ -1395,6 +1394,9 @@ var QueryExecutor = /** @class */ (function () {
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Set:
                 this.set_(request.query, onSuccess, onError);
+                break;
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].ChangeLogStatus:
+                this.changeLogStatus_(request.query, onSuccess, onError);
                 break;
             default:
                 console.error('The Api:-' + request.name + ' does not support.');
