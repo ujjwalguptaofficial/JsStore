@@ -49,7 +49,7 @@ export declare class Instance extends InstanceHelper {
      * @returns
      * @memberof Instance
      */
-    insert(query: IInsert): Promise<number>;
+    insert<T>(query: IInsert): Promise<number | T[]>;
     /**
      * update data into table
      *
