@@ -88,8 +88,8 @@ export class Instance extends InstanceHelper {
      * @returns 
      * @memberof Instance
      */
-    insert(query: IInsert) {
-        return this.pushApi<number>({
+    insert<T>(query: IInsert) {
+        return this.pushApi<number | T[]>({
             name: API.Insert,
             query: query
         });
@@ -278,5 +278,4 @@ export class Instance extends InstanceHelper {
             } as ISet
         });
     }
-
 }
