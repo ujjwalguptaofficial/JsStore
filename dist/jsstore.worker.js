@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.0.3 - 13/05/2018
+ * @license :jsstore - V2.0.4 - 15/05/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -2145,18 +2145,10 @@ var Instance = /** @class */ (function (_super) {
     Instance.prototype.processWhereArrayQry = function () {
         var _this = this;
         this.isArrayQry = true;
-        var wherequery = this.query.where, pKey = this.getPrimaryKey(this.query.from);
+        var whereQuery = this.query.where, pKey = this.getPrimaryKey(this.query.from);
         var isFirstWhere = true, output = [], operation;
         var isItemExist = function (keyValue) {
-            var isExist = false;
-            output.every(function (item) {
-                if (item[pKey] === keyValue) {
-                    isExist = true;
-                    return false;
-                }
-                return true;
-            });
-            return isExist;
+            return output.findIndex(function (item) { return item[pKey] === keyValue; }) >= 0;
         };
         var onSuccess = function () {
             if (operation === _enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].And) {
@@ -2190,7 +2182,7 @@ var Instance = /** @class */ (function (_super) {
                     output = _this.results;
                 }
             }
-            if (wherequery.length > 0) {
+            if (whereQuery.length > 0) {
                 _this.results = [];
                 processFirstQry();
             }
@@ -2200,20 +2192,20 @@ var Instance = /** @class */ (function (_super) {
             isFirstWhere = false;
         };
         var processFirstQry = function () {
-            _this.query.where = wherequery.shift();
-            if (_this.query.where['or']) {
+            _this.query.where = whereQuery.shift();
+            if (_this.query.where[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Or]) {
                 if (Object.keys(_this.query.where).length === 1) {
-                    operation = 'or';
-                    _this.query.where = _this.query.where['or'];
+                    operation = _enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Or;
+                    _this.query.where = _this.query.where[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Or];
                     _this.onWhereArrayQrySuccess = onSuccess;
                 }
                 else {
-                    operation = 'and';
+                    operation = _enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].And;
                     _this.onWhereArrayQrySuccess = onSuccess;
                 }
             }
             else {
-                operation = 'and';
+                operation = _enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].And;
                 _this.onWhereArrayQrySuccess = onSuccess;
             }
             _this.processWhere_();
@@ -3677,7 +3669,8 @@ var Base = /** @class */ (function (_super) {
             }
             else {
                 this.errorOccured = true;
-                var column = this.getColumnInfo(columnName), error = column == null ?
+                var column = this.getColumnInfo(columnName);
+                var error = column == null ?
                     new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].ColumnNotExist, { ColumnName: columnName }) :
                     new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].EnableSearchOff, { ColumnName: columnName });
                 this.onErrorOccured(error, true);
@@ -3729,7 +3722,7 @@ var Base = /** @class */ (function (_super) {
             if (queryKeys.length === 1) {
                 queryKeys.forEach(function (prop) {
                     value = whereQuery[prop];
-                    if (value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo]) {
+                    if (value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo] != null) {
                         whereQuery[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].GreaterThan] = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
                         if (whereQuery[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or] === undefined) {
                             whereQuery[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or] = {};
@@ -3749,12 +3742,12 @@ var Base = /** @class */ (function (_super) {
                 queryKeys.forEach(function (prop) {
                     value = whereQuery[prop];
                     var tmpQry = {};
-                    if (value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo]) {
+                    if (value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo] != null) {
                         tmpQry[prop] = {};
                         tmpQry[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].GreaterThan] = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
-                        tmpQry[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or] = {};
-                        tmpQry[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop] = {};
-                        tmpQry[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].LessThan] = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
+                        tmpQry[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or] = {};
+                        tmpQry[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop] = {};
+                        tmpQry[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].LessThan] = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
                     }
                     else {
                         tmpQry[prop] = value;
@@ -3854,7 +3847,7 @@ var BaseHelper = /** @class */ (function () {
         var value;
         Object.keys(whereQry).every(function (key) {
             value = whereQry[key];
-            if (value['!=']) {
+            if (value[_enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].NotEqualTo] != null) {
                 status = true;
             }
             return !status;
