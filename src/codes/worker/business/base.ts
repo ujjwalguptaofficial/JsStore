@@ -76,7 +76,7 @@ export class Base extends BaseHelper {
             if (queryKeys.length === 1) {
                 queryKeys.forEach((prop) => {
                     value = whereQuery[prop];
-                    if (value[QUERY_OPTION.NotEqualTo]) {
+                    if (value[QUERY_OPTION.NotEqualTo] != null) {
                         whereQuery[prop][QUERY_OPTION.GreaterThan] = value[QUERY_OPTION.NotEqualTo];
                         if (whereQuery[QUERY_OPTION.Or] === undefined) {
                             whereQuery[QUERY_OPTION.Or] = {};
@@ -96,12 +96,12 @@ export class Base extends BaseHelper {
                 queryKeys.forEach((prop) => {
                     value = whereQuery[prop];
                     const tmpQry = {};
-                    if (value[QUERY_OPTION.NotEqualTo]) {
+                    if (value[QUERY_OPTION.NotEqualTo] != null) {
                         tmpQry[prop] = {};
                         tmpQry[prop][QUERY_OPTION.GreaterThan] = value[QUERY_OPTION.NotEqualTo];
-                        tmpQry[prop][QUERY_OPTION.Or] = {};
-                        tmpQry[prop][QUERY_OPTION.Or][prop] = {};
-                        tmpQry[prop][QUERY_OPTION.Or][prop][QUERY_OPTION.LessThan] = value[QUERY_OPTION.NotEqualTo];
+                        tmpQry[QUERY_OPTION.Or] = {};
+                        tmpQry[QUERY_OPTION.Or][prop] = {};
+                        tmpQry[QUERY_OPTION.Or][prop][QUERY_OPTION.LessThan] = value[QUERY_OPTION.NotEqualTo];
                     }
                     else {
                         tmpQry[prop] = value;
@@ -178,10 +178,10 @@ export class Base extends BaseHelper {
         }
         else {
             this.errorOccured = true;
-            const column: Column = this.getColumnInfo(columnName),
-                error = column == null ?
-                    new LogHelper(ERROR_TYPE.ColumnNotExist, { ColumnName: columnName }) :
-                    new LogHelper(ERROR_TYPE.EnableSearchOff, { ColumnName: columnName });
+            const column: Column = this.getColumnInfo(columnName);
+            const error = column == null ?
+                new LogHelper(ERROR_TYPE.ColumnNotExist, { ColumnName: columnName }) :
+                new LogHelper(ERROR_TYPE.EnableSearchOff, { ColumnName: columnName });
 
             this.onErrorOccured(error, true);
         }

@@ -110,7 +110,11 @@ function getDbSchema() {
             {
                 name: "Notes",
                 dataType: 'string'
-            }
+            },
+            new JsStore.Column('state').options([JsStore.COL_OPTION.NotNull]).
+            setDataType(JsStore.DATA_TYPE.String),
+            new JsStore.Column('jobSuspendedFlag').options([JsStore.COL_OPTION.NotNull]).
+            setDataType(JsStore.DATA_TYPE.Number)
         ]
     }
 

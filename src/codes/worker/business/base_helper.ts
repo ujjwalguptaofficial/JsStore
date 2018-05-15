@@ -44,7 +44,7 @@ export class BaseHelper {
         let value;
         Object.keys(whereQry).every((key) => {
             value = whereQry[key];
-            if (value['!=']) {
+            if (value[QUERY_OPTION.NotEqualTo] != null) {
                 status = true;
             }
             return !status;

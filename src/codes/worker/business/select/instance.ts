@@ -4,7 +4,7 @@ import { LogHelper } from "../../log_helper";
 import { ERROR_TYPE, IDB_MODE, QUERY_OPTION } from "../../enums";
 
 export class Instance extends Helper {
-   
+
     constructor(query: ISelect, onSuccess: (results: object[]) => void, onError: (err: IError) => void) {
         super();
         this.onError = onError;
@@ -49,20 +49,12 @@ export class Instance extends Helper {
 
     private processWhereArrayQry() {
         this.isArrayQry = true;
-        const wherequery = this.query.where,
+        const whereQuery = this.query.where,
             pKey = this.getPrimaryKey(this.query.from);
         let isFirstWhere = true, output = [], operation;
 
         const isItemExist = (keyValue) => {
-            let isExist = false;
-            output.every((item) => {
-                if (item[pKey] === keyValue) {
-                    isExist = true;
-                    return false;
-                }
-                return true;
-            });
-            return isExist;
+            return output.findIndex(item => item[pKey] === keyValue) >= 0;
         };
         const onSuccess = () => {
             if (operation === QUERY_OPTION.And) {
@@ -96,7 +88,7 @@ export class Instance extends Helper {
                     output = this.results;
                 }
             }
-            if (wherequery.length > 0) {
+            if (whereQuery.length > 0) {
                 this.results = [];
                 processFirstQry();
             }
@@ -106,20 +98,20 @@ export class Instance extends Helper {
             isFirstWhere = false;
         };
         const processFirstQry = () => {
-            this.query.where = wherequery.shift();
-            if (this.query.where['or']) {
+            this.query.where = whereQuery.shift();
+            if (this.query.where[QUERY_OPTION.Or]) {
                 if (Object.keys(this.query.where).length === 1) {
-                    operation = 'or';
-                    this.query.where = this.query.where['or'];
+                    operation = QUERY_OPTION.Or;
+                    this.query.where = this.query.where[QUERY_OPTION.Or];
                     this.onWhereArrayQrySuccess = onSuccess;
                 }
                 else {
-                    operation = 'and';
+                    operation = QUERY_OPTION.And;
                     this.onWhereArrayQrySuccess = onSuccess;
                 }
             }
             else {
-                operation = 'and';
+                operation = QUERY_OPTION.And;
                 this.onWhereArrayQrySuccess = onSuccess;
             }
             this.processWhere_();
