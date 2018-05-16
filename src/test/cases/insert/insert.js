@@ -1,3 +1,7 @@
+function randomDate(start, end) {
+    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+}
+
 describe('Test insert', function () {
     it('wrong table test', function (done) {
         Con.insert({
@@ -45,6 +49,11 @@ describe('Test insert', function () {
 
     it('insert Employees', function (done) {
         $.getJSON("test/static/Employees.json", function (results) {
+            var startDate = new Date(1994, 0, 1);
+            var endDate = new Date();
+            results.forEach(function (value) {
+                value.birthDate = new randomDate(startDate, endDate);
+            });
             Con.insert({
                 into: 'Employees',
                 values: results
