@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.0.4 - 15/05/2018
+ * @license :jsstore - V2.0.4 - 16/05/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -3155,13 +3155,17 @@ var In = /** @class */ (function (_super) {
                 --skip;
             }
         };
-        var onCursorError = function (e) {
-            _this.errorOccured = true;
-            _this.onErrorOccured(e);
+        var valueLength = values.length;
+        var processedIn = 0;
+        var onQueryFinished = function () {
+            ++processedIn;
+            if (processedIn === valueLength) {
+                _this.onQueryFinished();
+            }
         };
         if (this.checkFlag) {
-            var _loop_1 = function (i, length_1) {
-                if (!this_1.errorOccured) {
+            for (var i = 0; i < valueLength; i++) {
+                if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -3171,21 +3175,17 @@ var In = /** @class */ (function (_super) {
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length_1) {
-                            _this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
-            };
-            var this_1 = this;
-            for (var i = 0, length_1 = values.length; i < length_1; i++) {
-                _loop_1(i, length_1);
             }
         }
         else {
-            var _loop_2 = function (i, length_2) {
-                if (!this_2.errorOccured) {
+            for (var i = 0; i < valueLength; i++) {
+                if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -3193,16 +3193,12 @@ var In = /** @class */ (function (_super) {
                             skipOrPush(cursor.value);
                             cursor.continue();
                         }
-                        else if (i + 1 === length_2) {
-                            _this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
-            };
-            var this_2 = this;
-            for (var i = 0, length_2 = values.length; i < length_2; i++) {
-                _loop_2(i, length_2);
             }
         }
     };
@@ -3218,13 +3214,17 @@ var In = /** @class */ (function (_super) {
                 --skip;
             }
         };
-        var onCursorError = function (e) {
-            _this.errorOccured = true;
-            _this.onErrorOccured(e);
+        var valueLength = values.length;
+        var processedIn = 0;
+        var onQueryFinished = function () {
+            ++processedIn;
+            if (processedIn === valueLength) {
+                _this.onQueryFinished();
+            }
         };
         if (this.checkFlag) {
-            var _loop_3 = function (i, length_3) {
-                if (!this_3.errorOccured) {
+            for (var i = 0; i < valueLength; i++) {
+                if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -3234,21 +3234,17 @@ var In = /** @class */ (function (_super) {
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length_3) {
-                            _this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
-            };
-            var this_3 = this;
-            for (var i = 0, length_3 = values.length; i < length_3; i++) {
-                _loop_3(i, length_3);
             }
         }
         else {
-            var _loop_4 = function (i, length_4) {
-                if (!this_4.errorOccured) {
+            for (var i = 0; i < valueLength; i++) {
+                if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -3256,16 +3252,12 @@ var In = /** @class */ (function (_super) {
                             skipOrPush((cursor.value));
                             cursor.continue();
                         }
-                        else if (i + 1 === length_4) {
-                            _this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
-            };
-            var this_4 = this;
-            for (var i = 0, length_4 = values.length; i < length_4; i++) {
-                _loop_4(i, length_4);
             }
         }
     };
@@ -3273,13 +3265,17 @@ var In = /** @class */ (function (_super) {
         var _this = this;
         var cursor, cursorRequest;
         var columnStore = this.objectStore.index(column);
-        var onCursorError = function (e) {
-            _this.errorOccured = true;
-            _this.onErrorOccured(e);
+        var valueLength = values.length;
+        var processedIn = 0;
+        var onQueryFinished = function () {
+            ++processedIn;
+            if (processedIn === valueLength) {
+                _this.onQueryFinished();
+            }
         };
         if (this.checkFlag) {
-            var _loop_5 = function (i, length_5) {
-                if (!this_5.errorOccured) {
+            for (var i = 0; i < valueLength; i++) {
+                if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -3289,21 +3285,17 @@ var In = /** @class */ (function (_super) {
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length_5) {
-                            _this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
-            };
-            var this_5 = this;
-            for (var i = 0, length_5 = values.length; i < length_5; i++) {
-                _loop_5(i, length_5);
             }
         }
         else {
-            var _loop_6 = function (i, length_6) {
-                if (!this_6.errorOccured) {
+            for (var i = 0; i < valueLength; i++) {
+                if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -3311,29 +3303,30 @@ var In = /** @class */ (function (_super) {
                             _this.results.push(cursor.value);
                             cursor.continue();
                         }
-                        else if (i + 1 === length_6) {
-                            _this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
-            };
-            var this_6 = this;
-            for (var i = 0, length_6 = values.length; i < length_6; i++) {
-                _loop_6(i, length_6);
             }
         }
     };
     In.prototype.executeSimpleForIn_ = function (column, values) {
         var _this = this;
         var cursor, cursorRequest;
-        var columnStore = this.objectStore.index(column), onCursorError = function (e) {
-            _this.errorOccured = true;
-            _this.onErrorOccured(e);
+        var columnStore = this.objectStore.index(column);
+        var valueLength = values.length;
+        var processedIn = 0;
+        var onQueryFinished = function () {
+            ++processedIn;
+            if (processedIn === valueLength) {
+                _this.onQueryFinished();
+            }
         };
         if (this.checkFlag) {
-            var _loop_7 = function (i, length_7) {
-                if (!this_7.errorOccured) {
+            for (var i = 0; i < valueLength; i++) {
+                if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -3343,21 +3336,17 @@ var In = /** @class */ (function (_super) {
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length_7) {
-                            _this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
-            };
-            var this_7 = this;
-            for (var i = 0, length_7 = values.length; i < length_7; i++) {
-                _loop_7(i, length_7);
             }
         }
         else {
-            var _loop_8 = function (i, length_8) {
-                if (!this_8.errorOccured) {
+            for (var i = 0; i < valueLength; i++) {
+                if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -3365,16 +3354,12 @@ var In = /** @class */ (function (_super) {
                             _this.results.push(cursor.value);
                             cursor.continue();
                         }
-                        else if (i + 1 === length_8) {
-                            _this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
-            };
-            var this_8 = this;
-            for (var i = 0, length_8 = values.length; i < length_8; i++) {
-                _loop_8(i, length_8);
             }
         }
     };
@@ -4720,63 +4705,63 @@ var In = /** @class */ (function (_super) {
         var _this = this;
         var cursor, cursorRequest;
         var columnStore = this.objectStore.index(column);
+        var valueLength = values.length;
+        var processedIn = 0;
+        var onQueryFinished = function () {
+            ++processedIn;
+            if (processedIn === valueLength) {
+                _this.onQueryFinished();
+            }
+        };
         if (this.checkFlag) {
-            var _loop_1 = function (i, length_1) {
-                cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
-                cursorRequest.onsuccess = function (e) {
-                    cursor = e.target.result;
-                    if (cursor) {
-                        if (_this.whereCheckerInstance.check(cursor.value)) {
-                            ++_this.resultCount;
-                        }
-                        cursor.continue();
-                    }
-                    else if (i + 1 === length_1) {
-                        _this.onQueryFinished();
-                    }
-                };
-                cursorRequest.onerror = this_1.onCursorError;
-            };
-            var this_1 = this;
-            for (var i = 0, length_1 = values.length; i < length_1; i++) {
-                _loop_1(i, length_1);
-            }
-        }
-        else {
-            if (this.objectStore.count) {
-                var _loop_2 = function (i, length_2) {
-                    cursorRequest = columnStore.count(IDBKeyRange.only(values[i]));
-                    cursorRequest.onsuccess = function (e) {
-                        _this.resultCount += e.target.result;
-                        if (i + 1 === length_2) {
-                            _this.onQueryFinished();
-                        }
-                    };
-                    cursorRequest.onerror = this_2.onCursorError;
-                };
-                var this_2 = this;
-                for (var i = 0, length_2 = values.length; i < length_2; i++) {
-                    _loop_2(i, length_2);
-                }
-            }
-            else {
-                var _loop_3 = function (i, length_3) {
+            for (var i = 0; i < valueLength; i++) {
+                if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
                         if (cursor) {
-                            ++_this.resultCount;
+                            if (_this.whereCheckerInstance.check(cursor.value)) {
+                                ++_this.resultCount;
+                            }
                             cursor.continue();
                         }
-                        else if (i + 1 === length_3) {
-                            _this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = this_3.onCursorError;
-                };
-                var this_3 = this;
-                for (var i = 0, length_3 = values.length; i < length_3; i++) {
-                    _loop_3(i, length_3);
+                    cursorRequest.onerror = this.onCursorError;
+                }
+            }
+        }
+        else {
+            if (this.objectStore.count) {
+                for (var i = 0; i < valueLength; i++) {
+                    if (!this.errorOccured) {
+                        cursorRequest = columnStore.count(IDBKeyRange.only(values[i]));
+                        cursorRequest.onsuccess = function (e) {
+                            _this.resultCount += e.target.result;
+                            onQueryFinished();
+                        };
+                        cursorRequest.onerror = this.onCursorError;
+                    }
+                }
+            }
+            else {
+                for (var i = 0; i < valueLength; i++) {
+                    if (!this.errorOccured) {
+                        cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+                        cursorRequest.onsuccess = function (e) {
+                            cursor = e.target.result;
+                            if (cursor) {
+                                ++_this.resultCount;
+                                cursor.continue();
+                            }
+                            else {
+                                onQueryFinished();
+                            }
+                        };
+                        cursorRequest.onerror = this.onCursorError;
+                    }
                 }
             }
         }
@@ -5446,10 +5431,18 @@ var In = /** @class */ (function (_super) {
     In.prototype.executeInLogic = function (column, values) {
         var _this = this;
         var cursor, cursorRequest;
+        var valueLength = values.length;
+        var processedIn = 0;
+        var onQueryFinished = function () {
+            ++processedIn;
+            if (processedIn === valueLength) {
+                _this.onQueryFinished();
+            }
+        };
         if (this.checkFlag) {
-            var _loop_1 = function (i, length_1) {
-                if (!this_1.errorOccured) {
-                    cursorRequest = this_1.objectStore.index(column).
+            for (var i = 0; i < valueLength; i++) {
+                if (!this.errorOccured) {
+                    cursorRequest = this.objectStore.index(column).
                         openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -5460,22 +5453,18 @@ var In = /** @class */ (function (_super) {
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length_1) {
-                            _this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = this_1.onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
-            };
-            var this_1 = this;
-            for (var i = 0, length_1 = values.length; i < length_1; i++) {
-                _loop_1(i, length_1);
             }
         }
         else {
-            var _loop_2 = function (i, length_2) {
-                if (!this_2.errorOccured) {
-                    cursorRequest = this_2.objectStore.index(column).
+            for (var i = 0; i < valueLength; i++) {
+                if (!this.errorOccured) {
+                    cursorRequest = this.objectStore.index(column).
                         openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -5484,16 +5473,12 @@ var In = /** @class */ (function (_super) {
                             ++_this.rowAffected;
                             cursor.continue();
                         }
-                        else if (i + 1 === length_2) {
-                            _this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = this_2.onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
-            };
-            var this_2 = this;
-            for (var i = 0, length_2 = values.length; i < length_2; i++) {
-                _loop_2(i, length_2);
             }
         }
     };
@@ -5932,13 +5917,17 @@ var In = /** @class */ (function (_super) {
         var cursor;
         var columnStore = this.objectStore.index(column);
         var cursorRequest;
-        var onCursorError = function (e) {
-            _this.errorOccured = true;
-            _this.onErrorOccured(e);
+        var valueLength = values.length;
+        var processedIn = 0;
+        var onQueryFinished = function () {
+            ++processedIn;
+            if (processedIn === valueLength) {
+                _this.onQueryFinished();
+            }
         };
         if (this.checkFlag) {
-            var _loop_1 = function (i, length_1) {
-                if (!this_1.errorOccured) {
+            for (var i = 0; i < valueLength; i++) {
+                if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -5949,21 +5938,17 @@ var In = /** @class */ (function (_super) {
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length_1) {
-                            _this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
-            };
-            var this_1 = this;
-            for (var i = 0, length_1 = values.length; i < length_1; i++) {
-                _loop_1(i, length_1);
             }
         }
         else {
-            var _loop_2 = function (i, length_2) {
-                if (!this_2.errorOccured) {
+            for (var i = 0; i < valueLength; i++) {
+                if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = function (e) {
                         cursor = e.target.result;
@@ -5972,16 +5957,12 @@ var In = /** @class */ (function (_super) {
                             ++_this.rowAffected;
                             cursor.continue();
                         }
-                        else if (i + 1 === length_2) {
-                            _this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
-            };
-            var this_2 = this;
-            for (var i = 0, length_2 = values.length; i < length_2; i++) {
-                _loop_2(i, length_2);
             }
         }
     };

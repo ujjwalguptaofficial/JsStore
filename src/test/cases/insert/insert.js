@@ -43,6 +43,20 @@ describe('Test insert', function () {
         });
     });
 
+    it('insert Employees', function (done) {
+        $.getJSON("test/static/Employees.json", function (results) {
+            Con.insert({
+                into: 'Employees',
+                values: results
+            }).then(function (results) {
+                expect(results).to.be.an('number').to.equal(34);
+                done();
+            }).catch(function (err) {
+                done(err);
+            });
+        });
+    });
+
     it('insert Shippers ', function (done) {
         $.getJSON("test/static/Shippers.json", function (results) {
             Con.insert({

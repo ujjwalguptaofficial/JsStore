@@ -29,12 +29,16 @@ export class In extends NotWhere {
                 --skip;
             }
         };
-        const onCursorError = (e) => {
-            this.errorOccured = true;
-            this.onErrorOccured(e);
+        const valueLength = values.length;
+        let processedIn = 0;
+        const onQueryFinished = () => {
+            ++processedIn;
+            if (processedIn === valueLength) {
+                this.onQueryFinished();
+            }
         };
         if (this.checkFlag) {
-            for (let i = 0, length = values.length; i < length; i++) {
+            for (let i = 0; i < valueLength; i++) {
                 if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = (e: any) => {
@@ -45,16 +49,16 @@ export class In extends NotWhere {
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
             }
         }
         else {
-            for (let i = 0, length = values.length; i < length; i++) {
+            for (let i = 0; i < valueLength; i++) {
                 if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = (e: any) => {
@@ -63,11 +67,11 @@ export class In extends NotWhere {
                             skipOrPush(cursor.value);
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
             }
         }
@@ -86,12 +90,16 @@ export class In extends NotWhere {
                 --skip;
             }
         };
-        const onCursorError = (e) => {
-            this.errorOccured = true;
-            this.onErrorOccured(e);
+        const valueLength = values.length;
+        let processedIn = 0;
+        const onQueryFinished = () => {
+            ++processedIn;
+            if (processedIn === valueLength) {
+                this.onQueryFinished();
+            }
         };
         if (this.checkFlag) {
-            for (let i = 0, length = values.length; i < length; i++) {
+            for (let i = 0; i < valueLength; i++) {
                 if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = (e: any) => {
@@ -102,16 +110,16 @@ export class In extends NotWhere {
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
             }
         }
         else {
-            for (let i = 0, length = values.length; i < length; i++) {
+            for (let i = 0; i < valueLength; i++) {
                 if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = (e: any) => {
@@ -120,11 +128,11 @@ export class In extends NotWhere {
                             skipOrPush((cursor.value));
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
             }
         }
@@ -134,12 +142,16 @@ export class In extends NotWhere {
         let cursor: IDBCursorWithValue,
             cursorRequest: IDBRequest;
         const columnStore = this.objectStore.index(column);
-        const onCursorError = (e) => {
-            this.errorOccured = true;
-            this.onErrorOccured(e);
+        const valueLength = values.length;
+        let processedIn = 0;
+        const onQueryFinished = () => {
+            ++processedIn;
+            if (processedIn === valueLength) {
+                this.onQueryFinished();
+            }
         };
         if (this.checkFlag) {
-            for (let i = 0, length = values.length; i < length; i++) {
+            for (let i = 0; i < valueLength; i++) {
                 if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = (e: any) => {
@@ -150,16 +162,16 @@ export class In extends NotWhere {
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
             }
         }
         else {
-            for (let i = 0, length = values.length; i < length; i++) {
+            for (let i = 0; i < valueLength; i++) {
                 if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = (e: any) => {
@@ -168,11 +180,11 @@ export class In extends NotWhere {
                             this.results.push(cursor.value);
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
             }
         }
@@ -181,13 +193,17 @@ export class In extends NotWhere {
     private executeSimpleForIn_(column, values) {
         let cursor: IDBCursorWithValue,
             cursorRequest: IDBRequest;
-        const columnStore = this.objectStore.index(column),
-            onCursorError = (e) => {
-                this.errorOccured = true;
-                this.onErrorOccured(e);
-            };
+        const columnStore = this.objectStore.index(column);
+        const valueLength = values.length;
+        let processedIn = 0;
+        const onQueryFinished = () => {
+            ++processedIn;
+            if (processedIn === valueLength) {
+                this.onQueryFinished();
+            }
+        };
         if (this.checkFlag) {
-            for (let i = 0, length = values.length; i < length; i++) {
+            for (let i = 0; i < valueLength; i++) {
                 if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = (e: any) => {
@@ -198,16 +214,16 @@ export class In extends NotWhere {
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
             }
         }
         else {
-            for (let i = 0, length = values.length; i < length; i++) {
+            for (let i = 0; i < valueLength; i++) {
                 if (!this.errorOccured) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = (e: any) => {
@@ -216,11 +232,11 @@ export class In extends NotWhere {
                             this.results.push(cursor.value);
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = onCursorError;
+                    cursorRequest.onerror = this.onCursorError;
                 }
             }
         }

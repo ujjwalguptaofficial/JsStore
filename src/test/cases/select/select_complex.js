@@ -289,4 +289,22 @@ describe('Test select complex case', function () {
             done(err);
         })
     });
+
+    it("select * from employees where jobSuspendedFlag=0 && state in('Working', 'Diagnostics', 'FinalTest')", function (done) {
+        Con.select({
+            from: 'Employees',
+            where: {
+                jobSuspendedFlag: 0,
+                state: { in: ['Working', 'Diagnostics', 'FinalTest']
+                }
+            }
+        }).
+        then(function (results) {
+            expect(results).to.be.an('array').length(15);
+            done();
+        }).
+        catch(function (err) {
+            done(err);
+        })
+    });
 });

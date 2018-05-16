@@ -3,8 +3,16 @@ import { NotWhere } from "./not_where";
 export class In extends NotWhere {
     private executeInLogic(column, values) {
         let cursor: IDBCursorWithValue, cursorRequest;
+        const valueLength = values.length;
+        let processedIn = 0;
+        const onQueryFinished = () => {
+            ++processedIn;
+            if (processedIn === valueLength) {
+                this.onQueryFinished();
+            }
+        };
         if (this.checkFlag) {
-            for (let i = 0, length = values.length; i < length; i++) {
+            for (let i = 0; i < valueLength; i++) {
                 if (!this.errorOccured) {
                     cursorRequest = this.objectStore.index(column).
                         openCursor(IDBKeyRange.only(values[i]));
@@ -17,8 +25,8 @@ export class In extends NotWhere {
                             }
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
                     cursorRequest.onerror = this.onCursorError;
@@ -26,7 +34,7 @@ export class In extends NotWhere {
             }
         }
         else {
-            for (let i = 0, length = values.length; i < length; i++) {
+            for (let i = 0; i < valueLength; i++) {
                 if (!this.errorOccured) {
                     cursorRequest = this.objectStore.index(column).
                         openCursor(IDBKeyRange.only(values[i]));
@@ -37,8 +45,8 @@ export class In extends NotWhere {
                             ++this.rowAffected;
                             cursor.continue();
                         }
-                        else if (i + 1 === length) {
-                            this.onQueryFinished();
+                        else {
+                            onQueryFinished();
                         }
                     };
                     cursorRequest.onerror = this.onCursorError;

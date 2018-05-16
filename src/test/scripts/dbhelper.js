@@ -94,17 +94,14 @@ function getDbSchema() {
             },
             {
                 name: "LastName",
-                notNull: true,
                 dataType: 'string'
             },
             {
                 name: "BirthDate",
-                notNull: true,
                 dataType: 'string'
             },
             {
                 name: "Photo",
-                notNull: true,
                 dataType: 'string'
             },
             {
