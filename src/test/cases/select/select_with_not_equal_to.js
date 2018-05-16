@@ -1,16 +1,19 @@
 describe('Test Select with not equal to', function () {
 
-    it("select * from employees where jobSuspendedFlag!=0)", function (done) {
+    it("select * from employees where jobSuspendedFlag!=0 and lastName like '%e%')", function (done) {
         Con.select({
             from: 'Employees',
             where: {
                 jobSuspendedFlag: {
                     '!=': 0
-                }
+                },
+                lastName: {
+                    like: '%e%',
+                },
             }
         }).
         then(function (results) {
-            expect(results).to.be.an('array').length(7);
+            expect(results).to.be.an('array').length(3);
             done();
         }).
         catch(function (err) {

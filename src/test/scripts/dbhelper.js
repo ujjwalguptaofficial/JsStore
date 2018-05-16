@@ -85,33 +85,20 @@ function getDbSchema() {
         ]
     }
 
+    var Column = JsStore.Column;
+    var COL_OPTION = JsStore.COL_OPTION;
+    var DATA_TYPE = JsStore.DATA_TYPE;
+
     var employees = {
         name: 'Employees',
-        columns: [{
-                name: "EmployeeID",
-                primaryKey: true,
-                autoIncrement: true
-            },
-            {
-                name: "LastName",
-                dataType: 'string'
-            },
-            {
-                name: "BirthDate",
-                dataType: 'string'
-            },
-            {
-                name: "Photo",
-                dataType: 'string'
-            },
-            {
-                name: "Notes",
-                dataType: 'string'
-            },
-            new JsStore.Column('state').options([JsStore.COL_OPTION.NotNull]).
-            setDataType(JsStore.DATA_TYPE.String),
-            new JsStore.Column('jobSuspendedFlag').options([JsStore.COL_OPTION.NotNull]).
-            setDataType(JsStore.DATA_TYPE.Number)
+        columns: [
+            new Column('employeeId').options([COL_OPTION.PrimaryKey, COL_OPTION.AutoIncrement]),
+            new Column('lastName').options([COL_OPTION.NotNull]).setDataType(DATA_TYPE.String),
+            new Column('birthDate').options([COL_OPTION.NotNull]).setDataType(DATA_TYPE.DateTime),
+            new Column('photo').options([COL_OPTION.NotNull]).setDataType(DATA_TYPE.String),
+            new Column('notes').setDataType(DATA_TYPE.String),
+            new Column('state').options([COL_OPTION.NotNull]).setDataType(DATA_TYPE.String),
+            new Column('jobSuspendedFlag').options([COL_OPTION.NotNull]).setDataType(DATA_TYPE.Number)
         ]
     }
 
