@@ -6,7 +6,6 @@ export class StudentLogic {
     private service_ = new StudentService();
 
     constructor() {
-        this.service_.createDb();
         this.registerEvents_();
     }
 

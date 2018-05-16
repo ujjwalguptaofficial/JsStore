@@ -1,9 +1,10 @@
 import {
+    Column,
     DATA_TYPE,
-    COL_OPTION,
-    Column
+    COL_OPTION
 } from "jsstore";
 import {
+    connection,
     idbCon
 } from "./idb_service";
 export class BaseService {
