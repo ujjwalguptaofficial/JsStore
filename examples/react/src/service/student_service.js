@@ -19,7 +19,8 @@ export class StudentService extends BaseService {
         return this.connection.insert({
             into: this.tableName,
             values: [student],
-            return: true
+            return: true // since studentid is autoincrement field and we need id, 
+            // so we are making return true which will return the whole data inserted.
         })
     }
 

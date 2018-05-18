@@ -24,7 +24,7 @@ export default class Layout extends React.Component {
     addStudent(student) {
         this.service.addStudent(student).then((records) => {
             if (records.length > 0) {
-                this.state.students.push(student);
+                this.state.students.push(records[0]);
                 this.setState({ student: this.state.students });
                 this.refs.students_grid.clearAddRowTextvalue();
             }

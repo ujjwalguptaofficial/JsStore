@@ -150,7 +150,7 @@ export default class StudentGrid extends React.Component {
                     <tr>
                         <td colSpan="2" style={{ 'text-align': 'center', 'padding-top': '25px' }}>
                             <button onClick={this.updateStudent.bind(this)}>Update</button>
-                            <button style={{ 'margin-left': '10px' }} onclick={this.onStudentUpdated.bind(this)}>Cancel</button>
+                            <button style={{ 'margin-left': '10px' }} onClick={this.onStudentUpdated.bind(this)}>Cancel</button>
                         </td>
                     </tr>
                 </table>
