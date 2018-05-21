@@ -3,7 +3,7 @@ import { IError } from "../interfaces";
 import { WhereChecker } from "./where_checker";
 import { IdbHelper } from "./idb_helper";
 import { LogHelper } from "../log_helper";
-import { ERROR_TYPE, OCCURENCE } from "../enums";
+import { ERROR_TYPE, OCCURENCE, DATA_TYPE } from "../enums";
 import { Column } from "../model/column";
 import { QUERY_OPTION } from "../enums";
 
@@ -70,46 +70,53 @@ export class Base extends BaseHelper {
 
     protected addGreatAndLessToNotOp() {
         const whereQuery = this.query.where;
-        let value;
-        if (this.containsNot(whereQuery)) {
+        const containsNot = (qry: object, keys: string[]) => {
+            return keys.findIndex(key => qry[key][QUERY_OPTION.NotEqualTo] != null) >= 0;
+        };
+        const addToSingleQry = (qry, keys: string[]) => {
+            let value;
+            keys.forEach((prop) => {
+                value = qry[prop];
+                if (value[QUERY_OPTION.NotEqualTo] != null) {
+                    qry[prop][QUERY_OPTION.GreaterThan] = value[QUERY_OPTION.NotEqualTo];
+                    if (qry[QUERY_OPTION.Or] === undefined) {
+                        qry[QUERY_OPTION.Or] = {};
+                        qry[QUERY_OPTION.Or][prop] = {};
+                    }
+                    else if (qry[QUERY_OPTION.Or][prop] === undefined) {
+                        qry[QUERY_OPTION.Or][prop] = {};
+                    }
+                    qry[QUERY_OPTION.Or][prop][QUERY_OPTION.LessThan] = value[QUERY_OPTION.NotEqualTo];
+                    delete qry[prop][QUERY_OPTION.NotEqualTo];
+                }
+            });
+            return qry;
+        };
+        if (this.getType(whereQuery) === DATA_TYPE.Object) {
             const queryKeys = Object.keys(whereQuery);
-            if (queryKeys.length === 1) {
-                queryKeys.forEach((prop) => {
-                    value = whereQuery[prop];
-                    if (value[QUERY_OPTION.NotEqualTo] != null) {
-                        whereQuery[prop][QUERY_OPTION.GreaterThan] = value[QUERY_OPTION.NotEqualTo];
-                        if (whereQuery[QUERY_OPTION.Or] === undefined) {
-                            whereQuery[QUERY_OPTION.Or] = {};
-                            whereQuery[QUERY_OPTION.Or][prop] = {};
-                        }
-                        else if (whereQuery[QUERY_OPTION.Or][prop] === undefined) {
-                            whereQuery[QUERY_OPTION.Or][prop] = {};
-                        }
-                        whereQuery[QUERY_OPTION.Or][prop][QUERY_OPTION.LessThan] = value[QUERY_OPTION.NotEqualTo];
-                        delete whereQuery[prop][QUERY_OPTION.NotEqualTo];
-                    }
-                });
-                this.query.where = whereQuery;
+            if (containsNot(whereQuery, queryKeys)) {
+                if (queryKeys.length === 1) {
+                    this.query.where = addToSingleQry(whereQuery, queryKeys);
+                }
+                else {
+                    const whereTmp = [];
+                    queryKeys.forEach((prop) => {
+                        whereTmp.push(addToSingleQry({ [prop]: whereQuery[prop] }, [prop]));
+                    });
+                    this.query.where = whereTmp;
+                }
             }
-            else {
-                const whereTmp = [];
-                queryKeys.forEach((prop) => {
-                    value = whereQuery[prop];
-                    const tmpQry = {};
-                    if (value[QUERY_OPTION.NotEqualTo] != null) {
-                        tmpQry[prop] = {};
-                        tmpQry[prop][QUERY_OPTION.GreaterThan] = value[QUERY_OPTION.NotEqualTo];
-                        tmpQry[QUERY_OPTION.Or] = {};
-                        tmpQry[QUERY_OPTION.Or][prop] = {};
-                        tmpQry[QUERY_OPTION.Or][prop][QUERY_OPTION.LessThan] = value[QUERY_OPTION.NotEqualTo];
-                    }
-                    else {
-                        tmpQry[prop] = value;
-                    }
-                    whereTmp.push(tmpQry);
-                });
-                this.query.where = whereTmp;
-            }
+        }
+        else {
+            const whereTmp = [];
+            (whereQuery as object[]).forEach(qry => {
+                const queryKeys = Object.keys(qry);
+                if (containsNot(qry, queryKeys)) {
+                    qry = addToSingleQry(qry, queryKeys);
+                }
+                whereTmp.push(qry);
+            });
+            this.query.where = whereTmp;
         }
     }
 

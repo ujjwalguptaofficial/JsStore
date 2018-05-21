@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.0.5 - 16/05/2018
+ * @license :jsstore - V2.0.5 - 21/05/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -3701,46 +3701,54 @@ var Base = /** @class */ (function (_super) {
     };
     Base.prototype.addGreatAndLessToNotOp = function () {
         var whereQuery = this.query.where;
-        var value;
-        if (this.containsNot(whereQuery)) {
+        var containsNot = function (qry, keys) {
+            return keys.findIndex(function (key) { return qry[key][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo] != null; }) >= 0;
+        };
+        var addToSingleQry = function (qry, keys) {
+            var value;
+            keys.forEach(function (prop) {
+                value = qry[prop];
+                if (value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo] != null) {
+                    qry[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].GreaterThan] = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
+                    if (qry[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or] === undefined) {
+                        qry[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or] = {};
+                        qry[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop] = {};
+                    }
+                    else if (qry[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop] === undefined) {
+                        qry[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop] = {};
+                    }
+                    qry[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].LessThan] = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
+                    delete qry[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
+                }
+            });
+            return qry;
+        };
+        if (this.getType(whereQuery) === _enums__WEBPACK_IMPORTED_MODULE_3__["DATA_TYPE"].Object) {
             var queryKeys = Object.keys(whereQuery);
-            if (queryKeys.length === 1) {
-                queryKeys.forEach(function (prop) {
-                    value = whereQuery[prop];
-                    if (value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo] != null) {
-                        whereQuery[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].GreaterThan] = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
-                        if (whereQuery[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or] === undefined) {
-                            whereQuery[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or] = {};
-                            whereQuery[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop] = {};
-                        }
-                        else if (whereQuery[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop] === undefined) {
-                            whereQuery[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop] = {};
-                        }
-                        whereQuery[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].LessThan] = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
-                        delete whereQuery[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
-                    }
-                });
-                this.query.where = whereQuery;
+            if (containsNot(whereQuery, queryKeys)) {
+                if (queryKeys.length === 1) {
+                    this.query.where = addToSingleQry(whereQuery, queryKeys);
+                }
+                else {
+                    var whereTmp_1 = [];
+                    queryKeys.forEach(function (prop) {
+                        whereTmp_1.push(addToSingleQry((_a = {}, _a[prop] = whereQuery[prop], _a), [prop]));
+                        var _a;
+                    });
+                    this.query.where = whereTmp_1;
+                }
             }
-            else {
-                var whereTmp_1 = [];
-                queryKeys.forEach(function (prop) {
-                    value = whereQuery[prop];
-                    var tmpQry = {};
-                    if (value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo] != null) {
-                        tmpQry[prop] = {};
-                        tmpQry[prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].GreaterThan] = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
-                        tmpQry[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or] = {};
-                        tmpQry[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop] = {};
-                        tmpQry[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Or][prop][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].LessThan] = value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].NotEqualTo];
-                    }
-                    else {
-                        tmpQry[prop] = value;
-                    }
-                    whereTmp_1.push(tmpQry);
-                });
-                this.query.where = whereTmp_1;
-            }
+        }
+        else {
+            var whereTmp_2 = [];
+            whereQuery.forEach(function (qry) {
+                var queryKeys = Object.keys(qry);
+                if (containsNot(qry, queryKeys)) {
+                    qry = addToSingleQry(qry, queryKeys);
+                }
+                whereTmp_2.push(qry);
+            });
+            this.query.where = whereTmp_2;
         }
     };
     Base.prototype.makeQryInCaseSensitive = function (qry) {
@@ -3826,18 +3834,6 @@ var BaseHelper = /** @class */ (function () {
     });
     BaseHelper.prototype.createTransaction = function (tableNames, callBack, mode) {
         _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].createTransaction(tableNames, callBack);
-    };
-    BaseHelper.prototype.containsNot = function (whereQry) {
-        var status = false;
-        var value;
-        Object.keys(whereQry).every(function (key) {
-            value = whereQry[key];
-            if (value[_enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].NotEqualTo] != null) {
-                status = true;
-            }
-            return !status;
-        });
-        return status;
     };
     BaseHelper.prototype.filterOnOccurence = function (value) {
         var found = false;

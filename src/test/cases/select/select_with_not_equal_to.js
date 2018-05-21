@@ -79,4 +79,29 @@ describe('Test Select with not equal to', function () {
         })
     });
 
+    it("select * from employees where (notes like '%from%' && state!='Concluded') && state !='WaitPickup'", function (done) {
+        Con.select({
+            from: 'Employees',
+            where: [{
+                notes: {
+                    'like': '%from%'
+                },
+                state: {
+                    '!=': 'Concluded'
+                }
+            }, {
+                state: {
+                    '!=': 'WaitPickup'
+                }
+            }]
+        }).
+        then(function (results) {
+            expect(results).to.be.an('array').length(6);
+            done();
+        }).
+        catch(function (err) {
+            done(err);
+        })
+    });
+
 });

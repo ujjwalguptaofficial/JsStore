@@ -39,19 +39,6 @@ export class BaseHelper {
         IdbHelper.createTransaction(tableNames, callBack);
     }
 
-    protected containsNot(whereQry: object) {
-        let status = false;
-        let value;
-        Object.keys(whereQry).every((key) => {
-            value = whereQry[key];
-            if (value[QUERY_OPTION.NotEqualTo] != null) {
-                status = true;
-            }
-            return !status;
-        });
-        return status;
-    }
-
     protected filterOnOccurence(value) {
         let found = false;
         value = value.toLowerCase();
