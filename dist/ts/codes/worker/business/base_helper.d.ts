@@ -12,7 +12,6 @@ export declare class BaseHelper {
     protected getType(value: any): "string" | "number" | "boolean" | "symbol" | "undefined" | "object" | "function" | DATA_TYPE.Array | DATA_TYPE.Null | DATA_TYPE.DateTime;
     protected readonly transaction: IDBTransaction;
     protected createTransaction(tableNames: string[], callBack: () => void, mode?: any): void;
-    protected containsNot(whereQry: object): boolean;
     protected filterOnOccurence(value: any): boolean;
     protected isTableExist(tableName: string): boolean;
     protected getTable(tableName: string): Table;
