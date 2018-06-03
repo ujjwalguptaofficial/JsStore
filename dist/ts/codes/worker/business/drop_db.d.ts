@@ -1,10 +1,9 @@
 import { IError } from "../interfaces";
-export declare class DropDb {
+import { BaseDb } from "./base_db";
+export declare class DropDb extends BaseDb {
     private onSuccess_;
     private onError_;
-    private readonly dbName_;
     constructor(onSuccess: () => void, onError: (err: IError) => void);
     deleteMetaData(): void;
-    private getDbList_(callback);
     deleteDb(): void;
 }

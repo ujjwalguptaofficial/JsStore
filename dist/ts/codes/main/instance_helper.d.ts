@@ -11,5 +11,5 @@ export declare class InstanceHelper {
     protected pushApi<T>(request: IWebWorkerRequest): Promise<T>;
     private prcoessExecutionOfQry_(request);
     private executeQry_();
-    private sendRequestToWorker_(firstRequest);
+    private sendRequestToWorker_(request);
 }

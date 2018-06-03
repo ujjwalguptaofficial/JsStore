@@ -42,4 +42,5 @@ export declare enum API {
     BulkInsert = "bulk_insert",
     ExportJson = "export_json",
     ChangeLogStatus = "change_log_status",
+    Terminate = "terminate",
 }

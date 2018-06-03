@@ -145,4 +145,11 @@ export declare class Instance extends InstanceHelper {
      * @memberof Instance
      */
     set(key: string, value: any): Promise<any>;
+    /**
+     * terminate the connection
+     *
+     * @returns
+     * @memberof Instance
+     */
+    terminate(): Promise<any>;
 }
