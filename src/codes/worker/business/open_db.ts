@@ -1,43 +1,23 @@
-import { IdbHelper } from "./idb_helper";
 import { IError } from "../interfaces";
 import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
 import { LogHelper } from "../log_helper";
 import { Table } from "../model/table";
+import { BaseDb } from "./base_db";
 
-export class OpenDb {
-    private dbName_: string;
+export class OpenDb extends BaseDb {
     private onSuccess_: () => void;
     private onError_: (err: IError) => void;
 
     constructor(onSuccess: () => void, onError: (err: IError) => void) {
-        this.dbName_ = IdbHelper.activeDb.name;
+        super();
         this.onSuccess_ = onSuccess;
         this.onError_ = onError;
     }
 
-    private get dbStatus_() {
-        return IdbHelper.dbStatus;
-    }
-
-    private set dbConnection_(value) {
-        IdbHelper.dbConnection = value;
-    }
-
-    private get dbConnection_() {
-        return IdbHelper.dbConnection;
-    }
-
-    private updateDbStatus_(status: CONNECTION_STATUS, err?: ERROR_TYPE) {
-        IdbHelper.updateDbStatus(status, err);
-    }
-
-    private onDbDroppedByBrowser_(deleteMetaData?: boolean) {
-        IdbHelper.callDbDroppedByBrowser(deleteMetaData);
-    }
 
     execute() {
-        if (this.dbName_.length > 0) {
-            const dbRequest = indexedDB.open(this.dbName_, IdbHelper.activeDbVersion);
+        if (this.dbName.length > 0) {
+            const dbRequest = indexedDB.open(this.dbName, this.dbVersion);
 
             dbRequest.onerror = (event: any) => {
                 if (this.onError_ != null) {
@@ -46,29 +26,29 @@ export class OpenDb {
             };
 
             dbRequest.onsuccess = (event) => {
-                this.dbStatus_.conStatus = CONNECTION_STATUS.Connected;
-                this.dbConnection_ = dbRequest.result;
-                (this.dbConnection_ as any).onclose = (e) => {
-                    this.onDbDroppedByBrowser_();
-                    this.updateDbStatus_(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
+                this.dbStatus.conStatus = CONNECTION_STATUS.Connected;
+                this.dbConnection = dbRequest.result;
+                (this.dbConnection as any).onclose = (e) => {
+                    this.onDbDroppedByBrowser();
+                    this.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
                 };
 
-                this.dbConnection_.onversionchange = (e: IDBVersionChangeEvent) => {
+                this.dbConnection.onversionchange = (e: IDBVersionChangeEvent) => {
                     if (e.newVersion === null) { // An attempt is made to delete the db
                         if (e.newVersion === null) { // An attempt is made to delete the db
                             (e.target as any).close(); // Manually close our connection to the db
-                            this.onDbDroppedByBrowser_(true);
-                            this.updateDbStatus_(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
+                            this.onDbDroppedByBrowser(true);
+                            this.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
                         }
                     }
                 };
 
-                IdbHelper.dbConnection.onerror = (e) => {
-                    IdbHelper.dbStatus.lastError = ("Error occured in connection :" + (e.target as any).result) as any;
+                this.dbConnection.onerror = (e) => {
+                    this.dbStatus.lastError = ("Error occured in connection :" + (e.target as any).result) as any;
                 };
 
-                IdbHelper.dbConnection.onabort = (e) => {
-                    IdbHelper.dbStatus = {
+                this.dbConnection.onabort = (e) => {
+                    this.dbStatus = {
                         conStatus: CONNECTION_STATUS.Closed,
                         lastError: ERROR_TYPE.ConnectionAborted
                     };
@@ -85,14 +65,10 @@ export class OpenDb {
         }
     }
 
-    private get activeDb_() {
-        return IdbHelper.activeDb;
-    }
-
     private setPrimaryKey_() {
-        this.activeDb_.tables.forEach((table, index) => {
+        this.activeDb.tables.forEach((table, index) => {
             table.columns.every(item => {
-                IdbHelper.activeDb.tables[index].primaryKey = item.primaryKey ? item.name : "";
+                this.activeDb.tables[index].primaryKey = item.primaryKey ? item.name : "";
                 return !item.primaryKey;
             });
         });

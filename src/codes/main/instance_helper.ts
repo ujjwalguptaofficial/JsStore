@@ -17,7 +17,8 @@ export class InstanceHelper {
     API.GetDbSchema,
     API.Get,
     API.Set,
-    API.ChangeLogStatus
+    API.ChangeLogStatus,
+    API.Terminate
   ];
 
   constructor(worker: Worker) {
@@ -80,14 +81,11 @@ export class InstanceHelper {
         this.sendRequestToWorker_(this.requestQueue_[0]);
         return;
       }
-      let allowedQueryIndex = -1;
-      this.requestQueue_.every((item, index) => {
-        if (this.whiteListApi_.indexOf(item.name) >= 0) {
-          allowedQueryIndex = index;
-          return false;
-        }
-        return true;
-      });
+
+      const allowedQueryIndex = this.requestQueue_.findIndex(
+        item => this.whiteListApi_.indexOf(item.name) >= 0
+      );
+
       // shift allowed query to zeroth index
       if (allowedQueryIndex >= 0) {
         this.requestQueue_.splice(
@@ -100,13 +98,22 @@ export class InstanceHelper {
     }
   }
 
-  private sendRequestToWorker_(firstRequest: IWebWorkerRequest) {
+  private sendRequestToWorker_(request: IWebWorkerRequest) {
     this.isCodeExecuting_ = true;
-    const request = {
-      name: firstRequest.name,
-      query: firstRequest.query
-    } as IWebWorkerRequest;
-    LogHelper.log("request executing : " + firstRequest.name);
-    this.worker_.postMessage(request);
+    LogHelper.log("request executing : " + request.name);
+    if (request.name === API.Terminate) {
+      this.worker_.terminate();
+      this.isDbOpened_ = false;
+      this.processFinishedQuery_({
+        returnedValue: null
+      } as any);
+    }
+    else {
+      const requestForWorker = {
+        name: request.name,
+        query: request.query
+      } as IWebWorkerRequest;
+      this.worker_.postMessage(requestForWorker);
+    }
   }
 }

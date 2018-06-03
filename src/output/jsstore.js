@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.0.6 - 21/05/2018
+ * @license :jsstore - V2.0.6 - 03/06/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -389,6 +389,12 @@ var Instance = /** @class */ (function (_super) {
             }
         });
     };
+    Instance.prototype.terminate = function () {
+        return this.pushApi({
+            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Terminate,
+            query: null
+        });
+    };
     return Instance;
 }(_instance_helper__WEBPACK_IMPORTED_MODULE_1__["InstanceHelper"]));
 
@@ -454,6 +460,7 @@ var API;
     API["BulkInsert"] = "bulk_insert";
     API["ExportJson"] = "export_json";
     API["ChangeLogStatus"] = "change_log_status";
+    API["Terminate"] = "terminate";
 })(API || (API = {}));
 
 
@@ -482,7 +489,8 @@ var InstanceHelper = /** @class */ (function () {
             _enums__WEBPACK_IMPORTED_MODULE_1__["API"].GetDbSchema,
             _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Get,
             _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Set,
-            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].ChangeLogStatus
+            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].ChangeLogStatus,
+            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Terminate
         ];
         if (worker) {
             this.worker_ = worker;
@@ -542,29 +550,31 @@ var InstanceHelper = /** @class */ (function () {
                 this.sendRequestToWorker_(this.requestQueue_[0]);
                 return;
             }
-            var allowedQueryIndex_1 = -1;
-            this.requestQueue_.every(function (item, index) {
-                if (_this.whiteListApi_.indexOf(item.name) >= 0) {
-                    allowedQueryIndex_1 = index;
-                    return false;
-                }
-                return true;
-            });
+            var allowedQueryIndex = this.requestQueue_.findIndex(function (item) { return _this.whiteListApi_.indexOf(item.name) >= 0; });
             // shift allowed query to zeroth index
-            if (allowedQueryIndex_1 >= 0) {
-                this.requestQueue_.splice(0, 0, this.requestQueue_.splice(allowedQueryIndex_1, 1)[0]);
+            if (allowedQueryIndex >= 0) {
+                this.requestQueue_.splice(0, 0, this.requestQueue_.splice(allowedQueryIndex, 1)[0]);
                 this.sendRequestToWorker_(this.requestQueue_[0]);
             }
         }
     };
-    InstanceHelper.prototype.sendRequestToWorker_ = function (firstRequest) {
+    InstanceHelper.prototype.sendRequestToWorker_ = function (request) {
         this.isCodeExecuting_ = true;
-        var request = {
-            name: firstRequest.name,
-            query: firstRequest.query
-        };
-        _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request executing : " + firstRequest.name);
-        this.worker_.postMessage(request);
+        _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request executing : " + request.name);
+        if (request.name === _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Terminate) {
+            this.worker_.terminate();
+            this.isDbOpened_ = false;
+            this.processFinishedQuery_({
+                returnedValue: null
+            });
+        }
+        else {
+            var requestForWorker = {
+                name: request.name,
+                query: request.query
+            };
+            this.worker_.postMessage(requestForWorker);
+        }
     };
     return InstanceHelper;
 }());

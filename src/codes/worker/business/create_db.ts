@@ -1,45 +1,16 @@
 import { TableHelper } from "../model/table_helper";
 import { IError } from "../interfaces";
-import { IdbHelper } from "./idb_helper";
 import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
 import { Column } from "../model/column";
 import * as KeyStore from "../keystore/index";
+import { BaseDb } from "./base_db";
 
-export class CreateDb {
-    private dbName_: string;
-
-    private get activeDb_() {
-        return IdbHelper.activeDb;
-    }
-
-    private get dbVersion_() {
-        return IdbHelper.activeDbVersion;
-    }
-
-    private get dbStatus_() {
-        return IdbHelper.dbStatus;
-    }
-
-    private set dbStatus_(value) {
-        IdbHelper.dbStatus = value;
-    }
-
-    private set dbConnection_(value) {
-        IdbHelper.dbConnection = value;
-    }
-
-    private get dbConnection_() {
-        return IdbHelper.dbConnection;
-    }
-
-    private getDbList_(callback: (dbList: string[]) => void) {
-        IdbHelper.getDbList(callback);
-    }
+export class CreateDb extends BaseDb {
 
     constructor(tablesMetaData: TableHelper[], onSuccess: (listOf) => void, onError: (err: IError) => void) {
-        this.dbName_ = this.activeDb_.name;
+        super();
         const listofTableCreated = [];
-        const dbRequest = indexedDB.open(this.dbName_, this.dbVersion_);
+        const dbRequest = indexedDB.open(this.dbName, this.dbVersion);
 
         dbRequest.onerror = (event) => {
             if (onError != null) {
@@ -48,34 +19,34 @@ export class CreateDb {
         };
 
         dbRequest.onsuccess = (event) => {
-            this.dbStatus_.conStatus = CONNECTION_STATUS.Connected;
-            this.dbConnection_ = dbRequest.result;
-            (this.dbConnection_ as any).onclose = (e) => {
-                IdbHelper.callDbDroppedByBrowser();
-                IdbHelper.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
+            this.dbStatus.conStatus = CONNECTION_STATUS.Connected;
+            this.dbConnection = dbRequest.result;
+            (this.dbConnection as any).onclose = (e) => {
+                this.onDbDroppedByBrowser();
+                this.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
             };
 
-            this.dbConnection_.onversionchange = (e: IDBVersionChangeEvent) => {
+            this.dbConnection.onversionchange = (e: IDBVersionChangeEvent) => {
                 if (e.newVersion === null) { // An attempt is made to delete the db
                     (e.target as any).close(); // Manually close our connection to the db
-                    IdbHelper.callDbDroppedByBrowser(true);
-                    IdbHelper.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
+                    this.onDbDroppedByBrowser(true);
+                    this.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
                 }
             };
 
-            this.dbConnection_.onerror = (e) => {
-                IdbHelper.dbStatus.lastError = ("Error occured in connection :" + (e.target as any).result) as any;
+            this.dbConnection.onerror = (e) => {
+                this.dbStatus.lastError = ("Error occured in connection :" + (e.target as any).result) as any;
             };
 
-            this.dbConnection_.onabort = (e) => {
-                this.dbStatus_ = {
+            this.dbConnection.onabort = (e) => {
+                this.dbStatus = {
                     conStatus: CONNECTION_STATUS.Closed,
                     lastError: ERROR_TYPE.ConnectionAborted
                 };
             };
 
             // save in database list
-            this.saveDbName_();
+            this.savedbNameIntoDbList();
             if (onSuccess != null) {
                 onSuccess(listofTableCreated);
             }
@@ -86,7 +57,7 @@ export class CreateDb {
             const createObjectStore = (item: TableHelper, index) => {
                 try {
                     if (item.primaryKey.length > 0) {
-                        IdbHelper.activeDb.tables[index].primaryKey = item.primaryKey;
+                        this.activeDb.tables[index].primaryKey = item.primaryKey;
                         const store = dbConnection.createObjectStore(item.name, {
                             keyPath: item.primaryKey
                         });
@@ -96,7 +67,7 @@ export class CreateDb {
                                 options['multiEntry'] = column.multiEntry;
                                 store.createIndex(column.name, column.name, options);
                                 if (column.autoIncrement) {
-                                    KeyStore.set(`JsStore_${this.dbName_}_${item.name}_${column.name}_Value`, 0);
+                                    KeyStore.set(`JsStore_${this.dbName}_${item.name}_${column.name}_Value`, 0);
                                 }
                             }
                         });
@@ -109,13 +80,13 @@ export class CreateDb {
                             const options = { unique: column.unique, multiEntry: column.multiEntry };
                             store.createIndex(column.name, column.name, options);
                             if (column.autoIncrement) {
-                                KeyStore.set(`JsStore_${this.dbName_}_${item.name}_${column.name}_Value`, 0);
+                                KeyStore.set(`JsStore_${this.dbName}_${item.name}_${column.name}_Value`, 0);
                             }
                         });
                     }
                     listofTableCreated.push(item.name);
                     // setting the table version
-                    KeyStore.set(`JsStore_${this.dbName_}_${item.name}_Version`, item.version);
+                    KeyStore.set(`JsStore_${this.dbName}_${item.name}_Version`, item.version);
                 }
                 catch (e) {
                     console.error(e);
@@ -136,11 +107,11 @@ export class CreateDb {
         };
     }
 
-    private saveDbName_() {
-        this.getDbList_((result) => {
-            if (result.indexOf(this.dbName_) < 0) {
-                result.push(this.dbName_);
-                IdbHelper.setDbList(result);
+    private savedbNameIntoDbList() {
+        this.getDbList((result) => {
+            if (result.indexOf(this.dbName) < 0) {
+                result.push(this.dbName);
+                this.setDbList(result);
             }
         });
     }

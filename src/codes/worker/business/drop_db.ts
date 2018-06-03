@@ -1,52 +1,45 @@
 import { IError } from "../interfaces";
 import * as KeyStore from "../keystore/index";
-import { IdbHelper } from "./idb_helper";
 import { Table } from "../model/table";
 import { Column } from "../model/column";
 import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
 import { LogHelper } from "../log_helper";
+import { BaseDb } from "./base_db";
 
-export class DropDb {
+export class DropDb extends BaseDb {
     private onSuccess_: () => void;
     private onError_: (err: IError) => void;
 
-    private get dbName_() {
-        return IdbHelper.activeDb.name;
-    }
-
     constructor(onSuccess: () => void, onError: (err: IError) => void) {
+        super();
         this.onSuccess_ = onSuccess;
         this.onError_ = onError;
     }
 
     deleteMetaData() {
-        KeyStore.remove(`JsStore_${this.dbName_}_Db_Version`);
-        IdbHelper.activeDb.tables.forEach((table: Table) => {
-            KeyStore.remove(`JsStore_${this.dbName_}_${table.name}_Version`);
+        KeyStore.remove(`JsStore_${this.dbName}_Db_Version`);
+        this.activeDb.tables.forEach((table: Table) => {
+            KeyStore.remove(`JsStore_${this.dbName}_${table.name}_Version`);
             table.columns.forEach((column: Column) => {
                 if (column.autoIncrement) {
-                    KeyStore.remove(`JsStore_${this.dbName_}_${table.name}_${column.name}_Value`);
+                    KeyStore.remove(`JsStore_${this.dbName}_${table.name}_${column.name}_Value`);
                 }
             });
         });
         // remove from database_list 
-        this.getDbList_(result => {
-            result.splice(result.indexOf(this.dbName_), 1);
-            IdbHelper.setDbList(result).then(() => {
+        this.getDbList(result => {
+            result.splice(result.indexOf(this.dbName), 1);
+            this.setDbList(result).then(() => {
                 // remove db schema from keystore
-                KeyStore.remove(`JsStore_${this.dbName_}_Schema`, this.onSuccess_);
+                KeyStore.remove(`JsStore_${this.dbName}_Schema`, this.onSuccess_);
             });
 
         });
     }
 
-    private getDbList_(callback: (dbList: string[]) => void) {
-        IdbHelper.getDbList(callback);
-    }
-
     deleteDb() {
         setTimeout(() => {
-            const dropDbRequest = indexedDB.deleteDatabase(this.dbName_);
+            const dropDbRequest = indexedDB.deleteDatabase(this.dbName);
             dropDbRequest.onblocked = () => {
                 if (this.onError_ != null) {
                     this.onError_(new LogHelper(ERROR_TYPE.DbBlocked).get());
@@ -58,7 +51,7 @@ export class DropDb {
                 }
             };
             dropDbRequest.onsuccess = () => {
-                IdbHelper.dbStatus.conStatus = CONNECTION_STATUS.Closed;
+                this.dbStatus.conStatus = CONNECTION_STATUS.Closed;
                 this.deleteMetaData();
             };
         }, 100);

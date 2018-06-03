@@ -278,4 +278,17 @@ export class Instance extends InstanceHelper {
             } as ISet
         });
     }
+
+    /**
+     * terminate the connection
+     *
+     * @returns
+     * @memberof Instance
+     */
+    terminate() {
+        return this.pushApi<any>({
+            name: API.Terminate,
+            query: null
+        });
+    }
 }
