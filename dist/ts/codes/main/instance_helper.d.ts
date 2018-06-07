@@ -4,8 +4,9 @@ export declare class InstanceHelper {
     private isDbOpened_;
     private requestQueue_;
     private isCodeExecuting_;
+    private queryExecutor_;
     private whiteListApi_;
-    constructor(worker: Worker);
+    constructor(worker?: Worker);
     private onMessageFromWorker_(msg);
     private processFinishedQuery_(message);
     protected pushApi<T>(request: IWebWorkerRequest): Promise<T>;

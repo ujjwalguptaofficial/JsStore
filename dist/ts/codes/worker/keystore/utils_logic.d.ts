@@ -1,4 +1,4 @@
-import * as JsStore from '../index';
+import * as JsStore from '../export';
 import { CONNECTION_STATUS } from './enums';
 export declare class Utils {
     /**

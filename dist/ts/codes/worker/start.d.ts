@@ -1,1 +1,1 @@
-export declare const registerEvents: () => void;
+export declare const initialize: () => void;

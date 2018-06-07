@@ -1,5 +1,7 @@
 import { IWebWorkerRequest } from "./interfaces";
 export declare class QueryExecutor {
+    onQueryFinished: (result: any) => void;
+    constructor(fn?: (result: any) => void);
     checkConnectionAndExecuteLogic(request: IWebWorkerRequest): void;
     private changeLogStatus_(status, onSuccess, onError);
     private returnResult_(result);

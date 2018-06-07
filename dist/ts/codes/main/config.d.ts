@@ -1,3 +1,4 @@
 export declare class Config {
-    static _isLogEnabled: boolean;
+    static isLogEnabled: boolean;
+    static isRuningInWorker: boolean;
 }

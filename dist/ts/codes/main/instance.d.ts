@@ -1,7 +1,7 @@
 import { InstanceHelper } from "./instance_helper";
 import { IDataBase, ISelect, ICount, IInsert, IUpdate, IRemove, IDbInfo } from "./interfaces";
 export declare class Instance extends InstanceHelper {
-    constructor(worker: Worker);
+    constructor(worker?: Worker);
     /**
      *  open database
      *

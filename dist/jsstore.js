@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.1.0 - 03/06/2018
+ * @license :jsstore - V2.1.0 - 07/06/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -303,10 +303,10 @@ var Instance = /** @class */ (function (_super) {
      * @memberof Instance
      */
     Instance.prototype.setLogStatus = function (status) {
-        _config__WEBPACK_IMPORTED_MODULE_2__["Config"]._isLogEnabled = status ? status : _config__WEBPACK_IMPORTED_MODULE_2__["Config"]._isLogEnabled;
+        _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isLogEnabled = status ? status : _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isLogEnabled;
         this.pushApi({
             name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].ChangeLogStatus,
-            query: _config__WEBPACK_IMPORTED_MODULE_2__["Config"]._isLogEnabled
+            query: _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isLogEnabled
         });
     };
     /**
@@ -479,6 +479,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InstanceHelper", function() { return InstanceHelper; });
 /* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4);
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2);
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5);
+
 
 
 var InstanceHelper = /** @class */ (function () {
@@ -503,8 +505,8 @@ var InstanceHelper = /** @class */ (function () {
             this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
         }
         else {
-            var err = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].WorkerNotSupplied);
-            err.throw();
+            _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker = false;
+            this.queryExecutor_ = new JsStoreWorker.QueryExecutor(this.processFinishedQuery_.bind(this));
         }
     }
     InstanceHelper.prototype.onMessageFromWorker_ = function (msg) {
@@ -568,7 +570,9 @@ var InstanceHelper = /** @class */ (function () {
         this.isCodeExecuting_ = true;
         _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request executing : " + request.name);
         if (request.name === _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Terminate) {
-            this.worker_.terminate();
+            if (_config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker === true) {
+                this.worker_.terminate();
+            }
             this.isDbOpened_ = false;
             this.processFinishedQuery_({
                 returnedValue: null
@@ -579,7 +583,12 @@ var InstanceHelper = /** @class */ (function () {
                 name: request.name,
                 query: request.query
             };
-            this.worker_.postMessage(requestForWorker);
+            if (_config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker === true) {
+                this.worker_.postMessage(requestForWorker);
+            }
+            else {
+                this.queryExecutor_.checkConnectionAndExecuteLogic(requestForWorker);
+            }
         }
     };
     return InstanceHelper;
@@ -609,7 +618,7 @@ var LogHelper = /** @class */ (function () {
         throw this.get();
     };
     LogHelper.log = function (msg) {
-        if (_config__WEBPACK_IMPORTED_MODULE_1__["Config"]._isLogEnabled) {
+        if (_config__WEBPACK_IMPORTED_MODULE_1__["Config"].isLogEnabled) {
             console.log(msg);
         }
     };
@@ -655,7 +664,8 @@ __webpack_require__.r(__webpack_exports__);
 var Config = /** @class */ (function () {
     function Config() {
     }
-    Config._isLogEnabled = false;
+    Config.isLogEnabled = false;
+    Config.isRuningInWorker = true;
     return Config;
 }());
 
@@ -675,7 +685,7 @@ __webpack_require__.r(__webpack_exports__);
  *
  */
 var enableLog = function () {
-    _config__WEBPACK_IMPORTED_MODULE_0__["Config"]._isLogEnabled = true;
+    _config__WEBPACK_IMPORTED_MODULE_0__["Config"].isLogEnabled = true;
 };
 
 
