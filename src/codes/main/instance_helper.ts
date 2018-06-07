@@ -1,13 +1,16 @@
 import { LogHelper } from "./log_helper";
 import { ERROR_TYPE, API } from "./enums";
 import { IWebWorkerRequest, IWebWorkerResult } from "./interfaces";
+import { Config } from "./config";
 
+declare var JsStoreWorker;
 
 export class InstanceHelper {
   private worker_: Worker;
   private isDbOpened_ = false;
   private requestQueue_: IWebWorkerRequest[] = [];
   private isCodeExecuting_ = false;
+  private queryExecutor_;
   private whiteListApi_ = [
     API.CreateDb,
     API.IsDbExist,
@@ -21,13 +24,13 @@ export class InstanceHelper {
     API.Terminate
   ];
 
-  constructor(worker: Worker) {
+  constructor(worker?: Worker) {
     if (worker) {
       this.worker_ = worker;
       this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
     } else {
-      const err = new LogHelper(ERROR_TYPE.WorkerNotSupplied);
-      err.throw();
+      Config.isRuningInWorker = false;
+      this.queryExecutor_ = new JsStoreWorker.QueryExecutor(this.processFinishedQuery_.bind(this));
     }
   }
 
@@ -102,7 +105,9 @@ export class InstanceHelper {
     this.isCodeExecuting_ = true;
     LogHelper.log("request executing : " + request.name);
     if (request.name === API.Terminate) {
-      this.worker_.terminate();
+      if (Config.isRuningInWorker === true) {
+        this.worker_.terminate();
+      }
       this.isDbOpened_ = false;
       this.processFinishedQuery_({
         returnedValue: null
@@ -113,7 +118,12 @@ export class InstanceHelper {
         name: request.name,
         query: request.query
       } as IWebWorkerRequest;
-      this.worker_.postMessage(requestForWorker);
+      if (Config.isRuningInWorker === true) {
+        this.worker_.postMessage(requestForWorker);
+      }
+      else {
+        this.queryExecutor_.checkConnectionAndExecuteLogic(requestForWorker);
+      }
     }
   }
 }

@@ -24,7 +24,7 @@ module.exports = [{
     },
     {
         name: "jsstore.worker",
-        entry: "./src/codes/worker/start.ts",
+        entry: "./src/codes/worker/index.ts",
         mode: 'none',
         module: {
             rules: [{

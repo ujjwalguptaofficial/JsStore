@@ -11,6 +11,7 @@ module.exports = [merge(baseConfig[0], {
     }),
     merge(baseConfig[1], {
         output: {
+            library: 'JsStoreWorker',
             path: path.join(__dirname, "./../output"),
             filename: "jsstore.worker.min.js"
         },

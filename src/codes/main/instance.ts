@@ -7,7 +7,7 @@ import { ISet } from "../worker/interfaces";
 
 export class Instance extends InstanceHelper {
 
-    constructor(worker: Worker) {
+    constructor(worker?: Worker) {
         super(worker);
     }
 
@@ -186,10 +186,10 @@ export class Instance extends InstanceHelper {
      * @memberof Instance
      */
     setLogStatus(status: boolean) {
-        Config._isLogEnabled = status ? status : Config._isLogEnabled;
+        Config.isLogEnabled = status ? status : Config.isLogEnabled;
         this.pushApi({
             name: API.ChangeLogStatus,
-            query: Config._isLogEnabled
+            query: Config.isLogEnabled
         });
     }
 

@@ -1,3 +1,4 @@
 export class Config {
-    static _isLogEnabled = false;
+    static isLogEnabled = false;
+    static isRuningInWorker = true;
 }

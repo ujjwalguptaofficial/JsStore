@@ -24,6 +24,11 @@ import { BulkInsert } from "./business/bulk_insert";
 import { IWebWorkerResult, IWebWorkerRequest } from "./interfaces";
 
 export class QueryExecutor {
+    onQueryFinished: (result: any) => void;
+
+    constructor(fn?: (result: any) => void) {
+        this.onQueryFinished = fn;
+    }
 
     checkConnectionAndExecuteLogic(request: IWebWorkerRequest) {
         LogHelper.log('checking connection and executing request:' + request.name);
@@ -69,7 +74,13 @@ export class QueryExecutor {
     }
 
     private returnResult_(result) {
-        (self as DedicatedWorkerGlobalScope).postMessage(result);
+        if (Config.isRuningInWorker === true) {
+            (self as DedicatedWorkerGlobalScope).postMessage(result);
+        }
+        else {
+            this.onQueryFinished(result);
+        }
+
     }
 
     private executeLogic_(request: IWebWorkerRequest) {

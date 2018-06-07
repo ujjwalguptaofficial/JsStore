@@ -18,7 +18,7 @@ export class LogHelper implements IError {
     }
 
     static log(msg) {
-        if (Config._isLogEnabled) {
+        if (Config.isLogEnabled) {
             console.log(msg);
         }
     }

@@ -34,6 +34,7 @@ module.exports = [...createConfigsForAllLibraryTarget(),
     merge(baseConfig[1], {
         devtool: 'source-map',
         output: {
+            library: 'JsStoreWorker',
             path: path.join(__dirname, "./../output"),
             filename: "jsstore.worker.js"
         }

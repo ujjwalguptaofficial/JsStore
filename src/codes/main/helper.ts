@@ -5,5 +5,5 @@ import { Config } from "./config";
  * 
  */
 export const enableLog = () => {
-    Config._isLogEnabled = true;
+    Config.isLogEnabled = true;
 };

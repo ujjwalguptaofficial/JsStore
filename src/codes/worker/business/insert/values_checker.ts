@@ -1,7 +1,7 @@
 import { Table } from "../../model/table";
 import { IError } from "../../interfaces";
 import { ValueChecker } from "./value_checker";
-import { IdbHelper } from "../../index";
+import { IdbHelper } from "../idb_helper";
 import * as KeyStore from "../../keystore/index";
 
 export class ValuesChecker {

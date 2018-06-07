@@ -1,5 +1,5 @@
 import { IError } from "../interfaces";
-import * as JsStore from '../../index';
+import * as JsStore from '../../export';
 import { CONNECTION_STATUS } from "../enums";
 import { Utils } from "../utils_logic";
 import { IdbHelper } from "./idb_helper";
