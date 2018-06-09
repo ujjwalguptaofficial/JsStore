@@ -17,6 +17,7 @@ JsStore is an IndexedDB Wrapper. It makes IndexedDB super easy with its SQL like
 * DataType Support
 * Complex Queries Support
 * Api Sync Support
+* [IDBStudio](https://github.com/ujjwalguptaofficial/idbstudio) - A cli management tool for jsstore.
 
 # Examples
 
