@@ -10,6 +10,8 @@ export declare class BaseHelper {
     protected getObjectFirstKey(value: object): string;
     protected isNull(value: any): boolean;
     protected getType(value: any): "string" | "number" | "boolean" | "symbol" | "undefined" | "object" | "function" | DATA_TYPE.Array | DATA_TYPE.Null | DATA_TYPE.DateTime;
+    protected isObject(value: any): boolean;
+    protected isString(value: any): boolean;
     protected readonly transaction: IDBTransaction;
     protected createTransaction(tableNames: string[], callBack: () => void, mode?: any): void;
     protected filterOnOccurence(value: any): boolean;

@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.1.0 - 07/06/2018
+ * @license :jsstore - V2.1.2 - 09/06/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -3780,25 +3780,29 @@ var Base = /** @class */ (function (_super) {
         var columnValue, keyValue;
         for (var column in qry) {
             columnValue = qry[column];
-            if (typeof columnValue === 'object') {
-                for (var key in columnValue) {
-                    keyValue = columnValue[key];
-                    switch (key) {
-                        case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In:
-                            results = results.concat(this.getAllCombinationOfWord(keyValue, true));
-                            break;
-                        case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Like:
-                            break;
-                        default:
-                            results = results.concat(this.getAllCombinationOfWord(keyValue));
+            switch (this.getType(columnValue)) {
+                case _enums__WEBPACK_IMPORTED_MODULE_3__["DATA_TYPE"].String:
+                    results = results.concat(this.getAllCombinationOfWord(columnValue));
+                    qry[column] = {};
+                    qry[column][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In] = results;
+                    break;
+                case _enums__WEBPACK_IMPORTED_MODULE_3__["DATA_TYPE"].Object:
+                    for (var key in columnValue) {
+                        keyValue = columnValue[key];
+                        if (this.isString(keyValue)) {
+                            switch (key) {
+                                case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In:
+                                    results = results.concat(this.getAllCombinationOfWord(keyValue, true));
+                                    break;
+                                case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Like:
+                                    break;
+                                default:
+                                    results = results.concat(this.getAllCombinationOfWord(keyValue));
+                            }
+                        }
                     }
-                }
-                qry[column][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In] = results;
-            }
-            else {
-                results = results.concat(this.getAllCombinationOfWord(columnValue));
-                qry[column] = {};
-                qry[column][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In] = results;
+                    qry[column][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In] = results;
+                    break;
             }
         }
         return qry;
@@ -3849,6 +3853,12 @@ var BaseHelper = /** @class */ (function () {
     BaseHelper.prototype.getType = function (value) {
         return _util__WEBPACK_IMPORTED_MODULE_2__["Util"].getType(value);
     };
+    BaseHelper.prototype.isObject = function (value) {
+        return _util__WEBPACK_IMPORTED_MODULE_2__["Util"].isObject(value);
+    };
+    BaseHelper.prototype.isString = function (value) {
+        return _util__WEBPACK_IMPORTED_MODULE_2__["Util"].isString(value);
+    };
     Object.defineProperty(BaseHelper.prototype, "transaction", {
         get: function () {
             return _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].transaction;
@@ -3885,25 +3895,11 @@ var BaseHelper = /** @class */ (function () {
         return found;
     };
     BaseHelper.prototype.isTableExist = function (tableName) {
-        var isExist = false;
-        this.activeDb.tables.every(function (table) {
-            if (table.name === tableName) {
-                isExist = true;
-                return false;
-            }
-            return true;
-        });
-        return isExist;
+        var index = this.activeDb.tables.findIndex(function (table) { return table.name === tableName; });
+        return index >= 0 ? true : false;
     };
     BaseHelper.prototype.getTable = function (tableName) {
-        var currentTable;
-        this.activeDb.tables.every(function (table) {
-            if (table.name === tableName) {
-                currentTable = table;
-                return false;
-            }
-            return true;
-        });
+        var currentTable = this.activeDb.tables.find(function (table) { return table.name === tableName; });
         return currentTable;
     };
     BaseHelper.prototype.getKeyRange = function (value, op) {
@@ -3995,6 +3991,12 @@ var Util = /** @class */ (function () {
             }
         }
         return false;
+    };
+    Util.isString = function (value) {
+        return typeof value === _enums__WEBPACK_IMPORTED_MODULE_0__["DATA_TYPE"].String;
+    };
+    Util.isObject = function (value) {
+        return typeof value === _enums__WEBPACK_IMPORTED_MODULE_0__["DATA_TYPE"].Object;
     };
     Util.getObjectFirstKey = function (value) {
         for (var key in value) {

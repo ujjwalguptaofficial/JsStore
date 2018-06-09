@@ -42,7 +42,7 @@ export interface ISelect {
     skip?: number;
     limit?: number;
     order?: IOrder;
-    groupBy?: any;
+    groupBy?: string | string[];
     aggregate?: IAggregate;
     ignoreCase?: boolean;
     distinct?: boolean;
@@ -102,11 +102,11 @@ export interface INextJoin {
     column: string;
 }
 export interface IAggregate {
-    max?: any[];
-    min?: any[];
-    sum?: any[];
-    count?: any[];
-    avg?: any[];
+    max?: string | string[];
+    min?: string | string[];
+    sum?: string | string[];
+    count?: string | string[];
+    avg?: string | string[];
 }
 export interface IWebWorkerResult {
     errorOccured: boolean;
