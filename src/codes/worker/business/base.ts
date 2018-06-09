@@ -200,25 +200,30 @@ export class Base extends BaseHelper {
             keyValue;
         for (const column in qry) {
             columnValue = qry[column];
-            if (typeof columnValue === 'object') {
-                for (const key in columnValue) {
-                    keyValue = columnValue[key];
-                    switch (key) {
-                        case QUERY_OPTION.In:
-                            results = results.concat(this.getAllCombinationOfWord(keyValue, true));
-                            break;
-                        case QUERY_OPTION.Like:
-                            break;
-                        default:
-                            results = results.concat(this.getAllCombinationOfWord(keyValue));
+
+            switch (this.getType(columnValue)) {
+                case DATA_TYPE.String:
+                    results = results.concat(this.getAllCombinationOfWord(columnValue));
+                    qry[column] = {};
+                    qry[column][QUERY_OPTION.In] = results;
+                    break;
+                case DATA_TYPE.Object:
+                    for (const key in columnValue) {
+                        keyValue = columnValue[key];
+                        if (this.isString(keyValue)) {
+                            switch (key) {
+                                case QUERY_OPTION.In:
+                                    results = results.concat(this.getAllCombinationOfWord(keyValue, true));
+                                    break;
+                                case QUERY_OPTION.Like:
+                                    break;
+                                default:
+                                    results = results.concat(this.getAllCombinationOfWord(keyValue));
+                            }
+                        }
                     }
-                }
-                qry[column][QUERY_OPTION.In] = results;
-            }
-            else {
-                results = results.concat(this.getAllCombinationOfWord(columnValue));
-                qry[column] = {};
-                qry[column][QUERY_OPTION.In] = results;
+                    qry[column][QUERY_OPTION.In] = results;
+                    break;
             }
         }
         return qry;

@@ -31,6 +31,14 @@ export class BaseHelper {
         return Util.getType(value);
     }
 
+    protected isObject(value) {
+        return Util.isObject(value);
+    }
+
+    protected isString(value) {
+        return Util.isString(value);
+    }
+
     protected get transaction() {
         return IdbHelper.transaction;
     }
@@ -60,27 +68,13 @@ export class BaseHelper {
         return found;
     }
 
-    protected isTableExist(tableName: string) {
-        let isExist = false;
-        this.activeDb.tables.every((table) => {
-            if (table.name === tableName) {
-                isExist = true;
-                return false;
-            }
-            return true;
-        });
-        return isExist;
+    protected isTableExist(tableName: string): boolean {
+        const index = this.activeDb.tables.findIndex(table => table.name === tableName);
+        return index >= 0 ? true : false;
     }
 
     protected getTable(tableName: string) {
-        let currentTable: Table;
-        this.activeDb.tables.every((table) => {
-            if (table.name === tableName) {
-                currentTable = table;
-                return false;
-            }
-            return true;
-        });
+        const currentTable = this.activeDb.tables.find(table => table.name === tableName);
         return currentTable;
     }
 

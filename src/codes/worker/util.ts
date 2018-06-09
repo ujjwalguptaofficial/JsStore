@@ -13,6 +13,14 @@ export class Util {
         return false;
     }
 
+    static isString(value) {
+        return typeof value === DATA_TYPE.String;
+    }
+
+    static isObject(value) {
+        return typeof value === DATA_TYPE.Object;
+    }
+
     static getObjectFirstKey(value) {
         for (const key in value) {
             return key;

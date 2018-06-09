@@ -111,6 +111,44 @@ describe('Test Select Api', function () {
         })
     });
 
+    it('select with ignore case with a number type', function (done) {
+        Con.select({
+            from: 'Customers',
+            ignoreCase: true,
+            where: {
+                Country: 'meXico',
+                CustomerID: 3
+            }
+        }).
+        then(function (results) {
+            expect(results).to.be.an('array').length(1);
+            done();
+        }).
+        catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('select with ignore case with a number type and object value', function (done) {
+        Con.select({
+            from: 'Customers',
+            ignoreCase: true,
+            where: {
+                Country: 'meXico',
+                CustomerID: {
+                    '!=': 3
+                }
+            }
+        }).
+        then(function (results) {
+            expect(results).to.be.an('array').length(4);
+            done();
+        }).
+        catch(function (err) {
+            done(err);
+        })
+    });
+
     it('select with distinct', function (done) {
         Con.select({
             from: 'Customers',
@@ -152,8 +190,7 @@ describe('Test Select Api', function () {
         Con.select({
             from: 'Customers',
             where: {
-                Country: {
-                    in: ['Germany', 'France', 'UK']
+                Country: { in: ['Germany', 'France', 'UK']
                 }
             }
         }).
