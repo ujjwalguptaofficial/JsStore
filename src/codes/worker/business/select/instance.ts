@@ -16,36 +16,28 @@ export class Instance extends Helper {
     }
 
     execute() {
-        if (this.isTableExist(this.tableName) === true) {
-            try {
-                if (this.query.where !== undefined) {
-                    this.addGreatAndLessToNotOp();
-                    this.initTransaction_();
-                    if (Array.isArray(this.query.where)) {
-                        this.processWhereArrayQry();
-                    }
-                    else {
-                        this.processWhere_();
-                    }
+        try {
+            if (this.query.where !== undefined) {
+                this.addGreatAndLessToNotOp();
+                this.initTransaction_();
+                if (this.isArray(this.query.where)) {
+                    this.processWhereArrayQry();
                 }
                 else {
-                    this.initTransaction_();
-                    this.executeWhereUndefinedLogic();
+                    this.processWhere_();
                 }
             }
-            catch (ex) {
-                this.errorOccured = true;
-                this.onExceptionOccured(ex, { TableName: this.query.from });
+            else {
+                this.initTransaction_();
+                this.executeWhereUndefinedLogic();
             }
         }
-        else {
+        catch (ex) {
             this.errorOccured = true;
-            this.onErrorOccured(
-                new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.query.from }),
-                true
-            );
+            this.onExceptionOccured(ex, { TableName: this.query.from });
         }
     }
+
 
     private processWhereArrayQry() {
         this.isArrayQry = true;

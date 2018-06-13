@@ -17,6 +17,10 @@ export class Util {
         return typeof value === DATA_TYPE.String;
     }
 
+    static isArray(value) {
+        return Array.isArray(value);
+    }
+
     static isObject(value) {
         return typeof value === DATA_TYPE.Object;
     }

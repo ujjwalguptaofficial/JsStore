@@ -22,6 +22,7 @@ import { Util } from "./util";
 import { Clear } from "./business/clear";
 import { BulkInsert } from "./business/bulk_insert";
 import { IWebWorkerResult, IWebWorkerRequest } from "./interfaces";
+import * as Transaction from "./business/transaction/index";
 
 export class QueryExecutor {
     onQueryFinished: (result: any) => void;
@@ -232,9 +233,21 @@ export class QueryExecutor {
             const selectJoinInstance = new Select.Join(query as ISelectJoin, onSuccess, onError);
         }
         else {
-            const selectInstance = new Select.Instance(query, onSuccess, onError);
-            selectInstance.execute();
+            if (this.isTableExist_(query.from) === true) {
+                const selectInstance = new Select.Instance(query, onSuccess, onError);
+                selectInstance.execute();
+            }
+            else {
+                onError(
+                    new LogHelper(ERROR_TYPE.TableNotExist, { TableName: query.from }).get()
+                );
+            }
         }
+    }
+
+    private isTableExist_(tableName: string): boolean {
+        const index = this.activeDb_.tables.findIndex(table => table.name === tableName);
+        return index >= 0 ? true : false;
     }
 
     private count_(query: ICount, onSuccess: () => void, onError: (err: IError) => void) {
@@ -344,5 +357,10 @@ export class QueryExecutor {
 
     private set_(query: ISet, onSuccess: (value) => void, onError: (err: IError) => void) {
         KeyStore.set(query.key, query.value, onSuccess, onError as any);
+    }
+
+    private transaction(qry: ITranscationQry) {
+        const transaction = new Transaction.Instance(qry, null, null);
+        transaction.execute();
     }
 }

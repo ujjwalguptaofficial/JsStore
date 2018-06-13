@@ -39,6 +39,10 @@ export class BaseHelper {
         return Util.isString(value);
     }
 
+    protected isArray(value) {
+        return Util.isArray(value);
+    }
+
     protected get transaction() {
         return IdbHelper.transaction;
     }

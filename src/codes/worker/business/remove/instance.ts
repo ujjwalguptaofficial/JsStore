@@ -21,7 +21,7 @@ export class Instance extends Where {
             if (this.query.where !== undefined) {
                 this.addGreatAndLessToNotOp();
                 this.initTransaction_();
-                if (Array.isArray(this.query.where)) {
+                if (this.isArray(this.query.where)) {
                     this.processWhereArrayQry();
                 }
                 else {

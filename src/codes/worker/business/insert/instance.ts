@@ -21,7 +21,7 @@ export class Instance extends Base {
 
     execute() {
         const table = this.getTable(this.tableName);
-        if (!Array.isArray(this.query.values)) {
+        if (!this.isArray(this.query.values)) {
             this.onErrorOccured(
                 new LogHelper(ERROR_TYPE.NotArray),
                 true

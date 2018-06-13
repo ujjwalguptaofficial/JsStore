@@ -19,7 +19,7 @@ export class Instance extends Where {
             try {
                 if (this.query.where !== undefined) {
                     this.addGreatAndLessToNotOp();
-                    if (this.query.where.or || Array.isArray(this.query.where)) {
+                    if (this.query.where.or || this.isArray(this.query.where)) {
                         const selectInstance = new Select.Instance(this.query as any,
                             (results) => {
                                 this.resultCount = results.length;
