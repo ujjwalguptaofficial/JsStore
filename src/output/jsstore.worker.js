@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.1.2 - 13/06/2018
+ * @license :jsstore - V2.1.2 - 14/06/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -270,6 +270,9 @@ var QueryExecutor = /** @class */ (function () {
             case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].ChangeLogStatus:
                 this.changeLogStatus_(request.query, onSuccess, onError);
                 break;
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Transaction:
+                this.transaction(request.query, onSuccess, onError);
+                break;
             default:
                 console.error('The Api:-' + request.name + ' does not support.');
         }
@@ -469,8 +472,8 @@ var QueryExecutor = /** @class */ (function () {
     QueryExecutor.prototype.set_ = function (query, onSuccess, onError) {
         _keystore_index__WEBPACK_IMPORTED_MODULE_6__["set"](query.key, query.value, onSuccess, onError);
     };
-    QueryExecutor.prototype.transaction = function (qry) {
-        var transaction = new _business_transaction_index__WEBPACK_IMPORTED_MODULE_18__["Instance"](qry, null, null);
+    QueryExecutor.prototype.transaction = function (qry, onSuccess, onError) {
+        var transaction = new _business_transaction_index__WEBPACK_IMPORTED_MODULE_18__["Instance"](qry, onSuccess, onError);
         transaction.execute();
     };
     return QueryExecutor;
@@ -677,6 +680,7 @@ var API;
     API["BulkInsert"] = "bulk_insert";
     API["ExportJson"] = "export_json";
     API["ChangeLogStatus"] = "change_log_status";
+    API["Transaction"] = "transaction";
 })(API || (API = {}));
 
 
@@ -6278,8 +6282,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return Instance; });
 /* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(37);
 /* harmony import */ var _select_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(28);
-/* harmony import */ var _insert_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(49);
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3);
+/* harmony import */ var _count_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(42);
+/* harmony import */ var _insert_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(49);
+/* harmony import */ var _remove_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(53);
+/* harmony import */ var _update_index__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(60);
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(3);
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -6294,11 +6301,13 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+
+
+
 var Instance = /** @class */ (function (_super) {
     __extends(Instance, _super);
     function Instance(qry, onSuccess, onError) {
         var _this = _super.call(this) || this;
-        qry.abortOnError = qry.abortOnError == null ? true : false;
         _this.query = qry;
         _this.onError = onError;
         _this.onSuccess = onSuccess;
@@ -6312,10 +6321,7 @@ var Instance = /** @class */ (function (_super) {
         var onRequestFinished = function (result) {
             var finisehdRequest = requestQueue.shift();
             if (finisehdRequest) {
-                if (_this.errorOccured && _this.query.abortOnError === true) {
-                    _this.transaction.abort();
-                }
-                else {
+                if (!_this.errorOccured) {
                     isQueryExecuting = false;
                     if (finisehdRequest.onSuccess) {
                         finisehdRequest.onSuccess(result);
@@ -6324,19 +6330,28 @@ var Instance = /** @class */ (function (_super) {
                 }
             }
         };
+        var abortTransaction = function () {
+            _this.transaction.abort();
+        };
         var executeRequest = function (request) {
             isQueryExecuting = true;
             var requestObj;
             switch (request.name) {
-                case _enums__WEBPACK_IMPORTED_MODULE_3__["API"].Select:
+                case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Select:
                     requestObj = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](request.query, onRequestFinished, _this.onError.bind(_this));
                     break;
-                case _enums__WEBPACK_IMPORTED_MODULE_3__["API"].Insert:
-                    requestObj = new _insert_index__WEBPACK_IMPORTED_MODULE_2__["Instance"](request.query, onRequestFinished, _this.onError.bind(_this));
+                case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Insert:
+                    requestObj = new _insert_index__WEBPACK_IMPORTED_MODULE_3__["Instance"](request.query, onRequestFinished, _this.onError.bind(_this));
                     break;
-                case _enums__WEBPACK_IMPORTED_MODULE_3__["API"].Update: break;
-                case _enums__WEBPACK_IMPORTED_MODULE_3__["API"].Remove: break;
-                case _enums__WEBPACK_IMPORTED_MODULE_3__["API"].Count: break;
+                case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Update:
+                    requestObj = new _update_index__WEBPACK_IMPORTED_MODULE_5__["Instance"](request.query, onRequestFinished, _this.onError.bind(_this));
+                    break;
+                case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Remove:
+                    requestObj = new _remove_index__WEBPACK_IMPORTED_MODULE_4__["Instance"](request.query, onRequestFinished, _this.onError.bind(_this));
+                    break;
+                case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Count:
+                    requestObj = new _count_index__WEBPACK_IMPORTED_MODULE_2__["Instance"](request.query, onRequestFinished, _this.onError.bind(_this));
+                    break;
             }
             requestObj.isTransaction = true;
             requestObj.execute();
@@ -6359,48 +6374,39 @@ var Instance = /** @class */ (function (_super) {
                 executeRequest(requestQueue[0]);
             }
         };
-        var select = function (qry, onSuccess) {
-            pushRequest({
-                name: _enums__WEBPACK_IMPORTED_MODULE_3__["API"].Select,
-                onSuccess: onSuccess,
+        var select = function (qry) {
+            return pushRequest({
+                name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Select,
                 query: qry
             });
         };
-        var insert = function (qry, onSuccess) {
-            pushRequest({
-                name: _enums__WEBPACK_IMPORTED_MODULE_3__["API"].Insert,
-                onSuccess: onSuccess,
+        var insert = function (qry) {
+            return pushRequest({
+                name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Insert,
                 query: qry
             });
         };
-        var update = function (qry, onSuccess) {
-            pushRequest({
-                name: _enums__WEBPACK_IMPORTED_MODULE_3__["API"].Update,
-                onSuccess: onSuccess,
+        var update = function (qry) {
+            return pushRequest({
+                name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Update,
                 query: qry
             });
         };
-        var remove = function (qry, onSuccess) {
-            pushRequest({
-                name: _enums__WEBPACK_IMPORTED_MODULE_3__["API"].Remove,
-                onSuccess: onSuccess,
+        var remove = function (qry) {
+            return pushRequest({
+                name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Remove,
                 query: qry
             });
         };
-        var count = function (qry, onSuccess) {
-            pushRequest({
-                name: _enums__WEBPACK_IMPORTED_MODULE_3__["API"].Count,
-                onSuccess: onSuccess,
+        var count = function (qry) {
+            return pushRequest({
+                name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Count,
                 query: qry
             });
         };
         var txLogic;
-        if (this.isString(txLogic)) {
-            eval("txLogic =" + this.query.logic);
-        }
-        else {
-            txLogic = this.query.logic;
-        }
+        txLogic = null;
+        eval("txLogic =" + this.query.logic);
         txLogic.call(this, this.query.data);
         this.query.data = this.query.logic = null;
         var startTransaction = function () {

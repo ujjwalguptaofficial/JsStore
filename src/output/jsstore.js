@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.1.2 - 13/06/2018
+ * @license :jsstore - V2.1.2 - 14/06/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -401,6 +401,20 @@ var Instance = /** @class */ (function (_super) {
             query: null
         });
     };
+    /**
+     * execute the transaction
+     *
+     * @param {ITranscationQry} query
+     * @returns
+     * @memberof Instance
+     */
+    Instance.prototype.transaction = function (query) {
+        query.logic = query.logic.toString();
+        return this.pushApi({
+            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Transaction,
+            query: query
+        });
+    };
     return Instance;
 }(_instance_helper__WEBPACK_IMPORTED_MODULE_1__["InstanceHelper"]));
 
@@ -467,6 +481,7 @@ var API;
     API["ExportJson"] = "export_json";
     API["ChangeLogStatus"] = "change_log_status";
     API["Terminate"] = "terminate";
+    API["Transaction"] = "transaction";
 })(API || (API = {}));
 
 

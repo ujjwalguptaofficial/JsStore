@@ -148,5 +148,4 @@ export interface ITranscationQry {
     tables: string[];
     logic: (results: any) => void;
     data: any;
-    abortOnError?: boolean;
 }

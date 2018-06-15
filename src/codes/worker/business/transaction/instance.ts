@@ -14,7 +14,6 @@ export class Instance extends Base {
 
     constructor(qry: ITranscationQry, onSuccess: (results: any) => void, onError: (err: IError) => void) {
         super();
-        qry.abortOnError = qry.abortOnError == null ? true : false;
         this.query = qry;
         this.onError = onError;
         this.onSuccess = onSuccess;
@@ -27,10 +26,7 @@ export class Instance extends Base {
         const onRequestFinished = (result) => {
             const finisehdRequest = requestQueue.shift();
             if (finisehdRequest) {
-                if (this.errorOccured && this.query.abortOnError === true) {
-                    abortTransaction();
-                }
-                else {
+                if (!this.errorOccured) {
                     isQueryExecuting = false;
                     if (finisehdRequest.onSuccess) {
                         finisehdRequest.onSuccess(result);
@@ -42,7 +38,8 @@ export class Instance extends Base {
         };
         const abortTransaction = () => {
             this.transaction.abort();
-        }
+        };
+
         const executeRequest = (request: IWebWorkerRequest) => {
             isQueryExecuting = true;
             let requestObj;
@@ -57,9 +54,21 @@ export class Instance extends Base {
                         request.query, onRequestFinished, this.onError.bind(this)
                     );
                     break;
-                case API.Update: break;
-                case API.Remove: break;
-                case API.Count: break;
+                case API.Update:
+                    requestObj = new Update.Instance(
+                        request.query, onRequestFinished, this.onError.bind(this)
+                    );
+                    break;
+                case API.Remove:
+                    requestObj = new Remove.Instance(
+                        request.query, onRequestFinished, this.onError.bind(this)
+                    );
+                    break;
+                case API.Count:
+                    requestObj = new Count.Instance(
+                        request.query, onRequestFinished, this.onError.bind(this)
+                    );
+                    break;
             }
             requestObj.isTransaction = true;
             requestObj.execute();
@@ -82,49 +91,40 @@ export class Instance extends Base {
                 executeRequest(requestQueue[0]);
             }
         };
-        const select = (qry: ISelect, onSuccess) => {
-            pushRequest({
+        const select = (qry: ISelect) => {
+            return pushRequest({
                 name: API.Select,
-                onSuccess: onSuccess,
                 query: qry
             } as IWebWorkerRequest);
         };
-        const insert = (qry: IInsert, onSuccess) => {
-            pushRequest({
+        const insert = (qry: IInsert) => {
+            return pushRequest({
                 name: API.Insert,
-                onSuccess: onSuccess,
                 query: qry
             } as IWebWorkerRequest);
         };
-        const update = (qry: IUpdate, onSuccess) => {
-            pushRequest({
+        const update = (qry: IUpdate) => {
+            return pushRequest({
                 name: API.Update,
-                onSuccess: onSuccess,
                 query: qry
             } as IWebWorkerRequest);
         };
-        const remove = (qry: IRemove, onSuccess) => {
-            pushRequest({
+        const remove = (qry: IRemove) => {
+            return pushRequest({
                 name: API.Remove,
-                onSuccess: onSuccess,
                 query: qry
             } as IWebWorkerRequest);
         };
-        const count = (qry: ICount, onSuccess) => {
-            pushRequest({
+        const count = (qry: ICount) => {
+            return pushRequest({
                 name: API.Count,
-                onSuccess: onSuccess,
                 query: qry
             } as IWebWorkerRequest);
         };
 
         let txLogic;
-        if (this.isString(txLogic)) {
-            eval("txLogic =" + this.query.logic);
-        }
-        else {
-            txLogic = this.query.logic;
-        }
+        txLogic = null;
+        eval("txLogic =" + this.query.logic);
         txLogic.call(this, this.query.data);
         this.query.data = this.query.logic = null;
 

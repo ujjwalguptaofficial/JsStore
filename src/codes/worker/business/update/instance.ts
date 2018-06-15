@@ -5,8 +5,8 @@ import { SchemaChecker } from "./schema_checker";
 import { QUERY_OPTION } from "../../enums";
 
 export class Instance extends Where {
-  
-    constructor(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void) {
+
+    constructor(query: IUpdate, onSuccess: (rowsUpdated: number) => void, onError: (err: IError) => void) {
         super();
         this.onSuccess = onSuccess;
         this.onError = onError;

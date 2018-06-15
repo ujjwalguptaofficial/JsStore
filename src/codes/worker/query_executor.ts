@@ -148,6 +148,9 @@ export class QueryExecutor {
             case API.ChangeLogStatus:
                 this.changeLogStatus_(request.query as boolean, onSuccess, onError);
                 break;
+            case API.Transaction:
+                this.transaction(request.query, onSuccess, onError);
+                break;
             default:
                 console.error('The Api:-' + request.name + ' does not support.');
         }
@@ -359,8 +362,8 @@ export class QueryExecutor {
         KeyStore.set(query.key, query.value, onSuccess, onError as any);
     }
 
-    private transaction(qry: ITranscationQry) {
-        const transaction = new Transaction.Instance(qry, null, null);
+    private transaction(qry: ITranscationQry, onSuccess: (value) => void, onError: (err: IError) => void) {
+        const transaction = new Transaction.Instance(qry, onSuccess, onError);
         transaction.execute();
     }
 }

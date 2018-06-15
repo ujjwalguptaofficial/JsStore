@@ -1,7 +1,10 @@
 import { LogHelper } from "./log_helper";
 import { ERROR_TYPE, API } from "./enums";
 import { InstanceHelper } from "./instance_helper";
-import { IDataBase, ISelect, ICount, IInsert, IUpdate, IRemove, IDbInfo } from "./interfaces";
+import {
+    IDataBase, ISelect, ICount, IInsert,
+    IUpdate, IRemove, IDbInfo, ITranscationQry
+} from "./interfaces";
 import { Config } from "./config";
 import { ISet } from "../worker/interfaces";
 
@@ -289,6 +292,21 @@ export class Instance extends InstanceHelper {
         return this.pushApi<any>({
             name: API.Terminate,
             query: null
+        });
+    }
+
+    /**
+     * execute the transaction
+     *
+     * @param {ITranscationQry} query
+     * @returns
+     * @memberof Instance
+     */
+    transaction(query: ITranscationQry) {
+        (query.logic as any) = query.logic.toString();
+        return this.pushApi<any>({
+            name: API.Transaction,
+            query: query
         });
     }
 }
