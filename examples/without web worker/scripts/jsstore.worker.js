@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.1.2 - 14/06/2018
+ * @license :jsstore - V2.1.2 - 17/06/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -498,25 +498,24 @@ var IdbHelper = /** @class */ (function () {
     function IdbHelper() {
     }
     IdbHelper.callDbDroppedByBrowser = function (deleteMetaData) {
-        if (this.dbStatus.conStatus === _enums__WEBPACK_IMPORTED_MODULE_0__["CONNECTION_STATUS"].Connected) {
-            this.isDbDeletedByBrowser = true;
+        if (IdbHelper.dbStatus.conStatus === _enums__WEBPACK_IMPORTED_MODULE_0__["CONNECTION_STATUS"].Connected) {
+            IdbHelper.isDbDeletedByBrowser = true;
             if (deleteMetaData === true) {
-                var dropDbObject = new _drop_db__WEBPACK_IMPORTED_MODULE_2__["DropDb"](this.onDbDroppedByBrowser, null);
+                var dropDbObject = new _drop_db__WEBPACK_IMPORTED_MODULE_2__["DropDb"](IdbHelper.onDbDroppedByBrowser, null);
                 dropDbObject.deleteMetaData();
             }
         }
     };
     IdbHelper.createTransaction = function (tableNames, callBack, mode) {
-        var _this = this;
-        if (this.transaction === null) {
+        if (IdbHelper.transaction === null) {
             mode = mode ? mode : _enums__WEBPACK_IMPORTED_MODULE_0__["IDB_MODE"].ReadWrite;
-            this.transaction = this.dbConnection.transaction(tableNames, mode);
-            this.transaction.oncomplete = function () {
-                _this.transaction = null;
+            IdbHelper.transaction = IdbHelper.dbConnection.transaction(tableNames, mode);
+            IdbHelper.transaction.oncomplete = function () {
+                IdbHelper.transaction = null;
                 callBack();
             };
-            this.transaction.ontimeout = function () {
-                _this.transaction = null;
+            IdbHelper.transaction.ontimeout = function () {
+                IdbHelper.transaction = null;
                 console.error('transaction timed out');
             };
         }
@@ -528,10 +527,10 @@ var IdbHelper = /** @class */ (function () {
     };
     IdbHelper.updateDbStatus = function (status, err) {
         if (err === undefined) {
-            this.dbStatus.conStatus = status;
+            IdbHelper.dbStatus.conStatus = status;
         }
         else {
-            this.dbStatus = {
+            IdbHelper.dbStatus = {
                 conStatus: status,
                 lastError: err
             };
@@ -544,9 +543,10 @@ var IdbHelper = /** @class */ (function () {
         });
     };
     IdbHelper.getDbVersion = function (dbName, callback) {
+        var _this = this;
         _keystore_index__WEBPACK_IMPORTED_MODULE_1__["get"]("JsStore_" + dbName + "_Db_Version", function (dbVersion) {
-            callback.call(this, Number(dbVersion));
-        }.bind(this));
+            callback.call(_this, Number(dbVersion));
+        });
     };
     IdbHelper.getDbSchema = function (dbName, callback) {
         _keystore_index__WEBPACK_IMPORTED_MODULE_1__["get"]("JsStore_" + dbName + "_Schema", function (result) {
@@ -681,6 +681,7 @@ var API;
     API["ExportJson"] = "export_json";
     API["ChangeLogStatus"] = "change_log_status";
     API["Transaction"] = "transaction";
+    API["FinishTransaction"] = "finish_transaction";
 })(API || (API = {}));
 
 
@@ -6311,6 +6312,7 @@ var Instance = /** @class */ (function (_super) {
         _this.query = qry;
         _this.onError = onError;
         _this.onSuccess = onSuccess;
+        _this.results = {};
         return _this;
     }
     Instance.prototype.execute = function () {
@@ -6321,7 +6323,10 @@ var Instance = /** @class */ (function (_super) {
         var onRequestFinished = function (result) {
             var finisehdRequest = requestQueue.shift();
             if (finisehdRequest) {
-                if (!_this.errorOccured) {
+                if (_this.errorOccured) {
+                    abortTransaction();
+                }
+                else {
                     isQueryExecuting = false;
                     if (finisehdRequest.onSuccess) {
                         finisehdRequest.onSuccess(result);
@@ -6331,7 +6336,9 @@ var Instance = /** @class */ (function (_super) {
             }
         };
         var abortTransaction = function () {
-            _this.transaction.abort();
+            if (_this.transaction != null) {
+                _this.transaction.abort();
+            }
         };
         var executeRequest = function (request) {
             isQueryExecuting = true;
@@ -6403,6 +6410,9 @@ var Instance = /** @class */ (function (_super) {
                 name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Count,
                 query: qry
             });
+        };
+        var setResult = function (key, value) {
+            _this.results[key] = value;
         };
         var txLogic;
         txLogic = null;

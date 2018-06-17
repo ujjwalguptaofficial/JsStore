@@ -99,5 +99,6 @@ export enum API {
     BulkInsert = "bulk_insert",
     ExportJson = "export_json",
     ChangeLogStatus = "change_log_status",
-    Transaction = "transaction"
+    Transaction = "transaction",
+    FinishTransaction = "finish_transaction"
 }

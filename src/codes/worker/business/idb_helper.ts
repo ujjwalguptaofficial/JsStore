@@ -18,25 +18,25 @@ export class IdbHelper {
     };
 
     static callDbDroppedByBrowser(deleteMetaData?: boolean) {
-        if (this.dbStatus.conStatus === CONNECTION_STATUS.Connected) {
-            this.isDbDeletedByBrowser = true;
+        if (IdbHelper.dbStatus.conStatus === CONNECTION_STATUS.Connected) {
+            IdbHelper.isDbDeletedByBrowser = true;
             if (deleteMetaData === true) {
-                const dropDbObject = new DropDb(this.onDbDroppedByBrowser, null);
+                const dropDbObject = new DropDb(IdbHelper.onDbDroppedByBrowser, null);
                 dropDbObject.deleteMetaData();
             }
         }
     }
 
     static createTransaction(tableNames: string[], callBack: () => void, mode?) {
-        if (this.transaction === null) {
+        if (IdbHelper.transaction === null) {
             mode = mode ? mode : IDB_MODE.ReadWrite;
-            this.transaction = this.dbConnection.transaction(tableNames, mode);
-            this.transaction.oncomplete = () => {
-                this.transaction = null;
+            IdbHelper.transaction = IdbHelper.dbConnection.transaction(tableNames, mode);
+            IdbHelper.transaction.oncomplete = () => {
+                IdbHelper.transaction = null;
                 callBack();
             };
-            (this.transaction as any).ontimeout = () => {
-                this.transaction = null;
+            (IdbHelper.transaction as any).ontimeout = () => {
+                IdbHelper.transaction = null;
                 console.error('transaction timed out');
             };
         }
@@ -51,10 +51,10 @@ export class IdbHelper {
 
     static updateDbStatus(status: CONNECTION_STATUS, err?: ERROR_TYPE) {
         if (err === undefined) {
-            this.dbStatus.conStatus = status;
+            IdbHelper.dbStatus.conStatus = status;
         }
         else {
-            this.dbStatus = {
+            IdbHelper.dbStatus = {
                 conStatus: status,
                 lastError: err
             };
@@ -69,9 +69,9 @@ export class IdbHelper {
     }
 
     static getDbVersion(dbName: string, callback: (version: number) => void) {
-        KeyStore.get(`JsStore_${dbName}_Db_Version`, function (dbVersion) {
+        KeyStore.get(`JsStore_${dbName}_Db_Version`, (dbVersion) => {
             callback.call(this, Number(dbVersion));
-        }.bind(this));
+        });
     }
 
     static getDbSchema(dbName: string, callback: (schema: IDataBase) => void) {

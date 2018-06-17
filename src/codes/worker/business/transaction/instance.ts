@@ -17,6 +17,7 @@ export class Instance extends Base {
         this.query = qry;
         this.onError = onError;
         this.onSuccess = onSuccess;
+        this.results = {};
     }
 
     execute() {
@@ -26,7 +27,10 @@ export class Instance extends Base {
         const onRequestFinished = (result) => {
             const finisehdRequest = requestQueue.shift();
             if (finisehdRequest) {
-                if (!this.errorOccured) {
+                if (this.errorOccured) {
+                    abortTransaction();
+                }
+                else {
                     isQueryExecuting = false;
                     if (finisehdRequest.onSuccess) {
                         finisehdRequest.onSuccess(result);
@@ -37,9 +41,10 @@ export class Instance extends Base {
 
         };
         const abortTransaction = () => {
-            this.transaction.abort();
+            if (this.transaction != null) {
+                this.transaction.abort();
+            }
         };
-
         const executeRequest = (request: IWebWorkerRequest) => {
             isQueryExecuting = true;
             let requestObj;
@@ -120,6 +125,9 @@ export class Instance extends Base {
                 name: API.Count,
                 query: qry
             } as IWebWorkerRequest);
+        };
+        const setResult = (key: string, value) => {
+            this.results[key] = value;
         };
 
         let txLogic;
