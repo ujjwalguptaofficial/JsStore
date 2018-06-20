@@ -33,7 +33,7 @@ export class SchemaChecker {
             }
         }
         else {
-            error = new LogHelper(ERROR_TYPE.NotObject);
+            error = new LogHelper(ERROR_TYPE.NotObject).get();
         }
         return error;
     }

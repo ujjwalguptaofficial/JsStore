@@ -3,6 +3,7 @@ import * as KeyStore from "../keystore/index";
 import { IDbStatus, ITable, IDataBase } from "../interfaces";
 import { DataBase } from "../model/database";
 import { DropDb } from "./drop_db";
+import { Table } from "../model/table";
 
 export class IdbHelper {
 
@@ -78,5 +79,10 @@ export class IdbHelper {
         KeyStore.get(`JsStore_${dbName}_Schema`, (result) => {
             callback(result);
         });
+    }
+
+    static getTable(tableName: string) {
+        const currentTable = IdbHelper.activeDb.tables.find(table => table.name === tableName);
+        return currentTable;
     }
 }

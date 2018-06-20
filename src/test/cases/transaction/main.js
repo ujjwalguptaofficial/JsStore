@@ -25,6 +25,32 @@ describe('Test transaction', function () {
         })
     });
 
+    it('select and count multiple tables', function (done) {
+        var count;
+        var transaction_query = {
+            tables: ['Customers', 'OrderDetails', 'Categories'],
+            logic: function (data) {
+                select({
+                    from: 'Customers'
+                }).then(function (results) {
+                    setResult('customers', results);
+                });
+
+                count({
+                    from: 'Customers'
+                }).then(function (length) {
+                    setResult('count', length);
+                });
+            }
+        }
+        Con.transaction(transaction_query).then(function (results) {
+            expect(results.customers).to.be.an('array').length(results.count);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
     // it('simple select', function (done) {
     //     var transaction_query = {
     //         tables: ['Customers'],

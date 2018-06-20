@@ -23,6 +23,7 @@ import { Clear } from "./business/clear";
 import { BulkInsert } from "./business/bulk_insert";
 import { IWebWorkerResult, IWebWorkerRequest } from "./interfaces";
 import * as Transaction from "./business/transaction/index";
+import { QueryHelper } from "./business/query_helper";
 
 export class QueryExecutor {
     onQueryFinished: (result: any) => void;
@@ -212,8 +213,17 @@ export class QueryExecutor {
     }
 
     private update_(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void) {
-        const updateDbInstance = new Update.Instance(query, onSuccess, onError);
-        updateDbInstance.execute();
+        const queryHelper = new QueryHelper(API.Update, query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            const updateDbInstance = new Update.Instance(query, onSuccess, onError);
+            updateDbInstance.execute();
+        }
+        else {
+            onError(
+                queryHelper.error
+            );
+        }
     }
 
     private insert_(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
@@ -227,8 +237,17 @@ export class QueryExecutor {
     }
 
     private remove_(query: IRemove, onSuccess: () => void, onError: (err: IError) => void) {
-        const deleteObject = new Remove.Instance(query, onSuccess, onError);
-        deleteObject.execute();
+        const queryHelper = new QueryHelper(API.Remove, query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            const deleteObject = new Remove.Instance(query, onSuccess, onError);
+            deleteObject.execute();
+        }
+        else {
+            onError(
+                queryHelper.error
+            );
+        }
     }
 
     private select_(query: ISelect, onSuccess: (result) => void, onError: (err: IError) => void) {
@@ -236,22 +255,20 @@ export class QueryExecutor {
             const selectJoinInstance = new Select.Join(query as ISelectJoin, onSuccess, onError);
         }
         else {
-            if (this.isTableExist_(query.from) === true) {
+            const queryHelper = new QueryHelper(API.Select, query);
+            queryHelper.checkAndModify();
+            if (queryHelper.error == null) {
                 const selectInstance = new Select.Instance(query, onSuccess, onError);
                 selectInstance.execute();
             }
             else {
                 onError(
-                    new LogHelper(ERROR_TYPE.TableNotExist, { TableName: query.from }).get()
+                    queryHelper.error
                 );
             }
         }
     }
 
-    private isTableExist_(tableName: string): boolean {
-        const index = this.activeDb_.tables.findIndex(table => table.name === tableName);
-        return index >= 0 ? true : false;
-    }
 
     private count_(query: ICount, onSuccess: () => void, onError: (err: IError) => void) {
         if (typeof query.from === 'object') {
@@ -259,8 +276,17 @@ export class QueryExecutor {
             const selectJoinInstance = new Select.Join(query as ISelectJoin, onSuccess, onError);
         }
         else {
-            const countInstance = new Count.Instance(query, onSuccess, onError);
-            countInstance.execute();
+            const queryHelper = new QueryHelper(API.Count, query);
+            queryHelper.checkAndModify();
+            if (queryHelper.error == null) {
+                const countInstance = new Count.Instance(query, onSuccess, onError);
+                countInstance.execute();
+            }
+            else {
+                onError(
+                    queryHelper.error
+                );
+            }
         }
     }
 

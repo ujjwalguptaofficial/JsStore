@@ -15,38 +15,28 @@ export class Instance extends Where {
     }
 
     execute() {
-        if (this.isTableExist(this.query.from)) {
-            try {
-                if (this.query.where !== undefined) {
-                    this.addGreatAndLessToNotOp();
-                    if (this.query.where.or || this.isArray(this.query.where)) {
-                        const selectInstance = new Select.Instance(this.query as any,
-                            (results) => {
-                                this.resultCount = results.length;
-                                this.onTransactionCompleted_();
-                            }, this.onError);
-                        selectInstance.execute();
-                    }
-                    else {
-                        this.initTransaction_();
-                        this.goToWhereLogic();
-                    }
+        try {
+            if (this.query.where !== undefined) {
+                if (this.query.where.or || this.isArray(this.query.where)) {
+                    const selectInstance = new Select.Instance(this.query as any,
+                        (results) => {
+                            this.resultCount = results.length;
+                            this.onTransactionCompleted_();
+                        }, this.onError);
+                    selectInstance.execute();
                 }
                 else {
                     this.initTransaction_();
-                    this.executeWhereUndefinedLogic();
+                    this.goToWhereLogic();
                 }
             }
-            catch (ex) {
-                this.onExceptionOccured(ex, { TableName: this.query.from });
+            else {
+                this.initTransaction_();
+                this.executeWhereUndefinedLogic();
             }
         }
-        else {
-            this.errorOccured = true;
-            this.onErrorOccured(
-                new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.query.from }),
-                true
-            );
+        catch (ex) {
+            this.onExceptionOccured(ex, { TableName: this.query.from });
         }
     }
 

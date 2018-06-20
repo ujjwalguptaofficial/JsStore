@@ -4,7 +4,7 @@ import * as Select from '../select/index';
 import { QUERY_OPTION } from "../../enums";
 
 export class Instance extends Where {
-    
+
 
     constructor(
         query: IRemove, onSuccess: (recordRemoved: number) => void,
@@ -19,7 +19,6 @@ export class Instance extends Where {
     execute() {
         try {
             if (this.query.where !== undefined) {
-                this.addGreatAndLessToNotOp();
                 this.initTransaction_();
                 if (this.isArray(this.query.where)) {
                     this.processWhereArrayQry();

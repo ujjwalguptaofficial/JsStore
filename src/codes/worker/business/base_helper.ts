@@ -78,8 +78,7 @@ export class BaseHelper {
     }
 
     protected getTable(tableName: string) {
-        const currentTable = this.activeDb.tables.find(table => table.name === tableName);
-        return currentTable;
+        return IdbHelper.getTable(tableName);
     }
 
     protected getKeyRange(value, op) {

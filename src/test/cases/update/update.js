@@ -29,7 +29,9 @@ describe('Test update Api', function () {
                 CustomerID: 1
             }
         }).
-        catch(function (err) {
+        then(function (results) {
+            done(results);
+        }).catch(function (err) {
             var error = {
                 "message": "Table 'Customerss' does not exist",
                 "type": "table_not_exist"

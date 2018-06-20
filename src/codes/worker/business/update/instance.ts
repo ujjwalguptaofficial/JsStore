@@ -15,27 +15,18 @@ export class Instance extends Where {
 
     execute() {
         try {
-            this.error = new SchemaChecker(this.getTable(this.query.in)).
-                check(this.query.set, this.query.in);
-            if (!this.error) {
-                if (this.query.where !== undefined) {
-                    this.addGreatAndLessToNotOp();
-                    if (this.query.where.or || Array.isArray(this.query.where)) {
-                        this.executeComplexLogic_();
-                    }
-                    else {
-                        this.initTransaction();
-                        this.goToWhereLogic();
-                    }
+            if (this.query.where !== undefined) {
+                if (this.query.where.or || Array.isArray(this.query.where)) {
+                    this.executeComplexLogic_();
                 }
                 else {
                     this.initTransaction();
-                    this.executeWhereUndefinedLogic();
+                    this.goToWhereLogic();
                 }
             }
             else {
-                this.errorOccured = true;
-                this.onErrorOccured(this.error, true);
+                this.initTransaction();
+                this.executeWhereUndefinedLogic();
             }
         }
         catch (ex) {
