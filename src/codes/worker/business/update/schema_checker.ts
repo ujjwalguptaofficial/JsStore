@@ -12,14 +12,14 @@ export class SchemaChecker {
     }
 
     check(setValue: object, tblName: string) {
-        let error: IError = null;
+        let log: LogHelper = null;
         if (typeof setValue === DATA_TYPE.Object) {
             if (this.table) {
                 // loop through table column and find data is valid
                 this.table.columns.every((column: Column) => {
-                    if (error === null) {
+                    if (log === null) {
                         if (column.name in setValue) {
-                            error = this.checkByColumn_(column, setValue[column.name]);
+                            log = this.checkByColumn_(column, setValue[column.name]);
                         }
                         return true;
                     }
@@ -29,13 +29,16 @@ export class SchemaChecker {
                 });
             }
             else {
-                error = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: tblName });
+                log = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: tblName });
             }
         }
         else {
-            error = new LogHelper(ERROR_TYPE.NotObject).get();
+            log = new LogHelper(ERROR_TYPE.NotObject);
         }
-        return error;
+        if (log != null) {
+            return log.get();
+        }
+        return null;
     }
 
     private isNull_(value) {
@@ -47,17 +50,17 @@ export class SchemaChecker {
     }
 
     private checkByColumn_(column: IColumn, value) {
-        let error: IError = null;
+        let log: LogHelper = null;
         // check not null schema
         if (column.notNull && this.isNull_(value)) {
-            error = new LogHelper(ERROR_TYPE.NullValue, { ColumnName: column.name });
+            log = new LogHelper(ERROR_TYPE.NullValue, { ColumnName: column.name });
         }
 
         // check datatype
         const type = this.getType_(value);
         if (column.dataType) {
             if (type !== column.dataType && type !== 'object') {
-                error = new LogHelper(ERROR_TYPE.BadDataType, { ColumnName: column.name });
+                log = new LogHelper(ERROR_TYPE.BadDataType, { ColumnName: column.name });
             }
         }
 
@@ -66,11 +69,11 @@ export class SchemaChecker {
             const allowedOp = ['+', '-', '*', '/'];
             for (const prop of Object.keys(value)) {
                 if (allowedOp.indexOf(prop) < 0 && column.dataType && type !== column.dataType) {
-                    error = new LogHelper(ERROR_TYPE.BadDataType, { ColumnName: column.name });
+                    log = new LogHelper(ERROR_TYPE.BadDataType, { ColumnName: column.name });
                 }
                 break;
             }
         }
-        return error;
+        return log;
     }
 }

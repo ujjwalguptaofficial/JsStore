@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.1.2 - 20/06/2018
+ * @license :jsstore - V2.1.2 - 21/06/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -6033,14 +6033,14 @@ var SchemaChecker = /** @class */ (function () {
     }
     SchemaChecker.prototype.check = function (setValue, tblName) {
         var _this = this;
-        var error = null;
+        var log = null;
         if (typeof setValue === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Object) {
             if (this.table) {
                 // loop through table column and find data is valid
                 this.table.columns.every(function (column) {
-                    if (error === null) {
+                    if (log === null) {
                         if (column.name in setValue) {
-                            error = _this.checkByColumn_(column, setValue[column.name]);
+                            log = _this.checkByColumn_(column, setValue[column.name]);
                         }
                         return true;
                     }
@@ -6050,13 +6050,16 @@ var SchemaChecker = /** @class */ (function () {
                 });
             }
             else {
-                error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].TableNotExist, { TableName: tblName });
+                log = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].TableNotExist, { TableName: tblName });
             }
         }
         else {
-            error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].NotObject).get();
+            log = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].NotObject);
         }
-        return error;
+        if (log != null) {
+            return log.get();
+        }
+        return null;
     };
     SchemaChecker.prototype.isNull_ = function (value) {
         return _util__WEBPACK_IMPORTED_MODULE_2__["Util"].isNull(value);
@@ -6065,16 +6068,16 @@ var SchemaChecker = /** @class */ (function () {
         return _util__WEBPACK_IMPORTED_MODULE_2__["Util"].getType(value);
     };
     SchemaChecker.prototype.checkByColumn_ = function (column, value) {
-        var error = null;
+        var log = null;
         // check not null schema
         if (column.notNull && this.isNull_(value)) {
-            error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].NullValue, { ColumnName: column.name });
+            log = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].NullValue, { ColumnName: column.name });
         }
         // check datatype
         var type = this.getType_(value);
         if (column.dataType) {
             if (type !== column.dataType && type !== 'object') {
-                error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].BadDataType, { ColumnName: column.name });
+                log = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].BadDataType, { ColumnName: column.name });
             }
         }
         // check allowed operators
@@ -6083,12 +6086,12 @@ var SchemaChecker = /** @class */ (function () {
             for (var _i = 0, _a = Object.keys(value); _i < _a.length; _i++) {
                 var prop = _a[_i];
                 if (allowedOp.indexOf(prop) < 0 && column.dataType && type !== column.dataType) {
-                    error = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].BadDataType, { ColumnName: column.name });
+                    log = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].BadDataType, { ColumnName: column.name });
                 }
                 break;
             }
         }
-        return error;
+        return log;
     };
     return SchemaChecker;
 }());
