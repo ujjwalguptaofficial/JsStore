@@ -45,7 +45,7 @@ export class ValuesChecker {
             return !isError;
         });
         if (isError) {
-            this.error = this.valueCheckerObj.error;
+            this.error = this.valueCheckerObj.log.get();
             this.onFinish(true);
         }
         else {

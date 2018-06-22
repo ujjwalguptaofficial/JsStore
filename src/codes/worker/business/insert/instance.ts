@@ -20,40 +20,40 @@ export class Instance extends Base {
     }
 
     execute() {
-        const table = this.getTable(this.tableName);
-        if (!this.isArray(this.query.values)) {
-            this.onErrorOccured(
-                new LogHelper(ERROR_TYPE.NotArray),
-                true
-            );
+        // const table = this.getTable(this.tableName);
+        // if (!this.isArray(this.query.values)) {
+        //     this.onErrorOccured(
+        //         new LogHelper(ERROR_TYPE.NotArray),
+        //         true
+        //     );
+        // }
+        // else if (table) {
+        try {
+            // if (this.query.skipDataCheck) {
+            this.insertData(this.query.values);
+            // }
+            // else {
+            //     let valueCheckerInstance = new ValuesChecker(table, this.query.values);
+            //     valueCheckerInstance.checkAndModifyValues((isError) => {
+            //         if (isError) {
+            //             this.onErrorOccured(valueCheckerInstance.error, true);
+            //         }
+            //         else {
+            //             this.insertData(valueCheckerInstance.values);
+            //         }
+            //         valueCheckerInstance = undefined;
+            //     });
+            // }
+            // // remove values from query
+            // this.query.values = undefined;
         }
-        else if (table) {
-            try {
-                if (this.query.skipDataCheck) {
-                    this.insertData(this.query.values);
-                }
-                else {
-                    let valueCheckerInstance = new ValuesChecker(table, this.query.values);
-                    valueCheckerInstance.checkAndModifyValues((isError) => {
-                        if (isError) {
-                            this.onErrorOccured(valueCheckerInstance.error, true);
-                        }
-                        else {
-                            this.insertData(valueCheckerInstance.values);
-                        }
-                        valueCheckerInstance = undefined;
-                    });
-                }
-                // remove values from query
-                this.query.values = undefined;
-            }
-            catch (ex) {
-                this.onExceptionOccured(ex, { TableName: this.tableName });
-            }
+        catch (ex) {
+            this.onExceptionOccured(ex, { TableName: this.tableName });
         }
-        else {
-            new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.tableName }).throw();
-        }
+        // }
+        // else {
+        //     new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.tableName }).throw();
+        // }
     }
 
     private onTransactionCompleted_ = () => {

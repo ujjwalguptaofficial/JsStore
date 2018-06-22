@@ -9,7 +9,7 @@ export class ValueChecker {
     table: Table;
     value: object;
     errorOccured = false;
-    error: IError;
+    log: LogHelper;
     autoIncrementValue = {};
 
     constructor(table: Table, autoIncrementValue) {
@@ -60,6 +60,6 @@ export class ValueChecker {
 
     private onValidationError_(error: ERROR_TYPE, details: object) {
         this.errorOccured = true;
-        this.error = new LogHelper(error, details);
+        this.log = new LogHelper(error, details);
     }
 }

@@ -1,9 +1,10 @@
 import { API, ERROR_TYPE, QUERY_OPTION, DATA_TYPE } from "../enums";
 import { IdbHelper } from "./idb_helper";
-import { IError } from "../interfaces";
+import { IError, IInsert } from "../interfaces";
 import { LogHelper } from "../log_helper";
 import { Util } from "../util";
 import * as Update from "./update/index";
+import * as Insert from "./insert/index";
 
 export class QueryHelper {
     api: API;
@@ -14,19 +15,75 @@ export class QueryHelper {
         this.query = query;
     }
     checkAndModify() {
-        switch (this.api) {
-            case API.Select:
-            case API.Remove:
-            case API.Count:
-                this.checkFetchQuery_();
-                break;
-            case API.Update:
-                this.checkUpdateQuery_();
-                break;
-            default:
-                throw new Error("invalid api");
+        return new Promise((resolve, reject) => {
+            switch (this.api) {
+                case API.Select:
+                case API.Remove:
+                case API.Count:
+                    this.checkFetchQuery_();
+                    if (this.error == null) {
+                        resolve();
+                    }
+                    else {
+                        reject();
+                    }
+                    break;
+                case API.Insert:
+                    this.checkInsertQuery_(() => {
+                        if (this.error) {
+                            reject(this.error);
+                        }
+                        else {
+                            resolve();
+                        }
+                    });
+                    break;
+                case API.Update:
+                    this.checkUpdateQuery_();
+                    if (this.error == null) {
+                        resolve();
+                    }
+                    else {
+                        reject(this.error);
+                    }
+                    break;
+                default:
+                    throw new Error("invalid api");
+            }
+        });
+    }
 
+    private checkInsertQuery_(onFinish: Function) {
+        const table = this.getTable_(this.query.into);
+        if (table) {
+            if (this.isArray_(this.query.values)) {
+                if (this.query.skipDataCheck) {
+                    onFinish();
+                }
+                else {
+                    const valueCheckerInstance = new Insert.ValuesChecker(table, this.query.values);
+                    valueCheckerInstance.checkAndModifyValues((isError) => {
+                        if (isError) {
+                            this.error = valueCheckerInstance.error;
+                            onFinish();
+                        }
+                        else {
+                            (this.query as IInsert).values = valueCheckerInstance.values;
+                            onFinish();
+                        }
+                    });
+                }
+            }
+            else {
+                this.error = new LogHelper(ERROR_TYPE.NotArray).get();
+                onFinish();
+            }
         }
+        else {
+            this.error = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: (this.query as IInsert).into }).get();
+            onFinish();
+        }
+
     }
 
     private checkUpdateQuery_() {
@@ -116,5 +173,9 @@ export class QueryHelper {
 
     private getType_(value) {
         return Util.getType(value);
+    }
+
+    private isArray_(value) {
+        return Util.isArray(value);
     }
 }

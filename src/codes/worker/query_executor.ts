@@ -227,8 +227,16 @@ export class QueryExecutor {
     }
 
     private insert_(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
-        const insertInstance = new Insert.Instance(query, onSuccess, onError);
-        insertInstance.execute();
+        const queryHelper = new QueryHelper(API.Insert, query);
+        queryHelper.checkAndModify().then(() => {
+            query = queryHelper.query;
+            const insertInstance = new Insert.Instance(query, onSuccess, onError);
+            insertInstance.execute();
+        }).catch((error) => {
+            onError(
+                error
+            );
+        });
     }
 
     private bulkInsert_(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {

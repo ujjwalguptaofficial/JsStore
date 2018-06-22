@@ -10,8 +10,8 @@ describe('Test insert', function () {
         catch(function (err) {
             console.log(err);
             var error = {
-                type: "not_array",
-                message: "Supplied value is not an array"
+                message: "Table 'Customer' does not exist",
+                type: 'table_not_exist'
             };
             expect(err).to.be.an('object').eql(error);
             done();
