@@ -240,8 +240,18 @@ export class QueryExecutor {
     }
 
     private bulkInsert_(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
-        const bulkInsertInstance = new BulkInsert(query, onSuccess, onError);
-        bulkInsertInstance.execute();
+        const queryHelper = new QueryHelper(API.BulkInsert, query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            const bulkInsertInstance = new BulkInsert(query, onSuccess, onError);
+            bulkInsertInstance.execute();
+        }
+        else {
+            onError(
+                queryHelper.error
+            );
+        }
+
     }
 
     private remove_(query: IRemove, onSuccess: () => void, onError: (err: IError) => void) {

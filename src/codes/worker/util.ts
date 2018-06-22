@@ -41,7 +41,7 @@ export class Util {
      * @memberof Util
      */
     static getType(value) {
-        if (value === null) {
+        if (value == null) {
             return DATA_TYPE.Null;
         }
         const type = typeof value;

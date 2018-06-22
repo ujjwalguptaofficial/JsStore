@@ -47,43 +47,65 @@ export class QueryHelper {
                         reject(this.error);
                     }
                     break;
+                case API.BulkInsert:
+                    this.checkBulkInsert_();
+                    break;
                 default:
                     throw new Error("invalid api");
             }
         });
     }
 
-    private checkInsertQuery_(onFinish: Function) {
-        const table = this.getTable_(this.query.into);
+    private isInsertQryValid_() {
+        const table = this.getTable_((this.query as IInsert).into);
+        let log: LogHelper;
         if (table) {
-            if (this.isArray_(this.query.values)) {
-                if (this.query.skipDataCheck) {
-                    onFinish();
-                }
-                else {
-                    const valueCheckerInstance = new Insert.ValuesChecker(table, this.query.values);
-                    valueCheckerInstance.checkAndModifyValues((isError) => {
-                        if (isError) {
-                            this.error = valueCheckerInstance.error;
-                            onFinish();
-                        }
-                        else {
-                            (this.query as IInsert).values = valueCheckerInstance.values;
-                            onFinish();
-                        }
-                    });
-                }
-            }
-            else {
-                this.error = new LogHelper(ERROR_TYPE.NotArray).get();
-                onFinish();
+            switch (this.getType_(this.query.values)) {
+                case DATA_TYPE.Array:
+                    break;
+                case DATA_TYPE.Null:
+                    log = new LogHelper(ERROR_TYPE.NoValueSupplied);
+                    break;
+                default:
+                    log = new LogHelper(ERROR_TYPE.NotArray);
             }
         }
         else {
-            this.error = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: (this.query as IInsert).into }).get();
+            log = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: (this.query as IInsert).into });
+        }
+        if (log != null) {
+            this.error = log.get();
+        }
+        return table;
+    }
+
+    private checkBulkInsert_() {
+        this.isInsertQryValid_();
+    }
+
+    private checkInsertQuery_(onFinish: Function) {
+        const table = this.isInsertQryValid_();
+        if (this.error == null) {
+            if (this.query.skipDataCheck) {
+                onFinish();
+            }
+            else {
+                const valueCheckerInstance = new Insert.ValuesChecker(table, this.query.values);
+                valueCheckerInstance.checkAndModifyValues((isError) => {
+                    if (isError) {
+                        this.error = valueCheckerInstance.error;
+                        onFinish();
+                    }
+                    else {
+                        (this.query as IInsert).values = valueCheckerInstance.values;
+                        onFinish();
+                    }
+                });
+            }
+        }
+        else {
             onFinish();
         }
-
     }
 
     private checkUpdateQuery_() {

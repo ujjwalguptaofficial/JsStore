@@ -15,13 +15,13 @@ export class BulkInsert extends Base {
     }
 
     execute() {
-        if (!Array.isArray(this.query.values)) {
-            this.onErrorOccured(
-                new LogHelper(ERROR_TYPE.NotArray),
-                true
-            );
-        }
-        else if (this.isTableExist(this.query.into) === true) {
+        // if (!Array.isArray(this.query.values)) {
+        //     this.onErrorOccured(
+        //         new LogHelper(ERROR_TYPE.NotArray),
+        //         true
+        //     );
+        // }
+        // else if (this.isTableExist(this.query.into) === true) {
             try {
                 this.bulkinsertData(this.query.values);
                 this.query.values = null;
@@ -29,11 +29,11 @@ export class BulkInsert extends Base {
             catch (ex) {
                 this.onExceptionOccured(ex, { TableName: this.query.into });
             }
-        }
-        else {
-            const error = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.query.into });
-            error.throw();
-        }
+        // }
+        // else {
+        //     const error = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.query.into });
+        //     error.throw();
+        // }
     }
 
     private bulkinsertData(values) {

@@ -60,7 +60,7 @@ export class LogHelper implements IError {
                 errMsg = "Column value is undefined";
                 break;
             case ERROR_TYPE.NoValueSupplied:
-                errMsg = "No value supplied";
+                errMsg = "No value is supplied";
                 break;
             case ERROR_TYPE.InvalidOp:
                 errMsg = "Invalid Op Value '" + this.info_['Op'] + "'";

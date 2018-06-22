@@ -356,8 +356,15 @@ var QueryExecutor = /** @class */ (function () {
         });
     };
     QueryExecutor.prototype.bulkInsert_ = function (query, onSuccess, onError) {
-        var bulkInsertInstance = new _business_bulk_insert__WEBPACK_IMPORTED_MODULE_17__["BulkInsert"](query, onSuccess, onError);
-        bulkInsertInstance.execute();
+        var queryHelper = new _business_query_helper__WEBPACK_IMPORTED_MODULE_19__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["API"].BulkInsert, query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            var bulkInsertInstance = new _business_bulk_insert__WEBPACK_IMPORTED_MODULE_17__["BulkInsert"](query, onSuccess, onError);
+            bulkInsertInstance.execute();
+        }
+        else {
+            onError(queryHelper.error);
+        }
     };
     QueryExecutor.prototype.remove_ = function (query, onSuccess, onError) {
         var queryHelper = new _business_query_helper__WEBPACK_IMPORTED_MODULE_19__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["API"].Remove, query);
@@ -1579,7 +1586,7 @@ var LogHelper = /** @class */ (function () {
                 errMsg = "Column value is undefined";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].NoValueSupplied:
-                errMsg = "No value supplied";
+                errMsg = "No value is supplied";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].InvalidOp:
                 errMsg = "Invalid Op Value '" + this.info_['Op'] + "'";
@@ -4008,7 +4015,7 @@ var Util = /** @class */ (function () {
      * @memberof Util
      */
     Util.getType = function (value) {
-        if (value === null) {
+        if (value == null) {
             return _enums__WEBPACK_IMPORTED_MODULE_0__["DATA_TYPE"].Null;
         }
         var type = typeof value;
@@ -6168,8 +6175,6 @@ var Clear = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BulkInsert", function() { return BulkInsert; });
 /* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(37);
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3);
-/* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(18);
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -6181,8 +6186,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
-
-
 var BulkInsert = /** @class */ (function (_super) {
     __extends(BulkInsert, _super);
     function BulkInsert(query, onSuccess, onError) {
@@ -6193,22 +6196,25 @@ var BulkInsert = /** @class */ (function (_super) {
         return _this;
     }
     BulkInsert.prototype.execute = function () {
-        if (!Array.isArray(this.query.values)) {
-            this.onErrorOccured(new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].NotArray), true);
+        // if (!Array.isArray(this.query.values)) {
+        //     this.onErrorOccured(
+        //         new LogHelper(ERROR_TYPE.NotArray),
+        //         true
+        //     );
+        // }
+        // else if (this.isTableExist(this.query.into) === true) {
+        try {
+            this.bulkinsertData(this.query.values);
+            this.query.values = null;
         }
-        else if (this.isTableExist(this.query.into) === true) {
-            try {
-                this.bulkinsertData(this.query.values);
-                this.query.values = null;
-            }
-            catch (ex) {
-                this.onExceptionOccured(ex, { TableName: this.query.into });
-            }
+        catch (ex) {
+            this.onExceptionOccured(ex, { TableName: this.query.into });
         }
-        else {
-            var error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].TableNotExist, { TableName: this.query.into });
-            error.throw();
-        }
+        // }
+        // else {
+        //     const error = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.query.into });
+        //     error.throw();
+        // }
     };
     BulkInsert.prototype.bulkinsertData = function (values) {
         var _this = this;
@@ -6458,40 +6464,61 @@ var QueryHelper = /** @class */ (function () {
                         reject(_this.error);
                     }
                     break;
+                case _enums__WEBPACK_IMPORTED_MODULE_0__["API"].BulkInsert:
+                    _this.checkBulkInsert_();
+                    break;
                 default:
                     throw new Error("invalid api");
             }
         });
     };
-    QueryHelper.prototype.checkInsertQuery_ = function (onFinish) {
-        var _this = this;
+    QueryHelper.prototype.isInsertQryValid_ = function () {
         var table = this.getTable_(this.query.into);
+        var log;
         if (table) {
-            if (this.isArray_(this.query.values)) {
-                if (this.query.skipDataCheck) {
-                    onFinish();
-                }
-                else {
-                    var valueCheckerInstance_1 = new _insert_index__WEBPACK_IMPORTED_MODULE_5__["ValuesChecker"](table, this.query.values);
-                    valueCheckerInstance_1.checkAndModifyValues(function (isError) {
-                        if (isError) {
-                            _this.error = valueCheckerInstance_1.error;
-                            onFinish();
-                        }
-                        else {
-                            _this.query.values = valueCheckerInstance_1.values;
-                            onFinish();
-                        }
-                    });
-                }
-            }
-            else {
-                this.error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].NotArray).get();
-                onFinish();
+            switch (this.getType_(this.query.values)) {
+                case _enums__WEBPACK_IMPORTED_MODULE_0__["DATA_TYPE"].Array:
+                    break;
+                case _enums__WEBPACK_IMPORTED_MODULE_0__["DATA_TYPE"].Null:
+                    log = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].NoValueSupplied);
+                    break;
+                default:
+                    log = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].NotArray);
             }
         }
         else {
-            this.error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].TableNotExist, { TableName: this.query.into }).get();
+            log = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].TableNotExist, { TableName: this.query.into });
+        }
+        if (log != null) {
+            this.error = log.get();
+        }
+        return table;
+    };
+    QueryHelper.prototype.checkBulkInsert_ = function () {
+        this.isInsertQryValid_();
+    };
+    QueryHelper.prototype.checkInsertQuery_ = function (onFinish) {
+        var _this = this;
+        var table = this.isInsertQryValid_();
+        if (this.error == null) {
+            if (this.query.skipDataCheck) {
+                onFinish();
+            }
+            else {
+                var valueCheckerInstance_1 = new _insert_index__WEBPACK_IMPORTED_MODULE_5__["ValuesChecker"](table, this.query.values);
+                valueCheckerInstance_1.checkAndModifyValues(function (isError) {
+                    if (isError) {
+                        _this.error = valueCheckerInstance_1.error;
+                        onFinish();
+                    }
+                    else {
+                        _this.query.values = valueCheckerInstance_1.values;
+                        onFinish();
+                    }
+                });
+            }
+        }
+        else {
             onFinish();
         }
     };

@@ -1,5 +1,5 @@
 describe('Test bulkInsert', function () {
-    it('insert OrderDetails - using bulk insert', function (done) {
+    it('insert OrderDetails', function (done) {
         $.getJSON("test/static/OrderDetails.json", function (results) {
             Con.bulkInsert({
                 into: 'OrderDetails',
@@ -21,8 +21,23 @@ describe('Test bulkInsert', function () {
         catch(function (err) {
             console.log(err);
             var error = {
-                type: "not_array",
-                message: "Supplied value is not an array"
+                message: "Table 'Custamer' does not exist",
+                type: "table_not_exist"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    });
+
+    it('without value', function (done) {
+        Con.bulkInsert({
+            into: 'Customers'
+        }).
+        catch(function (err) {
+            console.log(err);
+            var error = {
+                message: 'No value is supplied',
+                type: 'no_value_supplied'
             };
             expect(err).to.be.an('object').eql(error);
             done();
