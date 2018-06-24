@@ -39,12 +39,26 @@ describe('Test transaction', function () {
                 count({
                     from: 'Customers'
                 }).then(function (length) {
-                    setResult('count', length);
+                    setResult('countCustomer', length);
                 });
+
+                select({
+                    from: 'OrderDetails'
+                }).then(function (results) {
+                    setResult('orderDetails', results);
+                });
+
+                count({
+                    from: 'OrderDetails'
+                }).then(function (length) {
+                    setResult('countOrderDetails', length);
+                });
+
             }
         }
         Con.transaction(transaction_query).then(function (results) {
-            expect(results.customers).to.be.an('array').length(results.count);
+            expect(results.customers).to.be.an('array').length(results.countCustomer);
+            expect(results.orderDetails).to.be.an('array').length(results.countOrderDetails);
             done();
         }).catch(function (err) {
             done(err);

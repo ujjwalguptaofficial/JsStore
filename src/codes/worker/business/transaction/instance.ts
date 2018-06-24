@@ -7,6 +7,7 @@ import * as Insert from '../insert/index';
 import * as Remove from '../remove/index';
 import * as Update from '../update/index';
 import { API } from "../../enums";
+import { QueryHelper } from "../query_helper";
 
 export class Instance extends Base {
     query: ITranscationQry;
@@ -57,14 +58,22 @@ export class Instance extends Base {
         const setResult = (key: string, value) => {
             this.results[key] = value;
         };
+        const abort = () => {
+            this.abortTransaction();
+        };
         const txLogic = null;
         eval("txLogic =" + this.query.logic);
         txLogic.call(this, this.query.data);
         this.query.data = this.query.logic = null;
-        this.startTransaction();
+        this.checkQueries().then(() => {
+            this.startTransaction_();
+        }).catch((err) => {
+            this.onErrorOccured(err, true);
+        });
+
     }
 
-    startTransaction() {
+    private startTransaction_() {
         this.isTransactionStarted = true;
         this.initTransaction_(this.query.tables);
         this.processExecutionOfQry();
@@ -92,9 +101,7 @@ export class Instance extends Base {
                 this.processExecutionOfQry();
             }
         }
-
     }
-
 
     abortTransaction() {
         if (this.transaction != null) {
@@ -154,5 +161,26 @@ export class Instance extends Base {
             this.isTransactionStarted === true) {
             this.executeRequest(this.requestQueue[0]);
         }
+    }
+
+    private checkQueries() {
+        let index = 0;
+        return new Promise((resolve, reject) => {
+            const checkQuery = () => {
+                if (this.requestQueue.length - 1 === index) {
+                    const request = this.requestQueue[index++];
+                    const qryHelper = new QueryHelper(request.name, request.query);
+                    qryHelper.checkAndModify().then(() => {
+                        checkQuery();
+                    }).catch((err: IError) => {
+                        reject(err);
+                    });
+                }
+                else {
+                    resolve();
+                }
+            };
+            checkQuery();
+        });
     }
 }
