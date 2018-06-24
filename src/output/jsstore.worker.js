@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.1.2 - 22/06/2018
+ * @license :jsstore - V2.1.2 - 24/06/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -6278,6 +6278,9 @@ var Instance = /** @class */ (function (_super) {
     __extends(Instance, _super);
     function Instance(qry, onSuccess, onError) {
         var _this = _super.call(this) || this;
+        _this.requestQueue = [];
+        _this.isQueryExecuting = false;
+        _this.isTransactionStarted = false;
         _this.query = qry;
         _this.onError = onError;
         _this.onSuccess = onSuccess;
@@ -6286,96 +6289,32 @@ var Instance = /** @class */ (function (_super) {
     }
     Instance.prototype.execute = function () {
         var _this = this;
-        var requestQueue = [];
-        var isQueryExecuting = false;
-        var isTransactionStarted = false;
-        var onRequestFinished = function (result) {
-            var finisehdRequest = requestQueue.shift();
-            if (finisehdRequest) {
-                if (_this.errorOccured) {
-                    abortTransaction();
-                }
-                else {
-                    isQueryExecuting = false;
-                    if (finisehdRequest.onSuccess) {
-                        finisehdRequest.onSuccess(result);
-                    }
-                    processExecutionOfQry();
-                }
-            }
-        };
-        var abortTransaction = function () {
-            if (_this.transaction != null) {
-                _this.transaction.abort();
-            }
-        };
-        var executeRequest = function (request) {
-            isQueryExecuting = true;
-            var requestObj;
-            switch (request.name) {
-                case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Select:
-                    requestObj = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](request.query, onRequestFinished, _this.onError.bind(_this));
-                    break;
-                case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Insert:
-                    requestObj = new _insert_index__WEBPACK_IMPORTED_MODULE_3__["Instance"](request.query, onRequestFinished, _this.onError.bind(_this));
-                    break;
-                case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Update:
-                    requestObj = new _update_index__WEBPACK_IMPORTED_MODULE_5__["Instance"](request.query, onRequestFinished, _this.onError.bind(_this));
-                    break;
-                case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Remove:
-                    requestObj = new _remove_index__WEBPACK_IMPORTED_MODULE_4__["Instance"](request.query, onRequestFinished, _this.onError.bind(_this));
-                    break;
-                case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Count:
-                    requestObj = new _count_index__WEBPACK_IMPORTED_MODULE_2__["Instance"](request.query, onRequestFinished, _this.onError.bind(_this));
-                    break;
-            }
-            requestObj.isTransaction = true;
-            requestObj.execute();
-        };
-        var pushRequest = function (request) {
-            requestQueue.push(request);
-            processExecutionOfQry();
-            return new Promise(function (resolve, reject) {
-                request.onSuccess = function (result) {
-                    resolve(result);
-                };
-                request.onError = function (error) {
-                    reject(error);
-                };
-            });
-        };
-        var processExecutionOfQry = function () {
-            if (requestQueue.length > 0 && isQueryExecuting === false &&
-                isTransactionStarted === true) {
-                executeRequest(requestQueue[0]);
-            }
-        };
         var select = function (qry) {
-            return pushRequest({
+            return _this.pushRequest({
                 name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Select,
                 query: qry
             });
         };
         var insert = function (qry) {
-            return pushRequest({
+            return _this.pushRequest({
                 name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Insert,
                 query: qry
             });
         };
         var update = function (qry) {
-            return pushRequest({
+            return _this.pushRequest({
                 name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Update,
                 query: qry
             });
         };
         var remove = function (qry) {
-            return pushRequest({
+            return _this.pushRequest({
                 name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Remove,
                 query: qry
             });
         };
         var count = function (qry) {
-            return pushRequest({
+            return _this.pushRequest({
                 name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Count,
                 query: qry
             });
@@ -6383,23 +6322,83 @@ var Instance = /** @class */ (function (_super) {
         var setResult = function (key, value) {
             _this.results[key] = value;
         };
-        var txLogic;
-        txLogic = null;
+        var txLogic = null;
         eval("txLogic =" + this.query.logic);
         txLogic.call(this, this.query.data);
         this.query.data = this.query.logic = null;
-        var startTransaction = function () {
-            isTransactionStarted = true;
-            _this.initTransaction_(_this.query.tables);
-            processExecutionOfQry();
-        };
-        startTransaction();
+        this.startTransaction();
+    };
+    Instance.prototype.startTransaction = function () {
+        this.isTransactionStarted = true;
+        this.initTransaction_(this.query.tables);
+        this.processExecutionOfQry();
     };
     Instance.prototype.initTransaction_ = function (tableNames) {
         this.createTransaction(tableNames, this.onTransactionCompleted_.bind(this));
     };
     Instance.prototype.onTransactionCompleted_ = function () {
         this.onSuccess(this.results);
+    };
+    Instance.prototype.onRequestFinished_ = function (result) {
+        var finisehdRequest = this.requestQueue.shift();
+        if (finisehdRequest) {
+            if (this.errorOccured) {
+                this.abortTransaction();
+            }
+            else {
+                this.isQueryExecuting = false;
+                if (finisehdRequest.onSuccess) {
+                    finisehdRequest.onSuccess(result);
+                }
+                this.processExecutionOfQry();
+            }
+        }
+    };
+    Instance.prototype.abortTransaction = function () {
+        if (this.transaction != null) {
+            this.transaction.abort();
+        }
+    };
+    Instance.prototype.executeRequest = function (request) {
+        this.isQueryExecuting = true;
+        var requestObj;
+        switch (request.name) {
+            case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Select:
+                requestObj = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](request.query, this.onRequestFinished_.bind(this), this.onError.bind(this));
+                break;
+            case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Insert:
+                requestObj = new _insert_index__WEBPACK_IMPORTED_MODULE_3__["Instance"](request.query, this.onRequestFinished_.bind(this), this.onError.bind(this));
+                break;
+            case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Update:
+                requestObj = new _update_index__WEBPACK_IMPORTED_MODULE_5__["Instance"](request.query, this.onRequestFinished_.bind(this), this.onError.bind(this));
+                break;
+            case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Remove:
+                requestObj = new _remove_index__WEBPACK_IMPORTED_MODULE_4__["Instance"](request.query, this.onRequestFinished_.bind(this), this.onError.bind(this));
+                break;
+            case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Count:
+                requestObj = new _count_index__WEBPACK_IMPORTED_MODULE_2__["Instance"](request.query, this.onRequestFinished_.bind(this), this.onError.bind(this));
+                break;
+        }
+        requestObj.isTransaction = true;
+        requestObj.execute();
+    };
+    Instance.prototype.pushRequest = function (request) {
+        this.requestQueue.push(request);
+        this.processExecutionOfQry();
+        return new Promise(function (resolve, reject) {
+            request.onSuccess = function (result) {
+                resolve(result);
+            };
+            request.onError = function (error) {
+                reject(error);
+            };
+        });
+    };
+    Instance.prototype.processExecutionOfQry = function () {
+        if (this.requestQueue.length > 0 && this.isQueryExecuting === false &&
+            this.isTransactionStarted === true) {
+            this.executeRequest(this.requestQueue[0]);
+        }
     };
     return Instance;
 }(_base__WEBPACK_IMPORTED_MODULE_0__["Base"]));
