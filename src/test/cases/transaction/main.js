@@ -65,34 +65,42 @@ describe('Test transaction', function () {
         })
     });
 
-    // it('simple select', function (done) {
-    //     var transaction_query = {
-    //         tables: ['Customers'],
-    //         data: {
-    //             insertValues: [{
-    //                 CustomerName: 'ujjwalfev gupta',
-    //                 ContactName: 'ujjwadcvl',
-    //                 Address: 'bhubaneswdfar odisha',
-    //                 City: 'bhubaneswar',
-    //                 PostalCode: '12345',
-    //                 Country: 'BangKok'
-    //             }]
-    //         },
-    //         logic: function (data) {
-    //             insert({
-    //                 into: 'Customers',
-    //                 values: data.InsertValues
-    //             });
-    //             select({
-    //                 from: 'Customers',
-    //                 OnSuccess: function (results) {
-    //                     this._results = results;
-    //                 }
-    //             })
-    //         }
-    //     }
-    //     Con.transaction(transaction_query, function (results) {
-    //         console.log(results);
-    //     });
-    // })
+    it('simple insert', function (done) {
+        var transaction_query = {
+            tables: ['Customers'],
+            data: {
+                insertValues: [{
+                    CustomerName: 'ujjwalfev gupta',
+                    ContactName: 'ujjwadcvl',
+                    Address: 'bhubaneswdfar odisha',
+                    City: 'bhubaneswar',
+                    PostalCode: '12345',
+                    Country: 'BangKok'
+                }]
+            },
+            logic: function (data) {
+                count({
+                    from: 'Customers'
+                }).then(function (result) {
+                    setResult('countOldCustomer', result)
+                })
+                insert({
+                    into: 'Customers',
+                    values: data.insertValues
+                });
+                count({
+                    from: 'Customers'
+                }).then(function (result) {
+                    setResult('countNewCustomer', result)
+                })
+            }
+        }
+        Con.transaction(transaction_query).then(function (results) {
+            console.log(results)
+            expect(results.countNewCustomer).to.be.an('number').equal(results.countOldCustomer + 1);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    })
 })

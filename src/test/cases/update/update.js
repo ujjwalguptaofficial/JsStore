@@ -169,6 +169,24 @@ describe('Test update Api', function () {
     });
 
     it('update with ignore case', function (done) {
+        var count;
+        Con.count({
+            from: 'Customers',
+            ignoreCase: true,
+            set: {
+                ContactName: 'Ujjwal',
+                City: 'bhubaneswar'
+            },
+            where: {
+                City: 'bHuBaneSwar'
+            }
+        }).then(function (results) {
+            count = results;
+        }).
+        catch(function (err) {
+            done(err);
+        });
+
         Con.update({ in: "Customers",
             ignoreCase: true,
             set: {
@@ -179,7 +197,7 @@ describe('Test update Api', function () {
                 City: 'bHuBaneSwar'
             }
         }).then(function (results) {
-            expect(results).to.be.an('number').to.equal(3);
+            expect(results).to.be.an('number').to.equal(count);
             done();
         }).
         catch(function (err) {

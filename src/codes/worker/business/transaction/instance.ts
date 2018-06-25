@@ -84,7 +84,9 @@ export class Instance extends Base {
     }
 
     private onTransactionCompleted_() {
-        this.onSuccess(this.results);
+        setTimeout(() => {
+            this.onSuccess(this.results);
+        }, 1000);
     }
 
     onRequestFinished_(result) {
@@ -167,7 +169,7 @@ export class Instance extends Base {
         let index = 0;
         return new Promise((resolve, reject) => {
             const checkQuery = () => {
-                if (this.requestQueue.length - 1 === index) {
+                if (index < this.requestQueue.length) {
                     const request = this.requestQueue[index++];
                     const qryHelper = new QueryHelper(request.name, request.query);
                     qryHelper.checkAndModify().then(() => {

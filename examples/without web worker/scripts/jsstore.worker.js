@@ -6257,6 +6257,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _remove_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(53);
 /* harmony import */ var _update_index__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(60);
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(3);
+/* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(72);
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -6267,6 +6268,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 
 
@@ -6322,13 +6324,20 @@ var Instance = /** @class */ (function (_super) {
         var setResult = function (key, value) {
             _this.results[key] = value;
         };
+        var abort = function () {
+            _this.abortTransaction();
+        };
         var txLogic = null;
         eval("txLogic =" + this.query.logic);
         txLogic.call(this, this.query.data);
         this.query.data = this.query.logic = null;
-        this.startTransaction();
+        this.checkQueries().then(function () {
+            _this.startTransaction_();
+        }).catch(function (err) {
+            _this.onErrorOccured(err, true);
+        });
     };
-    Instance.prototype.startTransaction = function () {
+    Instance.prototype.startTransaction_ = function () {
         this.isTransactionStarted = true;
         this.initTransaction_(this.query.tables);
         this.processExecutionOfQry();
@@ -6337,7 +6346,10 @@ var Instance = /** @class */ (function (_super) {
         this.createTransaction(tableNames, this.onTransactionCompleted_.bind(this));
     };
     Instance.prototype.onTransactionCompleted_ = function () {
-        this.onSuccess(this.results);
+        var _this = this;
+        setTimeout(function () {
+            _this.onSuccess(_this.results);
+        }, 1000);
     };
     Instance.prototype.onRequestFinished_ = function (result) {
         var finisehdRequest = this.requestQueue.shift();
@@ -6364,19 +6376,19 @@ var Instance = /** @class */ (function (_super) {
         var requestObj;
         switch (request.name) {
             case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Select:
-                requestObj = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](request.query, this.onRequestFinished_, this.onError.bind(this));
+                requestObj = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](request.query, this.onRequestFinished_.bind(this), this.onError.bind(this));
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Insert:
-                requestObj = new _insert_index__WEBPACK_IMPORTED_MODULE_3__["Instance"](request.query, this.onRequestFinished_, this.onError.bind(this));
+                requestObj = new _insert_index__WEBPACK_IMPORTED_MODULE_3__["Instance"](request.query, this.onRequestFinished_.bind(this), this.onError.bind(this));
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Update:
-                requestObj = new _update_index__WEBPACK_IMPORTED_MODULE_5__["Instance"](request.query, this.onRequestFinished_, this.onError.bind(this));
+                requestObj = new _update_index__WEBPACK_IMPORTED_MODULE_5__["Instance"](request.query, this.onRequestFinished_.bind(this), this.onError.bind(this));
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Remove:
-                requestObj = new _remove_index__WEBPACK_IMPORTED_MODULE_4__["Instance"](request.query, this.onRequestFinished_, this.onError.bind(this));
+                requestObj = new _remove_index__WEBPACK_IMPORTED_MODULE_4__["Instance"](request.query, this.onRequestFinished_.bind(this), this.onError.bind(this));
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Count:
-                requestObj = new _count_index__WEBPACK_IMPORTED_MODULE_2__["Instance"](request.query, this.onRequestFinished_, this.onError.bind(this));
+                requestObj = new _count_index__WEBPACK_IMPORTED_MODULE_2__["Instance"](request.query, this.onRequestFinished_.bind(this), this.onError.bind(this));
                 break;
         }
         requestObj.isTransaction = true;
@@ -6399,6 +6411,27 @@ var Instance = /** @class */ (function (_super) {
             this.isTransactionStarted === true) {
             this.executeRequest(this.requestQueue[0]);
         }
+    };
+    Instance.prototype.checkQueries = function () {
+        var _this = this;
+        var index = 0;
+        return new Promise(function (resolve, reject) {
+            var checkQuery = function () {
+                if (_this.requestQueue.length - 1 === index) {
+                    var request = _this.requestQueue[index++];
+                    var qryHelper = new _query_helper__WEBPACK_IMPORTED_MODULE_7__["QueryHelper"](request.name, request.query);
+                    qryHelper.checkAndModify().then(function () {
+                        checkQuery();
+                    }).catch(function (err) {
+                        reject(err);
+                    });
+                }
+                else {
+                    resolve();
+                }
+            };
+            checkQuery();
+        });
     };
     return Instance;
 }(_base__WEBPACK_IMPORTED_MODULE_0__["Base"]));

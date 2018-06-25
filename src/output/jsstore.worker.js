@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.1.2 - 24/06/2018
+ * @license :jsstore - V2.1.2 - 25/06/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -6346,7 +6346,10 @@ var Instance = /** @class */ (function (_super) {
         this.createTransaction(tableNames, this.onTransactionCompleted_.bind(this));
     };
     Instance.prototype.onTransactionCompleted_ = function () {
-        this.onSuccess(this.results);
+        var _this = this;
+        setTimeout(function () {
+            _this.onSuccess(_this.results);
+        }, 1000);
     };
     Instance.prototype.onRequestFinished_ = function (result) {
         var finisehdRequest = this.requestQueue.shift();
@@ -6414,7 +6417,7 @@ var Instance = /** @class */ (function (_super) {
         var index = 0;
         return new Promise(function (resolve, reject) {
             var checkQuery = function () {
-                if (_this.requestQueue.length - 1 === index) {
+                if (index < _this.requestQueue.length) {
                     var request = _this.requestQueue[index++];
                     var qryHelper = new _query_helper__WEBPACK_IMPORTED_MODULE_7__["QueryHelper"](request.name, request.query);
                     qryHelper.checkAndModify().then(function () {
