@@ -38,8 +38,15 @@ export class Base extends BaseHelper {
                 this.onError((e as LogHelper).get());
             }
             else {
-                const error = new LogHelper((e as any).target.error.name);
-                error.message = (e as any).target.error.message;
+                let error;
+                if (e.name) {
+                    error = new LogHelper((e.name));
+                    error.message = e.message;
+                }
+                else {
+                    error = new LogHelper((e as any).target.error.name);
+                    error.message = (e as any).target.error.message;
+                }
                 error.logError();
                 this.onError(error.get());
             }

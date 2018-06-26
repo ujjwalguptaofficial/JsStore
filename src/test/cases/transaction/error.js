@@ -1,19 +1,12 @@
-describe('Test transaction', function () {
-    it('select and count', function (done) {
-        var count;
+describe('Transaction - error test', function () {
+    it('supplying wrong table name in tables', function (done) {
         var transaction_query = {
-            tables: ['Customers'],
+            tables: ['Customsers'],
             logic: function (data) {
                 select({
                     from: 'Customers'
                 }).then(function (results) {
                     setResult('customers', results);
-                });
-
-                count({
-                    from: 'Customers'
-                }).then(function (length) {
-                    setResult('count', length);
                 });
             }
         }
@@ -21,11 +14,40 @@ describe('Test transaction', function () {
             expect(results.customers).to.be.an('array').length(results.count);
             done();
         }).catch(function (err) {
-            done(err);
+            var error = {
+                "message": "Failed to execute 'transaction' on 'IDBDatabase': One of the specified object stores was not found.",
+                "type": "NotFoundError"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
         })
     });
 
-    it('select and count multiple tables', function (done) {
+    it('supplying wrong table name in select query', function (done) {
+        var transaction_query = {
+            tables: ['Customers'],
+            logic: function (data) {
+                select({
+                    from: 'Customssers'
+                }).then(function (results) {
+                    setResult('customers', results);
+                });
+            }
+        }
+        Con.transaction(transaction_query).then(function (results) {
+            expect(results.customers).to.be.an('array').length(results.count);
+            done();
+        }).catch(function (err) {
+            var error = {
+                message: "Table 'Customssers' does not exist",
+                type: "table_not_exist"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    });
+
+    it('select and count multiple tables- one table name wrong', function (done) {
         var count;
         var transaction_query = {
             tables: ['Customers', 'OrderDetails', 'Categories'],
@@ -37,7 +59,7 @@ describe('Test transaction', function () {
                 });
 
                 count({
-                    from: 'Customers'
+                    from: 'Customerdds'
                 }).then(function (length) {
                     setResult('countCustomer', length);
                 });
@@ -61,11 +83,16 @@ describe('Test transaction', function () {
             expect(results.orderDetails).to.be.an('array').length(results.countOrderDetails);
             done();
         }).catch(function (err) {
-            done(err);
+            var error = {
+                "message": "Table 'Customerdds' does not exist",
+                "type": "table_not_exist"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
         })
     });
 
-    it('simple insert', function (done) {
+    it('simple insert -null value supplying', function (done) {
         var transaction_query = {
             tables: ['Customers'],
             data: {
@@ -86,7 +113,7 @@ describe('Test transaction', function () {
                 })
                 insert({
                     into: 'Customers',
-                    values: data.insertValues
+                    values: null
                 });
                 count({
                     from: 'Customers'
@@ -100,11 +127,16 @@ describe('Test transaction', function () {
             expect(results.countNewCustomer).to.be.an('number').equal(results.countOldCustomer + 1);
             done();
         }).catch(function (err) {
-            done(err);
+            var error = {
+                "message": "No value is supplied",
+                "type": "no_value_supplied"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
         })
     })
 
-    it('update', function (done) {
+    it('update then abort', function (done) {
         var transaction_query = {
             tables: ['Customers'],
             data: {
@@ -124,12 +156,32 @@ describe('Test transaction', function () {
                         CustomerID: 5
                     }
                 }).then(function (result) {
-                    setResult('updated', result)
+                    abort();
                 })
             }
         }
-        Con.transaction(transaction_query).then(function (results) {
-            expect(results.updated).to.be.an('number').equal(1);
+        var customer;
+        Con.select({
+            from: 'Customers',
+            where: {
+                CustomerID: 5
+            }
+        }).then(function (results) {
+            customer = results[0];
+        }).catch(function (err) {
+            done(err);
+        })
+        Con.transaction(transaction_query).then(function (results) {}).catch(function (err) {
+            done(err);
+        })
+        Con.select({
+            from: 'Customers',
+            where: {
+                CustomerID: 5
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array');
+            expect(results[0]).to.be.an('object').eql(customer);
             done();
         }).catch(function (err) {
             done(err);

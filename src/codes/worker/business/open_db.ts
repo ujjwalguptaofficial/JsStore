@@ -47,12 +47,6 @@ export class OpenDb extends BaseDb {
                     this.dbStatus.lastError = ("Error occured in connection :" + (e.target as any).result) as any;
                 };
 
-                this.dbConnection.onabort = (e) => {
-                    this.dbStatus = {
-                        conStatus: CONNECTION_STATUS.Closed,
-                        lastError: ERROR_TYPE.ConnectionAborted
-                    };
-                };
                 if (this.onSuccess_ != null) {
                     this.onSuccess_();
                 }

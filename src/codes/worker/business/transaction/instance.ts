@@ -64,19 +64,24 @@ export class Instance extends Base {
         const txLogic = null;
         eval("txLogic =" + this.query.logic);
         txLogic.call(this, this.query.data);
-        this.query.data = this.query.logic = null;
+
         this.checkQueries().then(() => {
             this.startTransaction_();
         }).catch((err) => {
-            this.onErrorOccured(err, true);
+            this.onError(err);
         });
 
     }
 
     private startTransaction_() {
-        this.isTransactionStarted = true;
-        this.initTransaction_(this.query.tables);
-        this.processExecutionOfQry();
+        try {
+            this.isTransactionStarted = true;
+            this.initTransaction_(this.query.tables);
+            this.processExecutionOfQry();
+        }
+        catch (ex) {
+            this.onErrorOccured(ex, false);
+        }
     }
 
     private initTransaction_(tableNames) {
@@ -84,9 +89,7 @@ export class Instance extends Base {
     }
 
     private onTransactionCompleted_() {
-        setTimeout(() => {
-            this.onSuccess(this.results);
-        }, 1000);
+        this.onSuccess(this.results);
     }
 
     onRequestFinished_(result) {

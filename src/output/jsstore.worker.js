@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.1.2 - 25/06/2018
+ * @license :jsstore - V2.1.2 - 26/06/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -544,14 +544,12 @@ var IdbHelper = /** @class */ (function () {
         if (IdbHelper.transaction === null) {
             mode = mode ? mode : _enums__WEBPACK_IMPORTED_MODULE_0__["IDB_MODE"].ReadWrite;
             IdbHelper.transaction = IdbHelper.dbConnection.transaction(tableNames, mode);
-            IdbHelper.transaction.oncomplete = function () {
+            var onComplete = function () {
                 IdbHelper.transaction = null;
                 callBack();
             };
-            IdbHelper.transaction.ontimeout = function () {
-                IdbHelper.transaction = null;
-                console.error('transaction timed out');
-            };
+            IdbHelper.transaction.oncomplete = onComplete;
+            IdbHelper.transaction.onabort = onComplete;
         }
     };
     IdbHelper.setDbList = function (list) {
@@ -1777,12 +1775,6 @@ var OpenDb = /** @class */ (function (_super) {
                 _this.dbConnection.onerror = function (e) {
                     _this.dbStatus.lastError = ("Error occured in connection :" + e.target.result);
                 };
-                _this.dbConnection.onabort = function (e) {
-                    _this.dbStatus = {
-                        conStatus: _enums__WEBPACK_IMPORTED_MODULE_0__["CONNECTION_STATUS"].Closed,
-                        lastError: _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].ConnectionAborted
-                    };
-                };
                 if (_this.onSuccess_ != null) {
                     _this.onSuccess_();
                 }
@@ -1955,12 +1947,6 @@ var CreateDb = /** @class */ (function (_super) {
             };
             _this.dbConnection.onerror = function (e) {
                 _this.dbStatus.lastError = ("Error occured in connection :" + e.target.result);
-            };
-            _this.dbConnection.onabort = function (e) {
-                _this.dbStatus = {
-                    conStatus: _enums__WEBPACK_IMPORTED_MODULE_0__["CONNECTION_STATUS"].Closed,
-                    lastError: _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].ConnectionAborted
-                };
             };
             // save in database list
             _this.savedbNameIntoDbList();
@@ -3745,8 +3731,15 @@ var Base = /** @class */ (function (_super) {
                 this.onError(e.get());
             }
             else {
-                var error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](e.target.error.name);
-                error.message = e.target.error.message;
+                var error = void 0;
+                if (e.name) {
+                    error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"]((e.name));
+                    error.message = e.message;
+                }
+                else {
+                    error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](e.target.error.name);
+                    error.message = e.target.error.message;
+                }
                 error.logError();
                 this.onError(error.get());
             }
@@ -4934,40 +4927,12 @@ var Instance = /** @class */ (function (_super) {
         return _this;
     }
     Instance.prototype.execute = function () {
-        // const table = this.getTable(this.tableName);
-        // if (!this.isArray(this.query.values)) {
-        //     this.onErrorOccured(
-        //         new LogHelper(ERROR_TYPE.NotArray),
-        //         true
-        //     );
-        // }
-        // else if (table) {
         try {
-            // if (this.query.skipDataCheck) {
             this.insertData(this.query.values);
-            // }
-            // else {
-            //     let valueCheckerInstance = new ValuesChecker(table, this.query.values);
-            //     valueCheckerInstance.checkAndModifyValues((isError) => {
-            //         if (isError) {
-            //             this.onErrorOccured(valueCheckerInstance.error, true);
-            //         }
-            //         else {
-            //             this.insertData(valueCheckerInstance.values);
-            //         }
-            //         valueCheckerInstance = undefined;
-            //     });
-            // }
-            // // remove values from query
-            // this.query.values = undefined;
         }
         catch (ex) {
             this.onExceptionOccured(ex, { TableName: this.tableName });
         }
-        // }
-        // else {
-        //     new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.tableName }).throw();
-        // }
     };
     Instance.prototype.onQueryFinished = function () {
         if (this.isTransaction === true) {
@@ -5628,6 +5593,7 @@ var Instance = /** @class */ (function (_super) {
         _this.onSuccess = onSuccess;
         _this.onError = onError;
         _this.query = query;
+        _this.tableName = _this.query.in;
         return _this;
     }
     Instance.prototype.execute = function () {
@@ -6330,26 +6296,27 @@ var Instance = /** @class */ (function (_super) {
         var txLogic = null;
         eval("txLogic =" + this.query.logic);
         txLogic.call(this, this.query.data);
-        this.query.data = this.query.logic = null;
         this.checkQueries().then(function () {
             _this.startTransaction_();
         }).catch(function (err) {
-            _this.onErrorOccured(err, true);
+            _this.onError(err);
         });
     };
     Instance.prototype.startTransaction_ = function () {
-        this.isTransactionStarted = true;
-        this.initTransaction_(this.query.tables);
-        this.processExecutionOfQry();
+        try {
+            this.isTransactionStarted = true;
+            this.initTransaction_(this.query.tables);
+            this.processExecutionOfQry();
+        }
+        catch (ex) {
+            this.onErrorOccured(ex, false);
+        }
     };
     Instance.prototype.initTransaction_ = function (tableNames) {
         this.createTransaction(tableNames, this.onTransactionCompleted_.bind(this));
     };
     Instance.prototype.onTransactionCompleted_ = function () {
-        var _this = this;
-        setTimeout(function () {
-            _this.onSuccess(_this.results);
-        }, 1000);
+        this.onSuccess(this.results);
     };
     Instance.prototype.onRequestFinished_ = function (result) {
         var finisehdRequest = this.requestQueue.shift();
@@ -6465,36 +6432,29 @@ var QueryHelper = /** @class */ (function () {
     QueryHelper.prototype.checkAndModify = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
+            var resolveReject = function () {
+                if (_this.error == null) {
+                    resolve();
+                }
+                else {
+                    reject(_this.error);
+                }
+            };
             switch (_this.api) {
                 case _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Select:
                 case _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Remove:
                 case _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Count:
                     _this.checkFetchQuery_();
-                    if (_this.error == null) {
-                        resolve();
-                    }
-                    else {
-                        reject();
-                    }
+                    resolveReject();
                     break;
                 case _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Insert:
                     _this.checkInsertQuery_(function () {
-                        if (_this.error) {
-                            reject(_this.error);
-                        }
-                        else {
-                            resolve();
-                        }
+                        resolveReject();
                     });
                     break;
                 case _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Update:
                     _this.checkUpdateQuery_();
-                    if (_this.error == null) {
-                        resolve();
-                    }
-                    else {
-                        reject(_this.error);
-                    }
+                    resolveReject();
                     break;
                 case _enums__WEBPACK_IMPORTED_MODULE_0__["API"].BulkInsert:
                     _this.checkBulkInsert_();

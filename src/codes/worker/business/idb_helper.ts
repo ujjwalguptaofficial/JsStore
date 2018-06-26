@@ -32,14 +32,12 @@ export class IdbHelper {
         if (IdbHelper.transaction === null) {
             mode = mode ? mode : IDB_MODE.ReadWrite;
             IdbHelper.transaction = IdbHelper.dbConnection.transaction(tableNames, mode);
-            IdbHelper.transaction.oncomplete = () => {
+            const onComplete = () => {
                 IdbHelper.transaction = null;
                 callBack();
             };
-            (IdbHelper.transaction as any).ontimeout = () => {
-                IdbHelper.transaction = null;
-                console.error('transaction timed out');
-            };
+            IdbHelper.transaction.oncomplete = onComplete;
+            IdbHelper.transaction.onabort = onComplete;
         }
     }
 

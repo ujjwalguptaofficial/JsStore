@@ -16,36 +16,29 @@ export class QueryHelper {
     }
     checkAndModify() {
         return new Promise((resolve, reject) => {
+            const resolveReject = () => {
+                if (this.error == null) {
+                    resolve();
+                }
+                else {
+                    reject(this.error);
+                }
+            };
             switch (this.api) {
                 case API.Select:
                 case API.Remove:
                 case API.Count:
                     this.checkFetchQuery_();
-                    if (this.error == null) {
-                        resolve();
-                    }
-                    else {
-                        reject();
-                    }
+                    resolveReject();
                     break;
                 case API.Insert:
                     this.checkInsertQuery_(() => {
-                        if (this.error) {
-                            reject(this.error);
-                        }
-                        else {
-                            resolve();
-                        }
+                        resolveReject();
                     });
                     break;
                 case API.Update:
                     this.checkUpdateQuery_();
-                    if (this.error == null) {
-                        resolve();
-                    }
-                    else {
-                        reject(this.error);
-                    }
+                    resolveReject();
                     break;
                 case API.BulkInsert:
                     this.checkBulkInsert_();
