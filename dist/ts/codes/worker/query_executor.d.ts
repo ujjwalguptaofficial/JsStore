@@ -29,4 +29,5 @@ export declare class QueryExecutor {
     private isDbExist_(dbInfo, onSuccess, onError);
     private get_(key, onSuccess, onError);
     private set_(query, onSuccess, onError);
+    private transaction(qry, onSuccess, onError);
 }

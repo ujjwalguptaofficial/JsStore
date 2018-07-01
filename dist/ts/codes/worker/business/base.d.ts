@@ -22,7 +22,6 @@ export declare class Base extends BaseHelper {
     protected onErrorOccured(e: any, customError?: boolean): void;
     protected onExceptionOccured(ex: DOMException, info: any): void;
     protected getColumnInfo(columnName: any): Column;
-    protected addGreatAndLessToNotOp(): void;
     protected goToWhereLogic: () => void;
     protected makeQryInCaseSensitive(qry: any): any;
 }

@@ -118,13 +118,12 @@ export interface IAggregate {
     count?: string | string[];
     avg?: string | string[];
 }
-export interface ITranscationQry {
-    tableNames: string[];
-    logic: string;
-    data: object;
-    abortOnError?: boolean;
-}
 export interface ISet {
     key: string;
     value: any;
+}
+export interface ITranscationQry {
+    tables: string[];
+    logic: (results: any) => void;
+    data: any;
 }

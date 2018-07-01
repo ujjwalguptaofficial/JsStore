@@ -1,5 +1,5 @@
 import { InstanceHelper } from "./instance_helper";
-import { IDataBase, ISelect, ICount, IInsert, IUpdate, IRemove, IDbInfo } from "./interfaces";
+import { IDataBase, ISelect, ICount, IInsert, IUpdate, IRemove, IDbInfo, ITranscationQry } from "./interfaces";
 export declare class Instance extends InstanceHelper {
     constructor(worker?: Worker);
     /**
@@ -152,4 +152,12 @@ export declare class Instance extends InstanceHelper {
      * @memberof Instance
      */
     terminate(): Promise<any>;
+    /**
+     * execute the transaction
+     *
+     * @param {ITranscationQry} query
+     * @returns
+     * @memberof Instance
+     */
+    transaction(query: ITranscationQry): Promise<any>;
 }

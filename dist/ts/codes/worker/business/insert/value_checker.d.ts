@@ -1,10 +1,10 @@
 import { Table } from "../../model/table";
-import { IError } from "../../interfaces";
+import { LogHelper } from "../../log_helper";
 export declare class ValueChecker {
     table: Table;
     value: object;
     errorOccured: boolean;
-    error: IError;
+    log: LogHelper;
     autoIncrementValue: {};
     constructor(table: Table, autoIncrementValue: any);
     checkAndModifyValue(value: any): boolean;
