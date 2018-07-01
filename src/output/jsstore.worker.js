@@ -3860,7 +3860,7 @@ var BaseHelper = /** @class */ (function () {
         configurable: true
     });
     BaseHelper.prototype.createTransaction = function (tableNames, callBack, mode) {
-        _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].createTransaction(tableNames, callBack);
+        _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].createTransaction(tableNames, callBack, mode);
     };
     BaseHelper.prototype.filterOnOccurence = function (value) {
         var found = false;

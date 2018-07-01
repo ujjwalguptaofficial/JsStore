@@ -48,7 +48,7 @@ export class BaseHelper {
     }
 
     protected createTransaction(tableNames: string[], callBack: () => void, mode?) {
-        IdbHelper.createTransaction(tableNames, callBack);
+        IdbHelper.createTransaction(tableNames, callBack, mode);
     }
 
     protected filterOnOccurence(value) {
