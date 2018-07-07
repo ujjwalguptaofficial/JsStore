@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/ujjwalguptaofficial/JsStore.svg?branch=master)](https://travis-ci.org/ujjwalguptaofficial/JsStore)
 [![npm version](https://badge.fury.io/js/jsstore.svg)](https://badge.fury.io/js/jsstore)
-
+[![](https://data.jsdelivr.com/v1/package/npm/jsstore/badge)](https://www.jsdelivr.com/package/npm/jsstore)
 # Overview
 
 JsStore is an IndexedDB Wrapper. It makes IndexedDB super easy with its SQL like apis.
