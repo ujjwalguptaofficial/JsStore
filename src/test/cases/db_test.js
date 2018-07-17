@@ -1,3 +1,4 @@
+var conWithoutWorker;
 describe('Db Test', function () {
 
     it('getDbList api test', function (done) {
@@ -60,5 +61,17 @@ describe('Db Test', function () {
             expect(err).to.be.an('object').eql(error);
             done();
         })
+    });
+
+    it('terminate test', function (done) {
+        Con.terminate().then(function () {
+            if (Con.isDbOpened_ === false) {
+                done();
+            } else {
+                done('db is opened after terminate');
+            }
+        }).catch(function (err) {
+            done(err);
+        });
     });
 });

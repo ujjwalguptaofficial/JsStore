@@ -20,6 +20,10 @@ function initDb() {
 }
 
 function getDbSchema() {
+    var Column = JsStore.Column;
+    var COL_OPTION = JsStore.COL_OPTION;
+    var DATA_TYPE = JsStore.DATA_TYPE;
+    
     var customers = {
         name: 'Customers',
         columns: [{
@@ -30,12 +34,12 @@ function getDbSchema() {
             {
                 name: "CustomerName",
                 notNull: true,
-                dataType: 'string'
+                dataType: DATA_TYPE.String
             },
             {
                 name: "ContactName",
                 notNull: true,
-                dataType: 'string'
+                dataType: DATA_TYPE.String
             },
             {
                 name: "Address",
@@ -85,9 +89,7 @@ function getDbSchema() {
         ]
     }
 
-    var Column = JsStore.Column;
-    var COL_OPTION = JsStore.COL_OPTION;
-    var DATA_TYPE = JsStore.DATA_TYPE;
+   
 
     var employees = {
         name: 'Employees',
@@ -112,12 +114,12 @@ function getDbSchema() {
             {
                 name: "OrderID",
                 notNull: true,
-                dataType: 'number'
+                dataType: DATA_TYPE.Number
             },
             {
                 name: "ProductID",
                 notNull: true,
-                dataType: 'number'
+                dataType: DATA_TYPE.Number
             },
             {
                 name: "Quantity",

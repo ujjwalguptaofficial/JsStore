@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.2.1 - 01/07/2018
+ * @license :jsstore - V2.2.1 - 17/07/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -6628,12 +6628,12 @@ var log = function (value) {
     _log_helper__WEBPACK_IMPORTED_MODULE_1__["LogHelper"].log(value);
 };
 var initialize = function () {
-    self.onmessage = function (e) {
-        log("Request executing from WebWorker, request name: " + e.data.name);
-        new _query_executor__WEBPACK_IMPORTED_MODULE_2__["QueryExecutor"]().checkConnectionAndExecuteLogic(e.data);
-    };
-    if (typeof self.alert === 'undefined') {
+    if (typeof self.alert === 'undefined' && typeof WorkerGlobalScope !== 'undefined') {
         _config__WEBPACK_IMPORTED_MODULE_3__["Config"].isRuningInWorker = true;
+        self.onmessage = function (e) {
+            log("Request executing from WebWorker, request name: " + e.data.name);
+            new _query_executor__WEBPACK_IMPORTED_MODULE_2__["QueryExecutor"]().checkConnectionAndExecuteLogic(e.data);
+        };
     }
 };
 initialize();

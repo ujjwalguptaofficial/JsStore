@@ -6,12 +6,12 @@ const log = (value) => {
     LogHelper.log(value);
 };
 export const initialize = () => {
-    (self as DedicatedWorkerGlobalScope).onmessage = (e) => {
-        log("Request executing from WebWorker, request name: " + e.data.name);
-        new QueryExecutor().checkConnectionAndExecuteLogic(e.data);
-    };
-    if (typeof (self as any).alert === 'undefined') {
+    if (typeof (self as any).alert === 'undefined' && typeof WorkerGlobalScope !== 'undefined') {
         Config.isRuningInWorker = true;
+        (self as DedicatedWorkerGlobalScope).onmessage = (e) => {
+            log("Request executing from WebWorker, request name: " + e.data.name);
+            new QueryExecutor().checkConnectionAndExecuteLogic(e.data);
+        };
     }
 };
 initialize();
