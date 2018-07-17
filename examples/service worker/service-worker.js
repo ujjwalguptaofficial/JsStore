@@ -1,8 +1,8 @@
 self.addEventListener('fetch', function (event) {
   console.log("fetch event:", event.request.url);
 });
-importScripts('./jsstore.js');
-importScripts('./jsstore.worker.js');
+importScripts('https://cdn.jsdelivr.net/npm/jsstore@2.2.3/dist/jsstore.min.js');
+importScripts('https://cdn.jsdelivr.net/npm/jsstore@2.2.3/dist/jsstore.worker.min.js');
 
 var connection = new JsStore.Instance();
 var dbName = "Demo";
