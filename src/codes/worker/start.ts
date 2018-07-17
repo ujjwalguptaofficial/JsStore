@@ -6,7 +6,7 @@ const log = (value) => {
     LogHelper.log(value);
 };
 export const initialize = () => {
-    if (typeof (self as any).alert === 'undefined' && typeof WorkerGlobalScope !== 'undefined') {
+    if (typeof (self as any).alert === 'undefined' && typeof ServiceWorkerGlobalScope === 'undefined') {
         Config.isRuningInWorker = true;
         (self as DedicatedWorkerGlobalScope).onmessage = (e) => {
             log("Request executing from WebWorker, request name: " + e.data.name);
