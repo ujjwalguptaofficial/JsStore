@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.2.3 - 17/07/2018
+ * @license :jsstore - V2.2.4 - 24/07/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -2382,7 +2382,8 @@ var Helper = /** @class */ (function (_super) {
                     return b[orderColumn_1].toLowerCase().localeCompare(a[orderColumn_1].toLowerCase());
                 });
             };
-            if (typeof this.results[0][orderColumn_1] === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+            var column = this.getColumnInfo(orderColumn_1);
+            if (column.dataType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
                 if (order.type === 'asc') {
                     sortAlphabetInAsc();
                 }
@@ -2390,7 +2391,7 @@ var Helper = /** @class */ (function (_super) {
                     sortAlphabetInDesc();
                 }
             }
-            else if (typeof this.results[0][orderColumn_1] === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Number) {
+            else if (column.dataType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Number) {
                 if (order.type === 'asc') {
                     sortNumberInAsc();
                 }
