@@ -285,8 +285,8 @@ describe('Test Select Api', function () {
         Con.select({
             from: 'Customers',
             Order: {
-                By: 'Country',
-                Type: "desc"
+                by: 'Country',
+                type: "desc"
             }
         }).
         then(function (results) {

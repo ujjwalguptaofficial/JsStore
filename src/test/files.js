@@ -11,6 +11,7 @@ exports.list_of_files = [
     'test/cases/clear/*.js',
     'test/cases/column_option/*.js',
     'test/cases/db_test.js',
+    'test/cases/dashboard.js',
     {
         pattern: 'test/static/*.json',
         included: false,

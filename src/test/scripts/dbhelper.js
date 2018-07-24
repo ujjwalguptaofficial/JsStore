@@ -23,7 +23,7 @@ function getDbSchema() {
     var Column = JsStore.Column;
     var COL_OPTION = JsStore.COL_OPTION;
     var DATA_TYPE = JsStore.DATA_TYPE;
-    
+
     var customers = {
         name: 'Customers',
         columns: [{
@@ -89,7 +89,7 @@ function getDbSchema() {
         ]
     }
 
-   
+
 
     var employees = {
         name: 'Employees',
@@ -260,7 +260,9 @@ function getDbSchema() {
 
     var dataBase = {
         name: "Demo",
-        tables: [customers, categories, employees, orderDetails, orders, products, shippers, suppliers]
+        tables: [customers, categories, employees, orderDetails, orders, products, shippers, suppliers
+        ]
     };
     return dataBase;
 }
+

@@ -32,7 +32,8 @@ export class Helper extends GroupByHelper {
                         return b[orderColumn].toLowerCase().localeCompare(a[orderColumn].toLowerCase());
                     });
                 };
-            if (typeof this.results[0][orderColumn] === DATA_TYPE.String) {
+            const column = this.getColumnInfo(orderColumn);
+            if (column.dataType === DATA_TYPE.String) {
                 if (order.type === 'asc') {
                     sortAlphabetInAsc();
                 }
@@ -40,7 +41,7 @@ export class Helper extends GroupByHelper {
                     sortAlphabetInDesc();
                 }
             }
-            else if (typeof this.results[0][orderColumn] === DATA_TYPE.Number) {
+            else if (column.dataType === DATA_TYPE.Number) {
                 if (order.type === 'asc') {
                     sortNumberInAsc();
                 }

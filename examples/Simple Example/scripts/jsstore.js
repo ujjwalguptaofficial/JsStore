@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.0.0 - 10/05/2018
+ * @license :jsstore - V2.2.3 - 17/07/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -303,10 +303,10 @@ var Instance = /** @class */ (function (_super) {
      * @memberof Instance
      */
     Instance.prototype.setLogStatus = function (status) {
-        _config__WEBPACK_IMPORTED_MODULE_2__["Config"]._isLogEnabled = status ? status : _config__WEBPACK_IMPORTED_MODULE_2__["Config"]._isLogEnabled;
+        _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isLogEnabled = status ? status : _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isLogEnabled;
         this.pushApi({
             name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].ChangeLogStatus,
-            query: _config__WEBPACK_IMPORTED_MODULE_2__["Config"]._isLogEnabled
+            query: _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isLogEnabled
         });
     };
     /**
@@ -389,6 +389,32 @@ var Instance = /** @class */ (function (_super) {
             }
         });
     };
+    /**
+     * terminate the connection
+     *
+     * @returns
+     * @memberof Instance
+     */
+    Instance.prototype.terminate = function () {
+        return this.pushApi({
+            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Terminate,
+            query: null
+        });
+    };
+    /**
+     * execute the transaction
+     *
+     * @param {ITranscationQry} query
+     * @returns
+     * @memberof Instance
+     */
+    Instance.prototype.transaction = function (query) {
+        query.logic = query.logic.toString();
+        return this.pushApi({
+            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Transaction,
+            query: query
+        });
+    };
     return Instance;
 }(_instance_helper__WEBPACK_IMPORTED_MODULE_1__["InstanceHelper"]));
 
@@ -454,6 +480,8 @@ var API;
     API["BulkInsert"] = "bulk_insert";
     API["ExportJson"] = "export_json";
     API["ChangeLogStatus"] = "change_log_status";
+    API["Terminate"] = "terminate";
+    API["Transaction"] = "transaction";
 })(API || (API = {}));
 
 
@@ -466,6 +494,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InstanceHelper", function() { return InstanceHelper; });
 /* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4);
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2);
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5);
+
 
 
 var InstanceHelper = /** @class */ (function () {
@@ -482,15 +512,16 @@ var InstanceHelper = /** @class */ (function () {
             _enums__WEBPACK_IMPORTED_MODULE_1__["API"].GetDbSchema,
             _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Get,
             _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Set,
-            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].ChangeLogStatus
+            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].ChangeLogStatus,
+            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Terminate
         ];
         if (worker) {
             this.worker_ = worker;
             this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
         }
         else {
-            var err = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].WorkerNotSupplied);
-            err.throw();
+            _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker = false;
+            this.queryExecutor_ = new JsStoreWorker.QueryExecutor(this.processFinishedQuery_.bind(this));
         }
     }
     InstanceHelper.prototype.onMessageFromWorker_ = function (msg) {
@@ -542,29 +573,38 @@ var InstanceHelper = /** @class */ (function () {
                 this.sendRequestToWorker_(this.requestQueue_[0]);
                 return;
             }
-            var allowedQueryIndex_1 = -1;
-            this.requestQueue_.every(function (item, index) {
-                if (_this.whiteListApi_.indexOf(item.name) >= 0) {
-                    allowedQueryIndex_1 = index;
-                    return false;
-                }
-                return true;
-            });
+            var allowedQueryIndex = this.requestQueue_.findIndex(function (item) { return _this.whiteListApi_.indexOf(item.name) >= 0; });
             // shift allowed query to zeroth index
-            if (allowedQueryIndex_1 >= 0) {
-                this.requestQueue_.splice(0, 0, this.requestQueue_.splice(allowedQueryIndex_1, 1)[0]);
+            if (allowedQueryIndex >= 0) {
+                this.requestQueue_.splice(0, 0, this.requestQueue_.splice(allowedQueryIndex, 1)[0]);
                 this.sendRequestToWorker_(this.requestQueue_[0]);
             }
         }
     };
-    InstanceHelper.prototype.sendRequestToWorker_ = function (firstRequest) {
+    InstanceHelper.prototype.sendRequestToWorker_ = function (request) {
         this.isCodeExecuting_ = true;
-        var request = {
-            name: firstRequest.name,
-            query: firstRequest.query
-        };
-        _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request executing : " + firstRequest.name);
-        this.worker_.postMessage(request);
+        _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request executing : " + request.name);
+        if (request.name === _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Terminate) {
+            if (_config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker === true) {
+                this.worker_.terminate();
+            }
+            this.isDbOpened_ = false;
+            this.processFinishedQuery_({
+                returnedValue: null
+            });
+        }
+        else {
+            var requestForWorker = {
+                name: request.name,
+                query: request.query
+            };
+            if (_config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker === true) {
+                this.worker_.postMessage(requestForWorker);
+            }
+            else {
+                this.queryExecutor_.checkConnectionAndExecuteLogic(requestForWorker);
+            }
+        }
     };
     return InstanceHelper;
 }());
@@ -593,7 +633,7 @@ var LogHelper = /** @class */ (function () {
         throw this.get();
     };
     LogHelper.log = function (msg) {
-        if (_config__WEBPACK_IMPORTED_MODULE_1__["Config"]._isLogEnabled) {
+        if (_config__WEBPACK_IMPORTED_MODULE_1__["Config"].isLogEnabled) {
             console.log(msg);
         }
     };
@@ -639,7 +679,8 @@ __webpack_require__.r(__webpack_exports__);
 var Config = /** @class */ (function () {
     function Config() {
     }
-    Config._isLogEnabled = false;
+    Config.isLogEnabled = false;
+    Config.isRuningInWorker = true;
     return Config;
 }());
 
@@ -659,7 +700,7 @@ __webpack_require__.r(__webpack_exports__);
  *
  */
 var enableLog = function () {
-    _config__WEBPACK_IMPORTED_MODULE_0__["Config"]._isLogEnabled = true;
+    _config__WEBPACK_IMPORTED_MODULE_0__["Config"].isLogEnabled = true;
 };
 
 
