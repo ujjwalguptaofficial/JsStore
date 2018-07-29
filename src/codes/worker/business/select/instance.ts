@@ -17,7 +17,7 @@ export class Instance extends Helper {
 
     execute() {
         try {
-            if (this.query.where !== undefined) {
+            if (this.query.where != null) {
                 this.initTransaction_();
                 if (this.isArray(this.query.where)) {
                     this.processWhereArrayQry();

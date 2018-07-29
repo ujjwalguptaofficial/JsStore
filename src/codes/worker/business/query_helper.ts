@@ -111,7 +111,7 @@ export class QueryHelper {
 
     private checkFetchQuery_() {
         if (this.isTableExist_(this.query.from) === true) {
-            if (this.query.where !== undefined) {
+            if (this.query.where != null) {
                 this.addGreatAndLessToNotOp_();
             }
         }

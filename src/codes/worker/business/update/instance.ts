@@ -16,7 +16,7 @@ export class Instance extends Where {
 
     execute() {
         try {
-            if (this.query.where !== undefined) {
+            if (this.query.where != null) {
                 if (this.query.where.or || Array.isArray(this.query.where)) {
                     this.executeComplexLogic_();
                 }

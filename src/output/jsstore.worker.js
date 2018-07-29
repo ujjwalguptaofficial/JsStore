@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.2.4 - 24/07/2018
+ * @license :jsstore - V2.2.4 - 27/07/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -2182,7 +2182,7 @@ var Instance = /** @class */ (function (_super) {
     }
     Instance.prototype.execute = function () {
         try {
-            if (this.query.where !== undefined) {
+            if (this.query.where != null) {
                 this.initTransaction_();
                 if (this.isArray(this.query.where)) {
                     this.processWhereArrayQry();
@@ -4513,7 +4513,7 @@ var Instance = /** @class */ (function (_super) {
     Instance.prototype.execute = function () {
         var _this = this;
         try {
-            if (this.query.where !== undefined) {
+            if (this.query.where != null) {
                 if (this.query.where.or || this.isArray(this.query.where)) {
                     var selectInstance = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](this.query, function (results) {
                         _this.resultCount = results.length;
@@ -5166,7 +5166,7 @@ var Instance = /** @class */ (function (_super) {
     }
     Instance.prototype.execute = function () {
         try {
-            if (this.query.where !== undefined) {
+            if (this.query.where != null) {
                 this.initTransaction_();
                 if (this.isArray(this.query.where)) {
                     this.processWhereArrayQry();
@@ -5599,7 +5599,7 @@ var Instance = /** @class */ (function (_super) {
     }
     Instance.prototype.execute = function () {
         try {
-            if (this.query.where !== undefined) {
+            if (this.query.where != null) {
                 if (this.query.where.or || Array.isArray(this.query.where)) {
                     this.executeComplexLogic_();
                 }
@@ -6524,7 +6524,7 @@ var QueryHelper = /** @class */ (function () {
     };
     QueryHelper.prototype.checkFetchQuery_ = function () {
         if (this.isTableExist_(this.query.from) === true) {
-            if (this.query.where !== undefined) {
+            if (this.query.where != null) {
                 this.addGreatAndLessToNotOp_();
             }
         }
