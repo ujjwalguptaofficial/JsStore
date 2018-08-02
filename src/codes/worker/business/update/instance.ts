@@ -39,7 +39,8 @@ export class Instance extends Where {
     private executeComplexLogic_() {
         const selectObject = new Select.Instance({
             from: this.query.in,
-            where: this.query.where
+            where: this.query.where,
+            ignoreCase: this.query.ignoreCase
         } as ISelect, (results: any[]) => {
             const key = this.getPrimaryKey(this.query.in),
                 inQuery = [],

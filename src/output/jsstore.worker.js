@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.2.4 - 27/07/2018
+ * @license :jsstore - V2.2.4 - 02/08/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -5622,7 +5622,8 @@ var Instance = /** @class */ (function (_super) {
         var _this = this;
         var selectObject = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
             from: this.query.in,
-            where: this.query.where
+            where: this.query.where,
+            ignoreCase: this.query.ignoreCase
         }, function (results) {
             var key = _this.getPrimaryKey(_this.query.in), inQuery = [], whereQry = {};
             results.forEach(function (value) {
