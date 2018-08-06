@@ -1,0 +1,23 @@
+#tblGrid {
+    margin-top: 20px;
+}
+
+#tblGrid tr th,
+table tr td {
+    border: 1px solid black;
+    padding: 5px 0px 5px 0px;
+    text-align: center;
+}
+
+.row-centered {
+    text-align: center;
+}
+
+.col-centered {
+    display: inline-block;
+    float: none;
+    /* reset the text-align */
+    text-align: left;
+    /* inline-block space fix */
+    margin-right: -4px;
+}
