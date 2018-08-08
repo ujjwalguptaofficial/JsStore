@@ -37,8 +37,9 @@ export class Instance extends Base {
     }
 
     private insertData_(values) {
-        let valueIndex = 0,
-            insertDataIntoTable: (value: object) => void;
+        let valueIndex = 0;
+        let insertDataIntoTable: (value: object) => void;
+        let objectStore;
         if (this.query.return === true) {
             insertDataIntoTable = (value) => {
                 if (value) {
@@ -70,7 +71,7 @@ export class Instance extends Base {
             };
         }
         this.createTransaction([this.query.into], this.onTransactionCompleted_);
-        const objectStore = this.transaction.objectStore(this.query.into);
+        objectStore = this.transaction.objectStore(this.query.into);
         insertDataIntoTable(values[valueIndex++]);
     }
 }

@@ -4929,20 +4929,22 @@ var Instance = /** @class */ (function (_super) {
     }
     Instance.prototype.execute = function () {
         try {
-            this.insertData(this.query.values);
+            this.insertData_(this.query.values);
         }
         catch (ex) {
             this.onExceptionOccured(ex, { TableName: this.tableName });
         }
     };
-    Instance.prototype.onQueryFinished = function () {
+    Instance.prototype.onQueryFinished_ = function () {
         if (this.isTransaction === true) {
             this.onTransactionCompleted_();
         }
     };
-    Instance.prototype.insertData = function (values) {
+    Instance.prototype.insertData_ = function (values) {
         var _this = this;
-        var valueIndex = 0, insertDataIntoTable;
+        var valueIndex = 0;
+        var insertDataIntoTable;
+        var objectStore;
         if (this.query.return === true) {
             insertDataIntoTable = function (value) {
                 if (value) {
@@ -4954,7 +4956,7 @@ var Instance = /** @class */ (function (_super) {
                     };
                 }
                 else {
-                    _this.onQueryFinished();
+                    _this.onQueryFinished_();
                 }
             };
         }
@@ -4969,12 +4971,12 @@ var Instance = /** @class */ (function (_super) {
                     };
                 }
                 else {
-                    _this.onQueryFinished();
+                    _this.onQueryFinished_();
                 }
             };
         }
         this.createTransaction([this.query.into], this.onTransactionCompleted_);
-        var objectStore = this.transaction.objectStore(this.query.into);
+        objectStore = this.transaction.objectStore(this.query.into);
         insertDataIntoTable(values[valueIndex++]);
     };
     return Instance;
