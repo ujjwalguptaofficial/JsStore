@@ -1,15 +1,11 @@
 import { Base } from "../base";
 import { IInsert, IError } from "../../interfaces";
 import { Table } from "../../model/table";
-import { ERROR_TYPE } from "../../enums";
-import { LogHelper } from "../../log_helper";
-import { ValuesChecker } from "./values_checker";
-import { IdbHelper } from '../idb_helper';
 
 export class Instance extends Base {
-    _valuesAffected = [];
+    private valuesAffected_ = [];
     query: IInsert;
-    _table: Table;
+    table: Table;
 
     constructor(query: IInsert, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void) {
         super();
@@ -21,7 +17,7 @@ export class Instance extends Base {
 
     execute() {
         try {
-            this.insertData(this.query.values);
+            this.insertData_(this.query.values);
         }
         catch (ex) {
             this.onExceptionOccured(ex, { TableName: this.tableName });
@@ -30,31 +26,31 @@ export class Instance extends Base {
 
     private onTransactionCompleted_ = () => {
         if (this.errorOccured === false) {
-            this.onSuccess(this.query.return ? this._valuesAffected : this.rowAffected);
+            this.onSuccess(this.query.return === true ? this.valuesAffected_ : this.rowAffected);
         }
     }
 
-    private onQueryFinished() {
+    private onQueryFinished_() {
         if (this.isTransaction === true) {
             this.onTransactionCompleted_();
         }
     }
 
-    private insertData(values) {
+    private insertData_(values) {
         let valueIndex = 0,
             insertDataIntoTable: (value: object) => void;
-        if (this.query.return) {
+        if (this.query.return === true) {
             insertDataIntoTable = (value) => {
                 if (value) {
                     const addResult = objectStore.add(value);
                     addResult.onerror = this.onErrorOccured.bind(this);
                     addResult.onsuccess = (e) => {
-                        this._valuesAffected.push(value);
+                        this.valuesAffected_.push(value);
                         insertDataIntoTable.call(this, values[valueIndex++]);
                     };
                 }
                 else {
-                    this.onQueryFinished();
+                    this.onQueryFinished_();
                 }
             };
         }
@@ -69,7 +65,7 @@ export class Instance extends Base {
                     };
                 }
                 else {
-                    this.onQueryFinished();
+                    this.onQueryFinished_();
                 }
             };
         }

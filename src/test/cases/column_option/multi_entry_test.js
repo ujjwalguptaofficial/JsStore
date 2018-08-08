@@ -149,7 +149,64 @@ describe('Multi Entry Test', function () {
             expect(err).to.be.an('object').eql(error);
             done();
         })
+    });
 
+    it('Array column update to empty value', function (done) {
+        Con.update({ in: 'people',
+            where: {
+                name: 'Scott'
+            },
+            set: {
+                tags: []
+            }
+        }).then(function (rowsUpdated) {
+            Con.select({
+                from: 'people',
+                where: {
+                    name: 'Scott'
+                }
+            }).
+            then(function (results) {
+                var result = results[0];
+                expect(results).to.be.an('array').length(1);
+                expect(result['tags']).to.be.an('array').eql([]);
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            })
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('Array column update to null value', function (done) {
+        Con.update({ in: 'people',
+            where: {
+                name: 'Scott'
+            },
+            set: {
+                tags: null
+            }
+        }).then(function (rowsUpdated) {
+            Con.select({
+                from: 'people',
+                where: {
+                    name: 'Scott'
+                }
+            }).
+            then(function (results) {
+                var result = results[0];
+                expect(results).to.be.an('array').length(1);
+                expect(result['tags']).to.be.an('null');
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            })
+        }).catch(function (err) {
+            done(err);
+        })
     });
 });
 

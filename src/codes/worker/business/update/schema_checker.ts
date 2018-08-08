@@ -52,20 +52,21 @@ export class SchemaChecker {
     private checkByColumn_(column: IColumn, value) {
         let log: LogHelper = null;
         // check not null schema
-        if (column.notNull && this.isNull_(value)) {
+        if (column.notNull === true && this.isNull_(value)) {
             log = new LogHelper(ERROR_TYPE.NullValue, { ColumnName: column.name });
         }
 
         // check datatype
         const type = this.getType_(value);
-        if (column.dataType) {
+        const checkFurther = value != null;
+        if (column.dataType && checkFurther) {
             if (type !== column.dataType && type !== 'object') {
                 log = new LogHelper(ERROR_TYPE.BadDataType, { ColumnName: column.name });
             }
         }
 
         // check allowed operators
-        if (type === 'object') {
+        if (checkFurther && type === 'object') {
             const allowedOp = ['+', '-', '*', '/'];
             for (const prop of Object.keys(value)) {
                 if (allowedOp.indexOf(prop) < 0 && column.dataType && type !== column.dataType) {

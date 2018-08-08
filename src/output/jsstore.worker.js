@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.3.1 - 02/08/2018
+ * @license :jsstore - V2.3.1 - 08/08/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -4915,10 +4915,10 @@ var Instance = /** @class */ (function (_super) {
     __extends(Instance, _super);
     function Instance(query, onSuccess, onError) {
         var _this = _super.call(this) || this;
-        _this._valuesAffected = [];
+        _this.valuesAffected_ = [];
         _this.onTransactionCompleted_ = function () {
             if (_this.errorOccured === false) {
-                _this.onSuccess(_this.query.return ? _this._valuesAffected : _this.rowAffected);
+                _this.onSuccess(_this.query.return === true ? _this.valuesAffected_ : _this.rowAffected);
             }
         };
         _this.onError = onError;
@@ -4943,13 +4943,13 @@ var Instance = /** @class */ (function (_super) {
     Instance.prototype.insertData = function (values) {
         var _this = this;
         var valueIndex = 0, insertDataIntoTable;
-        if (this.query.return) {
+        if (this.query.return === true) {
             insertDataIntoTable = function (value) {
                 if (value) {
                     var addResult = objectStore.add(value);
                     addResult.onerror = _this.onErrorOccured.bind(_this);
                     addResult.onsuccess = function (e) {
-                        _this._valuesAffected.push(value);
+                        _this.valuesAffected_.push(value);
                         insertDataIntoTable.call(_this, values[valueIndex++]);
                     };
                 }
@@ -5722,6 +5722,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BaseUpdate", function() { return BaseUpdate; });
 /* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(37);
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3);
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(39);
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -5734,9 +5735,10 @@ var __extends = (undefined && undefined.__extends) || (function () {
 })();
 
 
+
 var updateValue = function (suppliedValue, storedValue) {
     for (var key in suppliedValue) {
-        if (typeof suppliedValue[key] !== _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Object) {
+        if (_util__WEBPACK_IMPORTED_MODULE_2__["Util"].getType(suppliedValue[key]) !== _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Object) {
             storedValue[key] = suppliedValue[key];
         }
         else {
@@ -6051,18 +6053,19 @@ var SchemaChecker = /** @class */ (function () {
     SchemaChecker.prototype.checkByColumn_ = function (column, value) {
         var log = null;
         // check not null schema
-        if (column.notNull && this.isNull_(value)) {
+        if (column.notNull === true && this.isNull_(value)) {
             log = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].NullValue, { ColumnName: column.name });
         }
         // check datatype
         var type = this.getType_(value);
-        if (column.dataType) {
+        var checkFurther = value != null;
+        if (column.dataType && checkFurther) {
             if (type !== column.dataType && type !== 'object') {
                 log = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].BadDataType, { ColumnName: column.name });
             }
         }
         // check allowed operators
-        if (type === 'object') {
+        if (checkFurther && type === 'object') {
             var allowedOp = ['+', '-', '*', '/'];
             for (var _i = 0, _a = Object.keys(value); _i < _a.length; _i++) {
                 var prop = _a[_i];
