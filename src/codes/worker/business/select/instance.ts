@@ -79,14 +79,18 @@ export class Instance extends Helper {
                     output = this.results;
                 }
             }
+            isFirstWhere = false;
             if (whereQuery.length > 0) {
                 this.results = [];
                 processFirstQry();
             }
             else {
                 this.results = output;
+                if (this.isSubQuery === true) {
+                    this.onTransactionCompleted_();
+                }
             }
-            isFirstWhere = false;
+
         };
         const processFirstQry = () => {
             this.query.where = whereQuery.shift();
@@ -117,7 +121,7 @@ export class Instance extends Helper {
         else if (this.isArrayQry === true) {
             this.onWhereArrayQrySuccess();
         }
-        else if (this.isTransaction === true) {
+        else if (this.isTransaction === true || this.isSubQuery === true) {
             this.onTransactionCompleted_();
         }
     }

@@ -13,6 +13,8 @@ export class BaseSelect extends Base {
         orQuery: object
     };
 
+    isSubQuery = false;
+
     protected removeDuplicates() {
         let datas = this.results;
         // free results memory

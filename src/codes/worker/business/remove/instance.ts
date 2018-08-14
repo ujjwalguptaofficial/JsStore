@@ -18,8 +18,8 @@ export class Instance extends Where {
 
     execute() {
         try {
+            this.initTransaction_();
             if (this.query.where != null) {
-                this.initTransaction_();
                 if (this.isArray(this.query.where)) {
                     this.processWhereArrayQry();
                 }
@@ -28,7 +28,6 @@ export class Instance extends Where {
                 }
             }
             else {
-                this.initTransaction_();
                 this.executeWhereUndefinedLogic();
             }
 
@@ -52,6 +51,7 @@ export class Instance extends Where {
             this.query.where[pkey][QUERY_OPTION.In] = keyList;
             this.processWhere_();
         }, this.onError);
+        selectObject.isSubQuery = true;
         selectObject.execute();
     }
 

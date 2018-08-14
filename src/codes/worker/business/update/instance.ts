@@ -16,17 +16,16 @@ export class Instance extends Where {
 
     execute() {
         try {
+            this.initTransaction();
             if (this.query.where != null) {
                 if (this.query.where.or || Array.isArray(this.query.where)) {
                     this.executeComplexLogic_();
                 }
                 else {
-                    this.initTransaction();
                     this.goToWhereLogic();
                 }
             }
             else {
-                this.initTransaction();
                 this.executeWhereUndefinedLogic();
             }
         }
@@ -53,6 +52,7 @@ export class Instance extends Where {
             this.initTransaction();
             this.goToWhereLogic();
         }, this.onError);
+        selectObject.isSubQuery = true;
         selectObject.execute();
     }
 }
