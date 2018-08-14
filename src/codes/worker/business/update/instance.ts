@@ -42,14 +42,13 @@ export class Instance extends Where {
             where: this.query.where,
             ignoreCase: this.query.ignoreCase
         } as ISelect, (results: any[]) => {
-            const key = this.getPrimaryKey(this.query.in),
-                inQuery = [],
-                whereQry = {};
+            const key = this.getPrimaryKey(this.query.in);
+            const inQuery = [];
             results.forEach((value) => {
                 inQuery.push(value[key]);
             });
             results = null;
-            whereQry[key] = { [QUERY_OPTION.In]: inQuery };
+            const whereQry = { [key]: { [QUERY_OPTION.In]: inQuery } };
             this.query[QUERY_OPTION.Where] = whereQry;
             this.initTransaction();
             this.goToWhereLogic();

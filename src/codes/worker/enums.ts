@@ -72,7 +72,8 @@ export enum QUERY_OPTION {
     Or = "or",
     Skip = "skip",
     Limit = "limit",
-    And = "and"
+    And = "and",
+    IgnoreCase = "ignoreCase"
 }
 
 export enum IDB_MODE {

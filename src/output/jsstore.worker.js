@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.3.2 - 08/08/2018
+ * @license :jsstore - V2.3.2 - 14/08/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -690,6 +690,7 @@ var QUERY_OPTION;
     QUERY_OPTION["Skip"] = "skip";
     QUERY_OPTION["Limit"] = "limit";
     QUERY_OPTION["And"] = "and";
+    QUERY_OPTION["IgnoreCase"] = "ignoreCase";
 })(QUERY_OPTION || (QUERY_OPTION = {}));
 var IDB_MODE;
 (function (IDB_MODE) {
@@ -5627,16 +5628,17 @@ var Instance = /** @class */ (function (_super) {
             where: this.query.where,
             ignoreCase: this.query.ignoreCase
         }, function (results) {
-            var key = _this.getPrimaryKey(_this.query.in), inQuery = [], whereQry = {};
+            var key = _this.getPrimaryKey(_this.query.in);
+            var inQuery = [];
             results.forEach(function (value) {
                 inQuery.push(value[key]);
             });
             results = null;
-            whereQry[key] = (_a = {}, _a[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].In] = inQuery, _a);
+            var whereQry = (_a = {}, _a[key] = (_b = {}, _b[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].In] = inQuery, _b), _a);
             _this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Where] = whereQry;
             _this.initTransaction();
             _this.goToWhereLogic();
-            var _a;
+            var _a, _b;
         }, this.onError);
         selectObject.execute();
     };
