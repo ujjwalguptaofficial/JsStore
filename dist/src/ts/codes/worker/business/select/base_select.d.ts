@@ -11,6 +11,7 @@ export declare class BaseSelect extends Base {
         results?: any[];
         orQuery: object;
     };
+    isSubQuery: boolean;
     protected removeDuplicates(): void;
     protected onQueryFinished(): void;
 }

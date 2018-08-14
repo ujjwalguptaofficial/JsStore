@@ -68,6 +68,7 @@ export declare enum QUERY_OPTION {
     Skip = "skip",
     Limit = "limit",
     And = "and",
+    IgnoreCase = "ignoreCase",
 }
 export declare enum IDB_MODE {
     ReadOnly = "readonly",
