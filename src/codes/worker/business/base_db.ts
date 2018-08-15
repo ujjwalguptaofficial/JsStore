@@ -2,7 +2,7 @@ import { IdbHelper } from "./idb_helper";
 import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
 import { IDbStatus } from "../interfaces";
 import { DataBase } from "../model/database";
-
+import { Util } from "../util";
 export class BaseDb {
     protected get dbName() {
         return IdbHelper.activeDb.name;
@@ -47,5 +47,9 @@ export class BaseDb {
 
     protected setDbList(value) {
         return IdbHelper.setDbList(value);
+    }
+
+    protected isNullOrEmpty(value) {
+        return Util.isNullOrEmpty(value);
     }
 }

@@ -1,8 +1,5 @@
 import { Base } from "./base";
 import { IInsert, IError } from "../interfaces";
-import { ERROR_TYPE } from "../enums";
-import { LogHelper } from "../log_helper";
-import { IdbHelper } from './idb_helper';
 
 export class BulkInsert extends Base {
     query: IInsert;

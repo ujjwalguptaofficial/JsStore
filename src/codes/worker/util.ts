@@ -13,6 +13,10 @@ export class Util {
         return false;
     }
 
+    static isNullOrEmpty(value) {
+        return value == null || value.length === 0;
+    }
+
     static isString(value) {
         return typeof value === DATA_TYPE.String;
     }

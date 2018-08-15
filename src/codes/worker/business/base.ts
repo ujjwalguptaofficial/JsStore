@@ -1,7 +1,6 @@
 import { BaseHelper } from "./base_helper";
 import { IError } from "../interfaces";
 import { WhereChecker } from "./where_checker";
-import { IdbHelper } from "./idb_helper";
 import { LogHelper } from "../log_helper";
 import { ERROR_TYPE, OCCURENCE, DATA_TYPE } from "../enums";
 import { Column } from "../model/column";
@@ -135,7 +134,7 @@ export class Base extends BaseHelper {
                 if (this.checkFlag === true) {
                     this.whereCheckerInstance = new WhereChecker(this.query.where);
                 }
-                this.executeWhereLogic(columnName, value);
+                this.executeWhereLogic(columnName, value, null,"next");
             }
         }
         else {

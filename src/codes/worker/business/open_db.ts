@@ -16,7 +16,11 @@ export class OpenDb extends BaseDb {
 
 
     execute() {
-        if (this.dbName.length > 0) {
+        if (this.isNullOrEmpty(this.dbName)) {
+            const error = new LogHelper(ERROR_TYPE.UndefinedDbName);
+            error.throw();
+        }
+        else {
             const dbRequest = indexedDB.open(this.dbName, this.dbVersion);
 
             dbRequest.onerror = (event: any) => {
@@ -52,10 +56,6 @@ export class OpenDb extends BaseDb {
                 }
                 this.setPrimaryKey_();
             };
-        }
-        else {
-            const error = new LogHelper(ERROR_TYPE.UndefinedDbName);
-            error.throw();
         }
     }
 
