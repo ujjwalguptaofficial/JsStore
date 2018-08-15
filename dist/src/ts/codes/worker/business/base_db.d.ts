@@ -11,4 +11,5 @@ export declare class BaseDb {
     protected readonly activeDb: DataBase;
     protected getDbList(callback: (dbList: string[]) => void): void;
     protected setDbList(value: any): Promise<{}>;
+    protected isNullOrEmpty(value: any): boolean;
 }

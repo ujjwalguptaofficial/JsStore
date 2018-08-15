@@ -1,6 +1,7 @@
 import { DATA_TYPE } from "./enums";
 export declare class Util {
     static isNull(value: any): boolean;
+    static isNullOrEmpty(value: any): boolean;
     static isString(value: any): boolean;
     static isArray(value: any): boolean;
     static isObject(value: any): boolean;
