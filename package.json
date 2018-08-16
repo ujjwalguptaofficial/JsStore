@@ -10,10 +10,12 @@
     "test:prod": "karma start src/test/karma.config.prod.js",
     "build:dev": "npm run lint && npm run webpack:dev && npm run test:dev",
     "build:prod": "npm run webpack:prod && npm run test:prod",
-    "build:ci": "npm run build:dev && npm run build:prod",
+    "build:all": "npm run build:dev && npm run build:prod",
+    "test:sauce": "karma start src/test/karma.config.saucelab.js",
+    "build:ci": "npm run build:all && npm run test:sauce",
     "webpack:dev": "webpack --config src/webpack/webpack.dev.config.js",
     "webpack:prod": "webpack --config src/webpack/webpack.prod.config.js",
-    "deploy": "npm run build:ci"
+    "deploy": "npm run build:all"
   },
   "repository": {
     "type": "git",
@@ -40,6 +42,7 @@
     "karma-chrome-launcher": "^2.2.0",
     "karma-mocha": "^1.3.0",
     "karma-mocha-reporter": "^2.2.5",
+    "karma-sauce-launcher": "^1.2.0",
     "mocha": "^4.1.0",
     "puppeteer": "^0.13.0",
     "smart-banner-webpack-plugin": "^3.0.1",

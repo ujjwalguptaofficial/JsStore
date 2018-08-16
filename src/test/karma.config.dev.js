@@ -9,7 +9,7 @@ module.exports = function (config) {
                 timeout: 10000 // 6 seconds - upped from 2 seconds
             }
         },
-        files: ['output/jsstore.js','output/jsstore.worker.js', ...files.list_of_files],
+        files: ['output/jsstore.js', 'output/jsstore.worker.js', ...files.list_of_files],
         proxies: {
             '/test/': '/base/test/',
             // '/scripts/': 'base/test/scripts/',
@@ -36,7 +36,7 @@ module.exports = function (config) {
             }
         },
         autoWatch: false,
-        // concurrency: Infinity,
+        concurrency: Infinity,
         // singleRun: false,
         singleRun: true,
         browserNoActivityTimeout: 120000,
