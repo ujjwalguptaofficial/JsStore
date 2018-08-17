@@ -33,7 +33,7 @@ module.exports = function (config) {
             platform: 'Windows 10',
             version: '11.0'
         },
-        sl_safari_10{
+        sl_safari_10: {
             base: 'SauceLabs',
             browserName: 'safari',
             platform: 'MacOS El Capitan 10.11',
