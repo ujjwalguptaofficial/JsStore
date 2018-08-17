@@ -30,10 +30,6 @@ describe('Multi Entry Test', function () {
             into: 'people',
             values: [value]
         }).
-        then(function (results) {
-            expect(results).to.be.an('array').length(1);
-            done();
-        }).
         catch(function (err) {
             var error = {
                 "message": "Supplied value for column 'tags' does not have valid type",

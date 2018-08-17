@@ -7,7 +7,7 @@
 [![](https://data.jsdelivr.com/v1/package/npm/jsstore/badge)](https://www.jsdelivr.com/package/npm/jsstore)
 [![Sauce Test Status](https://saucelabs.com/buildstatus/ujjwalgupta)](https://saucelabs.com/u/ujjwalgupta)
 
-[![Sauce Test Status](https://saucelabs.com/browser-matrix/YOUR_SAUCE_USERNAME.svg)](https://saucelabs.com/u/YOUR_SAUCE_USERNAME)
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/ujjwalgupta.svg)](https://saucelabs.com/u/ujjwalgupta)
 
 # Overview
 
