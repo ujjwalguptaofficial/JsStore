@@ -26,16 +26,20 @@ export class ValuesChecker {
             const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${this.table.name}_${column.name}_Value`;
             KeyStore.get(autoIncrementKey, (val) => {
                 autoIncValues[column.name] = val;
+            }, (err) => {
+                this.error = err as any;
+                this.onFinish(true);
             });
         });
-        KeyStore.get('dumy_key', (val) => {
-            this.valueCheckerObj = new ValueChecker(this.table, autoIncValues);
-            this.startChecking();
-        }, (err) => {
-            this.error = err as any;
-            this.onFinish(true);
-        });
-
+        if (this.error == null) {
+            KeyStore.get('dumy_key', (val) => {
+                this.valueCheckerObj = new ValueChecker(this.table, autoIncValues);
+                this.startChecking();
+            }, (err) => {
+                this.error = err as any;
+                this.onFinish(true);
+            });
+        }
     }
 
     private startChecking() {
@@ -51,15 +55,24 @@ export class ValuesChecker {
         else {
             for (const prop of Object.keys(this.valueCheckerObj.autoIncrementValue)) {
                 const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${this.table.name}_${prop}_Value`;
-                KeyStore.set(autoIncrementKey, this.valueCheckerObj.autoIncrementValue[prop]);
+                KeyStore.set(
+                    autoIncrementKey,
+                    this.valueCheckerObj.autoIncrementValue[prop],
+                    null,
+                    (err) => {
+                        this.error = err as any;
+                        this.onFinish(true);
+                    });
             }
-            KeyStore.get('dumy_key', (val) => {
-                this.onFinish(false);
-            },
-                (err) => {
-                    this.error = err as any;
-                    this.onFinish(true);
-                });
+            if (this.error == null) {
+                KeyStore.get('dumy_key', (val) => {
+                    this.onFinish(false);
+                },
+                    (err) => {
+                        this.error = err as any;
+                        this.onFinish(true);
+                    });
+            }
         }
     }
 }

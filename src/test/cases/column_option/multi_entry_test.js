@@ -21,6 +21,29 @@ describe('Multi Entry Test', function () {
         });
     });
 
+    it('array data type check', function (done) {
+        var value = {
+            name: "Ray",
+            tags: "apple"
+        };
+        Con.insert({
+            into: 'people',
+            values: [value]
+        }).
+        then(function (results) {
+            expect(results).to.be.an('array').length(1);
+            done();
+        }).
+        catch(function (err) {
+            var error = {
+                "message": "Supplied value for column 'tags' does not have valid type",
+                "type": "bad_data_type"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    });
+
     it('insert data into table', function (done) {
         Con.insert({
             into: 'people',
@@ -126,29 +149,6 @@ describe('Multi Entry Test', function () {
             done();
         })
 
-    });
-
-    it('array data type check', function (done) {
-        var value = {
-            name: "Ray",
-            tags: "apple"
-        };
-        Con.insert({
-            into: 'people',
-            values: [value]
-        }).
-        then(function (results) {
-            expect(results).to.be.an('array').length(1);
-            done();
-        }).
-        catch(function (err) {
-            var error = {
-                "message": "Supplied value for column 'tags' does not have valid type",
-                "type": "bad_data_type"
-            };
-            expect(err).to.be.an('object').eql(error);
-            done();
-        })
     });
 
     it('Array column update to empty value', function (done) {

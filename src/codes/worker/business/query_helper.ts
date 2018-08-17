@@ -79,7 +79,7 @@ export class QueryHelper {
     private checkInsertQuery_(onFinish: Function) {
         const table = this.isInsertQryValid_();
         if (this.error == null) {
-            if (this.query.skipDataCheck) {
+            if (this.query.skipDataCheck === true) {
                 onFinish();
             }
             else {
