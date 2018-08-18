@@ -13,31 +13,31 @@ module.exports = function (config) {
             base: 'SauceLabs',
             browserName: 'chrome',
             platform: 'Linux',
-            version: '48.0'
+            version: '48'
         },
-        sl_firefox: {
+        sl_mac_firefox: {
             base: 'SauceLabs',
-            platform: 'Linux',
+            platform: 'Windows 10',
             browserName: 'firefox',
-            version: '45.0'
+            version: '61.0'
         },
         sl_ie_edge: {
             base: 'SauceLabs',
-            browserName: 'edge',
+            browserName: 'Microsoft Edge',
             platform: 'Windows 10',
-            version: '42.17134.167.0'
+            version: '17'
         },
         sl_ie_11: {
             base: 'SauceLabs',
             browserName: 'internet explorer',
-            platform: 'Windows 10',
+            platform: 'Windows 7',
             version: '11.0'
         },
         sl_safari_10: {
             base: 'SauceLabs',
-            browserName: 'safari',
+            browserName: 'Safari',
             platform: 'MacOS El Capitan 10.11',
-            version: '10.0'
+            version: '10'
         }
     }
 
