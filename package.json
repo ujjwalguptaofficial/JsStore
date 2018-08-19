@@ -45,6 +45,7 @@
     "karma-mocha-reporter": "^2.2.5",
     "karma-sauce-launcher": "^1.2.0",
     "mocha": "^4.1.0",
+    "promise-polyfill": "^8.1.0",
     "puppeteer": "^0.13.0",
     "smart-banner-webpack-plugin": "^3.0.1",
     "ts-loader": "^4.1.0",
