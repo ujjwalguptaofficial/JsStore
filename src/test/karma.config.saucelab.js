@@ -7,7 +7,7 @@ module.exports = function (config) {
     }
     var customLaunchers = {};
     var createCuStomeLauncher = function (browser, platform, version, debug) {
-        customLaunchers[platform + browser + version] = {
+        customLaunchers[platform + "_" + browser + "_" + version] = {
             base: 'SauceLabs',
             browserName: browser,
             platform: platform,
@@ -16,52 +16,17 @@ module.exports = function (config) {
         }
     }
 
-    // Browsers to run on Sauce Labs
-    // Check out https://saucelabs.com/platforms for all browser/OS combos
-    // var customLaunchers = {
-    //     sl_chrome: {
-    //         base: 'SauceLabs',
-    //         browserName: 'chrome',
-    //         platform: 'Linux',
-    //         version: 'latest',
-    //         extendedDebugging: true
-    //     },
-    //     sl_mac_firefox: {
-    //         base: 'SauceLabs',
-    //         platform: 'Windows 10',
-    //         browserName: 'firefox',
-    //         version: '61.0'
-    //     },
-    //     sl_ie_edge: {
-    //         base: 'SauceLabs',
-    //         browserName: 'microsoftedge',
-    //         platform: 'Windows 10',
-    //         version: null
-    //     },
-    //     sl_ie_11: {
-    //         base: 'SauceLabs',
-    //         browserName: 'internet explorer',
-    //         platform: 'Windows 8.1',
-    //         version: '11'
-    //     },
-    //     sl_safari_10: {
-    //         base: 'SauceLabs',
-    //         browserName: 'Safari',
-    //         platform: 'macOS 10.12',
-    //         version: '10.1'
-    //     }
-    // }
     createCuStomeLauncher('chrome', 'linux', 'latest', true);
     createCuStomeLauncher('firefox', 'Windows 10', '61.0', true);
     createCuStomeLauncher('microsoftedge', 'Windows 10', null, true);
     createCuStomeLauncher('Safari', 'macOS 10.12', '10.1', true);
-    createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
+    //createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
     config.set({
         basePath: '../',
         frameworks: ['mocha', 'chai'],
         client: {
             mocha: {
-                timeout: 10000 // 6 seconds - upped from 2 seconds
+                timeout: 60000
             }
         },
         files: ['output/jsstore.min.js', 'output/jsstore.worker.min.js', ...files.list_of_files],
@@ -83,7 +48,7 @@ module.exports = function (config) {
             public: 'public'
         },
         // Increase timeout in case connection in CI is slow
-        captureTimeout: 120000,
+        captureTimeout: 240000, //120000,
         customLaunchers: customLaunchers,
         browsers: Object.keys(customLaunchers),
         singleRun: true
