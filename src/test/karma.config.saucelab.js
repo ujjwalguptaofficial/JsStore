@@ -49,6 +49,7 @@ module.exports = function (config) {
         },
         // Increase timeout in case connection in CI is slow
         captureTimeout: 240000, //120000,
+        browserNoActivityTimeout: 240000,
         customLaunchers: customLaunchers,
         browsers: Object.keys(customLaunchers),
         singleRun: true
