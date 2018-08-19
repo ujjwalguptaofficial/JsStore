@@ -231,13 +231,17 @@ describe('Test Select Api', function () {
             }
         }).
         then(function (results) {
-            var expected_id_list = [54, 55, 56];
-            var id_list = [];
-            results.forEach(element => {
-                id_list.push(element.CustomerID);
-            });
-            expect(id_list).to.be.an('array').length(3).deep.equal(expected_id_list);
-            done();
+            if (results.length > 0) {
+                var expected_id_list = [54, 55, 56];
+                var id_list = [];
+                results.forEach(element => {
+                    id_list.push(element.CustomerID);
+                });
+                expect(id_list).to.be.an('array').length(3).deep.equal(expected_id_list);
+                done();
+            } else {
+                done('no results');
+            }
         }).
         catch(function (err) {
             done(err);
