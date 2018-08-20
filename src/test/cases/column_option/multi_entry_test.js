@@ -122,7 +122,7 @@ describe('Multi Entry Test', function () {
                 "message": "Unable to add key to index 'name': at least one key does not satisfy the uniqueness requirements.",
                 "type": "ConstraintError"
             }
-            expect(err).to.be.an('object').eql(error);
+            expect(err.type).to.be.an('string').eql(error.type);
             done();
         })
 

@@ -15,8 +15,8 @@ describe('Transaction - error test', function () {
             done();
         }).catch(function (err) {
             var error = {
-                "message": "Failed to execute 'transaction' on 'IDBDatabase': One of the specified object stores was not found.",
-                "type": "NotFoundError"
+                "message": "Table 'Customsers' does not exist",
+                "type": "table_not_exist"
             };
             expect(err).to.be.an('object').eql(error);
             done();
