@@ -16,7 +16,7 @@ module.exports = function (config) {
         }
     }
 
-    createCuStomeLauncher('chrome', 'linux', 'latest', true);
+    createCuStomeLauncher('chrome', 'linux', '48', true);
     createCuStomeLauncher('firefox', 'Windows 10', '61.0', true);
     createCuStomeLauncher('microsoftedge', 'Windows 10', 'latest', true);
     createCuStomeLauncher('Safari', 'macOS 10.12', 'latest', true);
@@ -35,7 +35,7 @@ module.exports = function (config) {
             '/test/': '/base/test/',
             '/output/': '/base/output/'
         },
-        reporters: ['mocha', 'saucelabs'],
+        reporters: ['saucelabs'],
         port: 9876, // karma web server port
         colors: true,
         logLevel: config.LOG_INFO,
