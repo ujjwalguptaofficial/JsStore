@@ -22,8 +22,8 @@ module.exports = function (config) {
     createCuStomeLauncher('chrome', 'Windows 10', 'latest', true);
     createCuStomeLauncher('microsoftedge', 'Windows 10', 'latest', true);
     createCuStomeLauncher('Safari', 'macOS 10.12', 'latest', true);
-    createCuStomeLauncher('iPhone 8 Simulator', 'iOS 11.2', null, true);
-    createCuStomeLauncher('Android Emulator', 'Android 6.0', null, true);
+    //createCuStomeLauncher('iPhone 8 Simulator', 'iOS 11.2', null, true);
+    //createCuStomeLauncher('Android Emulator', 'Android 6.0', null, true);
     createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
 
     config.set({
@@ -39,7 +39,7 @@ module.exports = function (config) {
             '/test/': '/base/test/',
             '/output/': '/base/output/'
         },
-        reporters: ['progress','saucelabs'],
+        reporters: ['mocha','saucelabs'],
         port: 9876, // karma web server port
         colors: true,
         logLevel: config.LOG_INFO,
