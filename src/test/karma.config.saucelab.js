@@ -18,8 +18,9 @@ module.exports = function (config) {
 
     createCuStomeLauncher('chrome', 'linux', 'latest', true);
     createCuStomeLauncher('firefox', 'Windows 10', '61.0', true);
-    createCuStomeLauncher('microsoftedge', 'Windows 10', null, true);
-    createCuStomeLauncher('Safari', 'macOS 10.12', '10.1', true);
+    createCuStomeLauncher('microsoftedge', 'Windows 10', 'latest', true);
+    createCuStomeLauncher('Safari', 'macOS 10.12', 'latest', true);
+    createCuStomeLauncher('chrome', 'Windows 10', 'latest', true);
     //createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
     config.set({
         basePath: '../',
