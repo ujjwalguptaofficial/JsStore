@@ -48,6 +48,9 @@ module.exports = function (config) {
             //     port: 5757,
             //     logfile: 'sauce_connect.log'
             // },
+            connectOptions: {
+                noSslBumpDomains: "all"
+            },
             public: 'public'
         },
         // Increase timeout in case connection in CI is slow
