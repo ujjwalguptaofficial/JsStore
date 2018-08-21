@@ -109,9 +109,8 @@ describe('Multi Entry Test', function () {
                 console.log('Bypassing multi entry test in ie');
             } else {
                 expect(results).to.be.an('array').length(1);
-                done();
             }
-
+            done();
         }).
         catch(function (err) {
             done(err);
