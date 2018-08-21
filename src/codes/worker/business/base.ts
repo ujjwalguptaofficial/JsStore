@@ -107,7 +107,7 @@ export class Base extends BaseHelper {
                             this.getAllCombinationOfWord(filterValue).forEach((item) => {
                                 this.executeWhereLogic(columnName,
                                     { '-': { low: item, high: item + '\uffff' } },
-                                    '-');
+                                    '-',"next");
                             });
                             delete this.query.where[columnName][QUERY_OPTION.Like];
                         }
@@ -123,10 +123,10 @@ export class Base extends BaseHelper {
                     case QUERY_OPTION.LessThan:
                     case QUERY_OPTION.GreaterThanEqualTo:
                     case QUERY_OPTION.LessThanEqualTo:
-                        this.executeWhereLogic(columnName, value, key);
+                        this.executeWhereLogic(columnName, value, key, "next");
                         break;
                     case QUERY_OPTION.Aggregate: break;
-                    default: this.executeWhereLogic(columnName, value);
+                    default: this.executeWhereLogic(columnName, value, null, "next");
                 }
             }
             else {
@@ -134,7 +134,7 @@ export class Base extends BaseHelper {
                 if (this.checkFlag === true) {
                     this.whereCheckerInstance = new WhereChecker(this.query.where);
                 }
-                this.executeWhereLogic(columnName, value, null,"next");
+                this.executeWhereLogic(columnName, value, null, "next");
             }
         }
         else {
