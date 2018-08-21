@@ -143,7 +143,7 @@ describe('Test select complex case', function () {
             if (results.length > 0) {
                 var expected_id_list = [2, 3, 13, 58, 80];
                 var id_list = [];
-                results.forEach(element => {
+                results.forEach(function(element){
                     id_list.push(element.CustomerID);
                 });
                 expect(id_list).to.be.an('array').length(5).deep.equal(expected_id_list);
@@ -197,7 +197,7 @@ describe('Test select complex case', function () {
         }).then(function (results) {
             var expected_id_list = [2, 3, 4, 11, 13, 16, 58, 72, 80];
             var id_list = [];
-            results.forEach(element => {
+            results.forEach(function(element) {
                 id_list.push(element.CustomerID);
             });
             expect(id_list).to.be.an('array').length(9).deep.equal(expected_id_list);
@@ -225,7 +225,7 @@ describe('Test select complex case', function () {
         }).then(function (results) {
             var expected_id_list = [2, 3, 13, 58, 80];
             var id_list = [];
-            results.forEach(element => {
+            results.forEach(function(element) {
                 id_list.push(element.CustomerID);
             });
             expect(id_list).to.be.an('array').length(5).deep.equal(expected_id_list);

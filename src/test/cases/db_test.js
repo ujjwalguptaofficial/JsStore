@@ -5,7 +5,7 @@ describe('Db Test', function () {
         Con.getDbList().then(function (result) {
             expect(result).to.be.an('array').to.deep.equal(['Demo', 'MultiEntryTest']);
             done();
-        }).catch(err => {
+        }).catch(function (err) {
             done(err);
         })
     });
@@ -16,7 +16,7 @@ describe('Db Test', function () {
                 console.log(result);
                 expect(result).to.be.an('array').to.deep.equal(['Demo']);
                 done();
-            }).catch(err => {
+            }).catch(function (err) {
                 done(err);
             })
         }).catch(function (err) {
@@ -53,7 +53,7 @@ describe('Db Test', function () {
     it('open db test - invalid db', function (done) {
         Con.openDb('invalid_db').then(function (results) {
             done();
-        }).catch(err => {
+        }).catch(function (err) {
             var error = {
                 "message": "Database 'invalid_db' does not exist",
                 "type": "db_not_exist"
