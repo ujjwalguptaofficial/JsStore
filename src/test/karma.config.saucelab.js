@@ -16,12 +16,14 @@ module.exports = function (config) {
         }
     }
 
+    createCuStomeLauncher('Safari', 'macOS 10.12', 'latest', true);
     createCuStomeLauncher('chrome', 'linux', '48', true);
     createCuStomeLauncher('firefox', 'Windows 10', '61.0', true);
     createCuStomeLauncher('microsoftedge', 'Windows 10', 'latest', true);
-    createCuStomeLauncher('Safari', 'macOS 10.12', 'latest', true);
     createCuStomeLauncher('chrome', 'Windows 10', 'latest', true);
-    //createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
+    createCuStomeLauncher('opera', 'Windows 10', 'latest', true);
+    createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
+    
     config.set({
         basePath: '../',
         frameworks: ['mocha', 'chai'],
