@@ -8,6 +8,8 @@ before_script:
 script:
   - npm update
   - npm run build:ci
+after_failure:
+  - ls
 
 addons:
   sauce_connect:true
