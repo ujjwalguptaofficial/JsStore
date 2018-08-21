@@ -45,13 +45,13 @@ module.exports = function (config) {
         sauceLabs: {
             testName: 'jsstore sauce lab test',
             recordScreenshots: false,
-            // connectOptions: {
-            //     port: 5757,
-            //     logfile: 'sauce_connect.log'
-            // },
             connectOptions: {
-                noSslBumpDomains: "all"
+                //port: 5757,
+                logfile: 'sauce_connect.log'
             },
+            // connectOptions: { // for safair and ie
+            //     noSslBumpDomains: "all"
+            // },
             public: 'public'
         },
         // Increase timeout in case connection in CI is slow
