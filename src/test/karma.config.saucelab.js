@@ -16,13 +16,13 @@ module.exports = function (config) {
         }
     }
 
-    createCuStomeLauncher('chrome', 'linux', '48', true);
+    createCuStomeLauncher('chrome', 'linux', 'latest', true);
     createCuStomeLauncher('firefox', 'Windows 10', '61.0', true);
     createCuStomeLauncher('firefox', 'linux', 'latest', true);
     createCuStomeLauncher('chrome', 'Windows 10', 'latest', true);
     createCuStomeLauncher('microsoftedge', 'Windows 10', 'latest', true);
     createCuStomeLauncher('Safari', 'macOS 10.12', 'latest', true);
-    createCuStomeLauncher('iPhone 8 Simulator', 'OS 11.2', null, true);
+    createCuStomeLauncher('iPhone 8 Simulator', 'iOS 11.2', null, true);
     createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
 
     config.set({
