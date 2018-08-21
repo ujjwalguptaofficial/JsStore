@@ -1,8 +1,18 @@
-var Con = new JsStore.Instance(new Worker('../output/jsstore.worker.js'));
-// JsStore.enableLog();
+var Con;
+// = new JsStore.Instance(new Worker('../output/jsstore.worker.js'));
+JsStore.enableLog();
 
 function initDb() {
     console.log('initiate database');
+    var isIE = /*@cc_on!@*/ false || !!document.documentMode;
+    if(isIE){
+        Con = new JsStore.Instance();
+        console.log('not runing in worker');
+    }
+    else{
+        Con = new JsStore.Instance(new Worker('../output/jsstore.worker.js'));
+    }
+   
     Con.isDbExist('Demo').then(function (exist) {
         console.log('db exist :' + exist);
         if (exist) {
@@ -260,9 +270,7 @@ function getDbSchema() {
 
     var dataBase = {
         name: "Demo",
-        tables: [customers, categories, employees, orderDetails, orders, products, shippers, suppliers
-        ]
+        tables: [customers, categories, employees, orderDetails, orders, products, shippers, suppliers]
     };
     return dataBase;
 }
-

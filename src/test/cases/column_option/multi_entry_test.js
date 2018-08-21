@@ -4,7 +4,6 @@ describe('Multi Entry Test', function () {
             console.log('db exist :' + exist);
             if (exist) {
                 Con.openDb('MultiEntryTest').then(function () {
-                    onDbInit();
                     done();
                 });
 
@@ -79,9 +78,11 @@ describe('Multi Entry Test', function () {
     });
 
     it('insert data into table multiEntryTest', function (done) {
+        var values = MultiEntryTest.getValues();
+        console.log(values);
         Con.insert({
             into: 'people',
-            values: MultiEntryTest.getValues()
+            values: values
         }).
         then(function (results) {
             expect(results).to.be.an('number').equal(3);
