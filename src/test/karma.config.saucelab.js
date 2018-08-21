@@ -40,7 +40,7 @@ module.exports = function (config) {
             '/test/': '/base/test/',
             '/output/': '/base/output/'
         },
-        reporters: ['mocha','html'],
+        reporters: ['mocha','saucelabs','html'],
         port: 9876, // karma web server port
         colors: true,
         logLevel: config.LOG_INFO,
