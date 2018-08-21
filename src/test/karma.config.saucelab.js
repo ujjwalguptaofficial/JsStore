@@ -40,7 +40,7 @@ module.exports = function (config) {
             '/test/': '/base/test/',
             '/output/': '/base/output/'
         },
-        reporters: ['mocha','saucelabs'],
+        reporters: ['mocha','html'],
         port: 9876, // karma web server port
         colors: true,
         logLevel: config.LOG_INFO,
@@ -64,6 +64,16 @@ module.exports = function (config) {
         browserNoActivityTimeout: 240000,
         customLaunchers: customLaunchers,
         browsers: Object.keys(customLaunchers),
-        singleRun: true
+        singleRun: true,
+        htmlReporter: {
+            outputFile: 'report/units.html',
+
+            // Optional
+            pageTitle: 'Unit Tests',
+            subPageTitle: 'A sample project description',
+            groupSuites: true,
+            useCompactStyle: true,
+            useLegacyStyle: true
+        }
     })
 }
