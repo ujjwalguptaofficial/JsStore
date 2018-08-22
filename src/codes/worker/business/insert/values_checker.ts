@@ -7,8 +7,6 @@ import * as KeyStore from "../../keystore/index";
 export class ValuesChecker {
     table: Table;
     values: object[];
-    error: IError;
-    onFinish: (isError: boolean) => void;
     valueCheckerObj: ValueChecker;
 
     constructor(table: Table, values: object[]) {
@@ -16,63 +14,71 @@ export class ValuesChecker {
         this.values = values;
     }
 
-    checkAndModifyValues(onFinish: (isError: boolean) => void) {
-        this.onFinish = onFinish;
+    checkAndModifyValues() {
+        return new Promise((resolve, reject) => {
+            this.getAutoIncrementValues_().then(autoIncValues => {
+                this.valueCheckerObj = new ValueChecker(this.table, autoIncValues);
+                this.startChecking().then(resolve).catch(reject);
+            }).catch(reject);
+        });
+    }
+
+    private getAutoIncrementValues_() {
         const autoIncColumns = this.table.columns.filter((col) => {
             return col.autoIncrement;
         });
-        const autoIncValues = {};
-        autoIncColumns.forEach((column) => {
-            const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${this.table.name}_${column.name}_Value`;
-            KeyStore.get(autoIncrementKey, (val) => {
-                autoIncValues[column.name] = val;
-            }, (err) => {
-                this.error = err as any;
-                this.onFinish(true);
-            });
+        return new Promise((resolve, reject) => {
+            const autoIncValues = {};
+            let index = 0;
+            const setAutoIncrementValue = () => {
+                if (index < autoIncColumns.length) {
+                    const column = autoIncColumns[index];
+                    const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${this.table.name}_${column.name}_Value`;
+                    KeyStore.get(autoIncrementKey, (val) => {
+                        autoIncValues[column.name] = val;
+                        ++index;
+                        setAutoIncrementValue();
+                    }, reject);
+                }
+                else {
+                    resolve(autoIncValues);
+                }
+            };
+            setAutoIncrementValue();
         });
-        if (this.error == null) {
-            KeyStore.get('dumy_key', (val) => {
-                this.valueCheckerObj = new ValueChecker(this.table, autoIncValues);
-                this.startChecking();
-            }, (err) => {
-                this.error = err as any;
-                this.onFinish(true);
-            });
-        }
     }
 
     private startChecking() {
-        let isError = false;
-        this.values.every((item) => {
-            isError = this.valueCheckerObj.checkAndModifyValue(item);
-            return !isError;
+        return new Promise((resolve, reject) => {
+            let isError = false;
+            this.values.every((item) => {
+                isError = this.valueCheckerObj.checkAndModifyValue(item);
+                return !isError;
+            });
+            if (isError) {
+                const error = this.valueCheckerObj.log.get();
+                reject(error);
+            }
+            else {
+                const keys = Object.keys(this.valueCheckerObj.autoIncrementValue);
+                let index = 0;
+                const saveAutoIncrementKey = () => {
+                    if (index < keys.length) {
+                        const prop = keys[index++];
+                        const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${this.table.name}_${prop}_Value`;
+                        KeyStore.set(
+                            autoIncrementKey,
+                            this.valueCheckerObj.autoIncrementValue[prop],
+                            saveAutoIncrementKey,
+                            reject
+                        );
+                    }
+                    else {
+                        resolve();
+                    }
+                };
+                saveAutoIncrementKey();
+            }
         });
-        if (isError) {
-            this.error = this.valueCheckerObj.log.get();
-            this.onFinish(true);
-        }
-        else {
-            for (const prop of Object.keys(this.valueCheckerObj.autoIncrementValue)) {
-                const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${this.table.name}_${prop}_Value`;
-                KeyStore.set(
-                    autoIncrementKey,
-                    this.valueCheckerObj.autoIncrementValue[prop],
-                    null,
-                    (err) => {
-                        this.error = err as any;
-                        this.onFinish(true);
-                    });
-            }
-            if (this.error == null) {
-                KeyStore.get('dumy_key', (val) => {
-                    this.onFinish(false);
-                },
-                    (err) => {
-                        this.error = err as any;
-                        this.onFinish(true);
-                    });
-            }
-        }
     }
 }

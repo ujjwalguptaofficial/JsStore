@@ -88,7 +88,7 @@ describe('Multi Entry Test', function () {
 
     it('insert data into table multiEntryTest', function (done) {
         var values = MultiEntryTest.getValues();
-        console.log(values);
+        //console.log(values);
         Con.insert({
             into: 'people',
             values: values

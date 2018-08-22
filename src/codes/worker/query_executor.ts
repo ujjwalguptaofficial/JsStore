@@ -232,11 +232,7 @@ export class QueryExecutor {
             query = queryHelper.query;
             const insertInstance = new Insert.Instance(query, onSuccess, onError);
             insertInstance.execute();
-        }).catch((error) => {
-            onError(
-                error
-            );
-        });
+        }).catch(onError);
     }
 
     private bulkInsert_(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {

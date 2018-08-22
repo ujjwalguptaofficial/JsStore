@@ -5,6 +5,7 @@ import { LogHelper } from "../log_helper";
 import { Util } from "../util";
 import * as Update from "./update/index";
 import * as Insert from "./insert/index";
+import { Table } from "../model/table";
 
 export class QueryHelper {
     api: API;
@@ -32,9 +33,11 @@ export class QueryHelper {
                     resolveReject();
                     break;
                 case API.Insert:
-                    this.checkInsertQuery_(() => {
-                        resolveReject();
-                    });
+                    this.checkInsertQuery_().then(resolveReject).
+                        catch((err) => {
+                            this.error = err;
+                            resolveReject();
+                        });
                     break;
                 case API.Update:
                     this.checkUpdateQuery_();
@@ -49,7 +52,7 @@ export class QueryHelper {
         });
     }
 
-    private isInsertQryValid_() {
+    private isInsertQryValid_(callBack: (tbl: Table) => void) {
         const table = this.getTable_((this.query as IInsert).into);
         let log: LogHelper;
         if (table) {
@@ -66,39 +69,38 @@ export class QueryHelper {
         else {
             log = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: (this.query as IInsert).into });
         }
-        if (log != null) {
-            this.error = log.get();
+        if (callBack != null) {
+            callBack(table);
         }
-        return table;
+        return log == null ? null : log.get();
     }
 
     private checkBulkInsert_() {
-        this.isInsertQryValid_();
+        this.error = this.isInsertQryValid_(null);
     }
 
-    private checkInsertQuery_(onFinish: Function) {
-        const table = this.isInsertQryValid_();
-        if (this.error == null) {
-            if (this.query.skipDataCheck === true) {
-                onFinish();
+    private checkInsertQuery_() {
+        return new Promise((resolve, reject) => {
+            let table;
+            const err = this.isInsertQryValid_((tbl) => {
+                table = tbl;
+            });
+            if (err == null) {
+                if (this.query.skipDataCheck === true) {
+                    resolve();
+                }
+                else {
+                    const valueCheckerInstance = new Insert.ValuesChecker(table, this.query.values);
+                    valueCheckerInstance.checkAndModifyValues().then(() => {
+                        (this.query as IInsert).values = valueCheckerInstance.values;
+                        resolve();
+                    }).catch(reject);
+                }
             }
             else {
-                const valueCheckerInstance = new Insert.ValuesChecker(table, this.query.values);
-                valueCheckerInstance.checkAndModifyValues((isError) => {
-                    if (isError) {
-                        this.error = valueCheckerInstance.error;
-                        onFinish();
-                    }
-                    else {
-                        (this.query as IInsert).values = valueCheckerInstance.values;
-                        onFinish();
-                    }
-                });
+                reject(err);
             }
-        }
-        else {
-            onFinish();
-        }
+        });
     }
 
     private checkUpdateQuery_() {

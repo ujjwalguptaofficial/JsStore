@@ -218,6 +218,7 @@ describe('Test insert', function () {
             Phone: '91234',
             Address: 'ewrtgb'
         }
+        debugger;
         Con.insert({
             into: 'Shippers',
             values: [value],
