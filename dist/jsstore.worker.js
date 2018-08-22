@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.3.5 - 22/08/2018
+ * @license :jsstore - V2.4.0 - 22/08/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -366,9 +366,7 @@ var QueryExecutor = /** @class */ (function () {
             query = queryHelper.query;
             var insertInstance = new _business_insert_index__WEBPACK_IMPORTED_MODULE_12__["Instance"](query, onSuccess, onError);
             insertInstance.execute();
-        }).catch(function (error) {
-            onError(error);
-        });
+        }).catch(onError);
     };
     QueryExecutor.prototype.bulkInsert_ = function (query, onSuccess, onError) {
         var queryHelper = new _business_query_helper__WEBPACK_IMPORTED_MODULE_19__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["API"].BulkInsert, query);
@@ -5031,61 +5029,68 @@ var ValuesChecker = /** @class */ (function () {
         this.table = table;
         this.values = values;
     }
-    ValuesChecker.prototype.checkAndModifyValues = function (onFinish) {
+    ValuesChecker.prototype.checkAndModifyValues = function () {
         var _this = this;
-        this.onFinish = onFinish;
+        return new Promise(function (resolve, reject) {
+            _this.getAutoIncrementValues_().then(function (autoIncValues) {
+                _this.valueCheckerObj = new _value_checker__WEBPACK_IMPORTED_MODULE_0__["ValueChecker"](_this.table, autoIncValues);
+                _this.startChecking().then(resolve).catch(reject);
+            }).catch(reject);
+        });
+    };
+    ValuesChecker.prototype.getAutoIncrementValues_ = function () {
+        var _this = this;
         var autoIncColumns = this.table.columns.filter(function (col) {
             return col.autoIncrement;
         });
-        var autoIncValues = {};
-        autoIncColumns.forEach(function (column) {
-            var autoIncrementKey = "JsStore_" + _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDb.name + "_" + _this.table.name + "_" + column.name + "_Value";
-            _keystore_index__WEBPACK_IMPORTED_MODULE_2__["get"](autoIncrementKey, function (val) {
-                autoIncValues[column.name] = val;
-            }, function (err) {
-                _this.error = err;
-                _this.onFinish(true);
-            });
+        return new Promise(function (resolve, reject) {
+            var autoIncValues = {};
+            var index = 0;
+            var setAutoIncrementValue = function () {
+                if (index < autoIncColumns.length) {
+                    var column_1 = autoIncColumns[index];
+                    var autoIncrementKey = "JsStore_" + _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDb.name + "_" + _this.table.name + "_" + column_1.name + "_Value";
+                    _keystore_index__WEBPACK_IMPORTED_MODULE_2__["get"](autoIncrementKey, function (val) {
+                        autoIncValues[column_1.name] = val;
+                        ++index;
+                        setAutoIncrementValue();
+                    }, reject);
+                }
+                else {
+                    resolve(autoIncValues);
+                }
+            };
+            setAutoIncrementValue();
         });
-        if (this.error == null) {
-            _keystore_index__WEBPACK_IMPORTED_MODULE_2__["get"]('dumy_key', function (val) {
-                _this.valueCheckerObj = new _value_checker__WEBPACK_IMPORTED_MODULE_0__["ValueChecker"](_this.table, autoIncValues);
-                _this.startChecking();
-            }, function (err) {
-                _this.error = err;
-                _this.onFinish(true);
-            });
-        }
     };
     ValuesChecker.prototype.startChecking = function () {
         var _this = this;
-        var isError = false;
-        this.values.every(function (item) {
-            isError = _this.valueCheckerObj.checkAndModifyValue(item);
-            return !isError;
+        return new Promise(function (resolve, reject) {
+            var isError = false;
+            _this.values.every(function (item) {
+                isError = _this.valueCheckerObj.checkAndModifyValue(item);
+                return !isError;
+            });
+            if (isError) {
+                var error = _this.valueCheckerObj.log.get();
+                reject(error);
+            }
+            else {
+                var keys_1 = Object.keys(_this.valueCheckerObj.autoIncrementValue);
+                var index_1 = 0;
+                var saveAutoIncrementKey_1 = function () {
+                    if (index_1 < keys_1.length) {
+                        var prop = keys_1[index_1++];
+                        var autoIncrementKey = "JsStore_" + _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDb.name + "_" + _this.table.name + "_" + prop + "_Value";
+                        _keystore_index__WEBPACK_IMPORTED_MODULE_2__["set"](autoIncrementKey, _this.valueCheckerObj.autoIncrementValue[prop], saveAutoIncrementKey_1, reject);
+                    }
+                    else {
+                        resolve();
+                    }
+                };
+                saveAutoIncrementKey_1();
+            }
         });
-        if (isError) {
-            this.error = this.valueCheckerObj.log.get();
-            this.onFinish(true);
-        }
-        else {
-            for (var _i = 0, _a = Object.keys(this.valueCheckerObj.autoIncrementValue); _i < _a.length; _i++) {
-                var prop = _a[_i];
-                var autoIncrementKey = "JsStore_" + _idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDb.name + "_" + this.table.name + "_" + prop + "_Value";
-                _keystore_index__WEBPACK_IMPORTED_MODULE_2__["set"](autoIncrementKey, this.valueCheckerObj.autoIncrementValue[prop], null, function (err) {
-                    _this.error = err;
-                    _this.onFinish(true);
-                });
-            }
-            if (this.error == null) {
-                _keystore_index__WEBPACK_IMPORTED_MODULE_2__["get"]('dumy_key', function (val) {
-                    _this.onFinish(false);
-                }, function (err) {
-                    _this.error = err;
-                    _this.onFinish(true);
-                });
-            }
-        }
     };
     return ValuesChecker;
 }());
@@ -6499,7 +6504,9 @@ var QueryHelper = /** @class */ (function () {
                     resolveReject();
                     break;
                 case _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Insert:
-                    _this.checkInsertQuery_(function () {
+                    _this.checkInsertQuery_().then(resolveReject).
+                        catch(function (err) {
+                        _this.error = err;
                         resolveReject();
                     });
                     break;
@@ -6515,7 +6522,7 @@ var QueryHelper = /** @class */ (function () {
             }
         });
     };
-    QueryHelper.prototype.isInsertQryValid_ = function () {
+    QueryHelper.prototype.isInsertQryValid_ = function (callBack) {
         var table = this.getTable_(this.query.into);
         var log;
         if (table) {
@@ -6532,38 +6539,37 @@ var QueryHelper = /** @class */ (function () {
         else {
             log = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].TableNotExist, { TableName: this.query.into });
         }
-        if (log != null) {
-            this.error = log.get();
+        if (callBack != null) {
+            callBack(table);
         }
-        return table;
+        return log == null ? null : log.get();
     };
     QueryHelper.prototype.checkBulkInsert_ = function () {
-        this.isInsertQryValid_();
+        this.error = this.isInsertQryValid_(null);
     };
-    QueryHelper.prototype.checkInsertQuery_ = function (onFinish) {
+    QueryHelper.prototype.checkInsertQuery_ = function () {
         var _this = this;
-        var table = this.isInsertQryValid_();
-        if (this.error == null) {
-            if (this.query.skipDataCheck === true) {
-                onFinish();
+        return new Promise(function (resolve, reject) {
+            var table;
+            var err = _this.isInsertQryValid_(function (tbl) {
+                table = tbl;
+            });
+            if (err == null) {
+                if (_this.query.skipDataCheck === true) {
+                    resolve();
+                }
+                else {
+                    var valueCheckerInstance_1 = new _insert_index__WEBPACK_IMPORTED_MODULE_5__["ValuesChecker"](table, _this.query.values);
+                    valueCheckerInstance_1.checkAndModifyValues().then(function () {
+                        _this.query.values = valueCheckerInstance_1.values;
+                        resolve();
+                    }).catch(reject);
+                }
             }
             else {
-                var valueCheckerInstance_1 = new _insert_index__WEBPACK_IMPORTED_MODULE_5__["ValuesChecker"](table, this.query.values);
-                valueCheckerInstance_1.checkAndModifyValues(function (isError) {
-                    if (isError) {
-                        _this.error = valueCheckerInstance_1.error;
-                        onFinish();
-                    }
-                    else {
-                        _this.query.values = valueCheckerInstance_1.values;
-                        onFinish();
-                    }
-                });
+                reject(err);
             }
-        }
-        else {
-            onFinish();
-        }
+        });
     };
     QueryHelper.prototype.checkUpdateQuery_ = function () {
         this.error = new _update_index__WEBPACK_IMPORTED_MODULE_4__["SchemaChecker"](this.getTable_(this.query.in)).
