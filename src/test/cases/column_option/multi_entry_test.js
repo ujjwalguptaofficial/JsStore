@@ -1,4 +1,13 @@
 describe('Multi Entry Test', function () {
+    it('terminate connection', function (done) {
+        Con.terminate().then(function () {
+            Con = new JsStore.Instance();
+            done();
+        }).catch(function (error) {
+            done(error);
+        });
+    });
+
     it('create db with promise', function (done) {
         Con.isDbExist('MultiEntryTest').then(function (exist) {
             console.log('db exist :' + exist);
