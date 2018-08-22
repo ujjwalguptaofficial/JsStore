@@ -184,6 +184,11 @@ describe('Multi Entry Test', function () {
             then(function (results) {
                 var result = results[0];
                 expect(results).to.be.an('array').length(1);
+                // if (window.navigator.userAgent.indexOf("Mac") && GetBrowserName().toLowerCase() == 'firefox') {
+                //     console.log('bypassing test');
+                // } else {
+                //     expect(result['tags']).to.be.an('array').eql([]);
+                // }
                 expect(result['tags']).to.be.an('array').eql([]);
                 done();
             }).

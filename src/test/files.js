@@ -1,7 +1,8 @@
 const nodeModules = "../node_modules/"
 exports.list_of_files = [
-     nodeModules + 'promise-polyfill/dist/polyfill.min.js',
-     'test/scripts/find_polyfill.js',
+    'test/scripts/common.js',
+    nodeModules + 'promise-polyfill/dist/polyfill.min.js',
+    'test/scripts/find_polyfill.js',
     'test/scripts/findindex_polyfill.js',
     'test/scripts/jquery-3.2.1.min.js',
     'test/scripts/dbhelper.js',
