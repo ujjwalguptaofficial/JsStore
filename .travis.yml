@@ -8,6 +8,11 @@ before_script:
 script:
   - npm update
   - npm run build:ci
+after_success:
+  script: 
+    - npm run test:sauce
+  on:
+    branch: master
 after_failure:
   - ls
 

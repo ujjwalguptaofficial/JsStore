@@ -10,7 +10,7 @@ export declare class TableHelper {
     callback: () => void;
     constructor(table: Table);
     createMetaData(dbName: string, callBack: () => void): void;
-    private setPrimaryKey_();
-    private setRequireDelete_(dbName);
-    private setDbVersion_(dbName);
+    private setPrimaryKey_;
+    private setRequireDelete_;
+    private setDbVersion_;
 }

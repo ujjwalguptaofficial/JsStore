@@ -8,13 +8,13 @@ export declare class Instance extends Base {
     isTransactionStarted: boolean;
     constructor(qry: ITranscationQry, onSuccess: (results: any) => void, onError: (err: IError) => void);
     execute(): void;
-    private startTransaction_();
-    private initTransaction_(tableNames);
-    private onTransactionCompleted_();
+    private startTransaction_;
+    private initTransaction_;
+    private onTransactionCompleted_;
     onRequestFinished_(result: any): void;
     abortTransaction(): void;
     executeRequest(request: IWebWorkerRequest): void;
     pushRequest(request: IWebWorkerRequest): Promise<{}>;
     processExecutionOfQry(): void;
-    private checkQueries();
+    private checkQueries;
 }

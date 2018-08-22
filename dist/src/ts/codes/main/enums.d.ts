@@ -1,11 +1,11 @@
 export declare enum ERROR_TYPE {
     WorkerNotSupplied = "worker_not_supplied",
-    IndexedDbUndefined = "indexeddb_undefined",
+    IndexedDbUndefined = "indexeddb_undefined"
 }
 export declare enum WORKER_STATUS {
     Registered = "registerd",
     Failed = "failed",
-    NotStarted = "not_started",
+    NotStarted = "not_started"
 }
 export declare enum DATA_TYPE {
     String = "string",
@@ -14,14 +14,14 @@ export declare enum DATA_TYPE {
     Number = "number",
     Boolean = "boolean",
     Null = "null",
-    DateTime = "date_time",
+    DateTime = "date_time"
 }
 export declare enum COL_OPTION {
     PrimaryKey = "primary_key",
     AutoIncrement = "auto_increment",
     Unique = "unique",
     NotNull = "not_null",
-    MultiEntry = "multi_entry",
+    MultiEntry = "multi_entry"
 }
 export declare enum API {
     CreateDb = "create_db",
@@ -43,5 +43,5 @@ export declare enum API {
     ExportJson = "export_json",
     ChangeLogStatus = "change_log_status",
     Terminate = "terminate",
-    Transaction = "transaction",
+    Transaction = "transaction"
 }

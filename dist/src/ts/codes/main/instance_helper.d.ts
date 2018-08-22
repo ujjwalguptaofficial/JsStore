@@ -7,10 +7,10 @@ export declare class InstanceHelper {
     private queryExecutor_;
     private whiteListApi_;
     constructor(worker?: Worker);
-    private onMessageFromWorker_(msg);
-    private processFinishedQuery_(message);
+    private onMessageFromWorker_;
+    private processFinishedQuery_;
     protected pushApi<T>(request: IWebWorkerRequest): Promise<T>;
-    private prcoessExecutionOfQry_(request);
-    private executeQry_();
-    private sendRequestToWorker_(request);
+    private prcoessExecutionOfQry_;
+    private executeQry_;
+    private sendRequestToWorker_;
 }

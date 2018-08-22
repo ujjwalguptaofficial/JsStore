@@ -6,7 +6,7 @@ export interface IError {
 export interface IWebWorkerRequest {
     name: API;
     query: any;
-    onSuccess: (results) => void;
+    onSuccess: (results: any) => void;
     onError: (err: IError) => void;
 }
 export interface IWebWorkerResult {

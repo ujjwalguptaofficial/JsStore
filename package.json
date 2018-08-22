@@ -1,6 +1,6 @@
 {
   "name": "jsstore",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "description": "JsStore is an IndexedDB Wrapper. It makes IndexedDB super easy with its SQL like apis.",
   "main": "dist/jsstore.commonjs2.js",
   "types": "dist/src/ts/codes/main/index.d.ts",
@@ -12,7 +12,7 @@
     "build:prod": "npm run webpack:prod && npm run test:prod",
     "build:all": "npm run build:dev && npm run build:prod",
     "test:sauce": "karma start src/test/karma.config.saucelab.js",
-    "build:ci": "npm run webpack:dev && npm run webpack:prod",
+    "build:ci": "npm run build:all",
     "postbuild:ci": "npm run test:sauce",
     "webpack:dev": "webpack --config src/webpack/webpack.dev.config.js",
     "webpack:prod": "webpack --config src/webpack/webpack.prod.config.js",

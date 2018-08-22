@@ -10,7 +10,7 @@ export interface IInsert {
 export interface IQueryRequest {
     Name: string;
     Query: any;
-    OnSuccess: (result) => void;
+    OnSuccess: (result: any) => void;
     OnError: (err: IError) => void;
 }
 export interface IError {

@@ -5,5 +5,5 @@ export declare class OpenDb extends BaseDb {
     private onError_;
     constructor(onSuccess: () => void, onError: (err: IError) => void);
     execute(): void;
-    private setPrimaryKey_();
+    private setPrimaryKey_;
 }

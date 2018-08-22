@@ -22,5 +22,5 @@ export declare class BaseHelper {
     protected getPrimaryKey(tableName: any): string;
     protected getKeyPath(tableName: any): string;
     protected getAllCombinationOfWord(word: string, isArray?: boolean): any[];
-    private getCombination_(word);
+    private getCombination_;
 }

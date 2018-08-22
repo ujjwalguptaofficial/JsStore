@@ -5,9 +5,9 @@ export declare class Join extends BaseSelect {
     queryStack: ITableJoin[];
     currentQueryStackIndex: number;
     constructor(query: ISelectJoin, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
-    private onTransactionCompleted_(e);
-    private executeWhereJoinLogic_(joinQuery, query);
-    private executeRightJoin_(joinQuery, query);
-    private executeWhereUndefinedLogicForJoin_(joinQuery, query);
-    private startExecutionJoinLogic_();
+    private onTransactionCompleted_;
+    private executeWhereJoinLogic_;
+    private executeRightJoin_;
+    private executeWhereUndefinedLogicForJoin_;
+    private startExecutionJoinLogic_;
 }

@@ -7,7 +7,7 @@ export declare class Base extends BaseHelper {
     errorOccured: boolean;
     errorCount: number;
     rowAffected: number;
-    onSuccess: (result?) => void;
+    onSuccess: (result?: any) => void;
     onError: (err: IError) => void;
     objectStore: IDBObjectStore;
     query: any;

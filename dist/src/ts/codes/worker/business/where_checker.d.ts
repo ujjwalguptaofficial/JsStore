@@ -9,7 +9,7 @@ export declare class WhereChecker {
     status: boolean;
     constructor(where: object);
     check(rowValue: any): boolean;
-    private checkIn(column, value);
-    private checkLike(column, value);
-    private checkComparisionOp(column, value, symbol);
+    private checkIn;
+    private checkLike;
+    private checkComparisionOp;
 }

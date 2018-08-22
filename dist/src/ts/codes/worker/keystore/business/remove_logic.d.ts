@@ -5,6 +5,6 @@ export declare class Remove extends Base {
     rowAffected: number;
     constructor(key: string, onSuccess: (recordRemoved: number) => void, onError: (err: IError) => void);
     execute(): void;
-    private initTransaction();
-    private onTransactionCompleted();
+    private initTransaction;
+    private onTransactionCompleted;
 }

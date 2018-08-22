@@ -8,6 +8,6 @@ export declare class Instance extends Base {
     constructor(query: IInsert, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void);
     execute(): void;
     private onTransactionCompleted_;
-    private onQueryFinished_();
-    private insertData_(values);
+    private onQueryFinished_;
+    private insertData_;
 }

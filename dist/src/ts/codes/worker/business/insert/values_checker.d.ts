@@ -9,5 +9,5 @@ export declare class ValuesChecker {
     valueCheckerObj: ValueChecker;
     constructor(table: Table, values: object[]);
     checkAndModifyValues(onFinish: (isError: boolean) => void): void;
-    private startChecking();
+    private startChecking;
 }

@@ -1,19 +1,19 @@
 export declare enum OCCURENCE {
     First = "f",
     Last = "l",
-    Any = "a",
+    Any = "a"
 }
 export declare enum WEBWORKER_STATUS {
     Registered = "registerd",
     Failed = "failed",
-    NotStarted = "not_started",
+    NotStarted = "not_started"
 }
 export declare enum CONNECTION_STATUS {
     Connected = "connected",
     Closed = "closed",
     NotStarted = "not_started",
     UnableToStart = "unable_to_start",
-    ClosedByJsStore = "closed_by_jsstore",
+    ClosedByJsStore = "closed_by_jsstore"
 }
 export declare enum DATA_TYPE {
     String = "string",
@@ -22,7 +22,7 @@ export declare enum DATA_TYPE {
     Number = "number",
     Boolean = "boolean",
     Null = "null",
-    DateTime = "date_time",
+    DateTime = "date_time"
 }
 export declare enum ERROR_TYPE {
     UndefinedColumn = "undefined_column",
@@ -46,7 +46,7 @@ export declare enum ERROR_TYPE {
     InvalidConfig = "invalid_config",
     DbBlocked = "Db_blocked",
     IndexedDbUndefined = "indexeddb_undefined",
-    IndexedDbBlocked = "indexeddb_blocked",
+    IndexedDbBlocked = "indexeddb_blocked"
 }
 export declare enum QUERY_OPTION {
     Where = "where",
@@ -68,11 +68,11 @@ export declare enum QUERY_OPTION {
     Skip = "skip",
     Limit = "limit",
     And = "and",
-    IgnoreCase = "ignoreCase",
+    IgnoreCase = "ignoreCase"
 }
 export declare enum IDB_MODE {
     ReadOnly = "readonly",
-    ReadWrite = "readwrite",
+    ReadWrite = "readwrite"
 }
 export declare enum API {
     CreateDb = "create_db",
@@ -94,5 +94,5 @@ export declare enum API {
     ExportJson = "export_json",
     ChangeLogStatus = "change_log_status",
     Transaction = "transaction",
-    FinishTransaction = "finish_transaction",
+    FinishTransaction = "finish_transaction"
 }

@@ -1,7 +1,7 @@
 import { IError } from "../interfaces";
 export declare class Base {
     results: any;
-    onSuccess: (results) => void;
+    onSuccess: (results: any) => void;
     onError: (err: IError) => void;
     errorOccured: boolean;
     errorCount: number;
