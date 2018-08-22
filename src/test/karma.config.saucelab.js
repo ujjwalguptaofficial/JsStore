@@ -18,9 +18,9 @@ module.exports = function (config) {
 
     createCuStomeLauncher('chrome', 'linux', 'latest', true);
     createCuStomeLauncher('chrome', 'macOS 10.13', 'latest', true);
+    createCuStomeLauncher('chrome', 'Windows 10', 'latest', true);
     createCuStomeLauncher('firefox', 'macOS 10.13', 'latest', true);
     createCuStomeLauncher('firefox', 'Windows 10', '61.0', true);
-    createCuStomeLauncher('chrome', 'Windows 10', 'latest', true);
     createCuStomeLauncher('microsoftedge', 'Windows 10', 'latest', true);
     //createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
     createCuStomeLauncher('Safari', 'macOS 10.13', 'latest', true);
