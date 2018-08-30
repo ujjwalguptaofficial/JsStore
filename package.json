@@ -16,7 +16,8 @@
     "postbuild:ci": "npm run test:sauce",
     "webpack:dev": "webpack --config src/webpack/webpack.dev.config.js",
     "webpack:prod": "webpack --config src/webpack/webpack.prod.config.js",
-    "deploy": "npm run build:all"
+    "deploy": "npm run build:all",
+    "postinstall": "opencollective-postinstall"
   },
   "repository": {
     "type": "git",
@@ -58,5 +59,12 @@
     "webpack-cli": "^2.1.5",
     "webpack-merge": "^4.1.4"
   },
-  "displayName": "JsStore"
+  "displayName": "JsStore",
+  "dependencies": {
+    "opencollective": "^1.0.3"
+  },
+  "collective": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/JsStore"
+  }
 }
