@@ -12,6 +12,7 @@ export declare class BaseSelect extends Base {
         orQuery: object;
     };
     isSubQuery: boolean;
+    isOrderWithLimit: boolean;
     protected removeDuplicates(): void;
     protected onQueryFinished(): void;
 }

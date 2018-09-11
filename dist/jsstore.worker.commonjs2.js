@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.4.0 - 22/08/2018
+ * @license :jsstore - V2.4.1 - 11/09/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -681,6 +681,7 @@ var ERROR_TYPE;
     ERROR_TYPE["DbBlocked"] = "Db_blocked";
     ERROR_TYPE["IndexedDbUndefined"] = "indexeddb_undefined";
     ERROR_TYPE["IndexedDbBlocked"] = "indexeddb_blocked";
+    ERROR_TYPE["InvalidColumn"] = "invalid_column";
 })(ERROR_TYPE || (ERROR_TYPE = {}));
 var QUERY_OPTION;
 (function (QUERY_OPTION) {
@@ -1630,8 +1631,13 @@ var LogHelper = /** @class */ (function () {
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].InvalidOp:
                 errMsg = "Invalid Config '" + this.info_['Config'] + " '";
+                break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].DbBlocked:
                 errMsg = "database is blocked, cant be deleted right now";
+                break;
+            case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].InvalidColumn:
+                errMsg = "Invalid column name " + this.info_['column'];
+                break;
             default:
                 errMsg = this.message;
                 break;
@@ -2240,28 +2246,36 @@ var Instance = /** @class */ (function (_super) {
         _this.onTransactionCompleted_ = function () {
             if (_this.errorOccured === false) {
                 _this.processOrderBy();
-                if (_this.query.distinct) {
-                    var groupBy = [];
-                    var result = _this.results[0];
-                    for (var key in result) {
-                        groupBy.push(key);
+                if (_this.errorOccured === false) {
+                    if (_this.isOrderWithLimit === true) {
+                        _this.results = _this.results.slice(0, _this.query.limit);
                     }
-                    var primaryKey = _this.getPrimaryKey(_this.query.from), index = groupBy.indexOf(primaryKey);
-                    groupBy.splice(index, 1);
-                    _this.query.groupBy = groupBy.length > 0 ? groupBy : null;
-                }
-                if (_this.query.groupBy) {
-                    if (_this.query.aggregate) {
-                        _this.executeAggregateGroupBy();
+                    if (_this.query.distinct) {
+                        var groupBy = [];
+                        var result = _this.results[0];
+                        for (var key in result) {
+                            groupBy.push(key);
+                        }
+                        var primaryKey = _this.getPrimaryKey(_this.query.from), index = groupBy.indexOf(primaryKey);
+                        groupBy.splice(index, 1);
+                        _this.query.groupBy = groupBy.length > 0 ? groupBy : null;
                     }
-                    else {
-                        _this.processGroupBy();
+                    if (_this.query.groupBy) {
+                        if (_this.query.aggregate) {
+                            _this.executeAggregateGroupBy();
+                        }
+                        else {
+                            _this.processGroupBy();
+                        }
                     }
+                    else if (_this.query.aggregate) {
+                        _this.processAggregateQry();
+                    }
+                    _this.onSuccess(_this.results);
                 }
-                else if (_this.query.aggregate) {
-                    _this.processAggregateQry();
+                else {
+                    _this.onErrorOccured(_this.error, true);
                 }
-                _this.onSuccess(_this.results);
             }
         };
         _this.onError = onError;
@@ -2270,6 +2284,9 @@ var Instance = /** @class */ (function (_super) {
         _this.skipRecord = query.skip;
         _this.limitRecord = query.limit;
         _this.tableName = query.from;
+        if (query.order && query.order.by && query.limit != null) {
+            _this.isOrderWithLimit = true;
+        }
         return _this;
     }
     Instance.prototype.execute = function () {
@@ -2438,6 +2455,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Helper", function() { return Helper; });
 /* harmony import */ var _group_by_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(32);
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3);
+/* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(18);
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2448,6 +2466,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 
 var Helper = /** @class */ (function (_super) {
@@ -2478,7 +2497,11 @@ var Helper = /** @class */ (function (_super) {
                 });
             };
             var column = this.getColumnInfo(orderColumn_1);
-            if (column.dataType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+            if (column == null) {
+                this.errorOccured = true;
+                this.error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].InvalidColumn, { column: orderColumn_1 });
+            }
+            else if (column.dataType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
                 if (order.type === 'asc') {
                     sortAlphabetInAsc();
                 }
@@ -3045,17 +3068,27 @@ var Where = /** @class */ (function (_super) {
             _this.errorOccured = true;
             _this.onErrorOccured(e);
         };
-        if (this.skipRecord && this.limitRecord) {
-            this.executeSkipAndLimitForWhere_();
-        }
-        else if (this.skipRecord) {
-            this.executeSkipForWhere_();
-        }
-        else if (this.limitRecord) {
-            this.executeLimitForWhere_();
+        if (this.isOrderWithLimit === false) {
+            if (this.skipRecord && this.limitRecord) {
+                this.executeSkipAndLimitForWhere_();
+            }
+            else if (this.skipRecord) {
+                this.executeSkipForWhere_();
+            }
+            else if (this.limitRecord) {
+                this.executeLimitForWhere_();
+            }
+            else {
+                this.executeSimpleForWhere_();
+            }
         }
         else {
-            this.executeSimpleForWhere_();
+            if (this.skipRecord) {
+                this.executeSkipForWhere_();
+            }
+            else {
+                this.executeSimpleForWhere_();
+            }
         }
     };
     return Where;
@@ -3683,6 +3716,7 @@ var BaseSelect = /** @class */ (function (_super) {
         _this.results = [];
         _this.sorted = false;
         _this.isSubQuery = false;
+        _this.isOrderWithLimit = false;
         return _this;
     }
     BaseSelect.prototype.removeDuplicates = function () {

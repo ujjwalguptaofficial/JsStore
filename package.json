@@ -1,6 +1,6 @@
 {
   "name": "jsstore",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "JsStore is an IndexedDB Wrapper. It makes IndexedDB super easy with its SQL like apis.",
   "main": "dist/jsstore.commonjs2.js",
   "types": "dist/src/ts/codes/main/index.d.ts",
@@ -17,7 +17,7 @@
     "webpack:dev": "webpack --config src/webpack/webpack.dev.config.js",
     "webpack:prod": "webpack --config src/webpack/webpack.prod.config.js",
     "deploy": "npm run build:all",
-    "postinstall": "opencollective-postinstall"
+    "postinstall": "opencollective postinstall"
   },
   "repository": {
     "type": "git",
