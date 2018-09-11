@@ -91,8 +91,13 @@ export class LogHelper implements IError {
                 break;
             case ERROR_TYPE.InvalidOp:
                 errMsg = "Invalid Config '" + this.info_['Config'] + " '";
+                break;
             case ERROR_TYPE.DbBlocked:
                 errMsg = `database is blocked, cant be deleted right now`;
+                break;
+            case ERROR_TYPE.InvalidColumn:
+                errMsg = `Invalid column name ${this.info_['column']}`;
+                break;
             default:
                 errMsg = this.message;
                 break;

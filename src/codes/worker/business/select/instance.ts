@@ -13,6 +13,9 @@ export class Instance extends Helper {
         this.skipRecord = query.skip;
         this.limitRecord = query.limit;
         this.tableName = query.from as string;
+        if (query.order && query.order.by && query.limit != null) {
+            this.isOrderWithLimit = true;
+        }
     }
 
     execute() {
@@ -141,29 +144,37 @@ export class Instance extends Helper {
     private onTransactionCompleted_ = () => {
         if (this.errorOccured === false) {
             this.processOrderBy();
-            if (this.query.distinct) {
-                const groupBy = [];
-                const result = this.results[0];
-                for (const key in result) {
-                    groupBy.push(key);
+            if (this.errorOccured === false) {
+                if (this.isOrderWithLimit === true) {
+                    this.results = this.results.slice(0, this.query.limit);
                 }
-                const primaryKey = this.getPrimaryKey(this.query.from),
-                    index = groupBy.indexOf(primaryKey);
-                groupBy.splice(index, 1);
-                this.query.groupBy = groupBy.length > 0 ? groupBy : null;
-            }
-            if (this.query.groupBy) {
-                if (this.query.aggregate) {
-                    this.executeAggregateGroupBy();
+                if (this.query.distinct) {
+                    const groupBy = [];
+                    const result = this.results[0];
+                    for (const key in result) {
+                        groupBy.push(key);
+                    }
+                    const primaryKey = this.getPrimaryKey(this.query.from),
+                        index = groupBy.indexOf(primaryKey);
+                    groupBy.splice(index, 1);
+                    this.query.groupBy = groupBy.length > 0 ? groupBy : null;
                 }
-                else {
-                    this.processGroupBy();
+                if (this.query.groupBy) {
+                    if (this.query.aggregate) {
+                        this.executeAggregateGroupBy();
+                    }
+                    else {
+                        this.processGroupBy();
+                    }
                 }
+                else if (this.query.aggregate) {
+                    this.processAggregateQry();
+                }
+                this.onSuccess(this.results);
             }
-            else if (this.query.aggregate) {
-                this.processAggregateQry();
+            else {
+                this.onErrorOccured(this.error, true);
             }
-            this.onSuccess(this.results);
         }
     }
 
