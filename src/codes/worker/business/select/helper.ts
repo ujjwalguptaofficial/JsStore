@@ -1,5 +1,6 @@
 import { GroupByHelper } from "./group_by_helper";
-import { DATA_TYPE } from "../../enums";
+import { DATA_TYPE, ERROR_TYPE } from "../../enums";
+import { LogHelper } from "../../log_helper";
 
 export class Helper extends GroupByHelper {
 
@@ -33,7 +34,11 @@ export class Helper extends GroupByHelper {
                     });
                 };
             const column = this.getColumnInfo(orderColumn);
-            if (column.dataType === DATA_TYPE.String) {
+            if (column == null) {
+                this.errorOccured = true;
+                this.error = new LogHelper(ERROR_TYPE.InvalidColumn, { column: orderColumn });
+            }
+            else if (column.dataType === DATA_TYPE.String) {
                 if (order.type === 'asc') {
                     sortAlphabetInAsc();
                 }

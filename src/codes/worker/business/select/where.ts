@@ -157,17 +157,28 @@ export class Where extends Like {
             this.onErrorOccured(e);
         };
 
-        if (this.skipRecord && this.limitRecord) {
-            this.executeSkipAndLimitForWhere_();
-        }
-        else if (this.skipRecord) {
-            this.executeSkipForWhere_();
-        }
-        else if (this.limitRecord) {
-            this.executeLimitForWhere_();
+        if (this.isOrderWithLimit === false) {
+            if (this.skipRecord && this.limitRecord) {
+                this.executeSkipAndLimitForWhere_();
+            }
+            else if (this.skipRecord) {
+                this.executeSkipForWhere_();
+            }
+            else if (this.limitRecord) {
+                this.executeLimitForWhere_();
+            }
+            else {
+                this.executeSimpleForWhere_();
+            }
         }
         else {
-            this.executeSimpleForWhere_();
+            if (this.skipRecord) {
+                this.executeSkipForWhere_();
+            }
+            else {
+                this.executeSimpleForWhere_();
+            }
         }
+
     }
 }
