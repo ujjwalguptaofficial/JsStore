@@ -41,5 +41,31 @@ module.exports = [{
         plugins: [
             new SmartBannerPlugin(banner)
         ]
+    },
+    {
+        name: "jsstore.worker.ie",
+        entry: "./src/codes/worker/ie_index.ts",
+        mode: 'none',
+        module: {
+            rules: [{
+                test: /\.ts$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: 'ts-loader'
+                }
+            }, {
+                test: /\.js$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: 'babel-loader'
+                }
+            }]
+        },
+        resolve: {
+            extensions: ['.ts', '.js'] // '' is needed to find modules like "jquery"
+        },
+        plugins: [
+            new SmartBannerPlugin(banner)
+        ]
     }
 ];

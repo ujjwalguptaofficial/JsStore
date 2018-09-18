@@ -37,6 +37,7 @@
   },
   "homepage": "https://github.com/ujjwalguptaofficial/JsStore#readme",
   "devDependencies": {
+    "babel-loader": "^7.1.4",
     "chai": "^4.1.2",
     "copy-webpack-plugin": "^4.5.2",
     "karma": "^1.7.1",
