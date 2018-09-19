@@ -1,4 +1,4 @@
-import "./promise_polyfill";
+import { addPromise } from "../promise_polyfill/polyfill";
 export const addFind = () => {
     if (!Array.prototype.find) {
         Object.defineProperty(Array.prototype, 'find', {
@@ -97,3 +97,4 @@ export const addFindIndex = () => {
 
 addFind();
 addFindIndex();
+addPromise();
