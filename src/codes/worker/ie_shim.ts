@@ -1,3 +1,4 @@
+import "./promise_polyfill";
 export const addFind = () => {
     if (!Array.prototype.find) {
         Object.defineProperty(Array.prototype, 'find', {

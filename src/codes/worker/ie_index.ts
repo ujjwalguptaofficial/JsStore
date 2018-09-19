@@ -1,3 +1,2 @@
-export * from './query_executor';
-export * from './start';
+export * from './index';
 export * from './ie_shim';
