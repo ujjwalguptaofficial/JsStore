@@ -4,8 +4,8 @@ import {
 import {
     Student
 } from "../model/student";
-import * as $ from "jquery";
-
+import * as jQuery from "jquery";
+const $ = jQuery.default;
 export class StudentGrid {
 
     getHtml() {

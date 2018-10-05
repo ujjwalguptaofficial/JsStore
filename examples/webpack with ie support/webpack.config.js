@@ -2,9 +2,20 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
     entry: './src/app.js',
-    devtool: 'inline-source-map',
+    mode: 'development',
+    devtool: 'source-map',
     module: {
-        rules: []
+        rules: [{
+            test: /\.js|.jsx?$/,
+            exclude: /(node_modules|bower_components)/,
+            use: {
+                loader: 'babel-loader',
+                query: {
+                    presets: ['es2015']
+                }
+            },
+            
+        }]
     },
     resolve: {
         extensions: ['.js']
