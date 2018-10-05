@@ -6,7 +6,6 @@ before_install:
 before_script:
     - npm install
 script:
-  - npm update
   - npm run build:ci
 after_success:
   script: 
