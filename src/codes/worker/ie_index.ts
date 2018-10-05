@@ -1,2 +1,2 @@
 export * from './index';
-export * from './ie_shim';
+export * from '../ie_polyfill/index';

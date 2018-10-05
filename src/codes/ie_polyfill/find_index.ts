@@ -1,6 +1,6 @@
-export const addFind = () => {
-    if (!Array.prototype.find) {
-        Object.defineProperty(Array.prototype, 'find', {
+export const addFindIndex = () => {
+    if (!Array.prototype.findIndex) {
+        Object.defineProperty(Array.prototype, 'findIndex', {
             value: function (predicate) {
                 // 1. Let O be ? ToObject(this value).
                 if (this == null) {
@@ -28,17 +28,17 @@ export const addFind = () => {
                     // a. Let Pk be ! ToString(k).
                     // b. Let kValue be ? Get(O, Pk).
                     // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
-                    // d. If testResult is true, return kValue.
+                    // d. If testResult is true, return k.
                     const kValue = o[k];
                     if (predicate.call(thisArg, kValue, k, o)) {
-                        return kValue;
+                        return k;
                     }
                     // e. Increase k by 1.
                     k++;
                 }
 
-                // 7. Return undefined.
-                return undefined;
+                // 7. Return -1.
+                return -1;
             },
             configurable: true,
             writable: true
