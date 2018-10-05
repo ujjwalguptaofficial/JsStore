@@ -7,13 +7,13 @@ export class APromise {
             if (this.thenCallBack != null) {
                 this.thenCallBack(value);
             }
-        }
+        };
 
         const reject = (value) => {
             if (this.catchCallBack != null) {
                 this.catchCallBack(value);
             }
-        }
+        };
 
         // execute the callback
         try {

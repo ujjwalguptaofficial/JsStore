@@ -6,8 +6,7 @@ function initDb() {
     console.log('initiate database');
     var isIE = /*@cc_on!@*/ false || !!document.documentMode;
     if(isIE){
-        Con = new JsStore.Instance();
-        console.log('not runing in worker');
+        Con = new JsStore.Instance(new Worker('../output/jsstore.worker.ie.js'));
     }
     else{
         Con = new JsStore.Instance(new Worker('../output/jsstore.worker.js'));
@@ -25,7 +24,6 @@ function initDb() {
         }
     }).catch(function (err) {
         console.log(err);
-        //alert(err.Message);
     });
 }
 

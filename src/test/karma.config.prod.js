@@ -9,7 +9,9 @@ module.exports = function (config) {
                 timeout: 10000 // 6 seconds - upped from 2 seconds
             }
         },
-        files: ['output/jsstore.min.js', 'output/jsstore.worker.min.js', ...files.list_of_files],
+        files: ['output/jsstore.min.js', 'output/jsstore.worker.min.js',
+            'output/jsstore.worker.ie.min.js', ...files.list_of_files
+        ],
         proxies: {
             '/test/': '/base/test/',
             // '/scripts/': 'base/test/scripts/',
