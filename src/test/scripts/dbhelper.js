@@ -5,13 +5,13 @@ var Con;
 function initDb() {
     console.log('initiate database');
     var isIE = /*@cc_on!@*/ false || !!document.documentMode;
-    if(isIE){
+    if (isIE) {
+        console.log('test runing for ie');
         Con = new JsStore.Instance(new Worker('../output/jsstore.worker.ie.js'));
-    }
-    else{
+    } else {
         Con = new JsStore.Instance(new Worker('../output/jsstore.worker.js'));
     }
-   
+
     Con.isDbExist('Demo').then(function (exist) {
         console.log('db exist :' + exist);
         if (exist) {
