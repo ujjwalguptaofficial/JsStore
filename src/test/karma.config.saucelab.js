@@ -15,16 +15,14 @@ module.exports = function (config) {
             extendedDebugging: debug
         }
     }
-    createCuStomeLauncher('firefox', 'macOS 10.13', 'latest', true);
-    createCuStomeLauncher('firefox', 'Windows 10', '61.0', true);
-    createCuStomeLauncher('chrome', 'linux', 'latest', true);
-    createCuStomeLauncher('chrome', 'macOS 10.13', 'latest', true);
-    createCuStomeLauncher('chrome', 'Windows 10', 'latest', true);
-    createCuStomeLauncher('microsoftedge', 'Windows 10', 'latest', true);
-    //createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
-    createCuStomeLauncher('Safari', 'macOS 10.13', 'latest', true);
-    //createCuStomeLauncher('iPhone 8 Simulator', 'iOS 11.2', null, true);
-    //createCuStomeLauncher('Android Emulator', 'Android 6.0', null, true);
+    // createCuStomeLauncher('firefox', 'macOS 10.13', 'latest', true);
+    // createCuStomeLauncher('firefox', 'Windows 10', '61.0', true);
+    // createCuStomeLauncher('chrome', 'linux', 'latest', true);
+    // createCuStomeLauncher('chrome', 'macOS 10.13', 'latest', true);
+    // createCuStomeLauncher('chrome', 'Windows 10', 'latest', true);
+    // createCuStomeLauncher('microsoftedge', 'Windows 10', 'latest', true);
+    createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
+    // createCuStomeLauncher('Safari', 'macOS 10.13', 'latest', true);
     
 
     config.set({
