@@ -57,34 +57,7 @@ function createConfigsForAllLibraryTargetForWebWorker() {
     return configs;
 }
 
-function createConfigsForAllLibraryTargetForWebWorkerWithIE() {
-    const libraryTargetWorker = [{
-        type: "var",
-        name: 'jsstore.worker.ie.js'
-    }, {
-        type: "commonjs2",
-        name: 'jsstore.worker.ie.commonjs2.js'
-    }];
-
-    const getConfigForTaget = function (target) {
-        return {
-            devtool: 'source-map',
-            output: {
-                path: path.join(__dirname, "./../output"),
-                filename: target.name,
-                library: 'JsStoreWorker',
-                libraryTarget: target.type
-            }
-        }
-    }
-    var configs = [];
-    libraryTargetWorker.forEach(function (target) {
-        configs.push(merge(baseConfig[2], getConfigForTaget(target)));
-    })
-    return configs;
-}
 
 module.exports = [...createConfigsForAllLibraryTarget(),
-    ...createConfigsForAllLibraryTargetForWebWorker(),
-    ...createConfigsForAllLibraryTargetForWebWorkerWithIE()
+    ...createConfigsForAllLibraryTargetForWebWorker()
 ]
