@@ -55,7 +55,7 @@
     "ts-loader": "^4.5.0",
     "tslint": "^5.11.0",
     "typescript": "^2.9.2",
-    "uglify-js": "^3.4.7",
+    "uglify-js": "^3.4.9",
     "webpack": "^4.16.5",
     "webpack-cli": "^2.1.5",
     "webpack-merge": "^4.1.4"
