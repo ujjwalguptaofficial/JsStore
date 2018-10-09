@@ -71,14 +71,14 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./node_modules/file-loader/dist/cjs.js?name=scripts/jsstore.worker.ie.js!./node_modules/jsstore/dist/jsstore.worker.ie.js":
-/*!*********************************************************************************************************************************!*\
-  !*** ./node_modules/file-loader/dist/cjs.js?name=scripts/jsstore.worker.ie.js!./node_modules/jsstore/dist/jsstore.worker.ie.js ***!
-  \*********************************************************************************************************************************/
+/***/ "./node_modules/file-loader/dist/cjs.js?name=scripts/jsstore.worker.ie.min.js!./node_modules/jsstore/dist/jsstore.worker.ie.min.js":
+/*!*****************************************************************************************************************************************!*\
+  !*** ./node_modules/file-loader/dist/cjs.js?name=scripts/jsstore.worker.ie.min.js!./node_modules/jsstore/dist/jsstore.worker.ie.min.js ***!
+  \*****************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__.p + "scripts/jsstore.worker.ie.js";
+module.exports = __webpack_require__.p + "scripts/jsstore.worker.ie.min.js";
 
 /***/ }),
 
@@ -10466,7 +10466,7 @@ return jQuery;
 /***/ (function(module, exports) {
 
 /*!
- * @license :jsstore - V2.4.1 - 11/09/2018
+ * @license :jsstore - V2.4.3 - 09/10/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -12355,7 +12355,7 @@ var JsStore = _interopRequireWildcard(_jsstore);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-var fileUrl = __webpack_require__(/*! file-loader?name=scripts/jsstore.worker.ie.js!../../node_modules/jsstore/dist/jsstore.worker.ie */ "./node_modules/file-loader/dist/cjs.js?name=scripts/jsstore.worker.ie.js!./node_modules/jsstore/dist/jsstore.worker.ie.js");
+var fileUrl = __webpack_require__(/*! file-loader?name=scripts/jsstore.worker.ie.min.js!../../node_modules/jsstore/dist/jsstore.worker.ie.min.js */ "./node_modules/file-loader/dist/cjs.js?name=scripts/jsstore.worker.ie.min.js!./node_modules/jsstore/dist/jsstore.worker.ie.min.js");
 
 // This will ensure that we are using only one instance. 
 // Otherwise due to multiple instance multiple worker will be created.
