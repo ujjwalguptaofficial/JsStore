@@ -7,7 +7,7 @@ function initDb() {
     var isIE = /*@cc_on!@*/ false || !!document.documentMode;
     if (isIE) {
         console.log('test runing for ie');
-        Con = new JsStore.Instance(new Worker('../output/jsstore.worker.ie.js'));
+        Con = new JsStore.Instance(new Worker('../output/jsstore.worker.ie.min.js'));
     } else {
         Con = new JsStore.Instance(new Worker('../output/jsstore.worker.js'));
     }
