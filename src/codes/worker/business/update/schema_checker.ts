@@ -61,7 +61,7 @@ export class SchemaChecker {
         const checkFurther = value != null;
         if (column.dataType && checkFurther) {
             if (type !== column.dataType && type !== 'object') {
-                log = new LogHelper(ERROR_TYPE.BadDataType, { ColumnName: column.name });
+                log = new LogHelper(ERROR_TYPE.WrongDataType, { ColumnName: column.name });
             }
         }
 
@@ -70,7 +70,7 @@ export class SchemaChecker {
             const allowedOp = ['+', '-', '*', '/'];
             for (const prop of Object.keys(value)) {
                 if (allowedOp.indexOf(prop) < 0 && column.dataType && type !== column.dataType) {
-                    log = new LogHelper(ERROR_TYPE.BadDataType, { ColumnName: column.name });
+                    log = new LogHelper(ERROR_TYPE.WrongDataType, { ColumnName: column.name });
                 }
                 break;
             }

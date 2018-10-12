@@ -74,9 +74,9 @@ export class LogHelper implements IError {
             case ERROR_TYPE.NullValue:
                 errMsg = "Null value is not allowed for column '" + this.info_['ColumnName'] + "'";
                 break;
-            case ERROR_TYPE.BadDataType:
+            case ERROR_TYPE.WrongDataType:
                 errMsg = "Supplied value for column '" + this.info_['ColumnName'] +
-                    "' does not have valid type";
+                    "' have wrong data type";
                 break;
             case ERROR_TYPE.NextJoinNotExist: errMsg = "Next join details not supplied";
                 break;

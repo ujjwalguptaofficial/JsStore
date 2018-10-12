@@ -42,7 +42,7 @@ export class ValueChecker {
         // check datatype
         else if (column.dataType && !this.isNull_(this.value[column.name]) &&
             this.getType_(this.value[column.name]) !== column.dataType) {
-            this.onValidationError_(ERROR_TYPE.BadDataType, { ColumnName: column.name });
+            this.onValidationError_(ERROR_TYPE.WrongDataType, { ColumnName: column.name });
         }
     }
 
