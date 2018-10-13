@@ -21,8 +21,7 @@ describe('Test update complex case', function () {
             done(err);
         })
 
-        Con.update({
-            in: 'Products',
+        Con.update({ in: 'Products',
             where: where_query,
             set: {
                 ProductName: 'Cofee'
@@ -61,8 +60,7 @@ describe('Test update complex case', function () {
             done(err);
         })
 
-        Con.update({
-            in: 'Products',
+        Con.update({ in: 'Products',
             where: where_query,
             set: {
                 ProductName: 'Tea'
@@ -99,12 +97,44 @@ describe('Test update complex case', function () {
             done(err);
         })
 
-        Con.update({
-            in: 'Products',
+        Con.update({ in: 'Products',
             where: where_query,
             set: {
                 ProductName: 'Cofee_Tea'
             }
+        }).then(function (results) {
+            expect(results).to.be.an('number').to.equal(count);
+            done();
+        }).
+        catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('update with ignore case', function (done) {
+        var count;
+        Con.count({
+            from: 'Customers',
+            ignoreCase: true,
+            where: [{
+                City: 'bHuBaneSwar'
+            }]
+        }).then(function (results) {
+            count = results;
+        }).
+        catch(function (err) {
+            done(err);
+        });
+
+        Con.update({ in: "Customers",
+            ignoreCase: true,
+            set: {
+                ContactName: 'Ujjwal',
+                City: 'bhubaneswar'
+            },
+            where: [{
+                City: 'bHuBaneSwar'
+            }]
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(count);
             done();

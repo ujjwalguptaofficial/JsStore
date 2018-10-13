@@ -216,8 +216,8 @@ describe('Test update with operator option', function () {
             expect(results).to.be.an('number').to.equal(1);
         }).catch(function (err) {
             var error = {
-                "message": "Supplied value for column 'ProductName' does not have valid type",
-                "type": "bad_data_type"
+                "message": "Supplied value for column 'ProductName' have wrong data type",
+                "type": "wrong_data_type"
             };
             expect(err).to.be.an('object').eql(error);
             done();

@@ -158,8 +158,8 @@ describe('Multi Entry Test', function () {
         }).
         catch(function (err) {
             var error = {
-                "message": "Supplied value for column 'tags' does not have valid type",
-                "type": "bad_data_type"
+                "message": "Supplied value for column 'tags' have wrong data type",
+                "type": "wrong_data_type"
             };
             expect(err).to.be.an('object').eql(error);
             done();

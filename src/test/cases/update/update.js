@@ -310,7 +310,7 @@ describe('Test update Api', function () {
         });
     });
 
-    it('remove with operator - != (for number)', function (done) {
+    it('update with operator - != (for number)', function (done) {
         var count;
         Con.count({
             from: 'Products',
