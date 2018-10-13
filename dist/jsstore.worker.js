@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.4.3 - 09/10/2018
+ * @license :jsstore - V2.5.0 - 13/10/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -670,7 +670,7 @@ var ERROR_TYPE;
     ERROR_TYPE["EnableSearchOff"] = "enable_search_off";
     ERROR_TYPE["InvalidOp"] = "invalid_operator";
     ERROR_TYPE["NullValue"] = "null_value";
-    ERROR_TYPE["BadDataType"] = "bad_data_type";
+    ERROR_TYPE["WrongDataType"] = "wrong_data_type";
     ERROR_TYPE["NextJoinNotExist"] = "next_join_not_exist";
     ERROR_TYPE["TableNotExist"] = "table_not_exist";
     ERROR_TYPE["DbNotExist"] = "db_not_exist";
@@ -1613,9 +1613,9 @@ var LogHelper = /** @class */ (function () {
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].NullValue:
                 errMsg = "Null value is not allowed for column '" + this.info_['ColumnName'] + "'";
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].BadDataType:
+            case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].WrongDataType:
                 errMsg = "Supplied value for column '" + this.info_['ColumnName'] +
-                    "' does not have valid type";
+                    "' have wrong data type";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].NextJoinNotExist:
                 errMsg = "Next join details not supplied";
@@ -5174,7 +5174,7 @@ var ValueChecker = /** @class */ (function () {
         // check datatype
         else if (column.dataType && !this.isNull_(this.value[column.name]) &&
             this.getType_(this.value[column.name]) !== column.dataType) {
-            this.onValidationError_(_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].BadDataType, { ColumnName: column.name });
+            this.onValidationError_(_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].WrongDataType, { ColumnName: column.name });
         }
     };
     ValueChecker.prototype.checkAndModifyColumnValue_ = function (column) {
@@ -5269,15 +5269,16 @@ var Instance = /** @class */ (function (_super) {
     Instance.prototype.processWhereArrayQry = function () {
         var _this = this;
         var selectObject = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](this.query, function (results) {
+            var _a, _b;
             var keyList = [];
             var pkey = _this.getPrimaryKey(_this.query.from);
             results.forEach(function (item) {
                 keyList.push(item[pkey]);
             });
             results = null;
-            _this.query.where = {};
-            _this.query.where[pkey] = {};
-            _this.query.where[pkey][_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].In] = keyList;
+            var whereQry = (_a = {}, _a[pkey] = (_b = {}, _b[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].In] = keyList, _b), _a);
+            _this.query.ignoreCase = null;
+            _this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Where] = whereQry;
             _this.processWhere_();
         }, this.onError);
         selectObject.isSubQuery = true;
@@ -5683,7 +5684,7 @@ var Instance = /** @class */ (function (_super) {
         try {
             this.initTransaction();
             if (this.query.where != null) {
-                if (this.query.where.or || Array.isArray(this.query.where)) {
+                if (this.query.where.or || this.isArray(this.query.where)) {
                     this.executeComplexLogic_();
                 }
                 else {
@@ -5714,6 +5715,7 @@ var Instance = /** @class */ (function (_super) {
             });
             results = null;
             var whereQry = (_a = {}, _a[key] = (_b = {}, _b[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].In] = inQuery, _b), _a);
+            _this.query.ignoreCase = null;
             _this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Where] = whereQry;
             _this.initTransaction();
             _this.goToWhereLogic();
@@ -6144,7 +6146,7 @@ var SchemaChecker = /** @class */ (function () {
         var checkFurther = value != null;
         if (column.dataType && checkFurther) {
             if (type !== column.dataType && type !== 'object') {
-                log = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].BadDataType, { ColumnName: column.name });
+                log = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].WrongDataType, { ColumnName: column.name });
             }
         }
         // check allowed operators
@@ -6153,7 +6155,7 @@ var SchemaChecker = /** @class */ (function () {
             for (var _i = 0, _a = Object.keys(value); _i < _a.length; _i++) {
                 var prop = _a[_i];
                 if (allowedOp.indexOf(prop) < 0 && column.dataType && type !== column.dataType) {
-                    log = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].BadDataType, { ColumnName: column.name });
+                    log = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].WrongDataType, { ColumnName: column.name });
                 }
                 break;
             }

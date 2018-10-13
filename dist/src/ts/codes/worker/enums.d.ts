@@ -36,7 +36,7 @@ export declare enum ERROR_TYPE {
     EnableSearchOff = "enable_search_off",
     InvalidOp = "invalid_operator",
     NullValue = "null_value",
-    BadDataType = "bad_data_type",
+    WrongDataType = "wrong_data_type",
     NextJoinNotExist = "next_join_not_exist",
     TableNotExist = "table_not_exist",
     DbNotExist = "db_not_exist",
