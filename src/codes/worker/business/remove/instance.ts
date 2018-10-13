@@ -46,9 +46,9 @@ export class Instance extends Where {
                 keyList.push(item[pkey]);
             });
             results = null;
-            this.query.where = {};
-            this.query.where[pkey] = {};
-            this.query.where[pkey][QUERY_OPTION.In] = keyList;
+            const whereQry = { [pkey]: { [QUERY_OPTION.In]: keyList } };
+            this.query.ignoreCase = null;
+            this.query[QUERY_OPTION.Where] = whereQry;
             this.processWhere_();
         }, this.onError);
         selectObject.isSubQuery = true;

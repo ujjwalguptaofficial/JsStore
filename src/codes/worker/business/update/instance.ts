@@ -48,6 +48,7 @@ export class Instance extends Where {
             });
             results = null;
             const whereQry = { [key]: { [QUERY_OPTION.In]: inQuery } };
+            this.query.ignoreCase = null;
             this.query[QUERY_OPTION.Where] = whereQry;
             this.initTransaction();
             this.goToWhereLogic();
