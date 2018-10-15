@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.7.0 - 15/10/2018
+ * @license :jsstore - V2.7.1 - 15/10/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -121,6 +121,8 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony import */ var _sqlweb_helper__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(6);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SqlWeb", function() { return _sqlweb_helper__WEBPACK_IMPORTED_MODULE_5__["SqlWeb"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "useSqlWeb", function() { return _sqlweb_helper__WEBPACK_IMPORTED_MODULE_5__["useSqlWeb"]; });
 
 
 
@@ -725,6 +727,7 @@ var Config = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SqlWeb", function() { return SqlWeb; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "useSqlWeb", function() { return useSqlWeb; });
 /* tslint:disable-next-line */
 var SqlWeb;
 /**
