@@ -6,7 +6,7 @@ export let SqlWeb: ISqlWeb;
  * supply sqlweb
  * @param {*} value
  */
-const useSqlWeb = (value) => {
+export const useSqlWeb = (value) => {
     SqlWeb = value;
 };
 
