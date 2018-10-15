@@ -1,6 +1,6 @@
 {
   "name": "jsstore",
-  "version": "2.5.0",
+  "version": "2.7.0",
   "description": "JsStore is an IndexedDB Wrapper. It makes IndexedDB super easy with its SQL like apis.",
   "main": "dist/jsstore.commonjs2.js",
   "types": "dist/src/ts/codes/main/index.d.ts",
@@ -16,7 +16,8 @@
     "postbuild:ci": "npm run test:sauce",
     "webpack:dev": "webpack --config src/webpack/webpack.dev.config.js",
     "webpack:prod": "webpack --config src/webpack/webpack.prod.config.js",
-    "deploy": "npm run build:all",
+    "move:deploy_file": "node src/deploy_helper.js",
+    "deploy": "npm run build:all && npm run move:deploy_file",
     "postinstall": "opencollective postinstall"
   },
   "repository": {
@@ -40,6 +41,7 @@
     "babel-loader": "^7.1.4",
     "chai": "^4.1.2",
     "copy-webpack-plugin": "^4.5.2",
+    "fs-extra": "^7.0.0",
     "karma": "^1.7.1",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",

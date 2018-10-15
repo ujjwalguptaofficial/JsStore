@@ -160,4 +160,12 @@ export declare class Instance extends InstanceHelper {
      * @memberof Instance
      */
     transaction(query: ITranscationQry): Promise<any>;
+    /**
+     * run sql code
+     *
+     * @param {(string | object)} query
+     * @returns {Promise<any>}
+     * @memberof Instance
+     */
+    runSql(query: string | object): Promise<any>;
 }
