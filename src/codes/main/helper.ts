@@ -7,3 +7,4 @@ import { Config } from "./config";
 export const enableLog = () => {
     Config.isLogEnabled = true;
 };
+

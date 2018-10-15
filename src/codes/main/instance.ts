@@ -7,6 +7,7 @@ import {
 } from "./interfaces";
 import { Config } from "./config";
 import { ISet } from "../worker/interfaces";
+import { SqlWeb } from "./sqlweb_helper";
 
 export class Instance extends InstanceHelper {
 
@@ -308,5 +309,17 @@ export class Instance extends InstanceHelper {
             name: API.Transaction,
             query: query
         });
+    }
+
+    /**
+     * run sql code
+     *
+     * @param {(string | object)} query
+     * @returns {Promise<any>}
+     * @memberof Instance
+     */
+    runSql(query: string | object): Promise<any> {
+        const result = SqlWeb.parseSql(query);
+        return this[result.api](result.data);
     }
 }
