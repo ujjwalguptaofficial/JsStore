@@ -139,3 +139,12 @@ export interface ITranscationQry {
     logic: (results: any) => void;
     data: any;
 }
+
+export interface ISqlWeb {
+    parseSql: (sql: string | object) => ISqlWebResult;
+}
+
+interface ISqlWebResult {
+    api: string;
+    data: any;
+}

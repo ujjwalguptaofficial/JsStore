@@ -1,5 +1,4 @@
-import { LogHelper } from "./log_helper";
-import { ERROR_TYPE, API } from "./enums";
+import { API } from "./enums";
 import { InstanceHelper } from "./instance_helper";
 import {
     IDataBase, ISelect, ICount, IInsert,
@@ -7,7 +6,7 @@ import {
 } from "./interfaces";
 import { Config } from "./config";
 import { ISet } from "../worker/interfaces";
-import { SqlWeb } from "./sqlweb_helper";
+import { Util } from "./util";
 
 export class Instance extends InstanceHelper {
 
@@ -319,7 +318,7 @@ export class Instance extends InstanceHelper {
      * @memberof Instance
      */
     runSql(query: string | object): Promise<any> {
-        const result = SqlWeb.parseSql(query);
+        const result = Util.sqlWeb.parseSql(query);
         return this[result.api](result.data);
     }
 }
