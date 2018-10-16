@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.7.1 - 15/10/2018
+ * @license :jsstore - V2.7.2 - 16/10/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -119,10 +119,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _model_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(8);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Column", function() { return _model_index__WEBPACK_IMPORTED_MODULE_4__["Column"]; });
 
-/* harmony import */ var _sqlweb_helper__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(6);
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SqlWeb", function() { return _sqlweb_helper__WEBPACK_IMPORTED_MODULE_5__["SqlWeb"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "useSqlWeb", function() { return _sqlweb_helper__WEBPACK_IMPORTED_MODULE_5__["useSqlWeb"]; });
+/* harmony import */ var _global__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(10);
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "useSqlWeb", function() { return _global__WEBPACK_IMPORTED_MODULE_5__["useSqlWeb"]; });
 
 
 
@@ -142,7 +140,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
 /* harmony import */ var _instance_helper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3);
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5);
-/* harmony import */ var _sqlweb_helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6);
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6);
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -446,7 +444,7 @@ var Instance = /** @class */ (function (_super) {
      * @memberof Instance
      */
     Instance.prototype.runSql = function (query) {
-        var result = _sqlweb_helper__WEBPACK_IMPORTED_MODULE_3__["SqlWeb"].parseSql(query);
+        var result = _util__WEBPACK_IMPORTED_MODULE_3__["Util"].sqlWeb.parseSql(query);
         return this[result.api](result.data);
     };
     return Instance;
@@ -726,18 +724,23 @@ var Config = /** @class */ (function () {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SqlWeb", function() { return SqlWeb; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "useSqlWeb", function() { return useSqlWeb; });
-/* tslint:disable-next-line */
-var SqlWeb;
-/**
- *
- * supply sqlweb
- * @param {*} value
- */
-var useSqlWeb = function (value) {
-    SqlWeb = value;
-};
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Util", function() { return Util; });
+var Util = /** @class */ (function () {
+    function Util() {
+    }
+    Object.defineProperty(Util, "sqlWeb", {
+        get: function () {
+            return Util.sqlWeb_ == null ? window['SqlWeb'] : Util.sqlWeb_;
+        },
+        set: function (value) {
+            Util.sqlWeb_ = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return Util;
+}());
+
 
 
 /***/ }),
@@ -821,6 +824,25 @@ var Column = /** @class */ (function () {
     return Column;
 }());
 
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "useSqlWeb", function() { return useSqlWeb; });
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6);
+
+/**
+ *
+ * supply sqlweb
+ * @param {*} value
+ */
+var useSqlWeb = function (value) {
+    _util__WEBPACK_IMPORTED_MODULE_0__["Util"].sqlWeb = value;
+};
 
 
 /***/ })

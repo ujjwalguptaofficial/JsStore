@@ -1,3 +1,4 @@
 export declare class Util {
-    _isLogEnabled: boolean;
+    private static sqlWeb_;
+    static sqlWeb: any;
 }
