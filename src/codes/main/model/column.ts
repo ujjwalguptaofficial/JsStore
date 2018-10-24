@@ -12,6 +12,8 @@ export class Column implements IColumn {
     multiEntry: boolean;
     enableSearch: boolean;
 
+    keyPath: string[];
+
     constructor(name: string) {
         this.name = name;
     }

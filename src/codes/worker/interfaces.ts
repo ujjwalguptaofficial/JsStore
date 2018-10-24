@@ -53,6 +53,8 @@ export interface IColumn {
     default?;
     multiEntry?: boolean;
     enableSearch?: boolean;
+
+    keyPath?: string[];
 }
 
 export interface ISelect {

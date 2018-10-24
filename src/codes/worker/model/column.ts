@@ -12,6 +12,7 @@ export class Column implements IColumn {
     default;
     multiEntry: boolean;
     enableSearch: boolean;
+    keyPath: string[];
 
     constructor(key: IColumn, tableName: string) {
         if (key.name != null) {
@@ -29,6 +30,7 @@ export class Column implements IColumn {
         this.default = key.default;
         this.multiEntry = key.multiEntry == null ? false : key.multiEntry;
         this.enableSearch = key.enableSearch == null ? true : key.enableSearch;
+        this.keyPath = key.keyPath;
     }
 
 }

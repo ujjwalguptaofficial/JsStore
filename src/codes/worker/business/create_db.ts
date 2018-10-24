@@ -49,34 +49,29 @@ export class CreateDb extends BaseDb {
             const dbConnection = (event as any).target.result;
             const createObjectStore = (item: TableHelper, index) => {
                 try {
+                    let store: IDBObjectStore;
                     if (item.primaryKey.length > 0) {
                         this.activeDb.tables[index].primaryKey = item.primaryKey;
-                        const store = dbConnection.createObjectStore(item.name, {
+                        store = dbConnection.createObjectStore(item.name, {
                             keyPath: item.primaryKey
-                        });
-                        item.columns.forEach((column: Column) => {
-                            if (column.enableSearch === true) {
-                                const options = column.primaryKey ? { unique: true } : { unique: column.unique };
-                                options['multiEntry'] = column.multiEntry;
-                                store.createIndex(column.name, column.name, options);
-                                if (column.autoIncrement) {
-                                    KeyStore.set(`JsStore_${this.dbName}_${item.name}_${column.name}_Value`, 0);
-                                }
-                            }
                         });
                     }
                     else {
-                        const store = dbConnection.createObjectStore(item.name, {
+                        store = dbConnection.createObjectStore(item.name, {
                             autoIncrement: true
                         });
-                        item.columns.forEach((column: Column) => {
-                            const options = { unique: column.unique, multiEntry: column.multiEntry };
-                            store.createIndex(column.name, column.name, options);
+                    }
+                    item.columns.forEach((column: Column) => {
+                        if (column.enableSearch === true) {
+                            const options = column.primaryKey ? { unique: true } : { unique: column.unique };
+                            options['multiEntry'] = column.multiEntry;
+                            const keyPath = column.keyPath == null ? column.name : column.keyPath;
+                            store.createIndex(column.name, keyPath, options);
                             if (column.autoIncrement) {
                                 KeyStore.set(`JsStore_${this.dbName}_${item.name}_${column.name}_Value`, 0);
                             }
-                        });
-                    }
+                        }
+                    });
                     listofTableCreated.push(item.name);
                     // setting the table version
                     KeyStore.set(`JsStore_${this.dbName}_${item.name}_Version`, item.version);
