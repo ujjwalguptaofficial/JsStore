@@ -3,7 +3,8 @@ describe('Db Test', function () {
 
     it('getDbList api test', function (done) {
         Con.getDbList().then(function (result) {
-            expect(result).to.be.an('array').to.deep.equal(['Demo', 'MultiEntryTest']);
+            var dbList = ['Demo', 'MultiEntryTest', 'pinCodeDetails'];
+            expect(result).to.be.an('array').to.length(3);
             done();
         }).catch(function (err) {
             done(err);
@@ -14,7 +15,7 @@ describe('Db Test', function () {
         Con.dropDb().then(function () {
             Con.getDbList().then(function (result) {
                 console.log(result);
-                expect(result).to.be.an('array').to.deep.equal(['Demo']);
+                expect(result).to.be.an('array').to.deep.equal(['Demo', 'pinCodeDetails']);
                 done();
             }).catch(function (err) {
                 done(err);
@@ -43,7 +44,7 @@ describe('Db Test', function () {
 
     it('getDbList api test after dropping demo', function (done) {
         Con.getDbList().then(function (result) {
-            expect(result).to.be.an('array').to.deep.equal([]);
+            expect(result).to.be.an('array').to.deep.equal(['pinCodeDetails']);
             done();
         }).catch(function (err) {
             done(err);
