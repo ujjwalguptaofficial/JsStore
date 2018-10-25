@@ -10,6 +10,7 @@ export declare class Column implements IColumn {
     default: any;
     multiEntry: boolean;
     enableSearch: boolean;
+    keyPath: string[];
     constructor(name: string);
     options(columnOptions: COL_OPTION[]): this;
     setDataType(type: DATA_TYPE): this;

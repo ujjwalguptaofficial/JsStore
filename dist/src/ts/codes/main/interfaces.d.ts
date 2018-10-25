@@ -35,6 +35,7 @@ export interface IColumn {
     default?: any;
     multiEntry?: boolean;
     enableSearch?: boolean;
+    keyPath?: string[];
 }
 export interface ISelect {
     from: any;

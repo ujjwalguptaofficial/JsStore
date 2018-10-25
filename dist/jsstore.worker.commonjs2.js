@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.7.2 - 16/10/2018
+ * @license :jsstore - V2.8.0 - 25/10/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -2056,34 +2056,29 @@ var CreateDb = /** @class */ (function (_super) {
             var dbConnection = event.target.result;
             var createObjectStore = function (item, index) {
                 try {
+                    var store_1;
                     if (item.primaryKey.length > 0) {
                         _this.activeDb.tables[index].primaryKey = item.primaryKey;
-                        var store_1 = dbConnection.createObjectStore(item.name, {
+                        store_1 = dbConnection.createObjectStore(item.name, {
                             keyPath: item.primaryKey
-                        });
-                        item.columns.forEach(function (column) {
-                            if (column.enableSearch === true) {
-                                var options = column.primaryKey ? { unique: true } : { unique: column.unique };
-                                options['multiEntry'] = column.multiEntry;
-                                store_1.createIndex(column.name, column.name, options);
-                                if (column.autoIncrement) {
-                                    _keystore_index__WEBPACK_IMPORTED_MODULE_1__["set"]("JsStore_" + _this.dbName + "_" + item.name + "_" + column.name + "_Value", 0);
-                                }
-                            }
                         });
                     }
                     else {
-                        var store_2 = dbConnection.createObjectStore(item.name, {
+                        store_1 = dbConnection.createObjectStore(item.name, {
                             autoIncrement: true
                         });
-                        item.columns.forEach(function (column) {
-                            var options = { unique: column.unique, multiEntry: column.multiEntry };
-                            store_2.createIndex(column.name, column.name, options);
+                    }
+                    item.columns.forEach(function (column) {
+                        if (column.enableSearch === true) {
+                            var options = column.primaryKey ? { unique: true } : { unique: column.unique };
+                            options['multiEntry'] = column.multiEntry;
+                            var keyPath = column.keyPath == null ? column.name : column.keyPath;
+                            store_1.createIndex(column.name, keyPath, options);
                             if (column.autoIncrement) {
                                 _keystore_index__WEBPACK_IMPORTED_MODULE_1__["set"]("JsStore_" + _this.dbName + "_" + item.name + "_" + column.name + "_Value", 0);
                             }
-                        });
-                    }
+                        }
+                    });
                     listofTableCreated.push(item.name);
                     // setting the table version
                     _keystore_index__WEBPACK_IMPORTED_MODULE_1__["set"]("JsStore_" + _this.dbName + "_" + item.name + "_Version", item.version);
@@ -2196,6 +2191,7 @@ var Column = /** @class */ (function () {
         this.default = key.default;
         this.multiEntry = key.multiEntry == null ? false : key.multiEntry;
         this.enableSearch = key.enableSearch == null ? true : key.enableSearch;
+        this.keyPath = key.keyPath;
     }
     return Column;
 }());

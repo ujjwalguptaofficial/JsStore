@@ -9,5 +9,6 @@ export declare class Column implements IColumn {
     default: any;
     multiEntry: boolean;
     enableSearch: boolean;
+    keyPath: string[];
     constructor(key: IColumn, tableName: string);
 }

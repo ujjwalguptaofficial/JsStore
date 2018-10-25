@@ -6,7 +6,7 @@ module.exports = function (config) {
         frameworks: ['mocha', 'chai'],
         client: {
             mocha: {
-                timeout: 50000
+                timeout: 60000
             }
         },
         files: ['output/jsstore.min.js', 'output/jsstore.worker.min.js',
