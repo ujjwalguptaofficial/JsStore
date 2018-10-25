@@ -50,7 +50,7 @@ describe('keyPath test', function () {
                 officetypeAndDeliverystatus: ['B.O', 'Delivery']
             }
         }).then(function (results) {
-            expect(results).to.be.an('array').length(127091);
+            expect(results).to.be.an('array').length(4204);
             done();
         }).catch(err => {
             done(err);
