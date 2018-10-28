@@ -51,6 +51,26 @@ describe('Db Test', function () {
         });
     });
 
+    it('drop db test', function (done) {
+        Con.openDb('pinCodeDetails').then(() => {
+            Con.dropDb().then(function () {
+                done();
+            }).catch(function (err) {
+                done(err);
+            });
+        })
+    });
+
+    it('getDbList api test after dropping pinCodeDetails', function (done) {
+        Con.getDbList().then(function (result) {
+            expect(result).to.be.an('array').to.deep.equal([]);
+            done();
+        }).catch(function (err) {
+            done(err);
+        });
+    });
+
+
     it('open db test - invalid db', function (done) {
         Con.openDb('invalid_db').then(function (results) {
             done();
