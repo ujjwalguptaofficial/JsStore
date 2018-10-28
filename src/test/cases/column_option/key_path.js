@@ -1,61 +1,68 @@
 describe('keyPath test', function () {
-    it('terminate connection', function (done) {
-        Con.terminate().then(function () {
-            Con = new JsStore.Instance();
-            done();
-        }).catch(function (error) {
-            done(error);
-        });
-    });
+    // Internet Explorer 6-11
+    var isIE = /*@cc_on!@*/ false || !!document.documentMode;
 
-    it('create db', function (done) {
-        var dbName = 'pinCodeDetails';
-        Con.isDbExist(dbName).then(isExist => {
-            if (isExist) {
-                Con.openDb(dbName).then(done)
-            } else {
-                var db = getDbSchemaOfPinCodes();
-                Con.createDb(db).then(function (result) {
-                    done();
-                })
-            }
-        }).catch(err => {
-            done(err);
-        })
-    });
-
-    it('bulk insert pinCodes', function (done) {
-        var time1 = performance.now();
-        $.getJSON("test/static/pinCodes.json", function (results) {
-            Con.bulkInsert({
-                into: 'pinCodes',
-                values: results,
-            }).then(function (results) {
-                console.log('pinCodes inserted');
-                var time2 = performance.now();
-                console.log((time2 - time1) / 1000);
-                expect(results).to.be.an('undefined');
+    // Edge 20+
+    var isEdge = !isIE && !!window.StyleMedia;
+    if (!isIE || !isEdge) {
+        it('terminate connection', function (done) {
+            Con.terminate().then(function () {
+                Con = new JsStore.Instance();
                 done();
-            }).
-            catch(function (err) {
-                done(err);
+            }).catch(function (error) {
+                done(error);
             });
         });
-    })
 
-    it('selecting data based on keyPath', function (done) {
-        Con.select({
-            from: 'pinCodes',
-            where: {
-                officetypeAndDeliverystatus: ['B.O', 'Delivery']
-            }
-        }).then(function (results) {
-            expect(results).to.be.an('array').length(4204);
-            done();
-        }).catch(err => {
-            done(err);
+        it('create db', function (done) {
+            var dbName = 'pinCodeDetails';
+            Con.isDbExist(dbName).then(isExist => {
+                if (isExist) {
+                    Con.openDb(dbName).then(done)
+                } else {
+                    var db = getDbSchemaOfPinCodes();
+                    Con.createDb(db).then(function (result) {
+                        done();
+                    })
+                }
+            }).catch(err => {
+                done(err);
+            })
+        });
+
+        it('bulk insert pinCodes', function (done) {
+            var time1 = performance.now();
+            $.getJSON("test/static/pinCodes.json", function (results) {
+                Con.bulkInsert({
+                    into: 'pinCodes',
+                    values: results,
+                }).then(function (results) {
+                    console.log('pinCodes inserted');
+                    var time2 = performance.now();
+                    console.log((time2 - time1) / 1000);
+                    expect(results).to.be.an('undefined');
+                    done();
+                }).
+                catch(function (err) {
+                    done(err);
+                });
+            });
         })
-    })
+
+        it('selecting data based on keyPath', function (done) {
+            Con.select({
+                from: 'pinCodes',
+                where: {
+                    officetypeAndDeliverystatus: ['B.O', 'Delivery']
+                }
+            }).then(function (results) {
+                expect(results).to.be.an('array').length(4204);
+                done();
+            }).catch(err => {
+                done(err);
+            })
+        })
+    }
 })
 
 function getDbSchemaOfPinCodes() {
