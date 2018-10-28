@@ -6,7 +6,7 @@ module.exports = function (config) {
         process.exit(1)
     }
     var customLaunchers = {};
-    var createCuStomeLauncher = function (browser, platform, version, debug) {
+    var createCustomLauncher = function (browser, platform, version, debug) {
         customLaunchers[platform + "_" + browser + "_" + version] = {
             base: 'SauceLabs',
             browserName: browser,
@@ -15,14 +15,14 @@ module.exports = function (config) {
             extendedDebugging: debug
         }
     }
-    createCuStomeLauncher('firefox', 'macOS 10.13', 'latest', true);
-    createCuStomeLauncher('firefox', 'Windows 10', '61.0', true);
-    createCuStomeLauncher('chrome', 'linux', 'latest', true);
-    createCuStomeLauncher('chrome', 'macOS 10.13', 'latest', true);
-    createCuStomeLauncher('chrome', 'Windows 10', 'latest', true);
-    createCuStomeLauncher('microsoftedge', 'Windows 10', 'latest', true);
+    createCustomLauncher('firefox', 'macOS 10.13', 'latest', true);
+    createCustomLauncher('firefox', 'Windows 10', '61.0', true);
+    createCustomLauncher('chrome', 'linux', 'latest', true);
+    createCustomLauncher('chrome', 'macOS 10.13', 'latest', true);
+    createCustomLauncher('chrome', 'Windows 10', 'latest', true);
+    //createCuStomeLauncher('microsoftedge', 'Windows 10', 'latest', true);
     //createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
-    createCuStomeLauncher('Safari', 'macOS 10.13', 'latest', true);
+    createCustomLauncher('Safari', 'macOS 10.13', 'latest', true);
 
 
     config.set({
