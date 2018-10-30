@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.8.0 - 25/10/2018
+ * @license :jsstore - V2.8.1 - 30/10/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -101,6 +101,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony import */ var _start__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(73);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "initialize", function() { return _start__WEBPACK_IMPORTED_MODULE_1__["initialize"]; });
+
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(19);
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Config", function() { return _config__WEBPACK_IMPORTED_MODULE_2__["Config"]; });
+
 
 
 
