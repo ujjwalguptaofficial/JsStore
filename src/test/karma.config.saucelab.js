@@ -19,7 +19,7 @@ module.exports = function (config) {
     createCustomLauncher('firefox', 'Windows 10', '61.0', true);
     createCustomLauncher('chrome', 'linux', 'latest', true);
     createCustomLauncher('chrome', 'macOS 10.13', 'latest', true);
-    createCustomLauncher('chrome', 'Windows 10', '69.0.3497', true);
+    createCustomLauncher('chrome', 'Windows 10', 'latest', true);
    //createCustomLauncher('microsoftedge', 'Windows 10', '17', true);
     //createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
     createCustomLauncher('Safari', 'macOS 10.13', 'latest', true);
