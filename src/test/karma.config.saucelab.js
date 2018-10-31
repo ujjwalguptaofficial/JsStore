@@ -24,7 +24,7 @@ module.exports = function (config) {
    
    //createCustomLauncher('microsoftedge', 'Windows 10', '17', true);
     //createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
-    createCustomLauncher('Safari', 'macOS 10.13', 'latest', true);
+    //createCustomLauncher('Safari', 'macOS 10.13', 'latest', true);
 
 
     config.set({
