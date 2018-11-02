@@ -64,7 +64,7 @@ module.exports = function (config) {
         browserNoActivityTimeout: 240000,
         customLaunchers: customLaunchers,
         browsers: Object.keys(customLaunchers),
-        concurrency: Infinity,
+        //concurrency: Infinity,
         singleRun: true,
         htmlReporter: {
             outputFile: 'report/units.html',
