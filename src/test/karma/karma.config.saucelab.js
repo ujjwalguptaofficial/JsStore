@@ -13,7 +13,7 @@ module.exports = function (config) {
             platform: platform,
             version: version,
             extendedDebugging: debug,
-            "record-video": true,
+            "record-screenshots": true,
             flags: [
                 '--no-sandbox',
                 '--headless',
