@@ -32,7 +32,7 @@ module.exports = function (config) {
         frameworks: ['mocha', 'chai'],
         client: {
             mocha: {
-                timeout: 60000
+                timeout: 200000
             }
         },
         files: ['output/jsstore.min.js', 'output/jsstore.worker.min.js', ...files.list_of_files],
