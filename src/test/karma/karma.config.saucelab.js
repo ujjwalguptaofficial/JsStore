@@ -12,7 +12,14 @@ module.exports = function (config) {
             browserName: browser,
             platform: platform,
             version: version,
-            extendedDebugging: debug
+            extendedDebugging: debug,
+            flags: [
+                '--no-sandbox',
+                '--headless',
+                '--disable-gpu',
+                '--disable-translate',
+                '--disable-extensions'
+            ]
         }
     }
 
