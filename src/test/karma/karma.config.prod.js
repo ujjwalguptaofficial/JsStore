@@ -1,15 +1,15 @@
 process.env.CHROME_BIN = require('puppeteer').executablePath();
-var files = require('./files');
+var files = require('../files');
 module.exports = function (config) {
     config.set({
-        basePath: '../',
+        basePath: '../../',
         frameworks: ['mocha', 'chai'],
         client: {
             mocha: {
                 timeout: 60000
             }
         },
-        files: ['output/jsstore.min.js', 'output/jsstore.worker.min.js',
+        files: ['test/karma/prod.global.js', 'output/jsstore.min.js', 'output/jsstore.worker.min.js',
             'output/jsstore.worker.ie.min.js', ...files.list_of_files
         ],
         proxies: {

@@ -9,7 +9,16 @@ function initDb() {
         console.log('test runing for ie');
         Con = new JsStore.Instance(new Worker('../output/jsstore.worker.ie.min.js'));
     } else {
-        Con = new JsStore.Instance(new Worker('../output/jsstore.worker.js'));
+        if (typeof isRuningForSauceLab != 'undefined' && isRuningForSauceLab) {
+            console.log("test runing for sauce lab");
+            Con = new JsStore.Instance(new Worker('../output/jsstore.worker.min.js'));
+        } else if (typeof isRuningForProd != 'undefined' && isRuningForProd) {
+            console.log("test runing for production");
+            Con = new JsStore.Instance(new Worker('../output/jsstore.worker.min.js'));
+        } else {
+            Con = new JsStore.Instance(new Worker('output/jsstore.worker.js'));
+        }
+
     }
 
     Con.isDbExist('Demo').then(function (exist) {

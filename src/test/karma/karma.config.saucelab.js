@@ -1,4 +1,4 @@
-var files = require('./files');
+var files = require('../files');
 module.exports = function (config) {
 
     if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
@@ -28,14 +28,14 @@ module.exports = function (config) {
 
 
     config.set({
-        basePath: '../',
+        basePath: '../../',
         frameworks: ['mocha', 'chai'],
         client: {
             mocha: {
                 timeout: 200000
             }
         },
-        files: ['output/jsstore.min.js', 'output/jsstore.worker.min.js', ...files.list_of_files],
+        files: ['test/karma/sauce.global.js', 'output/jsstore.min.js', 'output/jsstore.worker.min.js', ...files.list_of_files],
         proxies: {
             '/test/': '/base/test/',
             '/output/': '/base/output/'
@@ -44,6 +44,7 @@ module.exports = function (config) {
         port: 9876, // karma web server port
         colors: true,
         logLevel: config.LOG_INFO,
+        captureConsole: true,
         browserConsoleLogOptions: {
             terminal: false
         },
@@ -63,9 +64,9 @@ module.exports = function (config) {
         captureTimeout: 240000, //120000,
         browserNoActivityTimeout: 240000,
         customLaunchers: customLaunchers,
-        browserDisconnectTolerance: 3,
+        browserDisconnectTolerance: 1,
         browsers: Object.keys(customLaunchers),
-        //concurrency: Infinity,
+        concurrency: 5,
         singleRun: true,
         htmlReporter: {
             outputFile: 'report/units.html',

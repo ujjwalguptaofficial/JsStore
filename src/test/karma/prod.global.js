@@ -1,0 +1,1 @@
+const isRuningForProd = true;

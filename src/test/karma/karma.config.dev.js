@@ -1,8 +1,8 @@
 process.env.CHROME_BIN = require('puppeteer').executablePath();
-var files = require('./files');
+var files = require('../files');
 module.exports = function (config) {
     config.set({
-        basePath: '../',
+        basePath: '../../',
         frameworks: ['mocha', 'chai'],
         client: {
             mocha: {
