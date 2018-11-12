@@ -42,6 +42,7 @@ module.exports = function (config) {
                 timeout: 200000
             }
         },
+        browserDisconnectTimeout: 60000,
         files: ['test/karma/sauce.global.js', 'output/jsstore.min.js', 'output/jsstore.worker.min.js', ...files.list_of_files],
         proxies: {
             '/test/': '/base/test/',
