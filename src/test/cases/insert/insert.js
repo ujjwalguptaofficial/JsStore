@@ -98,12 +98,38 @@ describe('Test insert', function () {
 
     it('insert suppliers - using return Data', function (done) {
         $.getJSON("test/static/Suppliers.json", function (results) {
+           // const value = 
+            let values = [{
+                SupplierName: "Exotic Liquid",
+                ContactName: "Charlotte Cooper",
+                Address: "49 Gilbert St.",
+                City: "Londona",
+                PostalCode: "43951-1",
+                Country: "UK",
+                Phone: "12345"
+            },{
+                SupplierName: "Exotsic Liquid",
+                ContactName: "Charlotte Cooper",
+                Address: "49 Gilbert St.",
+                City: "Londona",
+                PostalCode: "43951-1",
+                Country: "UK",
+                Phone: "12345"
+            },{
+                SupplierName: "Exotsic Liqduid",
+                ContactName: "Charlotte Cooper",
+                Address: "49 Gilbert St.",
+                City: "Londona",
+                PostalCode: "43951-1",
+                Country: "UK",
+                Phone: "12345"
+            }];
             Con.insert({
                 into: 'Suppliers',
-                values: results,
+                values: [...results, ...values],
                 return: true
             }).then(function (results) {
-                expect(results).to.be.an('array').length(29);
+                expect(results).to.be.an('array').length(32);
                 done();
             }).catch(function (err) {
                 done(err);

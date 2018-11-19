@@ -103,17 +103,7 @@ export class Base extends BaseHelper {
                             filterValue = filterValues[0];
                             occurence = OCCURENCE.First;
                         }
-                        if (occurence === OCCURENCE.First) {
-                            this.getAllCombinationOfWord(filterValue).forEach((item) => {
-                                this.executeWhereLogic(columnName,
-                                    { '-': { low: item, high: item + '\uffff' } },
-                                    '-',"next");
-                            });
-                            delete this.query.where[columnName][QUERY_OPTION.Like];
-                        }
-                        else {
-                            this.executeLikeLogic(columnName, filterValue, occurence);
-                        }
+                        this.executeLikeLogic(columnName, filterValue, occurence);
                     } break;
                     case QUERY_OPTION.In:
                         this.executeInLogic(columnName, value[QUERY_OPTION.In]);

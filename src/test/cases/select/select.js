@@ -360,4 +360,26 @@ describe('Test Select Api', function () {
             done(err);
         })
     });
+
+    it('select * from suppliers where PostalCode like - "43951%"', function (done) {
+        Con.select({
+            from: 'Suppliers',
+            where: {
+                PostalCode: {
+                    like: '43951%'
+                }
+            }
+        }).
+        then(function (results) {
+            if (results.length > 0) {
+                expect(results).to.be.an('array').length(3);
+                done();
+            } else {
+                done('no results');
+            }
+        }).
+        catch(function (err) {
+            done(err);
+        });
+    });
 });
