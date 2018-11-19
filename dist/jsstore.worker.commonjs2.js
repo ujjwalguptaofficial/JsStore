@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.8.1 - 30/10/2018
+ * @license :jsstore - V2.8.2 - 19/11/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -3782,7 +3782,6 @@ var Base = /** @class */ (function (_super) {
             _this.onErrorOccured(e);
         };
         _this.goToWhereLogic = function () {
-            var _this = this;
             var columnName = this.getObjectFirstKey(this.query.where);
             if (this.query.ignoreCase === true) {
                 this.query.where = this.makeQryInCaseSensitive(this.query.where);
@@ -3809,15 +3808,7 @@ var Base = /** @class */ (function (_super) {
                                     filterValue = filterValues[0];
                                     occurence = _enums__WEBPACK_IMPORTED_MODULE_3__["OCCURENCE"].First;
                                 }
-                                if (occurence === _enums__WEBPACK_IMPORTED_MODULE_3__["OCCURENCE"].First) {
-                                    this.getAllCombinationOfWord(filterValue).forEach(function (item) {
-                                        _this.executeWhereLogic(columnName, { '-': { low: item, high: item + '\uffff' } }, '-', "next");
-                                    });
-                                    delete this.query.where[columnName][_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Like];
-                                }
-                                else {
-                                    this.executeLikeLogic(columnName, filterValue, occurence);
-                                }
+                                this.executeLikeLogic(columnName, filterValue, occurence);
                             }
                             break;
                         case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In:
