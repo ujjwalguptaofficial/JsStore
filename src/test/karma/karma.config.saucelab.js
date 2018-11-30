@@ -25,11 +25,11 @@ module.exports = function (config) {
         }
     }
 
-    createCustomLauncher('chrome', 'Windows 8.1', 'latest', true);
-    // createCustomLauncher('firefox', 'macOS 10.13', 'latest', true);
-    // createCustomLauncher('firefox', 'Windows 10', '61.0', true);
-    // createCustomLauncher('chrome', 'linux', 'latest', true);
-    // createCustomLauncher('chrome', 'macOS 10.13', 'latest', true);
+    createCustomLauncher('chrome', 'Windows 7', 'latest', true);
+    createCustomLauncher('firefox', 'macOS 10.13', 'latest', true);
+    createCustomLauncher('firefox', 'Windows 10', '61.0', true);
+    createCustomLauncher('chrome', 'linux', 'latest', true);
+    createCustomLauncher('chrome', 'macOS 10.13', 'latest', true);
 
     //createCustomLauncher('microsoftedge', 'Windows 10', '17', true);
     //createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
