@@ -99,7 +99,7 @@ describe('Test insert', function () {
     it('insert suppliers - using return Data', function (done) {
         $.getJSON("test/static/Suppliers.json", function (results) {
            // const value = 
-            let values = [{
+            var values = [{
                 SupplierName: "Exotic Liquid",
                 ContactName: "Charlotte Cooper",
                 Address: "49 Gilbert St.",
