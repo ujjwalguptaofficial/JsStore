@@ -14,6 +14,7 @@ module.exports = function (config) {
             version: version,
             extendedDebugging: debug,
             "record-screenshots": true,
+            //  'seleniumVersion': '3.14.0',
             flags: [
                 '--no-sandbox',
                 '--headless',
@@ -24,7 +25,7 @@ module.exports = function (config) {
         }
     }
 
-    createCustomLauncher('chrome', 'Windows 10', 'latest', true);
+    createCustomLauncher('chrome', 'Windows 8.1', 'latest', true);
     // createCustomLauncher('firefox', 'macOS 10.13', 'latest', true);
     // createCustomLauncher('firefox', 'Windows 10', '61.0', true);
     // createCustomLauncher('chrome', 'linux', 'latest', true);
