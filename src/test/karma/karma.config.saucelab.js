@@ -14,6 +14,7 @@ module.exports = function (config) {
             version: version,
             extendedDebugging: debug,
             "record-screenshots": true,
+            'seleniumVersion': '3.14.0',
             flags: [
                 '--no-sandbox',
                 '--headless',
