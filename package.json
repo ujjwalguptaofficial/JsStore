@@ -13,7 +13,7 @@
     "build:all": "npm run build:dev && npm run build:prod",
     "test:sauce": "karma start src/test/karma/karma.config.saucelab.js",
     "build:ci": "npm run build:all",
-    "postbuild:ci": "npm run test:sauce",
+    "postbuild:ci": "npm run test:sauce -b1",
     "webpack:dev": "webpack --config src/webpack/webpack.dev.config.js",
     "webpack:prod": "webpack --config src/webpack/webpack.prod.config.js",
     "move:deploy_file": "node src/deploy_helper.js",
@@ -40,6 +40,7 @@
   "devDependencies": {
     "babel-loader": "^7.1.4",
     "chai": "^4.2.0",
+    "commander": "^2.19.0",
     "copy-webpack-plugin": "^4.5.2",
     "fs-extra": "^7.0.0",
     "karma": "^3.1.1",

@@ -1,4 +1,12 @@
+var program = require('commander');
 var files = require('../files');
+
+program.option('-b1, --batch1', 'start the batch1').
+option('-b2, --batch2', 'start the batch1').
+parse(process.argv);
+
+
+
 module.exports = function (config) {
 
     if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
@@ -24,17 +32,20 @@ module.exports = function (config) {
             ]
         }
     }
-
-    createCustomLauncher('chrome', 'Windows 7', 'latest', true);
-    createCustomLauncher('firefox', 'macOS 10.13', 'latest', true);
-    createCustomLauncher('firefox', 'Windows 10', '61.0', true);
-    createCustomLauncher('chrome', 'linux', 'latest', true);
-    createCustomLauncher('chrome', 'macOS 10.13', 'latest', true);
-
-    //createCustomLauncher('microsoftedge', 'Windows 10', '17', true);
-    //createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
-    //createCustomLauncher('Safari', 'macOS 10.13', 'latest', true);
-
+    if (program.batch1) {
+        console.log("runing batch1");
+        createCustomLauncher('chrome', 'Windows 7', 'latest', true);
+        createCustomLauncher('firefox', 'macOS 10.13', 'latest', true);
+        createCustomLauncher('firefox', 'Windows 10', '61.0', true);
+        createCustomLauncher('chrome', 'linux', 'latest', true);
+        createCustomLauncher('chrome', 'macOS 10.13', 'latest', true);
+       
+    } else {
+        console.log("runing batch2");
+        createCustomLauncher('microsoftedge', 'Windows 10', '17', true);
+        // createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
+        createCustomLauncher('Safari', 'macOS 10.13', 'latest', true);
+    }
 
     config.set({
         basePath: '../../',
