@@ -11,7 +11,7 @@
     "build:dev": "npm run lint && npm run webpack:dev && npm run test:dev",
     "build:prod": "npm run webpack:prod && node build_helper.js && npm run test:prod",
     "build:all": "npm run build:dev && npm run build:prod",
-    "test:sauce": "karma start src/test/karma/karma.config.saucelab.js -b1",
+    "test:sauce": "karma start src/test/karma/karma.config.saucelab.js",
     "build:ci": "npm run build:all",
     "postbuild:ci": "npm run test:sauce",
     "webpack:dev": "webpack --config src/webpack/webpack.dev.config.js",
