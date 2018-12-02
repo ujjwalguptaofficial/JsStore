@@ -98,7 +98,7 @@ describe('Test insert', function () {
 
     it('insert suppliers - using return Data', function (done) {
         $.getJSON("test/static/Suppliers.json", function (results) {
-           // const value = 
+            // const value = 
             var values = [{
                 SupplierName: "Exotic Liquid",
                 ContactName: "Charlotte Cooper",
@@ -107,7 +107,7 @@ describe('Test insert', function () {
                 PostalCode: "43951-1",
                 Country: "UK",
                 Phone: "12345"
-            },{
+            }, {
                 SupplierName: "Exotsic Liquid",
                 ContactName: "Charlotte Cooper",
                 Address: "49 Gilbert St.",
@@ -115,7 +115,7 @@ describe('Test insert', function () {
                 PostalCode: "43951-1",
                 Country: "UK",
                 Phone: "12345"
-            },{
+            }, {
                 SupplierName: "Exotsic Liqduid",
                 ContactName: "Charlotte Cooper",
                 Address: "49 Gilbert St.",
@@ -287,4 +287,31 @@ describe('Test insert', function () {
             done();
         });
     });
+
+    it('insert things', (done) => {
+        let things = [
+            "nest",
+            "Eggs",
+            "bite",
+            "gator",
+            "caYman",
+            "Grip",
+            "grips",
+            "Jaw",
+            "crocodilian",
+            "Bayou"
+        ];
+        things = things.map(val => {
+            return {
+                value: val
+            }
+        })
+        Con.insert({
+            into: 'things',
+            values: things
+        }).then(results => {
+            expect(results).to.be.an('number').to.equal(10);
+            done();
+        }).catch(done)
+    })
 });

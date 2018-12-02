@@ -72,4 +72,24 @@ describe('Test Select with order', function () {
             done();
         })
     });
+
+    it('things table test', function (done) {
+        debugger;
+        Con.select({
+            from: 'things',
+            order: {
+                by: 'value',
+                type: 'asc'
+            }
+        }).
+        then(results => {
+            console.log(results);
+            expect(results).to.be.an('array').length(10);
+            // var product = results[0];
+            // expect(product.Price).to.be.eql(7)
+            done();
+        }).
+        catch(done)
+    });
+
 });

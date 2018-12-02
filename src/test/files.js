@@ -6,6 +6,7 @@ exports.list_of_files = [
     'test/scripts/findindex_polyfill.js',
     'test/scripts/jquery-3.2.1.min.js',
     'test/scripts/dbhelper.js',
+    'test/cases/db_init.js',
     'test/cases/insert/*.js',
     'test/cases/select/*.js',
     'test/cases/count/*.js',

@@ -25,12 +25,12 @@ export class Helper extends GroupByHelper {
                 },
                 sortAlphabetInAsc = () => {
                     this.results.sort((a, b) => {
-                        return a[orderColumn].toLowerCase().localeCompare(b[orderColumn].toLowerCase());
+                        return a[orderColumn].localeCompare(b[orderColumn]);
                     });
                 },
                 sortAlphabetInDesc = () => {
                     this.results.sort((a, b) => {
-                        return b[orderColumn].toLowerCase().localeCompare(a[orderColumn].toLowerCase());
+                        return b[orderColumn].localeCompare(a[orderColumn]);
                     });
                 };
             const column = this.getColumnInfo(orderColumn);
