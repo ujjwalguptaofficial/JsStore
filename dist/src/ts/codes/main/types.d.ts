@@ -1,8 +1,23 @@
 import { IError } from "./interfaces";
 import { API } from "./enums";
 export declare type OrderQuery = {
+    /**
+     * sorting column name
+     *
+     * @type {string}
+     */
     by: string;
+    /**
+     * sorting type - asc/desc
+     *
+     * @type {string}
+     */
     type: string;
+    /**
+     * whether to do sorting by indexeddb or by jsstore
+     * default - true
+     * @type {boolean}
+     */
     idbSorting: boolean;
 };
 export declare type SelectQuery = {
