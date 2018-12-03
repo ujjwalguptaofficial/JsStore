@@ -4,6 +4,12 @@ import { API } from "./enums";
 export type OrderQuery = {
     by: string; // Column name
     type: string;
+
+    /**
+     * whether to do sorting by indexeddb or by jsstore
+     * default - true
+     * @type {boolean}
+     */
     idbSorting: boolean
 };
 
