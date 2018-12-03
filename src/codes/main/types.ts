@@ -2,7 +2,18 @@ import { IError } from "./interfaces";
 import { API } from "./enums";
 
 export type OrderQuery = {
-    by: string; // Column name
+    /**
+     * sorting column name
+     *
+     * @type {string}
+     */
+    by: string;
+
+    /**
+     * sorting type - asc/desc
+     *
+     * @type {string}
+     */
     type: string;
 
     /**
