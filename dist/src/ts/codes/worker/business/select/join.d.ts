@@ -1,10 +1,11 @@
 import { BaseSelect } from "./base_select";
-import { ISelectJoin, ITableJoin, IError } from "../../interfaces";
+import { SelectJoinQuery, TableJoinQuery } from "../../types";
+import { IError } from "../../interfaces";
 export declare class Join extends BaseSelect {
-    query: ISelectJoin;
-    queryStack: ITableJoin[];
+    query: SelectJoinQuery;
+    queryStack: TableJoinQuery[];
     currentQueryStackIndex: number;
-    constructor(query: ISelectJoin, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
+    constructor(query: SelectJoinQuery, onSuccess: (results: any[]) => void, onError: (err: IError) => void);
     private onTransactionCompleted_;
     private executeWhereJoinLogic_;
     private executeRightJoin_;

@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.8.2 - 19/11/2018
+ * @license :jsstore - V2.9.0 - 03/12/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -202,7 +202,7 @@ var Instance = /** @class */ (function (_super) {
      * select data from table
      *
      * @template T
-     * @param {ISelect} query
+     * @param {SelectQuery} query
      * @returns
      * @memberof Instance
      */
@@ -215,7 +215,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * get no of record from table
      *
-     * @param {ICount} query
+     * @param {CountQuery} query
      * @returns
      * @memberof Instance
      */
@@ -228,7 +228,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * insert data into table
      *
-     * @param {IInsert} query
+     * @param {InsertQuery} query
      * @returns
      * @memberof Instance
      */
@@ -241,7 +241,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * update data into table
      *
-     * @param {IUpdate} query
+     * @param {UpdateQuery} query
      * @returns
      * @memberof Instance
      */
@@ -254,7 +254,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * remove data from table
      *
-     * @param {IRemove} query
+     * @param {RemoveQuery} query
      * @returns
      * @memberof Instance
      */
@@ -280,7 +280,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * insert bulk amount of data
      *
-     * @param {IInsert} query
+     * @param {InsertQuery} query
      * @returns
      * @memberof Instance
      */
@@ -293,7 +293,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      *  export the result in json file
      *
-     * @param {ISelect} query
+     * @param {SelectQuery} query
      * @returns
      * @memberof Instance
      */
@@ -333,7 +333,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * get version of database
      *
-     * @param {(string | IDbInfo)} dbName
+     * @param {(string | DbInfo)} dbName
      * @returns
      * @memberof Instance
      */
@@ -346,7 +346,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * is database exist
      *
-     * @param {(IDbInfo | string)} dbInfo
+     * @param {(DbInfo | string)} dbInfo
      * @returns
      * @memberof Instance
      */
@@ -425,7 +425,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * execute the transaction
      *
-     * @param {ITranscationQry} query
+     * @param {TranscationQuery} query
      * @returns
      * @memberof Instance
      */

@@ -1,20 +1,21 @@
-import { ITranscationQry, IError, IWebWorkerRequest } from "../../interfaces";
+import { TranscationQuery, WebWorkerRequest } from "../../types";
 import { Base } from "../base";
+import { IError } from "../../interfaces";
 export declare class Instance extends Base {
-    query: ITranscationQry;
+    query: TranscationQuery;
     results: any;
-    requestQueue: IWebWorkerRequest[];
+    requestQueue: WebWorkerRequest[];
     isQueryExecuting: boolean;
     isTransactionStarted: boolean;
-    constructor(qry: ITranscationQry, onSuccess: (results: any) => void, onError: (err: IError) => void);
+    constructor(qry: TranscationQuery, onSuccess: (results: any) => void, onError: (err: IError) => void);
     execute(): void;
     private startTransaction_;
     private initTransaction_;
     private onTransactionCompleted_;
     onRequestFinished_(result: any): void;
     abortTransaction(): void;
-    executeRequest(request: IWebWorkerRequest): void;
-    pushRequest(request: IWebWorkerRequest): Promise<{}>;
+    executeRequest(request: WebWorkerRequest): void;
+    pushRequest(request: WebWorkerRequest): Promise<{}>;
     processExecutionOfQry(): void;
     private checkQueries;
 }

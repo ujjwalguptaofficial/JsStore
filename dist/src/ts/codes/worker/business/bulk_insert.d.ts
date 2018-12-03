@@ -1,8 +1,9 @@
 import { Base } from "./base";
-import { IInsert, IError } from "../interfaces";
+import { InsertQuery } from "../types";
+import { IError } from "../interfaces";
 export declare class BulkInsert extends Base {
-    query: IInsert;
-    constructor(query: IInsert, onSuccess: () => void, onError: (err: IError) => void);
+    query: InsertQuery;
+    constructor(query: InsertQuery, onSuccess: () => void, onError: (err: IError) => void);
     execute(): void;
     private bulkinsertData;
 }

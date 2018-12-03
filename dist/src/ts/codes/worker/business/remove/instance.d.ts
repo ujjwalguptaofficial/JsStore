@@ -1,7 +1,8 @@
 import { Where } from "./where";
-import { IRemove, IError } from "../../interfaces";
+import { RemoveQuery } from "../../types";
+import { IError } from "../../interfaces";
 export declare class Instance extends Where {
-    constructor(query: IRemove, onSuccess: (recordRemoved: number) => void, onError: (err: IError) => void);
+    constructor(query: RemoveQuery, onSuccess: (recordRemoved: number) => void, onError: (err: IError) => void);
     execute(): void;
     private processWhereArrayQry;
     private processWhere_;

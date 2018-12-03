@@ -1,8 +1,8 @@
-import { IWebWorkerRequest } from "./interfaces";
+import { WebWorkerRequest } from "./types";
 export declare class QueryExecutor {
     onQueryFinished: (result: any) => void;
     constructor(fn?: (result: any) => void);
-    checkConnectionAndExecuteLogic(request: IWebWorkerRequest): void;
+    checkConnectionAndExecuteLogic(request: WebWorkerRequest): void;
     private changeLogStatus_;
     private returnResult_;
     private executeLogic_;

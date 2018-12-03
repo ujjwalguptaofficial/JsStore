@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.8.2 - 19/11/2018
+ * @license :jsstore - V2.9.0 - 03/12/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -2489,11 +2489,11 @@ var Helper = /** @class */ (function (_super) {
                 });
             }, sortAlphabetInAsc = function () {
                 _this.results.sort(function (a, b) {
-                    return a[orderColumn_1].toLowerCase().localeCompare(b[orderColumn_1].toLowerCase());
+                    return a[orderColumn_1].localeCompare(b[orderColumn_1]);
                 });
             }, sortAlphabetInDesc = function () {
                 _this.results.sort(function (a, b) {
-                    return b[orderColumn_1].toLowerCase().localeCompare(a[orderColumn_1].toLowerCase());
+                    return b[orderColumn_1].localeCompare(a[orderColumn_1]);
                 });
             };
             var column = this.getColumnInfo(orderColumn_1);
@@ -3585,7 +3585,7 @@ var NotWhere = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     NotWhere.prototype.executeWhereUndefinedLogic = function () {
-        if (this.query.order && this.query.order.by) {
+        if (this.query.order && this.query.order.by && this.query.order.idbSorting !== false) {
             if (this.objectStore.indexNames.contains(this.query.order.by)) {
                 var orderType = this.query.order.type &&
                     this.query.order.type.toLowerCase() === 'desc' ? 'prev' : 'next';

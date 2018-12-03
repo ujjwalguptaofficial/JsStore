@@ -1,7 +1,7 @@
 import { Base } from "../base";
-import { IRemove } from "../../interfaces";
+import { RemoveQuery } from "../../types";
 export declare class BaseRemove extends Base {
     isOr: boolean;
-    query: IRemove;
+    query: RemoveQuery;
     protected onQueryFinished(): void;
 }

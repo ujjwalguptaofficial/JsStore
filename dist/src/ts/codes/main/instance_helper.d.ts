@@ -1,4 +1,4 @@
-import { IWebWorkerRequest } from "./interfaces";
+import { WebWorkerRequest } from "./types";
 export declare class InstanceHelper {
     private worker_;
     private isDbOpened_;
@@ -9,7 +9,7 @@ export declare class InstanceHelper {
     constructor(worker?: Worker);
     private onMessageFromWorker_;
     private processFinishedQuery_;
-    protected pushApi<T>(request: IWebWorkerRequest): Promise<T>;
+    protected pushApi<T>(request: WebWorkerRequest): Promise<T>;
     private prcoessExecutionOfQry_;
     private executeQry_;
     private sendRequestToWorker_;

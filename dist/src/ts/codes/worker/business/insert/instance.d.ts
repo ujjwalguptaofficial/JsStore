@@ -1,11 +1,12 @@
 import { Base } from "../base";
-import { IInsert, IError } from "../../interfaces";
+import { InsertQuery } from "../../types";
 import { Table } from "../../model/table";
+import { IError } from "../../interfaces";
 export declare class Instance extends Base {
     private valuesAffected_;
-    query: IInsert;
+    query: InsertQuery;
     table: Table;
-    constructor(query: IInsert, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void);
+    constructor(query: InsertQuery, onSuccess: (rowsInserted: number) => void, onError: (err: IError) => void);
     execute(): void;
     private onTransactionCompleted_;
     private onQueryFinished_;

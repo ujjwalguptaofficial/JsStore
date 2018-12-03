@@ -1,7 +1,8 @@
-import { ISelect, IError } from "../../interfaces";
+import { SelectQuery } from "../../types";
 import { Helper } from "./helper";
+import { IError } from "../../interfaces";
 export declare class Instance extends Helper {
-    constructor(query: ISelect, onSuccess: (results: object[]) => void, onError: (err: IError) => void);
+    constructor(query: SelectQuery, onSuccess: (results: object[]) => void, onError: (err: IError) => void);
     execute(): void;
     private processWhereArrayQry;
     protected onQueryFinished(): void;

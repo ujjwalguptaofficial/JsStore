@@ -1,5 +1,5 @@
-import { IColumn } from "../interfaces";
 import { DATA_TYPE, COL_OPTION } from "../enums";
+import { IColumn } from "../interfaces";
 export declare class Column implements IColumn {
     name: string;
     primaryKey: boolean;

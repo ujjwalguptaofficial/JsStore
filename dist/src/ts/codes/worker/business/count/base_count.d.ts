@@ -1,8 +1,8 @@
 import { Base } from "../base";
-import { ICount } from "../../interfaces";
+import { CountQuery } from "../../types";
 export declare class BaseCount extends Base {
     resultCount: number;
-    query: ICount;
+    query: CountQuery;
     protected onQueryFinished(): void;
     protected onTransactionCompleted_: () => void;
 }

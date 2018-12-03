@@ -1,5 +1,6 @@
 import { InstanceHelper } from "./instance_helper";
-import { IDataBase, ISelect, ICount, IInsert, IUpdate, IRemove, IDbInfo, ITranscationQry } from "./interfaces";
+import { SelectQuery, CountQuery, InsertQuery, UpdateQuery, RemoveQuery, DbInfo, TranscationQuery } from "./types";
+import { IDataBase } from "./interfaces";
 export declare class Instance extends InstanceHelper {
     constructor(worker?: Worker);
     /**
@@ -29,43 +30,43 @@ export declare class Instance extends InstanceHelper {
      * select data from table
      *
      * @template T
-     * @param {ISelect} query
+     * @param {SelectQuery} query
      * @returns
      * @memberof Instance
      */
-    select<T>(query: ISelect): Promise<T[]>;
+    select<T>(query: SelectQuery): Promise<T[]>;
     /**
      * get no of record from table
      *
-     * @param {ICount} query
+     * @param {CountQuery} query
      * @returns
      * @memberof Instance
      */
-    count(query: ICount): Promise<number>;
+    count(query: CountQuery): Promise<number>;
     /**
      * insert data into table
      *
-     * @param {IInsert} query
+     * @param {InsertQuery} query
      * @returns
      * @memberof Instance
      */
-    insert<T>(query: IInsert): Promise<number | T[]>;
+    insert<T>(query: InsertQuery): Promise<number | T[]>;
     /**
      * update data into table
      *
-     * @param {IUpdate} query
+     * @param {UpdateQuery} query
      * @returns
      * @memberof Instance
      */
-    update(query: IUpdate): Promise<number>;
+    update(query: UpdateQuery): Promise<number>;
     /**
      * remove data from table
      *
-     * @param {IRemove} query
+     * @param {RemoveQuery} query
      * @returns
      * @memberof Instance
      */
-    remove(query: IRemove): Promise<number>;
+    remove(query: RemoveQuery): Promise<number>;
     /**
      * delete all data from table
      *
@@ -77,19 +78,19 @@ export declare class Instance extends InstanceHelper {
     /**
      * insert bulk amount of data
      *
-     * @param {IInsert} query
+     * @param {InsertQuery} query
      * @returns
      * @memberof Instance
      */
-    bulkInsert(query: IInsert): Promise<null>;
+    bulkInsert(query: InsertQuery): Promise<null>;
     /**
      *  export the result in json file
      *
-     * @param {ISelect} query
+     * @param {SelectQuery} query
      * @returns
      * @memberof Instance
      */
-    exportJson(query: ISelect): Promise<null>;
+    exportJson(query: SelectQuery): Promise<null>;
     /**
      * set log status
      *
@@ -100,19 +101,19 @@ export declare class Instance extends InstanceHelper {
     /**
      * get version of database
      *
-     * @param {(string | IDbInfo)} dbName
+     * @param {(string | DbInfo)} dbName
      * @returns
      * @memberof Instance
      */
-    getDbVersion(dbName: string | IDbInfo): Promise<number>;
+    getDbVersion(dbName: string | DbInfo): Promise<number>;
     /**
      * is database exist
      *
-     * @param {(IDbInfo | string)} dbInfo
+     * @param {(DbInfo | string)} dbInfo
      * @returns
      * @memberof Instance
      */
-    isDbExist(dbInfo: IDbInfo | string): Promise<boolean>;
+    isDbExist(dbInfo: DbInfo | string): Promise<boolean>;
     /**
      * returns list of database created
      *
@@ -155,11 +156,11 @@ export declare class Instance extends InstanceHelper {
     /**
      * execute the transaction
      *
-     * @param {ITranscationQry} query
+     * @param {TranscationQuery} query
      * @returns
      * @memberof Instance
      */
-    transaction(query: ITranscationQry): Promise<any>;
+    transaction(query: TranscationQuery): Promise<any>;
     /**
      * run sql code
      *
