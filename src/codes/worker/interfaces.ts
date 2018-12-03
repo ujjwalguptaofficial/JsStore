@@ -72,6 +72,7 @@ export interface ISelect {
 export interface IOrder {
     by: string; // Column name
     type: string;
+    idbSorting: boolean;
 }
 
 export interface ICount {

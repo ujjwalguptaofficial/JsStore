@@ -1,5 +1,6 @@
 import { ISqlWeb } from "./interfaces";
 
+
 export class Util {
     private static sqlWeb_: ISqlWeb;
 

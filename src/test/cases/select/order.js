@@ -74,17 +74,23 @@ describe('Test Select with order', function () {
     });
 
     it('things table test', function (done) {
-        debugger;
         Con.select({
             from: 'things',
             order: {
                 by: 'value',
-                type: 'asc'
+                type: 'asc',
+                idbSorting: false
             }
         }).
         then(results => {
-            console.log(results);
+            results = results.map(val => {
+                return val.value;
+            });
             expect(results).to.be.an('array').length(10);
+            var expecteResult = ['Bayou', 'bite', 'caYman', 'crocodilian', 'Eggs',
+                'gator', 'Grip', 'grips', 'Jaw', 'nest'
+            ];
+            expect(results).to.deep.equal(expecteResult);
             // var product = results[0];
             // expect(product.Price).to.be.eql(7)
             done();

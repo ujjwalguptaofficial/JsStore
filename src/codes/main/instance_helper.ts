@@ -1,6 +1,6 @@
 import { LogHelper } from "./log_helper";
 import { ERROR_TYPE, API } from "./enums";
-import { IWebWorkerRequest, IWebWorkerResult } from "./interfaces";
+import { WebWorkerRequest, WebWorkerResult } from "./types";
 import { Config } from "./config";
 
 declare var JsStoreWorker;
@@ -8,7 +8,7 @@ declare var JsStoreWorker;
 export class InstanceHelper {
   private worker_: Worker;
   private isDbOpened_ = false;
-  private requestQueue_: IWebWorkerRequest[] = [];
+  private requestQueue_: WebWorkerRequest[] = [];
   private isCodeExecuting_ = false;
   private queryExecutor_;
   private whiteListApi_ = [
@@ -38,8 +38,8 @@ export class InstanceHelper {
     this.processFinishedQuery_(msg.data);
   }
 
-  private processFinishedQuery_(message: IWebWorkerResult) {
-    const finishedRequest: IWebWorkerRequest = this.requestQueue_.shift();
+  private processFinishedQuery_(message: WebWorkerResult) {
+    const finishedRequest: WebWorkerRequest = this.requestQueue_.shift();
     if (finishedRequest) {
       LogHelper.log("request finished : " + finishedRequest.name);
       if (message.errorOccured) {
@@ -60,7 +60,7 @@ export class InstanceHelper {
     }
   }
 
-  protected pushApi<T>(request: IWebWorkerRequest): Promise<T> {
+  protected pushApi<T>(request: WebWorkerRequest): Promise<T> {
     return new Promise((resolve, reject) => {
       request.onSuccess = result => {
         resolve(result as T);
@@ -72,7 +72,7 @@ export class InstanceHelper {
     });
   }
 
-  private prcoessExecutionOfQry_(request: IWebWorkerRequest) {
+  private prcoessExecutionOfQry_(request: WebWorkerRequest) {
     this.requestQueue_.push(request);
     this.executeQry_();
     LogHelper.log("request pushed: " + request.name);
@@ -101,7 +101,7 @@ export class InstanceHelper {
     }
   }
 
-  private sendRequestToWorker_(request: IWebWorkerRequest) {
+  private sendRequestToWorker_(request: WebWorkerRequest) {
     this.isCodeExecuting_ = true;
     LogHelper.log("request executing : " + request.name);
     if (request.name === API.Terminate) {
@@ -117,7 +117,7 @@ export class InstanceHelper {
       const requestForWorker = {
         name: request.name,
         query: request.query
-      } as IWebWorkerRequest;
+      } as WebWorkerRequest;
       if (Config.isRuningInWorker === true) {
         this.worker_.postMessage(requestForWorker);
       }

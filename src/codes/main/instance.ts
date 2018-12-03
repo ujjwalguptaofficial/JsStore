@@ -1,12 +1,13 @@
 import { API } from "./enums";
 import { InstanceHelper } from "./instance_helper";
 import {
-    IDataBase, ISelect, ICount, IInsert,
-    IUpdate, IRemove, IDbInfo, ITranscationQry
-} from "./interfaces";
+    SelectQuery, CountQuery, InsertQuery,
+    UpdateQuery, RemoveQuery, DbInfo, TranscationQuery
+} from "./types";
 import { Config } from "./config";
 import { ISet } from "../worker/interfaces";
 import { Util } from "./util";
+import { IDataBase } from "./interfaces";
 
 export class Instance extends InstanceHelper {
 
@@ -59,11 +60,11 @@ export class Instance extends InstanceHelper {
      * select data from table
      * 
      * @template T 
-     * @param {ISelect} query 
+     * @param {SelectQuery} query 
      * @returns 
      * @memberof Instance
      */
-    select<T>(query: ISelect) {
+    select<T>(query: SelectQuery) {
         return this.pushApi<T[]>({
             name: API.Select,
             query: query
@@ -73,11 +74,11 @@ export class Instance extends InstanceHelper {
     /**
      * get no of record from table
      * 
-     * @param {ICount} query 
+     * @param {CountQuery} query 
      * @returns 
      * @memberof Instance
      */
-    count(query: ICount) {
+    count(query: CountQuery) {
         return this.pushApi<number>({
             name: API.Count,
             query: query
@@ -87,11 +88,11 @@ export class Instance extends InstanceHelper {
     /**
      * insert data into table
      * 
-     * @param {IInsert} query 
+     * @param {InsertQuery} query 
      * @returns 
      * @memberof Instance
      */
-    insert<T>(query: IInsert) {
+    insert<T>(query: InsertQuery) {
         return this.pushApi<number | T[]>({
             name: API.Insert,
             query: query
@@ -101,11 +102,11 @@ export class Instance extends InstanceHelper {
     /**
      * update data into table
      * 
-     * @param {IUpdate} query 
+     * @param {UpdateQuery} query 
      * @returns 
      * @memberof Instance
      */
-    update(query: IUpdate) {
+    update(query: UpdateQuery) {
         return this.pushApi<number>({
             name: API.Update,
             query: query
@@ -115,11 +116,11 @@ export class Instance extends InstanceHelper {
     /**
      * remove data from table
      * 
-     * @param {IRemove} query 
+     * @param {RemoveQuery} query 
      * @returns 
      * @memberof Instance
      */
-    remove(query: IRemove) {
+    remove(query: RemoveQuery) {
         return this.pushApi<number>({
             name: API.Remove,
             query: query
@@ -143,11 +144,11 @@ export class Instance extends InstanceHelper {
     /**
      * insert bulk amount of data
      * 
-     * @param {IInsert} query 
+     * @param {InsertQuery} query 
      * @returns 
      * @memberof Instance
      */
-    bulkInsert(query: IInsert) {
+    bulkInsert(query: InsertQuery) {
         return this.pushApi<null>({
             name: API.BulkInsert,
             query: query
@@ -157,11 +158,11 @@ export class Instance extends InstanceHelper {
     /**
      *  export the result in json file
      * 
-     * @param {ISelect} query 
+     * @param {SelectQuery} query 
      * @returns 
      * @memberof Instance
      */
-    exportJson(query: ISelect) {
+    exportJson(query: SelectQuery) {
         const onSuccess = (url) => {
             const link = document.createElement("a");
             link.href = url;
@@ -199,11 +200,11 @@ export class Instance extends InstanceHelper {
     /**
      * get version of database
      * 
-     * @param {(string | IDbInfo)} dbName 
+     * @param {(string | DbInfo)} dbName 
      * @returns 
      * @memberof Instance
      */
-    getDbVersion(dbName: string | IDbInfo) {
+    getDbVersion(dbName: string | DbInfo) {
         return this.pushApi<number>({
             name: API.GetDbVersion,
             query: dbName
@@ -213,11 +214,11 @@ export class Instance extends InstanceHelper {
     /**
      * is database exist
      * 
-     * @param {(IDbInfo | string)} dbInfo 
+     * @param {(DbInfo | string)} dbInfo 
      * @returns 
      * @memberof Instance
      */
-    isDbExist(dbInfo: IDbInfo | string) {
+    isDbExist(dbInfo: DbInfo | string) {
         return this.pushApi<boolean>({
             name: API.IsDbExist,
             query: dbInfo
@@ -298,11 +299,11 @@ export class Instance extends InstanceHelper {
     /**
      * execute the transaction
      *
-     * @param {ITranscationQry} query
+     * @param {TranscationQuery} query
      * @returns
      * @memberof Instance
      */
-    transaction(query: ITranscationQry) {
+    transaction(query: TranscationQuery) {
         (query.logic as any) = query.logic.toString();
         return this.pushApi<any>({
             name: API.Transaction,

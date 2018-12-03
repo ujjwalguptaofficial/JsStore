@@ -39,8 +39,8 @@ module.exports = function (config) {
         },
         autoWatch: false,
         concurrency: Infinity,
-        singleRun: false,
-        // singleRun: true,
+        // singleRun: false,
+        singleRun: true,
         browserNoActivityTimeout: 120000,
     })
 }
