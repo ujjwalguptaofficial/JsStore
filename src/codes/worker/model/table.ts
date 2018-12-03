@@ -1,5 +1,6 @@
-import { ITable } from "../interfaces";
+
 import { Column } from "./column";
+import { ITable } from "../interfaces";
 
 export class Table implements ITable {
     name: string;

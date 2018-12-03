@@ -1,12 +1,12 @@
 import { Where } from "./where";
-import { IUpdate, IError, ISelect } from "../../interfaces";
+import { UpdateQuery, SelectQuery } from "../../types";
 import * as Select from "../select/index";
-import { SchemaChecker } from "./schema_checker";
 import { QUERY_OPTION } from "../../enums";
+import { IError } from "../../interfaces";
 
 export class Instance extends Where {
 
-    constructor(query: IUpdate, onSuccess: (rowsUpdated: number) => void, onError: (err: IError) => void) {
+    constructor(query: UpdateQuery, onSuccess: (rowsUpdated: number) => void, onError: (err: IError) => void) {
         super();
         this.onSuccess = onSuccess;
         this.onError = onError;
@@ -40,7 +40,7 @@ export class Instance extends Where {
             from: this.query.in,
             where: this.query.where,
             ignoreCase: this.query.ignoreCase
-        } as ISelect, (results: any[]) => {
+        } as SelectQuery, (results: any[]) => {
             const key = this.getPrimaryKey(this.query.in);
             const inQuery = [];
             results.forEach((value) => {

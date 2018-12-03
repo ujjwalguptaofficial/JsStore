@@ -1,11 +1,12 @@
 import { API, ERROR_TYPE, QUERY_OPTION, DATA_TYPE } from "../enums";
 import { IdbHelper } from "./idb_helper";
-import { IError, IInsert } from "../interfaces";
+import { InsertQuery } from "../types";
 import { LogHelper } from "../log_helper";
 import { Util } from "../util";
 import * as Update from "./update/index";
 import * as Insert from "./insert/index";
 import { Table } from "../model/table";
+import { IError } from "../interfaces";
 
 export class QueryHelper {
     api: API;
@@ -53,7 +54,7 @@ export class QueryHelper {
     }
 
     private isInsertQryValid_(callBack: (tbl: Table) => void) {
-        const table = this.getTable_((this.query as IInsert).into);
+        const table = this.getTable_((this.query as InsertQuery).into);
         let log: LogHelper;
         if (table) {
             switch (this.getType_(this.query.values)) {
@@ -67,7 +68,7 @@ export class QueryHelper {
             }
         }
         else {
-            log = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: (this.query as IInsert).into });
+            log = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: (this.query as InsertQuery).into });
         }
         if (callBack != null) {
             callBack(table);
@@ -92,7 +93,7 @@ export class QueryHelper {
                 else {
                     const valueCheckerInstance = new Insert.ValuesChecker(table, this.query.values);
                     valueCheckerInstance.checkAndModifyValues().then(() => {
-                        (this.query as IInsert).values = valueCheckerInstance.values;
+                        (this.query as InsertQuery).values = valueCheckerInstance.values;
                         resolve();
                     }).catch(reject);
                 }

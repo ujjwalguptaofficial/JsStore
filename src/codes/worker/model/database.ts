@@ -1,5 +1,6 @@
-import { IDataBase } from "../interfaces";
+
 import { Table } from "./table";
+import { IDataBase } from "../interfaces";
 
 export class DataBase {
     name: string;

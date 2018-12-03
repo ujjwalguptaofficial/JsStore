@@ -1,21 +1,22 @@
 import { BaseSelect } from "./base_select";
-import { ISelectJoin, ITableJoin, IError, IJoin, ISelect } from "../../interfaces";
+import { SelectJoinQuery, TableJoinQuery, JoinQuery, SelectQuery } from "../../types";
 import * as Select from './instance';
 import { QUERY_OPTION } from "../../enums";
+import { IError } from "../../interfaces";
 
 export class Join extends BaseSelect {
-    query: ISelectJoin;
-    queryStack: ITableJoin[] = [];
+    query: SelectJoinQuery;
+    queryStack: TableJoinQuery[] = [];
     currentQueryStackIndex = 0;
 
-    constructor(query: ISelectJoin, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
+    constructor(query: SelectJoinQuery, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
         super();
         this.onSuccess = onSuccess;
         this.onError = onError;
         this.query = query;
         const tableList = []; // used to open the multiple object store
 
-        const convertQueryIntoStack = (qry: IJoin) => {
+        const convertQueryIntoStack = (qry: JoinQuery) => {
             if (qry.table1 !== undefined) {
                 qry.table2['joinType'] = qry.join === undefined ? 'inner' : qry.join.toLowerCase();
                 this.queryStack.push(qry.table2);
@@ -38,7 +39,7 @@ export class Join extends BaseSelect {
             const selectObject = new Select.Instance({
                 from: this.queryStack[0].table,
                 where: this.queryStack[0].where
-            } as ISelect, (results) => {
+            } as SelectQuery, (results) => {
                 const tableName = this.queryStack[0].table;
                 results.forEach((item, index) => {
                     this.results[index] = {};
@@ -72,7 +73,7 @@ export class Join extends BaseSelect {
         }
     }
 
-    private executeWhereJoinLogic_(joinQuery: ITableJoin, query: ITableJoin) {
+    private executeWhereJoinLogic_(joinQuery: TableJoinQuery, query: TableJoinQuery) {
         const results = [],
             column = query.column,
             tmpresults = this.results,
@@ -84,7 +85,7 @@ export class Join extends BaseSelect {
             from: query.table,
             order: query.order,
             where: query.where
-        } as ISelect, (selectResults) => {
+        } as SelectQuery, (selectResults) => {
             // perform join
             selectResults.forEach((value, index) => {
                 // search item through each global result
@@ -130,7 +131,7 @@ export class Join extends BaseSelect {
         };
     }
 
-    private executeRightJoin_(joinQuery: ITableJoin, query: ITableJoin) {
+    private executeRightJoin_(joinQuery: TableJoinQuery, query: TableJoinQuery) {
         const joinresults = [],
             joinIndex = 0,
             column = query.column,
@@ -181,7 +182,7 @@ export class Join extends BaseSelect {
                 from: query.table,
                 order: query.order,
                 where: query.where
-            } as ISelect, (results) => {
+            } as SelectQuery, (results) => {
                 doRightJoin(results);
                 onExecutionFinished();
             }, this.onErrorOccured);
@@ -190,7 +191,7 @@ export class Join extends BaseSelect {
         executeLogic();
     }
 
-    private executeWhereUndefinedLogicForJoin_(joinQuery: ITableJoin, query: ITableJoin) {
+    private executeWhereUndefinedLogicForJoin_(joinQuery: TableJoinQuery, query: TableJoinQuery) {
         const joinresults = [],
             column = query.column,
             tmpresults = this.results,
@@ -243,7 +244,7 @@ export class Join extends BaseSelect {
                         from: query.table,
                         order: query.order,
                         where: where
-                    } as ISelect, (results) => {
+                    } as SelectQuery, (results) => {
                         doJoin(results);
                         ++itemIndex;
                         executeLogic();
@@ -264,7 +265,7 @@ export class Join extends BaseSelect {
             joinQuery = {
                 column: this.queryStack[this.currentQueryStackIndex].nextJoin.column,
                 table: this.queryStack[this.currentQueryStackIndex].nextJoin.table
-            } as ITableJoin;
+            } as TableJoinQuery;
             this.currentQueryStackIndex++;
         }
         else {

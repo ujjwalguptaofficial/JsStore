@@ -5,7 +5,7 @@ import {
     UpdateQuery, RemoveQuery, DbInfo, TranscationQuery
 } from "./types";
 import { Config } from "./config";
-import { ISet } from "../worker/interfaces";
+import { SetQuery } from "../worker/types";
 import { Util } from "./util";
 import { IDataBase } from "./interfaces";
 
@@ -279,7 +279,7 @@ export class Instance extends InstanceHelper {
             name: API.Set,
             query: {
                 key: key, value: value
-            } as ISet
+            } as SetQuery
         });
     }
 

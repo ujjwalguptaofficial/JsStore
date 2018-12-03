@@ -1,9 +1,9 @@
 import { Base } from "../base";
-import { ICount } from "../../interfaces";
+import { CountQuery } from "../../types";
 
 export class BaseCount extends Base {
     resultCount = 0;
-    query: ICount;
+    query: CountQuery;
 
     protected onQueryFinished() {
         if (this.isTransaction === true) {

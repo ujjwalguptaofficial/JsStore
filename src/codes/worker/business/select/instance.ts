@@ -1,11 +1,12 @@
-import { ISelect, IError } from "../../interfaces";
+import { SelectQuery } from "../../types";
 import { Helper } from "./helper";
 import { LogHelper } from "../../log_helper";
 import { ERROR_TYPE, IDB_MODE, QUERY_OPTION } from "../../enums";
+import { IError } from "../../interfaces";
 
 export class Instance extends Helper {
 
-    constructor(query: ISelect, onSuccess: (results: object[]) => void, onError: (err: IError) => void) {
+    constructor(query: SelectQuery, onSuccess: (results: object[]) => void, onError: (err: IError) => void) {
         super();
         this.onError = onError;
         this.onSuccess = onSuccess;

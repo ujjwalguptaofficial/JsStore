@@ -1,13 +1,14 @@
 import { Where } from "./where";
-import { IRemove, IError } from "../../interfaces";
+import { RemoveQuery } from "../../types";
 import * as Select from '../select/index';
 import { QUERY_OPTION } from "../../enums";
+import { IError } from "../../interfaces";
 
 export class Instance extends Where {
 
 
     constructor(
-        query: IRemove, onSuccess: (recordRemoved: number) => void,
+        query: RemoveQuery, onSuccess: (recordRemoved: number) => void,
         onError: (err: IError) => void
     ) {
         super();

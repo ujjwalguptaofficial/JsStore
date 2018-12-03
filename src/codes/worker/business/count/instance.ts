@@ -1,13 +1,14 @@
 import { Where } from "./where";
-import { ICount, IError } from "../../interfaces";
+import { CountQuery } from "../../types";
 import * as Select from '../select/index';
 import { LogHelper } from "../../log_helper";
 import { ERROR_TYPE, IDB_MODE } from "../../enums";
 import { IdbHelper } from '../idb_helper';
+import { IError } from "../../interfaces";
 
 export class Instance extends Where {
 
-    constructor(query: ICount, onSuccess: (noOfRecord: number) => void, onError: (error: IError) => void) {
+    constructor(query: CountQuery, onSuccess: (noOfRecord: number) => void, onError: (error: IError) => void) {
         super();
         this.onError = onError;
         this.onSuccess = onSuccess;

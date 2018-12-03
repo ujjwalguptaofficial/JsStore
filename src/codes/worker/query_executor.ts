@@ -1,9 +1,9 @@
 import { IdbHelper } from "./business/idb_helper";
 import { LogHelper } from "./log_helper";
 import {
-    ITranscationQry, IError, IUpdate,
-    IInsert, IRemove, IDataBase, ISelect, ISelectJoin, IDbInfo, ITable, ICount, ISet
-} from "./interfaces";
+    TranscationQuery, UpdateQuery,
+    InsertQuery, RemoveQuery, SelectQuery, SelectJoinQuery, CountQuery, SetQuery
+} from "./types";
 import { CONNECTION_STATUS, ERROR_TYPE, DATA_TYPE, API } from "./enums";
 import { Config } from "./config";
 import { OpenDb } from "./business/open_db";
@@ -21,9 +21,10 @@ import * as Update from './business/update/index';
 import { Util } from "./util";
 import { Clear } from "./business/clear";
 import { BulkInsert } from "./business/bulk_insert";
-import { IWebWorkerResult, IWebWorkerRequest } from "./interfaces";
+import { WebWorkerResult, WebWorkerRequest } from "./types";
 import * as Transaction from "./business/transaction/index";
 import { QueryHelper } from "./business/query_helper";
+import { IDataBase, IError } from "./interfaces";
 
 export class QueryExecutor {
     onQueryFinished: (result: any) => void;
@@ -32,7 +33,7 @@ export class QueryExecutor {
         this.onQueryFinished = fn;
     }
 
-    checkConnectionAndExecuteLogic(request: IWebWorkerRequest) {
+    checkConnectionAndExecuteLogic(request: WebWorkerRequest) {
         LogHelper.log('checking connection and executing request:' + request.name);
         switch (request.name) {
             case API.CreateDb:
@@ -85,28 +86,28 @@ export class QueryExecutor {
 
     }
 
-    private executeLogic_(request: IWebWorkerRequest) {
+    private executeLogic_(request: WebWorkerRequest) {
         const onSuccess = (results?) => {
             this.returnResult_({
                 returnedValue: results
-            } as IWebWorkerResult);
+            } as WebWorkerResult);
         };
         const onError = (err) => {
             this.returnResult_({
                 errorDetails: err,
                 errorOccured: true
-            } as IWebWorkerResult);
+            } as WebWorkerResult);
         };
 
         switch (request.name) {
             case API.Select:
-                this.select_(request.query as ISelect, onSuccess, onError);
+                this.select_(request.query as SelectQuery, onSuccess, onError);
                 break;
-            case API.Insert: this.insert_(request.query as IInsert, onSuccess, onError);
+            case API.Insert: this.insert_(request.query as InsertQuery, onSuccess, onError);
                 break;
-            case API.Update: this.update_(request.query as IUpdate, onSuccess, onError);
+            case API.Update: this.update_(request.query as UpdateQuery, onSuccess, onError);
                 break;
-            case API.Remove: this.remove_(request.query as IRemove, onSuccess, onError);
+            case API.Remove: this.remove_(request.query as RemoveQuery, onSuccess, onError);
                 break;
             case API.IsDbExist: this.isDbExist_(request.query, onSuccess, onError);
                 break;
@@ -136,15 +137,15 @@ export class QueryExecutor {
                 break;
             case API.DropDb: this.dropDb_(onSuccess, onError);
                 break;
-            case API.Count: this.count_(request.query as ICount, onSuccess, onError);
+            case API.Count: this.count_(request.query as CountQuery, onSuccess, onError);
                 break;
-            case API.BulkInsert: this.bulkInsert_(request.query as IInsert, onSuccess, onError);
+            case API.BulkInsert: this.bulkInsert_(request.query as InsertQuery, onSuccess, onError);
                 break;
-            case API.ExportJson: this.exportJson_(request.query as ISelect, onSuccess, onError);
+            case API.ExportJson: this.exportJson_(request.query as SelectQuery, onSuccess, onError);
                 break;
             case API.Get: this.get_(request.query as string, onSuccess, onError);
                 break;
-            case API.Set: this.set_(request.query as ISet, onSuccess, onError);
+            case API.Set: this.set_(request.query as SetQuery, onSuccess, onError);
                 break;
             case API.ChangeLogStatus:
                 this.changeLogStatus_(request.query as boolean, onSuccess, onError);
@@ -212,7 +213,7 @@ export class QueryExecutor {
         dropDbInstance.deleteDb();
     }
 
-    private update_(query: IUpdate, onSuccess: () => void, onError: (err: IError) => void) {
+    private update_(query: UpdateQuery, onSuccess: () => void, onError: (err: IError) => void) {
         const queryHelper = new QueryHelper(API.Update, query);
         queryHelper.checkAndModify();
         if (queryHelper.error == null) {
@@ -226,7 +227,7 @@ export class QueryExecutor {
         }
     }
 
-    private insert_(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
+    private insert_(query: InsertQuery, onSuccess: () => void, onError: (err: IError) => void) {
         const queryHelper = new QueryHelper(API.Insert, query);
         queryHelper.checkAndModify().then(() => {
             query = queryHelper.query;
@@ -235,7 +236,7 @@ export class QueryExecutor {
         }).catch(onError);
     }
 
-    private bulkInsert_(query: IInsert, onSuccess: () => void, onError: (err: IError) => void) {
+    private bulkInsert_(query: InsertQuery, onSuccess: () => void, onError: (err: IError) => void) {
         const queryHelper = new QueryHelper(API.BulkInsert, query);
         queryHelper.checkAndModify();
         if (queryHelper.error == null) {
@@ -250,7 +251,7 @@ export class QueryExecutor {
 
     }
 
-    private remove_(query: IRemove, onSuccess: () => void, onError: (err: IError) => void) {
+    private remove_(query: RemoveQuery, onSuccess: () => void, onError: (err: IError) => void) {
         const queryHelper = new QueryHelper(API.Remove, query);
         queryHelper.checkAndModify();
         if (queryHelper.error == null) {
@@ -264,9 +265,9 @@ export class QueryExecutor {
         }
     }
 
-    private select_(query: ISelect, onSuccess: (result) => void, onError: (err: IError) => void) {
+    private select_(query: SelectQuery, onSuccess: (result) => void, onError: (err: IError) => void) {
         if (typeof query.from === 'object') {
-            const selectJoinInstance = new Select.Join(query as ISelectJoin, onSuccess, onError);
+            const selectJoinInstance = new Select.Join(query as SelectJoinQuery, onSuccess, onError);
         }
         else {
             const queryHelper = new QueryHelper(API.Select, query);
@@ -284,10 +285,10 @@ export class QueryExecutor {
     }
 
 
-    private count_(query: ICount, onSuccess: () => void, onError: (err: IError) => void) {
+    private count_(query: CountQuery, onSuccess: () => void, onError: (err: IError) => void) {
         if (typeof query.from === 'object') {
             query['count'] = true;
-            const selectJoinInstance = new Select.Join(query as ISelectJoin, onSuccess, onError);
+            const selectJoinInstance = new Select.Join(query as SelectJoinQuery, onSuccess, onError);
         }
         else {
             const queryHelper = new QueryHelper(API.Count, query);
@@ -350,7 +351,7 @@ export class QueryExecutor {
         clearInstance.execute();
     }
 
-    private exportJson_(query: ISelect, onSuccess: (url: string) => void, onError: (err: IError) => void) {
+    private exportJson_(query: SelectQuery, onSuccess: (url: string) => void, onError: (err: IError) => void) {
         this.select_(query, (results) => {
             const url = URL.createObjectURL(new Blob([JSON.stringify(results)], {
                 type: "text/json"
@@ -398,11 +399,11 @@ export class QueryExecutor {
         KeyStore.get(key, onSuccess, onError as any);
     }
 
-    private set_(query: ISet, onSuccess: (value) => void, onError: (err: IError) => void) {
+    private set_(query: SetQuery, onSuccess: (value) => void, onError: (err: IError) => void) {
         KeyStore.set(query.key, query.value, onSuccess, onError as any);
     }
 
-    private transaction(qry: ITranscationQry, onSuccess: (value) => void, onError: (err: IError) => void) {
+    private transaction(qry: TranscationQuery, onSuccess: (value) => void, onError: (err: IError) => void) {
         const transaction = new Transaction.Instance(qry, onSuccess, onError);
         transaction.execute();
     }

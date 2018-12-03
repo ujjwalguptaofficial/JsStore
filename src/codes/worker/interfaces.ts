@@ -1,22 +1,8 @@
-import { ERROR_TYPE, CONNECTION_STATUS, API } from "./enums";
+import { ERROR_TYPE, CONNECTION_STATUS } from "./enums";
 
 export interface IError {
     type: ERROR_TYPE;
     message: string;
-}
-
-export interface IWebWorkerRequest {
-    name: API;
-    query: any;
-    onSuccess: (results) => void;
-    onError: (err: IError) => void;
-}
-
-export interface IWebWorkerResult {
-    errorOccured: boolean;
-    errorDetails: object;
-    returnedValue: number | string | object[];
-    throwError: boolean;
 }
 
 export interface IDbStatus {
@@ -24,13 +10,6 @@ export interface IDbStatus {
     lastError: ERROR_TYPE;
 }
 
-export interface IDbInfo {
-    dbName: string;
-    table: {
-        name: string,
-        version: number
-    };
-}
 
 export interface IDataBase {
     name: string;
@@ -55,100 +34,4 @@ export interface IColumn {
     enableSearch?: boolean;
 
     keyPath?: string[];
-}
-
-export interface ISelect {
-    from: string | object;
-    where?;
-    skip?: number;
-    limit?: number;
-    order?: IOrder;
-    groupBy?: string | string[];
-    aggregate?: IAggregate;
-    ignoreCase?: boolean;
-    distinct?: boolean;
-}
-
-export interface IOrder {
-    by: string; // Column name
-    type: string;
-    idbSorting: boolean;
-}
-
-export interface ICount {
-    from: any;
-    ignoreCase?: boolean;
-    where?;
-}
-
-export interface IRemove {
-    from: string;
-    ignoreCase?: boolean;
-    where?;
-}
-
-export interface IUpdate {
-    in: string;
-    ignoreCase?: boolean;
-    set: object;
-    where?;
-}
-
-export interface IInsert {
-    into: string;
-    values: object[];
-    return?: boolean;
-    skipDataCheck?: boolean;
-}
-
-export interface ICondition {
-    column: string;
-    value: string;
-    op: string;
-}
-
-export interface ITableJoin {
-    column: string;
-    table: string;
-    where?: object;
-    order?: IOrder;
-    joinType?: string;
-    nextJoin?: INextJoin;
-}
-
-export interface ISelectJoin {
-    from: IJoin; // IJoin
-    count?: boolean;
-    skip?: number;
-    limit?: number;
-}
-
-export interface IJoin {
-    table1: ITableJoin;
-    join: string; // inner,left,right,outer
-    table2: ITableJoin;
-}
-
-export interface INextJoin {
-    table: string;
-    column: string;
-}
-
-export interface IAggregate {
-    max?: string | string[];
-    min?: string | string[];
-    sum?: string | string[];
-    count?: string | string[];
-    avg?: string | string[];
-}
-
-export interface ISet {
-    key: string;
-    value: any;
-}
-
-export interface ITranscationQry {
-    tables: string[];
-    logic: (results: any) => void;
-    data: any;
 }

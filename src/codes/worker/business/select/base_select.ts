@@ -1,5 +1,5 @@
 import { Base } from "../base";
-import { ISelect } from "../../interfaces";
+import { SelectQuery } from "../../types";
 
 export class BaseSelect extends Base {
     results = [];
@@ -7,7 +7,7 @@ export class BaseSelect extends Base {
     isOr: boolean;
     isArrayQry: boolean;
     onWhereArrayQrySuccess: () => void;
-    query: ISelect;
+    query: SelectQuery;
     orInfo: {
         results?: any[];
         orQuery: object

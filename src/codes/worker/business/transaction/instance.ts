@@ -1,6 +1,5 @@
-import { ITranscationQry, IError, IWebWorkerRequest, ISelect, IRemove, ICount, IUpdate, IInsert } from "../../interfaces";
+import { TranscationQuery, WebWorkerRequest, SelectQuery, RemoveQuery, CountQuery, UpdateQuery, InsertQuery } from "../../types";
 import { Base } from "../base";
-import { IdbHelper } from "../idb_helper";
 import * as Select from '../select/index';
 import * as Count from '../count/index';
 import * as Insert from '../insert/index';
@@ -8,15 +7,16 @@ import * as Remove from '../remove/index';
 import * as Update from '../update/index';
 import { API } from "../../enums";
 import { QueryHelper } from "../query_helper";
+import { IError } from "../../interfaces";
 
 export class Instance extends Base {
-    query: ITranscationQry;
+    query: TranscationQuery;
     results;
-    requestQueue: IWebWorkerRequest[] = [];
+    requestQueue: WebWorkerRequest[] = [];
     isQueryExecuting = false;
     isTransactionStarted = false;
 
-    constructor(qry: ITranscationQry, onSuccess: (results: any) => void, onError: (err: IError) => void) {
+    constructor(qry: TranscationQuery, onSuccess: (results: any) => void, onError: (err: IError) => void) {
         super();
         this.query = qry;
         this.onError = onError;
@@ -25,35 +25,35 @@ export class Instance extends Base {
     }
 
     execute() {
-        const select = (qry: ISelect) => {
+        const select = (qry: SelectQuery) => {
             return this.pushRequest({
                 name: API.Select,
                 query: qry
-            } as IWebWorkerRequest);
+            } as WebWorkerRequest);
         };
-        const insert = (qry: IInsert) => {
+        const insert = (qry: InsertQuery) => {
             return this.pushRequest({
                 name: API.Insert,
                 query: qry
-            } as IWebWorkerRequest);
+            } as WebWorkerRequest);
         };
-        const update = (qry: IUpdate) => {
+        const update = (qry: UpdateQuery) => {
             return this.pushRequest({
                 name: API.Update,
                 query: qry
-            } as IWebWorkerRequest);
+            } as WebWorkerRequest);
         };
-        const remove = (qry: IRemove) => {
+        const remove = (qry: RemoveQuery) => {
             return this.pushRequest({
                 name: API.Remove,
                 query: qry
-            } as IWebWorkerRequest);
+            } as WebWorkerRequest);
         };
-        const count = (qry: ICount) => {
+        const count = (qry: CountQuery) => {
             return this.pushRequest({
                 name: API.Count,
                 query: qry
-            } as IWebWorkerRequest);
+            } as WebWorkerRequest);
         };
         const setResult = (key: string, value) => {
             this.results[key] = value;
@@ -116,7 +116,7 @@ export class Instance extends Base {
         }
     }
 
-    executeRequest(request: IWebWorkerRequest) {
+    executeRequest(request: WebWorkerRequest) {
         this.isQueryExecuting = true;
         let requestObj;
         switch (request.name) {
@@ -150,7 +150,7 @@ export class Instance extends Base {
         requestObj.execute();
     }
 
-    pushRequest(request: IWebWorkerRequest) {
+    pushRequest(request: WebWorkerRequest) {
         this.requestQueue.push(request);
         this.processExecutionOfQry();
         return new Promise((resolve, reject) => {

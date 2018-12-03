@@ -1,6 +1,7 @@
-import { IColumn } from "../interfaces";
+
 import { LogHelper } from "../log_helper";
 import { ERROR_TYPE } from "../enums";
+import { IColumn } from "../interfaces";
 
 export class Column implements IColumn {
     name: string;

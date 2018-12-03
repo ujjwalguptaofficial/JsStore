@@ -1,5 +1,5 @@
 import { Base } from "../base";
-import { IUpdate } from "../../interfaces";
+import { UpdateQuery } from "../../types";
 import { DATA_TYPE } from "../../enums";
 import { Util } from "../../util";
 
@@ -25,7 +25,7 @@ export const updateValue = (suppliedValue, storedValue) => {
 };
 
 export class BaseUpdate extends Base {
-    query: IUpdate;
+    query: UpdateQuery;
     protected initTransaction() {
         this.createTransaction([this.query.in], this.onTransactionCompleted_);
         this.objectStore = this.transaction.objectStore(this.query.in);

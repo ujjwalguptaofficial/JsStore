@@ -1,5 +1,4 @@
 import { Table } from "../../model/table";
-import { IError } from "../../interfaces";
 import { Column } from "../../model/column";
 import { Util } from "../../util";
 import { ERROR_TYPE } from "../../enums";
