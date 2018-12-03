@@ -289,7 +289,7 @@ describe('Test insert', function () {
     });
 
     it('insert things', (done) => {
-        let things = [
+        var things = [
             "nest",
             "Eggs",
             "bite",
