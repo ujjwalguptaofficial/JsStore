@@ -18,7 +18,7 @@ export declare type OrderQuery = {
      * default - true
      * @type {boolean}
      */
-    idbSorting: boolean;
+    idbSorting?: boolean;
 };
 export declare type SelectQuery = {
     from: any;
