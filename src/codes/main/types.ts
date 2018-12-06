@@ -21,7 +21,7 @@ export type OrderQuery = {
      * default - true
      * @type {boolean}
      */
-    idbSorting: boolean
+    idbSorting?: boolean
 };
 
 export type SelectQuery = {
