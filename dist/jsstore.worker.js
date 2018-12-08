@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.9.1 - 06/12/2018
+ * @license :jsstore - V2.9.1 - 08/12/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -5000,7 +5000,7 @@ var Instance = /** @class */ (function (_super) {
         if (this.query.return === true) {
             insertDataIntoTable = function (value) {
                 if (value) {
-                    var addResult = objectStore.add(value);
+                    var addResult = _this.query.upsert === true ? objectStore.put(value) : objectStore.add(value);
                     addResult.onerror = _this.onErrorOccured.bind(_this);
                     addResult.onsuccess = function (e) {
                         _this.valuesAffected_.push(value);
@@ -5015,7 +5015,7 @@ var Instance = /** @class */ (function (_super) {
         else {
             insertDataIntoTable = function (value) {
                 if (value) {
-                    var addResult = objectStore.add(value);
+                    var addResult = _this.query.upsert === true ? objectStore.put(value) : objectStore.add(value);
                     addResult.onerror = _this.onErrorOccured.bind(_this);
                     addResult.onsuccess = function (e) {
                         ++_this.rowAffected;
@@ -6269,8 +6269,15 @@ var BulkInsert = /** @class */ (function (_super) {
             _this.onSuccess();
         });
         this.objectStore = this.transaction.objectStore(this.query.into);
-        for (var i = 0, length_1 = values.length; i < length_1; i++) {
-            this.objectStore.add(values[i]);
+        if (this.query.upsert === false) {
+            for (var i = 0, length_1 = values.length; i < length_1; i++) {
+                this.objectStore.add(values[i]);
+            }
+        }
+        else {
+            for (var i = 0, length_2 = values.length; i < length_2; i++) {
+                this.objectStore.put(values[i]);
+            }
         }
     };
     return BulkInsert;
