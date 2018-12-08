@@ -44,7 +44,7 @@ export class Instance extends Base {
         if (this.query.return === true) {
             insertDataIntoTable = (value) => {
                 if (value) {
-                    const addResult = objectStore.add(value);
+                    const addResult = this.query.upsert === true ? objectStore.put(value) : objectStore.add(value);
                     addResult.onerror = this.onErrorOccured.bind(this);
                     addResult.onsuccess = (e) => {
                         this.valuesAffected_.push(value);
@@ -59,7 +59,7 @@ export class Instance extends Base {
         else {
             insertDataIntoTable = (value) => {
                 if (value) {
-                    const addResult = objectStore.add(value);
+                    const addResult = this.query.upsert === true ? objectStore.put(value) : objectStore.add(value);
                     addResult.onerror = this.onErrorOccured.bind(this);
                     addResult.onsuccess = (e) => {
                         ++this.rowAffected;
