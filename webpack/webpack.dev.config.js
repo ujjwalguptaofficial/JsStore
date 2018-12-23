@@ -14,7 +14,7 @@ function createConfigsForAllLibraryTarget() {
         return {
             devtool: 'source-map',
             output: {
-                path: path.join(__dirname, "./../output"),
+                path: path.join(__dirname, "./../build"),
                 filename: target.name,
                 library: 'JsStore',
                 libraryTarget: target.type
@@ -43,7 +43,7 @@ function createConfigsForAllLibraryTargetForWebWorker() {
         return {
             devtool: 'source-map',
             output: {
-                path: path.join(__dirname, "./../output"),
+                path: path.join(__dirname, "./../build"),
                 filename: target.name,
                 library: 'JsStoreWorker',
                 libraryTarget: target.type

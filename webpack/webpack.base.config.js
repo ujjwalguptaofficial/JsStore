@@ -4,7 +4,7 @@ const banner = require('./../license');
 
 module.exports = [{
         name: "jsstore",
-        entry: "./src/codes/main/index.ts",
+        entry: "./src/main/index.ts",
         module: {
             rules: [{
                 test: /\.ts$/,
@@ -24,7 +24,7 @@ module.exports = [{
     },
     {
         name: "jsstore.worker",
-        entry: "./src/codes/worker/index.ts",
+        entry: "./src/worker/index.ts",
         mode: 'none',
         module: {
             rules: [{

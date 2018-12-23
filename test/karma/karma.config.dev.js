@@ -9,15 +9,15 @@ module.exports = function (config) {
                 timeout: 60000
             }
         },
-        files: ['test/karma/prod.global.js', 'output/jsstore.min.js', 'output/jsstore.worker.min.js',
-            'output/jsstore.worker.ie.min.js', ...files.list_of_files
+        files: ['build/jsstore.js', 'build/jsstore.worker.js',
+            'build/jsstore.worker.ie.min.js', ...files.list_of_files
         ],
         proxies: {
             '/test/': '/base/test/',
             // '/scripts/': 'base/test/scripts/',
             // '/static/': 'base/test/static/',
             // '/cases/': 'base/cases/',
-            '/output/': '/base/output/'
+            '/output/': '/base/build/'
         },
         reporters: ['mocha'],
         port: 9876, // karma web server port

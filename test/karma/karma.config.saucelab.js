@@ -50,10 +50,10 @@ module.exports = function (config) {
             }
         },
         browserDisconnectTimeout: 60000,
-        files: ['test/karma/sauce.global.js', 'output/jsstore.min.js', 'output/jsstore.worker.min.js', ...files.list_of_files],
+        files: ['test/karma/sauce.global.js', 'build/jsstore.min.js', 'build/jsstore.worker.min.js', ...files.list_of_files],
         proxies: {
             '/test/': '/base/test/',
-            '/output/': '/base/output/'
+            '/output/': '/base/build/'
         },
         reporters: ['mocha', 'saucelabs', 'html'],
         port: 9876, // karma web server port
