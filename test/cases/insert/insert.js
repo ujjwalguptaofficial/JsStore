@@ -52,6 +52,8 @@ describe('Test insert', function () {
             Con.insert({
                 into: 'Orders',
                 values: results
+            }).then(result => {
+                done(result);
             }).catch(function (err) {
                 console.log(err);
                 var error = {
