@@ -39,8 +39,14 @@ export class BulkInsert extends Base {
             this.onSuccess();
         });
         this.objectStore = this.transaction.objectStore(this.query.into);
-        for (let i = 0, length = values.length; i < length; i++) {
-            this.objectStore.add(values[i]);
+        if (this.query.upsert === false) {
+            for (let i = 0, length = values.length; i < length; i++) {
+                this.objectStore.add(values[i]);
+            }
+        } else {
+            for (let i = 0, length = values.length; i < length; i++) {
+                this.objectStore.put(values[i]);
+            }
         }
     }
 }

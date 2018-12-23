@@ -72,6 +72,7 @@ export declare type InsertQuery = {
     values: any[];
     return?: boolean;
     skipDataCheck?: boolean;
+    upsert?: boolean;
 };
 export declare type TableJoinQuery = {
     column: string;

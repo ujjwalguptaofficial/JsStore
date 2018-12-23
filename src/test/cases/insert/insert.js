@@ -47,6 +47,38 @@ describe('Test insert', function () {
         });
     });
 
+    it('insert Orders a second time without option upsert', function (done) {
+        $.getJSON("test/static/Orders.json", function (results) {
+            Con.insert({
+                into: 'Orders',
+                values: results
+            }).catch(function (err) {
+                console.log(err);
+                var error = {
+                    message: "Key already exists in the object store.",
+                    type: "ConstraintError"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            });
+        });
+    });
+
+    it('insert Orders a second time with option upsert', function (done) {
+        $.getJSON("test/static/Orders.json", function (results) {
+            Con.insert({
+                into: 'Orders',
+                values: results,
+                upsert: true
+            }).then(function (results) {
+                expect(results).to.be.an('number').to.equal(196);
+                done();
+            }).catch(function (err) {
+                done(err);
+            });
+        });
+    });
+
     it('insert Employees', function (done) {
         $.getJSON("test/static/Employees.json", function (results) {
             var startDate = new Date(1994, 0, 1);
