@@ -81,7 +81,7 @@ export class LogHelper implements IError {
             case ERROR_TYPE.NextJoinNotExist: errMsg = "Next join details not supplied";
                 break;
             case ERROR_TYPE.TableNotExist:
-                errMsg = "Table '" + this.info_['TableName'] + "' does not exist";
+                errMsg = "Table '" + this.info_['tableName'] + "' does not exist";
                 break;
             case ERROR_TYPE.DbNotExist:
                 errMsg = "Database '" + this.info_['DbName'] + "' does not exist";

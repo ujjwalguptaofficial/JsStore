@@ -21,7 +21,7 @@ export class Instance extends Base {
             this.insertData_(this.query.values);
         }
         catch (ex) {
-            this.onExceptionOccured(ex, { TableName: this.tableName });
+            this.onExceptionOccured(ex, { tableName: this.tableName });
         }
     }
 
@@ -42,34 +42,70 @@ export class Instance extends Base {
         let insertDataIntoTable: (value: object) => void;
         let objectStore;
         if (this.query.return === true) {
-            insertDataIntoTable = (value) => {
-                if (value) {
-                    const addResult = this.query.upsert === true ? objectStore.put(value) : objectStore.add(value);
-                    addResult.onerror = this.onErrorOccured.bind(this);
-                    addResult.onsuccess = (e) => {
-                        this.valuesAffected_.push(value);
-                        insertDataIntoTable.call(this, values[valueIndex++]);
-                    };
-                }
-                else {
-                    this.onQueryFinished_();
-                }
-            };
+            if (this.query.upsert === true) {
+                insertDataIntoTable = (value) => {
+                    if (value) {
+                        const addResult = objectStore.put(value);
+                        addResult.onerror = this.onErrorOccured.bind(this);
+                        addResult.onsuccess = (e) => {
+                            this.valuesAffected_.push(value);
+                            insertDataIntoTable.call(this, values[valueIndex++]);
+                        };
+                    }
+                    else {
+                        this.onQueryFinished_();
+                    }
+                };
+            }
+            else {
+                insertDataIntoTable = (value) => {
+                    if (value) {
+                        const addResult = objectStore.add(value);
+                        addResult.onerror = this.onErrorOccured.bind(this);
+                        addResult.onsuccess = (e) => {
+                            this.valuesAffected_.push(value);
+                            insertDataIntoTable.call(this, values[valueIndex++]);
+                        };
+                    }
+                    else {
+                        this.onQueryFinished_();
+                    }
+                };
+            }
+
         }
         else {
-            insertDataIntoTable = (value) => {
-                if (value) {
-                    const addResult = this.query.upsert === true ? objectStore.put(value) : objectStore.add(value);
-                    addResult.onerror = this.onErrorOccured.bind(this);
-                    addResult.onsuccess = (e) => {
-                        ++this.rowAffected;
-                        insertDataIntoTable.call(this, values[valueIndex++]);
-                    };
-                }
-                else {
-                    this.onQueryFinished_();
-                }
-            };
+            if (this.query.upsert === true) {
+                insertDataIntoTable = (value) => {
+                    if (value) {
+                        const addResult = objectStore.put(value);
+                        addResult.onerror = this.onErrorOccured.bind(this);
+                        addResult.onsuccess = (e) => {
+                            ++this.rowAffected;
+                            insertDataIntoTable.call(this, values[valueIndex++]);
+                        };
+                    }
+                    else {
+                        this.onQueryFinished_();
+                    }
+                };
+            }
+            else {
+                insertDataIntoTable = (value) => {
+                    if (value) {
+                        const addResult = objectStore.add(value);
+                        addResult.onerror = this.onErrorOccured.bind(this);
+                        addResult.onsuccess = (e) => {
+                            ++this.rowAffected;
+                            insertDataIntoTable.call(this, values[valueIndex++]);
+                        };
+                    }
+                    else {
+                        this.onQueryFinished_();
+                    }
+                };
+            }
+
         }
         this.createTransaction([this.query.into], this.onTransactionCompleted_);
         objectStore = this.transaction.objectStore(this.query.into);

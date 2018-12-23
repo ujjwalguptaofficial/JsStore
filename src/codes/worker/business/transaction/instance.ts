@@ -81,8 +81,7 @@ export class Instance extends Base {
         }
         catch (ex) {
             this.errorOccured = true;
-            this.onExceptionOccured(ex, { TableName: this.query.tables });
-            //this.onErrorOccured(ex, false);
+            this.onExceptionOccured(ex, { tableName: this.query.tables });
         }
     }
 

@@ -68,7 +68,7 @@ export class QueryHelper {
             }
         }
         else {
-            log = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: (this.query as InsertQuery).into });
+            log = new LogHelper(ERROR_TYPE.TableNotExist, { tableName: (this.query as InsertQuery).into });
         }
         if (callBack != null) {
             callBack(table);
@@ -119,7 +119,7 @@ export class QueryHelper {
             }
         }
         else {
-            this.error = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.query.from }).get();
+            this.error = new LogHelper(ERROR_TYPE.TableNotExist, { tableName: this.query.from }).get();
         }
     }
 
@@ -193,7 +193,4 @@ export class QueryHelper {
         return Util.getType(value);
     }
 
-    private isArray_(value) {
-        return Util.isArray(value);
-    }
 }

@@ -35,7 +35,7 @@ export class Instance extends Where {
         }
         catch (ex) {
             this.errorOccured = true;
-            this.onExceptionOccured(ex, { TableName: this.query.from });
+            this.onExceptionOccured(ex, { tableName: this.query.from });
         }
     }
 

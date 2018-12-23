@@ -29,7 +29,7 @@ export class SchemaChecker {
                 });
             }
             else {
-                log = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: tblName });
+                log = new LogHelper(ERROR_TYPE.TableNotExist, { tableName: tblName });
             }
         }
         else {

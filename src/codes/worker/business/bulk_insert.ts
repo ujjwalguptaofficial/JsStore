@@ -13,25 +13,13 @@ export class BulkInsert extends Base {
     }
 
     execute() {
-        // if (!Array.isArray(this.query.values)) {
-        //     this.onErrorOccured(
-        //         new LogHelper(ERROR_TYPE.NotArray),
-        //         true
-        //     );
-        // }
-        // else if (this.isTableExist(this.query.into) === true) {
-            try {
-                this.bulkinsertData(this.query.values);
-                this.query.values = null;
-            }
-            catch (ex) {
-                this.onExceptionOccured(ex, { TableName: this.query.into });
-            }
-        // }
-        // else {
-        //     const error = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.query.into });
-        //     error.throw();
-        // }
+        try {
+            this.bulkinsertData(this.query.values);
+            this.query.values = null;
+        }
+        catch (ex) {
+            this.onExceptionOccured(ex, { tableName: this.query.into });
+        }
     }
 
     private bulkinsertData(values) {
@@ -39,12 +27,13 @@ export class BulkInsert extends Base {
             this.onSuccess();
         });
         this.objectStore = this.transaction.objectStore(this.query.into);
+        const valueLength = values.length;
         if (this.query.upsert === false) {
-            for (let i = 0, length = values.length; i < length; i++) {
+            for (let i = 0; i < valueLength; i++) {
                 this.objectStore.add(values[i]);
             }
         } else {
-            for (let i = 0, length = values.length; i < length; i++) {
+            for (let i = 0; i < valueLength; i++) {
                 this.objectStore.put(values[i]);
             }
         }
