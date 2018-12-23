@@ -32,12 +32,12 @@ function uglify(srcPath, distPath) {
 
 //concate files
 concat({
-    src: ['src/output/jsstore.worker.min.js',
+    src: ['build/jsstore.worker.min.js',
         'node_modules/promise-polyfill/dist/polyfill.min.js',
-        'src/codes/ie_polyfill/find_index.js',
-        'src/codes/ie_polyfill/find.js'
+        'src/ie_polyfill/find_index.js',
+        'src/ie_polyfill/find.js'
     ],
-    dest: 'src/output/jsstore.worker.ie.min.js'
+    dest: 'build/jsstore.worker.ie.min.js'
 })
 
 //uglify('src/output/jsstore.worker.ie.min.js', 'src/output/jsstore.worker.ie.min.js')
