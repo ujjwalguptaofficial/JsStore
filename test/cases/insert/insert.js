@@ -54,14 +54,14 @@ describe('Test insert', function () {
                 values: results
             }).then(result => {
                 done(result);
-            }).catch(function (err) {
-                console.log(err);
+            }).catch((err) => {
                 var error = {
                     message: "Key already exists in the object store.",
                     type: "ConstraintError"
                 };
-                expect(err).to.be.an('object').eql(error);
+                expect(err).to.be.an('object').to.haveOwnProperty('type').equal('ConstraintError')
                 done();
+                console.log(err);
             });
         });
     });
