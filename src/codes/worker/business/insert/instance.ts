@@ -49,7 +49,7 @@ export class Instance extends Base {
                         addResult.onerror = this.onErrorOccured.bind(this);
                         addResult.onsuccess = (e) => {
                             this.valuesAffected_.push(value);
-                            insertDataIntoTable.call(this, values[valueIndex++]);
+                            insertDataIntoTable(values[valueIndex++]);
                         };
                     }
                     else {
@@ -64,7 +64,7 @@ export class Instance extends Base {
                         addResult.onerror = this.onErrorOccured.bind(this);
                         addResult.onsuccess = (e) => {
                             this.valuesAffected_.push(value);
-                            insertDataIntoTable.call(this, values[valueIndex++]);
+                            insertDataIntoTable(values[valueIndex++]);
                         };
                     }
                     else {
@@ -82,7 +82,7 @@ export class Instance extends Base {
                         addResult.onerror = this.onErrorOccured.bind(this);
                         addResult.onsuccess = (e) => {
                             ++this.rowAffected;
-                            insertDataIntoTable.call(this, values[valueIndex++]);
+                            insertDataIntoTable(values[valueIndex++]);
                         };
                     }
                     else {
@@ -97,7 +97,7 @@ export class Instance extends Base {
                         addResult.onerror = this.onErrorOccured.bind(this);
                         addResult.onsuccess = (e) => {
                             ++this.rowAffected;
-                            insertDataIntoTable.call(this, values[valueIndex++]);
+                            insertDataIntoTable(values[valueIndex++]);
                         };
                     }
                     else {
