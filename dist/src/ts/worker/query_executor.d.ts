@@ -1,0 +1,33 @@
+import { WebWorkerRequest } from "./types";
+export declare class QueryExecutor {
+    onQueryFinished: (result: any) => void;
+    constructor(fn?: (result: any) => void);
+    checkConnectionAndExecuteLogic(request: WebWorkerRequest): void;
+    private changeLogStatus_;
+    private returnResult_;
+    private executeLogic_;
+    private getDbSchema_;
+    private isDbDeletedByBrowser_;
+    private getDbList_;
+    private activeDb_;
+    private openDb_;
+    private closeDb_;
+    private dropDb_;
+    private update_;
+    private insert_;
+    private bulkInsert_;
+    private remove_;
+    private select_;
+    private count_;
+    private createDb_;
+    private activeDbVersion_;
+    private getDbVersion_;
+    private readonly dbStatus_;
+    private clear_;
+    private exportJson_;
+    private getType_;
+    private isDbExist_;
+    private get_;
+    private set_;
+    private transaction;
+}
