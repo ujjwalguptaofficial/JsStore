@@ -1,4 +1,5 @@
 import React from "react";
+import { StudentService } from "../service/student_service";
 
 export default class StudentGrid extends React.Component {
 
@@ -7,20 +8,47 @@ export default class StudentGrid extends React.Component {
         super();
         this.state = {
             isEditing: false,
-            editStudentId: 0
+            editStudentId: 0,
+            students: []
         }
     }
 
-    add() {
+    componentDidMount() {
+        this.loadStudentsFromDb();
+    }
+
+    async loadStudentsFromDb() {
+        const service = new StudentService();
+        try {
+            const students = await service.getStudents()
+            this.setState({ students: students })
+        }
+        catch (ex) {
+            console.error(ex);
+        }
+    }
+
+    async add() {
         var student = {
             name: this.refs.name.value,
             gender: this.refs.gender.value,
             country: this.refs.country.value,
             city: this.refs.city.value
         }
-        this.props.addHandler(student);
-        this.clear();
+        // add student into indexeddb
+        const service = new StudentService();
+        try {
+            const students = await service.addStudent(student)
+            this.state.students.push(students[0]);
+            this.setState({ students: this.state.students });
+            this.clear();
+        }
+        catch (ex) {
+            console.error(ex);
+        }
+
     }
+
 
     clear() {
         this.refs.name.value = "";
@@ -29,37 +57,56 @@ export default class StudentGrid extends React.Component {
         this.refs.city.value = "";
     }
 
-    editUpdate(el) {
+    async  editUpdate(el) {
         const row = el.target.parentElement.parentElement;
         const studentId = Number(row.dataset.id);
         if (this.state.isEditing) {
-            const student = {
-                id: studentId,
+            const updateValue = {
                 name: row.children[0].firstChild.value,
                 gender: row.children[1].firstChild.value,
                 country: row.children[2].firstChild.value,
                 city: row.children[3].firstChild.value
             }
-            this.props.updateHandler(student);
+            // update student into indexeddb
+            const service = new StudentService();
+            try {
+                const rowsUpdated = await service.updateStudentById(studentId, updateValue);
+                if (rowsUpdated > 0) {
+                    const index = this.state.students.findIndex(value => value.id === studentId);
+                    this.state.students[index] = { id: studentId, ...updateValue };
+                    this.setState({ student: this.state.students, isEditing: false, editStudentId: 0 });
+                }
+
+            }
+            catch (ex) {
+                console.error(ex);
+            }
         }
         else {
             this.setState({ isEditing: true, editStudentId: studentId });
         }
     }
 
-    delete(el) {
+    async delete(el) {
         const row = el.target.parentElement.parentElement;
         const studentId = Number(row.dataset.id);
-        this.props.deleteHandler(studentId);
+        // delete student from indexeddb
+        const service = new StudentService();
+        try {
+            const rowsDeleted = await service.removeStudent(studentId);
+            if (rowsDeleted > 0) {
+                const index = this.state.students.findIndex(value => value.id === studentId);
+                this.state.students.splice(index, 1);
+                this.setState({ student: this.state.students });
+                alert("Row Deleted");
+            }
+
+        }
+        catch (ex) {
+            console.error(ex);
+        }
     }
 
-    onStudentUpdated() {
-        this.setState({ isEditing: false, editStudentId: 0 });
-    }
-
-    onStudentDeleted() {
-        alert("Row Deleted");
-    }
 
     render() {
         const getCell = (value) => {
@@ -68,7 +115,7 @@ export default class StudentGrid extends React.Component {
                 { value }
         }
 
-        const dataRows = this.props.students.map(student => {
+        const dataRows = this.state.students.map(student => {
             if (student.id === this.state.editStudentId) {
                 return (
                     <tr key={student.id} data-id={student.id}>
