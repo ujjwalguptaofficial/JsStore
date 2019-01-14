@@ -25,7 +25,7 @@ export class StudentGrid {
                             <td><input type="text"/></td>
                             <td><input type="text"/></td>
                             <td><button id="btnAdd">Add</button></td>
-                            <td><button id=""btnClear">Clear</button></td>
+                            <td><button id="btnClear">Clear</button></td>
                         </tr>
                     </thead>
                     <tbody>
@@ -41,9 +41,8 @@ export class StudentGrid {
                 html += this.getRowHtml(student);
             })
             $('table tbody').html(html);
-            this.catchEvents();
         });
-
+        this.catchEvents();
     }
 
     getRowHtml(student) {
