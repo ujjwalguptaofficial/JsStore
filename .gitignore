@@ -5,6 +5,7 @@
 node_modules/
 .nuxt/
 output/
+build/
 
 #definition
 !dist/src

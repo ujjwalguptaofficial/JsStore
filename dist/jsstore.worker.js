@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.9.0 - 03/12/2018
+ * @license :jsstore - V2.9.2 - 23/12/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -1625,7 +1625,7 @@ var LogHelper = /** @class */ (function () {
                 errMsg = "Next join details not supplied";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].TableNotExist:
-                errMsg = "Table '" + this.info_['TableName'] + "' does not exist";
+                errMsg = "Table '" + this.info_['tableName'] + "' does not exist";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].DbNotExist:
                 errMsg = "Database '" + this.info_['DbName'] + "' does not exist";
@@ -4584,7 +4584,7 @@ var Instance = /** @class */ (function (_super) {
             }
         }
         catch (ex) {
-            this.onExceptionOccured(ex, { TableName: this.query.from });
+            this.onExceptionOccured(ex, { tableName: this.query.from });
         }
     };
     Instance.prototype.initTransaction_ = function () {
@@ -4984,7 +4984,7 @@ var Instance = /** @class */ (function (_super) {
             this.insertData_(this.query.values);
         }
         catch (ex) {
-            this.onExceptionOccured(ex, { TableName: this.tableName });
+            this.onExceptionOccured(ex, { tableName: this.tableName });
         }
     };
     Instance.prototype.onQueryFinished_ = function () {
@@ -4998,34 +4998,68 @@ var Instance = /** @class */ (function (_super) {
         var insertDataIntoTable;
         var objectStore;
         if (this.query.return === true) {
-            insertDataIntoTable = function (value) {
-                if (value) {
-                    var addResult = objectStore.add(value);
-                    addResult.onerror = _this.onErrorOccured.bind(_this);
-                    addResult.onsuccess = function (e) {
-                        _this.valuesAffected_.push(value);
-                        insertDataIntoTable.call(_this, values[valueIndex++]);
-                    };
-                }
-                else {
-                    _this.onQueryFinished_();
-                }
-            };
+            if (this.query.upsert === true) {
+                insertDataIntoTable = function (value) {
+                    if (value) {
+                        var addResult = objectStore.put(value);
+                        addResult.onerror = _this.onErrorOccured.bind(_this);
+                        addResult.onsuccess = function (e) {
+                            _this.valuesAffected_.push(value);
+                            insertDataIntoTable(values[valueIndex++]);
+                        };
+                    }
+                    else {
+                        _this.onQueryFinished_();
+                    }
+                };
+            }
+            else {
+                insertDataIntoTable = function (value) {
+                    if (value) {
+                        var addResult = objectStore.add(value);
+                        addResult.onerror = _this.onErrorOccured.bind(_this);
+                        addResult.onsuccess = function (e) {
+                            _this.valuesAffected_.push(value);
+                            insertDataIntoTable(values[valueIndex++]);
+                        };
+                    }
+                    else {
+                        _this.onQueryFinished_();
+                    }
+                };
+            }
         }
         else {
-            insertDataIntoTable = function (value) {
-                if (value) {
-                    var addResult = objectStore.add(value);
-                    addResult.onerror = _this.onErrorOccured.bind(_this);
-                    addResult.onsuccess = function (e) {
-                        ++_this.rowAffected;
-                        insertDataIntoTable.call(_this, values[valueIndex++]);
-                    };
-                }
-                else {
-                    _this.onQueryFinished_();
-                }
-            };
+            if (this.query.upsert === true) {
+                insertDataIntoTable = function (value) {
+                    if (value) {
+                        var addResult = objectStore.put(value);
+                        addResult.onerror = _this.onErrorOccured.bind(_this);
+                        addResult.onsuccess = function (e) {
+                            ++_this.rowAffected;
+                            insertDataIntoTable(values[valueIndex++]);
+                        };
+                    }
+                    else {
+                        _this.onQueryFinished_();
+                    }
+                };
+            }
+            else {
+                insertDataIntoTable = function (value) {
+                    if (value) {
+                        var addResult = objectStore.add(value);
+                        addResult.onerror = _this.onErrorOccured.bind(_this);
+                        addResult.onsuccess = function (e) {
+                            ++_this.rowAffected;
+                            insertDataIntoTable(values[valueIndex++]);
+                        };
+                    }
+                    else {
+                        _this.onQueryFinished_();
+                    }
+                };
+            }
         }
         this.createTransaction([this.query.into], this.onTransactionCompleted_);
         objectStore = this.transaction.objectStore(this.query.into);
@@ -5254,7 +5288,7 @@ var Instance = /** @class */ (function (_super) {
         }
         catch (ex) {
             this.errorOccured = true;
-            this.onExceptionOccured(ex, { TableName: this.query.from });
+            this.onExceptionOccured(ex, { tableName: this.query.from });
         }
     };
     Instance.prototype.processWhereArrayQry = function () {
@@ -5688,7 +5722,7 @@ var Instance = /** @class */ (function (_super) {
         }
         catch (ex) {
             this.errorOccured = true;
-            this.onExceptionOccured.call(this, ex, { TableName: this.query.in });
+            this.onExceptionOccured.call(this, ex, { tableName: this.query.in });
         }
     };
     Instance.prototype.executeComplexLogic_ = function () {
@@ -6109,7 +6143,7 @@ var SchemaChecker = /** @class */ (function () {
                 });
             }
             else {
-                log = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].TableNotExist, { TableName: tblName });
+                log = new _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].TableNotExist, { tableName: tblName });
             }
         }
         else {
@@ -6243,25 +6277,13 @@ var BulkInsert = /** @class */ (function (_super) {
         return _this;
     }
     BulkInsert.prototype.execute = function () {
-        // if (!Array.isArray(this.query.values)) {
-        //     this.onErrorOccured(
-        //         new LogHelper(ERROR_TYPE.NotArray),
-        //         true
-        //     );
-        // }
-        // else if (this.isTableExist(this.query.into) === true) {
         try {
             this.bulkinsertData(this.query.values);
             this.query.values = null;
         }
         catch (ex) {
-            this.onExceptionOccured(ex, { TableName: this.query.into });
+            this.onExceptionOccured(ex, { tableName: this.query.into });
         }
-        // }
-        // else {
-        //     const error = new LogHelper(ERROR_TYPE.TableNotExist, { TableName: this.query.into });
-        //     error.throw();
-        // }
     };
     BulkInsert.prototype.bulkinsertData = function (values) {
         var _this = this;
@@ -6269,8 +6291,16 @@ var BulkInsert = /** @class */ (function (_super) {
             _this.onSuccess();
         });
         this.objectStore = this.transaction.objectStore(this.query.into);
-        for (var i = 0, length_1 = values.length; i < length_1; i++) {
-            this.objectStore.add(values[i]);
+        var valueLength = values.length;
+        if (this.query.upsert === false) {
+            for (var i = 0; i < valueLength; i++) {
+                this.objectStore.add(values[i]);
+            }
+        }
+        else {
+            for (var i = 0; i < valueLength; i++) {
+                this.objectStore.put(values[i]);
+            }
         }
     };
     return BulkInsert;
@@ -6391,8 +6421,7 @@ var Instance = /** @class */ (function (_super) {
         }
         catch (ex) {
             this.errorOccured = true;
-            this.onExceptionOccured(ex, { TableName: this.query.tables });
-            //this.onErrorOccured(ex, false);
+            this.onExceptionOccured(ex, { tableName: this.query.tables });
         }
     };
     Instance.prototype.initTransaction_ = function (tableNames) {
@@ -6564,7 +6593,7 @@ var QueryHelper = /** @class */ (function () {
             }
         }
         else {
-            log = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].TableNotExist, { TableName: this.query.into });
+            log = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].TableNotExist, { tableName: this.query.into });
         }
         if (callBack != null) {
             callBack(table);
@@ -6612,7 +6641,7 @@ var QueryHelper = /** @class */ (function () {
             }
         }
         else {
-            this.error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].TableNotExist, { TableName: this.query.from }).get();
+            this.error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].TableNotExist, { tableName: this.query.from }).get();
         }
     };
     QueryHelper.prototype.isTableExist_ = function (tableName) {
@@ -6684,9 +6713,6 @@ var QueryHelper = /** @class */ (function () {
     };
     QueryHelper.prototype.getType_ = function (value) {
         return _util__WEBPACK_IMPORTED_MODULE_3__["Util"].getType(value);
-    };
-    QueryHelper.prototype.isArray_ = function (value) {
-        return _util__WEBPACK_IMPORTED_MODULE_3__["Util"].isArray(value);
     };
     return QueryHelper;
 }());
