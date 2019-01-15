@@ -5,20 +5,20 @@ export class StudentService extends BaseService {
     
     getStudents() {
         return this.connection.select<Student>({
-            from: 'Students'
+            from: 'students'
         });
     }
 
     addStudent(student: Student) {
         return this.connection.insert({
-            into: 'Students',
+            into: 'students',
             values: [student]
         });
     }
 
     deleteStudent(studentId: number) {
         return this.connection.remove({
-            from: 'Students',
+            from: 'students',
             where: {
                 id: studentId
             }
@@ -27,7 +27,7 @@ export class StudentService extends BaseService {
 
     getStudent(studentId: number) {
         return this.connection.select<Student>({
-            from: 'Students',
+            from: 'students',
             where: {
                 id: studentId
             }
@@ -36,7 +36,7 @@ export class StudentService extends BaseService {
 
     updateStudent(studentId: number, value) {
         return this.connection.update({
-            in: 'Students',
+            in: 'students',
             set: value,
             where: {
                 id: studentId

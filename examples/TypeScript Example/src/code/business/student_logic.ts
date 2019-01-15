@@ -3,7 +3,6 @@ import { StudentService } from '../service/student_service';
 import { Student } from '../model/student';
 
 export class StudentLogic {
-    private service_ = new StudentService();
 
     constructor() {
         this.registerEvents_();
@@ -57,18 +56,21 @@ export class StudentLogic {
                 </tr>`;
     }
 
-    deleteStudent(studentId) {
-        this.service_.deleteStudent(studentId).then(rowsDeleted => {
+    async deleteStudent(studentId) {
+        const service = new StudentService();
+        try {
+            const rowsDeleted = await service.deleteStudent(studentId);
             if (rowsDeleted > 0) {
                 const row = $("#tblStudents tbody tr[data-id='" + studentId + "']");
                 row.remove();
             }
-        }).catch(err => {
+        }
+        catch (err) {
             alert(err.message);
-        });
+        }
     }
 
-    updateStudent(studentId) {
+    async  updateStudent(studentId) {
         const columns = $("#tblStudents tbody tr[data-id='" + studentId + "']").find('td');
         const updatedValue: Student = {
             name: columns[0].querySelector('input').value,
@@ -76,18 +78,21 @@ export class StudentLogic {
             country: columns[2].querySelector('input').value,
             city: columns[3].querySelector('input').value
         };
-        this.service_.updateStudent(studentId, updatedValue).then((rowsUpdated) => {
+        const service = new StudentService();
+        try {
+            const rowsUpdated = await service.updateStudent(studentId, updatedValue);
             if (rowsUpdated > 0) {
                 updatedValue.id = studentId;
                 ($("#tblStudents tbody tr[data-id='" + studentId + "']")[0] as HTMLElement).outerHTML =
                     this.getHtmlRow(updatedValue);
             }
-        }).catch(err => {
+        }
+        catch (err) {
             alert(err.message);
-        });
+        }
     }
 
-    addStudent() {
+    async  addStudent() {
         const columns = document.querySelectorAll('.tr-add td');
         const student: Student = {
             name: columns[0].querySelector('input').value,
@@ -95,26 +100,32 @@ export class StudentLogic {
             country: columns[2].querySelector('input').value,
             city: columns[3].querySelector('input').value
         };
-        this.service_.addStudent(student).then((rowsAdded) => {
+        const service = new StudentService();
+        try {
+            const rowsAdded = await service.addStudent(student);
             if (rowsAdded > 0) {
                 this.refreshStudentList();
                 alert('successfully added');
             }
-        }).catch((err) => {
+        }
+        catch (err) {
             console.error(err);
             alert(err.message);
-        });
+        }
     }
 
-    editStudent(studentId) {
-        this.service_.getStudent(studentId).then(students => {
+    async editStudent(studentId) {
+        const service = new StudentService();
+        try {
+            const students = await service.getStudent(studentId);
             if (students.length > 0) {
                 const row: HTMLElement = $("#tblStudents tbody tr[data-id='" + studentId + "']")[0];
                 row.outerHTML = this.getRowWithTextbox(students[0]);
             }
-        }).catch(err => {
+        }
+        catch (err) {
             alert(err.message);
-        });
+        }
     }
 
     clearAddText() {
@@ -124,19 +135,21 @@ export class StudentLogic {
         });
     }
 
-    refreshStudentList() {
-        this.service_.getStudents().then(results => {
+    async refreshStudentList() {
+        try {
+            const service = new StudentService();
+            const results = await service.getStudents();
             const tableBody = document.querySelector('#tblStudents tbody');
             let html = this.getRowWithTextbox();
             results.forEach(student => {
                 html += this.getHtmlRow(student);
             });
             tableBody.innerHTML = html;
-
-        }).catch((err) => {
+        }
+        catch (err) {
             console.error(err);
             alert(err.message);
-        });
+        }
     }
 
     private getHtmlRow(student: Student) {
