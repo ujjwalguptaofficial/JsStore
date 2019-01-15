@@ -33,16 +33,20 @@ export class StudentGrid {
                 </table>`
     }
 
-    init() {
+    async init() {
         var studentService = new StudentService();
         var html = '';
-        studentService.getStudents().then(students => {
+        try {
+            const students = await studentService.getStudents();
             students.forEach((student) => {
                 html += this.getRowHtml(student);
             })
             $('table tbody').html(html);
-        });
-        this.catchEvents();
+            this.catchEvents();
+        } catch (err) {
+            console.error(err);
+        }
+
     }
 
     getRowHtml(student) {
@@ -61,6 +65,19 @@ export class StudentGrid {
         $('table thead tr td input').val('');
     }
 
+    async addStudentIntoDb(student) {
+        var studentService = new StudentService();
+        try {
+            const addedStudents = await studentService.addStudent(student);
+            if (addedStudents.length > 0) {
+                this.clearAddRowTextBoxValue();
+                $('table tbody').append(this.getRowHtml(addedStudents[0]));
+            }
+        } catch (err) {
+            alert(err.message);
+        }
+    }
+
     catchEvents() {
         $('#btnAdd').click(() => {
             const addRow = $('table thead tr')[1];
@@ -71,32 +88,25 @@ export class StudentGrid {
                 $(addRow.cells[2]).find('input').val(),
                 $(addRow.cells[3]).find('input').val()
             );
-            var studentService = new StudentService();
-            studentService.addStudent(student).then((addedStudents) => {
-                if (addedStudents.length > 0) {
-                    this.clearAddRowTextBoxValue();
-                    $('table tbody').append(this.getRowHtml(addedStudents[0]));
-                }
-            }).catch(function (err) {
-                alert(err.message);
-            })
+            this.addStudentIntoDb(student);
         });
 
         $('#btnClear').click(() => {
             this.clearAddRowTextBoxValue();
         });
 
-        $('body').on('click', 'table .btn-delete', function () {
+        $('body').on('click', 'table .btn-delete', async function () {
             var row = $(this).parents('tr');
             var studentId = Number(row.data('id'));
             var studentService = new StudentService();
-            studentService.removeStudent(studentId).then(function (noOfRowsDeleted) {
+            try {
+                const noOfRowsDeleted = await studentService.removeStudent(studentId);
                 if (noOfRowsDeleted > 0) {
                     row.remove();
                 }
-            }).catch(function (err) {
+            } catch (err) {
                 alert(err.message);
-            });
+            }
         });
 
 
@@ -112,10 +122,11 @@ export class StudentGrid {
             row.find('td:eq(5)').html('<button class="btn-cancel-update">Cancel</button>');
         });
 
-        $('body').on('click', 'table .btn-cancel-update', function () {
+        $('body').on('click', 'table .btn-cancel-update', async function () {
             var row = $(this).parents('tr');
             var studentService = new StudentService();
-            studentService.getStudentById(Number(row.data('id'))).then(function (students) {
+            try {
+                const students = await studentService.getStudentById(Number(row.data('id')));
                 if (students.length > 0) {
                     const student = students[0];
                     row.find('td:eq(0)').html(student.name);
@@ -123,15 +134,14 @@ export class StudentGrid {
                     row.find('td:eq(2)').html(student.country);
                     row.find('td:eq(3)').html(student.city);
                 }
-
-            }).catch(function (err) {
+                row.find('td:eq(4)').html('<button class="btn-edit">Edit</button>');
+                row.find('td:eq(5)').html('<button class="btn-delete">Delete</button>');
+            } catch (err) {
                 alert(err.message);
-            });
-            row.find('td:eq(4)').html('<button class="btn-edit">Edit</button>');
-            row.find('td:eq(5)').html('<button class="btn-delete">Delete</button>');
+            }
         });
 
-        $('body').on('click', 'table .btn-update', function () {
+        $('body').on('click', 'table .btn-update', async function () {
             var row = $(this).parents('tr');
             var student = {
                 name: row.find('td:eq(0) input').val(),
@@ -141,7 +151,8 @@ export class StudentGrid {
             };
             var studentService = new StudentService();
             var studentId = Number(row.data('id'));
-            studentService.updateStudentById(studentId, student).then(function (noOfRowsUpdated) {
+            try {
+                const noOfRowsUpdated = await studentService.updateStudentById(studentId, student);
                 if (noOfRowsUpdated > 0) {
                     row.find('td').each(function (index) {
                         var $el = $(this);
@@ -152,9 +163,10 @@ export class StudentGrid {
                     row.find('td:eq(4)').html('<button class="btn-edit">Edit</button>');
                     row.find('td:eq(5)').html('<button class="btn-delete">Delete</button>');
                 }
-            }).catch(function (err) {
+            } catch (err) {
                 alert(err.message);
-            });
+            }
+
         })
     }
 
