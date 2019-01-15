@@ -2,7 +2,7 @@ import * as JsStore from "jsstore";
 import {
     DATA_TYPE
 } from "jsstore";
-const workerPath = require("file-loader?publicPath=/&name=jsstore.worker.js!jsstore/dist/jsstore.worker.min");
+import * as workerPath from 'file-loader?name=scripts/[name].[hash].js!jsstore/dist/jsstore.worker.min.js';
 
 // This will ensure that we are using only one instance. 
 // Otherwise due to multiple instance multiple worker will be created.
