@@ -3,7 +3,7 @@ import {
     DATA_TYPE
 } from "jsstore";
 import * as workerPath from 'file-loader?name=scripts/[name].[hash].js!jsstore/dist/jsstore.worker.min.js';
-
+this.connection.setLogStatus(true);
 // This will ensure that we are using only one instance. 
 // Otherwise due to multiple instance multiple worker will be created.
 export const idbCon = new JsStore.Instance(new Worker(workerPath));

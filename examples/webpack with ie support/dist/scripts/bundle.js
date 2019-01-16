@@ -71,14 +71,14 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./node_modules/file-loader/dist/cjs.js?name=scripts/jsstore.worker.ie.min.js!./node_modules/jsstore/dist/jsstore.worker.ie.min.js":
-/*!*****************************************************************************************************************************************!*\
-  !*** ./node_modules/file-loader/dist/cjs.js?name=scripts/jsstore.worker.ie.min.js!./node_modules/jsstore/dist/jsstore.worker.ie.min.js ***!
-  \*****************************************************************************************************************************************/
+/***/ "./node_modules/file-loader/dist/cjs.js?name=scripts/[name].[hash].js!./node_modules/jsstore/dist/jsstore.worker.ie.min.js":
+/*!*********************************************************************************************************************************!*\
+  !*** ./node_modules/file-loader/dist/cjs.js?name=scripts/[name].[hash].js!./node_modules/jsstore/dist/jsstore.worker.ie.min.js ***!
+  \*********************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__.p + "scripts/jsstore.worker.ie.min.js";
+module.exports = __webpack_require__.p + "scripts/jsstore.worker.ie.min.98ba4c08fe1fcdc96e60606ea29a2a6c.js";
 
 /***/ }),
 
@@ -10466,7 +10466,7 @@ return jQuery;
 /***/ (function(module, exports) {
 
 /*!
- * @license :jsstore - V2.4.3 - 09/10/2018
+ * @license :jsstore - V2.9.2 - 23/12/2018
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
  */
@@ -10580,11 +10580,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Config", function() { return _config__WEBPACK_IMPORTED_MODULE_2__["Config"]; });
 
-/* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6);
+/* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(7);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "enableLog", function() { return _helper__WEBPACK_IMPORTED_MODULE_3__["enableLog"]; });
 
-/* harmony import */ var _model_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(7);
+/* harmony import */ var _model_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(8);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Column", function() { return _model_index__WEBPACK_IMPORTED_MODULE_4__["Column"]; });
+
+/* harmony import */ var _global__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(10);
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "useSqlWeb", function() { return _global__WEBPACK_IMPORTED_MODULE_5__["useSqlWeb"]; });
+
 
 
 
@@ -10603,6 +10607,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
 /* harmony import */ var _instance_helper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3);
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5);
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6);
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -10613,6 +10618,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 
 
@@ -10663,7 +10669,7 @@ var Instance = /** @class */ (function (_super) {
      * select data from table
      *
      * @template T
-     * @param {ISelect} query
+     * @param {SelectQuery} query
      * @returns
      * @memberof Instance
      */
@@ -10676,7 +10682,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * get no of record from table
      *
-     * @param {ICount} query
+     * @param {CountQuery} query
      * @returns
      * @memberof Instance
      */
@@ -10689,7 +10695,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * insert data into table
      *
-     * @param {IInsert} query
+     * @param {InsertQuery} query
      * @returns
      * @memberof Instance
      */
@@ -10702,7 +10708,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * update data into table
      *
-     * @param {IUpdate} query
+     * @param {UpdateQuery} query
      * @returns
      * @memberof Instance
      */
@@ -10715,7 +10721,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * remove data from table
      *
-     * @param {IRemove} query
+     * @param {RemoveQuery} query
      * @returns
      * @memberof Instance
      */
@@ -10741,7 +10747,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * insert bulk amount of data
      *
-     * @param {IInsert} query
+     * @param {InsertQuery} query
      * @returns
      * @memberof Instance
      */
@@ -10754,7 +10760,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      *  export the result in json file
      *
-     * @param {ISelect} query
+     * @param {SelectQuery} query
      * @returns
      * @memberof Instance
      */
@@ -10794,7 +10800,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * get version of database
      *
-     * @param {(string | IDbInfo)} dbName
+     * @param {(string | DbInfo)} dbName
      * @returns
      * @memberof Instance
      */
@@ -10807,7 +10813,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * is database exist
      *
-     * @param {(IDbInfo | string)} dbInfo
+     * @param {(DbInfo | string)} dbInfo
      * @returns
      * @memberof Instance
      */
@@ -10886,7 +10892,7 @@ var Instance = /** @class */ (function (_super) {
     /**
      * execute the transaction
      *
-     * @param {ITranscationQry} query
+     * @param {TranscationQuery} query
      * @returns
      * @memberof Instance
      */
@@ -10896,6 +10902,17 @@ var Instance = /** @class */ (function (_super) {
             name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Transaction,
             query: query
         });
+    };
+    /**
+     * run sql code
+     *
+     * @param {(string | object)} query
+     * @returns {Promise<any>}
+     * @memberof Instance
+     */
+    Instance.prototype.runSql = function (query) {
+        var result = _util__WEBPACK_IMPORTED_MODULE_3__["Util"].sqlWeb.parseSql(query);
+        return this[result.api](result.data);
     };
     return Instance;
 }(_instance_helper__WEBPACK_IMPORTED_MODULE_1__["InstanceHelper"]));
@@ -11174,6 +11191,31 @@ var Config = /** @class */ (function () {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Util", function() { return Util; });
+var Util = /** @class */ (function () {
+    function Util() {
+    }
+    Object.defineProperty(Util, "sqlWeb", {
+        get: function () {
+            return Util.sqlWeb_ == null ? window['SqlWeb'] : Util.sqlWeb_;
+        },
+        set: function (value) {
+            Util.sqlWeb_ = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return Util;
+}());
+
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enableLog", function() { return enableLog; });
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5);
 
@@ -11187,19 +11229,19 @@ var enableLog = function () {
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _column__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(8);
+/* harmony import */ var _column__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Column", function() { return _column__WEBPACK_IMPORTED_MODULE_0__["Column"]; });
 
 
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11249,6 +11291,25 @@ var Column = /** @class */ (function () {
     return Column;
 }());
 
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "useSqlWeb", function() { return useSqlWeb; });
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6);
+
+/**
+ *
+ * supply sqlweb
+ * @param {*} value
+ */
+var useSqlWeb = function (value) {
+    _util__WEBPACK_IMPORTED_MODULE_0__["Util"].sqlWeb = value;
+};
 
 
 /***/ })
@@ -12092,13 +12153,11 @@ var _student = __webpack_require__(/*! ../model/student */ "./src/model/student.
 
 var _jquery = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 
-var jQuery = _interopRequireWildcard(_jquery);
+var $ = _interopRequireWildcard(_jquery);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var $ = jQuery.default;
 
 var StudentGrid = exports.StudentGrid = function () {
     function StudentGrid() {
@@ -12108,22 +12167,25 @@ var StudentGrid = exports.StudentGrid = function () {
     _createClass(StudentGrid, [{
         key: "getHtml",
         value: function getHtml() {
-            return "<table>\n                    <thead>\n                        <tr>\n                            <th>Name</th>\n                            <th>Gender</th>\n                            <th>Country</th>\n                            <th>City</th>\n                            <th></th>\n                            <th></th>\n                        </tr>\n                        <tr>\n                            <td><input type=\"text\"/></td>\n                            <td><input type=\"text\"/></td>\n                            <td><input type=\"text\"/></td>\n                            <td><input type=\"text\"/></td>\n                            <td><button id=\"btnAdd\">Add</button></td>\n                            <td><button id=\"\"btnClear\">Clear</button></td>\n                        </tr>\n                    </thead>\n                    <tbody>\n                    </tbody>\n                </table>";
+            return "<table>\n                    <thead>\n                        <tr>\n                            <th>Name</th>\n                            <th>Gender</th>\n                            <th>Country</th>\n                            <th>City</th>\n                            <th></th>\n                            <th></th>\n                        </tr>\n                        <tr>\n                            <td><input type=\"text\"/></td>\n                            <td><input type=\"text\"/></td>\n                            <td><input type=\"text\"/></td>\n                            <td><input type=\"text\"/></td>\n                            <td><button id=\"btnAdd\">Add</button></td>\n                            <td><button id=\"btnClear\">Clear</button></td>\n                        </tr>\n                    </thead>\n                    <tbody>\n                    </tbody>\n                </table>";
         }
     }, {
         key: "init",
-        value: function init() {
+        value: async function init() {
             var _this = this;
 
             var studentService = new _student_service.StudentService();
             var html = '';
-            studentService.getStudents().then(function (students) {
+            try {
+                var students = await studentService.getStudents();
                 students.forEach(function (student) {
                     html += _this.getRowHtml(student);
                 });
                 $('table tbody').html(html);
-                _this.catchEvents();
-            });
+                this.catchEvents();
+            } catch (err) {
+                console.error(err);
+            }
         }
     }, {
         key: "getRowHtml",
@@ -12137,6 +12199,20 @@ var StudentGrid = exports.StudentGrid = function () {
             $('table thead tr td input').val('');
         }
     }, {
+        key: "addStudentIntoDb",
+        value: async function addStudentIntoDb(student) {
+            var studentService = new _student_service.StudentService();
+            try {
+                var addedStudents = await studentService.addStudent(student);
+                if (addedStudents.length > 0) {
+                    this.clearAddRowTextBoxValue();
+                    $('table tbody').append(this.getRowHtml(addedStudents[0]));
+                }
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+    }, {
         key: "catchEvents",
         value: function catchEvents() {
             var _this2 = this;
@@ -12144,32 +12220,25 @@ var StudentGrid = exports.StudentGrid = function () {
             $('#btnAdd').click(function () {
                 var addRow = $('table thead tr')[1];
                 var student = new _student.Student(0, $(addRow.cells[0]).find('input').val(), $(addRow.cells[1]).find('input').val(), $(addRow.cells[2]).find('input').val(), $(addRow.cells[3]).find('input').val());
-                var studentService = new _student_service.StudentService();
-                studentService.addStudent(student).then(function (addedStudents) {
-                    if (addedStudents.length > 0) {
-                        _this2.clearAddRowTextBoxValue();
-                        $('table tbody').append(_this2.getRowHtml(addedStudents[0]));
-                    }
-                }).catch(function (err) {
-                    alert(err.message);
-                });
+                _this2.addStudentIntoDb(student);
             });
 
             $('#btnClear').click(function () {
                 _this2.clearAddRowTextBoxValue();
             });
 
-            $('body').on('click', 'table .btn-delete', function () {
+            $('body').on('click', 'table .btn-delete', async function () {
                 var row = $(this).parents('tr');
                 var studentId = Number(row.data('id'));
                 var studentService = new _student_service.StudentService();
-                studentService.removeStudent(studentId).then(function (noOfRowsDeleted) {
+                try {
+                    var noOfRowsDeleted = await studentService.removeStudent(studentId);
                     if (noOfRowsDeleted > 0) {
                         row.remove();
                     }
-                }).catch(function (err) {
+                } catch (err) {
                     alert(err.message);
-                });
+                }
             });
 
             $('body').on('click', 'table .btn-edit', function () {
@@ -12184,10 +12253,11 @@ var StudentGrid = exports.StudentGrid = function () {
                 row.find('td:eq(5)').html('<button class="btn-cancel-update">Cancel</button>');
             });
 
-            $('body').on('click', 'table .btn-cancel-update', function () {
+            $('body').on('click', 'table .btn-cancel-update', async function () {
                 var row = $(this).parents('tr');
                 var studentService = new _student_service.StudentService();
-                studentService.getStudentById(Number(row.data('id'))).then(function (students) {
+                try {
+                    var students = await studentService.getStudentById(Number(row.data('id')));
                     if (students.length > 0) {
                         var student = students[0];
                         row.find('td:eq(0)').html(student.name);
@@ -12195,14 +12265,14 @@ var StudentGrid = exports.StudentGrid = function () {
                         row.find('td:eq(2)').html(student.country);
                         row.find('td:eq(3)').html(student.city);
                     }
-                }).catch(function (err) {
+                    row.find('td:eq(4)').html('<button class="btn-edit">Edit</button>');
+                    row.find('td:eq(5)').html('<button class="btn-delete">Delete</button>');
+                } catch (err) {
                     alert(err.message);
-                });
-                row.find('td:eq(4)').html('<button class="btn-edit">Edit</button>');
-                row.find('td:eq(5)').html('<button class="btn-delete">Delete</button>');
+                }
             });
 
-            $('body').on('click', 'table .btn-update', function () {
+            $('body').on('click', 'table .btn-update', async function () {
                 var row = $(this).parents('tr');
                 var student = {
                     name: row.find('td:eq(0) input').val(),
@@ -12212,7 +12282,8 @@ var StudentGrid = exports.StudentGrid = function () {
                 };
                 var studentService = new _student_service.StudentService();
                 var studentId = Number(row.data('id'));
-                studentService.updateStudentById(studentId, student).then(function (noOfRowsUpdated) {
+                try {
+                    var noOfRowsUpdated = await studentService.updateStudentById(studentId, student);
                     if (noOfRowsUpdated > 0) {
                         row.find('td').each(function (index) {
                             var $el = $(this);
@@ -12223,9 +12294,9 @@ var StudentGrid = exports.StudentGrid = function () {
                         row.find('td:eq(4)').html('<button class="btn-edit">Edit</button>');
                         row.find('td:eq(5)').html('<button class="btn-delete">Delete</button>');
                     }
-                }).catch(function (err) {
+                } catch (err) {
                     alert(err.message);
-                });
+                }
             });
         }
     }]);
@@ -12280,8 +12351,6 @@ exports.BaseService = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _jsstore = __webpack_require__(/*! jsstore */ "./node_modules/jsstore/dist/jsstore.commonjs2.js");
-
 var _idb_service = __webpack_require__(/*! ./idb_service */ "./src/service/idb_service.js");
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -12289,40 +12358,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var BaseService = exports.BaseService = function () {
     function BaseService() {
         _classCallCheck(this, BaseService);
-
-        this.dbName = "students_db";
-        this.initJsStore();
     }
 
     _createClass(BaseService, [{
-        key: "initJsStore",
-        value: function initJsStore() {
-            var _this = this;
-
-            this.connection.isDbExist(this.dbName).then(function (exist) {
-                if (exist) {
-                    _this.connection.openDb(_this.dbName);
-                } else {
-                    _this.connection.createDb(_this.getDbSchema());
-                }
-            }).catch(function (err) {
-                console.error(err);
-            });
-        }
-    }, {
-        key: "getDbSchema",
-        value: function getDbSchema() {
-            var studentsTable = {
-                name: 'students',
-                columns: [new _jsstore.Column('id').options([_jsstore.COL_OPTION.PrimaryKey, _jsstore.COL_OPTION.AutoIncrement]), new _jsstore.Column('name').options([_jsstore.COL_OPTION.NotNull]).setDataType(_jsstore.DATA_TYPE.String), new _jsstore.Column('gender').options([_jsstore.COL_OPTION.NotNull]).disableSearch(), new _jsstore.Column('country').options([_jsstore.COL_OPTION.NotNull]).setDataType(_jsstore.DATA_TYPE.String), new _jsstore.Column('city').options([_jsstore.COL_OPTION.NotNull]).setDataType(_jsstore.DATA_TYPE.String)]
-            };
-
-            return {
-                name: this.dbName,
-                tables: [studentsTable]
-            };
-        }
-    }, {
         key: "connection",
         get: function get() {
             return _idb_service.idbCon;
@@ -12345,22 +12383,72 @@ var BaseService = exports.BaseService = function () {
 
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
-exports.idbCon = undefined;
+exports.dbName = exports.idbCon = undefined;
 
 var _jsstore = __webpack_require__(/*! jsstore */ "./node_modules/jsstore/dist/jsstore.commonjs2.js");
 
 var JsStore = _interopRequireWildcard(_jsstore);
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+var _jsstoreWorkerIeMin = __webpack_require__(/*! file-loader?name=scripts/[name].[hash].js!jsstore/dist/jsstore.worker.ie.min.js */ "./node_modules/file-loader/dist/cjs.js?name=scripts/[name].[hash].js!./node_modules/jsstore/dist/jsstore.worker.ie.min.js");
 
-var fileUrl = __webpack_require__(/*! file-loader?name=scripts/jsstore.worker.ie.min.js!../../node_modules/jsstore/dist/jsstore.worker.ie.min.js */ "./node_modules/file-loader/dist/cjs.js?name=scripts/jsstore.worker.ie.min.js!./node_modules/jsstore/dist/jsstore.worker.ie.min.js");
+var workerPath = _interopRequireWildcard(_jsstoreWorkerIeMin);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 // This will ensure that we are using only one instance. 
 // Otherwise due to multiple instance multiple worker will be created.
+var idbCon = exports.idbCon = new JsStore.Instance(new Worker(workerPath));
+idbCon.setLogStatus(true);
+var dbName = exports.dbName = "students_db";
 
-var idbCon = exports.idbCon = new JsStore.Instance(new Worker(fileUrl));
+var initJsStore = async function initJsStore() {
+    try {
+        var isDbCreated = await idbCon.isDbExist(dbName);
+        if (isDbCreated) {
+            idbCon.openDb(dbName);
+        } else {
+            idbCon.createDb(getDbSchema());
+        }
+    } catch (ex) {
+        console.error(ex);
+    }
+};
+
+var getDbSchema = function getDbSchema() {
+    var studentsTable = {
+        name: 'students',
+        columns: [{
+            name: 'id',
+            primaryKey: true,
+            autoIncrement: true
+        }, {
+            name: 'name',
+            notNull: true,
+            dataType: _jsstore.DATA_TYPE.String
+        }, {
+            name: 'gender',
+            dataType: _jsstore.DATA_TYPE.String,
+            default: 'male'
+        }, {
+            name: 'country',
+            notNull: true,
+            dataType: _jsstore.DATA_TYPE.String
+        }, {
+            name: 'city',
+            dataType: _jsstore.DATA_TYPE.String,
+            notNull: true
+        }]
+    };
+
+    return {
+        name: dbName,
+        tables: [studentsTable]
+    };
+};
+
+initJsStore();
 
 /***/ }),
 

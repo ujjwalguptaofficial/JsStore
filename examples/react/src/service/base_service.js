@@ -8,10 +8,7 @@ import {
 } from "./idb_service";
 export class BaseService {
 
-    constructor() {
-        this.connection.setLogStatus(true);
-    }
-
+     
     get connection() {
         return idbCon;
     }
