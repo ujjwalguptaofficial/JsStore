@@ -1,7 +1,7 @@
 /*!
- * @license :jsstore - V2.9.2 - 23/12/2018
+ * @license :jsstore - V2.9.3 - 18/01/2019
  * https://github.com/ujjwalguptaofficial/JsStore
- * Copyright (c) 2018 @Ujjwal Gupta; Licensed MIT
+ * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
 module.exports =
 /******/ (function(modules) { // webpackBootstrap
@@ -2479,19 +2479,33 @@ var Helper = /** @class */ (function (_super) {
         var order = this.query.order;
         if (order && this.results.length > 0 && !this.sorted && order.by) {
             order.type = order.type ? order.type.toLowerCase() : 'asc';
-            var orderColumn_1 = order.by, sortNumberInAsc = function () {
+            var orderColumn_1 = order.by;
+            var sortNumberInAsc = function () {
                 _this.results.sort(function (a, b) {
                     return a[orderColumn_1] - b[orderColumn_1];
                 });
-            }, sortNumberInDesc = function () {
+            };
+            var sortNumberInDesc = function () {
                 _this.results.sort(function (a, b) {
                     return b[orderColumn_1] - a[orderColumn_1];
                 });
-            }, sortAlphabetInAsc = function () {
+            };
+            var sortDateInAsc = function () {
+                _this.results.sort(function (a, b) {
+                    return a[orderColumn_1].getTime() - b[orderColumn_1].getTime();
+                });
+            };
+            var sortDateInDesc = function () {
+                _this.results.sort(function (a, b) {
+                    return b[orderColumn_1].getTime() - a[orderColumn_1].getTime();
+                });
+            };
+            var sortAlphabetInAsc = function () {
                 _this.results.sort(function (a, b) {
                     return a[orderColumn_1].localeCompare(b[orderColumn_1]);
                 });
-            }, sortAlphabetInDesc = function () {
+            };
+            var sortAlphabetInDesc = function () {
                 _this.results.sort(function (a, b) {
                     return b[orderColumn_1].localeCompare(a[orderColumn_1]);
                 });
@@ -2515,6 +2529,14 @@ var Helper = /** @class */ (function (_super) {
                 }
                 else {
                     sortNumberInDesc();
+                }
+            }
+            else if (column.dataType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].DateTime) {
+                if (order.type === 'asc') {
+                    sortDateInAsc();
+                }
+                else {
+                    sortDateInDesc();
                 }
             }
         }
@@ -3877,15 +3899,7 @@ var Base = /** @class */ (function (_super) {
         }
     };
     Base.prototype.getColumnInfo = function (columnName) {
-        var columnInfo;
-        this.getTable(this.tableName).columns.every(function (column) {
-            if (column.name === columnName) {
-                columnInfo = column;
-                return false;
-            }
-            return true;
-        });
-        return columnInfo;
+        return this.getTable(this.tableName).columns.find(function (column) { return column.name === columnName; });
     };
     Base.prototype.makeQryInCaseSensitive = function (qry) {
         var results = [];
