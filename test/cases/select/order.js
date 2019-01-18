@@ -98,4 +98,66 @@ describe('Test Select with order', function () {
         catch(done)
     });
 
+    it('order by asc for date', function (done) {
+        Con.select({
+            from: 'Employees',
+            order: {
+                by: 'birthDate',
+                type: 'asc',
+                idbSorting: false
+            }
+        }).
+        then(function (results) {
+            expect(results).to.be.an('array').length(34);
+            let isSorted = true;
+            results.every((value, index) => {
+                const nextVal = results[index + 1];
+                if (nextVal != null && value.birthDate.getTime() > nextVal.birthDate.getTime()) {
+                    isSorted = false;
+                }
+                return isSorted;
+            })
+            if (isSorted === true) {
+                done();
+            } else {
+                done("birth date is not sorted");
+            }
+
+        }).
+        catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('order by desc for date', function (done) {
+        Con.select({
+            from: 'Employees',
+            order: {
+                by: 'birthDate',
+                type: 'desc',
+                idbSorting: false
+            }
+        }).
+        then(function (results) {
+            expect(results).to.be.an('array').length(34);
+            let isSorted = true;
+            results.every((value, index) => {
+                const nextVal = results[index + 1];
+                // check for wrong condition
+                if (nextVal != null && value.birthDate.getTime() < nextVal.birthDate.getTime()) {
+                    isSorted = false;
+                }
+                return isSorted;
+            })
+            if (isSorted === true) {
+                done();
+            } else {
+                done("birth date is not sorted");
+            }
+
+        }).
+        catch(function (err) {
+            done(err);
+        })
+    });
 });

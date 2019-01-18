@@ -63,15 +63,7 @@ export class Base extends BaseHelper {
     }
 
     protected getColumnInfo(columnName) {
-        let columnInfo: Column;
-        this.getTable(this.tableName).columns.every((column) => {
-            if (column.name === columnName) {
-                columnInfo = column;
-                return false;
-            }
-            return true;
-        });
-        return columnInfo;
+        return this.getTable(this.tableName).columns.find(column => column.name === columnName);
     }
 
     protected goToWhereLogic = function () {

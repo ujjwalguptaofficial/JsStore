@@ -12,27 +12,37 @@ export class Helper extends GroupByHelper {
         const order = this.query.order;
         if (order && this.results.length > 0 && !this.sorted && order.by) {
             order.type = order.type ? order.type.toLowerCase() : 'asc';
-            const orderColumn = order.by,
-                sortNumberInAsc = () => {
-                    this.results.sort((a, b) => {
-                        return a[orderColumn] - b[orderColumn];
-                    });
-                },
-                sortNumberInDesc = () => {
-                    this.results.sort((a, b) => {
-                        return b[orderColumn] - a[orderColumn];
-                    });
-                },
-                sortAlphabetInAsc = () => {
-                    this.results.sort((a, b) => {
-                        return a[orderColumn].localeCompare(b[orderColumn]);
-                    });
-                },
-                sortAlphabetInDesc = () => {
-                    this.results.sort((a, b) => {
-                        return b[orderColumn].localeCompare(a[orderColumn]);
-                    });
-                };
+            const orderColumn = order.by;
+            const sortNumberInAsc = () => {
+                this.results.sort((a, b) => {
+                    return a[orderColumn] - b[orderColumn];
+                });
+            };
+            const sortNumberInDesc = () => {
+                this.results.sort((a, b) => {
+                    return b[orderColumn] - a[orderColumn];
+                });
+            };
+            const sortDateInAsc = () => {
+                this.results.sort((a, b) => {
+                    return a[orderColumn].getTime() - b[orderColumn].getTime();
+                });
+            };
+            const sortDateInDesc = () => {
+                this.results.sort((a, b) => {
+                    return b[orderColumn].getTime() - a[orderColumn].getTime();
+                });
+            };
+            const sortAlphabetInAsc = () => {
+                this.results.sort((a, b) => {
+                    return a[orderColumn].localeCompare(b[orderColumn]);
+                });
+            };
+            const sortAlphabetInDesc = () => {
+                this.results.sort((a, b) => {
+                    return b[orderColumn].localeCompare(a[orderColumn]);
+                });
+            };
             const column = this.getColumnInfo(orderColumn);
             if (column == null) {
                 this.errorOccured = true;
@@ -52,6 +62,14 @@ export class Helper extends GroupByHelper {
                 }
                 else {
                     sortNumberInDesc();
+                }
+            }
+            else if (column.dataType === DATA_TYPE.DateTime) {
+                if (order.type === 'asc') {
+                    sortDateInAsc();
+                }
+                else {
+                    sortDateInDesc();
                 }
             }
         }

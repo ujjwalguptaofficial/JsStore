@@ -81,6 +81,22 @@ describe('Test insert', function () {
         });
     });
 
+    it('insert Employees with invalid date', function (done) {
+        $.getJSON("test/static/Employees.json", function (results) {
+            Con.insert({
+                into: 'Employees',
+                values: results
+            }).catch(function (err) {
+                var error = {
+                    "message": "Supplied value for column 'birthDate' have wrong data type",
+                    "type": "wrong_data_type"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            });
+        });
+    });
+
     it('insert Employees', function (done) {
         $.getJSON("test/static/Employees.json", function (results) {
             var startDate = new Date(1994, 0, 1);
