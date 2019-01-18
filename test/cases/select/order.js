@@ -109,7 +109,7 @@ describe('Test Select with order', function () {
         }).
         then(function (results) {
             expect(results).to.be.an('array').length(34);
-            let isSorted = true;
+            var isSorted = true;
             results.every((value, index) => {
                 const nextVal = results[index + 1];
                 if (nextVal != null && value.birthDate.getTime() > nextVal.birthDate.getTime()) {
@@ -140,7 +140,7 @@ describe('Test Select with order', function () {
         }).
         then(function (results) {
             expect(results).to.be.an('array').length(34);
-            let isSorted = true;
+            var isSorted = true;
             results.every((value, index) => {
                 const nextVal = results[index + 1];
                 // check for wrong condition
