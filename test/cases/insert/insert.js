@@ -4,7 +4,7 @@ function randomDate(start, end) {
 
 describe('Test insert', function () {
     it('wrong table test', function (done) {
-        Con.insert({
+        con.insert({
             into: 'Customer'
         }).
         catch(function (err) {
@@ -20,7 +20,7 @@ describe('Test insert', function () {
 
     it('insert customers', function (done) {
         $.getJSON("test/static/Customers.json", function (results) {
-            Con.insert({
+            con.insert({
                 into: 'Customers',
                 values: results
             }).then(function (results) {
@@ -35,7 +35,7 @@ describe('Test insert', function () {
 
     it('insert Orders', function (done) {
         $.getJSON("test/static/Orders.json", function (results) {
-            Con.insert({
+            con.insert({
                 into: 'Orders',
                 values: results
             }).then(function (results) {
@@ -49,7 +49,7 @@ describe('Test insert', function () {
 
     it('insert Orders a second time without option upsert', function (done) {
         $.getJSON("test/static/Orders.json", function (results) {
-            Con.insert({
+            con.insert({
                 into: 'Orders',
                 values: results
             }).then(result => {
@@ -68,7 +68,7 @@ describe('Test insert', function () {
 
     it('insert Orders a second time with option upsert', function (done) {
         $.getJSON("test/static/Orders.json", function (results) {
-            Con.insert({
+            con.insert({
                 into: 'Orders',
                 values: results,
                 upsert: true
@@ -83,7 +83,7 @@ describe('Test insert', function () {
 
     it('insert Employees with invalid date', function (done) {
         $.getJSON("test/static/Employees.json", function (results) {
-            Con.insert({
+            con.insert({
                 into: 'Employees',
                 values: results
             }).catch(function (err) {
@@ -104,7 +104,7 @@ describe('Test insert', function () {
             results.forEach(function (value) {
                 value.birthDate = new randomDate(startDate, endDate);
             });
-            Con.insert({
+            con.insert({
                 into: 'Employees',
                 values: results
             }).then(function (results) {
@@ -118,7 +118,7 @@ describe('Test insert', function () {
 
     it('insert Shippers ', function (done) {
         $.getJSON("test/static/Shippers.json", function (results) {
-            Con.insert({
+            con.insert({
                 into: 'Shippers',
                 values: results
             }).then(function (results) {
@@ -132,7 +132,7 @@ describe('Test insert', function () {
 
     it('insert products - using Skip Data', function (done) {
         $.getJSON("test/static/Products.json", function (results) {
-            Con.insert({
+            con.insert({
                 into: 'Products',
                 values: results,
                 skipDataCheck: true
@@ -174,7 +174,7 @@ describe('Test insert', function () {
                 Country: "UK",
                 Phone: "12345"
             }];
-            Con.insert({
+            con.insert({
                 into: 'Suppliers',
                 values: [...results, ...values],
                 return: true
@@ -188,7 +188,7 @@ describe('Test insert', function () {
     });
 
     it('insert without values Option', function (done) {
-        Con.insert({
+        con.insert({
             into: 'Customers'
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(196);
@@ -205,7 +205,7 @@ describe('Test insert', function () {
     });
 
     it('not null test', function (done) {
-        Con.insert({
+        con.insert({
             into: 'Customers',
             values: [{}]
         }).then(function (results) {
@@ -226,7 +226,7 @@ describe('Test insert', function () {
         var value = {
             ShipperName: 'dsfgb'
         }
-        Con.insert({
+        con.insert({
             into: 'Shippers',
             values: [value]
         }).then(function (results) {
@@ -248,7 +248,7 @@ describe('Test insert', function () {
             ShipperName: 'dsfgb',
             Phone: 91234
         }
-        Con.insert({
+        con.insert({
             into: 'Shippers',
             values: [value]
         }).then(function (results) {
@@ -272,7 +272,7 @@ describe('Test insert', function () {
             Price: "1123",
             Unit: 12333
         }
-        Con.insert({
+        con.insert({
             into: 'Products',
             values: [value]
         }).then(function (results) {
@@ -294,7 +294,7 @@ describe('Test insert', function () {
             Phone: '91234',
             Address: 'ewrtgb'
         }
-        Con.insert({
+        con.insert({
             into: 'Shippers',
             values: [value],
             return: true
@@ -320,7 +320,7 @@ describe('Test insert', function () {
             Country: 'fesgt',
             Email: 1234
         }
-        Con.insert({
+        con.insert({
             into: 'Customers',
             values: [value]
         }).
@@ -356,7 +356,7 @@ describe('Test insert', function () {
                 value: val
             }
         })
-        Con.insert({
+        con.insert({
             into: 'things',
             values: things
         }).then(results => {

@@ -11,7 +11,7 @@ describe('Test join', function () {
                 column: 'CustomerID'
             }
         };
-        Con.select({
+        con.select({
             from: joinLogic
         }).then(function (results) {
             expect(results).to.be.an('array').length(196);
@@ -33,7 +33,7 @@ describe('Test join', function () {
                 column: 'CustomerID'
             }
         };
-        Con.select({
+        con.select({
             from: joinLogic
         }).then(function (results) {
             expect(results).to.be.an('array').length(196);
@@ -55,7 +55,7 @@ describe('Test join', function () {
                 column: 'CustomerID'
             }
         };
-        Con.select({
+        con.select({
             from: joinLogic
         }).then(function (results) {
             expect(results).to.be.an('array').length(93);
@@ -77,7 +77,7 @@ describe('Test join', function () {
                 column: 'CustomerID'
             }
         };
-        Con.select({
+        con.select({
             from: joinLogic
         }).then(function (results) {
             expect(results).to.be.an('array').length(93);
@@ -116,7 +116,7 @@ describe('Test join', function () {
                 column: 'ShipperID'
             }
         }
-        Con.select({
+        con.select({
             from: join2
         }).then(function (results) {
             expect(results).to.be.an('array').length(196);

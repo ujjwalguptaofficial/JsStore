@@ -1,6 +1,6 @@
 describe('Test aggregate option with groupby', function () {
     it('select with agregate - min', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             groupBy: 'CategoryID',
             aggregate: {
@@ -20,7 +20,7 @@ describe('Test aggregate option with groupby', function () {
     })
 
     it('select with agregate - max', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             groupBy: 'CategoryID',
             aggregate: {
@@ -40,7 +40,7 @@ describe('Test aggregate option with groupby', function () {
     });
 
     it('select with agregate - sum', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             groupBy: 'CategoryID',
             aggregate: {
@@ -60,7 +60,7 @@ describe('Test aggregate option with groupby', function () {
     });
 
     it('select with agregate - count', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             aggregate: {
                 count: "Price"
@@ -79,7 +79,7 @@ describe('Test aggregate option with groupby', function () {
     });
 
     it('select with agregate - avg', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             groupBy: 'CategoryID',
             aggregate: {

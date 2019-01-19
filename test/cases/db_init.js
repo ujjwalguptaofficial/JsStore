@@ -4,28 +4,28 @@ describe("initiate database", () => {
         var isIE = /*@cc_on!@*/ false || !!document.documentMode;
         if (isIE) {
             console.log('test runing for ie');
-            Con = new JsStore.Instance(new Worker('../output/jsstore.worker.ie.min.js'));
+            con = new JsStore.Instance(new Worker('../output/jsstore.worker.ie.min.js'));
         } else {
             if (typeof isRuningForSauceLab != 'undefined' && isRuningForSauceLab) {
                 console.log("test runing for sauce lab");
-                Con = new JsStore.Instance(new Worker('../output/jsstore.worker.min.js'));
+                con = new JsStore.Instance(new Worker('../output/jsstore.worker.min.js'));
             } else if (typeof isRuningForProd != 'undefined' && isRuningForProd) {
                 console.log("test runing for production");
-                Con = new JsStore.Instance(new Worker('../output/jsstore.worker.min.js'));
+                con = new JsStore.Instance(new Worker('../output/jsstore.worker.min.js'));
             } else {
                 console.log("test runing for development");
-                Con = new JsStore.Instance(new Worker('output/jsstore.worker.js'));
+                con = new JsStore.Instance(new Worker('output/jsstore.worker.js'));
             }
         }
     })
 
     it("db exist", (done) => {
-        Con.isDbExist('Demo').then(function (exist) {
+        con.isDbExist('Demo').then(function (exist) {
             console.log('db exist :' + exist);
             if (exist) {
-                Con.openDb('Demo').then(done);
+                con.openDb('Demo').then(done);
             } else {
-                Con.createDb(getDbSchema()).then(function () {
+                con.createDb(getDbSchema()).then(function () {
                     console.log('Database created');
                     done();
                 });

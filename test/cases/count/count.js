@@ -1,6 +1,6 @@
 describe('Test count Api', function () {
     it('count all', function (done) {
-        Con.count({
+        con.count({
             from: 'Customers'
         }).
         then(function (results) {
@@ -14,7 +14,7 @@ describe('Test count Api', function () {
     });
 
     it('count with where', function (done) {
-        Con.count({
+        con.count({
             from: 'Customers',
             where: {
                 Country: 'Mexico'
@@ -30,7 +30,7 @@ describe('Test count Api', function () {
     });
 
     it('count without ignore case', function (done) {
-        Con.count({
+        con.count({
             from: 'Customers',
             where: {
                 Country: 'mexico'
@@ -46,7 +46,7 @@ describe('Test count Api', function () {
     });
 
     it('count with ignore case', function (done) {
-        Con.count({
+        con.count({
             from: 'Customers',
             ignoreCase: true,
             where: {
@@ -63,7 +63,7 @@ describe('Test count Api', function () {
     });
 
     it('count with or', function (done) {
-        Con.count({
+        con.count({
             from: 'Customers',
             where: {
                 Country: 'Mexico',
@@ -82,7 +82,7 @@ describe('Test count Api', function () {
     });
 
     it('count with in', function (done) {
-        Con.count({
+        con.count({
             from: 'Customers',
             where: {
                 Country: {
@@ -100,7 +100,7 @@ describe('Test count Api', function () {
     });
 
     it('count with operator - >', function (done) {
-        Con.count({
+        con.count({
             from: 'Products',
             where: {
                 Price: {
@@ -118,7 +118,7 @@ describe('Test count Api', function () {
     });
 
     it('count with operator - >=', function (done) {
-        Con.count({
+        con.count({
             from: 'Products',
             where: {
                 Price: {
@@ -136,7 +136,7 @@ describe('Test count Api', function () {
     });
 
     it('count with operator - <', function (done) {
-        Con.count({
+        con.count({
             from: 'Products',
             where: {
                 Price: {
@@ -154,7 +154,7 @@ describe('Test count Api', function () {
     });
 
     it('count with operator - <=', function (done) {
-        Con.count({
+        con.count({
             from: 'Products',
             where: {
                 Price: {
@@ -172,7 +172,7 @@ describe('Test count Api', function () {
     });
 
     it('select with operator - != (for string)', function (done) {
-        Con.count({
+        con.count({
             from: 'Customers',
             where: {
                 Country: {
@@ -190,7 +190,7 @@ describe('Test count Api', function () {
     });
 
     it('select with operator - != (for number)', function (done) {
-        Con.count({
+        con.count({
             from: 'Products',
             where: {
                 Price: {
@@ -208,7 +208,7 @@ describe('Test count Api', function () {
     });
 
     it('count with operator - between', function (done) {
-        Con.count({
+        con.count({
             from: 'Products',
             where: {
                 Price: {
@@ -229,7 +229,7 @@ describe('Test count Api', function () {
     });
 
     it('count with like', function (done) {
-        Con.count({
+        con.count({
             from: 'Customers',
             where: {
                 CustomerName: {
@@ -247,7 +247,7 @@ describe('Test count Api', function () {
     });
 
     it('select with like - "o%"', function (done) {
-        Con.count({
+        con.count({
             from: 'Customers',
             where: {
                 CustomerName: {
@@ -265,7 +265,7 @@ describe('Test count Api', function () {
     });
 
     it('select with like - "%o"', function (done) {
-        Con.count({
+        con.count({
             from: 'Customers',
             where: {
                 CustomerName: {
@@ -283,7 +283,7 @@ describe('Test count Api', function () {
     });
 
     it('wrong table test', function (done) {
-        Con.count({
+        con.count({
             from: 'Cusdtomers'
         }).
         catch(function (err) {

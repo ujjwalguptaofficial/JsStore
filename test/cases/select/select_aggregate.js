@@ -1,6 +1,6 @@
 describe('Test Aggregate option', function () {
     it('select with agregate - min', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             aggregate: {
                 min: "Price"
@@ -15,7 +15,7 @@ describe('Test Aggregate option', function () {
     });
 
     it('select with agregate - max', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             aggregate: {
                 max: "Price"
@@ -30,7 +30,7 @@ describe('Test Aggregate option', function () {
     });
 
     it('select with agregate - sum', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             aggregate: {
                 sum: "Price"
@@ -45,7 +45,7 @@ describe('Test Aggregate option', function () {
     });
 
     it('select with agregate - count', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             aggregate: {
                 count: "Price"
@@ -60,7 +60,7 @@ describe('Test Aggregate option', function () {
     });
 
     it('select with agregate - avg', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             aggregate: {
                 avg: "Price"
@@ -75,7 +75,7 @@ describe('Test Aggregate option', function () {
     });
 
     it('select with agregate - min,max', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             aggregate: {
                 min: "Price",
@@ -92,7 +92,7 @@ describe('Test Aggregate option', function () {
     });
 
     it('select with agregate - min,max,avg', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             aggregate: {
                 min: "Price",
@@ -111,7 +111,7 @@ describe('Test Aggregate option', function () {
     });
 
     it('select with agregate - min,max,avg,count', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             aggregate: {
                 min: "Price",

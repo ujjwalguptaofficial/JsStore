@@ -1,6 +1,6 @@
 describe('Test select complex case', function () {
     it('select with multiple or', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 Country: 'Mexico',
@@ -20,7 +20,7 @@ describe('Test select complex case', function () {
     });
 
     it('select with and "&" like', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 Address: {
@@ -37,7 +37,7 @@ describe('Test select complex case', function () {
     });
 
     it('select with and "&" not', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 Country: {
@@ -54,7 +54,7 @@ describe('Test select complex case', function () {
     });
 
     it('select with multiple and (wrong data)', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 Address: 'hisrtgb',
@@ -69,7 +69,7 @@ describe('Test select complex case', function () {
     });
 
     it('select with or (wrong data)', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 Address: 'hisrtgb',
@@ -87,7 +87,7 @@ describe('Test select complex case', function () {
 
 
     it("sql qry - select * from customers where city='london' or address like 'a%' ", function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 City: 'London',
@@ -106,7 +106,7 @@ describe('Test select complex case', function () {
     });
 
     it("sql qry - select * from customers where city='dsfgtbb' or address like 'a%' ", function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 City: 'dsfgtbb',
@@ -125,7 +125,7 @@ describe('Test select complex case', function () {
     });
 
     it("sql qry - SELECT * FROM Customers WHERE Country='Mexico' and (City='London' or Address like '%a%')", function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: [{
                     Country: 'Mexico'
@@ -157,7 +157,7 @@ describe('Test select complex case', function () {
     });
 
     it("sql qry - SELECT * FROM Customers WHERE Country='Mexizfdfco' and (City='London' or Address like '%a%')", function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: [{
                     Country: 'Mexizfdfco'
@@ -180,7 +180,7 @@ describe('Test select complex case', function () {
     });
 
     it("sql qry - SELECT * FROM Customers WHERE Country='Mexico' or (City='London' and Address like '%a%')", function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: [{
                     Country: 'Mexico'
@@ -208,7 +208,7 @@ describe('Test select complex case', function () {
     });
 
     it("sql qry - SELECT * FROM Customers WHERE Country='Mexico' or (City='London' and Address like '%adsfvbbbb%')", function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: [{
                     Country: 'Mexico'
@@ -237,7 +237,7 @@ describe('Test select complex case', function () {
 
 
     it("sql qry - SELECT * FROM Customers WHERE Country='Mexico' and (City='London' or Address like '%a%') and ContactName like '%a%'", function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: [{
                     Country: 'Mexico'
@@ -265,7 +265,7 @@ describe('Test select complex case', function () {
     });
 
     it("sql qry - SELECT * FROM Customers WHERE Country='Mexico' and (City='London' or Address like '%a%') or ContactName like 'a%'", function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: [{
                     Country: 'Mexico'
@@ -295,7 +295,7 @@ describe('Test select complex case', function () {
     });
 
     it("select * from employees where jobSuspendedFlag=0 && state in('Working', 'Diagnostics', 'FinalTest')", function (done) {
-        Con.select({
+        con.select({
             from: 'Employees',
             where: {
                 jobSuspendedFlag: 0,

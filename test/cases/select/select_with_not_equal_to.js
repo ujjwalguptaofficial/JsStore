@@ -1,7 +1,7 @@
 describe('Test Select with not equal to', function () {
 
     it("select * from employees where jobSuspendedFlag!=0 and lastName like '%e%')", function (done) {
-        Con.select({
+        con.select({
             from: 'Employees',
             where: {
                 jobSuspendedFlag: {
@@ -22,7 +22,7 @@ describe('Test Select with not equal to', function () {
     });
 
     it("select * from employees where jobSuspendedFlag!=1)", function (done) {
-        Con.select({
+        con.select({
             from: 'Employees',
             where: {
                 jobSuspendedFlag: {
@@ -40,7 +40,7 @@ describe('Test Select with not equal to', function () {
     });
 
     it("select * from employees where jobSuspendedFlag!=0 && state in('Working', 'Diagnostics', 'FinalTest')", function (done) {
-        Con.select({
+        con.select({
             from: 'Employees',
             where: {
                 jobSuspendedFlag: {
@@ -60,7 +60,7 @@ describe('Test Select with not equal to', function () {
     });
 
     it("select * from employees where jobSuspendedFlag!=1 && state in('Working', 'Diagnostics', 'FinalTest')", function (done) {
-        Con.select({
+        con.select({
             from: 'Employees',
             where: {
                 jobSuspendedFlag: {
@@ -80,7 +80,7 @@ describe('Test Select with not equal to', function () {
     });
 
     it("select * from employees where (notes like '%from%' && state!='Concluded') && state !='WaitPickup'", function (done) {
-        Con.select({
+        con.select({
             from: 'Employees',
             where: [{
                 notes: {

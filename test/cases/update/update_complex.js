@@ -10,7 +10,7 @@ describe('Test update complex case', function () {
                 }
             },
             count;
-        Con.select({
+        con.select({
             from: 'Products',
             where: where_query
         }).then(function (results) {
@@ -21,7 +21,7 @@ describe('Test update complex case', function () {
             done(err);
         })
 
-        Con.update({ in: 'Products',
+        con.update({ in: 'Products',
             where: where_query,
             set: {
                 ProductName: 'Cofee'
@@ -49,7 +49,7 @@ describe('Test update complex case', function () {
                 }
             ],
             count;
-        Con.select({
+        con.select({
             from: 'Products',
             where: where_query
         }).then(function (results) {
@@ -60,7 +60,7 @@ describe('Test update complex case', function () {
             done(err);
         })
 
-        Con.update({ in: 'Products',
+        con.update({ in: 'Products',
             where: where_query,
             set: {
                 ProductName: 'Tea'
@@ -86,7 +86,7 @@ describe('Test update complex case', function () {
                 }
             ],
             count;
-        Con.select({
+        con.select({
             from: 'Products',
             where: where_query
         }).then(function (results) {
@@ -97,7 +97,7 @@ describe('Test update complex case', function () {
             done(err);
         })
 
-        Con.update({ in: 'Products',
+        con.update({ in: 'Products',
             where: where_query,
             set: {
                 ProductName: 'Cofee_Tea'
@@ -113,7 +113,7 @@ describe('Test update complex case', function () {
 
     it('update with ignore case', function (done) {
         var count;
-        Con.count({
+        con.count({
             from: 'Customers',
             ignoreCase: true,
             where: [{
@@ -126,7 +126,7 @@ describe('Test update complex case', function () {
             done(err);
         });
 
-        Con.update({ in: "Customers",
+        con.update({ in: "Customers",
             ignoreCase: true,
             set: {
                 ContactName: 'Ujjwal',

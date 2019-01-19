@@ -1,7 +1,7 @@
 describe('Multi Entry Test', function () {
     it('terminate connection', function (done) {
-        Con.terminate().then(function () {
-            Con = new JsStore.Instance();
+        con.terminate().then(function () {
+            con = new JsStore.Instance();
             done();
         }).catch(function (error) {
             done(error);
@@ -9,15 +9,15 @@ describe('Multi Entry Test', function () {
     });
 
     it('create db with promise', function (done) {
-        Con.isDbExist('MultiEntryTest').then(function (exist) {
+        con.isDbExist('MultiEntryTest').then(function (exist) {
             console.log('db exist :' + exist);
             if (exist) {
-                Con.openDb('MultiEntryTest').then(function () {
+                con.openDb('MultiEntryTest').then(function () {
                     done();
                 });
 
             } else {
-                Con.createDb(MultiEntryTest.getDbSchema()).then(function (tableList) {
+                con.createDb(MultiEntryTest.getDbSchema()).then(function (tableList) {
                     expect(tableList).to.be.an('array').length(1);
                     console.log('Database created');
                     done();
@@ -30,7 +30,7 @@ describe('Multi Entry Test', function () {
     });
 
     it('insert data into table', function (done) {
-        Con.insert({
+        con.insert({
             into: 'people',
             values: MultiEntryTest.getValues()
         }).
@@ -44,7 +44,7 @@ describe('Multi Entry Test', function () {
     });
 
     it('multientry test without multientry column - select data from array', function (done) {
-        Con.select({
+        con.select({
             from: 'people',
             where: {
                 tags: 'mongo'
@@ -60,7 +60,7 @@ describe('Multi Entry Test', function () {
     });
 
     it('change db with multientry column', function (done) {
-        Con.isDbExist({
+        con.isDbExist({
             dbName: 'MultiEntryTest',
             table: {
                 name: 'person',
@@ -69,13 +69,13 @@ describe('Multi Entry Test', function () {
         }).then(function (exist) {
             console.log('db exist :' + exist);
             if (exist) {
-                Con.openDb('MultiEntryTest');
+                con.openDb('MultiEntryTest');
                 done();
             } else {
                 var Db = MultiEntryTest.getDbSchema();
                 Db.tables[0].version = 2;
                 Db.tables[0].columns[1].multiEntry = true;
-                Con.createDb(Db).then(function (tableList) {
+                con.createDb(Db).then(function (tableList) {
                     expect(tableList).to.be.an('array').length(1);
                     console.log('Database created');
                     done();
@@ -89,7 +89,7 @@ describe('Multi Entry Test', function () {
     it('insert data into table multiEntryTest', function (done) {
         var values = MultiEntryTest.getValues();
         //console.log(values);
-        Con.insert({
+        con.insert({
             into: 'people',
             values: values
         }).
@@ -103,7 +103,7 @@ describe('Multi Entry Test', function () {
     });
 
     it('multientry test with multientry column - select data from array', function (done) {
-        Con.select({
+        con.select({
             from: 'people',
             where: {
                 tags: 'mongo'
@@ -132,7 +132,7 @@ describe('Multi Entry Test', function () {
             name: "Ray",
             tags: ["apple", "banana", "beer"]
         };
-        Con.insert({
+        con.insert({
             into: 'people',
             values: [value]
         }).
@@ -152,7 +152,7 @@ describe('Multi Entry Test', function () {
             name: "Ray",
             tags: "apple"
         };
-        Con.insert({
+        con.insert({
             into: 'people',
             values: [value]
         }).
@@ -167,7 +167,7 @@ describe('Multi Entry Test', function () {
     });
 
     it('Array column update to empty value', function (done) {
-        Con.update({ in: 'people',
+        con.update({ in: 'people',
             where: {
                 name: 'Scott'
             },
@@ -175,7 +175,7 @@ describe('Multi Entry Test', function () {
                 tags: []
             }
         }).then(function (rowsUpdated) {
-            Con.select({
+            con.select({
                 from: 'people',
                 where: {
                     name: 'Scott'
@@ -201,7 +201,7 @@ describe('Multi Entry Test', function () {
     });
 
     it('Array column update to null value', function (done) {
-        Con.update({ in: 'people',
+        con.update({ in: 'people',
             where: {
                 name: 'Scott'
             },
@@ -209,7 +209,7 @@ describe('Multi Entry Test', function () {
                 tags: null
             }
         }).then(function (rowsUpdated) {
-            Con.select({
+            con.select({
                 from: 'people',
                 where: {
                     name: 'Scott'

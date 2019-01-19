@@ -10,7 +10,7 @@ describe('Test remove complex case', function () {
                 }
             },
             count;
-        Con.select({
+        con.select({
             from: 'Customers',
             where: where_query
         }).then(function (results) {
@@ -19,7 +19,7 @@ describe('Test remove complex case', function () {
             done(err);
         })
 
-        Con.remove({
+        con.remove({
             from: 'Customers',
             where: where_query
         }).then(function (results) {
@@ -44,7 +44,7 @@ describe('Test remove complex case', function () {
                 }
             ],
             count;
-        Con.select({
+        con.select({
             from: 'Customers',
             where: where_query
         }).then(function (results) {
@@ -53,7 +53,7 @@ describe('Test remove complex case', function () {
             done(err);
         })
 
-        Con.remove({
+        con.remove({
             from: 'Customers',
             where: where_query
         }).then(function (results) {
@@ -78,7 +78,7 @@ describe('Test remove complex case', function () {
                 }
             ],
             count;
-        Con.select({
+        con.select({
             from: 'Customers',
             where: where_query
         }).then(function (results) {
@@ -87,7 +87,7 @@ describe('Test remove complex case', function () {
             done(err);
         })
 
-        Con.remove({
+        con.remove({
             from: 'Customers',
             where: where_query
         }).then(function (results) {

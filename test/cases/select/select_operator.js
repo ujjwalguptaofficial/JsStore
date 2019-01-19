@@ -1,6 +1,6 @@
 describe('Test operator', function () {
     it('select with operator - != (for string)', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 Country: {
@@ -16,7 +16,7 @@ describe('Test operator', function () {
     });
 
     it('select with operator - != (for number)', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             where: {
                 Price: {
@@ -32,7 +32,7 @@ describe('Test operator', function () {
     });
 
     it('select with operator - >', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             where: {
                 Price: {
@@ -48,7 +48,7 @@ describe('Test operator', function () {
     });
 
     it('select with operator - >=', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             where: {
                 Price: {
@@ -64,7 +64,7 @@ describe('Test operator', function () {
     });
 
     it('select with operator - <', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             where: {
                 Price: {
@@ -80,7 +80,7 @@ describe('Test operator', function () {
     });
 
     it('select with operator - <=', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             where: {
                 Price: {
@@ -96,7 +96,7 @@ describe('Test operator', function () {
     });
 
     it('select with operator - between', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             where: {
                 Price: {
@@ -115,7 +115,7 @@ describe('Test operator', function () {
     });
 
     it('select with operator - "<" and ">" ', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             where: {
                 Price: {

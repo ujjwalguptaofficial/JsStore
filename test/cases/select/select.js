@@ -1,6 +1,6 @@
 describe('Test Select Api', function () {
     it('select all', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers'
         }).
         then(function (results) {
@@ -13,7 +13,7 @@ describe('Test Select Api', function () {
     });
 
     it('wrong table test', function (done) {
-        Con.select({
+        con.select({
             from: 'Customer'
         }).
         catch(function (err) {
@@ -28,7 +28,7 @@ describe('Test Select Api', function () {
     });
 
     it('select with skip', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             skip: 10
         }).
@@ -42,7 +42,7 @@ describe('Test Select Api', function () {
     });
 
     // it('EnableSearch column test', function (done) {
-    //     Con.select({
+    //     con.select({
     //         from: 'Customers',
     //         where: {
     //             Email: 'uk@gmail.com'
@@ -63,7 +63,7 @@ describe('Test Select Api', function () {
     // });
 
     it('select with where', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 Country: 'Mexico'
@@ -79,7 +79,7 @@ describe('Test Select Api', function () {
     });
 
     it('select without ignore case', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 Country: 'mexico'
@@ -95,7 +95,7 @@ describe('Test Select Api', function () {
     });
 
     it('select with ignore case', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             ignoreCase: true,
             where: {
@@ -112,7 +112,7 @@ describe('Test Select Api', function () {
     });
 
     it('select with ignore case with a number type', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             ignoreCase: true,
             where: {
@@ -130,7 +130,7 @@ describe('Test Select Api', function () {
     });
 
     it('select with ignore case with a number type and object value', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             ignoreCase: true,
             where: {
@@ -150,7 +150,7 @@ describe('Test Select Api', function () {
     });
 
     it('select with distinct', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             distinct: true,
             ignoreCase: true,
@@ -168,7 +168,7 @@ describe('Test Select Api', function () {
     });
 
     it('select with or', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 Country: 'Mexico',
@@ -187,7 +187,7 @@ describe('Test Select Api', function () {
     });
 
     it('select with in', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 Country: { in: ['Germany', 'France', 'UK']
@@ -204,7 +204,7 @@ describe('Test Select Api', function () {
     });
 
     it('select with like -"%or%"', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 CustomerName: {
@@ -222,7 +222,7 @@ describe('Test Select Api', function () {
     });
 
     it('select with like - "o%"', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 CustomerName: {
@@ -249,7 +249,7 @@ describe('Test Select Api', function () {
     });
 
     it('select with like - "%o"', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 CustomerName: {
@@ -272,7 +272,7 @@ describe('Test Select Api', function () {
     });
 
     it('select with GroupBy', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             groupBy: "Country"
         }).
@@ -286,7 +286,7 @@ describe('Test Select Api', function () {
     });
 
     it('select with order by', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             Order: {
                 by: 'Country',
@@ -303,7 +303,7 @@ describe('Test Select Api', function () {
     });
 
     it('select with order by,limit 5, deep eql', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             order: {
                 by: 'Country',
@@ -362,7 +362,7 @@ describe('Test Select Api', function () {
     });
 
     it('select * from suppliers where PostalCode like - "43951%"', function (done) {
-        Con.select({
+        con.select({
             from: 'Suppliers',
             where: {
                 PostalCode: {

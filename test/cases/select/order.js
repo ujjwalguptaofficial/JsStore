@@ -1,6 +1,6 @@
 describe('Test Select with order', function () {
     it('order having type asc with limit ', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             limit: 1,
             where: {
@@ -25,7 +25,7 @@ describe('Test Select with order', function () {
     });
 
     it('order having type desc with limit ', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             limit: 1,
             where: {
@@ -50,7 +50,7 @@ describe('Test Select with order', function () {
     });
 
     it('invalid order column test', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             limit: 1,
             where: {
@@ -74,7 +74,7 @@ describe('Test Select with order', function () {
     });
 
     it('things table test', function (done) {
-        Con.select({
+        con.select({
             from: 'things',
             order: {
                 by: 'value',
@@ -99,7 +99,7 @@ describe('Test Select with order', function () {
     });
 
     it('order by asc for date', function (done) {
-        Con.select({
+        con.select({
             from: 'Employees',
             order: {
                 by: 'birthDate',
@@ -130,7 +130,7 @@ describe('Test Select with order', function () {
     });
 
     it('order by desc for date', function (done) {
-        Con.select({
+        con.select({
             from: 'Employees',
             order: {
                 by: 'birthDate',

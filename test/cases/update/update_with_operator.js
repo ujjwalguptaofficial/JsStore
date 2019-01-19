@@ -2,7 +2,7 @@ describe('Test update with operator option', function () {
 
     it('update with operator - +', function (done) {
         var Price;
-        Con.select({
+        con.select({
             from: "Products",
             where: {
                 ProductID: 1
@@ -13,7 +13,7 @@ describe('Test update with operator option', function () {
             done(err);
         });
 
-        Con.update({ in: "Products",
+        con.update({ in: "Products",
             set: {
                 Price: {
                     '+': 5
@@ -28,7 +28,7 @@ describe('Test update with operator option', function () {
             done(err);
         });
 
-        Con.select({
+        con.select({
             from: "Products",
             where: {
                 ProductID: 1
@@ -43,7 +43,7 @@ describe('Test update with operator option', function () {
 
     it('update with operator - "-" ', function (done) {
         var Price;
-        Con.select({
+        con.select({
             from: "Products",
             where: {
                 ProductID: 1
@@ -54,7 +54,7 @@ describe('Test update with operator option', function () {
             done(err);
         });
 
-        Con.update({ in: "Products",
+        con.update({ in: "Products",
             set: {
                 Price: {
                     '-': 5
@@ -69,7 +69,7 @@ describe('Test update with operator option', function () {
             done(err);
         });
 
-        Con.select({
+        con.select({
             from: "Products",
             where: {
                 ProductID: 1
@@ -84,7 +84,7 @@ describe('Test update with operator option', function () {
 
     it('update with operator - *', function (done) {
         var Price;
-        Con.select({
+        con.select({
             from: "Products",
             where: {
                 ProductID: 1
@@ -94,7 +94,7 @@ describe('Test update with operator option', function () {
         }).catch(function (err) {
             done(err);
         });
-        Con.update({ in: "Products",
+        con.update({ in: "Products",
             set: {
                 Price: {
                     '*': 5
@@ -109,7 +109,7 @@ describe('Test update with operator option', function () {
             done(err);
         });
 
-        Con.select({
+        con.select({
             from: "Products",
             where: {
                 ProductID: 1
@@ -124,7 +124,7 @@ describe('Test update with operator option', function () {
 
     it('update with operator - *', function (done) {
         var Price;
-        Con.select({
+        con.select({
             from: "Products",
             where: {
                 ProductID: 1
@@ -134,7 +134,7 @@ describe('Test update with operator option', function () {
         }).catch(function (err) {
             done(err);
         });
-        Con.update({ in: "Products",
+        con.update({ in: "Products",
             set: {
                 Price: {
                     '/': 5
@@ -149,7 +149,7 @@ describe('Test update with operator option', function () {
             done(err);
         });
 
-        Con.select({
+        con.select({
             from: "Products",
             where: {
                 ProductID: 1
@@ -164,7 +164,7 @@ describe('Test update with operator option', function () {
 
     it('update with operator - + : string concat', function (done) {
         var Name;
-        Con.select({
+        con.select({
             from: "Products",
             where: {
                 ProductID: 1
@@ -174,7 +174,7 @@ describe('Test update with operator option', function () {
         }).catch(function (err) {
             done(err);
         });
-        Con.update({ in: "Products",
+        con.update({ in: "Products",
             set: {
                 ProductName: {
                     '+': 'temp'
@@ -189,7 +189,7 @@ describe('Test update with operator option', function () {
             done(err);
         });
 
-        Con.select({
+        con.select({
             from: "Products",
             where: {
                 ProductID: 1
@@ -203,7 +203,7 @@ describe('Test update with operator option', function () {
     });
 
     it('update with wrong operator - #', function (done) {
-        Con.update({ in: "Products",
+        con.update({ in: "Products",
             set: {
                 ProductName: {
                     '#': 'temp'

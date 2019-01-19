@@ -1,7 +1,7 @@
 describe('Test update Api', function () {
 
     it('update with where - using promise', function (done) {
-        Con.update({ in: "Customers",
+        con.update({ in: "Customers",
             set: {
                 ContactName: 'Ujjwal',
                 City: 'Bhubaneswar'
@@ -20,7 +20,7 @@ describe('Test update Api', function () {
     });
 
     it('wrong table test', function (done) {
-        Con.update({ in: "Customerss",
+        con.update({ in: "Customerss",
             set: {
                 ContactName: 'Ujjwal',
                 City: 'Bhubaneswar'
@@ -42,7 +42,7 @@ describe('Test update Api', function () {
     });
 
     it('update without set option', function (done) {
-        Con.update({ in: "Customerss",
+        con.update({ in: "Customerss",
             where: {
                 CustomerID: 1
             }
@@ -58,7 +58,7 @@ describe('Test update Api', function () {
     });
 
     it('update with invalid set data', function (done) {
-        Con.update({ in: "Customers",
+        con.update({ in: "Customers",
             where: {
                 CustomerID: 1
             },
@@ -75,7 +75,7 @@ describe('Test update Api', function () {
     });
 
     it('update with like -"%or%', function (done) {
-        Con.update({ in: 'Customers',
+        con.update({ in: 'Customers',
             where: {
                 CustomerName: {
                     like: '%or%'
@@ -94,7 +94,7 @@ describe('Test update Api', function () {
     });
 
     it('update with like -"o%', function (done) {
-        Con.update({ in: 'Customers',
+        con.update({ in: 'Customers',
             where: {
                 CustomerName: {
                     like: 'o%'
@@ -113,7 +113,7 @@ describe('Test update Api', function () {
     });
 
     it('update with like -"%o', function (done) {
-        Con.update({ in: 'Customers',
+        con.update({ in: 'Customers',
             where: {
                 CustomerName: {
                     like: '%o'
@@ -132,7 +132,7 @@ describe('Test update Api', function () {
     });
 
     it('update with like', function (done) {
-        Con.update({ in: 'Customers',
+        con.update({ in: 'Customers',
             where: {
                 CustomerName: {
                     like: '%or%'
@@ -151,7 +151,7 @@ describe('Test update Api', function () {
     });
 
     it('update without ignore case', function (done) {
-        Con.update({ in: "Customers",
+        con.update({ in: "Customers",
             set: {
                 ContactName: 'Ujjwal',
                 City: 'bhubaneswar'
@@ -170,7 +170,7 @@ describe('Test update Api', function () {
 
     it('update with ignore case', function (done) {
         var count;
-        Con.count({
+        con.count({
             from: 'Customers',
             ignoreCase: true,
             set: {
@@ -187,7 +187,7 @@ describe('Test update Api', function () {
             done(err);
         });
 
-        Con.update({ in: "Customers",
+        con.update({ in: "Customers",
             ignoreCase: true,
             set: {
                 ContactName: 'Ujjwal',
@@ -206,7 +206,7 @@ describe('Test update Api', function () {
     });
 
     it('select with or', function (done) {
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 Country: 'Mexico',
@@ -224,7 +224,7 @@ describe('Test update Api', function () {
     });
 
     it('update with or', function (done) {
-        Con.update({ in: 'Customers',
+        con.update({ in: 'Customers',
             where: {
                 Country: 'Mexico',
                 or: {
@@ -245,7 +245,7 @@ describe('Test update Api', function () {
 
     it('update with in', function (done) {
         var Count;
-        Con.select({
+        con.select({
             from: 'Customers',
             where: {
                 Country: { in: ['Germany', 'France', 'UK']
@@ -257,7 +257,7 @@ describe('Test update Api', function () {
         catch(function (err) {
             done(err);
         })
-        Con.update({ in: 'Customers',
+        con.update({ in: 'Customers',
             where: {
                 Country: { in: ['Germany', 'France', 'UK']
                 }
@@ -277,7 +277,7 @@ describe('Test update Api', function () {
 
     it('update with operator - != (for string)', function (done) {
         var count;
-        Con.count({
+        con.count({
             from: 'Customers',
             where: {
                 Country: {
@@ -291,7 +291,7 @@ describe('Test update Api', function () {
             done(err);
         });
 
-        Con.update({ in: 'Customers',
+        con.update({ in: 'Customers',
             where: {
                 Country: {
                     '!=': 'Mexico'
@@ -312,7 +312,7 @@ describe('Test update Api', function () {
 
     it('update with operator - != (for number)', function (done) {
         var count;
-        Con.count({
+        con.count({
             from: 'Products',
             where: {
                 Price: {
@@ -326,7 +326,7 @@ describe('Test update Api', function () {
             done(err);
         })
 
-        Con.update({ in: 'Products',
+        con.update({ in: 'Products',
             where: {
                 Price: {
                     '!=': 20
@@ -346,7 +346,7 @@ describe('Test update Api', function () {
     });
 
     it('select with operator - >', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             where: {
                 Price: {
@@ -363,7 +363,7 @@ describe('Test update Api', function () {
     });
 
     it('update with operator - >', function (done) {
-        Con.update({ in: 'Products',
+        con.update({ in: 'Products',
             where: {
                 Price: {
                     ">": 20
@@ -382,7 +382,7 @@ describe('Test update Api', function () {
     });
 
     it('select with operator - >=', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             where: {
                 Price: {
@@ -399,7 +399,7 @@ describe('Test update Api', function () {
     });
 
     it('update with operator - >=', function (done) {
-        Con.update({ in: 'Products',
+        con.update({ in: 'Products',
             where: {
                 Price: {
                     ">=": 20
@@ -418,7 +418,7 @@ describe('Test update Api', function () {
     });
 
     it('select with operator - <', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             where: {
                 Price: {
@@ -435,7 +435,7 @@ describe('Test update Api', function () {
     });
 
     it('update with operator - <', function (done) {
-        Con.update({ in: 'Products',
+        con.update({ in: 'Products',
             where: {
                 Price: {
                     "<": 20
@@ -454,7 +454,7 @@ describe('Test update Api', function () {
     });
 
     it('select with operator - <=', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             where: {
                 Price: {
@@ -471,7 +471,7 @@ describe('Test update Api', function () {
     });
 
     it('update with operator - <=', function (done) {
-        Con.update({ in: 'Products',
+        con.update({ in: 'Products',
             where: {
                 Price: {
                     "<=": 20
@@ -490,7 +490,7 @@ describe('Test update Api', function () {
     });
 
     it('select with operator - between', function (done) {
-        Con.select({
+        con.select({
             from: 'Products',
             where: {
                 Price: {
@@ -510,7 +510,7 @@ describe('Test update Api', function () {
     });
 
     it('update with operator - between', function (done) {
-        Con.update({ in: 'Products',
+        con.update({ in: 'Products',
             where: {
                 Price: {
                     "-": {

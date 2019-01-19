@@ -6,8 +6,8 @@ describe('keyPath test', function () {
     var isEdge = !isIE && !!window.StyleMedia;
     if (!isIE || !isEdge) {
         it('terminate connection', function (done) {
-            Con.terminate().then(function () {
-                Con = new JsStore.Instance();
+            con.terminate().then(function () {
+                con = new JsStore.Instance();
                 done();
             }).catch(function (error) {
                 done(error);
@@ -16,12 +16,12 @@ describe('keyPath test', function () {
 
         it('create db', function (done) {
             var dbName = 'pinCodeDetails';
-            Con.isDbExist(dbName).then(isExist => {
+            con.isDbExist(dbName).then(isExist => {
                 if (isExist) {
-                    Con.openDb(dbName).then(done)
+                    con.openDb(dbName).then(done)
                 } else {
                     var db = getDbSchemaOfPinCodes();
-                    Con.createDb(db).then(function (result) {
+                    con.createDb(db).then(function (result) {
                         done();
                     })
                 }
@@ -33,7 +33,7 @@ describe('keyPath test', function () {
         it('bulk insert pinCodes', function (done) {
             var time1 = performance.now();
             $.getJSON("test/static/pinCodes.json", function (results) {
-                Con.bulkInsert({
+                con.bulkInsert({
                     into: 'pinCodes',
                     values: results,
                 }).then(function (results) {
@@ -50,7 +50,7 @@ describe('keyPath test', function () {
         })
 
         it('selecting data based on keyPath', function (done) {
-            Con.select({
+            con.select({
                 from: 'pinCodes',
                 where: {
                     officetypeAndDeliverystatus: ['B.O', 'Delivery']
