@@ -14,7 +14,6 @@ export class Instance extends Base {
     results;
     requestQueue: WebWorkerRequest[] = [];
     isQueryExecuting = false;
-    isTransactionStarted = false;
 
     constructor(qry: TranscationQuery, onSuccess: (results: any) => void, onError: (err: IError) => void) {
         super();
@@ -26,31 +25,31 @@ export class Instance extends Base {
 
     execute() {
         const select = (qry: SelectQuery) => {
-            return this.pushRequest({
+            return this.pushRequest_({
                 name: API.Select,
                 query: qry
             } as WebWorkerRequest);
         };
         const insert = (qry: InsertQuery) => {
-            return this.pushRequest({
+            return this.pushRequest_({
                 name: API.Insert,
                 query: qry
             } as WebWorkerRequest);
         };
         const update = (qry: UpdateQuery) => {
-            return this.pushRequest({
+            return this.pushRequest_({
                 name: API.Update,
                 query: qry
             } as WebWorkerRequest);
         };
         const remove = (qry: RemoveQuery) => {
-            return this.pushRequest({
+            return this.pushRequest_({
                 name: API.Remove,
                 query: qry
             } as WebWorkerRequest);
         };
         const count = (qry: CountQuery) => {
-            return this.pushRequest({
+            return this.pushRequest_({
                 name: API.Count,
                 query: qry
             } as WebWorkerRequest);
@@ -59,13 +58,13 @@ export class Instance extends Base {
             this.results[key] = value;
         };
         const abort = () => {
-            this.abortTransaction();
+            this.abortTransaction_();
         };
         const txLogic = null;
         eval("txLogic =" + this.query.logic);
         txLogic.call(this, this.query.data);
 
-        this.checkQueries().then(() => {
+        this.checkQueries_().then(() => {
             this.startTransaction_();
         }).catch((err) => {
             this.onError(err);
@@ -75,9 +74,8 @@ export class Instance extends Base {
 
     private startTransaction_() {
         try {
-            this.isTransactionStarted = true;
             this.initTransaction_(this.query.tables);
-            this.processExecutionOfQry();
+            this.processExecutionOfQry_();
         }
         catch (ex) {
             this.errorOccured = true;
@@ -93,29 +91,29 @@ export class Instance extends Base {
         this.onSuccess(this.results);
     }
 
-    onRequestFinished_(result) {
+    private onRequestFinished_(result) {
         const finisehdRequest = this.requestQueue.shift();
         if (finisehdRequest) {
             if (this.errorOccured) {
-                this.abortTransaction();
+                this.abortTransaction_();
             }
             else {
                 this.isQueryExecuting = false;
                 if (finisehdRequest.onSuccess) {
                     finisehdRequest.onSuccess(result);
                 }
-                this.processExecutionOfQry();
+                this.processExecutionOfQry_();
             }
         }
     }
 
-    abortTransaction() {
+    private abortTransaction_() {
         if (this.transaction != null) {
             this.transaction.abort();
         }
     }
 
-    executeRequest(request: WebWorkerRequest) {
+    private executeRequest_(request: WebWorkerRequest) {
         this.isQueryExecuting = true;
         let requestObj;
         switch (request.name) {
@@ -149,9 +147,8 @@ export class Instance extends Base {
         requestObj.execute();
     }
 
-    pushRequest(request: WebWorkerRequest) {
+    private pushRequest_(request: WebWorkerRequest) {
         this.requestQueue.push(request);
-        this.processExecutionOfQry();
         return new Promise((resolve, reject) => {
             request.onSuccess = (result) => {
                 resolve(result);
@@ -162,14 +159,13 @@ export class Instance extends Base {
         });
     }
 
-    processExecutionOfQry() {
-        if (this.requestQueue.length > 0 && this.isQueryExecuting === false &&
-            this.isTransactionStarted === true) {
-            this.executeRequest(this.requestQueue[0]);
+    private processExecutionOfQry_() {
+        if (this.requestQueue.length > 0 && this.isQueryExecuting === false) {
+            this.executeRequest_(this.requestQueue[0]);
         }
     }
 
-    private checkQueries() {
+    private checkQueries_() {
         let index = 0;
         return Promise.all(this.requestQueue.map(request => {
             return new QueryHelper(request.name, request.query).checkAndModify();
