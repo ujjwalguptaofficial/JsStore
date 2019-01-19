@@ -86,8 +86,11 @@ describe('Test transaction', function () {
                 })
                 insert({
                     into: 'Customers',
+                    return: true,
                     values: data.insertValues
-                });
+                }).then((insertedcustomer) => {
+                    setResult('insertedcustomer', insertedcustomer);
+                })
                 count({
                     from: 'Customers'
                 }).then(function (result) {
@@ -96,8 +99,11 @@ describe('Test transaction', function () {
             }
         }
         Con.transaction(transaction_query).then(function (results) {
-            console.log(results)
+            // console.log(results);
+            var insertedcustomer = results.insertedcustomer[0];
+            console.log("inserted customer", insertedcustomer);
             expect(results.countNewCustomer).to.be.an('number').equal(results.countOldCustomer + 1);
+            expect(insertedcustomer.CustomerID).to.be.an('number').equal(94);
             done();
         }).catch(function (err) {
             done(err);

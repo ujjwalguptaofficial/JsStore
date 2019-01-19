@@ -171,22 +171,8 @@ export class Instance extends Base {
 
     private checkQueries() {
         let index = 0;
-        return new Promise((resolve, reject) => {
-            const checkQuery = () => {
-                if (index < this.requestQueue.length) {
-                    const request = this.requestQueue[index++];
-                    const qryHelper = new QueryHelper(request.name, request.query);
-                    qryHelper.checkAndModify().then(() => {
-                        checkQuery();
-                    }).catch((err: IError) => {
-                        reject(err);
-                    });
-                }
-                else {
-                    resolve();
-                }
-            };
-            checkQuery();
-        });
+        return Promise.all(this.requestQueue.map(request => {
+            return new QueryHelper(request.name, request.query).checkAndModify();
+        }));
     }
 }
