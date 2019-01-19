@@ -6,16 +6,15 @@ export declare class Instance extends Base {
     results: any;
     requestQueue: WebWorkerRequest[];
     isQueryExecuting: boolean;
-    isTransactionStarted: boolean;
     constructor(qry: TranscationQuery, onSuccess: (results: any) => void, onError: (err: IError) => void);
     execute(): void;
     private startTransaction_;
     private initTransaction_;
     private onTransactionCompleted_;
-    onRequestFinished_(result: any): void;
-    abortTransaction(): void;
-    executeRequest(request: WebWorkerRequest): void;
-    pushRequest(request: WebWorkerRequest): Promise<{}>;
-    processExecutionOfQry(): void;
-    private checkQueries;
+    private onRequestFinished_;
+    private abortTransaction_;
+    private executeRequest_;
+    private pushRequest_;
+    private processExecutionOfQry_;
+    private checkQueries_;
 }

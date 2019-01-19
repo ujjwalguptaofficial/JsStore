@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.9.4 - 19/01/2019
+ * @license :jsstore - V2.9.5 - 19/01/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -6373,7 +6373,6 @@ var Instance = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.requestQueue = [];
         _this.isQueryExecuting = false;
-        _this.isTransactionStarted = false;
         _this.query = qry;
         _this.onError = onError;
         _this.onSuccess = onSuccess;
@@ -6383,31 +6382,31 @@ var Instance = /** @class */ (function (_super) {
     Instance.prototype.execute = function () {
         var _this = this;
         var select = function (qry) {
-            return _this.pushRequest({
+            return _this.pushRequest_({
                 name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Select,
                 query: qry
             });
         };
         var insert = function (qry) {
-            return _this.pushRequest({
+            return _this.pushRequest_({
                 name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Insert,
                 query: qry
             });
         };
         var update = function (qry) {
-            return _this.pushRequest({
+            return _this.pushRequest_({
                 name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Update,
                 query: qry
             });
         };
         var remove = function (qry) {
-            return _this.pushRequest({
+            return _this.pushRequest_({
                 name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Remove,
                 query: qry
             });
         };
         var count = function (qry) {
-            return _this.pushRequest({
+            return _this.pushRequest_({
                 name: _enums__WEBPACK_IMPORTED_MODULE_6__["API"].Count,
                 query: qry
             });
@@ -6416,12 +6415,12 @@ var Instance = /** @class */ (function (_super) {
             _this.results[key] = value;
         };
         var abort = function () {
-            _this.abortTransaction();
+            _this.abortTransaction_();
         };
         var txLogic = null;
         eval("txLogic =" + this.query.logic);
         txLogic.call(this, this.query.data);
-        this.checkQueries().then(function () {
+        this.checkQueries_().then(function () {
             _this.startTransaction_();
         }).catch(function (err) {
             _this.onError(err);
@@ -6429,9 +6428,8 @@ var Instance = /** @class */ (function (_super) {
     };
     Instance.prototype.startTransaction_ = function () {
         try {
-            this.isTransactionStarted = true;
             this.initTransaction_(this.query.tables);
-            this.processExecutionOfQry();
+            this.processExecutionOfQry_();
         }
         catch (ex) {
             this.errorOccured = true;
@@ -6448,23 +6446,23 @@ var Instance = /** @class */ (function (_super) {
         var finisehdRequest = this.requestQueue.shift();
         if (finisehdRequest) {
             if (this.errorOccured) {
-                this.abortTransaction();
+                this.abortTransaction_();
             }
             else {
                 this.isQueryExecuting = false;
                 if (finisehdRequest.onSuccess) {
                     finisehdRequest.onSuccess(result);
                 }
-                this.processExecutionOfQry();
+                this.processExecutionOfQry_();
             }
         }
     };
-    Instance.prototype.abortTransaction = function () {
+    Instance.prototype.abortTransaction_ = function () {
         if (this.transaction != null) {
             this.transaction.abort();
         }
     };
-    Instance.prototype.executeRequest = function (request) {
+    Instance.prototype.executeRequest_ = function (request) {
         this.isQueryExecuting = true;
         var requestObj;
         switch (request.name) {
@@ -6487,9 +6485,8 @@ var Instance = /** @class */ (function (_super) {
         requestObj.isTransaction = true;
         requestObj.execute();
     };
-    Instance.prototype.pushRequest = function (request) {
+    Instance.prototype.pushRequest_ = function (request) {
         this.requestQueue.push(request);
-        this.processExecutionOfQry();
         return new Promise(function (resolve, reject) {
             request.onSuccess = function (result) {
                 resolve(result);
@@ -6499,13 +6496,12 @@ var Instance = /** @class */ (function (_super) {
             };
         });
     };
-    Instance.prototype.processExecutionOfQry = function () {
-        if (this.requestQueue.length > 0 && this.isQueryExecuting === false &&
-            this.isTransactionStarted === true) {
-            this.executeRequest(this.requestQueue[0]);
+    Instance.prototype.processExecutionOfQry_ = function () {
+        if (this.requestQueue.length > 0 && this.isQueryExecuting === false) {
+            this.executeRequest_(this.requestQueue[0]);
         }
     };
-    Instance.prototype.checkQueries = function () {
+    Instance.prototype.checkQueries_ = function () {
         var index = 0;
         return Promise.all(this.requestQueue.map(function (request) {
             return new _query_helper__WEBPACK_IMPORTED_MODULE_7__["QueryHelper"](request.name, request.query).checkAndModify();
