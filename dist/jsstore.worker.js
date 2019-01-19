@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.9.3 - 18/01/2019
+ * @license :jsstore - V2.9.4 - 19/01/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -6506,25 +6506,10 @@ var Instance = /** @class */ (function (_super) {
         }
     };
     Instance.prototype.checkQueries = function () {
-        var _this = this;
         var index = 0;
-        return new Promise(function (resolve, reject) {
-            var checkQuery = function () {
-                if (index < _this.requestQueue.length) {
-                    var request = _this.requestQueue[index++];
-                    var qryHelper = new _query_helper__WEBPACK_IMPORTED_MODULE_7__["QueryHelper"](request.name, request.query);
-                    qryHelper.checkAndModify().then(function () {
-                        checkQuery();
-                    }).catch(function (err) {
-                        reject(err);
-                    });
-                }
-                else {
-                    resolve();
-                }
-            };
-            checkQuery();
-        });
+        return Promise.all(this.requestQueue.map(function (request) {
+            return new _query_helper__WEBPACK_IMPORTED_MODULE_7__["QueryHelper"](request.name, request.query).checkAndModify();
+        }));
     };
     return Instance;
 }(_base__WEBPACK_IMPORTED_MODULE_0__["Base"]));
