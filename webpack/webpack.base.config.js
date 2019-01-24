@@ -14,7 +14,6 @@ module.exports = [{
                 }
             }]
         },
-        mode: 'none',
         resolve: {
             extensions: ['.ts'] // '' is needed to find modules like "jquery"
         },
@@ -25,7 +24,6 @@ module.exports = [{
     {
         name: "jsstore.worker",
         entry: "./src/worker/index.ts",
-        mode: 'none',
         module: {
             rules: [{
                 test: /\.ts$/,

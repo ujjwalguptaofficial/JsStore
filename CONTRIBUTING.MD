@@ -22,7 +22,7 @@ There may be different types of bugs -
 * Api is throwing error or for particular situation its not working
 * You want to have any feature that you think will make jsstore incredible like - https://github.com/ujjwalguptaofficial/JsStore/issues/44
 * Any advanced level suggestion or report - speed, optimization of code, some tech suggestion, memory oveflow etc
-* You want an example for particular set of library or tech like - how to use in elctron, react, angular etc.
+* You want an example for particular set of library or tech like - how to use in electron, react, angular etc.
 * You have problem in learning or something particular is not working for you etc.
 
 The last one is actually not an issue realted to jsstore, its a particular problem for someone. So we dont want such type of issue on our board. Please ask this at different forums like - stackoverflow etc.

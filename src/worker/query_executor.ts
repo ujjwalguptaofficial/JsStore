@@ -78,7 +78,7 @@ export class QueryExecutor {
 
     private returnResult_(result) {
         if (Config.isRuningInWorker === true) {
-            (self as DedicatedWorkerGlobalScope).postMessage(result);
+            (self as any).postMessage(result);
         }
         else {
             this.onQueryFinished(result);

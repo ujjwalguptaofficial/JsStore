@@ -1,6 +1,7 @@
 const path = require('path');
 const baseConfig = require('./webpack.base.config');
 const merge = require('webpack-merge');
+var webpack = require('webpack');
 
 function createConfigsForAllLibraryTarget() {
     const libraryTarget = [{
@@ -13,12 +14,18 @@ function createConfigsForAllLibraryTarget() {
     const getConfigForTaget = function (target) {
         return {
             devtool: 'source-map',
+            mode: "development",
             output: {
                 path: path.join(__dirname, "./../build"),
                 filename: target.name,
                 library: 'JsStore',
                 libraryTarget: target.type
-            }
+            },
+            plugins: [
+                new webpack.DefinePlugin({
+                    'process.env.NODE_ENV': JSON.stringify("dev")
+                }),
+            ]
         }
     }
     var configs = [];
@@ -41,13 +48,19 @@ function createConfigsForAllLibraryTargetForWebWorker() {
 
     const getConfigForTaget = function (target) {
         return {
+            mode: "development",
             devtool: 'source-map',
             output: {
                 path: path.join(__dirname, "./../build"),
                 filename: target.name,
                 library: 'JsStoreWorker',
                 libraryTarget: target.type
-            }
+            },
+            plugins: [
+                new webpack.DefinePlugin({
+                    'process.env.NODE_ENV': JSON.stringify("dev")
+                }),
+            ]
         }
     }
     var configs = [];

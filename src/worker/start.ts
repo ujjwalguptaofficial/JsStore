@@ -8,7 +8,7 @@ const log = (value) => {
 export const initialize = () => {
     if (typeof (self as any).alert === 'undefined' && typeof ServiceWorkerGlobalScope === 'undefined') {
         Config.isRuningInWorker = true;
-        (self as DedicatedWorkerGlobalScope).onmessage = (e) => {
+        (self as any).onmessage = (e) => {
             log("Request executing from WebWorker, request name: " + e.data.name);
             new QueryExecutor().checkConnectionAndExecuteLogic(e.data);
         };

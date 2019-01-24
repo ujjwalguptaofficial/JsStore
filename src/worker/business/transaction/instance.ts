@@ -8,6 +8,7 @@ import * as Update from '../update/index';
 import { API } from "../../enums";
 import { QueryHelper } from "../query_helper";
 import { IError } from "../../interfaces";
+import { LogHelper } from "../../log_helper";
 
 export class Instance extends Base {
     query: TranscationQuery;
@@ -60,16 +61,28 @@ export class Instance extends Base {
         const abort = () => {
             this.abortTransaction_();
         };
+
         const txLogic = null;
         eval("txLogic =" + this.query.logic);
-        txLogic.call(this, this.query.data);
+        const promiseObj: Promise<void> = txLogic.call(this, this.query.data);
+        if (process.env.NODE_ENV === 'dev') {
+            console.log(`transaction query started`);
+            if (!promiseObj.then) {
+                console.error('transaction logic should be async or return a promise');
+                this.onTransactionCompleted_();
+                return;
+            }
+        }
 
-        this.checkQueries_().then(() => {
-            this.startTransaction_();
-        }).catch((err) => {
-            this.onError(err);
-        });
-
+        promiseObj.then(() => {
+            this.checkQueries_().then((results) => {
+                this.startTransaction_();
+            }).catch((err) => {
+                this.onError(err);
+            });
+        }).catch(err => {
+            this.onErrorOccured(err, false);
+        })
     }
 
     private startTransaction_() {
@@ -88,14 +101,24 @@ export class Instance extends Base {
     }
 
     private onTransactionCompleted_() {
+        if (process.env.NODE_ENV === 'dev') {
+            console.log(`transaction finished`);
+        }
         this.onSuccess(this.results);
     }
 
     private onRequestFinished_(result) {
         const finisehdRequest = this.requestQueue.shift();
+        if (process.env.NODE_ENV === 'dev') {
+            console.log(`finished request : ${finisehdRequest.name} `);
+        }
         if (finisehdRequest) {
-            if (this.errorOccured) {
+            if (this.errorOccured === true) {
                 this.abortTransaction_();
+                if (process.env.NODE_ENV === 'dev') {
+                    console.log(`transaction aborted due to error occured`);
+                }
+                this.onErrorOccured(this.error);
             }
             else {
                 this.isQueryExecuting = false;
@@ -116,6 +139,9 @@ export class Instance extends Base {
     private executeRequest_(request: WebWorkerRequest) {
         this.isQueryExecuting = true;
         let requestObj;
+        if (process.env.NODE_ENV === 'dev') {
+            console.log(`executing request : ${request.name} `);
+        }
         switch (request.name) {
             case API.Select:
                 requestObj = new Select.Instance(
@@ -149,11 +175,16 @@ export class Instance extends Base {
 
     private pushRequest_(request: WebWorkerRequest) {
         this.requestQueue.push(request);
+        if (process.env.NODE_ENV === 'dev') {
+            console.log(`request pushed : ${request.name} with query value - ${JSON.stringify(request.query)}`);
+        }
         return new Promise((resolve, reject) => {
             request.onSuccess = (result) => {
                 resolve(result);
             };
             request.onError = (error) => {
+                this.errorOccured = true;
+                this.error = error;
                 reject(error);
             };
         });
