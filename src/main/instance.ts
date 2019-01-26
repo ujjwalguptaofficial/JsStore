@@ -290,7 +290,7 @@ export class Instance extends InstanceHelper {
      * @memberof Instance
      */
     terminate() {
-        return this.pushApi<any>({
+        return this.pushApi<void>({
             name: API.Terminate,
             query: null
         });

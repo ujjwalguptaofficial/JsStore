@@ -1,6 +1,6 @@
 import { Table } from "./table";
 import { Column } from "./column";
-import * as KeyStore from "../keystore/index";
+import { KeyStore } from "../keystore/index";
 import { IdbHelper } from "../business/idb_helper";
 
 export class TableHelper {
@@ -34,24 +34,25 @@ export class TableHelper {
         });
     }
 
-    private setRequireDelete_(dbName: string) {
-        KeyStore.get(`JsStore_${dbName}_${this.name}_Version`, (tableVersion) => {
-            if (tableVersion == null) {
-                this.requireCreation = true;
-            }
-            // mark only table which has version greater than store version
-            else if (tableVersion < this.version) {
-                this.requireDelete = true;
-            }
-        });
+    private async setRequireDelete_(dbName: string) {
+        const tableVersion = await KeyStore.get<number>(`JsStore_${dbName}_${this.name}_Version`);
+        if (tableVersion == null) {
+            this.requireCreation = true;
+        }
+        // mark only table which has version greater than store version
+        else if (tableVersion < this.version) {
+            this.requireDelete = true;
+        }
     }
 
-    private setDbVersion_(dbName: string) {
+    private async setDbVersion_(dbName: string) {
         IdbHelper.activeDbVersion = IdbHelper.activeDbVersion > this.version ? IdbHelper.activeDbVersion : this.version;
         // setting db version
         KeyStore.set(`JsStore_${dbName}_Db_Version`, IdbHelper.activeDbVersion);
         // setting table version
-        KeyStore.set(`JsStore_${dbName}_${this.name}_Version`, IdbHelper.activeDbVersion, this.callback);
+        await KeyStore.set(`JsStore_${dbName}_${this.name}_Version`, IdbHelper.activeDbVersion);
         this.version = IdbHelper.activeDbVersion;
+        this.callback();
+
     }
 }

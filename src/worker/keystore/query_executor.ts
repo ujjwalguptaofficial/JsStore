@@ -1,5 +1,4 @@
-import { IDbStatus, IQueryResult, IQueryRequest } from "./interfaces";
-import { CONNECTION_STATUS } from "./enums";
+import { IQueryResult, IQueryRequest } from "./interfaces";
 import { Main } from "./business/main_logic";
 
 export class QueryExecutor {
@@ -7,44 +6,41 @@ export class QueryExecutor {
     static tableName = "LocalStore";
     static columnName = "Key";
     static isCodeExecuting = false;
-    static dbStatus: IDbStatus = {
-        conStatus: CONNECTION_STATUS.NotStarted,
-        lastError: ""
-    };
-
-    static prcoessQuery(request: IQueryRequest) {
-        this.requestQueue.push(request);
-        if (this.requestQueue.length === 1) {
+    static prcoessQuery<T>(request: IQueryRequest) {
+        return new Promise<T>((resolve, reject) => {
+            request.onSuccess = (result) => {
+                resolve(result);
+            };
+            request.onError = (error) => {
+                if (process.env.NODE_ENV === 'dev') {
+                    console.error(error);
+                }
+                reject(error);
+            };
+            this.requestQueue.push(request);
             this.executeCode();
-        }
+        });
     }
 
     static executeCode() {
         if (!this.isCodeExecuting && this.requestQueue.length > 0) {
             this.isCodeExecuting = true;
             const request: IQueryRequest = {
-                Name: this.requestQueue[0].Name,
-                Query: this.requestQueue[0].Query
+                name: this.requestQueue[0].name,
+                query: this.requestQueue[0].query
             } as IQueryRequest;
-            new Main(results => {
-                this.onQueryFinished(results);
-            }).checkConnectionAndExecuteLogic(request);
+            new Main(this.onQueryFinished.bind(this)).checkConnectionAndExecuteLogic(request);
         }
     }
 
     static onQueryFinished(message: IQueryResult) {
         const finishedRequest: IQueryRequest = this.requestQueue.shift();
         this.isCodeExecuting = false;
-        if (message.ErrorOccured) {
-            if (finishedRequest.OnError) {
-                finishedRequest.OnError(message.ErrorDetails);
-            }
-            else {
-                console.error(message.ErrorDetails);
-            }
+        if (message.errorOccured) {
+            finishedRequest.onError(message.errorDetails);
         }
-        else if (finishedRequest.OnSuccess) {
-            finishedRequest.OnSuccess(message.ReturnedValue);
+        else {
+            finishedRequest.onSuccess(message.returnedValue);
         }
         this.executeCode();
     }

@@ -9,7 +9,7 @@ export let tempDatas;
 export class InitDb {
     constructor(dbName: string, onSuccess: () => void, onError: (err: IError) => void) {
         const dbRequest = self.indexedDB.open(dbName, 1);
-        IdbHelper._isDbDeletedByBrowser = false;
+        IdbHelper.isDbDeletedByBrowser = false;
         dbRequest.onerror = (event) => {
             if ((event as any).target.error.name === 'InvalidStateError') {
                 JsStore.IdbHelper.dbStatus = {
@@ -23,14 +23,14 @@ export class InitDb {
         };
 
         dbRequest.onsuccess = (event) => {
-            QueryExecutor.dbStatus.conStatus = CONNECTION_STATUS.Connected;
-            IdbHelper._dbConnection = dbRequest.result;
-            IdbHelper._dbConnection.onclose = () => {
+            IdbHelper.dbStatus.conStatus = CONNECTION_STATUS.Connected;
+            IdbHelper.dbConnection = dbRequest.result;
+            IdbHelper.dbConnection.onclose = () => {
                 IdbHelper.callDbDroppedByBrowser();
                 Utils.updateDbStatus(CONNECTION_STATUS.Closed, JsStore.ERROR_TYPE.ConnectionClosed);
             };
 
-            IdbHelper._dbConnection.onversionchange = (e) => {
+            IdbHelper.dbConnection.onversionchange = (e: any) => {
                 if (e.newVersion === null) { // An attempt is made to delete the db
                     e.target.close(); // Manually close our connection to the db
                     IdbHelper.callDbDroppedByBrowser();
@@ -38,12 +38,12 @@ export class InitDb {
                 }
             };
 
-            IdbHelper._dbConnection.onerror = (e) => {
-                QueryExecutor.dbStatus.lastError = "Error occured in connection :" + e.target.result;
+            IdbHelper.dbConnection.onerror = (e: any) => {
+                IdbHelper.dbStatus.lastError = "Error occured in connection :" + e.target.result;
             };
 
-            IdbHelper._dbConnection.onabort = (e) => {
-                QueryExecutor.dbStatus = {
+            IdbHelper.dbConnection.onabort = (e) => {
+                IdbHelper.dbStatus = {
                     conStatus: CONNECTION_STATUS.Closed,
                     lastError: "Connection aborted"
                 };

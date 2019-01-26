@@ -2,7 +2,7 @@ import { Table } from "../../model/table";
 import { IError } from "../../interfaces";
 import { ValueChecker } from "./value_checker";
 import { IdbHelper } from "../idb_helper";
-import * as KeyStore from "../../keystore/index";
+import { KeyStore } from "../../keystore/index";
 
 export class ValuesChecker {
     table: Table;
@@ -30,15 +30,20 @@ export class ValuesChecker {
         return new Promise((resolve, reject) => {
             const autoIncValues = {};
             let index = 0;
-            const setAutoIncrementValue = () => {
-                if (index < autoIncColumns.length) {
+            let autoIncColumnLength = autoIncColumns.length;
+            const setAutoIncrementValue = async () => {
+                if (index < autoIncColumnLength) {
                     const column = autoIncColumns[index];
                     const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${this.table.name}_${column.name}_Value`;
-                    KeyStore.get(autoIncrementKey, (val) => {
+                    try {
+                        const val = await KeyStore.get(autoIncrementKey);
                         autoIncValues[column.name] = val;
                         ++index;
                         setAutoIncrementValue();
-                    }, reject);
+                    }
+                    catch (ex) {
+                        reject(ex);
+                    }
                 }
                 else {
                     resolve(autoIncValues);
@@ -68,10 +73,9 @@ export class ValuesChecker {
                         const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${this.table.name}_${prop}_Value`;
                         KeyStore.set(
                             autoIncrementKey,
-                            this.valueCheckerObj.autoIncrementValue[prop],
-                            saveAutoIncrementKey,
-                            reject
-                        );
+                            this.valueCheckerObj.autoIncrementValue[prop]
+                        ).then(saveAutoIncrementKey).catch(reject);
+
                     }
                     else {
                         resolve();

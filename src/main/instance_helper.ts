@@ -4,13 +4,12 @@ import { WebWorkerRequest, WebWorkerResult } from "./types";
 import { Config } from "./config";
 
 declare var JsStoreWorker;
-
 export class InstanceHelper {
   private worker_: Worker;
   private isDbOpened_ = false;
   private requestQueue_: WebWorkerRequest[] = [];
   private isCodeExecuting_ = false;
-  private queryExecutor_;
+
   private whiteListApi_ = [
     API.CreateDb,
     API.IsDbExist,
@@ -30,7 +29,7 @@ export class InstanceHelper {
       this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
     } else {
       Config.isRuningInWorker = false;
-      this.queryExecutor_ = new JsStoreWorker.QueryExecutor(this.processFinishedQuery_.bind(this));
+      JsStoreWorker.KeyStore.init();
     }
   }
 
@@ -43,17 +42,20 @@ export class InstanceHelper {
     if (finishedRequest) {
       LogHelper.log("request finished : " + finishedRequest.name);
       if (message.errorOccured) {
-        if (finishedRequest.onError) {
-          finishedRequest.onError(message.errorDetails);
-        }
+        finishedRequest.onError(message.errorDetails);
       } else {
-        if (finishedRequest.onSuccess) {
-          const openDbQueries = ["open_db", "create_db"];
-          if (openDbQueries.indexOf(finishedRequest.name) >= 0) {
-            this.isDbOpened_ = true;
-          }
-          finishedRequest.onSuccess(message.returnedValue);
+        switch (finishedRequest.name) {
+          case API.OpenDb:
+          case API.CreateDb:
+            this.isDbOpened_ = true; break;
+          case API.Terminate:
+            this.isDbOpened_ = false;
+            if (Config.isRuningInWorker === true) {
+              this.worker_.terminate();
+            }
+            break;
         }
+        finishedRequest.onSuccess(message.returnedValue);
       }
       this.isCodeExecuting_ = false;
       this.executeQry_();
@@ -74,13 +76,13 @@ export class InstanceHelper {
 
   private prcoessExecutionOfQry_(request: WebWorkerRequest) {
     this.requestQueue_.push(request);
-    this.executeQry_();
     LogHelper.log("request pushed: " + request.name);
+    this.executeQry_();
   }
 
   private executeQry_() {
     if (!this.isCodeExecuting_ && this.requestQueue_.length > 0) {
-      if (this.isDbOpened_) {
+      if (this.isDbOpened_ === true) {
         this.sendRequestToWorker_(this.requestQueue_[0]);
         return;
       }
@@ -103,27 +105,16 @@ export class InstanceHelper {
 
   private sendRequestToWorker_(request: WebWorkerRequest) {
     this.isCodeExecuting_ = true;
-    LogHelper.log("request executing : " + request.name);
-    if (request.name === API.Terminate) {
-      if (Config.isRuningInWorker === true) {
-        this.worker_.terminate();
-      }
-      this.isDbOpened_ = false;
-      this.processFinishedQuery_({
-        returnedValue: null
-      } as any);
+    const requestForWorker = {
+      name: request.name,
+      query: request.query
+    } as WebWorkerRequest;
+    if (Config.isRuningInWorker === true) {
+      this.worker_.postMessage(requestForWorker);
     }
     else {
-      const requestForWorker = {
-        name: request.name,
-        query: request.query
-      } as WebWorkerRequest;
-      if (Config.isRuningInWorker === true) {
-        this.worker_.postMessage(requestForWorker);
-      }
-      else {
-        this.queryExecutor_.checkConnectionAndExecuteLogic(requestForWorker);
-      }
+      new JsStoreWorker.QueryExecutor(this.processFinishedQuery_.bind(this)).checkConnectionAndExecuteLogic(requestForWorker);
     }
+
   }
 }

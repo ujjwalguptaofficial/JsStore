@@ -1,5 +1,5 @@
 import { IError } from "../interfaces";
-import * as KeyStore from "../keystore/index";
+import { KeyStore } from "../keystore/index";
 import { Table } from "../model/table";
 import { Column } from "../model/column";
 import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
@@ -16,7 +16,7 @@ export class DropDb extends BaseDb {
         this.onError_ = onError;
     }
 
-    deleteMetaData() {
+    async deleteMetaData() {
         KeyStore.remove(`JsStore_${this.dbName}_Db_Version`);
         this.activeDb.tables.forEach((table: Table) => {
             KeyStore.remove(`JsStore_${this.dbName}_${table.name}_Version`);
@@ -27,14 +27,12 @@ export class DropDb extends BaseDb {
             });
         });
         // remove from database_list 
-        this.getDbList(result => {
-            result.splice(result.indexOf(this.dbName), 1);
-            this.setDbList(result).then(() => {
-                // remove db schema from keystore
-                KeyStore.remove(`JsStore_${this.dbName}_Schema`, this.onSuccess_);
-            });
-
-        });
+        const dbList = await this.getDbList();
+        dbList.splice(dbList.indexOf(this.dbName), 1);
+        await this.setDbList(dbList);
+        // remove db schema from keystore
+        await KeyStore.remove(`JsStore_${this.dbName}_Schema`);
+        this.onSuccess_();
     }
 
     deleteDb() {

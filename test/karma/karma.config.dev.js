@@ -10,7 +10,7 @@ module.exports = function (config) {
             }
         },
         files: ['build/jsstore.js', 'build/jsstore.worker.js',
-            'build/jsstore.worker.ie.min.js', ...files.list_of_files
+            ...files.list_of_files
         ],
         proxies: {
             '/test/': '/base/test/',

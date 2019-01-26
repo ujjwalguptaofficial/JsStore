@@ -5,13 +5,12 @@ import { Table } from "../model/table";
 import { BaseDb } from "./base_db";
 
 export class OpenDb extends BaseDb {
-    private onSuccess_: () => void;
-    private onError_: (err: IError) => void;
+
 
     constructor(onSuccess: () => void, onError: (err: IError) => void) {
         super();
-        this.onSuccess_ = onSuccess;
-        this.onError_ = onError;
+        this.onSuccess = onSuccess;
+        this.onError = onError;
     }
 
 
@@ -24,35 +23,22 @@ export class OpenDb extends BaseDb {
             const dbRequest = indexedDB.open(this.dbName, this.dbVersion);
 
             dbRequest.onerror = (event: any) => {
-                if (this.onError_ != null) {
-                    this.onError_(event.target.error);
+                if (this.onError != null) {
+                    this.onError(event.target.error);
                 }
             };
 
             dbRequest.onsuccess = (event) => {
                 this.dbStatus.conStatus = CONNECTION_STATUS.Connected;
                 this.dbConnection = dbRequest.result;
-                (this.dbConnection as any).onclose = (e) => {
-                    this.onDbDroppedByBrowser();
-                    this.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
-                };
+                (this.dbConnection as any).onclose = this.onDbClose;
 
-                this.dbConnection.onversionchange = (e: IDBVersionChangeEvent) => {
-                    if (e.newVersion === null) { // An attempt is made to delete the db
-                        if (e.newVersion === null) { // An attempt is made to delete the db
-                            (e.target as any).close(); // Manually close our connection to the db
-                            this.onDbDroppedByBrowser(true);
-                            this.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
-                        }
-                    }
-                };
+                this.dbConnection.onversionchange = this.onDbVersionChange;
 
-                this.dbConnection.onerror = (e) => {
-                    this.dbStatus.lastError = ("Error occured in connection :" + (e.target as any).result) as any;
-                };
+                this.dbConnection.onerror = this.onDbConError;
 
-                if (this.onSuccess_ != null) {
-                    this.onSuccess_();
+                if (this.onSuccess != null) {
+                    this.onSuccess();
                 }
                 this.setPrimaryKey_();
             };

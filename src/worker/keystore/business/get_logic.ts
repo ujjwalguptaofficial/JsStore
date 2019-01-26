@@ -33,7 +33,7 @@ export class Get extends Base {
 
     private initTransaction_() {
         IdbHelper.createTransaction([QueryExecutor.tableName], this.onTransactionCompleted_, 'readonly');
-        this.objectStore = IdbHelper._transaction.objectStore(QueryExecutor.tableName);
+        this.objectStore = IdbHelper. transaction.objectStore(QueryExecutor.tableName);
     }
 
     private onTransactionCompleted_ = () => {

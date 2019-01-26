@@ -2,47 +2,41 @@ import { TableHelper } from "../model/table_helper";
 import { IError } from "../interfaces";
 import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
 import { Column } from "../model/column";
-import * as KeyStore from "../keystore/index";
+import { KeyStore } from "../keystore/index";
 import { BaseDb } from "./base_db";
 
 export class CreateDb extends BaseDb {
 
-    constructor(tablesMetaData: TableHelper[], onSuccess: (listOf) => void, onError: (err: IError) => void) {
+    constructor(onSuccess: (listOf) => void, onError: (err: IError) => void) {
         super();
+        this.onSuccess = onSuccess;
+        this.onError = onError;
+    }
+
+    execute(tablesMetaData: TableHelper[]) {
         const listofTableCreated = [];
         const dbRequest = indexedDB.open(this.dbName, this.dbVersion);
 
         dbRequest.onerror = (event) => {
-            if (onError != null) {
-                onError((event as any).target.error);
+            if (this.onError != null) {
+                this.onError((event as any).target.error);
             }
         };
 
         dbRequest.onsuccess = (event) => {
             this.dbStatus.conStatus = CONNECTION_STATUS.Connected;
             this.dbConnection = dbRequest.result;
-            (this.dbConnection as any).onclose = (e) => {
-                this.onDbDroppedByBrowser();
-                this.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
-            };
+            (this.dbConnection as any).onclose = this.onDbClose;
 
-            this.dbConnection.onversionchange = (e: IDBVersionChangeEvent) => {
-                if (e.newVersion === null) { // An attempt is made to delete the db
-                    (e.target as any).close(); // Manually close our connection to the db
-                    this.onDbDroppedByBrowser(true);
-                    this.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
-                }
-            };
-
-            this.dbConnection.onerror = (e) => {
-                this.dbStatus.lastError = ("Error occured in connection :" + (e.target as any).result) as any;
-            };
+            this.dbConnection.onversionchange = this.onDbVersionChange;
+            this.dbConnection.onerror = this.onDbConError;
 
             // save in database list
-            this.savedbNameIntoDbList();
-            if (onSuccess != null) {
-                onSuccess(listofTableCreated);
+            this.savedbNameIntoDbList_();
+            if (this.onSuccess != null) {
+                this.onSuccess(listofTableCreated);
             }
+
         };
 
         dbRequest.onupgradeneeded = (event) => {
@@ -95,12 +89,11 @@ export class CreateDb extends BaseDb {
         };
     }
 
-    private savedbNameIntoDbList() {
-        this.getDbList((result) => {
-            if (result.indexOf(this.dbName) < 0) {
-                result.push(this.dbName);
-                this.setDbList(result);
-            }
-        });
+    private async savedbNameIntoDbList_() {
+        const dbList = await this.getDbList();
+        if (dbList.indexOf(this.dbName) < 0) {
+            dbList.push(this.dbName);
+            this.setDbList(dbList);
+        }
     }
 }

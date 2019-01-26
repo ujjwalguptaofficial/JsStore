@@ -1,5 +1,5 @@
 import { CONNECTION_STATUS, ERROR_TYPE, IDB_MODE } from "../enums";
-import * as KeyStore from "../keystore/index";
+import { KeyStore } from "../keystore/index";
 import { IDbStatus, ITable, IDataBase } from "../interfaces";
 import { DataBase } from "../model/database";
 import { DropDb } from "./drop_db";
@@ -14,8 +14,7 @@ export class IdbHelper {
     static activeDb: DataBase;
     static activeDbVersion = 0;
     static dbStatus: IDbStatus = {
-        conStatus: CONNECTION_STATUS.NotStarted,
-        lastError: null
+        conStatus: CONNECTION_STATUS.NotStarted
     };
 
     static callDbDroppedByBrowser(deleteMetaData?: boolean) {
@@ -42,10 +41,7 @@ export class IdbHelper {
     }
 
     static setDbList(list: string[]) {
-        return new Promise((resolve, reject) => {
-            KeyStore.set('DataBase_List', list, resolve, reject);
-        });
-
+        return KeyStore.set('DataBase_List', list);
     }
 
     static updateDbStatus(status: CONNECTION_STATUS, err?: ERROR_TYPE) {
@@ -60,23 +56,18 @@ export class IdbHelper {
         }
     }
 
-    static getDbList(callback: (dbList: string[]) => void) {
-        KeyStore.get('DataBase_List', (result) => {
-            result = result == null ? [] : result;
-            callback(result);
-        });
+    static async getDbList() {
+        const result = await KeyStore.get<string[]>('DataBase_List');
+        return result == null ? [] : result;
     }
 
-    static getDbVersion(dbName: string, callback: (version: number) => void) {
-        KeyStore.get(`JsStore_${dbName}_Db_Version`, (dbVersion) => {
-            callback.call(this, Number(dbVersion));
-        });
+    static async getDbVersion(dbName: string) {
+        const dbVersion = await KeyStore.get(`JsStore_${dbName}_Db_Version`);
+        return Number(dbVersion);
     }
 
-    static getDbSchema(dbName: string, callback: (schema: IDataBase) => void) {
-        KeyStore.get(`JsStore_${dbName}_Schema`, (result) => {
-            callback(result);
-        });
+    static getDbSchema(dbName: string) {
+        return KeyStore.get<DataBase>(`JsStore_${dbName}_Schema`);
     }
 
     static getTable(tableName: string) {

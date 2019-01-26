@@ -15,6 +15,7 @@ describe("initiate database", () => {
             } else {
                 console.log("test runing for development");
                 con = new JsStore.Instance(new Worker('output/jsstore.worker.js'));
+                con.setLogStatus(true);
             }
         }
     })

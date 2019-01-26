@@ -1,9 +1,11 @@
 import { IdbHelper } from "./idb_helper";
 import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
-import { IDbStatus } from "../interfaces";
+import { IDbStatus, IError } from "../interfaces";
 import { DataBase } from "../model/database";
 import { Util } from "../util";
 export class BaseDb {
+    onSuccess: (listOfTablesCreated?: string[]) => void;
+    onError: (err: IError) => void
     protected get dbName() {
         return IdbHelper.activeDb.name;
     }
@@ -41,8 +43,8 @@ export class BaseDb {
         return IdbHelper.activeDb;
     }
 
-    protected getDbList(callback: (dbList: string[]) => void) {
-        IdbHelper.getDbList(callback);
+    protected getDbList() {
+        return IdbHelper.getDbList();
     }
 
     protected setDbList(value) {
@@ -51,5 +53,22 @@ export class BaseDb {
 
     protected isNullOrEmpty(value) {
         return Util.isNullOrEmpty(value);
+    }
+
+    protected onDbClose(event) {
+        this.onDbDroppedByBrowser();
+        this.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
+    }
+
+    protected onDbVersionChange(e: IDBVersionChangeEvent) {
+        if (e.newVersion === null) { // An attempt is made to delete the db
+            (e.target as any).close(); // Manually close our connection to the db
+            this.onDbDroppedByBrowser(true);
+            this.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
+        }
+    }
+
+    protected onDbConError(e) {
+        this.dbStatus.lastError = ("Error occured in connection :" + (e.target as any).result) as any;
     }
 }

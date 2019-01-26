@@ -2,7 +2,7 @@ import { Base } from "./base";
 import { IError } from "../interfaces";
 import { IdbHelper } from './idb_helper';
 import { Column } from "../model/column";
-import * as KeyStore from "../keystore/index";
+import { KeyStore } from "../keystore/index";
 
 export class Clear extends Base {
     constructor(tableName: string, onSuccess: () => void, onError: (err: IError) => void) {

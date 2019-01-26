@@ -8,7 +8,7 @@ import { CONNECTION_STATUS, ERROR_TYPE, DATA_TYPE, API } from "./enums";
 import { Config } from "./config";
 import { OpenDb } from "./business/open_db";
 import { DropDb } from "./business/drop_db";
-import * as KeyStore from "./keystore/index";
+import { KeyStore } from "./keystore/index";
 import { DbHelper } from "./model/db_helper";
 import { TableHelper } from "./model/table_helper";
 import { CreateDb } from "./business/create_db";
@@ -34,7 +34,7 @@ export class QueryExecutor {
     }
 
     checkConnectionAndExecuteLogic(request: WebWorkerRequest) {
-        LogHelper.log('checking connection and executing request:' + request.name);
+        LogHelper.log('request executing:' + request.name);
         switch (request.name) {
             case API.CreateDb:
             case API.IsDbExist:
@@ -44,6 +44,7 @@ export class QueryExecutor {
             case API.Get:
             case API.Set:
             case API.ChangeLogStatus:
+            case API.Terminate:
             case API.OpenDb:
                 this.executeLogic_(request);
                 break;
@@ -65,8 +66,7 @@ export class QueryExecutor {
                             }, request.onError);
                         }
                     } break;
-                    default:
-                        break;
+
                 }
         }
     }
@@ -112,13 +112,13 @@ export class QueryExecutor {
             case API.IsDbExist: this.isDbExist_(request.query, onSuccess, onError);
                 break;
             case API.GetDbVersion:
-                this.getDbVersion_(request.query as string, onSuccess);
+                this.getDbVersion_(request.query as string).then(onSuccess).catch(onError)
                 break;
             case API.GetDbList:
-                this.getDbList_(onSuccess);
+                this.getDbList_().then(onSuccess).catch(onError)
                 break;
             case API.GetDbSchema:
-                this.getDbSchema_(request.query as string, onSuccess);
+                this.getDbSchema_(request.query as string).then(onSuccess).catch(onError)
                 break;
             case API.OpenDb:
                 if (this.isDbDeletedByBrowser_ === true) {
@@ -143,9 +143,9 @@ export class QueryExecutor {
                 break;
             case API.ExportJson: this.exportJson_(request.query as SelectQuery, onSuccess, onError);
                 break;
-            case API.Get: this.get_(request.query as string, onSuccess, onError);
+            case API.Get: this.get_(request.query as string).then(onSuccess).catch(onError);
                 break;
-            case API.Set: this.set_(request.query as SetQuery, onSuccess, onError);
+            case API.Set: this.set_(request.query as SetQuery).then(onSuccess).catch(onError);
                 break;
             case API.ChangeLogStatus:
                 this.changeLogStatus_(request.query as boolean, onSuccess, onError);
@@ -153,13 +153,23 @@ export class QueryExecutor {
             case API.Transaction:
                 this.transaction(request.query, onSuccess, onError);
                 break;
+            case API.Terminate:
+                this.terminate_(onSuccess, onError);
+                break;
             default:
                 console.error('The Api:-' + request.name + ' does not support.');
         }
     }
 
-    private getDbSchema_(dbName: string, callback: (schema: DataBase) => void) {
-        IdbHelper.getDbSchema(dbName, callback);
+    private getDbSchema_(dbName: string) {
+        return IdbHelper.getDbSchema(dbName);
+    }
+
+    private async terminate_(onSuccess: () => void, onError: (err: IError) => void) {
+        await KeyStore.close();
+        this.closeDb_();
+        //give it some time to close db
+        onSuccess();
     }
 
     private get isDbDeletedByBrowser_() {
@@ -170,8 +180,8 @@ export class QueryExecutor {
         IdbHelper.isDbDeletedByBrowser = value;
     }
 
-    private getDbList_(callback: (dbList: string[]) => void) {
-        IdbHelper.getDbList(callback);
+    private getDbList_() {
+        return IdbHelper.getDbList();
     }
 
     private get activeDb_() {
@@ -182,22 +192,20 @@ export class QueryExecutor {
         IdbHelper.activeDb = value;
     }
 
-    private openDb_(dbName, onSuccess: () => void, onError: (err: IError) => void) {
-        this.getDbVersion_(dbName, (dbVersion) => {
-            if (dbVersion !== 0) {
-                this.activeDbVersion_ = dbVersion;
-                this.getDbSchema_(dbName, (result) => {
-                    this.activeDb_ = result;
-                    const openDbProject = new OpenDb(onSuccess, onError);
-                    openDbProject.execute();
-                });
-            }
-            else {
-                const err = new LogHelper(ERROR_TYPE.DbNotExist, { DbName: dbName });
-                err.logError();
-                onError(err.get());
-            }
-        });
+    private async openDb_(dbName, onSuccess: () => void, onError: (err: IError) => void) {
+        const dbVersion = await this.getDbVersion_(dbName);
+        if (dbVersion !== 0) {
+            this.activeDbVersion_ = dbVersion;
+            const result = await this.getDbSchema_(dbName);
+            this.activeDb_ = result;
+            const openDbProject = new OpenDb(onSuccess, onError);
+            openDbProject.execute();
+        }
+        else {
+            const err = new LogHelper(ERROR_TYPE.DbNotExist, { DbName: dbName });
+            err.logError();
+            onError(err.get());
+        }
     }
 
     private closeDb_() {
@@ -305,7 +313,7 @@ export class QueryExecutor {
         }
     }
 
-    private createDb_(
+    private async createDb_(
         dataBase: IDataBase, onSuccess: () => void, onError: (err: IError) => void
     ) {
         const processCreateDb = () => {
@@ -314,7 +322,8 @@ export class QueryExecutor {
             // create meta data
             const dbHelper = new DbHelper(IdbHelper.activeDb);
             dbHelper.createMetaData((tablesMetaData: TableHelper[]) => {
-                const createDbInstance = new CreateDb(tablesMetaData, onSuccess, onError);
+                const createDbInstance = new CreateDb(onSuccess, onError);
+                createDbInstance.execute(tablesMetaData);
             });
         };
         if (dataBase == null) {
@@ -322,11 +331,10 @@ export class QueryExecutor {
         }
         else {
             this.closeDb_();
-            this.getDbVersion_(dataBase.name, (version) => {
-                this.activeDbVersion_ = version ? version : 1;
-                IdbHelper.activeDb = new DataBase(dataBase);
-                processCreateDb();
-            });
+            const version = await this.getDbVersion_(dataBase.name);
+            this.activeDbVersion_ = version ? version : 1;
+            IdbHelper.activeDb = new DataBase(dataBase);
+            processCreateDb();
         }
     }
 
@@ -338,8 +346,8 @@ export class QueryExecutor {
         IdbHelper.activeDbVersion = value;
     }
 
-    private getDbVersion_(dbName: string, callback: (version: number) => void) {
-        IdbHelper.getDbVersion(dbName, callback);
+    private getDbVersion_(dbName: string) {
+        return IdbHelper.getDbVersion(dbName);
     }
 
     private get dbStatus_() {
@@ -366,17 +374,15 @@ export class QueryExecutor {
         return Util.getType(value);
     }
 
-    private isDbExist_(dbInfo, onSuccess: (isExist: boolean) => void, onError: (err: IError) => void) {
+    private async isDbExist_(dbInfo, onSuccess: (isExist: boolean) => void, onError: (err: IError) => void) {
         if (this.dbStatus_.conStatus !== CONNECTION_STATUS.UnableToStart) {
             if (this.getType_(dbInfo) === DATA_TYPE.String) {
-                this.getDbVersion_(dbInfo, (dbVersion) => {
-                    onSuccess(Boolean(dbVersion));
-                });
+                const dbVersion = await this.getDbVersion_(dbInfo);
+                onSuccess(Boolean(dbVersion));
             }
             else {
-                this.getDbVersion_(dbInfo.dbName, (dbVersion) => {
-                    onSuccess(dbInfo.table.version <= dbVersion);
-                });
+                const dbVersion = await this.getDbVersion_(dbInfo.dbName);
+                onSuccess(dbInfo.table.version <= dbVersion);
             }
         }
         else {
@@ -395,12 +401,12 @@ export class QueryExecutor {
         }
     }
 
-    private get_(key: string, onSuccess: (value) => void, onError: (err: IError) => void) {
-        KeyStore.get(key, onSuccess, onError as any);
+    private get_(key: string) {
+        return KeyStore.get(key);
     }
 
-    private set_(query: SetQuery, onSuccess: (value) => void, onError: (err: IError) => void) {
-        KeyStore.set(query.key, query.value, onSuccess, onError as any);
+    private set_(query: SetQuery) {
+        return KeyStore.set(query.key, query.value);
     }
 
     private transaction(qry: TranscationQuery, onSuccess: (value) => void, onError: (err: IError) => void) {

@@ -51,7 +51,7 @@ export class Set extends Base {
 
     private initTransaction() {
         IdbHelper.createTransaction([QueryExecutor.tableName], this.onTransactionCompleted_);
-        this.objectStore = IdbHelper._transaction.objectStore(QueryExecutor.tableName);
+        this.objectStore = IdbHelper. transaction.objectStore(QueryExecutor.tableName);
     }
 
     private onTransactionCompleted_ = () => {

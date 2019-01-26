@@ -38,7 +38,7 @@ export class Remove extends Base {
 
     private initTransaction() {
         IdbHelper.createTransaction([QueryExecutor.tableName], this.onTransactionCompleted.bind(this));
-        this.objectStore = IdbHelper._transaction.objectStore(QueryExecutor.tableName);
+        this.objectStore = IdbHelper. transaction.objectStore(QueryExecutor.tableName);
     }
 
     private onTransactionCompleted() {

@@ -1,6 +1,6 @@
 import * as JsStore from '../export';
 import { CONNECTION_STATUS } from './enums';
-import { QueryExecutor } from './query_executor';
+import { IdbHelper } from './business/idb_helper';
 
 export class Utils {
     /**
@@ -30,10 +30,10 @@ export class Utils {
 
     static updateDbStatus(status: CONNECTION_STATUS, err?: JsStore.ERROR_TYPE) {
         if (err === undefined) {
-            QueryExecutor.dbStatus.conStatus = status;
+            IdbHelper.dbStatus.conStatus = status;
         }
         else {
-            QueryExecutor.dbStatus = {
+            IdbHelper.dbStatus = {
                 conStatus: status,
                 lastError: err
             };

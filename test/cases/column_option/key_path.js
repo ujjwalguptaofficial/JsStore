@@ -7,6 +7,7 @@ describe('keyPath test', function () {
     if (!isIE || !isEdge) {
         it('terminate connection', function (done) {
             con.terminate().then(function () {
+                console.log('terminated');
                 con = new JsStore.Instance();
                 done();
             }).catch(function (error) {

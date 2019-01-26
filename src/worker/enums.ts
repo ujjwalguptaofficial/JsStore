@@ -102,5 +102,6 @@ export enum API {
     ExportJson = "export_json",
     ChangeLogStatus = "change_log_status",
     Transaction = "transaction",
-    FinishTransaction = "finish_transaction"
+    FinishTransaction = "finish_transaction",
+    Terminate = "terminate",
 }

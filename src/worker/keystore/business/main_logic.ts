@@ -8,9 +8,9 @@ import { Get } from "./get_logic";
 import { IdbHelper } from './idb_helper';
 
 export class Main {
-    onSuccess: (result) => void;
-    constructor(onSuccess = null) {
-        this.onSuccess = onSuccess;
+    onQueryFinished: (result) => void;
+    constructor(onQueryFinished = null) {
+        this.onQueryFinished = onQueryFinished;
     }
 
     set(query: IInsert, onSuccess: (result) => void, onError: (err: IError) => void) {
@@ -33,21 +33,29 @@ export class Main {
         const initDbInstance = new InitDb(dbName, onSuccess, onError);
     }
 
+    closeDb(onSuccess: () => void, onError: (err: IError) => void) {
+        if (IdbHelper.dbStatus.conStatus === CONNECTION_STATUS.Connected) {
+            IdbHelper.dbStatus.conStatus = CONNECTION_STATUS.Closed;
+            IdbHelper.dbConnection.close();
+        }
+        onSuccess();
+    }
+
     checkConnectionAndExecuteLogic(request: IQueryRequest) {
-        if (request.Name === 'create_db' || request.Name === 'open_db') {
+        if (request.name === 'create_db' || request.name === 'open_db') {
             this.executeLogic(request);
         }
         else {
-            switch (QueryExecutor.dbStatus.conStatus) {
+            switch (IdbHelper.dbStatus.conStatus) {
                 case CONNECTION_STATUS.Connected: this.executeLogic(request); break;
                 case CONNECTION_STATUS.NotStarted:
-                    setTimeout(function () {
+                    setTimeout(() => {
                         this.checkConnectionAndExecuteLogic(request);
-                    }.bind(this), 100); break;
+                    }, 100); break;
                 case CONNECTION_STATUS.Closed:
-                    if (IdbHelper._isDbDeletedByBrowser) {
+                    if (IdbHelper.isDbDeletedByBrowser) {
                         this.createDb(() => {
-                            IdbHelper._isDbDeletedByBrowser = false;
+                            IdbHelper.isDbDeletedByBrowser = false;
                             this.checkConnectionAndExecuteLogic(request);
                         }, (err) => {
                             console.error(err);
@@ -58,33 +66,32 @@ export class Main {
     }
 
     private returnResult(result) {
-        if (this.onSuccess) {
-            this.onSuccess(result);
-        }
+        this.onQueryFinished(result);
     }
 
     private executeLogic(request: IQueryRequest) {
         const onSuccess = (results?) => {
             this.returnResult({
-                ReturnedValue: results
+                returnedValue: results
             } as IQueryResult);
         };
         const onError = (err) => {
             this.returnResult({
-                ErrorDetails: err,
-                ErrorOccured: true
+                errorDetails: err,
+                errorOccured: true
             } as IQueryResult);
         };
 
-        switch (request.Name) {
+        switch (request.name) {
             case 'get':
-                this.get(request.Query, onSuccess, onError);
+                this.get(request.query, onSuccess, onError);
                 break;
-            case 'set': this.set(request.Query, onSuccess, onError);
+            case 'set': this.set(request.query, onSuccess, onError);
                 break;
-            case 'remove': this.remove(request.Query, onSuccess, onError);
+            case 'remove': this.remove(request.query, onSuccess, onError);
                 break;
             case 'create_db': this.createDb(onSuccess, onError); break;
+            case 'close_db': this.closeDb(onSuccess, onError); break;
         }
     }
 }
