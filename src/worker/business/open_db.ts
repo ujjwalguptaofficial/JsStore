@@ -17,7 +17,7 @@ export class OpenDb extends BaseDb {
     execute() {
         if (this.isNullOrEmpty(this.dbName)) {
             const error = new LogHelper(ERROR_TYPE.UndefinedDbName);
-            error.throw();
+            this.onError(error.get());
         }
         else {
             const dbRequest = indexedDB.open(this.dbName, this.dbVersion);
