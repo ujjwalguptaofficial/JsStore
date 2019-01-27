@@ -17,8 +17,7 @@
     "webpack:dev": "webpack --config webpack/webpack.dev.config.js",
     "webpack:prod": "webpack --config webpack/webpack.prod.config.js",
     "move:deploy_file": "node deployer.js",
-    "deploy": "npm run build:all && npm run move:deploy_file",
-    "postinstall": "opencollective postinstall"
+    "deploy": "npm run build:all && npm run move:deploy_file"
   },
   "repository": {
     "type": "git",
@@ -65,9 +64,7 @@
     "webpack-merge": "^4.1.4"
   },
   "displayName": "JsStore",
-  "dependencies": {
-    "opencollective": "^1.0.3"
-  },
+  "dependencies": {},
   "collective": {
     "type": "opencollective",
     "url": "https://opencollective.com/JsStore"
