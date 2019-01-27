@@ -89,11 +89,12 @@ export class CreateDb extends BaseDb {
         };
     }
 
-    private async savedbNameIntoDbList_() {
-        const dbList = await this.getDbList();
-        if (dbList.indexOf(this.dbName) < 0) {
-            dbList.push(this.dbName);
-            this.setDbList(dbList);
-        }
+    private savedbNameIntoDbList_() {
+        this.getDbList().then(dbList => {
+            if (dbList.indexOf(this.dbName) < 0) {
+                dbList.push(this.dbName);
+                this.setDbList(dbList);
+            }
+        });
     }
 }

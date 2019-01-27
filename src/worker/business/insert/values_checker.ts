@@ -3,6 +3,7 @@ import { IError } from "../../interfaces";
 import { ValueChecker } from "./value_checker";
 import { IdbHelper } from "../idb_helper";
 import { KeyStore } from "../../keystore/index";
+import { promise } from "../helpers/promise";
 
 export class ValuesChecker {
     table: Table;
@@ -15,7 +16,7 @@ export class ValuesChecker {
     }
 
     checkAndModifyValues() {
-        return new Promise((resolve, reject) => {
+        return promise((resolve, reject) => {
             this.getAutoIncrementValues_().then(autoIncValues => {
                 this.valueCheckerObj = new ValueChecker(this.table, autoIncValues);
                 this.startChecking().then(resolve).catch(reject);
@@ -27,23 +28,19 @@ export class ValuesChecker {
         const autoIncColumns = this.table.columns.filter((col) => {
             return col.autoIncrement;
         });
-        return new Promise((resolve, reject) => {
+        return promise((resolve, reject) => {
             const autoIncValues = {};
             let index = 0;
             let autoIncColumnLength = autoIncColumns.length;
-            const setAutoIncrementValue = async () => {
+            const setAutoIncrementValue = () => {
                 if (index < autoIncColumnLength) {
                     const column = autoIncColumns[index];
                     const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${this.table.name}_${column.name}_Value`;
-                    try {
-                        const val = await KeyStore.get(autoIncrementKey);
+                    KeyStore.get(autoIncrementKey).then(val => {
                         autoIncValues[column.name] = val;
                         ++index;
                         setAutoIncrementValue();
-                    }
-                    catch (ex) {
-                        reject(ex);
-                    }
+                    }).catch(reject);
                 }
                 else {
                     resolve(autoIncValues);
@@ -54,7 +51,7 @@ export class ValuesChecker {
     }
 
     private startChecking() {
-        return new Promise((resolve, reject) => {
+        return promise((resolve, reject) => {
             let isError = false;
             this.values.every((item) => {
                 isError = this.valueCheckerObj.checkAndModifyValue(item);

@@ -16,7 +16,7 @@ export class DropDb extends BaseDb {
         this.onError_ = onError;
     }
 
-    async deleteMetaData() {
+    deleteMetaData() {
         KeyStore.remove(`JsStore_${this.dbName}_Db_Version`);
         this.activeDb.tables.forEach((table: Table) => {
             KeyStore.remove(`JsStore_${this.dbName}_${table.name}_Version`);
@@ -27,12 +27,13 @@ export class DropDb extends BaseDb {
             });
         });
         // remove from database_list 
-        const dbList = await this.getDbList();
-        dbList.splice(dbList.indexOf(this.dbName), 1);
-        await this.setDbList(dbList);
-        // remove db schema from keystore
-        await KeyStore.remove(`JsStore_${this.dbName}_Schema`);
-        this.onSuccess_();
+        this.getDbList().then(dbList => {
+            dbList.splice(dbList.indexOf(this.dbName), 1);
+            this.setDbList(dbList).then(() => {
+                // remove db schema from keystore
+                KeyStore.remove(`JsStore_${this.dbName}_Schema`).then(this.onSuccess_.bind(this));
+            });
+        });
     }
 
     deleteDb() {

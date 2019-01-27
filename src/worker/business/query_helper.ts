@@ -7,6 +7,7 @@ import * as Update from "./update/index";
 import * as Insert from "./insert/index";
 import { Table } from "../model/table";
 import { IError } from "../interfaces";
+import { promise } from "./helpers/promise";
 
 export class QueryHelper {
     api: API;
@@ -17,7 +18,7 @@ export class QueryHelper {
         this.query = query;
     }
     checkAndModify() {
-        return new Promise((resolve, reject) => {
+        return promise((resolve, reject) => {
             const resolveReject = () => {
                 if (this.error == null) {
                     resolve();
@@ -81,7 +82,7 @@ export class QueryHelper {
     }
 
     private checkInsertQuery_() {
-        return new Promise((resolve, reject) => {
+        return promise((resolve, reject) => {
             let table;
             const err = this.isInsertQryValid_((tbl) => {
                 table = tbl;

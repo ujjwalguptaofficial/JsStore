@@ -4,6 +4,7 @@ import { IDbStatus, ITable, IDataBase } from "../interfaces";
 import { DataBase } from "../model/database";
 import { DropDb } from "./drop_db";
 import { Table } from "../model/table";
+import { promise } from "./helpers/promise";
 
 export class IdbHelper {
 
@@ -56,14 +57,20 @@ export class IdbHelper {
         }
     }
 
-    static async getDbList() {
-        const result = await KeyStore.get<string[]>('DataBase_List');
-        return result == null ? [] : result;
+    static getDbList() {
+        return promise<string[]>((res, rej) => {
+            KeyStore.get<string[]>('DataBase_List').then(result => {
+                res(result == null ? [] : result);
+            }).catch(rej);
+        });
     }
 
-    static async getDbVersion(dbName: string) {
-        const dbVersion = await KeyStore.get(`JsStore_${dbName}_Db_Version`);
-        return Number(dbVersion);
+    static getDbVersion(dbName: string) {
+        return promise<number>((res, rej) => {
+            KeyStore.get(`JsStore_${dbName}_Db_Version`).then(dbVersion => {
+                res(Number(dbVersion));
+            }).catch(rej);
+        })
     }
 
     static getDbSchema(dbName: string) {

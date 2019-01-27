@@ -34,25 +34,26 @@ export class TableHelper {
         });
     }
 
-    private async setRequireDelete_(dbName: string) {
-        const tableVersion = await KeyStore.get<number>(`JsStore_${dbName}_${this.name}_Version`);
-        if (tableVersion == null) {
-            this.requireCreation = true;
-        }
-        // mark only table which has version greater than store version
-        else if (tableVersion < this.version) {
-            this.requireDelete = true;
-        }
+    private setRequireDelete_(dbName: string) {
+        KeyStore.get<number>(`JsStore_${dbName}_${this.name}_Version`).then(tableVersion => {
+            if (tableVersion == null) {
+                this.requireCreation = true;
+            }
+            // mark only table which has version greater than store version
+            else if (tableVersion < this.version) {
+                this.requireDelete = true;
+            }
+        });
     }
 
-    private async setDbVersion_(dbName: string) {
+    private setDbVersion_(dbName: string) {
         IdbHelper.activeDbVersion = IdbHelper.activeDbVersion > this.version ? IdbHelper.activeDbVersion : this.version;
         // setting db version
         KeyStore.set(`JsStore_${dbName}_Db_Version`, IdbHelper.activeDbVersion);
         // setting table version
-        await KeyStore.set(`JsStore_${dbName}_${this.name}_Version`, IdbHelper.activeDbVersion);
-        this.version = IdbHelper.activeDbVersion;
-        this.callback();
-
+        KeyStore.set(`JsStore_${dbName}_${this.name}_Version`, IdbHelper.activeDbVersion).then(() => {
+            this.version = IdbHelper.activeDbVersion;
+            this.callback();
+        });
     }
 }
