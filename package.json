@@ -1,6 +1,6 @@
 {
   "name": "jsstore",
-  "version": "2.9.5",
+  "version": "2.10.0",
   "description": "JsStore is an IndexedDB Wrapper. It makes IndexedDB super easy with its SQL like apis.",
   "main": "dist/jsstore.commonjs2.js",
   "types": "dist/src/ts/main/index.d.ts",

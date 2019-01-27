@@ -4,7 +4,6 @@ export declare class InstanceHelper {
     private isDbOpened_;
     private requestQueue_;
     private isCodeExecuting_;
-    private queryExecutor_;
     private whiteListApi_;
     constructor(worker?: Worker);
     private onMessageFromWorker_;

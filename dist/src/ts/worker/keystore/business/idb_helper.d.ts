@@ -1,7 +1,9 @@
+import { IDbStatus } from '../interfaces';
 export declare class IdbHelper {
-    static _dbConnection: any;
-    static _isDbDeletedByBrowser: boolean;
-    static _transaction: IDBTransaction;
+    static dbConnection: IDBDatabase;
+    static isDbDeletedByBrowser: boolean;
+    static transaction: IDBTransaction;
+    static dbStatus: IDbStatus;
     static callDbDroppedByBrowser(): void;
     static createTransaction(tableNames: any, callBack: () => void, mode?: any): void;
 }

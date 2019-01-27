@@ -152,7 +152,7 @@ export declare class Instance extends InstanceHelper {
      * @returns
      * @memberof Instance
      */
-    terminate(): Promise<any>;
+    terminate(): Promise<void>;
     /**
      * execute the transaction
      *

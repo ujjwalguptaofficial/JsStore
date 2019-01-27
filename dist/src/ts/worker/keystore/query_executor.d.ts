@@ -1,11 +1,10 @@
-import { IDbStatus, IQueryResult, IQueryRequest } from "./interfaces";
+import { IQueryResult, IQueryRequest } from "./interfaces";
 export declare class QueryExecutor {
     static requestQueue: IQueryRequest[];
     static tableName: string;
     static columnName: string;
     static isCodeExecuting: boolean;
-    static dbStatus: IDbStatus;
-    static prcoessQuery(request: IQueryRequest): void;
+    static prcoessQuery<T>(request: IQueryRequest): Promise<T>;
     static executeCode(): void;
     static onQueryFinished(message: IQueryResult): void;
 }

@@ -1,5 +1,5 @@
 import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
-import { IDbStatus, IDataBase } from "../interfaces";
+import { IDbStatus } from "../interfaces";
 import { DataBase } from "../model/database";
 import { Table } from "../model/table";
 export declare class IdbHelper {
@@ -14,8 +14,8 @@ export declare class IdbHelper {
     static createTransaction(tableNames: string[], callBack: () => void, mode?: any): void;
     static setDbList(list: string[]): Promise<{}>;
     static updateDbStatus(status: CONNECTION_STATUS, err?: ERROR_TYPE): void;
-    static getDbList(callback: (dbList: string[]) => void): void;
-    static getDbVersion(dbName: string, callback: (version: number) => void): void;
-    static getDbSchema(dbName: string, callback: (schema: IDataBase) => void): void;
+    static getDbList(): Promise<string[]>;
+    static getDbVersion(dbName: string): Promise<number>;
+    static getDbSchema(dbName: string): Promise<DataBase>;
     static getTable(tableName: string): Table;
 }

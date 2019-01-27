@@ -5,7 +5,7 @@ export interface IError {
 }
 export interface IDbStatus {
     conStatus: CONNECTION_STATUS;
-    lastError: ERROR_TYPE;
+    lastError?: ERROR_TYPE;
 }
 export interface IDataBase {
     name: string;
