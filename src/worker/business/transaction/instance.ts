@@ -5,7 +5,7 @@ import * as Count from '../count/index';
 import * as Insert from '../insert/index';
 import * as Remove from '../remove/index';
 import * as Update from '../update/index';
-import { API } from "../../enums";
+import { API, ERROR_TYPE } from "../../enums";
 import { QueryHelper } from "../query_helper";
 import { IError } from "../../interfaces";
 import { LogHelper } from "../../log_helper";
@@ -16,6 +16,8 @@ export class Instance extends Base {
     requestQueue: WebWorkerRequest[] = [];
     isQueryExecuting = false;
 
+    isTxStarted_ = false;
+
     constructor(qry: TranscationQuery, onSuccess: (results: any) => void, onError: (err: IError) => void) {
         super();
         this.query = qry;
@@ -25,6 +27,11 @@ export class Instance extends Base {
     }
 
     execute() {
+        const notExistingTable = this.getNotExistingTable_(this.query.tables);
+        if (notExistingTable != null) {
+            this.onError(new LogHelper(ERROR_TYPE.TableNotExist, { tableName: notExistingTable }).get());
+            return;
+        }
         const select = (qry: SelectQuery) => {
             return this.pushRequest_({
                 name: API.Select,
@@ -62,6 +69,7 @@ export class Instance extends Base {
             this.abortTransaction_();
         };
 
+
         const txLogic = null;
         eval("txLogic =" + this.query.logic);
         const promiseObj: Promise<void> = txLogic.call(this, this.query.data);
@@ -75,8 +83,9 @@ export class Instance extends Base {
         }
 
         promiseObj.then(() => {
-            this.checkQueries_().then((results) => {
+            this.checkQueries_(this.requestQueue).then((results) => {
                 this.startTransaction_();
+                this.isTxStarted_ = true;
             }).catch((err) => {
                 this.onError(err);
             });
@@ -133,6 +142,9 @@ export class Instance extends Base {
     private abortTransaction_() {
         if (this.transaction != null) {
             this.transaction.abort();
+            if (process.env.NODE_ENV === 'dev') {
+                console.log(`transaction aborted `);
+            }
         }
     }
 
@@ -174,11 +186,7 @@ export class Instance extends Base {
     }
 
     private pushRequest_(request: WebWorkerRequest) {
-        this.requestQueue.push(request);
-        if (process.env.NODE_ENV === 'dev') {
-            console.log(`request pushed : ${request.name} with query value - ${JSON.stringify(request.query)}`);
-        }
-        return new Promise((resolve, reject) => {
+        const promise = new Promise((resolve, reject) => {
             request.onSuccess = (result) => {
                 resolve(result);
             };
@@ -188,6 +196,19 @@ export class Instance extends Base {
                 reject(error);
             };
         });
+        if (this.isTxStarted_ === true) {
+            this.checkQueries_([request]).then(this.processExecutionOfQry_.bind(this)).catch(err => {
+                this.errorOccured = true;
+                this.abortTransaction_();
+            });
+        }
+        else {
+            this.requestQueue.push(request);
+        }
+        if (process.env.NODE_ENV === 'dev') {
+            console.log(`request pushed : ${request.name} with query value - ${JSON.stringify(request.query)}`);
+        }
+        return promise;
     }
 
     private processExecutionOfQry_() {
@@ -196,10 +217,21 @@ export class Instance extends Base {
         }
     }
 
-    private checkQueries_() {
-        let index = 0;
-        return Promise.all(this.requestQueue.map(request => {
+    private checkQueries_(requestQueue: WebWorkerRequest[]) {
+        return Promise.all(requestQueue.map(request => {
             return new QueryHelper(request.name, request.query).checkAndModify();
         }));
+    }
+
+    private getNotExistingTable_(tables: string[]) {
+        let invalidTable: string = null;
+        tables.every(table => {
+            if (this.isTableExist(table) === false) {
+                invalidTable = table;
+                return false;
+            }
+            return true;
+        });
+        return invalidTable;
     }
 }

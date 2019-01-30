@@ -74,7 +74,7 @@ export class BaseHelper {
 
     protected isTableExist(tableName: string): boolean {
         const index = this.activeDb.tables.findIndex(table => table.name === tableName);
-        return index >= 0 ? true : false;
+        return index >= 0;
     }
 
     protected getTable(tableName: string) {

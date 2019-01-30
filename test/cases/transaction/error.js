@@ -1,7 +1,7 @@
 describe('Transaction - error test', function () {
     it('supplying wrong table name in tables', function (done) {
         var transaction_query = {
-            tables: ['Customsers'],
+            tables: ['Customsers', 'Customers', 'Suppliers'],
             logic: function (data) {
                 return new Promise((res, rej) => {
                     select({
@@ -13,10 +13,7 @@ describe('Transaction - error test', function () {
                 })
             }
         }
-        con.transaction(transaction_query).then(function (results) {
-            expect(results.customers).to.be.an('array').length(results.count);
-            done();
-        }).catch(function (err) {
+        con.transaction(transaction_query).catch(function (err) {
             var error = {
                 "message": "Table 'Customsers' does not exist",
                 "type": "table_not_exist"
@@ -40,10 +37,7 @@ describe('Transaction - error test', function () {
                 })
             }
         }
-        con.transaction(transaction_query).then(function (results) {
-            expect(results.customers).to.be.an('array').length(results.count);
-            done();
-        }).catch(function (err) {
+        con.transaction(transaction_query).catch(function (err) {
             var error = {
                 message: "Table 'Customssers' does not exist",
                 type: "table_not_exist"

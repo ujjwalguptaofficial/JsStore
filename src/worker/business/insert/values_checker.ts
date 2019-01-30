@@ -29,24 +29,16 @@ export class ValuesChecker {
             return col.autoIncrement;
         });
         return promise((resolve, reject) => {
-            const autoIncValues = {};
-            let index = 0;
-            let autoIncColumnLength = autoIncColumns.length;
-            const setAutoIncrementValue = () => {
-                if (index < autoIncColumnLength) {
-                    const column = autoIncColumns[index];
-                    const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${this.table.name}_${column.name}_Value`;
-                    KeyStore.get(autoIncrementKey).then(val => {
-                        autoIncValues[column.name] = val;
-                        ++index;
-                        setAutoIncrementValue();
-                    }).catch(reject);
+            Promise.all(autoIncColumns.map(column => {
+                const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${this.table.name}_${column.name}_Value`;
+                return KeyStore.get(autoIncrementKey);
+            })).then(results => {
+                const autoIncValues = {};
+                for (var i = 0; i < autoIncColumns.length; i++) {
+                    autoIncValues[autoIncColumns[i].name] = results[i];
                 }
-                else {
-                    resolve(autoIncValues);
-                }
-            };
-            setAutoIncrementValue();
+                resolve(autoIncValues);
+            }).catch(reject);
         });
     }
 
@@ -63,22 +55,13 @@ export class ValuesChecker {
             }
             else {
                 const keys = Object.keys(this.valueCheckerObj.autoIncrementValue);
-                let index = 0;
-                const saveAutoIncrementKey = () => {
-                    if (index < keys.length) {
-                        const prop = keys[index++];
-                        const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${this.table.name}_${prop}_Value`;
-                        KeyStore.set(
-                            autoIncrementKey,
-                            this.valueCheckerObj.autoIncrementValue[prop]
-                        ).then(saveAutoIncrementKey).catch(reject);
-
-                    }
-                    else {
-                        resolve();
-                    }
-                };
-                saveAutoIncrementKey();
+                Promise.all(keys.map((prop) => {
+                    const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${this.table.name}_${prop}_Value`;
+                    return KeyStore.set(
+                        autoIncrementKey,
+                        this.valueCheckerObj.autoIncrementValue[prop]
+                    )
+                })).then(resolve).catch(reject);
             }
         });
     }
