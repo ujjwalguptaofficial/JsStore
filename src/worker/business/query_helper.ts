@@ -13,6 +13,9 @@ export class QueryHelper {
     api: API;
     query;
     error: IError;
+    isTransaction = false;
+    static autoIncrementValues: { [table: string]: { [columnName: string]: number } } = {};
+
     constructor(api: API, query: any) {
         this.api = api;
         this.query = query;
@@ -48,8 +51,6 @@ export class QueryHelper {
                 case API.BulkInsert:
                     this.checkBulkInsert_();
                     break;
-                default:
-                    throw new Error("invalid api");
             }
         });
     }
@@ -71,14 +72,14 @@ export class QueryHelper {
         else {
             log = new LogHelper(ERROR_TYPE.TableNotExist, { tableName: (this.query as InsertQuery).into });
         }
-        if (callBack != null) {
-            callBack(table);
-        }
+        callBack(table);
         return log == null ? null : log.get();
     }
 
     private checkBulkInsert_() {
-        this.error = this.isInsertQryValid_(null);
+        this.error = this.isInsertQryValid_(() => {
+
+        });
     }
 
     private checkInsertQuery_() {

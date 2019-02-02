@@ -27,10 +27,12 @@ import { QueryHelper } from "./business/query_helper";
 import { IDataBase, IError } from "./interfaces";
 
 export class QueryExecutor {
+    static isTransactionQuery = false;
     onQueryFinished: (result: any) => void;
 
     constructor(fn?: (result: any) => void) {
         this.onQueryFinished = fn;
+        QueryHelper.autoIncrementValues = {};
     }
 
     checkConnectionAndExecuteLogic(request: WebWorkerRequest) {
@@ -99,6 +101,7 @@ export class QueryExecutor {
             } as WebWorkerResult);
         };
 
+        QueryExecutor.isTransactionQuery = request.name === API.Transaction
         switch (request.name) {
             case API.Select:
                 this.select_(request.query as SelectQuery, onSuccess, onError);
@@ -151,7 +154,7 @@ export class QueryExecutor {
                 this.changeLogStatus_(request.query as boolean, onSuccess, onError);
                 break;
             case API.Transaction:
-                this.transaction(request.query, onSuccess, onError);
+                this.transaction_(request.query, onSuccess, onError);
                 break;
             case API.Terminate:
                 this.terminate_(onSuccess, onError);
@@ -415,7 +418,7 @@ export class QueryExecutor {
         return KeyStore.set(query.key, query.value);
     }
 
-    private transaction(qry: TranscationQuery, onSuccess: (value) => void, onError: (err: IError) => void) {
+    private transaction_(qry: TranscationQuery, onSuccess: (value) => void, onError: (err: IError) => void) {
         const transaction = new Transaction.Instance(qry, onSuccess, onError);
         transaction.execute();
     }

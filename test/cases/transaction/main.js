@@ -4,20 +4,20 @@ describe('Test transaction', function () {
         var transaction_query = {
             tables: ['Customers'],
             logic: function (data) {
-                return new Promise((res, rej) => {
-                    select({
-                        from: 'Customers'
-                    }).then(function (results) {
-                        setResult('customers', results);
-                    });
 
-                    count({
-                        from: 'Customers'
-                    }).then(function (length) {
-                        setResult('count', length);
-                    });
-                    res()
-                })
+                select({
+                    from: 'Customers'
+                }).then(function (results) {
+                    setResult('customers', results);
+                });
+
+                count({
+                    from: 'Customers'
+                }).then(function (length) {
+                    setResult('count', length);
+                });
+                start()
+
             }
         }
         con.transaction(transaction_query).then(function (results) {
@@ -33,32 +33,32 @@ describe('Test transaction', function () {
         var transaction_query = {
             tables: ['Customers', 'OrderDetails', 'Categories'],
             logic: function (data) {
-                return new Promise((res, rej) => {
-                    select({
-                        from: 'Customers'
-                    }).then(function (results) {
-                        setResult('customers', results);
-                    });
 
-                    count({
-                        from: 'Customers'
-                    }).then(function (length) {
-                        setResult('countCustomer', length);
-                    });
+                select({
+                    from: 'Customers'
+                }).then(function (results) {
+                    setResult('customers', results);
+                });
 
-                    select({
-                        from: 'OrderDetails'
-                    }).then(function (results) {
-                        setResult('orderDetails', results);
-                    });
+                count({
+                    from: 'Customers'
+                }).then(function (length) {
+                    setResult('countCustomer', length);
+                });
 
-                    count({
-                        from: 'OrderDetails'
-                    }).then(function (length) {
-                        setResult('countOrderDetails', length);
-                    });
-                    res()
-                })
+                select({
+                    from: 'OrderDetails'
+                }).then(function (results) {
+                    setResult('orderDetails', results);
+                });
+
+                count({
+                    from: 'OrderDetails'
+                }).then(function (length) {
+                    setResult('countOrderDetails', length);
+                });
+                start()
+
 
             }
         }
@@ -85,32 +85,30 @@ describe('Test transaction', function () {
                 }]
             },
             logic: function (data) {
-                return new Promise((res, rej) => {
-                    count({
-                        from: 'Customers'
-                    }).then(function (result) {
-                        setResult('countOldCustomer', result)
-                    })
-                    insert({
-                        into: 'Customers',
-                        return: true,
-                        values: data.insertValues
-                    }).then((insertedcustomer) => {
-                        setResult('insertedcustomer', insertedcustomer);
-                    })
-                    count({
-                        from: 'Customers'
-                    }).then(function (result) {
-                        setResult('countNewCustomer', result)
-                    })
-                    res()
+                debugger;
+                select({
+                    from: 'Customers'
+                }).then(function (result) {
+                    setResult('countOldCustomer', result.length);
                 })
+                insert({
+                    into: 'Customers',
+                    return: true,
+                    values: data.insertValues
+                }).then((insertedcustomer) => {
+                    setResult('insertedcustomer', insertedcustomer);
+                })
+                count({
+                    from: 'Customers'
+                }).then(function (result) {
+                    setResult('countNewCustomer', result)
+                })
+                start()
+
             }
         }
         con.transaction(transaction_query).then(function (results) {
-            // console.log(results);
             var insertedcustomer = results.insertedcustomer[0];
-            console.log("inserted customer", insertedcustomer);
             expect(results.countNewCustomer).to.be.an('number').equal(results.countOldCustomer + 1);
             expect(insertedcustomer.CustomerID).to.be.an('number').equal(94);
             done();
@@ -133,17 +131,17 @@ describe('Test transaction', function () {
                 }
             },
             logic: function (data) {
-                return new Promise((res, rej) => {
-                    update({ in: 'Customers',
-                        set: data.updateValue,
-                        where: {
-                            CustomerID: 5
-                        }
-                    }).then(function (result) {
-                        setResult('updated', result)
-                    })
-                    res()
+
+                update({ in: 'Customers',
+                    set: data.updateValue,
+                    where: {
+                        CustomerID: 5
+                    }
+                }).then(function (result) {
+                    setResult('updated', result)
                 })
+                start()
+
 
             }
         }

@@ -3,8 +3,7 @@ describe('Db Test', function () {
 
     it('getDbList api test', function (done) {
         con.getDbList().then(function (result) {
-            var dbList = ['Demo', 'MultiEntryTest', 'pinCodeDetails'];
-            expect(result).to.be.an('array').to.length(3);
+            expect(result).to.be.an('array').to.length(4);
             done();
         }).catch(function (err) {
             done(err);
@@ -15,7 +14,7 @@ describe('Db Test', function () {
         con.dropDb().then(function () {
             con.getDbList().then(function (result) {
                 console.log(result);
-                expect(result).to.be.an('array').to.deep.equal(['Demo', 'pinCodeDetails']);
+                expect(result).to.be.an('array').to.deep.equal(['Demo', 'shop', 'pinCodeDetails']);
                 done();
             }).catch(function (err) {
                 done(err);
@@ -44,7 +43,7 @@ describe('Db Test', function () {
 
     it('getDbList api test after dropping demo', function (done) {
         con.getDbList().then(function (result) {
-            expect(result).to.be.an('array').to.deep.equal(['pinCodeDetails']);
+            expect(result).to.be.an('array').to.deep.equal(['shop', 'pinCodeDetails']);
             done();
         }).catch(function (err) {
             done(err);
@@ -63,7 +62,7 @@ describe('Db Test', function () {
 
     it('getDbList api test after dropping pinCodeDetails', function (done) {
         con.getDbList().then(function (result) {
-            expect(result).to.be.an('array').to.deep.equal([]);
+            expect(result).to.be.an('array').to.deep.equal(['shop']);
             done();
         }).catch(function (err) {
             done(err);

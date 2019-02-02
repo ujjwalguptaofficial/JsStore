@@ -4,6 +4,9 @@ import { ValueChecker } from "./value_checker";
 import { IdbHelper } from "../idb_helper";
 import { KeyStore } from "../../keystore/index";
 import { promise } from "../helpers/promise";
+import { Util } from "../../util";
+import { QueryExecutor } from "../../query_executor";
+import { QueryHelper } from "../query_helper";
 
 export class ValuesChecker {
     table: Table;
@@ -17,31 +20,20 @@ export class ValuesChecker {
 
     checkAndModifyValues() {
         return promise((resolve, reject) => {
-            this.getAutoIncrementValues_().then(autoIncValues => {
-                this.valueCheckerObj = new ValueChecker(this.table, autoIncValues);
+            const onAutoIncValueEvaluated = (autoIncrementValues) => {
+                this.valueCheckerObj = new ValueChecker(this.table, autoIncrementValues);
                 this.startChecking().then(resolve).catch(reject);
-            }).catch(reject);
+            };
+            if (QueryExecutor.isTransactionQuery === false) {
+                Util.getAutoIncrementValues(this.table).then(autoIncValues => {
+                    onAutoIncValueEvaluated(autoIncValues);
+                }).catch(reject);
+            }
+            else {
+                onAutoIncValueEvaluated(QueryHelper.autoIncrementValues[this.table.name]);
+            }
         });
     }
-
-    private getAutoIncrementValues_() {
-        const autoIncColumns = this.table.columns.filter((col) => {
-            return col.autoIncrement;
-        });
-        return promise((resolve, reject) => {
-            Promise.all(autoIncColumns.map(column => {
-                const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${this.table.name}_${column.name}_Value`;
-                return KeyStore.get(autoIncrementKey);
-            })).then(results => {
-                const autoIncValues = {};
-                for (var i = 0; i < autoIncColumns.length; i++) {
-                    autoIncValues[autoIncColumns[i].name] = results[i];
-                }
-                resolve(autoIncValues);
-            }).catch(reject);
-        });
-    }
-
     private startChecking() {
         return promise((resolve, reject) => {
             let isError = false;
@@ -53,15 +45,12 @@ export class ValuesChecker {
                 const error = this.valueCheckerObj.log.get();
                 reject(error);
             }
+            const promiseObj = Util.setAutoIncrementValue(this.table, this.valueCheckerObj.autoIncrementValue);
+            if (QueryExecutor.isTransactionQuery === false) {
+                promiseObj.then(resolve).catch(reject);
+            }
             else {
-                const keys = Object.keys(this.valueCheckerObj.autoIncrementValue);
-                Promise.all(keys.map((prop) => {
-                    const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${this.table.name}_${prop}_Value`;
-                    return KeyStore.set(
-                        autoIncrementKey,
-                        this.valueCheckerObj.autoIncrementValue[prop]
-                    )
-                })).then(resolve).catch(reject);
+                resolve();
             }
         });
     }

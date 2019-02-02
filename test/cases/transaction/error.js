@@ -3,14 +3,14 @@ describe('Transaction - error test', function () {
         var transaction_query = {
             tables: ['Customsers', 'Customers', 'Suppliers'],
             logic: function (data) {
-                return new Promise((res, rej) => {
-                    select({
-                        from: 'Customers'
-                    }).then(function (results) {
-                        setResult('customers', results);
-                    });
-                    res()
-                })
+
+                select({
+                    from: 'Customers'
+                }).then(function (results) {
+                    setResult('customers', results);
+                });
+                start()
+
             }
         }
         con.transaction(transaction_query).catch(function (err) {
@@ -27,14 +27,12 @@ describe('Transaction - error test', function () {
         var transaction_query = {
             tables: ['Customers'],
             logic: function (data) {
-                return new Promise((res, rej) => {
-                    select({
-                        from: 'Customssers'
-                    }).then(function (results) {
-                        setResult('customers', results);
-                    });
-                    res()
-                })
+                select({
+                    from: 'Customssers'
+                }).then(function (results) {
+                    setResult('customers', results);
+                });
+                start()
             }
         }
         con.transaction(transaction_query).catch(function (err) {
@@ -52,32 +50,32 @@ describe('Transaction - error test', function () {
         var transaction_query = {
             tables: ['Customers', 'OrderDetails', 'Categories'],
             logic: function (data) {
-                return new Promise((res, rej) => {
-                    select({
-                        from: 'Customers'
-                    }).then(function (results) {
-                        setResult('customers', results);
-                    });
 
-                    count({
-                        from: 'Customerdds'
-                    }).then(function (length) {
-                        setResult('countCustomer', length);
-                    });
+                select({
+                    from: 'Customers'
+                }).then(function (results) {
+                    setResult('customers', results);
+                });
 
-                    select({
-                        from: 'OrderDetails'
-                    }).then(function (results) {
-                        setResult('orderDetails', results);
-                    });
+                count({
+                    from: 'Customerdds'
+                }).then(function (length) {
+                    setResult('countCustomer', length);
+                });
 
-                    count({
-                        from: 'OrderDetails'
-                    }).then(function (length) {
-                        setResult('countOrderDetails', length);
-                    });
-                    res()
-                })
+                select({
+                    from: 'OrderDetails'
+                }).then(function (results) {
+                    setResult('orderDetails', results);
+                });
+
+                count({
+                    from: 'OrderDetails'
+                }).then(function (length) {
+                    setResult('countOrderDetails', length);
+                });
+                start()
+
 
             }
         }
@@ -109,23 +107,23 @@ describe('Transaction - error test', function () {
                 }]
             },
             logic: function (data) {
-                return new Promise((res, rej) => {
-                    count({
-                        from: 'Customers'
-                    }).then(function (result) {
-                        setResult('countOldCustomer', result)
-                    })
-                    insert({
-                        into: 'Customers',
-                        values: null
-                    });
-                    count({
-                        from: 'Customers'
-                    }).then(function (result) {
-                        setResult('countNewCustomer', result)
-                    })
-                    res();
+
+                count({
+                    from: 'Customers'
+                }).then(function (result) {
+                    setResult('countOldCustomer', result)
                 })
+                insert({
+                    into: 'Customers',
+                    values: null
+                });
+                count({
+                    from: 'Customers'
+                }).then(function (result) {
+                    setResult('countNewCustomer', result)
+                })
+                start();
+
             }
         }
         con.transaction(transaction_query).then(function (results) {
@@ -156,17 +154,17 @@ describe('Transaction - error test', function () {
                 }
             },
             logic: function (data) {
-                return new Promise((res, rej) => {
-                    update({ in: 'Customers',
-                        set: data.updateValue,
-                        where: {
-                            CustomerID: 5
-                        }
-                    }).then(function (result) {
-                        abort();
-                    })
-                    res()
+
+                update({ in: 'Customers',
+                    set: data.updateValue,
+                    where: {
+                        CustomerID: 5
+                    }
+                }).then(function (result) {
+                    abort();
                 })
+                start()
+
             }
         }
         var customer;

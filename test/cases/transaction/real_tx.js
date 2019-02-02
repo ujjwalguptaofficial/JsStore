@@ -33,7 +33,6 @@ describe('real time transaction', () => {
     })
 
     it('buying products', (done) => {
-        debugger;
         var txQuery = {
             tables: ['customers', 'orders', 'products', 'orderDetails'],
             logic: (data) => {
@@ -42,7 +41,6 @@ describe('real time transaction', () => {
                         customerId: customer.id,
                         orderDate: new Date(),
                     }
-                    console.log('order', order);
                     insert({
                         into: 'orders',
                         values: [order],
@@ -51,6 +49,7 @@ describe('real time transaction', () => {
                         if (orders.length > 0) {
                             var insertedOrder = orders[0];
                             setResult('order', insertedOrder);
+                            insertOrderDetail(insertedOrder.orderId);
                         } else {
                             abort();
                         }
@@ -58,24 +57,68 @@ describe('real time transaction', () => {
                         console.error("err", err);
                     })
                 };
-                return new Promise((res, rej) => {
+
+                const insertOrderDetail = (orderId) => {
+                    const orderDetails = data.orderDetails.map((value) => {
+                        value.orderId = orderId
+                        return value;
+                    });
                     insert({
-                        into: 'customers',
-                        values: [data.customer],
-                        return: true
-                    }).then(customers => {
-                        if (customers.length > 0) {
-                            var customer = customers[0];
-                            insertOrder(customer);
-                            setResult('customer', customer);
+                        into: 'orderDetails',
+                        values: orderDetails,
+                    }).then(orderDetailsCount => {
+                        if (orderDetailsCount > 0) {
+                            setResult('orderDetailsCount', orderDetailsCount);
+                            updateProduct();
                         } else {
-                            abort();
+                            abort("No orderDetails inserted");
                         }
                     }).catch(err => {
                         console.error("err", err);
-                    });
-                    res();
+                    })
+                };
+
+                const updateProduct = () => {
+                    data.orderDetails.forEach((orderDetail, index) => {
+                        // update the product inventory
+                        update({ in: 'products',
+                            where: {
+                                productId: orderDetail.productId
+                            },
+                            set: {
+                                unit: {
+                                    '-': orderDetail.quantity
+                                }
+                            }
+                        }).then(productUpdated => {
+                            if (productUpdated > 0) {
+
+                            } else {
+                                abort("No orderDetails inserted");
+                            }
+                        }).catch(err => {
+                            console.error("err", err);
+                        })
+                    })
+
+                };
+
+                insert({
+                    into: 'customers',
+                    values: [data.customer],
+                    return: true
+                }).then(customers => {
+                    if (customers.length > 0) {
+                        var customer = customers[0];
+                        insertOrder(customer);
+                        setResult('customer', customer);
+                    } else {
+                        abort();
+                    }
+                }).catch(err => {
+                    console.error("err", err);
                 });
+                start();
             },
             data: {
                 customer: {
@@ -86,14 +129,22 @@ describe('real time transaction', () => {
                     country: 'india',
                     email: 'sdfg@m.com'
                 },
-
+                orderDetails: [{
+                    productId: 1,
+                    quantity: 2
+                }, {
+                    productId: 2,
+                    quantity: 4
+                }]
             }
         }
         con.transaction(txQuery).then((result) => {
             console.log("result", result);
             done();
         }).catch(done);
-    })
+    });
+
+
 
     it('open db demo', (done) => {
         con.openDb("Demo").then(() => {
@@ -173,7 +224,8 @@ function getShopDbSchema() {
         name: 'orders',
         columns: [{
                 name: "orderId",
-                primaryKey: true
+                primaryKey: true,
+                autoIncrement: true,
             },
             {
                 name: "customerId",

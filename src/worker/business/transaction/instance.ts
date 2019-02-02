@@ -9,6 +9,9 @@ import { API, ERROR_TYPE } from "../../enums";
 import { QueryHelper } from "../query_helper";
 import { IError } from "../../interfaces";
 import { LogHelper } from "../../log_helper";
+import { QueryExecutor } from "../../query_executor";
+import { Util } from "../../util";
+import { promise } from "../helpers/promise";
 
 export class Instance extends Base {
     query: TranscationQuery;
@@ -32,6 +35,17 @@ export class Instance extends Base {
             this.onError(new LogHelper(ERROR_TYPE.TableNotExist, { tableName: notExistingTable }).get());
             return;
         }
+        Promise.all(this.query.tables.map(table => {
+            return Util.getAutoIncrementValues(this.getTable(table));
+        })).then(results => {
+            results.forEach((result, index) => {
+                QueryHelper.autoIncrementValues[this.query.tables[index]] = result;
+            });
+            this.startExecution_();
+        }).catch(this.onError);
+    }
+
+    private startExecution_() {
         const select = (qry: SelectQuery) => {
             return this.pushRequest_({
                 name: API.Select,
@@ -65,37 +79,30 @@ export class Instance extends Base {
         const setResult = (key: string, value) => {
             this.results[key] = value;
         };
-        const abort = () => {
-            this.abortTransaction_();
+        const abort = (msg: string) => {
+            this.abortTransaction_(msg);
         };
+
+        const start = () => {
+            this.checkQueries_(this.requestQueue).then((results) => {
+                this.startTransaction_();
+            }).catch((err) => {
+                this.onError(err);
+            });
+        }
 
 
         const txLogic = null;
         eval("txLogic =" + this.query.logic);
-        const promiseObj: Promise<void> = txLogic.call(this, this.query.data);
+        txLogic.call(this, this.query.data);
         if (process.env.NODE_ENV === 'dev') {
             console.log(`transaction query started`);
-            if (!promiseObj.then) {
-                console.error('transaction logic should be async or return a promise');
-                this.onTransactionCompleted_();
-                return;
-            }
         }
-
-        promiseObj.then(() => {
-            this.checkQueries_(this.requestQueue).then((results) => {
-                this.startTransaction_();
-                this.isTxStarted_ = true;
-            }).catch((err) => {
-                this.onError(err);
-            });
-        }).catch(err => {
-            this.onErrorOccured(err, false);
-        })
     }
 
     private startTransaction_() {
         try {
+            this.isTxStarted_ = true;
             this.initTransaction_(this.query.tables);
             this.processExecutionOfQry_();
         }
@@ -105,7 +112,7 @@ export class Instance extends Base {
         }
     }
 
-    private initTransaction_(tableNames) {
+    private initTransaction_(tableNames: string[]) {
         this.createTransaction(tableNames, this.onTransactionCompleted_.bind(this));
     }
 
@@ -123,7 +130,7 @@ export class Instance extends Base {
         }
         if (finisehdRequest) {
             if (this.errorOccured === true) {
-                this.abortTransaction_();
+                this.abortTransaction_("automatic abort of transaction due to error occured");
                 if (process.env.NODE_ENV === 'dev') {
                     console.log(`transaction aborted due to error occured`);
                 }
@@ -139,11 +146,11 @@ export class Instance extends Base {
         }
     }
 
-    private abortTransaction_() {
+    private abortTransaction_(msg: string) {
         if (this.transaction != null) {
             this.transaction.abort();
             if (process.env.NODE_ENV === 'dev') {
-                console.log(`transaction aborted `);
+                console.log(`transaction aborted. Msg : ${msg}`);
             }
         }
     }
@@ -186,6 +193,9 @@ export class Instance extends Base {
     }
 
     private pushRequest_(request: WebWorkerRequest) {
+        const push = () => {
+            this.requestQueue.push(request);
+        };
         const promise = new Promise((resolve, reject) => {
             request.onSuccess = (result) => {
                 resolve(result);
@@ -197,13 +207,16 @@ export class Instance extends Base {
             };
         });
         if (this.isTxStarted_ === true) {
-            this.checkQueries_([request]).then(this.processExecutionOfQry_.bind(this)).catch(err => {
+            this.checkQueries_([request]).then(() => {
+                push();
+                this.processExecutionOfQry_();
+            }).catch(err => {
                 this.errorOccured = true;
-                this.abortTransaction_();
+                this.abortTransaction_(JSON.stringify(err));
             });
         }
         else {
-            this.requestQueue.push(request);
+            push();
         }
         if (process.env.NODE_ENV === 'dev') {
             console.log(`request pushed : ${request.name} with query value - ${JSON.stringify(request.query)}`);
@@ -219,7 +232,10 @@ export class Instance extends Base {
 
     private checkQueries_(requestQueue: WebWorkerRequest[]) {
         return Promise.all(requestQueue.map(request => {
-            return new QueryHelper(request.name, request.query).checkAndModify();
+            const tableName = request.query.into || request.query.in;
+            return new QueryHelper(request.name, request.query).checkAndModify(
+
+            )
         }));
     }
 
