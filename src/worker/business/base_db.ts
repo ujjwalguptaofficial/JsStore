@@ -69,6 +69,6 @@ export class BaseDb {
     }
 
     protected onDbConError(e) {
-        this.dbStatus.lastError = ("Error occured in connection :" + (e.target as any).result) as any;
+        IdbHelper.dbStatus.lastError = ("Error occured in connection :" + (e.target as any).result) as any;
     }
 }

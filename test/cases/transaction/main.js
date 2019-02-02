@@ -85,11 +85,10 @@ describe('Test transaction', function () {
                 }]
             },
             logic: function (data) {
-                debugger;
                 select({
                     from: 'Customers'
                 }).then(function (result) {
-                    setResult('countOldCustomer', result.length);
+                    setResult('customers', result);
                 })
                 insert({
                     into: 'Customers',
@@ -109,8 +108,9 @@ describe('Test transaction', function () {
         }
         con.transaction(transaction_query).then(function (results) {
             var insertedcustomer = results.insertedcustomer[0];
-            expect(results.countNewCustomer).to.be.an('number').equal(results.countOldCustomer + 1);
-            expect(insertedcustomer.CustomerID).to.be.an('number').equal(94);
+            var customers = results.customers;
+            expect(results.countNewCustomer).to.be.an('number').equal(customers.length + 1);
+            expect(insertedcustomer.CustomerID).to.be.an('number').greaterThan(customers[customers.length - 1].CustomerID);
             done();
         }).catch(function (err) {
             done(err);
