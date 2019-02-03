@@ -20,7 +20,8 @@ module.exports = function (config) {
             browserName: browser,
             platform: platform,
             version: version,
-            extendedDebugging: false,
+            extendedDebugging: debug,
+            "record-screenshots": true,
             'seleniumVersion': '3.14.0',
             flags: [
                 '--no-sandbox',
@@ -31,12 +32,12 @@ module.exports = function (config) {
             ]
         }
     }
-    createCustomLauncher('chrome', 'Windows 10', 'latest', true);
+    createCustomLauncher('chrome', 'Windows 7', 'latest', true);
     createCustomLauncher('firefox', 'macOS 10.13', 'latest', true);
     createCustomLauncher('firefox', 'Windows 10', '61.0', true);
     createCustomLauncher('chrome', 'linux', 'latest', true);
     createCustomLauncher('chrome', 'macOS 10.13', 'latest', true);
-    // createCustomLauncher('microsoftedge', 'Windows 10', 'latest', true);
+   // createCustomLauncher('microsoftedge', 'Windows 10', 'latest', true);
     // createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
     createCustomLauncher('Safari', 'macOS 10.13', 'latest', true);
 
