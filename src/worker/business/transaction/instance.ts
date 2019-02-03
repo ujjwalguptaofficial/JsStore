@@ -79,6 +79,9 @@ export class Instance extends Base {
         const setResult = (key: string, value) => {
             this.results[key] = value;
         };
+        const getResult = (key: string) => {
+            return this.results[key];
+        };
         const abort = (msg: string) => {
             this.abortTransaction_(msg);
         };

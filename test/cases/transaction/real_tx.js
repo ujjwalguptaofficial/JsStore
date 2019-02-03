@@ -69,7 +69,7 @@ describe('real time transaction', () => {
                     }).then(orderDetailsCount => {
                         if (orderDetailsCount > 0) {
                             setResult('orderDetailsCount', orderDetailsCount);
-                            updateProduct();
+                            updateProductAndEvaluatePrice();
                         } else {
                             abort("No orderDetails inserted");
                         }
@@ -78,13 +78,15 @@ describe('real time transaction', () => {
                     })
                 };
 
-                const updateProduct = () => {
+                // update the product inventory and evaluate price
+                const updateProductAndEvaluatePrice = () => {
+                    setResult('totalPrice', 0);
                     data.orderDetails.forEach((orderDetail, index) => {
-                        // update the product inventory
+                        const where = {
+                            productId: orderDetail.productId
+                        };
                         update({ in: 'products',
-                            where: {
-                                productId: orderDetail.productId
-                            },
+                            where: where,
                             set: {
                                 unit: {
                                     '-': orderDetail.quantity
@@ -98,6 +100,21 @@ describe('real time transaction', () => {
                             }
                         }).catch(err => {
                             console.error("err", err);
+                        })
+
+                        select({
+                            from: 'products',
+                            where: where
+                        }).then(results => {
+                            if (results.length > 0) {
+                                const product = results[0];
+                                const price = product.price * orderDetail.quantity
+                                setResult('totalPrice', getResult('totalPrice') + price);
+                            } else {
+                                abort("no products found");
+                            }
+                        }).catch(err => {
+                            console.err('err', err);
                         })
                     })
 
@@ -139,12 +156,63 @@ describe('real time transaction', () => {
             }
         }
         con.transaction(txQuery).then((result) => {
-            console.log("result", result);
+            // console.log("result", result);
+            expect(result.totalPrice).to.be.an('number').equal(1200 * 2 + 1500 * 4);
+            expect(result.customer.id).to.be.an('number').equal(1);
             done();
         }).catch(done);
     });
 
+    it('insert new customer and check for valid next customerid', (done) => {
+        con.insert({
+            into: 'customers',
+            values: [{
+                customerName: 'ujjwal gupta',
+                address: 'bhubaneswar odisha',
+                city: 'bhubaneswar',
+                postalCode: 'asdf',
+                country: 'india',
+                email: 'sdfg@m.com'
+            }],
+            return: true
+        }).then(result => {
+            expect(result[0].id).to.be.an('number').equal(2);
+            done();
+        }).catch(done);
+    });
 
+    it('check for products updates', (done) => {
+        var txQuery = {
+            tables: ['products'],
+            logic: (data) => {
+                select({
+                    from: 'products',
+                    where: {
+                        productId: 1
+                    }
+                }).then(result => {
+                    setResult('productId1', result[0].unit);
+                })
+
+                select({
+                    from: 'products',
+                    where: {
+                        productId: 2
+                    }
+                }).then(result => {
+                    setResult('productId2', result[0].unit);
+                })
+
+                start();
+            }
+        }
+
+        con.transaction(txQuery).then(result => {
+            expect(result.productId1).to.be.an('number').equal(200 - 2);
+            expect(result.productId2).to.be.an('number').equal(2000 - 4);
+            done();
+        }).catch(done);
+    });
 
     it('open db demo', (done) => {
         con.openDb("Demo").then(() => {
