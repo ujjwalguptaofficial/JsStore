@@ -105,7 +105,7 @@ export declare type WebWorkerResult = {
 };
 export declare type TranscationQuery = {
     tables: string[];
-    logic: (results: any) => void;
+    logic: (data: any) => Promise<void>;
     data: any;
 };
 export declare type SqlWebResult = {

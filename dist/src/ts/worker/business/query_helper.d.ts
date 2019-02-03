@@ -4,6 +4,12 @@ export declare class QueryHelper {
     api: API;
     query: any;
     error: IError;
+    isTransaction: boolean;
+    static autoIncrementValues: {
+        [table: string]: {
+            [columnName: string]: number;
+        };
+    };
     constructor(api: API, query: any);
     checkAndModify(): Promise<{}>;
     private isInsertQryValid_;

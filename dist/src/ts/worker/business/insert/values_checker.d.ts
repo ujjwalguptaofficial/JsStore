@@ -6,6 +6,5 @@ export declare class ValuesChecker {
     valueCheckerObj: ValueChecker;
     constructor(table: Table, values: object[]);
     checkAndModifyValues(): Promise<{}>;
-    private getAutoIncrementValues_;
     private startChecking;
 }

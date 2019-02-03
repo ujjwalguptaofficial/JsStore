@@ -1,5 +1,6 @@
 import { WebWorkerRequest } from "./types";
 export declare class QueryExecutor {
+    static isTransactionQuery: boolean;
     onQueryFinished: (result: any) => void;
     constructor(fn?: (result: any) => void);
     checkConnectionAndExecuteLogic(request: WebWorkerRequest): void;
@@ -30,5 +31,5 @@ export declare class QueryExecutor {
     private isDbExist_;
     private get_;
     private set_;
-    private transaction;
+    private transaction_;
 }

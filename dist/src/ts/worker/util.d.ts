@@ -1,4 +1,5 @@
 import { DATA_TYPE } from "./enums";
+import { Table } from "./model/table";
 export declare class Util {
     static isNull(value: any): boolean;
     static isNullOrEmpty(value: any): boolean;
@@ -15,4 +16,8 @@ export declare class Util {
      * @memberof Util
      */
     static getType(value: any): "string" | "number" | "bigint" | "boolean" | "symbol" | "undefined" | "object" | "function" | DATA_TYPE.Array | DATA_TYPE.Null | DATA_TYPE.DateTime;
+    static getAutoIncrementValues(table: Table): Promise<{
+        [columnName: string]: number;
+    }>;
+    static setAutoIncrementValue(table: Table, autoIncrementValue: object): Promise<{}[]>;
 }
