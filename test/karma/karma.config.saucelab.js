@@ -20,7 +20,7 @@ module.exports = function (config) {
             browserName: browser,
             platform: platform,
             version: version,
-            extendedDebugging: debug,
+            extendedDebugging: false,
             'seleniumVersion': '3.14.0',
             flags: [
                 '--no-sandbox',
