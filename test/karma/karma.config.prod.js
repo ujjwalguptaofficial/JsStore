@@ -10,7 +10,7 @@ module.exports = function (config) {
             }
         },
         files: ['test/karma/prod.global.js', 'build/jsstore.min.js', 'build/jsstore.worker.min.js',
-            ...files.list_of_files
+            'build/jsstore.worker.ie.min.js', ...files.list_of_files
         ],
         proxies: {
             '/test/': '/base/test/',
