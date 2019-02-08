@@ -21,8 +21,8 @@ module.exports = function (config) {
             platform: platform,
             version: version,
             extendedDebugging: debug,
-            // "record-screenshots": true,
-            // 'seleniumVersion': '3.14.0',
+            "record-screenshots": true,
+            'seleniumVersion': '3.14.0',
             flags: [
                 '--no-sandbox',
                 '--headless',
@@ -37,7 +37,7 @@ module.exports = function (config) {
     createCustomLauncher('firefox', 'Windows 10', '61.0', true);
     createCustomLauncher('chrome', 'linux', 'latest', true);
     createCustomLauncher('chrome', 'macOS 10.13', 'latest', true);
-    // createCustomLauncher('microsoftedge', 'Windows 10', 'latest', true);
+   // createCustomLauncher('microsoftedge', 'Windows 10', 'latest', true);
     // createCuStomeLauncher('internet explorer', 'Windows 8.1', '11', true);
     createCustomLauncher('Safari', 'macOS 10.13', 'latest', true);
 
@@ -82,7 +82,7 @@ module.exports = function (config) {
         //browserDisconnectTolerance: 1,
         browsers: Object.keys(customLaunchers),
         concurrency: 5,
-        singleRun: false,
+        singleRun: true,
         htmlReporter: {
             outputFile: 'report/units.html',
 
