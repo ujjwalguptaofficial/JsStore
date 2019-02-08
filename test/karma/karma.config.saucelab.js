@@ -82,7 +82,7 @@ module.exports = function (config) {
         //browserDisconnectTolerance: 1,
         browsers: Object.keys(customLaunchers),
         concurrency: 5,
-        singleRun: true,
+        singleRun: false,
         htmlReporter: {
             outputFile: 'report/units.html',
 
