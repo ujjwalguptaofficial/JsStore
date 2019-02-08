@@ -167,7 +167,8 @@ describe('Multi Entry Test', function () {
     });
 
     it('Array column update to empty value', function (done) {
-        con.update({ in: 'people',
+        con.update({
+            in: 'people',
             where: {
                 name: 'Scott'
             },
@@ -175,33 +176,38 @@ describe('Multi Entry Test', function () {
                 tags: []
             }
         }).then(function (rowsUpdated) {
-            con.select({
-                from: 'people',
-                where: {
-                    name: 'Scott'
-                }
-            }).
-            then(function (results) {
-                var result = results[0];
-                expect(results).to.be.an('array').length(1);
-                // if (window.navigator.userAgent.indexOf("Mac") && GetBrowserName().toLowerCase() == 'firefox') {
-                //     console.log('bypassing test');
-                // } else {
-                //     expect(result['tags']).to.be.an('array').eql([]);
-                // }
-                expect(result['tags']).to.be.an('array').eql([]);
-                done();
-            }).
-            catch(function (err) {
-                done(err);
-            })
+            done();
         }).catch(function (err) {
             done(err);
         })
     });
 
+    it('check array column is updated to empty', (done) => {
+        con.select({
+            from: 'people',
+            where: {
+                name: 'Scott'
+            }
+        }).
+        then(function (results) {
+            var result = results[0];
+            expect(results).to.be.an('array').length(1);
+            // if (window.navigator.userAgent.indexOf("Mac") && GetBrowserName().toLowerCase() == 'firefox') {
+            //     console.log('bypassing test');
+            // } else {
+            //     expect(result['tags']).to.be.an('array').eql([]);
+            // }
+            expect(result['tags']).to.be.an('array').eql([]);
+            done();
+        }).
+        catch(function (err) {
+            done(err);
+        })
+    })
+
     it('Array column update to null value', function (done) {
-        con.update({ in: 'people',
+        con.update({
+            in: 'people',
             where: {
                 name: 'Scott'
             },
