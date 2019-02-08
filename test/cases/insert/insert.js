@@ -176,7 +176,7 @@ describe('Test insert', function () {
             }];
             con.insert({
                 into: 'Suppliers',
-                values: [...results, ...values],
+                values: results.concat(values),
                 return: true
             }).then(function (results) {
                 expect(results).to.be.an('array').length(32);
