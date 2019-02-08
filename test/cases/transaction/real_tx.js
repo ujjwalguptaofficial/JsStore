@@ -1,11 +1,11 @@
-describe('real time transaction', () => {
-    it('create shop db', (done) => {
-        con.createDb(getShopDbSchema()).then(() => {
+describe('real time transaction', function () {
+    it('create shop db', function (done) {
+        con.createDb(getShopDbSchema()).then(function () {
             done();
         }).catch(done);
     })
 
-    it('insert products items', (done) => {
+    it('insert products items', function (done) {
         var values = [{
             productName: 'black jeans',
             unit: 200,
@@ -26,17 +26,17 @@ describe('real time transaction', () => {
         con.insert({
             into: "products",
             values: values
-        }).then((rowsInserted) => {
+        }).then(function (rowsInserted) {
             expect(rowsInserted).to.be.an('number').equal(4);
             done();
         }).catch(done);
     })
 
-    it('buying products', (done) => {
+    it('buying products', function (done) {
         var txQuery = {
             tables: ['customers', 'orders', 'products', 'orderDetails'],
-            logic: (data) => {
-                const insertOrder = (customer) => {
+            logic: function (data) {
+                const insertOrder = function (customer) {
                     const order = {
                         customerId: customer.id,
                         orderDate: new Date(),
@@ -45,7 +45,7 @@ describe('real time transaction', () => {
                         into: 'orders',
                         values: [order],
                         return: true
-                    }).then(orders => {
+                    }).then(function (orders) {
                         if (orders.length > 0) {
                             var insertedOrder = orders[0];
                             setResult('order', insertedOrder);
@@ -53,59 +53,60 @@ describe('real time transaction', () => {
                         } else {
                             abort();
                         }
-                    }).catch(err => {
+                    }).catch(function (err) {
                         console.error("err", err);
                     })
                 };
 
-                const insertOrderDetail = (orderId) => {
-                    const orderDetails = data.orderDetails.map((value) => {
+                const insertOrderDetail = function (orderId) {
+                    const orderDetails = data.orderDetails.map(function (value) {
                         value.orderId = orderId
                         return value;
                     });
                     insert({
                         into: 'orderDetails',
                         values: orderDetails,
-                    }).then(orderDetailsCount => {
+                    }).then(function (orderDetailsCount) {
                         if (orderDetailsCount > 0) {
                             setResult('orderDetailsCount', orderDetailsCount);
                             updateProductAndEvaluatePrice();
                         } else {
                             abort("No orderDetails inserted");
                         }
-                    }).catch(err => {
+                    }).catch(function (err) {
                         console.error("err", err);
                     })
                 };
 
                 // update the product inventory and evaluate price
-                const updateProductAndEvaluatePrice = () => {
+                const updateProductAndEvaluatePrice = function () {
                     setResult('totalPrice', 0);
-                    data.orderDetails.forEach((orderDetail, index) => {
+                    data.orderDetails.forEach(function (orderDetail, index) {
                         const where = {
                             productId: orderDetail.productId
                         };
-                        update({ in: 'products',
+                        update({
+                            in: 'products',
                             where: where,
                             set: {
                                 unit: {
                                     '-': orderDetail.quantity
                                 }
                             }
-                        }).then(productUpdated => {
+                        }).then(function (productUpdated) {
                             if (productUpdated > 0) {
 
                             } else {
                                 abort("No orderDetails inserted");
                             }
-                        }).catch(err => {
+                        }).catch(function (err) {
                             console.error("err", err);
                         })
 
                         select({
                             from: 'products',
                             where: where
-                        }).then(results => {
+                        }).then(function (results) {
                             if (results.length > 0) {
                                 const product = results[0];
                                 const price = product.price * orderDetail.quantity
@@ -113,7 +114,7 @@ describe('real time transaction', () => {
                             } else {
                                 abort("no products found");
                             }
-                        }).catch(err => {
+                        }).catch(function (err) {
                             console.err('err', err);
                         })
                     })
@@ -124,7 +125,7 @@ describe('real time transaction', () => {
                     into: 'customers',
                     values: [data.customer],
                     return: true
-                }).then(customers => {
+                }).then(function (customers) {
                     if (customers.length > 0) {
                         var customer = customers[0];
                         insertOrder(customer);
@@ -132,7 +133,7 @@ describe('real time transaction', () => {
                     } else {
                         abort();
                     }
-                }).catch(err => {
+                }).catch(function (err) {
                     console.error("err", err);
                 });
                 start();
@@ -155,7 +156,7 @@ describe('real time transaction', () => {
                 }]
             }
         }
-        con.transaction(txQuery).then((result) => {
+        con.transaction(txQuery).then(function (result) {
             // console.log("result", result);
             expect(result.totalPrice).to.be.an('number').equal(1200 * 2 + 1500 * 4);
             expect(result.customer.id).to.be.an('number').equal(1);
@@ -163,7 +164,7 @@ describe('real time transaction', () => {
         }).catch(done);
     });
 
-    it('insert new customer and check for valid next customerid', (done) => {
+    it('insert new customer and check for valid next customerid', function (done) {
         con.insert({
             into: 'customers',
             values: [{
@@ -175,22 +176,22 @@ describe('real time transaction', () => {
                 email: 'sdfg@m.com'
             }],
             return: true
-        }).then(result => {
+        }).then(function (result) {
             expect(result[0].id).to.be.an('number').equal(2);
             done();
         }).catch(done);
     });
 
-    it('check for products updates', (done) => {
+    it('check for products updates', function (done) {
         var txQuery = {
             tables: ['products'],
-            logic: (data) => {
+            logic: function (data) {
                 select({
                     from: 'products',
                     where: {
                         productId: 1
                     }
-                }).then(result => {
+                }).then(function (result) {
                     setResult('productId1', result[0].unit);
                 })
 
@@ -199,7 +200,7 @@ describe('real time transaction', () => {
                     where: {
                         productId: 2
                     }
-                }).then(result => {
+                }).then(function (result) {
                     setResult('productId2', result[0].unit);
                 })
 
@@ -207,15 +208,15 @@ describe('real time transaction', () => {
             }
         }
 
-        con.transaction(txQuery).then(result => {
+        con.transaction(txQuery).then(function (result) {
             expect(result.productId1).to.be.an('number').equal(200 - 2);
             expect(result.productId2).to.be.an('number').equal(2000 - 4);
             done();
         }).catch(done);
     });
 
-    it('open db demo', (done) => {
-        con.openDb("Demo").then(() => {
+    it('open db demo', function (done) {
+        con.openDb("Demo").then(function () {
             done();
         }).catch(done);
     })

@@ -1,5 +1,5 @@
-describe("initiate database", () => {
-    before(() => {
+describe("initiate database", function () {
+    before(function () {
         console.log('initiate database');
         var isIE = /*@cc_on!@*/ false || !!document.documentMode;
         if (isIE) {
@@ -20,7 +20,7 @@ describe("initiate database", () => {
         }
     })
 
-    it("db exist", (done) => {
+    it("db exist", function (done) {
         con.isDbExist('Demo').then(function (exist) {
             console.log('db exist :' + exist);
             if (exist) {

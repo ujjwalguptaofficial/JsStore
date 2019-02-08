@@ -182,7 +182,7 @@ describe('Multi Entry Test', function () {
         })
     });
 
-    it('check array column is updated to empty', (done) => {
+    it('check array column is updated to empty', function (done) {
         con.select({
             from: 'people',
             where: {

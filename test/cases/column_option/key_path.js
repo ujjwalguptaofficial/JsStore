@@ -17,7 +17,7 @@ describe('keyPath test', function () {
 
         it('create db', function (done) {
             var dbName = 'pinCodeDetails';
-            con.isDbExist(dbName).then(isExist => {
+            con.isDbExist(dbName).then(function (isExist) {
                 if (isExist) {
                     con.openDb(dbName).then(done)
                 } else {
@@ -26,7 +26,7 @@ describe('keyPath test', function () {
                         done();
                     })
                 }
-            }).catch(err => {
+            }).catch(function (err) {
                 done(err);
             })
         });
@@ -59,7 +59,7 @@ describe('keyPath test', function () {
             }).then(function (results) {
                 expect(results).to.be.an('array').length(4204);
                 done();
-            }).catch(err => {
+            }).catch(function (err) {
                 done(err);
             })
         })

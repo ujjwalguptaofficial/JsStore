@@ -94,7 +94,7 @@ describe('Test transaction', function () {
                     into: 'Customers',
                     return: true,
                     values: data.insertValues
-                }).then((insertedcustomer) => {
+                }).then(function (insertedcustomer) {
                     setResult('insertedcustomer', insertedcustomer);
                 })
                 count({
@@ -132,7 +132,8 @@ describe('Test transaction', function () {
             },
             logic: function (data) {
 
-                update({ in: 'Customers',
+                update({
+                    in: 'Customers',
                     set: data.updateValue,
                     where: {
                         CustomerID: 5

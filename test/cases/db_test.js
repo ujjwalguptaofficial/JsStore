@@ -51,7 +51,7 @@ describe('Db Test', function () {
     });
 
     it('drop db test', function (done) {
-        con.openDb('pinCodeDetails').then(() => {
+        con.openDb('pinCodeDetails').then(function () {
             con.dropDb().then(function () {
                 done();
             }).catch(function (err) {

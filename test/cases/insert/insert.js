@@ -52,9 +52,9 @@ describe('Test insert', function () {
             con.insert({
                 into: 'Orders',
                 values: results
-            }).then(result => {
+            }).then(function (result) {
                 done(result);
-            }).catch((err) => {
+            }).catch(function (err) {
                 var error = {
                     message: "Key already exists in the object store.",
                     type: "ConstraintError"
@@ -338,7 +338,7 @@ describe('Test insert', function () {
         });
     });
 
-    it('insert things', (done) => {
+    it('insert things', function (done) {
         var things = [
             "nest",
             "Eggs",
@@ -351,7 +351,7 @@ describe('Test insert', function () {
             "crocodilian",
             "Bayou"
         ];
-        things = things.map(val => {
+        things = things.map(function (val) {
             return {
                 value: val
             }
@@ -359,7 +359,7 @@ describe('Test insert', function () {
         con.insert({
             into: 'things',
             values: things
-        }).then(results => {
+        }).then(function (results) {
             expect(results).to.be.an('number').to.equal(10);
             done();
         }).catch(done)
