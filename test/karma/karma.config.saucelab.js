@@ -5,7 +5,38 @@ program.option('-b1, --batch1', 'start the batch1').
 option('-b2, --batch2', 'start the batch1').
 parse(process.argv);
 
+var customLaunchers = {};
+var createCustomLauncher = function (browser, platform, version, debug) {
+    customLaunchers[platform + "_" + browser + "_" + version] = {
+        base: 'SauceLabs',
+        browserName: browser,
+        platform: platform,
+        version: version,
+        extendedDebugging: debug,
+        "record-screenshots": true,
+        'seleniumVersion': '3.14.0',
+        flags: [
+            '--no-sandbox',
+            '--headless',
+            '--disable-gpu',
+            '--disable-translate',
+            '--disable-extensions'
+        ]
+    }
+}
 
+if (program.batch1) {
+    createCustomLauncher('firefox', 'macOS 10.13', 'latest', true);
+    createCustomLauncher('firefox', 'Windows 10', '61.0', true);
+    createCustomLauncher('chrome', 'linux', 'latest', true);
+    createCustomLauncher('chrome', 'macOS 10.13', 'latest', true);
+
+} else {
+    // createCustomLauncher('chrome', 'Windows 7', 'latest', true);
+    createCustomLauncher('microsoftedge', 'Windows 10', 'latest', true);
+    // createCustomLauncher('internet explorer', 'Windows 8.1', '11', true);
+    // createCustomLauncher('Safari', 'macOS 10.13', 'latest', true);
+}
 
 module.exports = function (config) {
 
@@ -13,34 +44,6 @@ module.exports = function (config) {
         console.log('Make sure the SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables are set.')
         process.exit(1)
     }
-    var customLaunchers = {};
-    var createCustomLauncher = function (browser, platform, version, debug) {
-        customLaunchers[platform + "_" + browser + "_" + version] = {
-            base: 'SauceLabs',
-            browserName: browser,
-            platform: platform,
-            version: version,
-            extendedDebugging: debug,
-            "record-screenshots": true,
-            'seleniumVersion': '3.14.0',
-            flags: [
-                '--no-sandbox',
-                '--headless',
-                '--disable-gpu',
-                '--disable-translate',
-                '--disable-extensions'
-            ]
-        }
-    }
-    // createCustomLauncher('chrome', 'Windows 7', 'latest', true);
-    createCustomLauncher('firefox', 'macOS 10.13', 'latest', true);
-    createCustomLauncher('firefox', 'Windows 10', '61.0', true);
-    createCustomLauncher('chrome', 'linux', 'latest', true);
-    createCustomLauncher('chrome', 'macOS 10.13', 'latest', true);
-    createCustomLauncher('microsoftedge', 'Windows 10', 'latest', true);
-    // createCustomLauncher('internet explorer', 'Windows 8.1', '11', true);
-    // createCustomLauncher('Safari', 'macOS 10.13', 'latest', true);
-
     config.set({
         basePath: '../../',
         frameworks: ['mocha', 'chai'],
