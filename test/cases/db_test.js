@@ -3,7 +3,7 @@ describe('Db Test', function () {
 
     it('getDbList api test', function (done) {
         con.getDbList().then(function (result) {
-            expect(result).to.be.an('array').to.length(4);
+            expect(result).to.be.an('array').to.length(3);
             done();
         }).catch(function (err) {
             done(err);
@@ -14,7 +14,7 @@ describe('Db Test', function () {
         con.dropDb().then(function () {
             con.getDbList().then(function (result) {
                 console.log(result);
-                expect(result).to.be.an('array').to.deep.equal(['Demo', 'shop', 'pinCodeDetails']);
+                expect(result).to.be.an('array').to.deep.equal(['Demo', 'shop']);
                 done();
             }).catch(function (err) {
                 done(err);
@@ -43,7 +43,7 @@ describe('Db Test', function () {
 
     it('getDbList api test after dropping demo', function (done) {
         con.getDbList().then(function (result) {
-            expect(result).to.be.an('array').to.deep.equal(['shop', 'pinCodeDetails']);
+            expect(result).to.be.an('array').to.deep.equal(['shop']);
             done();
         }).catch(function (err) {
             done(err);
@@ -51,18 +51,16 @@ describe('Db Test', function () {
     });
 
     it('drop db test', function (done) {
-        con.openDb('pinCodeDetails').then(function () {
+        con.openDb('shop').then(function () {
             con.dropDb().then(function () {
                 done();
-            }).catch(function (err) {
-                done(err);
-            });
-        })
+            }).catch(done);
+        }).catch(done);
     });
 
     it('getDbList api test after dropping pinCodeDetails', function (done) {
         con.getDbList().then(function (result) {
-            expect(result).to.be.an('array').to.deep.equal(['shop']);
+            expect(result).to.be.an('array').to.deep.equal([]);
             done();
         }).catch(function (err) {
             done(err);
