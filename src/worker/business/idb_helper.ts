@@ -70,7 +70,7 @@ export class IdbHelper {
             KeyStore.get(`JsStore_${dbName}_Db_Version`).then(dbVersion => {
                 res(Number(dbVersion));
             }).catch(rej);
-        })
+        });
     }
 
     static getDbSchema(dbName: string) {

@@ -92,7 +92,7 @@ export class Instance extends Base {
             }).catch((err) => {
                 this.onError(err);
             });
-        }
+        };
 
 
         const txLogic = null;
@@ -199,7 +199,7 @@ export class Instance extends Base {
         const push = () => {
             this.requestQueue.push(request);
         };
-        const promise = new Promise((resolve, reject) => {
+        const promiseObj = promise((resolve, reject) => {
             request.onSuccess = (result) => {
                 resolve(result);
             };
@@ -224,7 +224,7 @@ export class Instance extends Base {
         if (process.env.NODE_ENV === 'dev') {
             console.log(`request pushed : ${request.name} with query value - ${JSON.stringify(request.query)}`);
         }
-        return promise;
+        return promiseObj;
     }
 
     private processExecutionOfQry_() {
@@ -236,9 +236,7 @@ export class Instance extends Base {
     private checkQueries_(requestQueue: WebWorkerRequest[]) {
         return Promise.all(requestQueue.map(request => {
             const tableName = request.query.into || request.query.in;
-            return new QueryHelper(request.name, request.query).checkAndModify(
-
-            )
+            return new QueryHelper(request.name, request.query).checkAndModify();
         }));
     }
 

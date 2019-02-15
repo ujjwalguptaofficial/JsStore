@@ -16,7 +16,7 @@ export class Helper {
 
     static logError(msg) {
         if (Config.isLogEnabled) {
-            console.error(msg);
+            console.error(msg); 
         }
     }
 }

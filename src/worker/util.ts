@@ -78,7 +78,7 @@ export class Util {
                 return KeyStore.get(autoIncrementKey);
             })).then(results => {
                 const autoIncValues = {};
-                for (var i = 0; i < autoIncColumns.length; i++) {
+                for (let i = 0; i < autoIncColumns.length; i++) {
                     autoIncValues[autoIncColumns[i].name] = results[i];
                 }
                 resolve(autoIncValues);
@@ -92,12 +92,12 @@ export class Util {
             const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${table.name}_${columnName}_Value`;
             const value = autoIncrementValue[columnName];
             if (QueryExecutor.isTransactionQuery === true) {
-                QueryHelper.autoIncrementValues[table.name][columnName] = value
+                QueryHelper.autoIncrementValues[table.name][columnName] = value;
             }
             return KeyStore.set(
                 autoIncrementKey,
                 value
-            )
+            );
         }));
     }
 

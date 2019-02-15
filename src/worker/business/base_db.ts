@@ -5,7 +5,7 @@ import { DataBase } from "../model/database";
 import { Util } from "../util";
 export class BaseDb {
     onSuccess: (listOfTablesCreated?: string[]) => void;
-    onError: (err: IError) => void
+    onError: (err: IError) => void;
     protected get dbName() {
         return IdbHelper.activeDb.name;
     }

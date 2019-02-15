@@ -101,7 +101,7 @@ export class QueryExecutor {
             } as WebWorkerResult);
         };
 
-        QueryExecutor.isTransactionQuery = request.name === API.Transaction
+        QueryExecutor.isTransactionQuery = request.name === API.Transaction;
         switch (request.name) {
             case API.Select:
                 this.select_(request.query as SelectQuery, onSuccess, onError);
@@ -115,13 +115,13 @@ export class QueryExecutor {
             case API.IsDbExist: this.isDbExist_(request.query, onSuccess, onError);
                 break;
             case API.GetDbVersion:
-                this.getDbVersion_(request.query as string).then(onSuccess).catch(onError)
+                this.getDbVersion_(request.query as string).then(onSuccess).catch(onError);
                 break;
             case API.GetDbList:
-                this.getDbList_().then(onSuccess).catch(onError)
+                this.getDbList_().then(onSuccess).catch(onError);
                 break;
             case API.GetDbSchema:
-                this.getDbSchema_(request.query as string).then(onSuccess).catch(onError)
+                this.getDbSchema_(request.query as string).then(onSuccess).catch(onError);
                 break;
             case API.OpenDb:
                 if (this.isDbDeletedByBrowser_ === true) {
@@ -203,7 +203,7 @@ export class QueryExecutor {
                     this.activeDb_ = result;
                     const openDbProject = new OpenDb(onSuccess, onError);
                     openDbProject.execute();
-                })
+                });
             }
             else {
                 const err = new LogHelper(ERROR_TYPE.DbNotExist, { DbName: dbName });
