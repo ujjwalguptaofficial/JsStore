@@ -70,9 +70,6 @@
     "no-unused-expression": true,
     "no-var-keyword": true,
     "object-literal-shorthand": false,
-    "only-arrow-functions": [
-      true
-    ],
     "prefer-const": true,
     "semicolon": [
       true,

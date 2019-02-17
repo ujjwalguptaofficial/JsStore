@@ -2,6 +2,7 @@ import { Table } from "./table";
 import { Column } from "./column";
 import { KeyStore } from "../keystore/index";
 import { IdbHelper } from "../business/idb_helper";
+import { promise } from "../business/helpers/promise";
 
 export class TableHelper {
     name: string;
@@ -12,7 +13,7 @@ export class TableHelper {
     version: number;
     requireDelete = false;
     requireCreation = false;
-    callback: () => void;
+    callback: (tableHelperObj: TableHelper) => void;
 
     constructor(table: Table) {
         this.name = table.name;
@@ -21,10 +22,12 @@ export class TableHelper {
         this.setPrimaryKey_();
     }
 
-    createMetaData(dbName: string, callBack: () => void) {
-        this.callback = callBack;
-        this.setRequireDelete_(dbName);
-        this.setDbVersion_(dbName);
+    createMetaData(dbName: string): Promise<TableHelper> {
+        return promise((resolve) => {
+            this.callback = resolve;
+            this.setRequireDelete_(dbName);
+            this.setDbVersion_(dbName);
+        });
     }
 
     private setPrimaryKey_() {
@@ -53,7 +56,7 @@ export class TableHelper {
         // setting table version
         KeyStore.set(`JsStore_${dbName}_${this.name}_Version`, IdbHelper.activeDbVersion).then(() => {
             this.version = IdbHelper.activeDbVersion;
-            this.callback();
+            this.callback(this);
         });
     }
 }

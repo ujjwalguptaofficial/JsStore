@@ -3,32 +3,35 @@ import { TableHelper } from "./table_helper";
 import { Table } from "./table";
 
 export class DbHelper {
-    name: string;
+    dbName: string;
     tables: Table[] = [];
 
     constructor(dataBase: DataBase) {
-        this.name = dataBase.name;
+        this.dbName = dataBase.name;
         this.tables = dataBase.tables;
     }
 
-    createMetaData(callBack: (tablesMetaData: TableHelper[]) => void) {
-        let index = 0;
-        const tableHelperList: TableHelper[] = [];
-        const createMetaDataForTable = () => {
-            if (index < this.tables.length) {
-                const table: Table = this.tables[index],
-                    tableHelperInstance: TableHelper = new TableHelper(table);
-                tableHelperInstance.createMetaData(this.name, () => {
-                    tableHelperInstance.callback = null;
-                    tableHelperList.push(tableHelperInstance);
-                    createMetaDataForTable();
-                });
-                ++index;
-            }
-            else {
-                callBack(tableHelperList);
-            }
-        };
-        createMetaDataForTable();
+    createMetaData() {
+        return Promise.all(
+            this.tables.map((table) => {
+                return new TableHelper(table).createMetaData(this.dbName);
+            })
+        );
+        // const createMetaDataForTable = () => {
+        //     if (index < this.tables.length) {
+        //         const table: Table = this.tables[index];
+        //         const tableHelperInstance: TableHelper = new TableHelper(table);
+        //         tableHelperInstance.createMetaData(this.name, function () {
+        //             tableHelperInstance.callback = null;
+        //             tableHelperList.push(tableHelperInstance);
+        //             createMetaDataForTable();
+        //         });
+        //         ++index;
+        //     }
+        //     else {
+        //         callBack(tableHelperList);
+        //     }
+        // };
+        // createMetaDataForTable();
     }
 }
