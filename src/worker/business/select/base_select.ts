@@ -1,8 +1,7 @@
-import { Base } from "../base";
+import { WhereBase } from "../where_base";
 import { SelectQuery } from "../../types";
 
-export class BaseSelect extends Base {
-    results = [];
+export class BaseSelect extends WhereBase {
     sorted = false;
     isOr: boolean;
     isArrayQry: boolean;
@@ -31,9 +30,5 @@ export class BaseSelect extends Base {
             datas.push(lookupObject[i]);
         }
         this.results = datas;
-    }
-
-    protected onQueryFinished() {
-        // ff
     }
 }

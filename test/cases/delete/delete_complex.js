@@ -97,4 +97,26 @@ describe('Test remove complex case', function () {
             done(err);
         })
     });
+
+
+    it("sql - DELETE FROM Customers WHERE Country regex /Mexico|Brazil/", function (done) {
+        var from  = 'Customers'
+          , where = { Country: { regex: /Mexico|Brazil/ } }
+          , count ;
+
+        con.select({from, where})
+           .then(function (results) {
+            count = results.length;
+
+            con.remove({from, where })
+            .then(function (results) {
+                expect(results).to.be.an('number').to.equal(count);
+                done();
+            }).catch(function (err) {
+                done(err);
+            })
+        }).catch(function (err) {
+            done(err);
+        })
+    });
 });

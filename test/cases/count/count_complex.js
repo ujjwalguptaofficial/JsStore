@@ -70,4 +70,19 @@ describe('Test count complex case', function () {
             done(err);
         })
     });
+
+    it('count with multiple regex', function (done) {
+        con.count({
+            from: 'Customers',
+            where: {
+                // Country: { regex: /(mexico|brazil)/i },
+                City: { regex: /.ampinas/ }
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('number').to.equal(1);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
 });
