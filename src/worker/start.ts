@@ -1,4 +1,3 @@
-import { KeyStore } from "./keystore/index";
 import { QueryExecutor } from "./query_executor";
 import { Config } from "./config";
 export const initialize = function () {

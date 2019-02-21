@@ -1,5 +1,5 @@
 import { LogHelper } from "./log_helper";
-import { ERROR_TYPE, API } from "./enums";
+import { API } from "./enums";
 import { WebWorkerRequest, WebWorkerResult } from "./types";
 import { Config } from "./config";
 
