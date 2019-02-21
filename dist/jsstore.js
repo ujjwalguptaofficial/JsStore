@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.10.1 - 03/02/2019
+ * @license :jsstore - V2.10.2 - 21/02/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -179,6 +179,7 @@ var API;
     API["ChangeLogStatus"] = "change_log_status";
     API["Terminate"] = "terminate";
     API["Transaction"] = "transaction";
+    API["InitKeyStore"] = "init_keystore";
 })(API || (API = {}));
 
 
@@ -627,6 +628,7 @@ var InstanceHelper = /** @class */ (function () {
         this.isDbOpened_ = false;
         this.requestQueue_ = [];
         this.isCodeExecuting_ = false;
+        // these apis have special permissions. These apis dont wait for database open.
         this.whiteListApi_ = [
             _enums__WEBPACK_IMPORTED_MODULE_1__["API"].CreateDb,
             _enums__WEBPACK_IMPORTED_MODULE_1__["API"].IsDbExist,
@@ -637,11 +639,15 @@ var InstanceHelper = /** @class */ (function () {
             _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Get,
             _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Set,
             _enums__WEBPACK_IMPORTED_MODULE_1__["API"].ChangeLogStatus,
-            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Terminate
+            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Terminate,
+            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].InitKeyStore
         ];
         if (worker) {
             this.worker_ = worker;
             this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
+            this.pushApi({
+                name: _enums__WEBPACK_IMPORTED_MODULE_1__["API"].InitKeyStore
+            });
         }
         else {
             _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker = false;

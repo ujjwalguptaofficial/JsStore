@@ -96,5 +96,6 @@ export declare enum API {
     ChangeLogStatus = "change_log_status",
     Transaction = "transaction",
     FinishTransaction = "finish_transaction",
-    Terminate = "terminate"
+    Terminate = "terminate",
+    InitKeyStore = "init_keystore"
 }

@@ -43,5 +43,6 @@ export declare enum API {
     ExportJson = "export_json",
     ChangeLogStatus = "change_log_status",
     Terminate = "terminate",
-    Transaction = "transaction"
+    Transaction = "transaction",
+    InitKeyStore = "init_keystore"
 }

@@ -7,9 +7,9 @@ export declare class TableHelper {
     version: number;
     requireDelete: boolean;
     requireCreation: boolean;
-    callback: () => void;
+    callback: (tableHelperObj: TableHelper) => void;
     constructor(table: Table);
-    createMetaData(dbName: string, callBack: () => void): void;
+    createMetaData(dbName: string): Promise<TableHelper>;
     private setPrimaryKey_;
     private setRequireDelete_;
     private setDbVersion_;
