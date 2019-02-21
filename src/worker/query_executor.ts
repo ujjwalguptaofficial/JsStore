@@ -48,6 +48,7 @@ export class QueryExecutor {
             case API.ChangeLogStatus:
             case API.Terminate:
             case API.OpenDb:
+            case API.InitKeyStore:
                 this.executeLogic_(request);
                 break;
             default:
@@ -159,9 +160,17 @@ export class QueryExecutor {
             case API.Terminate:
                 this.terminate_(onSuccess, onError);
                 break;
+            case API.InitKeyStore:
+                this.initKeyStore_(onSuccess);
+                break;
             default:
                 console.error('The Api:-' + request.name + ' does not support.');
         }
+    }
+
+    private initKeyStore_(onSuccess) {
+        KeyStore.init();
+        onSuccess();
     }
 
     private getDbSchema_(dbName: string) {

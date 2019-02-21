@@ -32,7 +32,7 @@ if (program.batch1) {
     createCustomLauncher('chrome', 'macOS 10.13', 'latest', true);
 
 } else {
-    createCustomLauncher('Safari', 'macOS 10.14', 'latest', true);
+    createCustomLauncher('Safari', 'macOS 10.13', 'latest', true);
     createCustomLauncher('chrome', 'Windows 10', 'latest', true);
     createCustomLauncher('microsoftedge', 'Windows 10', 'latest', true);
     createCustomLauncher('internet explorer', 'Windows 8.1', '11', true);
