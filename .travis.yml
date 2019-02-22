@@ -7,9 +7,6 @@ before_script:
     - npm install
 script:
   - npm run build:ci
-  
-after_success:
-  - if [ "$TRAVIS_BRANCH" == "master" ]; then npm run test:sauce ; fi 
 after_failure:
   - ls
 
