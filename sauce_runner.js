@@ -1,5 +1,5 @@
  var output = require('child_process').execSync(
-     "git symbolic-ref --short HEAD"
+     "$TRAVIS_BRANCH"
  ).toString().trim();
  if (output === "master") {
     require('child_process').execSync(
