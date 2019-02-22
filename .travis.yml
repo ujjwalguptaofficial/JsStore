@@ -9,7 +9,7 @@ script:
   - npm run build:ci
   
 after_success:
-  - $TRAVIS_BRANCH == "master" && npm run test:sauce
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then npm run test:sauce ; fi 
 after_failure:
   - ls
 
