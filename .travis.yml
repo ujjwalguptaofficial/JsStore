@@ -9,11 +9,7 @@ script:
   - npm run build:ci
   
 after_success:
-  script: 
-    - npm run test:sauce
-  on:
-    branch: master
-
+  - $TRAVIS_BRANCH == "develop" && npm run test:sauce
 after_failure:
   - ls
 
