@@ -4,7 +4,7 @@ describe('keyPath test', function () {
 
     // Edge 20+
     var isEdge = !isIE && !!window.StyleMedia;
-    if (!isEdge) {
+    if (!(isIE || isEdge)) {
         it('terminate connection', function (done) {
             con.terminate().then(function () {
                 console.log('terminated');
@@ -44,9 +44,9 @@ describe('keyPath test', function () {
                     expect(results).to.be.an('undefined');
                     done();
                 }).
-                    catch(function (err) {
-                        done(err);
-                    });
+                catch(function (err) {
+                    done(err);
+                });
             });
         })
 
@@ -78,45 +78,45 @@ function getDbSchemaOfPinCodes() {
     var table = {
         name: 'pinCodes',
         columns: [{
-            name: 'id',
-            primaryKey: true,
-            autoIncrement: true
-        },
-        {
-            name: 'officename',
-            dataType: 'string'
-        }, {
-            name: 'pincode',
-            dataType: 'string'
-        },
-        {
-            name: 'officetype',
-            dataType: 'string'
-        }, {
-            name: 'Deliverystatus',
-            dataType: 'string'
-        }, {
-            name: 'officetypeAndDeliverystatus',
-            keyPath: ['officetype', 'Deliverystatus']
-        }, {
-            name: 'divisionname',
-            dataType: 'string'
-        }, {
-            name: 'regionname',
-            dataType: 'string'
-        }, {
-            name: 'circlename',
-            dataType: 'string'
-        }, {
-            name: 'taluk',
-            dataType: 'string'
-        }, {
-            name: 'districtname',
-            dataType: 'string'
-        }, {
-            name: 'statename',
-            dataType: 'string'
-        }
+                name: 'id',
+                primaryKey: true,
+                autoIncrement: true
+            },
+            {
+                name: 'officename',
+                dataType: 'string'
+            }, {
+                name: 'pincode',
+                dataType: 'string'
+            },
+            {
+                name: 'officetype',
+                dataType: 'string'
+            }, {
+                name: 'Deliverystatus',
+                dataType: 'string'
+            }, {
+                name: 'officetypeAndDeliverystatus',
+                keyPath: ['officetype', 'Deliverystatus']
+            }, {
+                name: 'divisionname',
+                dataType: 'string'
+            }, {
+                name: 'regionname',
+                dataType: 'string'
+            }, {
+                name: 'circlename',
+                dataType: 'string'
+            }, {
+                name: 'taluk',
+                dataType: 'string'
+            }, {
+                name: 'districtname',
+                dataType: 'string'
+            }, {
+                name: 'statename',
+                dataType: 'string'
+            }
         ]
     }
     var database = {
