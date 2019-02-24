@@ -9,8 +9,7 @@ script:
   - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
   - npm run build:ci
 after_success:
-  - test $TRAVIS_BRANCH = "master" &&
-    echo "TRAVIS_BRANCH=$TRAVIS_BRANCH, PR=$PR, BRANCH=$BRANCH"   
+  - test $TRAVIS_BRANCH = $BRANCH && npm run test:sauce
 after_failure:
   - ls
 
