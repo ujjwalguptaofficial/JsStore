@@ -1,8 +1,8 @@
-import { Base } from "../base";
+import { WhereBase } from "../where_base";
 import { CountQuery } from "../../types";
 
-export class BaseCount extends Base {
-    resultCount = 0;
+export class BaseCount extends WhereBase {
+    resultCount:number = 0;
     query: CountQuery;
 
     protected onQueryFinished() {

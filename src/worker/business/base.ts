@@ -97,6 +97,9 @@ export class Base extends BaseHelper {
                         }
                         this.executeLikeLogic(columnName, filterValue, occurence);
                     } break;
+                    case QUERY_OPTION.Regex:
+                        this.executeRegexLogic(columnName, value[QUERY_OPTION.Regex]);
+                        break;
                     case QUERY_OPTION.In:
                         this.executeInLogic(columnName, value[QUERY_OPTION.In]);
                         break;
@@ -152,6 +155,7 @@ export class Base extends BaseHelper {
                                     results = results.concat(this.getAllCombinationOfWord(keyValue, true));
                                     break;
                                 case QUERY_OPTION.Like:
+                                case QUERY_OPTION.Regex:
                                     break;
                                 default:
                                     results = results.concat(this.getAllCombinationOfWord(keyValue));

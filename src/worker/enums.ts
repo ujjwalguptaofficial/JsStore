@@ -57,6 +57,7 @@ export enum ERROR_TYPE {
 export enum QUERY_OPTION {
     Where = "where",
     Like = 'like',
+    Regex = 'regex',
     In = 'in',
     Between = '-',
     GreaterThan = '>',

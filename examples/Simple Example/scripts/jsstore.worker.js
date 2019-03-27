@@ -687,6 +687,7 @@ var QUERY_OPTION;
 (function (QUERY_OPTION) {
     QUERY_OPTION["Where"] = "where";
     QUERY_OPTION["Like"] = "like";
+    QUERY_OPTION["Regex"] = "regex";
     QUERY_OPTION["In"] = "in";
     QUERY_OPTION["Between"] = "-";
     QUERY_OPTION["GreaterThan"] = ">";
