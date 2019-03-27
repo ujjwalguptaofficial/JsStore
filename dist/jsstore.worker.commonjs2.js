@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.10.2 - 21/02/2019
+ * @license :jsstore - V2.10.3 - 27/03/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -166,6 +166,9 @@ var Base = /** @class */ (function (_super) {
                                 this.executeLikeLogic(columnName, filterValue, occurence);
                             }
                             break;
+                        case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Regex:
+                            this.executeRegexLogic(columnName, value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Regex]);
+                            break;
                         case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In:
                             this.executeInLogic(columnName, value[_enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].In]);
                             break;
@@ -254,6 +257,7 @@ var Base = /** @class */ (function (_super) {
                                     results = results.concat(this.getAllCombinationOfWord(keyValue, true));
                                     break;
                                 case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Like:
+                                case _enums__WEBPACK_IMPORTED_MODULE_3__["QUERY_OPTION"].Regex:
                                     break;
                                 default:
                                     results = results.concat(this.getAllCombinationOfWord(keyValue));
@@ -674,7 +678,7 @@ var Clear = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BaseCount", function() { return BaseCount; });
-/* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../base */ "./src/worker/business/base.ts");
+/* harmony import */ var _where_base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../where_base */ "./src/worker/business/where_base.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -707,7 +711,7 @@ var BaseCount = /** @class */ (function (_super) {
         }
     };
     return BaseCount;
-}(_base__WEBPACK_IMPORTED_MODULE_0__["Base"]));
+}(_where_base__WEBPACK_IMPORTED_MODULE_0__["WhereBase"]));
 
 
 
@@ -1044,6 +1048,49 @@ var NotWhere = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./src/worker/business/count/regex.ts":
+/*!********************************************!*\
+  !*** ./src/worker/business/count/regex.ts ***!
+  \********************************************/
+/*! exports provided: LikeRegex */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LikeRegex", function() { return LikeRegex; });
+/* harmony import */ var _like__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./like */ "./src/worker/business/count/like.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+var LikeRegex = /** @class */ (function (_super) {
+    __extends(LikeRegex, _super);
+    function LikeRegex() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    LikeRegex.prototype.executeRegexLogic = function (column, exp) {
+        var _this = this;
+        this.passFilter = function (colValue) { return exp.test(colValue); };
+        this.passAction = function (_cursor) { ++_this.resultCount; };
+        this.executeWhereOnColumn(column);
+    };
+    return LikeRegex;
+}(_like__WEBPACK_IMPORTED_MODULE_0__["Like"]));
+
+
+
+/***/ }),
+
 /***/ "./src/worker/business/count/where.ts":
 /*!********************************************!*\
   !*** ./src/worker/business/count/where.ts ***!
@@ -1054,7 +1101,7 @@ var NotWhere = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Where", function() { return Where; });
-/* harmony import */ var _like__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./like */ "./src/worker/business/count/like.ts");
+/* harmony import */ var _regex__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./regex */ "./src/worker/business/count/regex.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -1121,7 +1168,7 @@ var Where = /** @class */ (function (_super) {
         };
     };
     return Where;
-}(_like__WEBPACK_IMPORTED_MODULE_0__["Like"]));
+}(_regex__WEBPACK_IMPORTED_MODULE_0__["LikeRegex"]));
 
 
 
@@ -1934,13 +1981,29 @@ var QueryHelper = /** @class */ (function () {
         this.error = new _update_index__WEBPACK_IMPORTED_MODULE_4__["SchemaChecker"](this.getTable_(this.query.in)).
             check(this.query.set, this.query.in);
         if (this.error == null) {
-            this.addGreatAndLessToNotOp_();
+            if (this.query.where != null) {
+                this.checkForNullInWhere_();
+                if (this.error == null) {
+                    this.addGreatAndLessToNotOp_();
+                }
+            }
+        }
+    };
+    QueryHelper.prototype.checkForNullInWhere_ = function () {
+        for (var key in this.query.where) {
+            if (this.query.where[key] == null) {
+                this.error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].NullValueInWhere, { column: key }).get();
+                return;
+            }
         }
     };
     QueryHelper.prototype.checkFetchQuery_ = function () {
         if (this.isTableExist_(this.query.from) === true) {
             if (this.query.where != null) {
-                this.addGreatAndLessToNotOp_();
+                this.checkForNullInWhere_();
+                if (this.error == null) {
+                    this.addGreatAndLessToNotOp_();
+                }
             }
         }
         else {
@@ -1949,7 +2012,7 @@ var QueryHelper = /** @class */ (function () {
     };
     QueryHelper.prototype.isTableExist_ = function (tableName) {
         var index = this.activeDb_.tables.findIndex(function (table) { return table.name === tableName; });
-        return index >= 0 ? true : false;
+        return index >= 0;
     };
     Object.defineProperty(QueryHelper.prototype, "activeDb_", {
         get: function () {
@@ -2035,7 +2098,7 @@ var QueryHelper = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BaseRemove", function() { return BaseRemove; });
-/* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../base */ "./src/worker/business/base.ts");
+/* harmony import */ var _where_base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../where_base */ "./src/worker/business/where_base.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -2059,7 +2122,7 @@ var BaseRemove = /** @class */ (function (_super) {
         // ff
     };
     return BaseRemove;
-}(_base__WEBPACK_IMPORTED_MODULE_0__["Base"]));
+}(_where_base__WEBPACK_IMPORTED_MODULE_0__["WhereBase"]));
 
 
 
@@ -2437,6 +2500,49 @@ var NotWhere = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./src/worker/business/remove/regex.ts":
+/*!*********************************************!*\
+  !*** ./src/worker/business/remove/regex.ts ***!
+  \*********************************************/
+/*! exports provided: LikeRegex */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LikeRegex", function() { return LikeRegex; });
+/* harmony import */ var _like__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./like */ "./src/worker/business/remove/like.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+var LikeRegex = /** @class */ (function (_super) {
+    __extends(LikeRegex, _super);
+    function LikeRegex() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    LikeRegex.prototype.executeRegexLogic = function (column, exp) {
+        var _this = this;
+        this.passFilter = function (colValue) { return exp.test(colValue); };
+        this.passAction = function (cursor) { cursor.delete(); ++_this.rowAffected; };
+        this.executeWhereOnColumn(column);
+    };
+    return LikeRegex;
+}(_like__WEBPACK_IMPORTED_MODULE_0__["Like"]));
+
+
+
+/***/ }),
+
 /***/ "./src/worker/business/remove/where.ts":
 /*!*********************************************!*\
   !*** ./src/worker/business/remove/where.ts ***!
@@ -2447,7 +2553,7 @@ var NotWhere = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Where", function() { return Where; });
-/* harmony import */ var _like__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./like */ "./src/worker/business/remove/like.ts");
+/* harmony import */ var _regex__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./regex */ "./src/worker/business/remove/regex.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -2506,7 +2612,7 @@ var Where = /** @class */ (function (_super) {
         };
     };
     return Where;
-}(_like__WEBPACK_IMPORTED_MODULE_0__["Like"]));
+}(_regex__WEBPACK_IMPORTED_MODULE_0__["LikeRegex"]));
 
 
 
@@ -2522,7 +2628,7 @@ var Where = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BaseSelect", function() { return BaseSelect; });
-/* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../base */ "./src/worker/business/base.ts");
+/* harmony import */ var _where_base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../where_base */ "./src/worker/business/where_base.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -2541,7 +2647,6 @@ var BaseSelect = /** @class */ (function (_super) {
     __extends(BaseSelect, _super);
     function BaseSelect() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.results = [];
         _this.sorted = false;
         _this.isSubQuery = false;
         _this.isOrderWithLimit = false;
@@ -2563,11 +2668,8 @@ var BaseSelect = /** @class */ (function (_super) {
         }
         this.results = datas;
     };
-    BaseSelect.prototype.onQueryFinished = function () {
-        // ff
-    };
     return BaseSelect;
-}(_base__WEBPACK_IMPORTED_MODULE_0__["Base"]));
+}(_where_base__WEBPACK_IMPORTED_MODULE_0__["WhereBase"]));
 
 
 
@@ -4224,6 +4326,48 @@ var NotWhere = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./src/worker/business/select/regex.ts":
+/*!*********************************************!*\
+  !*** ./src/worker/business/select/regex.ts ***!
+  \*********************************************/
+/*! exports provided: LikeRegex */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LikeRegex", function() { return LikeRegex; });
+/* harmony import */ var _like__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./like */ "./src/worker/business/select/like.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+var LikeRegex = /** @class */ (function (_super) {
+    __extends(LikeRegex, _super);
+    function LikeRegex() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    LikeRegex.prototype.executeRegexLogic = function (column, exp) {
+        this.passFilter = function (colValue) { return exp.test(colValue); };
+        this.passAction = this.skipOrPush;
+        this.executeWhereOnColumn(column);
+    };
+    return LikeRegex;
+}(_like__WEBPACK_IMPORTED_MODULE_0__["Like"]));
+
+
+
+/***/ }),
+
 /***/ "./src/worker/business/select/where.ts":
 /*!*********************************************!*\
   !*** ./src/worker/business/select/where.ts ***!
@@ -4234,7 +4378,7 @@ var NotWhere = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Where", function() { return Where; });
-/* harmony import */ var _like__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./like */ "./src/worker/business/select/like.ts");
+/* harmony import */ var _regex__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./regex */ "./src/worker/business/select/regex.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -4430,7 +4574,7 @@ var Where = /** @class */ (function (_super) {
         }
     };
     return Where;
-}(_like__WEBPACK_IMPORTED_MODULE_0__["Like"]));
+}(_regex__WEBPACK_IMPORTED_MODULE_0__["LikeRegex"]));
 
 
 
@@ -5314,6 +5458,81 @@ var Where = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./src/worker/business/where_base.ts":
+/*!*******************************************!*\
+  !*** ./src/worker/business/where_base.ts ***!
+  \*******************************************/
+/*! exports provided: WhereBase */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WhereBase", function() { return WhereBase; });
+/* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./base */ "./src/worker/business/base.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+var WhereBase = /** @class */ (function (_super) {
+    __extends(WhereBase, _super);
+    function WhereBase() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.results = [];
+        _this.skipOrPush = function (value) {
+            if (!_this.skipRecord || _this.skipCnt === 0) {
+                _this.results.push(value);
+            }
+            else {
+                --_this.skipCnt;
+            }
+        };
+        return _this;
+    }
+    WhereBase.prototype.executeWhereOnColumn = function (column) {
+        var _this = this;
+        this.skipCnt = this.skipRecord;
+        this.cursorOpenRequest = this.objectStore.index(column).openCursor();
+        this.cursorOpenRequest.onerror = this.onCursorError;
+        this.cursorOpenRequest.onsuccess = function (e) {
+            var cursor = e.target.result;
+            if (cursor && _this.didNotReachLimit()) {
+                if (_this.pass(cursor)) {
+                    _this.passAction(cursor.value);
+                }
+                cursor.continue();
+            }
+            else {
+                _this.onQueryFinished();
+            }
+        };
+    };
+    WhereBase.prototype.didNotReachLimit = function () {
+        return !this.limitRecord || this.results.length < this.limitRecord;
+    };
+    WhereBase.prototype.pass = function (cursor) {
+        return this.passFilter(cursor.key) &&
+            (!this.checkFlag || this.whereCheckerInstance.check(cursor.value));
+    };
+    WhereBase.prototype.onQueryFinished = function () {
+        // virtual
+    };
+    return WhereBase;
+}(_base__WEBPACK_IMPORTED_MODULE_0__["Base"]));
+
+
+
+/***/ }),
+
 /***/ "./src/worker/business/where_checker.ts":
 /*!**********************************************!*\
   !*** ./src/worker/business/where_checker.ts ***!
@@ -5338,44 +5557,39 @@ var WhereChecker = /** @class */ (function () {
     }
     WhereChecker.prototype.check = function (rowValue) {
         this.status = true;
-        var columnValue;
         for (var columnName in this.where) {
-            if (this.status) {
-                columnValue = this.where[columnName];
-                if (typeof columnValue === 'object') {
-                    for (var key in columnValue) {
-                        if (this.status) {
-                            switch (key) {
-                                case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].In:
-                                    this.checkIn(columnName, rowValue[columnName]);
-                                    break;
-                                case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].Like:
-                                    this.checkLike(columnName, rowValue[columnName]);
-                                    break;
-                                case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].Between:
-                                case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].GreaterThan:
-                                case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].LessThan:
-                                case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].GreaterThanEqualTo:
-                                case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].LessThanEqualTo:
-                                case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].NotEqualTo:
-                                    this.checkComparisionOp(columnName, rowValue[columnName], key);
-                                    break;
-                            }
-                        }
-                        else {
-                            break;
-                        }
-                    }
-                }
-                else {
-                    if (columnValue !== rowValue[columnName]) {
-                        this.status = false;
+            if (!this.status) {
+                break;
+            }
+            var columnValue = this.where[columnName];
+            if (typeof columnValue === 'object') {
+                for (var key in columnValue) {
+                    if (!this.status) {
                         break;
+                    }
+                    switch (key) {
+                        case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].In:
+                            this.checkIn(columnName, rowValue[columnName]);
+                            break;
+                        case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].Like:
+                            this.checkLike(columnName, rowValue[columnName]);
+                            break;
+                        case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].Regex:
+                            this.checkRegex(columnName, rowValue[columnName]);
+                            break;
+                        case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].Between:
+                        case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].GreaterThan:
+                        case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].LessThan:
+                        case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].GreaterThanEqualTo:
+                        case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].LessThanEqualTo:
+                        case _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].NotEqualTo:
+                            this.checkComparisionOp(columnName, rowValue[columnName], key);
+                            break;
                     }
                 }
             }
             else {
-                break;
+                this.status = columnValue === rowValue[columnName];
             }
         }
         return this.status;
@@ -5422,6 +5636,10 @@ var WhereChecker = /** @class */ (function () {
                     this.status = false;
                 }
         }
+    };
+    WhereChecker.prototype.checkRegex = function (column, value) {
+        var expr = this.where[column][_enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].Regex];
+        this.status = expr.test(value);
     };
     WhereChecker.prototype.checkComparisionOp = function (column, value, symbol) {
         var compareValue = this.where[column][symbol];
@@ -5565,11 +5783,13 @@ var ERROR_TYPE;
     ERROR_TYPE["IndexedDbUndefined"] = "indexeddb_undefined";
     ERROR_TYPE["IndexedDbBlocked"] = "indexeddb_blocked";
     ERROR_TYPE["InvalidColumn"] = "invalid_column";
+    ERROR_TYPE["NullValueInWhere"] = "null_value_in_where";
 })(ERROR_TYPE || (ERROR_TYPE = {}));
 var QUERY_OPTION;
 (function (QUERY_OPTION) {
     QUERY_OPTION["Where"] = "where";
     QUERY_OPTION["Like"] = "like";
+    QUERY_OPTION["Regex"] = "regex";
     QUERY_OPTION["In"] = "in";
     QUERY_OPTION["Between"] = "-";
     QUERY_OPTION["GreaterThan"] = ">";
@@ -6475,9 +6695,9 @@ var LogHelper = /** @class */ (function () {
     LogHelper.prototype.logError = function () {
         console.error(this.get());
     };
-    LogHelper.prototype.logWarning = function () {
-        console.warn(this.get());
-    };
+    // logWarning() {
+    //     console.warn(this.get());
+    // }
     LogHelper.prototype.get = function () {
         return {
             message: this.message,
@@ -6544,6 +6764,9 @@ var LogHelper = /** @class */ (function () {
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].InvalidColumn:
                 errMsg = "Invalid column name " + this.info_['column'];
+                break;
+            case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].NullValueInWhere:
+                errMsg = "Null/undefined is not allowed in where. Column '" + this.info_['column'] + "' has null";
                 break;
             default:
                 errMsg = this.message;

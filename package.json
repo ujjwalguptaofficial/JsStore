@@ -1,6 +1,6 @@
 {
   "name": "jsstore",
-  "version": "2.10.2",
+  "version": "2.10.3",
   "description": "JsStore is an IndexedDB Wrapper. It makes IndexedDB super easy with its SQL like apis.",
   "main": "dist/jsstore.commonjs2.js",
   "types": "dist/ts/main/index.d.ts",
@@ -43,7 +43,7 @@
     "chai": "^4.2.0",
     "copy-webpack-plugin": "^4.5.2",
     "fs-extra": "^7.0.0",
-    "karma": "^4.0.0",
+    "karma": "^4.0.1",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-html-reporter": "^0.2.7",
@@ -59,12 +59,14 @@
     "tslint": "^5.11.0",
     "typescript": "^3.2.4",
     "uglify-js": "^3.4.9",
-    "webpack": "^4.29.5",
+    "webpack": "^4.29.6",
     "webpack-cli": "^3.2.1",
     "webpack-merge": "^4.1.4"
   },
   "displayName": "JsStore",
-  "dependencies": {},
+  "dependencies": {
+    "lodash": "^4.17.11"
+  },
   "collective": {
     "type": "opencollective",
     "url": "https://opencollective.com/JsStore"
