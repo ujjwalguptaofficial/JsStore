@@ -41,22 +41,22 @@ describe('Test Select Api', function () {
         })
     });
 
-    it('EnableSearch column test', function (done) {
-        con.select({
-            from: 'Customers',
-            where: {
-                Email: 'uk@gmail.com'
-            }
-        }).
-        catch(function (err) {
-            var error = {
-                "message": "Search is turned off for the Column 'Email'",
-                "type": "enable_search_off"
-            };
-            expect(err).to.be.an('object').eql(error);
-            done();
-        })
-    });
+    // it('EnableSearch column test', function (done) {
+    //     con.select({
+    //         from: 'Customers',
+    //         where: {
+    //             Email: 'uk@gmail.com'
+    //         }
+    //     }).
+    //     catch(function (err) {
+    //         var error = {
+    //             "message": "Search is turned off for the Column 'Email'",
+    //             "type": "enable_search_off"
+    //         };
+    //         expect(err).to.be.an('object').eql(error);
+    //         done();
+    //     })
+    // });
 
     it('select with where', function (done) {
         con.select({
