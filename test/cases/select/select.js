@@ -49,7 +49,6 @@ describe('Test Select Api', function () {
             }
         }).
         catch(function (err) {
-            console.log(err);
             var error = {
                 "message": "Search is turned off for the Column 'Email'",
                 "type": "enable_search_off"
