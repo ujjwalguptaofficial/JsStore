@@ -10,7 +10,8 @@ Thing that should not be change -
 4. license
 5. webpack config
 6. tsconfig
-7. tslint
+7. tslint 
+8. do not commit anything in dist folder        
 
 These are the files which contains some config & makes the jsstore bug free thats why we dont want user to change as thing may become messy. But we understand that sometimes you need to change these things, so in that case please give a description files name with reason of why you need to change in the pull request.
 
@@ -62,7 +63,7 @@ Setting up jsstore in your local is very easy -
 * build:ci - Build the code that needed by CI
 * webpack:dev - run the webpack config for dev
 * webpack:prod - run the webpack config for prod
-* deploy - This one create both dev and prod code and also test both codes. This is used when some new version is to be deployed.
+* deploy - This one create both dev and prod code and also test both codes. This is used when some new version is to be deployed.   
 
 ## Submitting Changes
 
@@ -74,6 +75,7 @@ Some things that will increase the chance that your pull request is accepted:
 
 * Follow the existing coding style
 * Write a [good commit message](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
+* Do not add anything inside the dist folder
 
 ## Discussions
 
