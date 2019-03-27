@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.10.1 - 03/02/2019
+ * @license :jsstore - V2.10.2 - 21/02/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -4473,6 +4473,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../query_helper */ "./src/worker/business/query_helper.ts");
 /* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../log_helper */ "./src/worker/log_helper.ts");
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../util */ "./src/worker/util.ts");
+/* harmony import */ var _helpers_promise__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../helpers/promise */ "./src/worker/business/helpers/promise.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -4486,6 +4487,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 
 
@@ -4661,7 +4663,7 @@ var Instance = /** @class */ (function (_super) {
         var push = function () {
             _this.requestQueue.push(request);
         };
-        var promise = new Promise(function (resolve, reject) {
+        var promiseObj = Object(_helpers_promise__WEBPACK_IMPORTED_MODULE_10__["promise"])(function (resolve, reject) {
             request.onSuccess = function (result) {
                 resolve(result);
             };
@@ -4686,7 +4688,7 @@ var Instance = /** @class */ (function (_super) {
         if (true) {
             console.log("request pushed : " + request.name + " with query value - " + JSON.stringify(request.query));
         }
-        return promise;
+        return promiseObj;
     };
     Instance.prototype.processExecutionOfQry_ = function () {
         if (this.requestQueue.length > 0 && this.isQueryExecuting === false) {
@@ -5615,6 +5617,7 @@ var API;
     API["Transaction"] = "transaction";
     API["FinishTransaction"] = "finish_transaction";
     API["Terminate"] = "terminate";
+    API["InitKeyStore"] = "init_keystore";
 })(API || (API = {}));
 
 
@@ -6638,28 +6641,30 @@ __webpack_require__.r(__webpack_exports__);
 var DbHelper = /** @class */ (function () {
     function DbHelper(dataBase) {
         this.tables = [];
-        this.name = dataBase.name;
+        this.dbName = dataBase.name;
         this.tables = dataBase.tables;
     }
-    DbHelper.prototype.createMetaData = function (callBack) {
+    DbHelper.prototype.createMetaData = function () {
         var _this = this;
-        var index = 0;
-        var tableHelperList = [];
-        var createMetaDataForTable = function () {
-            if (index < _this.tables.length) {
-                var table = _this.tables[index], tableHelperInstance_1 = new _table_helper__WEBPACK_IMPORTED_MODULE_0__["TableHelper"](table);
-                tableHelperInstance_1.createMetaData(_this.name, function () {
-                    tableHelperInstance_1.callback = null;
-                    tableHelperList.push(tableHelperInstance_1);
-                    createMetaDataForTable();
-                });
-                ++index;
-            }
-            else {
-                callBack(tableHelperList);
-            }
-        };
-        createMetaDataForTable();
+        return Promise.all(this.tables.map(function (table) {
+            return new _table_helper__WEBPACK_IMPORTED_MODULE_0__["TableHelper"](table).createMetaData(_this.dbName);
+        }));
+        // const createMetaDataForTable = () => {
+        //     if (index < this.tables.length) {
+        //         const table: Table = this.tables[index];
+        //         const tableHelperInstance: TableHelper = new TableHelper(table);
+        //         tableHelperInstance.createMetaData(this.name, function () {
+        //             tableHelperInstance.callback = null;
+        //             tableHelperList.push(tableHelperInstance);
+        //             createMetaDataForTable();
+        //         });
+        //         ++index;
+        //     }
+        //     else {
+        //         callBack(tableHelperList);
+        //     }
+        // };
+        // createMetaDataForTable();
     };
     return DbHelper;
 }());
@@ -6709,6 +6714,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TableHelper", function() { return TableHelper; });
 /* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../keystore/index */ "./src/worker/keystore/index.ts");
 /* harmony import */ var _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../business/idb_helper */ "./src/worker/business/idb_helper.ts");
+/* harmony import */ var _business_helpers_promise__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../business/helpers/promise */ "./src/worker/business/helpers/promise.ts");
+
 
 
 var TableHelper = /** @class */ (function () {
@@ -6721,10 +6728,13 @@ var TableHelper = /** @class */ (function () {
         this.columns = table.columns;
         this.setPrimaryKey_();
     }
-    TableHelper.prototype.createMetaData = function (dbName, callBack) {
-        this.callback = callBack;
-        this.setRequireDelete_(dbName);
-        this.setDbVersion_(dbName);
+    TableHelper.prototype.createMetaData = function (dbName) {
+        var _this = this;
+        return Object(_business_helpers_promise__WEBPACK_IMPORTED_MODULE_2__["promise"])(function (resolve) {
+            _this.callback = resolve;
+            _this.setRequireDelete_(dbName);
+            _this.setDbVersion_(dbName);
+        });
     };
     TableHelper.prototype.setPrimaryKey_ = function () {
         var _this = this;
@@ -6753,7 +6763,7 @@ var TableHelper = /** @class */ (function () {
         // setting table version
         _keystore_index__WEBPACK_IMPORTED_MODULE_0__["KeyStore"].set("JsStore_" + dbName + "_" + this.name + "_Version", _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDbVersion).then(function () {
             _this.version = _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDbVersion;
-            _this.callback();
+            _this.callback(_this);
         });
     };
     return TableHelper;
@@ -6832,6 +6842,7 @@ var QueryExecutor = /** @class */ (function () {
             case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].ChangeLogStatus:
             case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Terminate:
             case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].OpenDb:
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].InitKeyStore:
                 this.executeLogic_(request);
                 break;
             default:
@@ -6954,9 +6965,16 @@ var QueryExecutor = /** @class */ (function () {
             case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Terminate:
                 this.terminate_(onSuccess, onError);
                 break;
+            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].InitKeyStore:
+                this.initKeyStore_(onSuccess);
+                break;
             default:
                 console.error('The Api:-' + request.name + ' does not support.');
         }
+    };
+    QueryExecutor.prototype.initKeyStore_ = function (onSuccess) {
+        _keystore_index__WEBPACK_IMPORTED_MODULE_6__["KeyStore"].init();
+        onSuccess();
     };
     QueryExecutor.prototype.getDbSchema_ = function (dbName) {
         return _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].getDbSchema(dbName);
@@ -7101,7 +7119,7 @@ var QueryExecutor = /** @class */ (function () {
             _keystore_index__WEBPACK_IMPORTED_MODULE_6__["KeyStore"].set("JsStore_" + _this.activeDb_.name + "_Schema", _this.activeDb_);
             // create meta data
             var dbHelper = new _model_db_helper__WEBPACK_IMPORTED_MODULE_7__["DbHelper"](_business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDb);
-            dbHelper.createMetaData(function (tablesMetaData) {
+            dbHelper.createMetaData().then(function (tablesMetaData) {
                 var createDbInstance = new _business_create_db__WEBPACK_IMPORTED_MODULE_8__["CreateDb"](onSuccess, onError);
                 createDbInstance.execute(tablesMetaData);
             });
@@ -7213,19 +7231,16 @@ var QueryExecutor = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "initialize", function() { return initialize; });
-/* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./keystore/index */ "./src/worker/keystore/index.ts");
-/* harmony import */ var _query_executor__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./query_executor */ "./src/worker/query_executor.ts");
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./config */ "./src/worker/config.ts");
-
+/* harmony import */ var _query_executor__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./query_executor */ "./src/worker/query_executor.ts");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./src/worker/config.ts");
 
 
 var initialize = function () {
     if (typeof self.alert === 'undefined' && typeof ServiceWorkerGlobalScope === 'undefined') {
-        _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker = true;
+        _config__WEBPACK_IMPORTED_MODULE_1__["Config"].isRuningInWorker = true;
         self.onmessage = function (e) {
-            new _query_executor__WEBPACK_IMPORTED_MODULE_1__["QueryExecutor"]().checkConnectionAndExecuteLogic(e.data);
+            new _query_executor__WEBPACK_IMPORTED_MODULE_0__["QueryExecutor"]().checkConnectionAndExecuteLogic(e.data);
         };
-        _keystore_index__WEBPACK_IMPORTED_MODULE_0__["KeyStore"].init();
     }
 };
 initialize();

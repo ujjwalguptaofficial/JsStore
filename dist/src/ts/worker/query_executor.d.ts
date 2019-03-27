@@ -7,6 +7,7 @@ export declare class QueryExecutor {
     private changeLogStatus_;
     private returnResult_;
     private executeLogic_;
+    private initKeyStore_;
     private getDbSchema_;
     private terminate_;
     private isDbDeletedByBrowser_;

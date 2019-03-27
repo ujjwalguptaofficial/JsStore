@@ -1,4 +1,4 @@
-const nodeModules = "../node_modules/"
+const nodeModules = "node_modules/"
 exports.list_of_files = [
     'test/scripts/common.js',
     nodeModules + 'promise-polyfill/dist/polyfill.min.js',

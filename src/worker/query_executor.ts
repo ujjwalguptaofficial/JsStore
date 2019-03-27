@@ -48,6 +48,7 @@ export class QueryExecutor {
             case API.ChangeLogStatus:
             case API.Terminate:
             case API.OpenDb:
+            case API.InitKeyStore:
                 this.executeLogic_(request);
                 break;
             default:
@@ -159,9 +160,17 @@ export class QueryExecutor {
             case API.Terminate:
                 this.terminate_(onSuccess, onError);
                 break;
+            case API.InitKeyStore:
+                this.initKeyStore_(onSuccess);
+                break;
             default:
                 console.error('The Api:-' + request.name + ' does not support.');
         }
+    }
+
+    private initKeyStore_(onSuccess) {
+        KeyStore.init();
+        onSuccess();
     }
 
     private getDbSchema_(dbName: string) {
@@ -243,7 +252,7 @@ export class QueryExecutor {
 
     private insert_(query: InsertQuery, onSuccess: () => void, onError: (err: IError) => void) {
         const queryHelper = new QueryHelper(API.Insert, query);
-        queryHelper.checkAndModify().then(() => {
+        queryHelper.checkAndModify().then(function () {
             query = queryHelper.query;
             const insertInstance = new Insert.Instance(query, onSuccess, onError);
             insertInstance.execute();
@@ -327,7 +336,7 @@ export class QueryExecutor {
             KeyStore.set("JsStore_" + this.activeDb_.name + "_Schema", this.activeDb_);
             // create meta data
             const dbHelper = new DbHelper(IdbHelper.activeDb);
-            dbHelper.createMetaData((tablesMetaData: TableHelper[]) => {
+            dbHelper.createMetaData().then(function (tablesMetaData: TableHelper[]) {
                 const createDbInstance = new CreateDb(onSuccess, onError);
                 createDbInstance.execute(tablesMetaData);
             });
@@ -367,7 +376,7 @@ export class QueryExecutor {
     }
 
     private exportJson_(query: SelectQuery, onSuccess: (url: string) => void, onError: (err: IError) => void) {
-        this.select_(query, (results) => {
+        this.select_(query, function (results) {
             const url = URL.createObjectURL(new Blob([JSON.stringify(results)], {
                 type: "text/json"
             }));
@@ -384,12 +393,12 @@ export class QueryExecutor {
     private isDbExist_(dbInfo, onSuccess: (isExist: boolean) => void, onError: (err: IError) => void) {
         if (this.dbStatus_.conStatus !== CONNECTION_STATUS.UnableToStart) {
             if (this.getType_(dbInfo) === DATA_TYPE.String) {
-                this.getDbVersion_(dbInfo).then(dbVersion => {
+                this.getDbVersion_(dbInfo).then(function (dbVersion) {
                     onSuccess(Boolean(dbVersion));
                 });
             }
             else {
-                this.getDbVersion_(dbInfo.dbName).then(dbVersion => {
+                this.getDbVersion_(dbInfo.dbName).then(function (dbVersion) {
                     onSuccess(dbInfo.table.version <= dbVersion);
                 });
             }

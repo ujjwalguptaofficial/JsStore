@@ -1,5 +1,5 @@
 import { LogHelper } from "./log_helper";
-import { ERROR_TYPE, API } from "./enums";
+import { API } from "./enums";
 import { WebWorkerRequest, WebWorkerResult } from "./types";
 import { Config } from "./config";
 
@@ -10,6 +10,7 @@ export class InstanceHelper {
   private requestQueue_: WebWorkerRequest[] = [];
   private isCodeExecuting_ = false;
 
+  // these apis have special permissions. These apis dont wait for database open.
   private whiteListApi_ = [
     API.CreateDb,
     API.IsDbExist,
@@ -20,13 +21,17 @@ export class InstanceHelper {
     API.Get,
     API.Set,
     API.ChangeLogStatus,
-    API.Terminate
+    API.Terminate,
+    API.InitKeyStore
   ];
 
   constructor(worker?: Worker) {
     if (worker) {
       this.worker_ = worker;
       this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
+      this.pushApi({
+        name: API.InitKeyStore
+      } as WebWorkerRequest);
     } else {
       Config.isRuningInWorker = false;
       JsStoreWorker.KeyStore.init();
