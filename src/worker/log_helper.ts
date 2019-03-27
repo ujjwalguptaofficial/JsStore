@@ -27,9 +27,9 @@ export class LogHelper implements IError {
         console.error(this.get());
     }
 
-    logWarning() {
-        console.warn(this.get());
-    }
+    // logWarning() {
+    //     console.warn(this.get());
+    // }
 
     get() {
         return {
@@ -97,6 +97,9 @@ export class LogHelper implements IError {
                 break;
             case ERROR_TYPE.InvalidColumn:
                 errMsg = `Invalid column name ${this.info_['column']}`;
+                break;
+            case ERROR_TYPE.NullValueInWhere:
+                errMsg = `Null/undefined is not allowed in where. Column '${this.info_['column']}' has null`;
                 break;
             default:
                 errMsg = this.message;

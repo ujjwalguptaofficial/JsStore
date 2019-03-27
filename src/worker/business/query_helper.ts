@@ -77,7 +77,7 @@ export class QueryHelper {
     }
 
     private checkBulkInsert_() {
-        this.error = this.isInsertQryValid_(() => {
+        this.error = this.isInsertQryValid_(function () {
 
         });
     }
@@ -110,15 +110,33 @@ export class QueryHelper {
         this.error = new Update.SchemaChecker(this.getTable_(this.query.in)).
             check(this.query.set, this.query.in);
         if (this.error == null) {
-            this.addGreatAndLessToNotOp_();
+            if (this.query.where != null) {
+                this.checkForNullInWhere_();
+                if (this.error == null) {
+                    this.addGreatAndLessToNotOp_();
+                }
+            }
+        }
+    }
+
+    private checkForNullInWhere_() {
+        for (const key in this.query.where) {
+            if (this.query.where[key] == null) {
+                this.error = new LogHelper(ERROR_TYPE.NullValueInWhere, { column: key }).get();
+                return;
+            }
         }
     }
 
     private checkFetchQuery_() {
         if (this.isTableExist_(this.query.from) === true) {
             if (this.query.where != null) {
-                this.addGreatAndLessToNotOp_();
+                this.checkForNullInWhere_();
+                if (this.error == null) {
+                    this.addGreatAndLessToNotOp_();
+                }
             }
+
         }
         else {
             this.error = new LogHelper(ERROR_TYPE.TableNotExist, { tableName: this.query.from }).get();
@@ -127,7 +145,7 @@ export class QueryHelper {
 
     private isTableExist_(tableName: string): boolean {
         const index = this.activeDb_.tables.findIndex(table => table.name === tableName);
-        return index >= 0 ? true : false;
+        return index >= 0;
     }
 
     private get activeDb_() {

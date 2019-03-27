@@ -41,26 +41,23 @@ describe('Test Select Api', function () {
         })
     });
 
-    // it('EnableSearch column test', function (done) {
-    //     con.select({
-    //         from: 'Customers',
-    //         where: {
-    //             Email: 'uk@gmail.com'
-    //         }
-    //     }).
-    //     then(function (results) {
-    //         done(results);
-    //     }).
-    //     catch(function (err) {
-    //         console.log(err);
-    //         var error = {
-    //             "message": "Search is turned off for the Column 'Email'",
-    //             "type": "enable_search_off"
-    //         };
-    //         expect(err).to.be.an('object').eql(error);
-    //         done();
-    //     })
-    // });
+    it('EnableSearch column test', function (done) {
+        con.select({
+            from: 'Customers',
+            where: {
+                Email: 'uk@gmail.com'
+            }
+        }).
+        catch(function (err) {
+            console.log(err);
+            var error = {
+                "message": "Search is turned off for the Column 'Email'",
+                "type": "enable_search_off"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    });
 
     it('select with where', function (done) {
         con.select({
@@ -190,7 +187,8 @@ describe('Test Select Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: { in: ['Germany', 'France', 'UK']
+                Country: {
+                    in: ['Germany', 'France', 'UK']
                 }
             }
         }).
@@ -381,5 +379,22 @@ describe('Test Select Api', function () {
         catch(function (err) {
             done(err);
         });
+    });
+
+    it('select with where & key null', function (done) {
+        con.select({
+            from: 'Customers',
+            where: {
+                Country: null
+            }
+        }).
+        catch(function (err) {
+            var error = {
+                "message": "Null/undefined is not allowed in where. Column 'Country' has null",
+                "type": "null_value_in_where"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
     });
 });

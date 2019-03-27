@@ -1,7 +1,8 @@
 describe('Test update Api', function () {
 
     it('update with where - using promise', function (done) {
-        con.update({ in: "Customers",
+        con.update({
+            in: "Customers",
             set: {
                 ContactName: 'Ujjwal',
                 City: 'Bhubaneswar'
@@ -20,7 +21,8 @@ describe('Test update Api', function () {
     });
 
     it('wrong table test', function (done) {
-        con.update({ in: "Customerss",
+        con.update({
+            in: "Customerss",
             set: {
                 ContactName: 'Ujjwal',
                 City: 'Bhubaneswar'
@@ -42,7 +44,8 @@ describe('Test update Api', function () {
     });
 
     it('update without set option', function (done) {
-        con.update({ in: "Customerss",
+        con.update({
+            in: "Customerss",
             where: {
                 CustomerID: 1
             }
@@ -58,7 +61,8 @@ describe('Test update Api', function () {
     });
 
     it('update with invalid set data', function (done) {
-        con.update({ in: "Customers",
+        con.update({
+            in: "Customers",
             where: {
                 CustomerID: 1
             },
@@ -75,7 +79,8 @@ describe('Test update Api', function () {
     });
 
     it('update with like -"%or%', function (done) {
-        con.update({ in: 'Customers',
+        con.update({
+            in: 'Customers',
             where: {
                 CustomerName: {
                     like: '%or%'
@@ -94,7 +99,8 @@ describe('Test update Api', function () {
     });
 
     it('update with like -"o%', function (done) {
-        con.update({ in: 'Customers',
+        con.update({
+            in: 'Customers',
             where: {
                 CustomerName: {
                     like: 'o%'
@@ -113,7 +119,8 @@ describe('Test update Api', function () {
     });
 
     it('update with like -"%o', function (done) {
-        con.update({ in: 'Customers',
+        con.update({
+            in: 'Customers',
             where: {
                 CustomerName: {
                     like: '%o'
@@ -132,7 +139,8 @@ describe('Test update Api', function () {
     });
 
     it('update with like', function (done) {
-        con.update({ in: 'Customers',
+        con.update({
+            in: 'Customers',
             where: {
                 CustomerName: {
                     like: '%or%'
@@ -151,7 +159,8 @@ describe('Test update Api', function () {
     });
 
     it('update without ignore case', function (done) {
-        con.update({ in: "Customers",
+        con.update({
+            in: "Customers",
             set: {
                 ContactName: 'Ujjwal',
                 City: 'bhubaneswar'
@@ -187,7 +196,8 @@ describe('Test update Api', function () {
             done(err);
         });
 
-        con.update({ in: "Customers",
+        con.update({
+            in: "Customers",
             ignoreCase: true,
             set: {
                 ContactName: 'Ujjwal',
@@ -224,7 +234,8 @@ describe('Test update Api', function () {
     });
 
     it('update with or', function (done) {
-        con.update({ in: 'Customers',
+        con.update({
+            in: 'Customers',
             where: {
                 Country: 'Mexico',
                 or: {
@@ -248,7 +259,8 @@ describe('Test update Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: { in: ['Germany', 'France', 'UK']
+                Country: {
+                    in: ['Germany', 'France', 'UK']
                 }
             }
         }).then(function (results) {
@@ -257,9 +269,11 @@ describe('Test update Api', function () {
         catch(function (err) {
             done(err);
         })
-        con.update({ in: 'Customers',
+        con.update({
+            in: 'Customers',
             where: {
-                Country: { in: ['Germany', 'France', 'UK']
+                Country: {
+                    in: ['Germany', 'France', 'UK']
                 }
             },
             set: {
@@ -291,7 +305,8 @@ describe('Test update Api', function () {
             done(err);
         });
 
-        con.update({ in: 'Customers',
+        con.update({
+            in: 'Customers',
             where: {
                 Country: {
                     '!=': 'Mexico'
@@ -326,7 +341,8 @@ describe('Test update Api', function () {
             done(err);
         })
 
-        con.update({ in: 'Products',
+        con.update({
+            in: 'Products',
             where: {
                 Price: {
                     '!=': 20
@@ -363,7 +379,8 @@ describe('Test update Api', function () {
     });
 
     it('update with operator - >', function (done) {
-        con.update({ in: 'Products',
+        con.update({
+            in: 'Products',
             where: {
                 Price: {
                     ">": 20
@@ -399,7 +416,8 @@ describe('Test update Api', function () {
     });
 
     it('update with operator - >=', function (done) {
-        con.update({ in: 'Products',
+        con.update({
+            in: 'Products',
             where: {
                 Price: {
                     ">=": 20
@@ -435,7 +453,8 @@ describe('Test update Api', function () {
     });
 
     it('update with operator - <', function (done) {
-        con.update({ in: 'Products',
+        con.update({
+            in: 'Products',
             where: {
                 Price: {
                     "<": 20
@@ -471,7 +490,8 @@ describe('Test update Api', function () {
     });
 
     it('update with operator - <=', function (done) {
-        con.update({ in: 'Products',
+        con.update({
+            in: 'Products',
             where: {
                 Price: {
                     "<=": 20
@@ -510,7 +530,8 @@ describe('Test update Api', function () {
     });
 
     it('update with operator - between', function (done) {
-        con.update({ in: 'Products',
+        con.update({
+            in: 'Products',
             where: {
                 Price: {
                     "-": {
@@ -528,6 +549,28 @@ describe('Test update Api', function () {
         }).
         catch(function (err) {
             done(err);
+        })
+    });
+
+    it('update with where & key null in where', function (done) {
+        con.update({
+            in: "Customers",
+            set: {
+                ContactName: 'Ujjwal',
+                City: 'Bhubaneswar'
+            },
+            where: {
+                CustomerID: null
+            }
+        }).
+
+        catch(function (err) {
+            var error = {
+                "message": "Null/undefined is not allowed in where. Column 'CustomerID' has null",
+                "type": "null_value_in_where"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
         })
     });
 });

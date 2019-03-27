@@ -51,7 +51,8 @@ export enum ERROR_TYPE {
     DbBlocked = "Db_blocked",
     IndexedDbUndefined = "indexeddb_undefined",
     IndexedDbBlocked = "indexeddb_blocked",
-    InvalidColumn = "invalid_column"
+    InvalidColumn = "invalid_column",
+    NullValueInWhere = "null_value_in_where"
 }
 
 export enum QUERY_OPTION {
