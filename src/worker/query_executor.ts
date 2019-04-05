@@ -11,7 +11,7 @@ import { DropDb } from "./business/drop_db";
 import { KeyStore } from "./keystore/index";
 import { DbHelper } from "./model/db_helper";
 import { TableHelper } from "./model/table_helper";
-import { CreateDb } from "./business/create_db";
+import { InitDb } from "./business/init_db";
 import { DataBase } from "./model/database";
 import * as Select from './business/select/index';
 import * as Count from './business/count/index';
@@ -27,6 +27,7 @@ import { QueryHelper } from "./business/query_helper";
 import { IDataBase, IError } from "./interfaces";
 
 export class QueryExecutor {
+    private dbConnection_;
     static isTransactionQuery = false;
     onQueryFinished: (result: any) => void;
 
@@ -36,6 +37,7 @@ export class QueryExecutor {
     }
 
     checkConnectionAndExecuteLogic(request: WebWorkerRequest) {
+        IdbHelper.dbConnection = this.dbConnection_;
         LogHelper.log('request executing:' + request.name);
         switch (request.name) {
             case API.CreateDb:
@@ -336,9 +338,11 @@ export class QueryExecutor {
             KeyStore.set("JsStore_" + this.activeDb_.name + "_Schema", this.activeDb_);
             // create meta data
             const dbHelper = new DbHelper(IdbHelper.activeDb);
-            dbHelper.createMetaData().then(function (tablesMetaData: TableHelper[]) {
-                const createDbInstance = new CreateDb(onSuccess, onError);
-                createDbInstance.execute(tablesMetaData);
+            dbHelper.createMetaData().then((tablesMetaData: TableHelper[]) => {
+                const createDbInstance = new InitDb(onSuccess, onError);
+                createDbInstance.execute(tablesMetaData).then(result => {
+                    this.dbConnection_ = result;
+                });
             });
         };
         if (dataBase == null) {

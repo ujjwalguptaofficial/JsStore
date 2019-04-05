@@ -6,7 +6,7 @@ import { BaseDb } from "./base_db";
 
 export class OpenDb extends BaseDb {
 
-
+    onSuccess: any;
     constructor(onSuccess: () => void, onError: (err: IError) => void) {
         super();
         this.onSuccess = onSuccess;

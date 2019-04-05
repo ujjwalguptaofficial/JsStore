@@ -10,6 +10,8 @@ export class InstanceHelper {
   private requestQueue_: WebWorkerRequest[] = [];
   private isCodeExecuting_ = false;
 
+  private executor_;
+
   // these apis have special permissions. These apis dont wait for database open.
   private whiteListApi_ = [
     API.CreateDb,
@@ -35,6 +37,7 @@ export class InstanceHelper {
     } else {
       Config.isRuningInWorker = false;
       JsStoreWorker.KeyStore.init();
+      this.executor_ = new JsStoreWorker.QueryExecutor(this.processFinishedQuery_.bind(this));
     }
   }
 
@@ -118,7 +121,7 @@ export class InstanceHelper {
       this.worker_.postMessage(requestForWorker);
     }
     else {
-      new JsStoreWorker.QueryExecutor(this.processFinishedQuery_.bind(this)).checkConnectionAndExecuteLogic(requestForWorker);
+      this.executor_.checkConnectionAndExecuteLogic(requestForWorker);
     }
 
   }
