@@ -39,7 +39,7 @@ export class QueryExecutor {
         IdbHelper.dbConnection = this.dbConnection_;
         LogHelper.log('request executing:' + request.name);
         switch (request.name) {
-            case API.CreateDb:
+            case API.InitDb:
             case API.IsDbExist:
             case API.GetDbVersion:
             case API.GetDbList:
@@ -48,7 +48,6 @@ export class QueryExecutor {
             case API.Set:
             case API.ChangeLogStatus:
             case API.Terminate:
-            case API.OpenDb:
             case API.InitKeyStore:
                 this.executeLogic_(request);
                 break;
@@ -125,7 +124,7 @@ export class QueryExecutor {
             case API.GetDbSchema:
                 this.getDbSchema_(request.query as string).then(onSuccess).catch(onError);
                 break;
-            case API.CreateDb: this.initDb_(request.query as IDataBase, onSuccess, onError);
+            case API.InitDb: this.initDb_(request.query as IDataBase, onSuccess, onError);
                 break;
             case API.Clear: this.clear_(request.query as string, onSuccess, onError);
                 break;

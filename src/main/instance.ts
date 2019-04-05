@@ -16,29 +16,15 @@ export class Instance extends InstanceHelper {
     }
 
     /**
-     *  open database
-     * 
-     * @param {string} dbName 
-     * @returns 
-     * @memberof Instance
-     */
-    openDb(dbName: string) {
-        return this.pushApi<null>({
-            name: API.OpenDb,
-            query: dbName
-        });
-    }
-
-    /**
-     * creates DataBase
+     * initializes DataBase
      * 
      * @param {IDataBase} dataBase 
      * @returns 
      * @memberof Instance
      */
-    createDb(dataBase: IDataBase) {
+    initDb(dataBase: IDataBase) {
         return this.pushApi<string[]>({
-            name: API.CreateDb,
+            name: API.InitDb,
             query: dataBase
         });
     }

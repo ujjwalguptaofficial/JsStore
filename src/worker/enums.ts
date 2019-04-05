@@ -85,7 +85,7 @@ export enum IDB_MODE {
 }
 
 export enum API {
-    CreateDb = "create_db",
+    InitDb = "init_db",
     IsDbExist = "is_db_exist",
     GetDbVersion = "get_db_version",
     GetDbList = "get_db_list",
@@ -96,7 +96,6 @@ export enum API {
     Update = "update",
     Remove = "remove",
     GetDbSchema = "get_db_schema",
-    OpenDb = "open_db",
     Clear = "clear",
     DropDb = "drop_db",
     Count = "count",

@@ -29,7 +29,7 @@ export class InitDb extends BaseDb {
 
             dbRequest.onsuccess = (event) => {
                 this.dbStatus.conStatus = CONNECTION_STATUS.Connected;
-                this.dbConnection = dbRequest.result;
+                res(dbRequest.result);
                 (this.dbConnection as any).onclose = this.onDbClose;
 
                 this.dbConnection.onversionchange = this.onDbVersionChange;
@@ -39,7 +39,6 @@ export class InitDb extends BaseDb {
                 this.savedbNameIntoDbList_();
                 this.onSuccess(this.isDbCreated_);
                 this.setPrimaryKey_();
-                res(dbRequest.result);
 
             };
 

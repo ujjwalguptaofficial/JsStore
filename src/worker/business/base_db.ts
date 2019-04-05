@@ -19,10 +19,6 @@ export class BaseDb {
     }
 
 
-    protected set dbConnection(value) {
-        IdbHelper.dbConnection = value;
-    }
-
     protected get dbConnection() {
         return IdbHelper.dbConnection;
     }

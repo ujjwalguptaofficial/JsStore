@@ -14,11 +14,10 @@ export class InstanceHelper {
 
   // these apis have special permissions. These apis dont wait for database open.
   private whiteListApi_ = [
-    API.CreateDb,
+    API.InitDb,
     API.IsDbExist,
     API.GetDbVersion,
     API.GetDbList,
-    API.OpenDb,
     API.GetDbSchema,
     API.Get,
     API.Set,
@@ -53,8 +52,7 @@ export class InstanceHelper {
         finishedRequest.onError(message.errorDetails);
       } else {
         switch (finishedRequest.name) {
-          case API.OpenDb:
-          case API.CreateDb:
+          case API.InitDb:
             this.isDbOpened_ = true; break;
           case API.Terminate:
             this.isDbOpened_ = false;

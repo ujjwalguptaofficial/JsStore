@@ -6,8 +6,8 @@ import { IError } from "./interfaces";
 export type WebWorkerRequest = {
     name: API;
     query: any;
-    onSuccess: (results) => void;
-    onError: (err: IError) => void;
+    onSuccess?: (results) => void;
+    onError?: (err: IError) => void;
 };
 
 export type WebWorkerResult = {
