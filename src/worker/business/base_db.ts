@@ -1,8 +1,5 @@
-import { IdbHelper } from "./idb_helper";
-import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
-import { IDbStatus, IError } from "../interfaces";
-import { DataBase } from "../model/database";
-import { Util } from "../util";
+import { IdbHelper } from "./index";
+import { IError } from "../interfaces";
 export class BaseDb {
     onSuccess: (isDbCreated: boolean) => void;
     onError: (err: IError) => void;

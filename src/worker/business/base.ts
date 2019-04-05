@@ -1,6 +1,5 @@
-import { BaseHelper } from "./base_helper";
 import { IError } from "../interfaces";
-import { WhereChecker } from "./where_checker";
+import { WhereChecker, BaseHelper } from "./index";
 import { LogHelper } from "../log_helper";
 import { ERROR_TYPE, OCCURENCE, DATA_TYPE } from "../enums";
 import { Column } from "../model/index";

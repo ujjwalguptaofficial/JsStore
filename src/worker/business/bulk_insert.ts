@@ -1,4 +1,4 @@
-import { Base } from "./base";
+import { Base } from "./index";
 import { InsertQuery } from "../types";
 import { IError } from "../interfaces";
 

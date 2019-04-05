@@ -1,44 +1,13 @@
-import { IdbHelper } from "./business/index";
-import { CONNECTION_STATUS, ERROR_TYPE, API } from "./enums";
-import { QueryExecutor } from "./index";
-import { IDataBase } from "./interfaces";
-import { WebWorkerRequest, SelectQuery, WebWorkerResult } from "./types";
-import { promise } from "./business/helpers/promise";
-
-const onResultEvaluated = function (result: WebWorkerResult) {
-    const finishedRequest: WebWorkerRequest = requestQueue.shift();
-    if (finishedRequest) {
-        if (result.errorOccured) {
-            finishedRequest.onError(result.errorDetails as any);
-        } else {
-            finishedRequest.onSuccess(result.returnedValue);
-        }
-        isQueryExecuting = false;
-        sendQueryForExecution();
-    }
-};
-
-let isQueryExecuting = false;
-
-const sendQueryForExecution = function () {
-    if (isQueryExecuting === false) {
-        isQueryExecuting = true;
-        executor.checkConnectionAndExecuteLogic(requestQueue[0]);
-    }
-};
-
-const executor = new QueryExecutor(onResultEvaluated);
-
-const execute = function (request: WebWorkerRequest) {
-    requestQueue.push(request);
-    sendQueryForExecution();
-};
-
-const requestQueue: WebWorkerRequest[] = [];
+import { SelectQuery, InsertQuery, RemoveQuery } from "../types";
+import { IDataBase } from "../interfaces";
+import { promise, IdbHelper } from "../business/index";
+import { API, CONNECTION_STATUS, ERROR_TYPE } from "../enums";
+import { execute } from "./helper";
 
 const tableName = "LocalStore";
 const columnName = "Key";
-export class KeyStoreHelper {
+const columnValue = "Value";
+export class KeyStore {
 
     static init() {
         setDbType();
@@ -53,6 +22,7 @@ export class KeyStoreHelper {
                 }]
             }]
         } as IDataBase;
+
         return promise(function (res, rej) {
             execute({
                 name: API.InitDb,
@@ -64,8 +34,8 @@ export class KeyStoreHelper {
 
     }
 
-    static get(key: string) {
-        return promise(function (res, rej) {
+    static get<T>(key: string) {
+        return promise<T>(function (res, rej) {
             execute({
                 name: API.Select,
                 query: {
@@ -79,6 +49,51 @@ export class KeyStoreHelper {
             });
         });
 
+    }
+
+    static set(key: string, value) {
+        return promise(function (res, rej) {
+            execute({
+                name: API.Insert,
+                query: {
+                    into: tableName,
+                    values: [{
+                        [columnName]: key,
+                        [columnValue]: value
+                    }],
+                    upsert: true
+                } as InsertQuery,
+                onSuccess: res,
+                onError: rej
+            });
+        });
+    }
+
+    static remove(key: string) {
+        return promise<number>(function (res, rej) {
+            execute({
+                name: API.Remove,
+                query: {
+                    from: tableName,
+                    where: {
+                        [columnName]: key
+                    }
+                } as RemoveQuery,
+                onSuccess: res,
+                onError: rej
+            });
+        });
+    }
+
+    static close() {
+        return promise(function (res, rej) {
+            execute({
+                name: API.Terminate,
+                query: null,
+                onSuccess: res,
+                onError: rej
+            });
+        });
     }
 }
 
