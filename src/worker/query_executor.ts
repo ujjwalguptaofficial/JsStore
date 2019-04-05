@@ -6,7 +6,6 @@ import {
 } from "./types";
 import { CONNECTION_STATUS, ERROR_TYPE, DATA_TYPE, API } from "./enums";
 import { Config } from "./config";
-import { OpenDb } from "./business/open_db";
 import { DropDb } from "./business/drop_db";
 import { KeyStore } from "./keystore/index";
 import { DbHelper } from "./model/db_helper";
@@ -60,13 +59,13 @@ export class QueryExecutor {
                     } break;
                     case CONNECTION_STATUS.Closed: {
                         if (this.isDbDeletedByBrowser_ === true) {
-                            this.createDb_(null, () => {
+                            this.initDb_(null, () => {
                                 this.isDbDeletedByBrowser_ = false;
                                 this.checkConnectionAndExecuteLogic(request);
                             }, request.onError);
                         }
                         else {
-                            this.openDb_(this.activeDb_.name, () => {
+                            this.initDb_(this.activeDb_, () => {
                                 this.checkConnectionAndExecuteLogic(request);
                             }, request.onError);
                         }
@@ -126,18 +125,7 @@ export class QueryExecutor {
             case API.GetDbSchema:
                 this.getDbSchema_(request.query as string).then(onSuccess).catch(onError);
                 break;
-            case API.OpenDb:
-                if (this.isDbDeletedByBrowser_ === true) {
-                    this.createDb_(null, () => {
-                        this.isDbDeletedByBrowser_ = false;
-                        onSuccess();
-                    }, onError);
-                }
-                else {
-                    this.openDb_(request.query, onSuccess, onError);
-                }
-                break;
-            case API.CreateDb: this.createDb_(request.query as IDataBase, onSuccess, onError);
+            case API.CreateDb: this.initDb_(request.query as IDataBase, onSuccess, onError);
                 break;
             case API.Clear: this.clear_(request.query as string, onSuccess, onError);
                 break;
@@ -206,24 +194,24 @@ export class QueryExecutor {
         IdbHelper.activeDb = value;
     }
 
-    private openDb_(dbName, onSuccess: () => void, onError: (err: IError) => void) {
-        this.getDbVersion_(dbName).then(dbVersion => {
-            if (dbVersion !== 0) {
-                this.activeDbVersion_ = dbVersion;
-                this.getDbSchema_(dbName).then(result => {
-                    this.activeDb_ = result;
-                    const openDbProject = new OpenDb(onSuccess, onError);
-                    openDbProject.execute();
-                });
-            }
-            else {
-                const err = new LogHelper(ERROR_TYPE.DbNotExist, { DbName: dbName });
-                err.logError();
-                onError(err.get());
-            }
-        });
+    // private openDb_(dbName, onSuccess: () => void, onError: (err: IError) => void) {
+    //     this.getDbVersion_(dbName).then(dbVersion => {
+    //         if (dbVersion !== 0) {
+    //             this.activeDbVersion_ = dbVersion;
+    //             this.getDbSchema_(dbName).then(result => {
+    //                 this.activeDb_ = result;
+    //                 const openDbProject = new OpenDb(onSuccess, onError);
+    //                 openDbProject.execute();
+    //             });
+    //         }
+    //         else {
+    //             const err = new LogHelper(ERROR_TYPE.DbNotExist, { DbName: dbName });
+    //             err.logError();
+    //             onError(err.get());
+    //         }
+    //     });
 
-    }
+    // }
 
     private closeDb_() {
         if (IdbHelper.dbStatus.conStatus === CONNECTION_STATUS.Connected) {
@@ -330,7 +318,7 @@ export class QueryExecutor {
         }
     }
 
-    private createDb_(
+    private initDb_(
         dataBase: IDataBase, onSuccess: () => void, onError: (err: IError) => void
     ) {
         const processCreateDb = () => {
