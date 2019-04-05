@@ -1,4 +1,3 @@
-import { IdbHelper } from "./business/idb_helper";
 import { LogHelper } from "./log_helper";
 import {
     TranscationQuery, UpdateQuery,
@@ -6,7 +5,7 @@ import {
 } from "./types";
 import { CONNECTION_STATUS, ERROR_TYPE, DATA_TYPE, API } from "./enums";
 import { Config } from "./config";
-import { DropDb, Clear, BulkInsert, QueryHelper, InitDb } from "./business/index";
+import { DropDb, Clear, BulkInsert, QueryHelper, InitDb, IdbHelper } from "./business/index";
 import { KeyStore } from "./keystore/index";
 import { DbHelper, DataBase, TableHelper } from "./model/index";
 import * as Select from './business/select/index';

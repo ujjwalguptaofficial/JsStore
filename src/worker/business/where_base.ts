@@ -1,4 +1,4 @@
-import { Base } from "./base";
+import { Base } from "./index";
 
 export class WhereBase extends Base {
     protected results : any[] = [] ;

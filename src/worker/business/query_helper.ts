@@ -1,14 +1,12 @@
 import { API, ERROR_TYPE, QUERY_OPTION, DATA_TYPE } from "../enums";
-import { IdbHelper } from "./idb_helper";
+import { IdbHelper, promise } from "./index";
 import { InsertQuery } from "../types";
 import { LogHelper } from "../log_helper";
 import { Util } from "../util";
 import * as Update from "./update/index";
 import * as Insert from "./insert/index";
-import { Table } from "../model/table";
+import { Table } from "../model/index";
 import { IError } from "../interfaces";
-import { promise } from "./helpers/promise";
-
 export class QueryHelper {
     api: API;
     query;

@@ -1,6 +1,11 @@
 import { IError } from "./interfaces";
 import { API } from "./enums";
 
+export type SetQuery = {
+    key: string;
+    value: any;
+};
+
 export type OrderQuery = {
     /**
      * sorting column name

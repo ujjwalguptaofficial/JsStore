@@ -2,10 +2,10 @@ import { API } from "./enums";
 import { InstanceHelper } from "./instance_helper";
 import {
     SelectQuery, CountQuery, InsertQuery,
-    UpdateQuery, RemoveQuery, DbInfo, TranscationQuery
+    UpdateQuery, RemoveQuery, DbInfo, TranscationQuery,
+    SetQuery
 } from "./types";
 import { Config } from "./config";
-import { SetQuery } from "../worker/types";
 import { Util } from "./util";
 import { IDataBase } from "./interfaces";
 
