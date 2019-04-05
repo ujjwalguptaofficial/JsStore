@@ -18,19 +18,6 @@ export class BaseDb {
         IdbHelper.dbStatus = value;
     }
 
-
-    protected get dbConnection() {
-        return IdbHelper.dbConnection;
-    }
-
-    protected updateDbStatus(status: CONNECTION_STATUS, err?: ERROR_TYPE) {
-        IdbHelper.updateDbStatus(status, err);
-    }
-
-    protected onDbDroppedByBrowser(deleteMetaData?: boolean) {
-        IdbHelper.callDbDroppedByBrowser(deleteMetaData);
-    }
-
     protected get dbVersion() {
         return parseInt(IdbHelper.activeDbVersion as any);
     }
@@ -45,26 +32,5 @@ export class BaseDb {
 
     protected setDbList(value) {
         return IdbHelper.setDbList(value);
-    }
-
-    protected isNullOrEmpty(value) {
-        return Util.isNullOrEmpty(value);
-    }
-
-    protected onDbClose(event) {
-        this.onDbDroppedByBrowser();
-        this.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
-    }
-
-    protected onDbVersionChange(e: IDBVersionChangeEvent) {
-        if (e.newVersion === null) { // An attempt is made to delete the db
-            (e.target as any).close(); // Manually close our connection to the db
-            this.onDbDroppedByBrowser(true);
-            this.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
-        }
-    }
-
-    protected onDbConError(e) {
-        IdbHelper.dbStatus.lastError = ("Error occured in connection :" + (e.target as any).result) as any;
     }
 }

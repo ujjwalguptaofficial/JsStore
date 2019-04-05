@@ -30,10 +30,7 @@ export class InitDb extends BaseDb {
             dbRequest.onsuccess = (event) => {
                 this.dbStatus.conStatus = CONNECTION_STATUS.Connected;
                 res(dbRequest.result);
-                (this.dbConnection as any).onclose = this.onDbClose;
-
-                this.dbConnection.onversionchange = this.onDbVersionChange;
-                this.dbConnection.onerror = this.onDbConError;
+               
 
                 // save in database list
                 this.savedbNameIntoDbList_();

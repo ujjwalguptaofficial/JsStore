@@ -1,17 +1,38 @@
 import { CONNECTION_STATUS, ERROR_TYPE, IDB_MODE } from "../enums";
 import { KeyStore } from "../keystore/index";
-import { IDbStatus, ITable, IDataBase } from "../interfaces";
-import { DataBase } from "../model/database";
-import { DropDb } from "./drop_db";
-import { Table } from "../model/table";
-import { promise } from "./helpers/promise";
+import { IDbStatus } from "../interfaces";
+import { DataBase } from "../model/index";
+import { DropDb, promise } from "./index";
 
+let dbConnection: IDBDatabase;
 export class IdbHelper {
 
     static onDbDroppedByBrowser: () => void;
     static transaction: IDBTransaction = null;
     static isDbDeletedByBrowser: boolean;
-    static dbConnection: IDBDatabase;
+    static get dbConnection() {
+        return dbConnection;
+    }
+    static set dbConnection(value) {
+        if (value != null) {
+            dbConnection = value;
+            (dbConnection as any).onclose = function () {
+                IdbHelper.callDbDroppedByBrowser();
+                IdbHelper.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
+            };
+
+            dbConnection.onversionchange = function (e: IDBVersionChangeEvent) {
+                if (e.newVersion === null) { // An attempt is made to delete the db
+                    (e.target as any).close(); // Manually close our connection to the db
+                    IdbHelper.callDbDroppedByBrowser(true);
+                    IdbHelper.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
+                }
+            };
+            dbConnection.onerror = function (e) {
+                IdbHelper.dbStatus.lastError = ("Error occured in connection :" + (e.target as any).result) as any;
+            };
+        }
+    }
     static activeDb: DataBase;
     static activeDbVersion = 0;
     static dbStatus: IDbStatus = {
@@ -31,7 +52,7 @@ export class IdbHelper {
     static createTransaction(tableNames: string[], callBack: () => void, mode?) {
         if (IdbHelper.transaction === null) {
             mode = mode ? mode : IDB_MODE.ReadWrite;
-            IdbHelper.transaction = IdbHelper.dbConnection.transaction(tableNames, mode);
+            IdbHelper.transaction = dbConnection.transaction(tableNames, mode);
             const onComplete = () => {
                 IdbHelper.transaction = null;
                 callBack();
