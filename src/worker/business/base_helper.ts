@@ -1,6 +1,5 @@
-import { OCCURENCE } from "../enums";
+import { OCCURENCE, QUERY_OPTION } from "../enums";
 import { IdbHelper } from "./index";
-import { QUERY_OPTION } from "../enums";
 import { Util } from "../util";
 import { DataBase } from "../model/index";
 

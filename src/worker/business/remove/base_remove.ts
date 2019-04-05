@@ -1,4 +1,4 @@
-import { WhereBase } from "../where_base";
+import { WhereBase } from "../index";
 import { RemoveQuery } from "../../types";
 
 export class BaseRemove extends WhereBase {

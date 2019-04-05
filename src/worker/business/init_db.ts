@@ -1,10 +1,8 @@
-import { TableHelper } from "../model/table_helper";
+import { TableHelper, Column } from "../model/index";
 import { IError } from "../interfaces";
-import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
-import { Column } from "../model/column";
+import { CONNECTION_STATUS } from "../enums";
 import { KeyStore } from "../keystore/index";
-import { BaseDb } from "./base_db";
-import { promise } from "./helpers/promise";
+import { BaseDb, promise } from "./index";
 
 export class InitDb extends BaseDb {
 
@@ -30,7 +28,7 @@ export class InitDb extends BaseDb {
             dbRequest.onsuccess = (event) => {
                 this.dbStatus.conStatus = CONNECTION_STATUS.Connected;
                 res(dbRequest.result);
-               
+
 
                 // save in database list
                 this.savedbNameIntoDbList_();

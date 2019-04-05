@@ -1,9 +1,7 @@
 import { Where } from "./where";
 import { CountQuery } from "../../types";
 import * as Select from '../select/index';
-import { LogHelper } from "../../log_helper";
-import { ERROR_TYPE, IDB_MODE } from "../../enums";
-import { IdbHelper } from '../idb_helper';
+import { IDB_MODE } from "../../enums";
 import { IError } from "../../interfaces";
 
 export class Instance extends Where {

@@ -1,9 +1,8 @@
 import { IError } from "../interfaces";
 import { WhereChecker, BaseHelper } from "./index";
 import { LogHelper } from "../log_helper";
-import { ERROR_TYPE, OCCURENCE, DATA_TYPE } from "../enums";
+import { ERROR_TYPE, OCCURENCE, DATA_TYPE, QUERY_OPTION } from "../enums";
 import { Column } from "../model/index";
-import { QUERY_OPTION } from "../enums";
 
 export class Base extends BaseHelper {
     error: IError;

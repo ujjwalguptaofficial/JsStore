@@ -1,17 +1,14 @@
 import { TranscationQuery, WebWorkerRequest, SelectQuery, RemoveQuery, CountQuery, UpdateQuery, InsertQuery } from "../../types";
-import { Base } from "../base";
+import { Base, QueryHelper, promise } from "../index";
 import * as Select from '../select/index';
 import * as Count from '../count/index';
 import * as Insert from '../insert/index';
 import * as Remove from '../remove/index';
 import * as Update from '../update/index';
 import { API, ERROR_TYPE } from "../../enums";
-import { QueryHelper } from "../query_helper";
 import { IError } from "../../interfaces";
 import { LogHelper } from "../../log_helper";
-import { QueryExecutor } from "../../query_executor";
 import { Util } from "../../util";
-import { promise } from "../helpers/promise";
 
 export class Instance extends Base {
     query: TranscationQuery;
