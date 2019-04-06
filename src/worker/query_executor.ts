@@ -127,8 +127,6 @@ export class QueryExecutor {
                 break;
             case API.BulkInsert: this.bulkInsert_(request.query as InsertQuery, onSuccess, onError);
                 break;
-            case API.ExportJson: this.exportJson_(request.query as SelectQuery, onSuccess, onError);
-                break;
             case API.Get: this.get_(request.query as string).then(onSuccess).catch(onError);
                 break;
             case API.Set: this.set_(request.query as SetQuery).then(onSuccess).catch(onError);
@@ -185,25 +183,6 @@ export class QueryExecutor {
     private set activeDb_(value) {
         IdbHelper.activeDb = value;
     }
-
-    // private openDb_(dbName, onSuccess: () => void, onError: (err: IError) => void) {
-    //     this.getDbVersion_(dbName).then(dbVersion => {
-    //         if (dbVersion !== 0) {
-    //             this.activeDbVersion_ = dbVersion;
-    //             this.getDbSchema_(dbName).then(result => {
-    //                 this.activeDb_ = result;
-    //                 const openDbProject = new OpenDb(onSuccess, onError);
-    //                 openDbProject.execute();
-    //             });
-    //         }
-    //         else {
-    //             const err = new LogHelper(ERROR_TYPE.DbNotExist, { DbName: dbName });
-    //             err.logError();
-    //             onError(err.get());
-    //         }
-    //     });
-
-    // }
 
     private closeDb_() {
         if (IdbHelper.dbStatus.conStatus === CONNECTION_STATUS.Connected) {
@@ -357,17 +336,6 @@ export class QueryExecutor {
     private clear_(tableName: string, onSuccess: () => void, onError: (err: IError) => void) {
         const clearInstance = new Clear(tableName, onSuccess, onError);
         clearInstance.execute();
-    }
-
-    private exportJson_(query: SelectQuery, onSuccess: (url: string) => void, onError: (err: IError) => void) {
-        this.select_(query, function (results) {
-            const url = URL.createObjectURL(new Blob([JSON.stringify(results)], {
-                type: "text/json"
-            }));
-            onSuccess(url);
-        }, (err) => {
-            onError(err);
-        });
     }
 
     private getType_(value) {

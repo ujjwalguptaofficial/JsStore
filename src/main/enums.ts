@@ -43,7 +43,6 @@ export enum API {
     DropDb = "drop_db",
     Count = "count",
     BulkInsert = "bulk_insert",
-    ExportJson = "export_json",
     ChangeLogStatus = "change_log_status",
     Terminate = "terminate",
     Transaction = "transaction",
