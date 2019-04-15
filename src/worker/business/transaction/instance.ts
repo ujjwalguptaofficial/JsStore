@@ -9,7 +9,6 @@ import { API, ERROR_TYPE } from "../../enums";
 import { QueryHelper } from "../query_helper";
 import { IError } from "../../interfaces";
 import { LogHelper } from "../../log_helper";
-import { QueryExecutor } from "../../query_executor";
 import { Util } from "../../util";
 import { promise } from "../helpers/promise";
 

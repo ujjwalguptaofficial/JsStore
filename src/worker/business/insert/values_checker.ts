@@ -1,8 +1,5 @@
-import { Table } from "../../model/table";
-import { IError } from "../../interfaces";
+import { Table } from "../../model/index";
 import { ValueChecker } from "./value_checker";
-import { IdbHelper } from "../idb_helper";
-import { KeyStore } from "../../keystore/index";
 import { promise } from "../helpers/promise";
 import { Util } from "../../util";
 import { QueryExecutor } from "../../query_executor";

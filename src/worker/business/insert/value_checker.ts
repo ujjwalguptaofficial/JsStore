@@ -1,5 +1,4 @@
-import { Table } from "../../model/table";
-import { Column } from "../../model/column";
+import { Table, Column } from "../../model/index";
 import { Util } from "../../util";
 import { ERROR_TYPE } from "../../enums";
 import { LogHelper } from "../../log_helper";
