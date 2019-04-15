@@ -1,7 +1,6 @@
 import { IError } from "../interfaces";
 import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
 import { LogHelper } from "../log_helper";
-import { Table } from "../model/table";
 import { BaseDb } from "./base_db";
 
 export class OpenDb extends BaseDb {

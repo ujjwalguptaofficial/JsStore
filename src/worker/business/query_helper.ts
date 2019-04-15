@@ -5,7 +5,7 @@ import { LogHelper } from "../log_helper";
 import { Util } from "../util";
 import * as Update from "./update/index";
 import * as Insert from "./insert/index";
-import { Table } from "../model/table";
+import { Table } from "../model/index";
 import { IError } from "../interfaces";
 import { promise } from "./helpers/promise";
 

@@ -1,7 +1,6 @@
 import { IdbHelper } from "./idb_helper";
 import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
-import { IDbStatus, IError } from "../interfaces";
-import { DataBase } from "../model/database";
+import { IError } from "../interfaces";
 import { Util } from "../util";
 export class BaseDb {
     onSuccess: (listOfTablesCreated?: string[]) => void;

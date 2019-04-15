@@ -1,5 +1,5 @@
 import { DATA_TYPE } from "./enums";
-import { Table } from "./model/table";
+import { Table } from "./model/index";
 import { promise } from "./business/helpers/promise";
 import { IdbHelper } from "./business/idb_helper";
 import { KeyStore, QueryExecutor } from "./index";

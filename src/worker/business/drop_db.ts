@@ -1,7 +1,6 @@
 import { IError } from "../interfaces";
 import { KeyStore } from "../keystore/index";
-import { Table } from "../model/table";
-import { Column } from "../model/column";
+import { Table, Column } from "../model/index";
 import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
 import { LogHelper } from "../log_helper";
 import { BaseDb } from "./base_db";

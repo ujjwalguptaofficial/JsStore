@@ -1,9 +1,8 @@
-import { OCCURENCE, DATA_TYPE } from "../enums";
+import { OCCURENCE } from "../enums";
 import { IdbHelper } from "./idb_helper";
-import { Table } from "../model/table";
 import { QUERY_OPTION } from "../enums";
 import { Util } from "../util";
-import { DataBase } from "../model/database";
+import { DataBase } from "../model/index";
 
 export class BaseHelper {
     compSymbol: OCCURENCE;

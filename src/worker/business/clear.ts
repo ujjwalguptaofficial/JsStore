@@ -1,7 +1,6 @@
 import { Base } from "./base";
 import { IError } from "../interfaces";
-import { IdbHelper } from './idb_helper';
-import { Column } from "../model/column";
+import { Column } from "../model/index";
 import { KeyStore } from "../keystore/index";
 
 export class Clear extends Base {

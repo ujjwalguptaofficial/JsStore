@@ -1,9 +1,8 @@
 import { CONNECTION_STATUS, ERROR_TYPE, IDB_MODE } from "../enums";
 import { KeyStore } from "../keystore/index";
-import { IDbStatus, ITable, IDataBase } from "../interfaces";
-import { DataBase } from "../model/database";
+import { IDbStatus } from "../interfaces";
+import { DataBase, Table } from "../model/index";
 import { DropDb } from "./drop_db";
-import { Table } from "../model/table";
 import { promise } from "./helpers/promise";
 
 export class IdbHelper {
