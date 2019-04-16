@@ -28,7 +28,6 @@ export class Base extends BaseHelper {
         this.onErrorOccured(e);
     }
 
-
     protected onErrorOccured(e, customError = false) {
         ++this.errorCount;
         if (this.errorCount === 1) {

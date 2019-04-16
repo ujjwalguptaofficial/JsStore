@@ -2,6 +2,7 @@ import { Base } from "../base";
 import { InsertQuery } from "../../types";
 import { Table } from "../../model/index";
 import { IError } from "../../interfaces";
+import { promise } from "../../helpers/promise";
 
 export class Instance extends Base {
     private valuesAffected_ = [];
@@ -37,44 +38,49 @@ export class Instance extends Base {
         }
     }
 
-    private insertData_(values) {
-        let valueIndex = 0;
-        let insertDataIntoTable: (value: object) => void;
+    private insertData_(values: any[]) {
+        // let valueIndex = 0;
+        let insertDataIntoTable: (value: object) => Promise<void>;
         let objectStore;
         const processName = this.query.upsert === true ? "put" : "add";
         if (this.query.return === true) {
             insertDataIntoTable = (value) => {
-                if (value) {
+                return promise((res, rej) => {
                     const addResult = objectStore[processName](value);
-                    addResult.onerror = this.onErrorOccured.bind(this);
+                    addResult.onerror = rej;
                     addResult.onsuccess = (e) => {
                         this.valuesAffected_.push(value);
-                        insertDataIntoTable(values[valueIndex++]);
+                        res();
                     };
-                }
-                else {
-                    this.onQueryFinished_();
-                }
-            };
+                });
 
+            };
         }
         else {
             insertDataIntoTable = (value) => {
-                if (value) {
+                return promise((res, rej) => {
                     const addResult = objectStore[processName](value);
-                    addResult.onerror = this.onErrorOccured.bind(this);
+                    addResult.onerror = rej;
                     addResult.onsuccess = (e) => {
                         ++this.rowAffected;
-                        insertDataIntoTable(values[valueIndex++]);
+                        res();
+                        // insertDataIntoTable(values[valueIndex++]);
                     };
-                }
-                else {
-                    this.onQueryFinished_();
-                }
+                });
             };
         }
         this.createTransaction([this.query.into], this.onTransactionCompleted_);
         objectStore = this.transaction.objectStore(this.query.into);
-        insertDataIntoTable(values[valueIndex++]);
+        Promise.all(
+            values.map(function (val) {
+                return insertDataIntoTable(val);
+            })
+        ).then(() => {
+            this.onQueryFinished_();
+        }).catch((err) => {
+            this.transaction.abort();
+            this.onErrorOccured(err);
+        });
+        // insertDataIntoTable(values[valueIndex++]);
     }
 }
