@@ -4,47 +4,35 @@ import { promiseAll, promise } from "../../helpers/index";
 export class In extends NotWhere {
     protected executeInLogic(column, values) {
         let cursor: IDBCursorWithValue, cursorRequest;
-        let runInLogic: (val) => Promise<void>;
-        if (this.checkFlag) {
-            runInLogic = (value) => {
-                return promise((res, rej) => {
-                    cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value));
-                    cursorRequest.onsuccess = (e) => {
-                        cursor = e.target.result;
-                        if (cursor) {
-                            if (this.whereCheckerInstance.check(cursor.value)) {
-                                cursor.delete();
-                                ++this.rowAffected;
-                            }
-                            cursor.continue();
-                        }
-                        else {
-                            res();
-                        }
-                    };
-                    cursorRequest.onerror = rej;
-                });
-            };
-
-        }
-        else {
-            runInLogic = (value) => {
-                return promise((res, rej) => {
-                    cursorRequest = this.objectStore.index(column).
-                        openCursor(this.getKeyRange(value));
-                    cursorRequest.onsuccess = (e) => {
-                        cursor = e.target.result;
-                        if (cursor) {
+        const runInLogic: (val) => Promise<void> = (value) => {
+            return promise((res, rej) => {
+                cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value));
+                cursorRequest.onsuccess = (e) => {
+                    cursor = e.target.result;
+                    if (cursor) {
+                        if (shouldAddValue()) {
                             cursor.delete();
                             ++this.rowAffected;
-                            cursor.continue();
                         }
-                        else {
-                            res();
-                        }
-                    };
-                    cursorRequest.onerror = rej;
-                });
+                        cursor.continue();
+                    }
+                    else {
+                        res();
+                    }
+                };
+                cursorRequest.onerror = rej;
+            });
+        };
+        let shouldAddValue: () => boolean;
+
+        if (this.checkFlag) {
+            shouldAddValue = () => {
+                return this.whereCheckerInstance.check(cursor.value);
+            };
+        }
+        else {
+            shouldAddValue = () => {
+                return true;
             };
         }
 
