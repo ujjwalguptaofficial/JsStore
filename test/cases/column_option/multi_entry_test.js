@@ -136,6 +136,9 @@ describe('Multi Entry Test', function () {
             into: 'people',
             values: [value]
         }).
+        then(function (err) {
+            done(err);
+        }).
         catch(function (err) {
             var error = {
                 "message": "Unable to add key to index 'name': at least one key does not satisfy the uniqueness requirements.",

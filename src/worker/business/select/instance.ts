@@ -172,7 +172,7 @@ export class Instance extends Helper {
                 this.onSuccess(this.results);
             }
             else {
-                this.onErrorOccured(this.error, true);
+                this.onError(this.error);
             }
         }
     }
