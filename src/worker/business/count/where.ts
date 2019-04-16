@@ -5,12 +5,13 @@ export class Where extends LikeRegex {
         value = op ? value[op] : value;
         let cursorRequest,
             cursor: IDBCursorWithValue;
-        if (this.checkFlag) {
+        let shouldAddValue: () => boolean;
+        const initCursorAndFilter = () => {
             cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
             cursorRequest.onsuccess = (e) => {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (this.whereCheckerInstance.check(cursor.value)) {
+                    if (shouldAddValue()) {
                         ++this.resultCount;
                     }
                     cursor.continue();
@@ -19,6 +20,12 @@ export class Where extends LikeRegex {
                     this.onQueryFinished();
                 }
             };
+        };
+        if (this.checkFlag) {
+            shouldAddValue = () => {
+                return this.whereCheckerInstance.check(cursor.value);
+            };
+            initCursorAndFilter();
         }
         else {
             if (this.objectStore.count) {
@@ -29,17 +36,10 @@ export class Where extends LikeRegex {
                 };
             }
             else {
-                cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
-                cursorRequest.onsuccess = (e) => {
-                    cursor = e.target.result;
-                    if (cursor) {
-                        ++this.resultCount;
-                        cursor.continue();
-                    }
-                    else {
-                        this.onQueryFinished();
-                    }
+                shouldAddValue = () => {
+                    return true;
                 };
+                initCursorAndFilter();
             }
         }
         cursorRequest.onerror = this.onErrorOccured;

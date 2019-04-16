@@ -120,7 +120,6 @@ describe('Test insert', function () {
         });
     });
 
-
     it('insert Employees', function (done) {
         $.getJSON("test/static/Employees.json", function (results) {
             var startDate = new Date(1994, 0, 1);

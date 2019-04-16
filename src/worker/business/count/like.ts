@@ -10,34 +10,31 @@ export class Like extends In {
         this.compSymbol = symbol;
         const cursorRequest = this.objectStore.index(column).openCursor();
         cursorRequest.onerror = this.onErrorOccured;
+        let shouldAddValue: () => boolean;
         if (this.checkFlag) {
-            cursorRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (this.filterOnOccurence(cursor.key) &&
-                        this.whereCheckerInstance.check(cursor.value)) {
-                        ++this.resultCount;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    this.onQueryFinished();
-                }
+            shouldAddValue = () => {
+                return this.filterOnOccurence(cursor.key) &&
+                    this.whereCheckerInstance.check(cursor.value);
             };
+
         }
         else {
-            cursorRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (this.filterOnOccurence(cursor.key)) {
-                        ++this.resultCount;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    this.onQueryFinished();
-                }
+            shouldAddValue = () => {
+                return this.filterOnOccurence(cursor.key);
             };
         }
+
+        cursorRequest.onsuccess = (e: any) => {
+            cursor = e.target.result;
+            if (cursor) {
+                if (shouldAddValue()) {
+                    ++this.resultCount;
+                }
+                cursor.continue();
+            }
+            else {
+                this.onQueryFinished();
+            }
+        };
     }
 }

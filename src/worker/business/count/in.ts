@@ -6,24 +6,31 @@ export class In extends NotWhere {
         let cursor: IDBCursorWithValue, cursorRequest;
         const columnStore = this.objectStore.index(column);
         let runInLogic: (val) => Promise<void>;
+        let shouldAddValue: () => boolean;
+        const initCursorAndFilter = (value) => {
+            return promise<void>((res, rej) => {
+                cursorRequest = columnStore.openCursor(this.getKeyRange(value));
+                cursorRequest.onsuccess = (e) => {
+                    cursor = e.target.result;
+                    if (cursor) {
+                        if (shouldAddValue()) {
+                            ++this.resultCount;
+                        }
+                        cursor.continue();
+                    }
+                    else {
+                        res();
+                    }
+                };
+                cursorRequest.onerror = rej;
+            });
+        };
         if (this.checkFlag) {
+            shouldAddValue = () => {
+                return this.whereCheckerInstance.check(cursor.value);
+            };
             runInLogic = (value) => {
-                return promise((res, rej) => {
-                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
-                    cursorRequest.onsuccess = (e) => {
-                        cursor = e.target.result;
-                        if (cursor) {
-                            if (this.whereCheckerInstance.check(cursor.value)) {
-                                ++this.resultCount;
-                            }
-                            cursor.continue();
-                        }
-                        else {
-                            res();
-                        }
-                    };
-                    cursorRequest.onerror = rej;
-                });
+                return initCursorAndFilter(value);
             };
         }
         else {
@@ -40,21 +47,11 @@ export class In extends NotWhere {
                 };
             }
             else {
+                shouldAddValue = () => {
+                    return true;
+                };
                 runInLogic = (value) => {
-                    return promise((res, rej) => {
-                        cursorRequest = columnStore.openCursor(this.getKeyRange(value));
-                        cursorRequest.onsuccess = (e) => {
-                            cursor = e.target.result;
-                            if (cursor) {
-                                ++this.resultCount;
-                                cursor.continue();
-                            }
-                            else {
-                                res();
-                            }
-                        };
-                        cursorRequest.onerror = rej;
-                    });
+                    return initCursorAndFilter(value);
                 };
             }
         }
