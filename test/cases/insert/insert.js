@@ -81,6 +81,29 @@ describe('Test insert', function () {
         });
     });
 
+
+    it('insert into orders with existing primaryKey', function (done) {
+        $.getJSON("test/static/Orders.json", function (results) {
+            con.insert({
+                into: 'Orders',
+                values: [{
+                    OrderID: 10248,
+                    CustomerID: 90,
+                    EmployeeID: 5,
+                    OrderDate: "2019-04-05T02:48:32.955Z",
+                    ShipperID: 3
+                }]
+            }).catch(function (err) {
+                var error = {
+                    "message": "Key already exists in the object store.",
+                    "type": "ConstraintError"
+                };
+                expect(err).to.be.an('object').to.haveOwnProperty('type').equal('ConstraintError')
+                done();
+            });
+        });
+    });
+
     it('insert Employees with invalid date', function (done) {
         $.getJSON("test/static/Employees.json", function (results) {
             con.insert({
@@ -96,6 +119,7 @@ describe('Test insert', function () {
             });
         });
     });
+
 
     it('insert Employees', function (done) {
         $.getJSON("test/static/Employees.json", function (results) {
