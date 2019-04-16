@@ -2,7 +2,7 @@ import { Table } from "./table";
 import { Column } from "./column";
 import { KeyStore } from "../keystore/index";
 import { IdbHelper } from "../business/index";
-import { promise } from "../helpers/promise";
+import { promise } from "../helpers/index";
 
 export class TableHelper {
     name: string;

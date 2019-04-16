@@ -1,6 +1,7 @@
 import { DataBase } from "./database";
 import { TableHelper } from "./table_helper";
 import { Table } from "./table";
+import { promiseAll } from "../helpers/index";
 
 export class DbHelper {
     dbName: string;
@@ -12,7 +13,7 @@ export class DbHelper {
     }
 
     createMetaData() {
-        return Promise.all(
+        return promiseAll(
             this.tables.map((table) => {
                 return new TableHelper(table).createMetaData(this.dbName);
             })

@@ -2,7 +2,7 @@ import { Base } from "../base";
 import { InsertQuery } from "../../types";
 import { Table } from "../../model/index";
 import { IError } from "../../interfaces";
-import { promise } from "../../helpers/promise";
+import { promiseAll, promise } from "../../helpers/index";
 
 export class Instance extends Base {
     private valuesAffected_ = [];
@@ -73,7 +73,7 @@ export class Instance extends Base {
         }
         this.createTransaction([this.query.into], this.onTransactionCompleted_);
         objectStore = this.transaction.objectStore(this.query.into);
-        Promise.all(
+        promiseAll(
             values.map(function (val) {
                 return insertDataIntoTable(val);
             })

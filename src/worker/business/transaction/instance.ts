@@ -10,7 +10,7 @@ import { QueryHelper } from "../query_helper";
 import { IError } from "../../interfaces";
 import { LogHelper } from "../../log_helper";
 import { Util } from "../../util";
-import { promise } from "../../helpers/promise";
+import { promise, promiseAll } from "../../helpers/index";
 
 export class Instance extends Base {
     query: TranscationQuery;
@@ -34,10 +34,10 @@ export class Instance extends Base {
             this.onError(new LogHelper(ERROR_TYPE.TableNotExist, { tableName: notExistingTable }).get());
             return;
         }
-        Promise.all(this.query.tables.map(table => {
+        promiseAll<number>(this.query.tables.map(table => {
             return Util.getAutoIncrementValues(this.getTable(table));
         })).then(results => {
-            results.forEach((result, index) => {
+            results.forEach((result: any, index) => {
                 QueryHelper.autoIncrementValues[this.query.tables[index]] = result;
             });
             this.startExecution_();
@@ -231,7 +231,7 @@ export class Instance extends Base {
     }
 
     private checkQueries_(requestQueue: WebWorkerRequest[]) {
-        return Promise.all(requestQueue.map(request => {
+        return promiseAll(requestQueue.map(request => {
             const tableName = request.query.into || request.query.in;
             return new QueryHelper(request.name, request.query).checkAndModify();
         }));

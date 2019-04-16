@@ -1,5 +1,6 @@
 import { IQueryResult, IQueryRequest } from "./interfaces";
 import { Main } from "./business/main_logic";
+import { promise } from "../helpers/index";
 
 export class QueryExecutor {
     static requestQueue: IQueryRequest[] = [];
@@ -7,7 +8,7 @@ export class QueryExecutor {
     static columnName = "Key";
     static isCodeExecuting = false;
     static prcoessQuery<T>(request: IQueryRequest) {
-        return new Promise<T>((resolve, reject) => {
+        return promise<T>((resolve, reject) => {
             request.onSuccess = (result) => {
                 resolve(result);
             };

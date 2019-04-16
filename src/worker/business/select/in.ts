@@ -1,5 +1,5 @@
 import { NotWhere } from "./not_where";
-import { promise } from "../../helpers/promise";
+import { promiseAll, promise } from "../../helpers/index";
 
 export class In extends NotWhere {
     protected executeInLogic(column, values) {
@@ -70,7 +70,7 @@ export class In extends NotWhere {
             };
         }
 
-        Promise.all(
+        promiseAll(
             values.map(function (val) {
                 return runInLogic(val);
             })
@@ -134,7 +134,7 @@ export class In extends NotWhere {
             };
         }
 
-        Promise.all(
+        promiseAll(
             values.map(function (val) {
                 return runInLogic(val);
             })
@@ -189,7 +189,7 @@ export class In extends NotWhere {
             };
         }
 
-        Promise.all(
+        promiseAll(
             values.map(function (val) {
                 return runInLogic(val);
             })
@@ -244,7 +244,7 @@ export class In extends NotWhere {
             };
         }
 
-        Promise.all(
+        promiseAll(
             values.map(function (val) {
                 return runInLogic(val);
             })

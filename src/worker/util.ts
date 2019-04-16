@@ -1,8 +1,9 @@
 import { DATA_TYPE } from "./enums";
 import { Table } from "./model/index";
-import { promise } from "./helpers/promise";
-import { KeyStore, QueryExecutor } from "./index";
+import { KeyStore } from "./keystore/index";
 import { QueryHelper, IdbHelper } from "./business/index";
+import { promiseAll, promise } from "./helpers/index";
+import { QueryExecutor } from "./query_executor";
 
 export class Util {
     static isNull(value) {
@@ -72,7 +73,7 @@ export class Util {
             return col.autoIncrement;
         });
         return promise((resolve, reject) => {
-            Promise.all(autoIncColumns.map(column => {
+            promiseAll(autoIncColumns.map(column => {
                 const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${table.name}_${column.name}_Value`;
                 return KeyStore.get(autoIncrementKey);
             })).then(results => {
@@ -87,7 +88,7 @@ export class Util {
 
     static setAutoIncrementValue(table: Table, autoIncrementValue: object) {
         const keys = Object.keys(autoIncrementValue);
-        return Promise.all(keys.map((columnName) => {
+        return promiseAll(keys.map((columnName) => {
             const autoIncrementKey = `JsStore_${IdbHelper.activeDb.name}_${table.name}_${columnName}_Value`;
             const value = autoIncrementValue[columnName];
             if (QueryExecutor.isTransactionQuery === true) {

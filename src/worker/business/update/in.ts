@@ -1,6 +1,6 @@
 import { NotWhere } from "./not_where";
 import { updateValue } from "./base_update";
-import { promise } from "../../helpers/promise";
+import { promiseAll, promise } from "../../helpers/index";
 
 export class In extends NotWhere {
     private executeInLogic(column, values: any[]) {
@@ -48,7 +48,7 @@ export class In extends NotWhere {
             };
         }
 
-        Promise.all(
+        promiseAll(
             values.map(function (val) {
                 return runInLogic(val);
             })
