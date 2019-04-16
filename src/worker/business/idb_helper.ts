@@ -3,7 +3,7 @@ import { KeyStore } from "../keystore/index";
 import { IDbStatus } from "../interfaces";
 import { DataBase, Table } from "../model/index";
 import { DropDb } from "./drop_db";
-import { promise } from "./helpers/promise";
+import { promise } from "../helpers/promise";
 
 export class IdbHelper {
 

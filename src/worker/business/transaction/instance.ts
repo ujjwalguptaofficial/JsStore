@@ -10,7 +10,7 @@ import { QueryHelper } from "../query_helper";
 import { IError } from "../../interfaces";
 import { LogHelper } from "../../log_helper";
 import { Util } from "../../util";
-import { promise } from "../helpers/promise";
+import { promise } from "../../helpers/promise";
 
 export class Instance extends Base {
     query: TranscationQuery;

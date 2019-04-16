@@ -1,6 +1,6 @@
 import { Table } from "../../model/index";
 import { ValueChecker } from "./value_checker";
-import { promise } from "../helpers/promise";
+import { promise } from "../../helpers/promise";
 import { Util } from "../../util";
 import { QueryExecutor } from "../../query_executor";
 import { QueryHelper } from "../query_helper";

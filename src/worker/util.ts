@@ -1,9 +1,8 @@
 import { DATA_TYPE } from "./enums";
 import { Table } from "./model/index";
-import { promise } from "./business/helpers/promise";
-import { IdbHelper } from "./business/idb_helper";
+import { promise } from "./helpers/promise";
 import { KeyStore, QueryExecutor } from "./index";
-import { QueryHelper } from "./business/query_helper";
+import { QueryHelper, IdbHelper } from "./business/index";
 
 export class Util {
     static isNull(value) {
