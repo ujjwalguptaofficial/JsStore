@@ -7,44 +7,34 @@ export class In extends NotWhere {
         let cursor: IDBCursorWithValue;
         const columnStore = this.objectStore.index(column);
         let cursorRequest;
-        let runInLogic: (val) => Promise<void>;
+        let runInLogic: (val) => Promise<void> = (value) => {
+            return promise((res, rej) => {
+                cursorRequest = columnStore.openCursor(this.getKeyRange(value));
+                cursorRequest.onsuccess = (e) => {
+                    cursor = e.target.result;
+                    if (cursor) {
+                        if (shouldAddValue()) {
+                            cursor.update(updateValue(this.query.set, cursor.value));
+                            ++this.rowAffected;
+                        }
+                        cursor.continue();
+                    }
+                    else {
+                        res();
+                    }
+                };
+                cursorRequest.onerror = rej;
+            });
+        };
+        let shouldAddValue: () => boolean;
         if (this.checkFlag) {
-            runInLogic = (value) => {
-                return promise((res, rej) => {
-                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
-                    cursorRequest.onsuccess = (e) => {
-                        cursor = e.target.result;
-                        if (cursor) {
-                            if (this.whereCheckerInstance.check(cursor.value)) {
-                                cursor.update(updateValue(this.query.set, cursor.value));
-                                ++this.rowAffected;
-                            }
-                            cursor.continue();
-                        }
-                        else {
-                            res();
-                        }
-                    };
-                    cursorRequest.onerror = rej;
-                });
+            shouldAddValue = () => {
+                return this.whereCheckerInstance.check(cursor.value);
             };
         }
         else {
-            runInLogic = (value) => {
-                return promise((res, rej) => {
-                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
-                    cursorRequest.onsuccess = (e) => {
-                        cursor = e.target.result;
-                        if (cursor) {
-                            cursor.update(updateValue(this.query.set, cursor.value));
-                            ++this.rowAffected;
-                            cursor.continue();
-                        } else {
-                            res();
-                        }
-                    };
-                    cursorRequest.onerror = rej;
-                });
+            shouldAddValue = () => {
+                return true;
             };
         }
 

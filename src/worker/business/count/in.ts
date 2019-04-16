@@ -5,9 +5,7 @@ export class In extends NotWhere {
     protected executeInLogic(column, values) {
         let cursor: IDBCursorWithValue, cursorRequest;
         const columnStore = this.objectStore.index(column);
-        let runInLogic: (val) => Promise<void>;
-        let shouldAddValue: () => boolean;
-        const initCursorAndFilter = (value) => {
+        let runInLogic: (val) => Promise<void> = (value) => {
             return promise<void>((res, rej) => {
                 cursorRequest = columnStore.openCursor(this.getKeyRange(value));
                 cursorRequest.onsuccess = (e) => {
@@ -25,12 +23,11 @@ export class In extends NotWhere {
                 cursorRequest.onerror = rej;
             });
         };
+        let shouldAddValue: () => boolean;
+
         if (this.checkFlag) {
             shouldAddValue = () => {
                 return this.whereCheckerInstance.check(cursor.value);
-            };
-            runInLogic = (value) => {
-                return initCursorAndFilter(value);
             };
         }
         else {
@@ -49,9 +46,6 @@ export class In extends NotWhere {
             else {
                 shouldAddValue = () => {
                     return true;
-                };
-                runInLogic = (value) => {
-                    return initCursorAndFilter(value);
                 };
             }
         }

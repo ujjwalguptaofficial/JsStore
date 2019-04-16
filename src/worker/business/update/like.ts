@@ -10,38 +10,34 @@ export class Like extends In {
         this.compSymbol = symbol;
         const cursorOpenRequest = this.objectStore.index(column).openCursor();
         cursorOpenRequest.onerror = this.onErrorOccured;
+        let shouldAddValue: () => boolean;
 
         if (this.checkFlag) {
-            cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (this.filterOnOccurence(cursor.key) &&
-                        this.whereCheckerInstance.check(cursor.value)) {
-                        cursor.update(updateValue(this.query.set, cursor.value));
-                        ++this.rowAffected;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    this.onQueryFinished();
-                }
-
+            shouldAddValue = () => {
+                return this.filterOnOccurence(cursor.key) &&
+                    this.whereCheckerInstance.check(cursor.value);
             };
+
         }
         else {
-            cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (this.filterOnOccurence(cursor.key)) {
-                        cursor.update(updateValue(this.query.set, cursor.value));
-                        ++this.rowAffected;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    this.onQueryFinished();
-                }
+            shouldAddValue = () => {
+                return this.filterOnOccurence(cursor.key);
             };
         }
+
+        cursorOpenRequest.onsuccess = (e: any) => {
+            cursor = e.target.result;
+            if (cursor) {
+                if (shouldAddValue()) {
+                    cursor.update(updateValue(this.query.set, cursor.value));
+                    ++this.rowAffected;
+                }
+                cursor.continue();
+            }
+            else {
+                this.onQueryFinished();
+            }
+
+        };
     }
 }
