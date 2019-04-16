@@ -2,7 +2,7 @@ import { NotWhere } from "./not_where";
 import { promise } from "../../helpers/promise";
 
 export class In extends NotWhere {
-    private executeInLogic(column, values) {
+    protected executeInLogic(column, values) {
         let cursor: IDBCursorWithValue, cursorRequest;
         const columnStore = this.objectStore.index(column);
         let runInLogic: (val) => Promise<void>;
