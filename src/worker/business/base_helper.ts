@@ -80,7 +80,7 @@ export class BaseHelper {
         return IdbHelper.getTable(tableName);
     }
 
-    protected getKeyRange(value, op) {
+    protected getKeyRange(value, op?) {
         let keyRange: IDBKeyRange;
         switch (op) {
             case QUERY_OPTION.Between: keyRange = IDBKeyRange.bound(value.low, value.high, false, false); break;

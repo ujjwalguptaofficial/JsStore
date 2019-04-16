@@ -34,7 +34,6 @@ export class Instance extends Where {
 
         }
         catch (ex) {
-            this.errorOccured = true;
             this.onExceptionOccured(ex, { tableName: this.query.from });
         }
     }
@@ -69,8 +68,11 @@ export class Instance extends Where {
     }
 
     private onTransactionCompleted_ = () => {
-        if (this.errorOccured === false) {
+        if (this.error == null) {
             this.onSuccess(this.rowAffected);
+        }
+        else {
+            this.onError(this.error);
         }
     }
 

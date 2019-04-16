@@ -4,13 +4,10 @@ import { updateValue } from "./base_update";
 export class LikeRegex extends Like {
     protected executeRegexLogic(column, value) {
         let cursor: IDBCursorWithValue;
-        this.compValue = value ; // (value as string).toLowerCase();
+        this.compValue = value; // (value as string).toLowerCase();
         this.compValueLength = this.compValue.length;
         const cursorOpenRequest = this.objectStore.index(column).openCursor();
-        cursorOpenRequest.onerror = (e) => {
-            this.errorOccured = true;
-            this.onErrorOccured(e);
-        };
+        cursorOpenRequest.onerror = this.onErrorOccured;
 
         if (this.checkFlag) {
             cursorOpenRequest.onsuccess = (e: any) => {

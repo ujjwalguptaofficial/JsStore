@@ -8,8 +8,6 @@ import { QUERY_OPTION } from "../enums";
 
 export class Base extends BaseHelper {
     error: IError;
-    errorOccured = false;
-    errorCount = 0;
     rowAffected = 0;
     onSuccess: (result?) => void;
     onError: (err: IError) => void;
@@ -23,31 +21,23 @@ export class Base extends BaseHelper {
     skipRecord;
     limitRecord;
 
-    protected onCursorError = (e) => {
-        this.errorOccured = true;
-        this.onErrorOccured(e);
-    }
-
     protected onErrorOccured(e, customError = false) {
-        ++this.errorCount;
-        if (this.errorCount === 1) {
-            if (customError) {
-                e.logError();
-                this.onError((e as LogHelper).get());
+        if (customError) {
+            e.logError();
+            this.error = (e as LogHelper).get();
+        }
+        else {
+            let error;
+            if (e.name) {
+                error = new LogHelper((e.name));
+                error.message = e.message;
             }
             else {
-                let error;
-                if (e.name) {
-                    error = new LogHelper((e.name));
-                    error.message = e.message;
-                }
-                else {
-                    error = new LogHelper((e as any).target.error.name);
-                    error.message = (e as any).target.error.message;
-                }
-                error.logError();
-                this.onError(error.get());
+                error = new LogHelper((e as any).target.error.name);
+                error.message = (e as any).target.error.message;
             }
+            error.logError();
+            this.error = error.get();
         }
     }
 

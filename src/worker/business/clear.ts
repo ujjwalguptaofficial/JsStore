@@ -13,8 +13,11 @@ export class Clear extends Base {
 
     execute() {
         this.createTransaction([this.query], () => {
-            if (this.errorOccured === false) {
+            if (this.error == null) {
                 this.onSuccess();
+            }
+            else {
+                this.onError(this.error);
             }
         });
         const clearRequest: IDBRequest = this.transaction.objectStore(this.query).clear();
@@ -27,9 +30,6 @@ export class Clear extends Base {
             });
         };
 
-        clearRequest.onerror = (e) => {
-            this.errorOccured = true;
-            this.onErrorOccured(e);
-        };
+        clearRequest.onerror = this.onErrorOccured;
     }
 }

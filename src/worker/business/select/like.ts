@@ -8,7 +8,7 @@ export class Like extends In {
         this.compValueLength = this.compValue.length;
         this.compSymbol = symbol;
         this.cursorOpenRequest = this.objectStore.index(column).openCursor();
-        this.cursorOpenRequest.onerror = this.onCursorError;
+        this.cursorOpenRequest.onerror = this.onErrorOccured;
         if (this.skipRecord && this.limitRecord) {
             this.executeSkipAndLimit_();
         }

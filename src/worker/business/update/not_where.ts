@@ -17,9 +17,6 @@ export class NotWhere extends BaseUpdate {
             }
 
         };
-        cursorRequest.onerror = (e) => {
-            this.errorOccured = true;
-            this.onErrorOccured(e);
-        };
+        cursorRequest.onerror = this.onErrorOccured;
     }
 }

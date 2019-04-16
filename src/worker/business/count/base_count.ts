@@ -12,8 +12,11 @@ export class BaseCount extends WhereBase {
     }
 
     protected onTransactionCompleted_ = () => {
-        if (this.errorOccured === false) {
+        if (this.error == null) {
             this.onSuccess(this.resultCount);
+        }
+        else {
+            this.onError(this.error);
         }
     }
 }

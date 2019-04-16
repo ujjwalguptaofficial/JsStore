@@ -14,7 +14,7 @@ export class In extends NotWhere {
         };
         if (this.checkFlag) {
             for (let i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
+                if (!this.error) {
                     cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                     cursorRequest.onsuccess = (e) => {
                         cursor = e.target.result;
@@ -28,26 +28,26 @@ export class In extends NotWhere {
                             onQueryFinished();
                         }
                     };
-                    cursorRequest.onerror = this.onCursorError;
+                    cursorRequest.onerror = this.onErrorOccured;
                 }
             }
         }
         else {
             if (this.objectStore.count) {
                 for (let i = 0; i < valueLength; i++) {
-                    if (!this.errorOccured) {
+                    if (!this.error) {
                         cursorRequest = columnStore.count(IDBKeyRange.only(values[i]));
                         cursorRequest.onsuccess = (e) => {
                             this.resultCount += e.target.result;
                             onQueryFinished();
                         };
-                        cursorRequest.onerror = this.onCursorError;
+                        cursorRequest.onerror = this.onErrorOccured;
                     }
                 }
             }
             else {
                 for (let i = 0; i < valueLength; i++) {
-                    if (!this.errorOccured) {
+                    if (!this.error) {
                         cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
                         cursorRequest.onsuccess = (e) => {
                             cursor = e.target.result;
@@ -59,7 +59,7 @@ export class In extends NotWhere {
                                 onQueryFinished();
                             }
                         };
-                        cursorRequest.onerror = this.onCursorError;
+                        cursorRequest.onerror = this.onErrorOccured;
                     }
                 }
             }

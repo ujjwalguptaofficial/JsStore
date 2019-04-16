@@ -27,7 +27,10 @@ export class Instance extends Base {
     }
 
     private onTransactionCompleted_ = () => {
-        if (this.errorOccured === false) {
+        if (this.error == null) {
+            this.onError(this.error);
+        }
+        else {
             this.onSuccess(this.query.return === true ? this.valuesAffected_ : this.rowAffected);
         }
     }
@@ -64,7 +67,6 @@ export class Instance extends Base {
                     addResult.onsuccess = (e) => {
                         ++this.rowAffected;
                         res();
-                        // insertDataIntoTable(values[valueIndex++]);
                     };
                 });
             };

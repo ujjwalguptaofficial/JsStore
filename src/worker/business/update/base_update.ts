@@ -38,7 +38,10 @@ export class BaseUpdate extends Base {
     }
 
     private onTransactionCompleted_ = () => {
-        if (this.errorOccured === false) {
+        if (this.error) {
+            this.onError(this.error);
+        }
+        else {
             this.onSuccess(this.rowAffected);
         }
     }

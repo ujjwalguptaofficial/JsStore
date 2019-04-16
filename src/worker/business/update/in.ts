@@ -1,8 +1,9 @@
 import { NotWhere } from "./not_where";
 import { updateValue } from "./base_update";
+import { promise } from "../../helpers/promise";
 
 export class In extends NotWhere {
-    private executeInLogic(column, values) {
+    private executeInLogic(column, values: any[]) {
         let cursor: IDBCursorWithValue;
         const columnStore = this.objectStore.index(column);
         let cursorRequest;
@@ -14,10 +15,11 @@ export class In extends NotWhere {
                 this.onQueryFinished();
             }
         };
+        let runInLogic: (val) => Promise<void>;
         if (this.checkFlag) {
-            for (let i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+            runInLogic = (value) => {
+                return promise((res, rej) => {
+                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
                     cursorRequest.onsuccess = (e) => {
                         cursor = e.target.result;
                         if (cursor) {
@@ -28,17 +30,17 @@ export class In extends NotWhere {
                             cursor.continue();
                         }
                         else {
-                            onQueryFinished();
+                            res();
                         }
                     };
-                    cursorRequest.onerror = this.onCursorError;
-                }
-            }
+                    cursorRequest.onerror = rej;
+                });
+            };
         }
         else {
-            for (let i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+            runInLogic = (value) => {
+                return promise((res, rej) => {
+                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
                     cursorRequest.onsuccess = (e) => {
                         cursor = e.target.result;
                         if (cursor) {
@@ -46,12 +48,22 @@ export class In extends NotWhere {
                             ++this.rowAffected;
                             cursor.continue();
                         } else {
-                            onQueryFinished();
+                            res();
                         }
                     };
-                    cursorRequest.onerror = this.onCursorError;
-                }
-            }
+                    cursorRequest.onerror = rej;
+                });
+            };
         }
+
+        Promise.all(
+            values.map(function (val) {
+                return runInLogic(val);
+            })
+        ).then(() => {
+            this.onQueryFinished();
+        }).catch(err => {
+            this.onErrorOccured(err);
+        });
     }
 }

@@ -109,7 +109,6 @@ export class Instance extends Base {
             this.processExecutionOfQry_();
         }
         catch (ex) {
-            this.errorOccured = true;
             this.onExceptionOccured(ex, { tableName: this.query.tables });
         }
     }
@@ -131,7 +130,7 @@ export class Instance extends Base {
             console.log(`finished request : ${finisehdRequest.name} `);
         }
         if (finisehdRequest) {
-            if (this.errorOccured === true) {
+            if (this.error) {
                 this.abortTransaction_("automatic abort of transaction due to error occured");
                 if (process.env.NODE_ENV === 'dev') {
                     console.log(`transaction aborted due to error occured`);
@@ -203,7 +202,6 @@ export class Instance extends Base {
                 resolve(result);
             };
             request.onError = (error) => {
-                this.errorOccured = true;
                 this.error = error;
                 reject(error);
             };
@@ -213,7 +211,7 @@ export class Instance extends Base {
                 push();
                 this.processExecutionOfQry_();
             }).catch(err => {
-                this.errorOccured = true;
+                this.error = err;
                 this.abortTransaction_(JSON.stringify(err));
             });
         }

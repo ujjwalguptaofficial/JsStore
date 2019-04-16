@@ -34,10 +34,7 @@ export class NotWhere extends BaseSelect {
             this.executeSimpleForNotWhere_();
         }
 
-        this.cursorOpenRequest.onerror = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
+        this.cursorOpenRequest.onerror = this.onErrorOccured;
 
     }
 

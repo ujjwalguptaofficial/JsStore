@@ -45,7 +45,6 @@ export class Helper extends GroupByHelper {
             };
             const column = this.getColumnInfo(orderColumn);
             if (column == null) {
-                this.errorOccured = true;
                 this.error = new LogHelper(ERROR_TYPE.InvalidColumn, { column: orderColumn });
             }
             else if (column.dataType === DATA_TYPE.String) {

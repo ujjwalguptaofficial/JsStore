@@ -9,10 +9,7 @@ export class Like extends In {
         this.compValueLength = this.compValue.length;
         this.compSymbol = symbol;
         const cursorRequest = this.objectStore.index(column).openCursor();
-        cursorRequest.onerror = (e) => {
-            this.errorOccured = true;
-            this.onErrorOccured(e);
-        };
+        cursorRequest.onerror = this.onErrorOccured;
 
         if (this.checkFlag) {
             cursorRequest.onsuccess = (e: any) => {

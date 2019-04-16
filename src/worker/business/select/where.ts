@@ -152,10 +152,7 @@ export class Where extends LikeRegex {
             dir
         );
 
-        this.cursorOpenRequest.onerror = (e) => {
-            this.errorOccured = true;
-            this.onErrorOccured(e);
-        };
+        this.cursorOpenRequest.onerror = this.onErrorOccured;
 
         if (this.isOrderWithLimit === false) {
             if (this.skipRecord && this.limitRecord) {

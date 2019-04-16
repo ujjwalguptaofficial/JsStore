@@ -36,9 +36,6 @@ export class Where extends Like {
             };
         }
 
-        cursorRequest.onerror = (e) => {
-            this.errorOccured = true;
-            this.onErrorOccured(e);
-        };
+        cursorRequest.onerror = this.onErrorOccured;
     }
 }

@@ -8,7 +8,7 @@ export class NotWhere extends BaseCount {
                 this.resultCount = countRequest.result;
                 this.onQueryFinished();
             };
-            countRequest.onerror = this.onCursorError;
+            countRequest.onerror = this.onErrorOccured;
         }
         else {
             let cursor;
@@ -23,7 +23,7 @@ export class NotWhere extends BaseCount {
                     this.onQueryFinished();
                 }
             }.bind(this);
-            cursorRequest.onerror = this.onCursorError;
+            cursorRequest.onerror = this.onErrorOccured;
         }
     }
 }

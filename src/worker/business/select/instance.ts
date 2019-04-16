@@ -35,7 +35,6 @@ export class Instance extends Helper {
             }
         }
         catch (ex) {
-            this.errorOccured = true;
             this.onExceptionOccured(ex, { TableName: this.query.from });
         }
     }
@@ -142,9 +141,9 @@ export class Instance extends Helper {
     }
 
     private onTransactionCompleted_ = () => {
-        if (this.errorOccured === false) {
+        if (!this.error) {
             this.processOrderBy();
-            if (this.errorOccured === false) {
+            if (!this.error) {
                 if (this.isOrderWithLimit === true) {
                     this.results = this.results.slice(0, this.query.limit);
                 }

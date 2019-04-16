@@ -35,7 +35,7 @@ export class Join extends BaseSelect {
         convertQueryIntoStack(query.from);
         this.queryStack.reverse();
         // get the data for first table
-        if (!this.errorOccured) {
+        if (!this.error) {
             const selectObject = new Select.Instance({
                 from: this.queryStack[0].table,
                 where: this.queryStack[0].where
@@ -238,7 +238,7 @@ export class Join extends BaseSelect {
         };
         const executeLogic = () => {
             if (itemIndex < resultLength) {
-                if (!this.errorOccured) {
+                if (!this.error) {
                     where[query.column] = tmpresults[itemIndex][joinQuery.table][joinQuery.column];
                     const selectInstance = new Select.Instance({
                         from: query.table,

@@ -27,7 +27,7 @@ describe('Test insert', function () {
                 expect(results).to.be.an('number').to.equal(93);
                 done();
             }).
-            then(function (err) {
+            catch(function (err) {
                 done(err);
             })
         });

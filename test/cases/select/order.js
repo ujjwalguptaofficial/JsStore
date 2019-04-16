@@ -63,6 +63,9 @@ describe('Test Select with order', function () {
                 type: 'asc'
             }
         }).
+        then(function (err) {
+            done(err);
+        }).
         catch(function (err) {
             var error = {
                 "message": "Invalid column name invalid column",

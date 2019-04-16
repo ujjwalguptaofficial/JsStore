@@ -30,7 +30,6 @@ export class Instance extends Where {
             }
         }
         catch (ex) {
-            this.errorOccured = true;
             this.onExceptionOccured.call(this, ex, { tableName: this.query.in });
         }
     }
