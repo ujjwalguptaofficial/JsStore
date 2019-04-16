@@ -1,4 +1,5 @@
 import { NotWhere } from "./not_where";
+import { promise } from "../../helpers/promise";
 
 export class In extends NotWhere {
     protected executeInLogic(column, values) {
@@ -29,18 +30,11 @@ export class In extends NotWhere {
                 --skip;
             }
         };
-        const valueLength = values.length;
-        let processedIn = 0;
-        const onQueryFinished = () => {
-            ++processedIn;
-            if (processedIn === valueLength) {
-                this.onQueryFinished();
-            }
-        };
+        let runInLogic: (val) => Promise<void>;
         if (this.checkFlag) {
-            for (let i = 0; i < valueLength; i++) {
-                if (!this.error) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+            runInLogic = (value) => {
+                return promise((res, rej) => {
+                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
                     cursorRequest.onsuccess = (e: any) => {
                         cursor = e.target.result;
                         if (this.results.length !== this.limitRecord && cursor) {
@@ -50,17 +44,17 @@ export class In extends NotWhere {
                             cursor.continue();
                         }
                         else {
-                            onQueryFinished();
+                            res();
                         }
                     };
-                    cursorRequest.onerror = this.onErrorOccured;
-                }
-            }
+                    cursorRequest.onerror = rej;
+                });
+            };
         }
         else {
-            for (let i = 0; i < valueLength; i++) {
-                if (!this.error) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+            runInLogic = (value) => {
+                return promise((res, rej) => {
+                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
                     cursorRequest.onsuccess = (e: any) => {
                         cursor = e.target.result;
                         if (this.results.length !== this.limitRecord && cursor) {
@@ -68,13 +62,23 @@ export class In extends NotWhere {
                             cursor.continue();
                         }
                         else {
-                            onQueryFinished();
+                            res();
                         }
                     };
-                    cursorRequest.onerror = this.onErrorOccured;
-                }
-            }
+                    cursorRequest.onerror = rej;
+                });
+            };
         }
+
+        Promise.all(
+            values.map(function (val) {
+                return runInLogic(val);
+            })
+        ).then(() => {
+            this.onQueryFinished();
+        }).catch(err => {
+            this.onErrorOccured(err);
+        });
     }
 
     private executeSkipForIn_(column, values) {
@@ -90,18 +94,11 @@ export class In extends NotWhere {
                 --skip;
             }
         };
-        const valueLength = values.length;
-        let processedIn = 0;
-        const onQueryFinished = () => {
-            ++processedIn;
-            if (processedIn === valueLength) {
-                this.onQueryFinished();
-            }
-        };
+        let runInLogic: (val) => Promise<void>;
         if (this.checkFlag) {
-            for (let i = 0; i < valueLength; i++) {
-                if (!this.error) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+            runInLogic = (value) => {
+                return promise((res, rej) => {
+                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
                     cursorRequest.onsuccess = (e: any) => {
                         cursor = e.target.result;
                         if (cursor) {
@@ -111,17 +108,17 @@ export class In extends NotWhere {
                             cursor.continue();
                         }
                         else {
-                            onQueryFinished();
+                            res();
                         }
                     };
-                    cursorRequest.onerror = this.onErrorOccured;
-                }
-            }
+                    cursorRequest.onerror = rej;
+                });
+            };
         }
         else {
-            for (let i = 0; i < valueLength; i++) {
-                if (!this.error) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+            runInLogic = (value) => {
+                return promise((res, rej) => {
+                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
                     cursorRequest.onsuccess = (e: any) => {
                         cursor = e.target.result;
                         if (cursor) {
@@ -129,31 +126,34 @@ export class In extends NotWhere {
                             cursor.continue();
                         }
                         else {
-                            onQueryFinished();
+                            res();
                         }
                     };
-                    cursorRequest.onerror = this.onErrorOccured;
-                }
-            }
+                    cursorRequest.onerror = rej;
+                });
+            };
         }
+
+        Promise.all(
+            values.map(function (val) {
+                return runInLogic(val);
+            })
+        ).then(() => {
+            this.onQueryFinished();
+        }).catch(err => {
+            this.onErrorOccured(err);
+        });
     }
 
     private executeLimitForIn_(column, values) {
         let cursor: IDBCursorWithValue,
             cursorRequest: IDBRequest;
         const columnStore = this.objectStore.index(column);
-        const valueLength = values.length;
-        let processedIn = 0;
-        const onQueryFinished = () => {
-            ++processedIn;
-            if (processedIn === valueLength) {
-                this.onQueryFinished();
-            }
-        };
+        let runInLogic: (val) => Promise<void>;
         if (this.checkFlag) {
-            for (let i = 0; i < valueLength; i++) {
-                if (!this.error) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+            runInLogic = (value) => {
+                return promise((res, rej) => {
+                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
                     cursorRequest.onsuccess = (e: any) => {
                         cursor = e.target.result;
                         if (cursor && this.results.length !== this.limitRecord) {
@@ -163,17 +163,17 @@ export class In extends NotWhere {
                             cursor.continue();
                         }
                         else {
-                            onQueryFinished();
+                            res();
                         }
                     };
-                    cursorRequest.onerror = this.onErrorOccured;
-                }
-            }
+                    cursorRequest.onerror = rej;
+                });
+            };
         }
         else {
-            for (let i = 0; i < valueLength; i++) {
-                if (!this.error) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+            runInLogic = (value) => {
+                return promise((res, rej) => {
+                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
                     cursorRequest.onsuccess = (e: any) => {
                         cursor = e.target.result;
                         if (cursor && this.results.length !== this.limitRecord) {
@@ -181,31 +181,34 @@ export class In extends NotWhere {
                             cursor.continue();
                         }
                         else {
-                            onQueryFinished();
+                            res();
                         }
                     };
-                    cursorRequest.onerror = this.onErrorOccured;
-                }
-            }
+                    cursorRequest.onerror = rej;
+                });
+            };
         }
+
+        Promise.all(
+            values.map(function (val) {
+                return runInLogic(val);
+            })
+        ).then(() => {
+            this.onQueryFinished();
+        }).catch(err => {
+            this.onErrorOccured(err);
+        });
     }
 
     private executeSimpleForIn_(column, values) {
         let cursor: IDBCursorWithValue,
             cursorRequest: IDBRequest;
         const columnStore = this.objectStore.index(column);
-        const valueLength = values.length;
-        let processedIn = 0;
-        const onQueryFinished = () => {
-            ++processedIn;
-            if (processedIn === valueLength) {
-                this.onQueryFinished();
-            }
-        };
+        let runInLogic: (val) => Promise<void>;
         if (this.checkFlag) {
-            for (let i = 0; i < valueLength; i++) {
-                if (!this.error) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+            runInLogic = (value) => {
+                return promise((res, rej) => {
+                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
                     cursorRequest.onsuccess = (e: any) => {
                         cursor = e.target.result;
                         if (cursor) {
@@ -215,17 +218,17 @@ export class In extends NotWhere {
                             cursor.continue();
                         }
                         else {
-                            onQueryFinished();
+                            res();
                         }
                     };
-                    cursorRequest.onerror = this.onErrorOccured;
-                }
-            }
+                    cursorRequest.onerror = rej;
+                });
+            };
         }
         else {
-            for (let i = 0; i < valueLength; i++) {
-                if (!this.error) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
+            runInLogic = (value) => {
+                return promise((res, rej) => {
+                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
                     cursorRequest.onsuccess = (e: any) => {
                         cursor = e.target.result;
                         if (cursor) {
@@ -233,12 +236,22 @@ export class In extends NotWhere {
                             cursor.continue();
                         }
                         else {
-                            onQueryFinished();
+                            res();
                         }
                     };
-                    cursorRequest.onerror = this.onErrorOccured;
-                }
-            }
+                    cursorRequest.onerror = rej;
+                });
+            };
         }
+
+        Promise.all(
+            values.map(function (val) {
+                return runInLogic(val);
+            })
+        ).then(() => {
+            this.onQueryFinished();
+        }).catch(err => {
+            this.onErrorOccured(err);
+        });
     }
 }
