@@ -41,71 +41,37 @@ export class Instance extends Base {
         let valueIndex = 0;
         let insertDataIntoTable: (value: object) => void;
         let objectStore;
+        const processName = this.query.upsert === true ? "put" : "add";
         if (this.query.return === true) {
-            if (this.query.upsert === true) {
-                insertDataIntoTable = (value) => {
-                    if (value) {
-                        const addResult = objectStore.put(value);
-                        addResult.onerror = this.onErrorOccured.bind(this);
-                        addResult.onsuccess = (e) => {
-                            this.valuesAffected_.push(value);
-                            insertDataIntoTable(values[valueIndex++]);
-                        };
-                    }
-                    else {
-                        this.onQueryFinished_();
-                    }
-                };
-            }
-            else {
-                insertDataIntoTable = (value) => {
-                    if (value) {
-                        const addResult = objectStore.add(value);
-                        addResult.onerror = this.onErrorOccured.bind(this);
-                        addResult.onsuccess = (e) => {
-                            this.valuesAffected_.push(value);
-                            insertDataIntoTable(values[valueIndex++]);
-                        };
-                    }
-                    else {
-                        this.onQueryFinished_();
-                    }
-                };
-            }
+            insertDataIntoTable = (value) => {
+                if (value) {
+                    const addResult = objectStore[processName](value);
+                    addResult.onerror = this.onErrorOccured.bind(this);
+                    addResult.onsuccess = (e) => {
+                        this.valuesAffected_.push(value);
+                        insertDataIntoTable(values[valueIndex++]);
+                    };
+                }
+                else {
+                    this.onQueryFinished_();
+                }
+            };
 
         }
         else {
-            if (this.query.upsert === true) {
-                insertDataIntoTable = (value) => {
-                    if (value) {
-                        const addResult = objectStore.put(value);
-                        addResult.onerror = this.onErrorOccured.bind(this);
-                        addResult.onsuccess = (e) => {
-                            ++this.rowAffected;
-                            insertDataIntoTable(values[valueIndex++]);
-                        };
-                    }
-                    else {
-                        this.onQueryFinished_();
-                    }
-                };
-            }
-            else {
-                insertDataIntoTable = (value) => {
-                    if (value) {
-                        const addResult = objectStore.add(value);
-                        addResult.onerror = this.onErrorOccured.bind(this);
-                        addResult.onsuccess = (e) => {
-                            ++this.rowAffected;
-                            insertDataIntoTable(values[valueIndex++]);
-                        };
-                    }
-                    else {
-                        this.onQueryFinished_();
-                    }
-                };
-            }
-
+            insertDataIntoTable = (value) => {
+                if (value) {
+                    const addResult = objectStore[processName](value);
+                    addResult.onerror = this.onErrorOccured.bind(this);
+                    addResult.onsuccess = (e) => {
+                        ++this.rowAffected;
+                        insertDataIntoTable(values[valueIndex++]);
+                    };
+                }
+                else {
+                    this.onQueryFinished_();
+                }
+            };
         }
         this.createTransaction([this.query.into], this.onTransactionCompleted_);
         objectStore = this.transaction.objectStore(this.query.into);
