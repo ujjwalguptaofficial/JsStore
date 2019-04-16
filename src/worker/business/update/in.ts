@@ -7,14 +7,6 @@ export class In extends NotWhere {
         let cursor: IDBCursorWithValue;
         const columnStore = this.objectStore.index(column);
         let cursorRequest;
-        const valueLength = values.length;
-        let processedIn = 0;
-        const onQueryFinished = () => {
-            ++processedIn;
-            if (processedIn === valueLength) {
-                this.onQueryFinished();
-            }
-        };
         let runInLogic: (val) => Promise<void>;
         if (this.checkFlag) {
             runInLogic = (value) => {
