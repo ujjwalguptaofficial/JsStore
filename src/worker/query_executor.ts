@@ -137,8 +137,6 @@ export class QueryExecutor {
                 break;
             case API.BulkInsert: this.bulkInsert_(request.query as InsertQuery, onSuccess, onError);
                 break;
-            case API.ExportJson: this.exportJson_(request.query as SelectQuery, onSuccess, onError);
-                break;
             case API.Get: this.get_(request.query as string).then(onSuccess).catch(onError);
                 break;
             case API.Set: this.set_(request.query as SetQuery).then(onSuccess).catch(onError);
@@ -367,16 +365,6 @@ export class QueryExecutor {
         clearInstance.execute();
     }
 
-    private exportJson_(query: SelectQuery, onSuccess: (url: string) => void, onError: (err: IError) => void) {
-        this.select_(query, function (results) {
-            const url = URL.createObjectURL(new Blob([JSON.stringify(results)], {
-                type: "text/json"
-            }));
-            onSuccess(url);
-        }, (err) => {
-            onError(err);
-        });
-    }
 
     private getType_(value) {
         return Util.getType(value);

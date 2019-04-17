@@ -156,34 +156,6 @@ export class Instance extends InstanceHelper {
     }
 
     /**
-     *  export the result in json file
-     * 
-     * @param {SelectQuery} query 
-     * @returns 
-     * @memberof Instance
-     */
-    exportJson(query: SelectQuery) {
-        const onSuccess = (url) => {
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = query.from + ".json";
-            link.click();
-        };
-
-        return new Promise<null>((resolve, reject) => {
-            this.pushApi({
-                name: API.ExportJson,
-                query: query
-            }).then(url => {
-                onSuccess(url);
-                resolve();
-            }).catch((err) => {
-                reject(err);
-            });
-        });
-    }
-
-    /**
      * set log status
      * 
      * @param {boolean} status 
