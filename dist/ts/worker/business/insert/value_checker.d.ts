@@ -1,4 +1,4 @@
-import { Table } from "../../model/table";
+import { Table } from "../../model/index";
 import { LogHelper } from "../../log_helper";
 export declare class ValueChecker {
     table: Table;

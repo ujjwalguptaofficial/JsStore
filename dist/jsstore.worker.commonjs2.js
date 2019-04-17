@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.10.3 - 27/03/2019
+ * @license :jsstore - V2.11.0 - 17/04/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -128,14 +128,8 @@ var Base = /** @class */ (function (_super) {
     __extends(Base, _super);
     function Base() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.errorOccured = false;
-        _this.errorCount = 0;
         _this.rowAffected = 0;
         _this.checkFlag = false;
-        _this.onCursorError = function (e) {
-            _this.errorOccured = true;
-            _this.onErrorOccured(e);
-        };
         _this.goToWhereLogic = function () {
             var columnName = this.getObjectFirstKey(this.query.where);
             if (this.query.ignoreCase === true) {
@@ -204,25 +198,22 @@ var Base = /** @class */ (function (_super) {
     }
     Base.prototype.onErrorOccured = function (e, customError) {
         if (customError === void 0) { customError = false; }
-        ++this.errorCount;
-        if (this.errorCount === 1) {
-            if (customError) {
-                e.logError();
-                this.onError(e.get());
+        if (customError) {
+            e.logError();
+            this.error = e.get();
+        }
+        else {
+            var error = void 0;
+            if (e.name) {
+                error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"]((e.name));
+                error.message = e.message;
             }
             else {
-                var error = void 0;
-                if (e.name) {
-                    error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"]((e.name));
-                    error.message = e.message;
-                }
-                else {
-                    error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](e.target.error.name);
-                    error.message = e.target.error.message;
-                }
-                error.logError();
-                this.onError(error.get());
+                error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](e.target.error.name);
+                error.message = e.target.error.message;
             }
+            error.logError();
+            this.error = error.get();
         }
     };
     Base.prototype.onExceptionOccured = function (ex, info) {
@@ -585,16 +576,9 @@ var BulkInsert = /** @class */ (function (_super) {
             _this.onSuccess();
         });
         this.objectStore = this.transaction.objectStore(this.query.into);
-        var valueLength = values.length;
-        if (this.query.upsert === false) {
-            for (var i = 0; i < valueLength; i++) {
-                this.objectStore.add(values[i]);
-            }
-        }
-        else {
-            for (var i = 0; i < valueLength; i++) {
-                this.objectStore.put(values[i]);
-            }
+        var processName = this.query.upsert === true ? "put" : "add";
+        for (var i = 0, valueLength = values.length; i < valueLength; i++) {
+            this.objectStore[processName](values[i]);
         }
     };
     return BulkInsert;
@@ -643,8 +627,11 @@ var Clear = /** @class */ (function (_super) {
     Clear.prototype.execute = function () {
         var _this = this;
         this.createTransaction([this.query], function () {
-            if (_this.errorOccured === false) {
+            if (_this.error == null) {
                 _this.onSuccess();
+            }
+            else {
+                _this.onError(_this.error);
             }
         });
         var clearRequest = this.transaction.objectStore(this.query).clear();
@@ -656,10 +643,7 @@ var Clear = /** @class */ (function (_super) {
                 }
             });
         };
-        clearRequest.onerror = function (e) {
-            _this.errorOccured = true;
-            _this.onErrorOccured(e);
-        };
+        clearRequest.onerror = this.onErrorOccured;
     };
     return Clear;
 }(_base__WEBPACK_IMPORTED_MODULE_0__["Base"]));
@@ -699,8 +683,11 @@ var BaseCount = /** @class */ (function (_super) {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.resultCount = 0;
         _this.onTransactionCompleted_ = function () {
-            if (_this.errorOccured === false) {
+            if (_this.error == null) {
                 _this.onSuccess(_this.resultCount);
+            }
+            else {
+                _this.onError(_this.error);
             }
         };
         return _this;
@@ -728,6 +715,7 @@ var BaseCount = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "In", function() { return In; });
 /* harmony import */ var _not_where__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./not_where */ "./src/worker/business/count/not_where.ts");
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../helpers/index */ "./src/worker/helpers/index.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -742,6 +730,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
+
 var In = /** @class */ (function (_super) {
     __extends(In, _super);
     function In() {
@@ -751,66 +740,56 @@ var In = /** @class */ (function (_super) {
         var _this = this;
         var cursor, cursorRequest;
         var columnStore = this.objectStore.index(column);
-        var valueLength = values.length;
-        var processedIn = 0;
-        var onQueryFinished = function () {
-            ++processedIn;
-            if (processedIn === valueLength) {
-                _this.onQueryFinished();
-            }
+        var runInLogic = function (value) {
+            return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (res, rej) {
+                cursorRequest = columnStore.openCursor(_this.getKeyRange(value));
+                cursorRequest.onsuccess = function (e) {
+                    cursor = e.target.result;
+                    if (cursor) {
+                        if (shouldAddValue()) {
+                            ++_this.resultCount;
+                        }
+                        cursor.continue();
+                    }
+                    else {
+                        res();
+                    }
+                };
+                cursorRequest.onerror = rej;
+            });
         };
+        var shouldAddValue;
         if (this.checkFlag) {
-            for (var i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
-                    cursorRequest.onsuccess = function (e) {
-                        cursor = e.target.result;
-                        if (cursor) {
-                            if (_this.whereCheckerInstance.check(cursor.value)) {
-                                ++_this.resultCount;
-                            }
-                            cursor.continue();
-                        }
-                        else {
-                            onQueryFinished();
-                        }
-                    };
-                    cursorRequest.onerror = this.onCursorError;
-                }
-            }
+            shouldAddValue = function () {
+                return _this.whereCheckerInstance.check(cursor.value);
+            };
         }
         else {
             if (this.objectStore.count) {
-                for (var i = 0; i < valueLength; i++) {
-                    if (!this.errorOccured) {
-                        cursorRequest = columnStore.count(IDBKeyRange.only(values[i]));
+                runInLogic = function (value) {
+                    return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (res, rej) {
+                        cursorRequest = columnStore.count(_this.getKeyRange(value));
                         cursorRequest.onsuccess = function (e) {
                             _this.resultCount += e.target.result;
-                            onQueryFinished();
+                            res();
                         };
-                        cursorRequest.onerror = this.onCursorError;
-                    }
-                }
+                        cursorRequest.onerror = rej;
+                    });
+                };
             }
             else {
-                for (var i = 0; i < valueLength; i++) {
-                    if (!this.errorOccured) {
-                        cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
-                        cursorRequest.onsuccess = function (e) {
-                            cursor = e.target.result;
-                            if (cursor) {
-                                ++_this.resultCount;
-                                cursor.continue();
-                            }
-                            else {
-                                onQueryFinished();
-                            }
-                        };
-                        cursorRequest.onerror = this.onCursorError;
-                    }
-                }
+                shouldAddValue = function () {
+                    return true;
+                };
             }
         }
+        Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promiseAll"])(values.map(function (val) {
+            return runInLogic(val);
+        })).then(function () {
+            _this.onQueryFinished();
+        }).catch(function (err) {
+            _this.onErrorOccured(err);
+        });
     };
     return In;
 }(_not_where__WEBPACK_IMPORTED_MODULE_0__["NotWhere"]));
@@ -947,36 +926,31 @@ var Like = /** @class */ (function (_super) {
         this.compValueLength = this.compValue.length;
         this.compSymbol = symbol;
         var cursorRequest = this.objectStore.index(column).openCursor();
-        cursorRequest.onerror = this.onCursorError;
+        cursorRequest.onerror = this.onErrorOccured;
+        var shouldAddValue;
         if (this.checkFlag) {
-            cursorRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (_this.filterOnOccurence(cursor.key) &&
-                        _this.whereCheckerInstance.check(cursor.value)) {
-                        ++_this.resultCount;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
+            shouldAddValue = function () {
+                return _this.filterOnOccurence(cursor.key) &&
+                    _this.whereCheckerInstance.check(cursor.value);
             };
         }
         else {
-            cursorRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (_this.filterOnOccurence(cursor.key)) {
-                        ++_this.resultCount;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
+            shouldAddValue = function () {
+                return _this.filterOnOccurence(cursor.key);
             };
         }
+        cursorRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (cursor) {
+                if (shouldAddValue()) {
+                    ++_this.resultCount;
+                }
+                cursor.continue();
+            }
+            else {
+                _this.onQueryFinished();
+            }
+        };
     };
     return Like;
 }(_in__WEBPACK_IMPORTED_MODULE_0__["In"]));
@@ -1023,7 +997,7 @@ var NotWhere = /** @class */ (function (_super) {
                 _this.resultCount = countRequest_1.result;
                 _this.onQueryFinished();
             };
-            countRequest_1.onerror = this.onCursorError;
+            countRequest_1.onerror = this.onErrorOccured;
         }
         else {
             var cursor_1;
@@ -1038,7 +1012,7 @@ var NotWhere = /** @class */ (function (_super) {
                     this.onQueryFinished();
                 }
             }.bind(this);
-            cursorRequest.onerror = this.onCursorError;
+            cursorRequest.onerror = this.onErrorOccured;
         }
     };
     return NotWhere;
@@ -1125,12 +1099,13 @@ var Where = /** @class */ (function (_super) {
         var _this = this;
         value = op ? value[op] : value;
         var cursorRequest, cursor;
-        if (this.checkFlag) {
-            cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
+        var shouldAddValue;
+        var initCursorAndFilter = function () {
+            cursorRequest = _this.objectStore.index(column).openCursor(_this.getKeyRange(value, op));
             cursorRequest.onsuccess = function (e) {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (_this.whereCheckerInstance.check(cursor.value)) {
+                    if (shouldAddValue()) {
                         ++_this.resultCount;
                     }
                     cursor.continue();
@@ -1139,6 +1114,12 @@ var Where = /** @class */ (function (_super) {
                     _this.onQueryFinished();
                 }
             };
+        };
+        if (this.checkFlag) {
+            shouldAddValue = function () {
+                return _this.whereCheckerInstance.check(cursor.value);
+            };
+            initCursorAndFilter();
         }
         else {
             if (this.objectStore.count) {
@@ -1149,23 +1130,13 @@ var Where = /** @class */ (function (_super) {
                 };
             }
             else {
-                cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
-                cursorRequest.onsuccess = function (e) {
-                    cursor = e.target.result;
-                    if (cursor) {
-                        ++_this.resultCount;
-                        cursor.continue();
-                    }
-                    else {
-                        _this.onQueryFinished();
-                    }
+                shouldAddValue = function () {
+                    return true;
                 };
+                initCursorAndFilter();
             }
         }
-        cursorRequest.onerror = function (e) {
-            _this.errorOccured = true;
-            _this.onErrorOccured(e);
-        };
+        cursorRequest.onerror = this.onErrorOccured;
     };
     return Where;
 }(_regex__WEBPACK_IMPORTED_MODULE_0__["LikeRegex"]));
@@ -1383,23 +1354,6 @@ var DropDb = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./src/worker/business/helpers/promise.ts":
-/*!************************************************!*\
-  !*** ./src/worker/business/helpers/promise.ts ***!
-  \************************************************/
-/*! exports provided: promise */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "promise", function() { return promise; });
-var promise = function (callBack) {
-    return new Promise(callBack);
-};
-
-
-/***/ }),
-
 /***/ "./src/worker/business/idb_helper.ts":
 /*!*******************************************!*\
   !*** ./src/worker/business/idb_helper.ts ***!
@@ -1413,7 +1367,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../enums */ "./src/worker/enums.ts");
 /* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../keystore/index */ "./src/worker/keystore/index.ts");
 /* harmony import */ var _drop_db__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./drop_db */ "./src/worker/business/drop_db.ts");
-/* harmony import */ var _helpers_promise__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./helpers/promise */ "./src/worker/business/helpers/promise.ts");
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../helpers/index */ "./src/worker/helpers/index.ts");
 
 
 
@@ -1457,14 +1411,14 @@ var IdbHelper = /** @class */ (function () {
         }
     };
     IdbHelper.getDbList = function () {
-        return Object(_helpers_promise__WEBPACK_IMPORTED_MODULE_3__["promise"])(function (res, rej) {
+        return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_3__["promise"])(function (res, rej) {
             _keystore_index__WEBPACK_IMPORTED_MODULE_1__["KeyStore"].get('DataBase_List').then(function (result) {
                 res(result == null ? [] : result);
             }).catch(rej);
         });
     };
     IdbHelper.getDbVersion = function (dbName) {
-        return Object(_helpers_promise__WEBPACK_IMPORTED_MODULE_3__["promise"])(function (res, rej) {
+        return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_3__["promise"])(function (res, rej) {
             _keystore_index__WEBPACK_IMPORTED_MODULE_1__["KeyStore"].get("JsStore_" + dbName + "_Db_Version").then(function (dbVersion) {
                 res(Number(dbVersion));
             }).catch(rej);
@@ -1484,6 +1438,47 @@ var IdbHelper = /** @class */ (function () {
     };
     return IdbHelper;
 }());
+
+
+
+/***/ }),
+
+/***/ "./src/worker/business/index.ts":
+/*!**************************************!*\
+  !*** ./src/worker/business/index.ts ***!
+  \**************************************/
+/*! exports provided: IdbHelper, OpenDb, DropDb, CreateDb, Clear, BulkInsert, QueryHelper */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _idb_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./idb_helper */ "./src/worker/business/idb_helper.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "IdbHelper", function() { return _idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"]; });
+
+/* harmony import */ var _open_db__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./open_db */ "./src/worker/business/open_db.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OpenDb", function() { return _open_db__WEBPACK_IMPORTED_MODULE_1__["OpenDb"]; });
+
+/* harmony import */ var _drop_db__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./drop_db */ "./src/worker/business/drop_db.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DropDb", function() { return _drop_db__WEBPACK_IMPORTED_MODULE_2__["DropDb"]; });
+
+/* harmony import */ var _create_db__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./create_db */ "./src/worker/business/create_db.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CreateDb", function() { return _create_db__WEBPACK_IMPORTED_MODULE_3__["CreateDb"]; });
+
+/* harmony import */ var _clear__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./clear */ "./src/worker/business/clear.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Clear", function() { return _clear__WEBPACK_IMPORTED_MODULE_4__["Clear"]; });
+
+/* harmony import */ var _bulk_insert__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./bulk_insert */ "./src/worker/business/bulk_insert.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "BulkInsert", function() { return _bulk_insert__WEBPACK_IMPORTED_MODULE_5__["BulkInsert"]; });
+
+/* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./query_helper */ "./src/worker/business/query_helper.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "QueryHelper", function() { return _query_helper__WEBPACK_IMPORTED_MODULE_6__["QueryHelper"]; });
+
+
+
+
+
+
+
 
 
 
@@ -1521,6 +1516,7 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return Instance; });
 /* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../base */ "./src/worker/business/base.ts");
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../helpers/index */ "./src/worker/helpers/index.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -1535,14 +1531,18 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
+
 var Instance = /** @class */ (function (_super) {
     __extends(Instance, _super);
     function Instance(query, onSuccess, onError) {
         var _this = _super.call(this) || this;
         _this.valuesAffected_ = [];
         _this.onTransactionCompleted_ = function () {
-            if (_this.errorOccured === false) {
+            if (_this.error == null) {
                 _this.onSuccess(_this.query.return === true ? _this.valuesAffected_ : _this.rowAffected);
+            }
+            else {
+                _this.onError(_this.error);
             }
         };
         _this.onError = onError;
@@ -1566,76 +1566,44 @@ var Instance = /** @class */ (function (_super) {
     };
     Instance.prototype.insertData_ = function (values) {
         var _this = this;
-        var valueIndex = 0;
+        // let valueIndex = 0;
         var insertDataIntoTable;
         var objectStore;
+        var processName = this.query.upsert === true ? "put" : "add";
         if (this.query.return === true) {
-            if (this.query.upsert === true) {
-                insertDataIntoTable = function (value) {
-                    if (value) {
-                        var addResult = objectStore.put(value);
-                        addResult.onerror = _this.onErrorOccured.bind(_this);
-                        addResult.onsuccess = function (e) {
-                            _this.valuesAffected_.push(value);
-                            insertDataIntoTable(values[valueIndex++]);
-                        };
-                    }
-                    else {
-                        _this.onQueryFinished_();
-                    }
-                };
-            }
-            else {
-                insertDataIntoTable = function (value) {
-                    if (value) {
-                        var addResult = objectStore.add(value);
-                        addResult.onerror = _this.onErrorOccured.bind(_this);
-                        addResult.onsuccess = function (e) {
-                            _this.valuesAffected_.push(value);
-                            insertDataIntoTable(values[valueIndex++]);
-                        };
-                    }
-                    else {
-                        _this.onQueryFinished_();
-                    }
-                };
-            }
+            insertDataIntoTable = function (value) {
+                return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (res, rej) {
+                    var addResult = objectStore[processName](value);
+                    addResult.onerror = rej;
+                    addResult.onsuccess = function (e) {
+                        _this.valuesAffected_.push(value);
+                        res();
+                    };
+                });
+            };
         }
         else {
-            if (this.query.upsert === true) {
-                insertDataIntoTable = function (value) {
-                    if (value) {
-                        var addResult = objectStore.put(value);
-                        addResult.onerror = _this.onErrorOccured.bind(_this);
-                        addResult.onsuccess = function (e) {
-                            ++_this.rowAffected;
-                            insertDataIntoTable(values[valueIndex++]);
-                        };
-                    }
-                    else {
-                        _this.onQueryFinished_();
-                    }
-                };
-            }
-            else {
-                insertDataIntoTable = function (value) {
-                    if (value) {
-                        var addResult = objectStore.add(value);
-                        addResult.onerror = _this.onErrorOccured.bind(_this);
-                        addResult.onsuccess = function (e) {
-                            ++_this.rowAffected;
-                            insertDataIntoTable(values[valueIndex++]);
-                        };
-                    }
-                    else {
-                        _this.onQueryFinished_();
-                    }
-                };
-            }
+            insertDataIntoTable = function (value) {
+                return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (res, rej) {
+                    var addResult = objectStore[processName](value);
+                    addResult.onerror = rej;
+                    addResult.onsuccess = function (e) {
+                        ++_this.rowAffected;
+                        res();
+                    };
+                });
+            };
         }
         this.createTransaction([this.query.into], this.onTransactionCompleted_);
         objectStore = this.transaction.objectStore(this.query.into);
-        insertDataIntoTable(values[valueIndex++]);
+        Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promiseAll"])(values.map(function (val) {
+            return insertDataIntoTable(val);
+        })).then(function () {
+            _this.onQueryFinished_();
+        }).catch(function (err) {
+            _this.transaction.abort();
+            _this.onErrorOccured(err);
+        });
     };
     return Instance;
 }(_base__WEBPACK_IMPORTED_MODULE_0__["Base"]));
@@ -1726,7 +1694,7 @@ var ValueChecker = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ValuesChecker", function() { return ValuesChecker; });
 /* harmony import */ var _value_checker__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./value_checker */ "./src/worker/business/insert/value_checker.ts");
-/* harmony import */ var _helpers_promise__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers/promise */ "./src/worker/business/helpers/promise.ts");
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../helpers/index */ "./src/worker/helpers/index.ts");
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../util */ "./src/worker/util.ts");
 /* harmony import */ var _query_executor__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../query_executor */ "./src/worker/query_executor.ts");
 /* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../query_helper */ "./src/worker/business/query_helper.ts");
@@ -1742,7 +1710,7 @@ var ValuesChecker = /** @class */ (function () {
     }
     ValuesChecker.prototype.checkAndModifyValues = function () {
         var _this = this;
-        return Object(_helpers_promise__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (resolve, reject) {
+        return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (resolve, reject) {
             var onAutoIncValueEvaluated = function (autoIncrementValues) {
                 _this.valueCheckerObj = new _value_checker__WEBPACK_IMPORTED_MODULE_0__["ValueChecker"](_this.table, autoIncrementValues);
                 _this.startChecking().then(resolve).catch(reject);
@@ -1759,7 +1727,7 @@ var ValuesChecker = /** @class */ (function () {
     };
     ValuesChecker.prototype.startChecking = function () {
         var _this = this;
-        return Object(_helpers_promise__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (resolve, reject) {
+        return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (resolve, reject) {
             var isError = false;
             _this.values.every(function (item) {
                 isError = _this.valueCheckerObj.checkAndModifyValue(item);
@@ -1880,7 +1848,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../util */ "./src/worker/util.ts");
 /* harmony import */ var _update_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./update/index */ "./src/worker/business/update/index.ts");
 /* harmony import */ var _insert_index__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./insert/index */ "./src/worker/business/insert/index.ts");
-/* harmony import */ var _helpers_promise__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./helpers/promise */ "./src/worker/business/helpers/promise.ts");
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../helpers/index */ "./src/worker/helpers/index.ts");
 
 
 
@@ -1896,7 +1864,7 @@ var QueryHelper = /** @class */ (function () {
     }
     QueryHelper.prototype.checkAndModify = function () {
         var _this = this;
-        return Object(_helpers_promise__WEBPACK_IMPORTED_MODULE_6__["promise"])(function (resolve, reject) {
+        return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_6__["promise"])(function (resolve, reject) {
             var resolveReject = function () {
                 if (_this.error == null) {
                     resolve();
@@ -1955,7 +1923,7 @@ var QueryHelper = /** @class */ (function () {
     };
     QueryHelper.prototype.checkInsertQuery_ = function () {
         var _this = this;
-        return Object(_helpers_promise__WEBPACK_IMPORTED_MODULE_6__["promise"])(function (resolve, reject) {
+        return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_6__["promise"])(function (resolve, reject) {
             var table;
             var err = _this.isInsertQryValid_(function (tbl) {
                 table = tbl;
@@ -2139,6 +2107,7 @@ var BaseRemove = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "In", function() { return In; });
 /* harmony import */ var _not_where__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./not_where */ "./src/worker/business/remove/not_where.ts");
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../helpers/index */ "./src/worker/helpers/index.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -2153,6 +2122,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
+
 var In = /** @class */ (function (_super) {
     __extends(In, _super);
     function In() {
@@ -2161,56 +2131,43 @@ var In = /** @class */ (function (_super) {
     In.prototype.executeInLogic = function (column, values) {
         var _this = this;
         var cursor, cursorRequest;
-        var valueLength = values.length;
-        var processedIn = 0;
-        var onQueryFinished = function () {
-            ++processedIn;
-            if (processedIn === valueLength) {
-                _this.onQueryFinished();
-            }
-        };
-        if (this.checkFlag) {
-            for (var i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
-                    cursorRequest = this.objectStore.index(column).
-                        openCursor(IDBKeyRange.only(values[i]));
-                    cursorRequest.onsuccess = function (e) {
-                        cursor = e.target.result;
-                        if (cursor) {
-                            if (_this.whereCheckerInstance.check(cursor.value)) {
-                                cursor.delete();
-                                ++_this.rowAffected;
-                            }
-                            cursor.continue();
-                        }
-                        else {
-                            onQueryFinished();
-                        }
-                    };
-                    cursorRequest.onerror = this.onCursorError;
-                }
-            }
-        }
-        else {
-            for (var i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
-                    cursorRequest = this.objectStore.index(column).
-                        openCursor(IDBKeyRange.only(values[i]));
-                    cursorRequest.onsuccess = function (e) {
-                        cursor = e.target.result;
-                        if (cursor) {
+        var runInLogic = function (value) {
+            return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (res, rej) {
+                cursorRequest = _this.objectStore.index(column).openCursor(_this.getKeyRange(value));
+                cursorRequest.onsuccess = function (e) {
+                    cursor = e.target.result;
+                    if (cursor) {
+                        if (shouldAddValue()) {
                             cursor.delete();
                             ++_this.rowAffected;
-                            cursor.continue();
                         }
-                        else {
-                            onQueryFinished();
-                        }
-                    };
-                    cursorRequest.onerror = this.onCursorError;
-                }
-            }
+                        cursor.continue();
+                    }
+                    else {
+                        res();
+                    }
+                };
+                cursorRequest.onerror = rej;
+            });
+        };
+        var shouldAddValue;
+        if (this.checkFlag) {
+            shouldAddValue = function () {
+                return _this.whereCheckerInstance.check(cursor.value);
+            };
         }
+        else {
+            shouldAddValue = function () {
+                return true;
+            };
+        }
+        Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promiseAll"])(values.map(function (val) {
+            return runInLogic(val);
+        })).then(function () {
+            _this.onQueryFinished();
+        }).catch(function (err) {
+            _this.onErrorOccured(err);
+        });
     };
     return In;
 }(_not_where__WEBPACK_IMPORTED_MODULE_0__["NotWhere"]));
@@ -2270,8 +2227,11 @@ var Instance = /** @class */ (function (_super) {
     function Instance(query, onSuccess, onError) {
         var _this = _super.call(this) || this;
         _this.onTransactionCompleted_ = function () {
-            if (_this.errorOccured === false) {
+            if (_this.error == null) {
                 _this.onSuccess(_this.rowAffected);
+            }
+            else {
+                _this.onError(_this.error);
             }
         };
         _this.query = query;
@@ -2295,7 +2255,6 @@ var Instance = /** @class */ (function (_super) {
             }
         }
         catch (ex) {
-            this.errorOccured = true;
             this.onExceptionOccured(ex, { tableName: this.query.from });
         }
     };
@@ -2400,41 +2359,32 @@ var Like = /** @class */ (function (_super) {
         this.compValueLength = this.compValue.length;
         this.compSymbol = symbol;
         var cursorRequest = this.objectStore.index(column).openCursor();
-        cursorRequest.onerror = function (e) {
-            _this.errorOccured = true;
-            _this.onErrorOccured(e);
-        };
+        cursorRequest.onerror = this.onErrorOccured;
+        var shouldAddValue;
         if (this.checkFlag) {
-            cursorRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (_this.filterOnOccurence(cursor.key) &&
-                        _this.whereCheckerInstance.check(cursor.value)) {
-                        cursor.delete();
-                        ++_this.rowAffected;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
+            shouldAddValue = function () {
+                return _this.filterOnOccurence(cursor.key) &&
+                    _this.whereCheckerInstance.check(cursor.value);
             };
         }
         else {
-            cursorRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (_this.filterOnOccurence(cursor.key)) {
-                        cursor.delete();
-                        ++_this.rowAffected;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
+            shouldAddValue = function () {
+                return _this.filterOnOccurence(cursor.key);
             };
         }
+        cursorRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (cursor) {
+                if (shouldAddValue()) {
+                    cursor.delete();
+                    ++_this.rowAffected;
+                }
+                cursor.continue();
+            }
+            else {
+                _this.onQueryFinished();
+            }
+        };
     };
     return Like;
 }(_in__WEBPACK_IMPORTED_MODULE_0__["In"]));
@@ -2488,10 +2438,7 @@ var NotWhere = /** @class */ (function (_super) {
                 _this.onQueryFinished();
             }
         };
-        cursorRequest.onerror = function (e) {
-            _this.errorOccured = true;
-            _this.onErrorOccured(e);
-        };
+        cursorRequest.onerror = this.onErrorOccured;
     };
     return NotWhere;
 }(_base_remove__WEBPACK_IMPORTED_MODULE_0__["BaseRemove"]));
@@ -2578,38 +2525,31 @@ var Where = /** @class */ (function (_super) {
         var cursor, cursorRequest;
         value = op ? value[op] : value;
         cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
+        var shouldAddValue;
         if (this.checkFlag) {
-            cursorRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (_this.whereCheckerInstance.check(cursor.value)) {
-                        cursor.delete();
-                        ++_this.rowAffected;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
+            shouldAddValue = function () {
+                return _this.whereCheckerInstance.check(cursor.value);
             };
         }
         else {
-            cursorRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    cursor.delete();
-                    ++_this.rowAffected;
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
+            shouldAddValue = function () {
+                return true;
             };
         }
-        cursorRequest.onerror = function (e) {
-            _this.errorOccured = true;
-            _this.onErrorOccured(e);
+        cursorRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (cursor) {
+                if (shouldAddValue()) {
+                    cursor.delete();
+                    ++_this.rowAffected;
+                }
+                cursor.continue();
+            }
+            else {
+                _this.onQueryFinished();
+            }
         };
+        cursorRequest.onerror = this.onErrorOccured;
     };
     return Where;
 }(_regex__WEBPACK_IMPORTED_MODULE_0__["LikeRegex"]));
@@ -3008,8 +2948,7 @@ var Helper = /** @class */ (function (_super) {
             };
             var column = this.getColumnInfo(orderColumn_1);
             if (column == null) {
-                this.errorOccured = true;
-                this.error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].InvalidColumn, { column: orderColumn_1 });
+                this.onErrorOccured(new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].InvalidColumn, { column: orderColumn_1 }), true);
             }
             else if (column.dataType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
                 if (order.type === 'asc') {
@@ -3170,6 +3109,7 @@ var Helper = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "In", function() { return In; });
 /* harmony import */ var _not_where__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./not_where */ "./src/worker/business/select/not_where.ts");
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../helpers/index */ "./src/worker/helpers/index.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -3184,12 +3124,37 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
+
+var shouldAddValue;
+var skipOrPush;
+var skip;
+var cursor;
 var In = /** @class */ (function (_super) {
     __extends(In, _super);
     function In() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     In.prototype.executeInLogic = function (column, values) {
+        var _this = this;
+        skip = this.skipRecord;
+        skipOrPush = function (val) {
+            if (skip === 0) {
+                _this.results.push(val);
+            }
+            else {
+                --skip;
+            }
+        };
+        if (this.checkFlag) {
+            shouldAddValue = function () {
+                return _this.whereCheckerInstance.check(cursor.value);
+            };
+        }
+        else {
+            shouldAddValue = function () {
+                return true;
+            };
+        }
         if (this.skipRecord && this.limitRecord) {
             this.executeSkipAndLimitForIn_(column, values);
         }
@@ -3205,223 +3170,123 @@ var In = /** @class */ (function (_super) {
     };
     In.prototype.executeSkipAndLimitForIn_ = function (column, values) {
         var _this = this;
-        var cursor, cursorRequest, skip = this.skipRecord;
+        var cursorRequest;
         var columnStore = this.objectStore.index(column);
-        var skipOrPush = function (value) {
-            if (skip === 0) {
-                _this.results.push(value);
-            }
-            else {
-                --skip;
-            }
-        };
-        var valueLength = values.length;
-        var processedIn = 0;
-        var onQueryFinished = function () {
-            ++processedIn;
-            if (processedIn === valueLength) {
-                _this.onQueryFinished();
-            }
-        };
-        if (this.checkFlag) {
-            for (var i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
-                    cursorRequest.onsuccess = function (e) {
-                        cursor = e.target.result;
-                        if (_this.results.length !== _this.limitRecord && cursor) {
-                            if (_this.whereCheckerInstance.check(cursor.value)) {
-                                skipOrPush(cursor.value);
-                            }
-                            cursor.continue();
-                        }
-                        else {
-                            onQueryFinished();
-                        }
-                    };
-                    cursorRequest.onerror = this.onCursorError;
-                }
-            }
-        }
-        else {
-            for (var i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
-                    cursorRequest.onsuccess = function (e) {
-                        cursor = e.target.result;
-                        if (_this.results.length !== _this.limitRecord && cursor) {
+        var runInLogic = function (value) {
+            return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (res, rej) {
+                cursorRequest = columnStore.openCursor(_this.getKeyRange(value));
+                cursorRequest.onsuccess = function (e) {
+                    cursor = e.target.result;
+                    if (_this.results.length !== _this.limitRecord && cursor) {
+                        if (shouldAddValue()) {
                             skipOrPush(cursor.value);
-                            cursor.continue();
                         }
-                        else {
-                            onQueryFinished();
-                        }
-                    };
-                    cursorRequest.onerror = this.onCursorError;
-                }
-            }
-        }
+                        cursor.continue();
+                    }
+                    else {
+                        res();
+                    }
+                };
+                cursorRequest.onerror = rej;
+            });
+        };
+        Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promiseAll"])(values.map(function (val) {
+            return runInLogic(val);
+        })).then(function () {
+            _this.onQueryFinished();
+        }).catch(function (err) {
+            _this.onErrorOccured(err);
+        });
     };
     In.prototype.executeSkipForIn_ = function (column, values) {
         var _this = this;
-        var cursor, skip = this.skipRecord, cursorRequest;
+        var cursorRequest;
         var columnStore = this.objectStore.index(column);
-        var skipOrPush = function (value) {
-            if (skip === 0) {
-                _this.results.push(value);
-            }
-            else {
-                --skip;
-            }
-        };
-        var valueLength = values.length;
-        var processedIn = 0;
-        var onQueryFinished = function () {
-            ++processedIn;
-            if (processedIn === valueLength) {
-                _this.onQueryFinished();
-            }
-        };
-        if (this.checkFlag) {
-            for (var i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
-                    cursorRequest.onsuccess = function (e) {
-                        cursor = e.target.result;
-                        if (cursor) {
-                            if (_this.whereCheckerInstance.check(cursor.value)) {
-                                skipOrPush((cursor.value));
-                            }
-                            cursor.continue();
-                        }
-                        else {
-                            onQueryFinished();
-                        }
-                    };
-                    cursorRequest.onerror = this.onCursorError;
-                }
-            }
-        }
-        else {
-            for (var i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
-                    cursorRequest.onsuccess = function (e) {
-                        cursor = e.target.result;
-                        if (cursor) {
+        var runInLogic = function (value) {
+            return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (res, rej) {
+                cursorRequest = columnStore.openCursor(_this.getKeyRange(value));
+                cursorRequest.onsuccess = function (e) {
+                    cursor = e.target.result;
+                    if (cursor) {
+                        if (shouldAddValue()) {
                             skipOrPush((cursor.value));
-                            cursor.continue();
                         }
-                        else {
-                            onQueryFinished();
-                        }
-                    };
-                    cursorRequest.onerror = this.onCursorError;
-                }
-            }
-        }
+                        cursor.continue();
+                    }
+                    else {
+                        res();
+                    }
+                };
+                cursorRequest.onerror = rej;
+            });
+        };
+        Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promiseAll"])(values.map(function (val) {
+            return runInLogic(val);
+        })).then(function () {
+            _this.onQueryFinished();
+        }).catch(function (err) {
+            _this.onErrorOccured(err);
+        });
     };
     In.prototype.executeLimitForIn_ = function (column, values) {
         var _this = this;
-        var cursor, cursorRequest;
+        var cursorRequest;
         var columnStore = this.objectStore.index(column);
-        var valueLength = values.length;
-        var processedIn = 0;
-        var onQueryFinished = function () {
-            ++processedIn;
-            if (processedIn === valueLength) {
-                _this.onQueryFinished();
-            }
-        };
-        if (this.checkFlag) {
-            for (var i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
-                    cursorRequest.onsuccess = function (e) {
-                        cursor = e.target.result;
-                        if (cursor && _this.results.length !== _this.limitRecord) {
-                            if (_this.whereCheckerInstance.check(cursor.value)) {
-                                _this.results.push(cursor.value);
-                            }
-                            cursor.continue();
-                        }
-                        else {
-                            onQueryFinished();
-                        }
-                    };
-                    cursorRequest.onerror = this.onCursorError;
-                }
-            }
-        }
-        else {
-            for (var i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
-                    cursorRequest.onsuccess = function (e) {
-                        cursor = e.target.result;
-                        if (cursor && _this.results.length !== _this.limitRecord) {
+        var runInLogic = function (value) {
+            return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (res, rej) {
+                cursorRequest = columnStore.openCursor(_this.getKeyRange(value));
+                cursorRequest.onsuccess = function (e) {
+                    cursor = e.target.result;
+                    if (cursor && _this.results.length !== _this.limitRecord) {
+                        if (shouldAddValue()) {
                             _this.results.push(cursor.value);
-                            cursor.continue();
                         }
-                        else {
-                            onQueryFinished();
-                        }
-                    };
-                    cursorRequest.onerror = this.onCursorError;
-                }
-            }
-        }
+                        cursor.continue();
+                    }
+                    else {
+                        res();
+                    }
+                };
+                cursorRequest.onerror = rej;
+            });
+        };
+        Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promiseAll"])(values.map(function (val) {
+            return runInLogic(val);
+        })).then(function () {
+            _this.onQueryFinished();
+        }).catch(function (err) {
+            _this.onErrorOccured(err);
+        });
     };
     In.prototype.executeSimpleForIn_ = function (column, values) {
         var _this = this;
-        var cursor, cursorRequest;
+        var cursorRequest;
         var columnStore = this.objectStore.index(column);
-        var valueLength = values.length;
-        var processedIn = 0;
-        var onQueryFinished = function () {
-            ++processedIn;
-            if (processedIn === valueLength) {
-                _this.onQueryFinished();
-            }
-        };
-        if (this.checkFlag) {
-            for (var i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
-                    cursorRequest.onsuccess = function (e) {
-                        cursor = e.target.result;
-                        if (cursor) {
-                            if (_this.whereCheckerInstance.check(cursor.value)) {
-                                _this.results.push(cursor.value);
-                            }
-                            cursor.continue();
-                        }
-                        else {
-                            onQueryFinished();
-                        }
-                    };
-                    cursorRequest.onerror = this.onCursorError;
-                }
-            }
-        }
-        else {
-            for (var i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
-                    cursorRequest.onsuccess = function (e) {
-                        cursor = e.target.result;
-                        if (cursor) {
+        var runInLogic = function (value) {
+            return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (res, rej) {
+                cursorRequest = columnStore.openCursor(_this.getKeyRange(value));
+                cursorRequest.onsuccess = function (e) {
+                    cursor = e.target.result;
+                    if (cursor) {
+                        if (shouldAddValue()) {
                             _this.results.push(cursor.value);
-                            cursor.continue();
                         }
-                        else {
-                            onQueryFinished();
-                        }
-                    };
-                    cursorRequest.onerror = this.onCursorError;
-                }
-            }
-        }
+                        cursor.continue();
+                    }
+                    else {
+                        res();
+                    }
+                };
+                cursorRequest.onerror = rej;
+            });
+        };
+        Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promiseAll"])(values.map(function (val) {
+            return runInLogic(val);
+        })).then(function () {
+            _this.onQueryFinished();
+        }).catch(function (err) {
+            _this.onErrorOccured(err);
+        });
     };
     return In;
 }(_not_where__WEBPACK_IMPORTED_MODULE_0__["NotWhere"]));
@@ -3483,9 +3348,9 @@ var Instance = /** @class */ (function (_super) {
     function Instance(query, onSuccess, onError) {
         var _this = _super.call(this) || this;
         _this.onTransactionCompleted_ = function () {
-            if (_this.errorOccured === false) {
+            if (!_this.error) {
                 _this.processOrderBy();
-                if (_this.errorOccured === false) {
+                if (!_this.error) {
                     if (_this.isOrderWithLimit === true) {
                         _this.results = _this.results.slice(0, _this.query.limit);
                     }
@@ -3513,7 +3378,7 @@ var Instance = /** @class */ (function (_super) {
                     _this.onSuccess(_this.results);
                 }
                 else {
-                    _this.onErrorOccured(_this.error, true);
+                    _this.onError(_this.error);
                 }
             }
         };
@@ -3545,7 +3410,6 @@ var Instance = /** @class */ (function (_super) {
             }
         }
         catch (ex) {
-            this.errorOccured = true;
             this.onExceptionOccured(ex, { TableName: this.query.from });
         }
     };
@@ -3745,7 +3609,7 @@ var Join = /** @class */ (function (_super) {
         convertQueryIntoStack(query.from);
         _this.queryStack.reverse();
         // get the data for first table
-        if (!_this.errorOccured) {
+        if (!_this.error) {
             var selectObject = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
                 from: _this.queryStack[0].table,
                 where: _this.queryStack[0].where
@@ -3929,7 +3793,7 @@ var Join = /** @class */ (function (_super) {
         };
         var executeLogic = function () {
             if (itemIndex < resultLength) {
-                if (!_this.errorOccured) {
+                if (!_this.error) {
                     where[query.column] = tmpresults[itemIndex][joinQuery.table][joinQuery.column];
                     var selectInstance = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
                         from: query.table,
@@ -4004,17 +3868,42 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
+var shouldAddValue;
+var skipOrPush;
+var skip;
+var cursor;
 var Like = /** @class */ (function (_super) {
     __extends(Like, _super);
     function Like() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     Like.prototype.executeLikeLogic = function (column, value, symbol) {
+        var _this = this;
+        skip = this.skipRecord;
+        skipOrPush = function (val) {
+            if (skip === 0) {
+                _this.results.push(val);
+            }
+            else {
+                --skip;
+            }
+        };
+        if (this.checkFlag) {
+            shouldAddValue = function () {
+                return _this.filterOnOccurence(cursor.key) &&
+                    _this.whereCheckerInstance.check(cursor.value);
+            };
+        }
+        else {
+            shouldAddValue = function () {
+                return _this.filterOnOccurence(cursor.key);
+            };
+        }
         this.compValue = value.toLowerCase();
         this.compValueLength = this.compValue.length;
         this.compSymbol = symbol;
         this.cursorOpenRequest = this.objectStore.index(column).openCursor();
-        this.cursorOpenRequest.onerror = this.onCursorError;
+        this.cursorOpenRequest.onerror = this.onErrorOccured;
         if (this.skipRecord && this.limitRecord) {
             this.executeSkipAndLimit_();
         }
@@ -4030,152 +3919,63 @@ var Like = /** @class */ (function (_super) {
     };
     Like.prototype.executeSkipAndLimit_ = function () {
         var _this = this;
-        var cursor;
-        var skipOrPush = function (value) {
-            if (skip === 0) {
-                _this.results.push(value);
+        this.cursorOpenRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (_this.results.length !== _this.limitRecord && cursor) {
+                if (shouldAddValue()) {
+                    skipOrPush(cursor.value);
+                }
+                cursor.continue();
             }
             else {
-                --skip;
+                _this.onQueryFinished();
             }
         };
-        var skip = this.skipRecord;
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (_this.results.length !== _this.limitRecord && cursor) {
-                    if (_this.filterOnOccurence(cursor.key) &&
-                        _this.whereCheckerInstance.check(cursor.value)) {
-                        skipOrPush(cursor.value);
-                    }
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (_this.results.length !== _this.limitRecord && cursor) {
-                    if (_this.filterOnOccurence(cursor.key)) {
-                        skipOrPush(cursor.value);
-                    }
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
     };
     Like.prototype.executeSkip_ = function () {
         var _this = this;
-        var cursor, skip = this.skipRecord;
-        var skipOrPush = function (value) {
-            if (skip === 0) {
-                _this.results.push(value);
+        this.cursorOpenRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (cursor) {
+                if (shouldAddValue()) {
+                    skipOrPush((cursor.value));
+                }
+                cursor.continue();
             }
             else {
-                --skip;
+                _this.onQueryFinished();
             }
         };
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (_this.filterOnOccurence(cursor.key) &&
-                        _this.whereCheckerInstance.check(cursor.value)) {
-                        skipOrPush((cursor.value));
-                    }
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (_this.filterOnOccurence(cursor.key)) {
-                        skipOrPush((cursor.value));
-                    }
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
     };
     Like.prototype.executeLimit_ = function () {
         var _this = this;
-        var cursor;
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (_this.results.length !== _this.limitRecord && cursor) {
-                    if (_this.filterOnOccurence(cursor.key) &&
-                        _this.whereCheckerInstance.check(cursor.value)) {
-                        _this.results.push(cursor.value);
-                    }
-                    cursor.continue();
+        this.cursorOpenRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (_this.results.length !== _this.limitRecord && cursor) {
+                if (shouldAddValue()) {
+                    _this.results.push(cursor.value);
                 }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (_this.results.length !== _this.limitRecord && cursor) {
-                    if (_this.filterOnOccurence(cursor.key)) {
-                        _this.results.push(cursor.value);
-                    }
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
+                cursor.continue();
+            }
+            else {
+                _this.onQueryFinished();
+            }
+        };
     };
     Like.prototype.executeSimple_ = function () {
         var _this = this;
-        var cursor;
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (_this.filterOnOccurence(cursor.key) &&
-                        _this.whereCheckerInstance.check(cursor.value)) {
-                        _this.results.push(cursor.value);
-                    }
-                    cursor.continue();
+        this.cursorOpenRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (cursor) {
+                if (shouldAddValue()) {
+                    _this.results.push(cursor.value);
                 }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (_this.filterOnOccurence(cursor.key)) {
-                        _this.results.push(cursor.value);
-                    }
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
+                cursor.continue();
+            }
+            else {
+                _this.onQueryFinished();
+            }
+        };
     };
     return Like;
 }(_in__WEBPACK_IMPORTED_MODULE_0__["In"]));
@@ -4247,10 +4047,7 @@ var NotWhere = /** @class */ (function (_super) {
         else {
             this.executeSimpleForNotWhere_();
         }
-        this.cursorOpenRequest.onerror = function (e) {
-            this._errorOccured = true;
-            this.onErrorOccured(e);
-        }.bind(this);
+        this.cursorOpenRequest.onerror = this.onErrorOccured;
     };
     NotWhere.prototype.executeSkipAndLimitForNoWhere_ = function () {
         var _this = this;
@@ -4393,163 +4190,28 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
+var shouldAddValue;
+var cursor;
 var Where = /** @class */ (function (_super) {
     __extends(Where, _super);
     function Where() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    Where.prototype.executeSkipAndLimitForWhere_ = function () {
-        var _this = this;
-        var recordSkipped = false;
-        var cursor;
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (recordSkipped && _this.results.length !== _this.limitRecord) {
-                        if (_this.whereCheckerInstance.check(cursor.value)) {
-                            _this.results.push(cursor.value);
-                        }
-                        cursor.continue();
-                    }
-                    else {
-                        recordSkipped = true;
-                        cursor.advance(_this.skipRecord);
-                    }
-                }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (recordSkipped && _this.results.length !== _this.limitRecord) {
-                        _this.results.push(cursor.value);
-                        cursor.continue();
-                    }
-                    else {
-                        recordSkipped = true;
-                        cursor.advance(_this.skipRecord);
-                    }
-                }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
-    };
-    Where.prototype.executeSkipForWhere_ = function () {
-        var _this = this;
-        var recordSkipped = false, cursor;
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (recordSkipped) {
-                        if (_this.whereCheckerInstance.check(cursor.value)) {
-                            _this.results.push(cursor.value);
-                        }
-                        cursor.continue();
-                    }
-                    else {
-                        recordSkipped = true;
-                        cursor.advance(_this.skipRecord);
-                    }
-                }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (recordSkipped) {
-                        _this.results.push(cursor.value);
-                        cursor.continue();
-                    }
-                    else {
-                        recordSkipped = true;
-                        cursor.advance(_this.skipRecord);
-                    }
-                }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
-    };
-    Where.prototype.executeLimitForWhere_ = function () {
-        var _this = this;
-        var cursor;
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor && _this.results.length !== _this.limitRecord &&
-                    _this.whereCheckerInstance.check(cursor.value)) {
-                    _this.results.push(cursor.value);
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor && _this.results.length !== _this.limitRecord) {
-                    _this.results.push(cursor.value);
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
-    };
-    Where.prototype.executeSimpleForWhere_ = function () {
-        var _this = this;
-        var cursor;
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (_this.whereCheckerInstance.check(cursor.value)) {
-                        _this.results.push(cursor.value);
-                    }
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    _this.results.push(cursor.value);
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
-            };
-        }
-    };
     Where.prototype.executeWhereLogic = function (column, value, op, dir) {
         var _this = this;
+        if (this.checkFlag) {
+            shouldAddValue = function () {
+                return _this.whereCheckerInstance.check(cursor.value);
+            };
+        }
+        else {
+            shouldAddValue = function () {
+                return true;
+            };
+        }
         value = op ? value[op] : value;
         this.cursorOpenRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op), dir);
-        this.cursorOpenRequest.onerror = function (e) {
-            _this.errorOccured = true;
-            _this.onErrorOccured(e);
-        };
+        this.cursorOpenRequest.onerror = this.onErrorOccured;
         if (this.isOrderWithLimit === false) {
             if (this.skipRecord && this.limitRecord) {
                 this.executeSkipAndLimitForWhere_();
@@ -4572,6 +4234,79 @@ var Where = /** @class */ (function (_super) {
                 this.executeSimpleForWhere_();
             }
         }
+    };
+    Where.prototype.executeSkipAndLimitForWhere_ = function () {
+        var _this = this;
+        var recordSkipped = false;
+        this.cursorOpenRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (cursor) {
+                if (recordSkipped && _this.results.length !== _this.limitRecord) {
+                    if (shouldAddValue()) {
+                        _this.results.push(cursor.value);
+                    }
+                    cursor.continue();
+                }
+                else {
+                    recordSkipped = true;
+                    cursor.advance(_this.skipRecord);
+                }
+            }
+            else {
+                _this.onQueryFinished();
+            }
+        };
+    };
+    Where.prototype.executeSkipForWhere_ = function () {
+        var _this = this;
+        var recordSkipped = false;
+        this.cursorOpenRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (cursor) {
+                if (recordSkipped) {
+                    if (shouldAddValue()) {
+                        _this.results.push(cursor.value);
+                    }
+                    cursor.continue();
+                }
+                else {
+                    recordSkipped = true;
+                    cursor.advance(_this.skipRecord);
+                }
+            }
+            else {
+                _this.onQueryFinished();
+            }
+        };
+    };
+    Where.prototype.executeLimitForWhere_ = function () {
+        var _this = this;
+        this.cursorOpenRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (cursor && _this.results.length !== _this.limitRecord &&
+                shouldAddValue()) {
+                _this.results.push(cursor.value);
+                cursor.continue();
+            }
+            else {
+                _this.onQueryFinished();
+            }
+        };
+    };
+    Where.prototype.executeSimpleForWhere_ = function () {
+        var _this = this;
+        this.cursorOpenRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (cursor) {
+                if (shouldAddValue()) {
+                    _this.results.push(cursor.value);
+                }
+                cursor.continue();
+            }
+            else {
+                _this.onQueryFinished();
+            }
+        };
     };
     return Where;
 }(_regex__WEBPACK_IMPORTED_MODULE_0__["LikeRegex"]));
@@ -4617,7 +4352,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../query_helper */ "./src/worker/business/query_helper.ts");
 /* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../log_helper */ "./src/worker/log_helper.ts");
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../util */ "./src/worker/util.ts");
-/* harmony import */ var _helpers_promise__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../helpers/promise */ "./src/worker/business/helpers/promise.ts");
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../helpers/index */ "./src/worker/helpers/index.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -4662,7 +4397,7 @@ var Instance = /** @class */ (function (_super) {
             this.onError(new _log_helper__WEBPACK_IMPORTED_MODULE_8__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_6__["ERROR_TYPE"].TableNotExist, { tableName: notExistingTable }).get());
             return;
         }
-        Promise.all(this.query.tables.map(function (table) {
+        Object(_helpers_index__WEBPACK_IMPORTED_MODULE_10__["promiseAll"])(this.query.tables.map(function (table) {
             return _util__WEBPACK_IMPORTED_MODULE_9__["Util"].getAutoIncrementValues(_this.getTable(table));
         })).then(function (results) {
             results.forEach(function (result, index) {
@@ -4733,7 +4468,6 @@ var Instance = /** @class */ (function (_super) {
             this.processExecutionOfQry_();
         }
         catch (ex) {
-            this.errorOccured = true;
             this.onExceptionOccured(ex, { tableName: this.query.tables });
         }
     };
@@ -4752,7 +4486,7 @@ var Instance = /** @class */ (function (_super) {
             console.log("finished request : " + finisehdRequest.name + " ");
         }
         if (finisehdRequest) {
-            if (this.errorOccured === true) {
+            if (this.error) {
                 this.abortTransaction_("automatic abort of transaction due to error occured");
                 if (true) {
                     console.log("transaction aborted due to error occured");
@@ -4807,12 +4541,11 @@ var Instance = /** @class */ (function (_super) {
         var push = function () {
             _this.requestQueue.push(request);
         };
-        var promiseObj = Object(_helpers_promise__WEBPACK_IMPORTED_MODULE_10__["promise"])(function (resolve, reject) {
+        var promiseObj = Object(_helpers_index__WEBPACK_IMPORTED_MODULE_10__["promise"])(function (resolve, reject) {
             request.onSuccess = function (result) {
                 resolve(result);
             };
             request.onError = function (error) {
-                _this.errorOccured = true;
                 _this.error = error;
                 reject(error);
             };
@@ -4822,7 +4555,7 @@ var Instance = /** @class */ (function (_super) {
                 push();
                 _this.processExecutionOfQry_();
             }).catch(function (err) {
-                _this.errorOccured = true;
+                _this.error = err;
                 _this.abortTransaction_(JSON.stringify(err));
             });
         }
@@ -4840,7 +4573,7 @@ var Instance = /** @class */ (function (_super) {
         }
     };
     Instance.prototype.checkQueries_ = function (requestQueue) {
-        return Promise.all(requestQueue.map(function (request) {
+        return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_10__["promiseAll"])(requestQueue.map(function (request) {
             var tableName = request.query.into || request.query.in;
             return new _query_helper__WEBPACK_IMPORTED_MODULE_7__["QueryHelper"](request.name, request.query).checkAndModify();
         }));
@@ -4927,7 +4660,10 @@ var BaseUpdate = /** @class */ (function (_super) {
     function BaseUpdate() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.onTransactionCompleted_ = function () {
-            if (_this.errorOccured === false) {
+            if (_this.error) {
+                _this.onError(_this.error);
+            }
+            else {
                 _this.onSuccess(_this.rowAffected);
             }
         };
@@ -4961,6 +4697,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "In", function() { return In; });
 /* harmony import */ var _not_where__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./not_where */ "./src/worker/business/update/not_where.ts");
 /* harmony import */ var _base_update__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./base_update */ "./src/worker/business/update/base_update.ts");
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../helpers/index */ "./src/worker/helpers/index.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -4976,6 +4713,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 })();
 
 
+
 var In = /** @class */ (function (_super) {
     __extends(In, _super);
     function In() {
@@ -4986,54 +4724,43 @@ var In = /** @class */ (function (_super) {
         var cursor;
         var columnStore = this.objectStore.index(column);
         var cursorRequest;
-        var valueLength = values.length;
-        var processedIn = 0;
-        var onQueryFinished = function () {
-            ++processedIn;
-            if (processedIn === valueLength) {
-                _this.onQueryFinished();
-            }
-        };
-        if (this.checkFlag) {
-            for (var i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
-                    cursorRequest.onsuccess = function (e) {
-                        cursor = e.target.result;
-                        if (cursor) {
-                            if (_this.whereCheckerInstance.check(cursor.value)) {
-                                cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.set, cursor.value));
-                                ++_this.rowAffected;
-                            }
-                            cursor.continue();
-                        }
-                        else {
-                            onQueryFinished();
-                        }
-                    };
-                    cursorRequest.onerror = this.onCursorError;
-                }
-            }
-        }
-        else {
-            for (var i = 0; i < valueLength; i++) {
-                if (!this.errorOccured) {
-                    cursorRequest = columnStore.openCursor(IDBKeyRange.only(values[i]));
-                    cursorRequest.onsuccess = function (e) {
-                        cursor = e.target.result;
-                        if (cursor) {
+        var runInLogic = function (value) {
+            return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_2__["promise"])(function (res, rej) {
+                cursorRequest = columnStore.openCursor(_this.getKeyRange(value));
+                cursorRequest.onsuccess = function (e) {
+                    cursor = e.target.result;
+                    if (cursor) {
+                        if (shouldAddValue()) {
                             cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.set, cursor.value));
                             ++_this.rowAffected;
-                            cursor.continue();
                         }
-                        else {
-                            onQueryFinished();
-                        }
-                    };
-                    cursorRequest.onerror = this.onCursorError;
-                }
-            }
+                        cursor.continue();
+                    }
+                    else {
+                        res();
+                    }
+                };
+                cursorRequest.onerror = rej;
+            });
+        };
+        var shouldAddValue;
+        if (this.checkFlag) {
+            shouldAddValue = function () {
+                return _this.whereCheckerInstance.check(cursor.value);
+            };
         }
+        else {
+            shouldAddValue = function () {
+                return true;
+            };
+        }
+        Object(_helpers_index__WEBPACK_IMPORTED_MODULE_2__["promiseAll"])(values.map(function (val) {
+            return runInLogic(val);
+        })).then(function () {
+            _this.onQueryFinished();
+        }).catch(function (err) {
+            _this.onErrorOccured(err);
+        });
     };
     return In;
 }(_not_where__WEBPACK_IMPORTED_MODULE_0__["NotWhere"]));
@@ -5118,7 +4845,6 @@ var Instance = /** @class */ (function (_super) {
             }
         }
         catch (ex) {
-            this.errorOccured = true;
             this.onExceptionOccured.call(this, ex, { tableName: this.query.in });
         }
     };
@@ -5191,41 +4917,32 @@ var Like = /** @class */ (function (_super) {
         this.compValueLength = this.compValue.length;
         this.compSymbol = symbol;
         var cursorOpenRequest = this.objectStore.index(column).openCursor();
-        cursorOpenRequest.onerror = function (e) {
-            _this.errorOccured = true;
-            _this.onErrorOccured(e);
-        };
+        cursorOpenRequest.onerror = this.onErrorOccured;
+        var shouldAddValue;
         if (this.checkFlag) {
-            cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (_this.filterOnOccurence(cursor.key) &&
-                        _this.whereCheckerInstance.check(cursor.value)) {
-                        cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.set, cursor.value));
-                        ++_this.rowAffected;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
+            shouldAddValue = function () {
+                return _this.filterOnOccurence(cursor.key) &&
+                    _this.whereCheckerInstance.check(cursor.value);
             };
         }
         else {
-            cursorOpenRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (_this.filterOnOccurence(cursor.key)) {
-                        cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.set, cursor.value));
-                        ++_this.rowAffected;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
+            shouldAddValue = function () {
+                return _this.filterOnOccurence(cursor.key);
             };
         }
+        cursorOpenRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (cursor) {
+                if (shouldAddValue()) {
+                    cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_1__["updateValue"])(_this.query.set, cursor.value));
+                    ++_this.rowAffected;
+                }
+                cursor.continue();
+            }
+            else {
+                _this.onQueryFinished();
+            }
+        };
     };
     return Like;
 }(_in__WEBPACK_IMPORTED_MODULE_0__["In"]));
@@ -5279,10 +4996,7 @@ var NotWhere = /** @class */ (function (_super) {
                 _this.onQueryFinished();
             }
         };
-        cursorRequest.onerror = function (e) {
-            _this.errorOccured = true;
-            _this.onErrorOccured(e);
-        };
+        cursorRequest.onerror = this.onErrorOccured;
     };
     return NotWhere;
 }(_base_update__WEBPACK_IMPORTED_MODULE_0__["BaseUpdate"]));
@@ -5418,38 +5132,31 @@ var Where = /** @class */ (function (_super) {
         var cursor, cursorRequest;
         value = op ? value[op] : value;
         cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
+        var shouldAddValue;
         if (this.checkFlag) {
-            cursorRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (_this.whereCheckerInstance.check(cursor.value)) {
-                        cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_0__["updateValue"])(_this.query.set, cursor.value));
-                        ++_this.rowAffected;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
+            shouldAddValue = function () {
+                return _this.whereCheckerInstance.check(cursor.value);
             };
         }
         else {
-            cursorRequest.onsuccess = function (e) {
-                cursor = e.target.result;
-                if (cursor) {
-                    cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_0__["updateValue"])(_this.query.set, cursor.value));
-                    ++_this.rowAffected;
-                    cursor.continue();
-                }
-                else {
-                    _this.onQueryFinished();
-                }
+            shouldAddValue = function () {
+                return true;
             };
         }
-        cursorRequest.onerror = function (e) {
-            _this.errorOccured = true;
-            _this.onErrorOccured(e);
+        cursorRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (cursor) {
+                if (shouldAddValue()) {
+                    cursor.update(Object(_base_update__WEBPACK_IMPORTED_MODULE_0__["updateValue"])(_this.query.set, cursor.value));
+                    ++_this.rowAffected;
+                }
+                cursor.continue();
+            }
+            else {
+                _this.onQueryFinished();
+            }
         };
+        cursorRequest.onerror = this.onErrorOccured;
     };
     return Where;
 }(_like__WEBPACK_IMPORTED_MODULE_1__["Like"]));
@@ -5502,7 +5209,7 @@ var WhereBase = /** @class */ (function (_super) {
         var _this = this;
         this.skipCnt = this.skipRecord;
         this.cursorOpenRequest = this.objectStore.index(column).openCursor();
-        this.cursorOpenRequest.onerror = this.onCursorError;
+        this.cursorOpenRequest.onerror = this.onErrorOccured;
         this.cursorOpenRequest.onsuccess = function (e) {
             var cursor = e.target.result;
             if (cursor && _this.didNotReachLimit()) {
@@ -5832,7 +5539,6 @@ var API;
     API["DropDb"] = "drop_db";
     API["Count"] = "count";
     API["BulkInsert"] = "bulk_insert";
-    API["ExportJson"] = "export_json";
     API["ChangeLogStatus"] = "change_log_status";
     API["Transaction"] = "transaction";
     API["FinishTransaction"] = "finish_transaction";
@@ -5847,7 +5553,7 @@ var API;
 /*!******************************!*\
   !*** ./src/worker/export.ts ***!
   \******************************/
-/*! exports provided: IdbHelper, OCCURENCE, WEBWORKER_STATUS, CONNECTION_STATUS, DATA_TYPE, ERROR_TYPE, QUERY_OPTION, IDB_MODE, API */
+/*! exports provided: OCCURENCE, WEBWORKER_STATUS, CONNECTION_STATUS, DATA_TYPE, ERROR_TYPE, QUERY_OPTION, IDB_MODE, API, IdbHelper */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5874,6 +5580,61 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+/***/ }),
+
+/***/ "./src/worker/helpers/index.ts":
+/*!*************************************!*\
+  !*** ./src/worker/helpers/index.ts ***!
+  \*************************************/
+/*! exports provided: promise, promiseAll */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _promise__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./promise */ "./src/worker/helpers/promise.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "promise", function() { return _promise__WEBPACK_IMPORTED_MODULE_0__["promise"]; });
+
+/* harmony import */ var _promise_all__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./promise_all */ "./src/worker/helpers/promise_all.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "promiseAll", function() { return _promise_all__WEBPACK_IMPORTED_MODULE_1__["promiseAll"]; });
+
+
+
+
+
+/***/ }),
+
+/***/ "./src/worker/helpers/promise.ts":
+/*!***************************************!*\
+  !*** ./src/worker/helpers/promise.ts ***!
+  \***************************************/
+/*! exports provided: promise */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "promise", function() { return promise; });
+var promise = function (callBack) {
+    return new Promise(callBack);
+};
+
+
+/***/ }),
+
+/***/ "./src/worker/helpers/promise_all.ts":
+/*!*******************************************!*\
+  !*** ./src/worker/helpers/promise_all.ts ***!
+  \*******************************************/
+/*! exports provided: promiseAll */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "promiseAll", function() { return promiseAll; });
+var promiseAll = function (promises) {
+    return Promise.all(promises);
+};
 
 
 /***/ }),
@@ -6552,13 +6313,15 @@ var KeyStore = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "QueryExecutor", function() { return QueryExecutor; });
 /* harmony import */ var _business_main_logic__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./business/main_logic */ "./src/worker/keystore/business/main_logic.ts");
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers/index */ "./src/worker/helpers/index.ts");
+
 
 var QueryExecutor = /** @class */ (function () {
     function QueryExecutor() {
     }
     QueryExecutor.prcoessQuery = function (request) {
         var _this = this;
-        return new Promise(function (resolve, reject) {
+        return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (resolve, reject) {
             request.onSuccess = function (result) {
                 resolve(result);
             };
@@ -6860,6 +6623,8 @@ var DataBase = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DbHelper", function() { return DbHelper; });
 /* harmony import */ var _table_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./table_helper */ "./src/worker/model/table_helper.ts");
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers/index */ "./src/worker/helpers/index.ts");
+
 
 var DbHelper = /** @class */ (function () {
     function DbHelper(dataBase) {
@@ -6869,7 +6634,7 @@ var DbHelper = /** @class */ (function () {
     }
     DbHelper.prototype.createMetaData = function () {
         var _this = this;
-        return Promise.all(this.tables.map(function (table) {
+        return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promiseAll"])(this.tables.map(function (table) {
             return new _table_helper__WEBPACK_IMPORTED_MODULE_0__["TableHelper"](table).createMetaData(_this.dbName);
         }));
         // const createMetaDataForTable = () => {
@@ -6891,6 +6656,39 @@ var DbHelper = /** @class */ (function () {
     };
     return DbHelper;
 }());
+
+
+
+/***/ }),
+
+/***/ "./src/worker/model/index.ts":
+/*!***********************************!*\
+  !*** ./src/worker/model/index.ts ***!
+  \***********************************/
+/*! exports provided: Column, DataBase, DbHelper, Table, TableHelper */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _column__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./column */ "./src/worker/model/column.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Column", function() { return _column__WEBPACK_IMPORTED_MODULE_0__["Column"]; });
+
+/* harmony import */ var _database__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./database */ "./src/worker/model/database.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DataBase", function() { return _database__WEBPACK_IMPORTED_MODULE_1__["DataBase"]; });
+
+/* harmony import */ var _db_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./db_helper */ "./src/worker/model/db_helper.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DbHelper", function() { return _db_helper__WEBPACK_IMPORTED_MODULE_2__["DbHelper"]; });
+
+/* harmony import */ var _table__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./table */ "./src/worker/model/table.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Table", function() { return _table__WEBPACK_IMPORTED_MODULE_3__["Table"]; });
+
+/* harmony import */ var _table_helper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./table_helper */ "./src/worker/model/table_helper.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TableHelper", function() { return _table_helper__WEBPACK_IMPORTED_MODULE_4__["TableHelper"]; });
+
+
+
+
+
 
 
 
@@ -6936,8 +6734,8 @@ var Table = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TableHelper", function() { return TableHelper; });
 /* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../keystore/index */ "./src/worker/keystore/index.ts");
-/* harmony import */ var _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../business/idb_helper */ "./src/worker/business/idb_helper.ts");
-/* harmony import */ var _business_helpers_promise__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../business/helpers/promise */ "./src/worker/business/helpers/promise.ts");
+/* harmony import */ var _business_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../business/index */ "./src/worker/business/index.ts");
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../helpers/index */ "./src/worker/helpers/index.ts");
 
 
 
@@ -6953,8 +6751,8 @@ var TableHelper = /** @class */ (function () {
     }
     TableHelper.prototype.createMetaData = function (dbName) {
         var _this = this;
-        return Object(_business_helpers_promise__WEBPACK_IMPORTED_MODULE_2__["promise"])(function (resolve) {
-            _this.callback = resolve;
+        return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_2__["promise"])(function (resolve) {
+            _this.callback_ = resolve;
             _this.setRequireDelete_(dbName);
             _this.setDbVersion_(dbName);
         });
@@ -6980,13 +6778,13 @@ var TableHelper = /** @class */ (function () {
     };
     TableHelper.prototype.setDbVersion_ = function (dbName) {
         var _this = this;
-        _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDbVersion = _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDbVersion > this.version ? _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDbVersion : this.version;
+        _business_index__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDbVersion = _business_index__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDbVersion > this.version ? _business_index__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDbVersion : this.version;
         // setting db version
-        _keystore_index__WEBPACK_IMPORTED_MODULE_0__["KeyStore"].set("JsStore_" + dbName + "_Db_Version", _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDbVersion);
+        _keystore_index__WEBPACK_IMPORTED_MODULE_0__["KeyStore"].set("JsStore_" + dbName + "_Db_Version", _business_index__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDbVersion);
         // setting table version
-        _keystore_index__WEBPACK_IMPORTED_MODULE_0__["KeyStore"].set("JsStore_" + dbName + "_" + this.name + "_Version", _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDbVersion).then(function () {
-            _this.version = _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDbVersion;
-            _this.callback(_this);
+        _keystore_index__WEBPACK_IMPORTED_MODULE_0__["KeyStore"].set("JsStore_" + dbName + "_" + this.name + "_Version", _business_index__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDbVersion).then(function () {
+            _this.version = _business_index__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].activeDbVersion;
+            _this.callback_(_this);
         });
     };
     return TableHelper;
@@ -7006,33 +6804,19 @@ var TableHelper = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "QueryExecutor", function() { return QueryExecutor; });
-/* harmony import */ var _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./business/idb_helper */ "./src/worker/business/idb_helper.ts");
-/* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./log_helper */ "./src/worker/log_helper.ts");
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./enums */ "./src/worker/enums.ts");
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./config */ "./src/worker/config.ts");
-/* harmony import */ var _business_open_db__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./business/open_db */ "./src/worker/business/open_db.ts");
-/* harmony import */ var _business_drop_db__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./business/drop_db */ "./src/worker/business/drop_db.ts");
-/* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./keystore/index */ "./src/worker/keystore/index.ts");
-/* harmony import */ var _model_db_helper__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./model/db_helper */ "./src/worker/model/db_helper.ts");
-/* harmony import */ var _business_create_db__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./business/create_db */ "./src/worker/business/create_db.ts");
-/* harmony import */ var _model_database__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./model/database */ "./src/worker/model/database.ts");
-/* harmony import */ var _business_select_index__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./business/select/index */ "./src/worker/business/select/index.ts");
-/* harmony import */ var _business_count_index__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./business/count/index */ "./src/worker/business/count/index.ts");
-/* harmony import */ var _business_insert_index__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./business/insert/index */ "./src/worker/business/insert/index.ts");
-/* harmony import */ var _business_remove_index__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./business/remove/index */ "./src/worker/business/remove/index.ts");
-/* harmony import */ var _business_update_index__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./business/update/index */ "./src/worker/business/update/index.ts");
-/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./util */ "./src/worker/util.ts");
-/* harmony import */ var _business_clear__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./business/clear */ "./src/worker/business/clear.ts");
-/* harmony import */ var _business_bulk_insert__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./business/bulk_insert */ "./src/worker/business/bulk_insert.ts");
-/* harmony import */ var _business_transaction_index__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./business/transaction/index */ "./src/worker/business/transaction/index.ts");
-/* harmony import */ var _business_query_helper__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./business/query_helper */ "./src/worker/business/query_helper.ts");
-
-
-
-
-
-
-
+/* harmony import */ var _business_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./business/index */ "./src/worker/business/index.ts");
+/* harmony import */ var _business_select_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./business/select/index */ "./src/worker/business/select/index.ts");
+/* harmony import */ var _business_count_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./business/count/index */ "./src/worker/business/count/index.ts");
+/* harmony import */ var _business_insert_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./business/insert/index */ "./src/worker/business/insert/index.ts");
+/* harmony import */ var _business_remove_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./business/remove/index */ "./src/worker/business/remove/index.ts");
+/* harmony import */ var _business_update_index__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./business/update/index */ "./src/worker/business/update/index.ts");
+/* harmony import */ var _business_transaction_index__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./business/transaction/index */ "./src/worker/business/transaction/index.ts");
+/* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./log_helper */ "./src/worker/log_helper.ts");
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./enums */ "./src/worker/enums.ts");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./config */ "./src/worker/config.ts");
+/* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./keystore/index */ "./src/worker/keystore/index.ts");
+/* harmony import */ var _model_index__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./model/index */ "./src/worker/model/index.ts");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./util */ "./src/worker/util.ts");
 
 
 
@@ -7049,33 +6833,33 @@ __webpack_require__.r(__webpack_exports__);
 var QueryExecutor = /** @class */ (function () {
     function QueryExecutor(fn) {
         this.onQueryFinished = fn;
-        _business_query_helper__WEBPACK_IMPORTED_MODULE_19__["QueryHelper"].autoIncrementValues = {};
+        _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"].autoIncrementValues = {};
     }
     QueryExecutor.prototype.checkConnectionAndExecuteLogic = function (request) {
         var _this = this;
-        _log_helper__WEBPACK_IMPORTED_MODULE_1__["LogHelper"].log('request executing:' + request.name);
+        _log_helper__WEBPACK_IMPORTED_MODULE_7__["LogHelper"].log('request executing:' + request.name);
         switch (request.name) {
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].CreateDb:
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].IsDbExist:
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbVersion:
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbList:
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbSchema:
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Get:
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Set:
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].ChangeLogStatus:
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Terminate:
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].OpenDb:
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].InitKeyStore:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].CreateDb:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].IsDbExist:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].GetDbVersion:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].GetDbList:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].GetDbSchema:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Get:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Set:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].ChangeLogStatus:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Terminate:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].OpenDb:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].InitKeyStore:
                 this.executeLogic_(request);
                 break;
             default:
                 switch (this.dbStatus_.conStatus) {
-                    case _enums__WEBPACK_IMPORTED_MODULE_2__["CONNECTION_STATUS"].Connected:
+                    case _enums__WEBPACK_IMPORTED_MODULE_8__["CONNECTION_STATUS"].Connected:
                         {
                             this.executeLogic_(request);
                         }
                         break;
-                    case _enums__WEBPACK_IMPORTED_MODULE_2__["CONNECTION_STATUS"].Closed:
+                    case _enums__WEBPACK_IMPORTED_MODULE_8__["CONNECTION_STATUS"].Closed:
                         {
                             if (this.isDbDeletedByBrowser_ === true) {
                                 this.createDb_(null, function () {
@@ -7094,11 +6878,11 @@ var QueryExecutor = /** @class */ (function () {
         }
     };
     QueryExecutor.prototype.changeLogStatus_ = function (status, onSuccess, onError) {
-        _config__WEBPACK_IMPORTED_MODULE_3__["Config"].isLogEnabled = status;
+        _config__WEBPACK_IMPORTED_MODULE_9__["Config"].isLogEnabled = status;
         onSuccess();
     };
     QueryExecutor.prototype.returnResult_ = function (result) {
-        if (_config__WEBPACK_IMPORTED_MODULE_3__["Config"].isRuningInWorker === true) {
+        if (_config__WEBPACK_IMPORTED_MODULE_9__["Config"].isRuningInWorker === true) {
             self.postMessage(result);
         }
         else {
@@ -7118,33 +6902,33 @@ var QueryExecutor = /** @class */ (function () {
                 errorOccured: true
             });
         };
-        QueryExecutor.isTransactionQuery = request.name === _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Transaction;
+        QueryExecutor.isTransactionQuery = request.name === _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Transaction;
         switch (request.name) {
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Select:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Select:
                 this.select_(request.query, onSuccess, onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Insert:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Insert:
                 this.insert_(request.query, onSuccess, onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Update:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Update:
                 this.update_(request.query, onSuccess, onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Remove:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Remove:
                 this.remove_(request.query, onSuccess, onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].IsDbExist:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].IsDbExist:
                 this.isDbExist_(request.query, onSuccess, onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbVersion:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].GetDbVersion:
                 this.getDbVersion_(request.query).then(onSuccess).catch(onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbList:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].GetDbList:
                 this.getDbList_().then(onSuccess).catch(onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbSchema:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].GetDbSchema:
                 this.getDbSchema_(request.query).then(onSuccess).catch(onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].OpenDb:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].OpenDb:
                 if (this.isDbDeletedByBrowser_ === true) {
                     this.createDb_(null, function () {
                         _this.isDbDeletedByBrowser_ = false;
@@ -7155,40 +6939,37 @@ var QueryExecutor = /** @class */ (function () {
                     this.openDb_(request.query, onSuccess, onError);
                 }
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].CreateDb:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].CreateDb:
                 this.createDb_(request.query, onSuccess, onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Clear:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Clear:
                 this.clear_(request.query, onSuccess, onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].DropDb:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].DropDb:
                 this.dropDb_(onSuccess, onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Count:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Count:
                 this.count_(request.query, onSuccess, onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].BulkInsert:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].BulkInsert:
                 this.bulkInsert_(request.query, onSuccess, onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].ExportJson:
-                this.exportJson_(request.query, onSuccess, onError);
-                break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Get:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Get:
                 this.get_(request.query).then(onSuccess).catch(onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Set:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Set:
                 this.set_(request.query).then(onSuccess).catch(onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].ChangeLogStatus:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].ChangeLogStatus:
                 this.changeLogStatus_(request.query, onSuccess, onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Transaction:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Transaction:
                 this.transaction_(request.query, onSuccess, onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].Terminate:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Terminate:
                 this.terminate_(onSuccess, onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_2__["API"].InitKeyStore:
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].InitKeyStore:
                 this.initKeyStore_(onSuccess);
                 break;
             default:
@@ -7196,38 +6977,38 @@ var QueryExecutor = /** @class */ (function () {
         }
     };
     QueryExecutor.prototype.initKeyStore_ = function (onSuccess) {
-        _keystore_index__WEBPACK_IMPORTED_MODULE_6__["KeyStore"].init();
+        _keystore_index__WEBPACK_IMPORTED_MODULE_10__["KeyStore"].init();
         onSuccess();
     };
     QueryExecutor.prototype.getDbSchema_ = function (dbName) {
-        return _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].getDbSchema(dbName);
+        return _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].getDbSchema(dbName);
     };
     QueryExecutor.prototype.terminate_ = function (onSuccess, onError) {
         var _this = this;
-        _keystore_index__WEBPACK_IMPORTED_MODULE_6__["KeyStore"].close().then(function () {
+        _keystore_index__WEBPACK_IMPORTED_MODULE_10__["KeyStore"].close().then(function () {
             _this.closeDb_();
             onSuccess();
         });
     };
     Object.defineProperty(QueryExecutor.prototype, "isDbDeletedByBrowser_", {
         get: function () {
-            return _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].isDbDeletedByBrowser;
+            return _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].isDbDeletedByBrowser;
         },
         set: function (value) {
-            _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].isDbDeletedByBrowser = value;
+            _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].isDbDeletedByBrowser = value;
         },
         enumerable: true,
         configurable: true
     });
     QueryExecutor.prototype.getDbList_ = function () {
-        return _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].getDbList();
+        return _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].getDbList();
     };
     Object.defineProperty(QueryExecutor.prototype, "activeDb_", {
         get: function () {
-            return _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDb;
+            return _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDb;
         },
         set: function (value) {
-            _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDb = value;
+            _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDb = value;
         },
         enumerable: true,
         configurable: true
@@ -7239,33 +7020,33 @@ var QueryExecutor = /** @class */ (function () {
                 _this.activeDbVersion_ = dbVersion;
                 _this.getDbSchema_(dbName).then(function (result) {
                     _this.activeDb_ = result;
-                    var openDbProject = new _business_open_db__WEBPACK_IMPORTED_MODULE_4__["OpenDb"](onSuccess, onError);
+                    var openDbProject = new _business_index__WEBPACK_IMPORTED_MODULE_0__["OpenDb"](onSuccess, onError);
                     openDbProject.execute();
                 });
             }
             else {
-                var err = new _log_helper__WEBPACK_IMPORTED_MODULE_1__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["ERROR_TYPE"].DbNotExist, { DbName: dbName });
+                var err = new _log_helper__WEBPACK_IMPORTED_MODULE_7__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["ERROR_TYPE"].DbNotExist, { DbName: dbName });
                 err.logError();
                 onError(err.get());
             }
         });
     };
     QueryExecutor.prototype.closeDb_ = function () {
-        if (_business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbStatus.conStatus === _enums__WEBPACK_IMPORTED_MODULE_2__["CONNECTION_STATUS"].Connected) {
-            _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbStatus.conStatus = _enums__WEBPACK_IMPORTED_MODULE_2__["CONNECTION_STATUS"].ClosedByJsStore;
-            _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbConnection.close();
+        if (_business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbStatus.conStatus === _enums__WEBPACK_IMPORTED_MODULE_8__["CONNECTION_STATUS"].Connected) {
+            _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbStatus.conStatus = _enums__WEBPACK_IMPORTED_MODULE_8__["CONNECTION_STATUS"].ClosedByJsStore;
+            _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbConnection.close();
         }
     };
     QueryExecutor.prototype.dropDb_ = function (onSuccess, onError) {
         this.closeDb_();
-        var dropDbInstance = new _business_drop_db__WEBPACK_IMPORTED_MODULE_5__["DropDb"](onSuccess, onError);
+        var dropDbInstance = new _business_index__WEBPACK_IMPORTED_MODULE_0__["DropDb"](onSuccess, onError);
         dropDbInstance.deleteDb();
     };
     QueryExecutor.prototype.update_ = function (query, onSuccess, onError) {
-        var queryHelper = new _business_query_helper__WEBPACK_IMPORTED_MODULE_19__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["API"].Update, query);
+        var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].Update, query);
         queryHelper.checkAndModify();
         if (queryHelper.error == null) {
-            var updateDbInstance = new _business_update_index__WEBPACK_IMPORTED_MODULE_14__["Instance"](query, onSuccess, onError);
+            var updateDbInstance = new _business_update_index__WEBPACK_IMPORTED_MODULE_5__["Instance"](query, onSuccess, onError);
             updateDbInstance.execute();
         }
         else {
@@ -7273,18 +7054,18 @@ var QueryExecutor = /** @class */ (function () {
         }
     };
     QueryExecutor.prototype.insert_ = function (query, onSuccess, onError) {
-        var queryHelper = new _business_query_helper__WEBPACK_IMPORTED_MODULE_19__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["API"].Insert, query);
+        var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].Insert, query);
         queryHelper.checkAndModify().then(function () {
             query = queryHelper.query;
-            var insertInstance = new _business_insert_index__WEBPACK_IMPORTED_MODULE_12__["Instance"](query, onSuccess, onError);
+            var insertInstance = new _business_insert_index__WEBPACK_IMPORTED_MODULE_3__["Instance"](query, onSuccess, onError);
             insertInstance.execute();
         }).catch(onError);
     };
     QueryExecutor.prototype.bulkInsert_ = function (query, onSuccess, onError) {
-        var queryHelper = new _business_query_helper__WEBPACK_IMPORTED_MODULE_19__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["API"].BulkInsert, query);
+        var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].BulkInsert, query);
         queryHelper.checkAndModify();
         if (queryHelper.error == null) {
-            var bulkInsertInstance = new _business_bulk_insert__WEBPACK_IMPORTED_MODULE_17__["BulkInsert"](query, onSuccess, onError);
+            var bulkInsertInstance = new _business_index__WEBPACK_IMPORTED_MODULE_0__["BulkInsert"](query, onSuccess, onError);
             bulkInsertInstance.execute();
         }
         else {
@@ -7292,10 +7073,10 @@ var QueryExecutor = /** @class */ (function () {
         }
     };
     QueryExecutor.prototype.remove_ = function (query, onSuccess, onError) {
-        var queryHelper = new _business_query_helper__WEBPACK_IMPORTED_MODULE_19__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["API"].Remove, query);
+        var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].Remove, query);
         queryHelper.checkAndModify();
         if (queryHelper.error == null) {
-            var deleteObject = new _business_remove_index__WEBPACK_IMPORTED_MODULE_13__["Instance"](query, onSuccess, onError);
+            var deleteObject = new _business_remove_index__WEBPACK_IMPORTED_MODULE_4__["Instance"](query, onSuccess, onError);
             deleteObject.execute();
         }
         else {
@@ -7304,13 +7085,13 @@ var QueryExecutor = /** @class */ (function () {
     };
     QueryExecutor.prototype.select_ = function (query, onSuccess, onError) {
         if (typeof query.from === 'object') {
-            var selectJoinInstance = new _business_select_index__WEBPACK_IMPORTED_MODULE_10__["Join"](query, onSuccess, onError);
+            var selectJoinInstance = new _business_select_index__WEBPACK_IMPORTED_MODULE_1__["Join"](query, onSuccess, onError);
         }
         else {
-            var queryHelper = new _business_query_helper__WEBPACK_IMPORTED_MODULE_19__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["API"].Select, query);
+            var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].Select, query);
             queryHelper.checkAndModify();
             if (queryHelper.error == null) {
-                var selectInstance = new _business_select_index__WEBPACK_IMPORTED_MODULE_10__["Instance"](query, onSuccess, onError);
+                var selectInstance = new _business_select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](query, onSuccess, onError);
                 selectInstance.execute();
             }
             else {
@@ -7321,13 +7102,13 @@ var QueryExecutor = /** @class */ (function () {
     QueryExecutor.prototype.count_ = function (query, onSuccess, onError) {
         if (typeof query.from === 'object') {
             query['count'] = true;
-            var selectJoinInstance = new _business_select_index__WEBPACK_IMPORTED_MODULE_10__["Join"](query, onSuccess, onError);
+            var selectJoinInstance = new _business_select_index__WEBPACK_IMPORTED_MODULE_1__["Join"](query, onSuccess, onError);
         }
         else {
-            var queryHelper = new _business_query_helper__WEBPACK_IMPORTED_MODULE_19__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["API"].Count, query);
+            var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].Count, query);
             queryHelper.checkAndModify();
             if (queryHelper.error == null) {
-                var countInstance = new _business_count_index__WEBPACK_IMPORTED_MODULE_11__["Instance"](query, onSuccess, onError);
+                var countInstance = new _business_count_index__WEBPACK_IMPORTED_MODULE_2__["Instance"](query, onSuccess, onError);
                 countInstance.execute();
             }
             else {
@@ -7339,11 +7120,11 @@ var QueryExecutor = /** @class */ (function () {
         var _this = this;
         var processCreateDb = function () {
             // save dbSchema in keystore
-            _keystore_index__WEBPACK_IMPORTED_MODULE_6__["KeyStore"].set("JsStore_" + _this.activeDb_.name + "_Schema", _this.activeDb_);
+            _keystore_index__WEBPACK_IMPORTED_MODULE_10__["KeyStore"].set("JsStore_" + _this.activeDb_.name + "_Schema", _this.activeDb_);
             // create meta data
-            var dbHelper = new _model_db_helper__WEBPACK_IMPORTED_MODULE_7__["DbHelper"](_business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDb);
+            var dbHelper = new _model_index__WEBPACK_IMPORTED_MODULE_11__["DbHelper"](_business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDb);
             dbHelper.createMetaData().then(function (tablesMetaData) {
-                var createDbInstance = new _business_create_db__WEBPACK_IMPORTED_MODULE_8__["CreateDb"](onSuccess, onError);
+                var createDbInstance = new _business_index__WEBPACK_IMPORTED_MODULE_0__["CreateDb"](onSuccess, onError);
                 createDbInstance.execute(tablesMetaData);
             });
         };
@@ -7354,51 +7135,41 @@ var QueryExecutor = /** @class */ (function () {
             this.closeDb_();
             this.getDbVersion_(dataBase.name).then(function (version) {
                 _this.activeDbVersion_ = version ? version : 1;
-                _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDb = new _model_database__WEBPACK_IMPORTED_MODULE_9__["DataBase"](dataBase);
+                _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDb = new _model_index__WEBPACK_IMPORTED_MODULE_11__["DataBase"](dataBase);
                 processCreateDb();
             });
         }
     };
     Object.defineProperty(QueryExecutor.prototype, "activeDbVersion_", {
         get: function () {
-            return _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDbVersion;
+            return _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDbVersion;
         },
         set: function (value) {
-            _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDbVersion = value;
+            _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDbVersion = value;
         },
         enumerable: true,
         configurable: true
     });
     QueryExecutor.prototype.getDbVersion_ = function (dbName) {
-        return _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].getDbVersion(dbName);
+        return _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].getDbVersion(dbName);
     };
     Object.defineProperty(QueryExecutor.prototype, "dbStatus_", {
         get: function () {
-            return _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbStatus;
+            return _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbStatus;
         },
         enumerable: true,
         configurable: true
     });
     QueryExecutor.prototype.clear_ = function (tableName, onSuccess, onError) {
-        var clearInstance = new _business_clear__WEBPACK_IMPORTED_MODULE_16__["Clear"](tableName, onSuccess, onError);
+        var clearInstance = new _business_index__WEBPACK_IMPORTED_MODULE_0__["Clear"](tableName, onSuccess, onError);
         clearInstance.execute();
     };
-    QueryExecutor.prototype.exportJson_ = function (query, onSuccess, onError) {
-        this.select_(query, function (results) {
-            var url = URL.createObjectURL(new Blob([JSON.stringify(results)], {
-                type: "text/json"
-            }));
-            onSuccess(url);
-        }, function (err) {
-            onError(err);
-        });
-    };
     QueryExecutor.prototype.getType_ = function (value) {
-        return _util__WEBPACK_IMPORTED_MODULE_15__["Util"].getType(value);
+        return _util__WEBPACK_IMPORTED_MODULE_12__["Util"].getType(value);
     };
     QueryExecutor.prototype.isDbExist_ = function (dbInfo, onSuccess, onError) {
-        if (this.dbStatus_.conStatus !== _enums__WEBPACK_IMPORTED_MODULE_2__["CONNECTION_STATUS"].UnableToStart) {
-            if (this.getType_(dbInfo) === _enums__WEBPACK_IMPORTED_MODULE_2__["DATA_TYPE"].String) {
+        if (this.dbStatus_.conStatus !== _enums__WEBPACK_IMPORTED_MODULE_8__["CONNECTION_STATUS"].UnableToStart) {
+            if (this.getType_(dbInfo) === _enums__WEBPACK_IMPORTED_MODULE_8__["DATA_TYPE"].String) {
                 this.getDbVersion_(dbInfo).then(function (dbVersion) {
                     onSuccess(Boolean(dbVersion));
                 });
@@ -7415,10 +7186,10 @@ var QueryExecutor = /** @class */ (function () {
                 type: this.dbStatus_.lastError,
             };
             switch (error.type) {
-                case _enums__WEBPACK_IMPORTED_MODULE_2__["ERROR_TYPE"].IndexedDbBlocked:
+                case _enums__WEBPACK_IMPORTED_MODULE_8__["ERROR_TYPE"].IndexedDbBlocked:
                     error.message = "IndexedDB is blocked";
                     break;
-                case _enums__WEBPACK_IMPORTED_MODULE_2__["ERROR_TYPE"].IndexedDbUndefined:
+                case _enums__WEBPACK_IMPORTED_MODULE_8__["ERROR_TYPE"].IndexedDbUndefined:
                     error.message = "IndexedDB is not supported";
                     break;
                 default: break;
@@ -7427,13 +7198,13 @@ var QueryExecutor = /** @class */ (function () {
         }
     };
     QueryExecutor.prototype.get_ = function (key) {
-        return _keystore_index__WEBPACK_IMPORTED_MODULE_6__["KeyStore"].get(key);
+        return _keystore_index__WEBPACK_IMPORTED_MODULE_10__["KeyStore"].get(key);
     };
     QueryExecutor.prototype.set_ = function (query) {
-        return _keystore_index__WEBPACK_IMPORTED_MODULE_6__["KeyStore"].set(query.key, query.value);
+        return _keystore_index__WEBPACK_IMPORTED_MODULE_10__["KeyStore"].set(query.key, query.value);
     };
     QueryExecutor.prototype.transaction_ = function (qry, onSuccess, onError) {
-        var transaction = new _business_transaction_index__WEBPACK_IMPORTED_MODULE_18__["Instance"](qry, onSuccess, onError);
+        var transaction = new _business_transaction_index__WEBPACK_IMPORTED_MODULE_6__["Instance"](qry, onSuccess, onError);
         transaction.execute();
     };
     QueryExecutor.isTransactionQuery = false;
@@ -7482,10 +7253,10 @@ initialize();
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Util", function() { return Util; });
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./enums */ "./src/worker/enums.ts");
-/* harmony import */ var _business_helpers_promise__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./business/helpers/promise */ "./src/worker/business/helpers/promise.ts");
-/* harmony import */ var _business_idb_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./business/idb_helper */ "./src/worker/business/idb_helper.ts");
-/* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./index */ "./src/worker/index.ts");
-/* harmony import */ var _business_query_helper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./business/query_helper */ "./src/worker/business/query_helper.ts");
+/* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./keystore/index */ "./src/worker/keystore/index.ts");
+/* harmony import */ var _business_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./business/index */ "./src/worker/business/index.ts");
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./helpers/index */ "./src/worker/helpers/index.ts");
+/* harmony import */ var _query_executor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./query_executor */ "./src/worker/query_executor.ts");
 
 
 
@@ -7553,10 +7324,10 @@ var Util = /** @class */ (function () {
         var autoIncColumns = table.columns.filter(function (col) {
             return col.autoIncrement;
         });
-        return Object(_business_helpers_promise__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (resolve, reject) {
-            Promise.all(autoIncColumns.map(function (column) {
-                var autoIncrementKey = "JsStore_" + _business_idb_helper__WEBPACK_IMPORTED_MODULE_2__["IdbHelper"].activeDb.name + "_" + table.name + "_" + column.name + "_Value";
-                return _index__WEBPACK_IMPORTED_MODULE_3__["KeyStore"].get(autoIncrementKey);
+        return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_3__["promise"])(function (resolve, reject) {
+            Object(_helpers_index__WEBPACK_IMPORTED_MODULE_3__["promiseAll"])(autoIncColumns.map(function (column) {
+                var autoIncrementKey = "JsStore_" + _business_index__WEBPACK_IMPORTED_MODULE_2__["IdbHelper"].activeDb.name + "_" + table.name + "_" + column.name + "_Value";
+                return _keystore_index__WEBPACK_IMPORTED_MODULE_1__["KeyStore"].get(autoIncrementKey);
             })).then(function (results) {
                 var autoIncValues = {};
                 for (var i = 0; i < autoIncColumns.length; i++) {
@@ -7568,13 +7339,13 @@ var Util = /** @class */ (function () {
     };
     Util.setAutoIncrementValue = function (table, autoIncrementValue) {
         var keys = Object.keys(autoIncrementValue);
-        return Promise.all(keys.map(function (columnName) {
-            var autoIncrementKey = "JsStore_" + _business_idb_helper__WEBPACK_IMPORTED_MODULE_2__["IdbHelper"].activeDb.name + "_" + table.name + "_" + columnName + "_Value";
+        return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_3__["promiseAll"])(keys.map(function (columnName) {
+            var autoIncrementKey = "JsStore_" + _business_index__WEBPACK_IMPORTED_MODULE_2__["IdbHelper"].activeDb.name + "_" + table.name + "_" + columnName + "_Value";
             var value = autoIncrementValue[columnName];
-            if (_index__WEBPACK_IMPORTED_MODULE_3__["QueryExecutor"].isTransactionQuery === true) {
-                _business_query_helper__WEBPACK_IMPORTED_MODULE_4__["QueryHelper"].autoIncrementValues[table.name][columnName] = value;
+            if (_query_executor__WEBPACK_IMPORTED_MODULE_4__["QueryExecutor"].isTransactionQuery === true) {
+                _business_index__WEBPACK_IMPORTED_MODULE_2__["QueryHelper"].autoIncrementValues[table.name][columnName] = value;
             }
-            return _index__WEBPACK_IMPORTED_MODULE_3__["KeyStore"].set(autoIncrementKey, value);
+            return _keystore_index__WEBPACK_IMPORTED_MODULE_1__["KeyStore"].set(autoIncrementKey, value);
         }));
     };
     return Util;

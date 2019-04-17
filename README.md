@@ -11,7 +11,7 @@
 
 # Overview
 
-JsStore is an IndexedDB Wrapper. It makes IndexedDB super easy with its SQL like apis.
+A complete IndexedDB wrapper with SQL like syntax.
 
 # Features 
 

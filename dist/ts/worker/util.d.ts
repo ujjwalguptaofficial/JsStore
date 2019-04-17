@@ -1,5 +1,5 @@
 import { DATA_TYPE } from "./enums";
-import { Table } from "./model/table";
+import { Table } from "./model/index";
 export declare class Util {
     static isNull(value: any): boolean;
     static isNullOrEmpty(value: any): boolean;

@@ -84,14 +84,6 @@ export declare class Instance extends InstanceHelper {
      */
     bulkInsert(query: InsertQuery): Promise<null>;
     /**
-     *  export the result in json file
-     *
-     * @param {SelectQuery} query
-     * @returns
-     * @memberof Instance
-     */
-    exportJson(query: SelectQuery): Promise<null>;
-    /**
      * set log status
      *
      * @param {boolean} status

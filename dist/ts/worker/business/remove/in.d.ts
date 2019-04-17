@@ -1,4 +1,4 @@
 import { NotWhere } from "./not_where";
 export declare class In extends NotWhere {
-    private executeInLogic;
+    protected executeInLogic(column: any, values: any): void;
 }

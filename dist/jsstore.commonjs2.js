@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.10.3 - 27/03/2019
+ * @license :jsstore - V2.11.0 - 17/04/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -175,7 +175,6 @@ var API;
     API["DropDb"] = "drop_db";
     API["Count"] = "count";
     API["BulkInsert"] = "bulk_insert";
-    API["ExportJson"] = "export_json";
     API["ChangeLogStatus"] = "change_log_status";
     API["Terminate"] = "terminate";
     API["Transaction"] = "transaction";
@@ -441,33 +440,6 @@ var Instance = /** @class */ (function (_super) {
         return this.pushApi({
             name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].BulkInsert,
             query: query
-        });
-    };
-    /**
-     *  export the result in json file
-     *
-     * @param {SelectQuery} query
-     * @returns
-     * @memberof Instance
-     */
-    Instance.prototype.exportJson = function (query) {
-        var _this = this;
-        var onSuccess = function (url) {
-            var link = document.createElement("a");
-            link.href = url;
-            link.download = query.from + ".json";
-            link.click();
-        };
-        return new Promise(function (resolve, reject) {
-            _this.pushApi({
-                name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].ExportJson,
-                query: query
-            }).then(function (url) {
-                onSuccess(url);
-                resolve();
-            }).catch(function (err) {
-                reject(err);
-            });
         });
     };
     /**

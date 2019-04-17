@@ -1,7 +1,6 @@
 import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
 import { IDbStatus } from "../interfaces";
-import { DataBase } from "../model/database";
-import { Table } from "../model/table";
+import { DataBase, Table } from "../model/index";
 export declare class IdbHelper {
     static onDbDroppedByBrowser: () => void;
     static transaction: IDBTransaction;

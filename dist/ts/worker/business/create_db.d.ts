@@ -1,4 +1,4 @@
-import { TableHelper } from "../model/table_helper";
+import { TableHelper } from "../model/index";
 import { IError } from "../interfaces";
 import { BaseDb } from "./base_db";
 export declare class CreateDb extends BaseDb {

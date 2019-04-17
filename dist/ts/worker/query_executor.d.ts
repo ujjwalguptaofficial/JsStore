@@ -27,7 +27,6 @@ export declare class QueryExecutor {
     private getDbVersion_;
     private readonly dbStatus_;
     private clear_;
-    private exportJson_;
     private getType_;
     private isDbExist_;
     private get_;

@@ -1,6 +1,6 @@
 import { Base } from "../base";
 import { InsertQuery } from "../../types";
-import { Table } from "../../model/table";
+import { Table } from "../../model/index";
 import { IError } from "../../interfaces";
 export declare class Instance extends Base {
     private valuesAffected_;
