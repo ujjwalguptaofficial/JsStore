@@ -1,8 +1,31 @@
 import { NotWhere } from "./not_where";
-
+let skipOrPush: (val) => void;
+let skip;
+let shouldAddValue: () => boolean;
+let cursor: IDBCursorWithValue;
 export class Not extends NotWhere {
     compValue: string;
     protected executeLikeLogic_(column, value: string) {
+        skip = this.skipRecord;
+        skipOrPush = (val) => {
+            if (skip === 0) {
+                this.results.push(val);
+            }
+            else {
+                --skip;
+            }
+        };
+        if (this.checkFlag) {
+            shouldAddValue = () => {
+                return this.filterOnOccurence(cursor.key) &&
+                    this.whereCheckerInstance.check(cursor.value);
+            };
+        }
+        else {
+            shouldAddValue = () => {
+                return this.filterOnOccurence(cursor.key);
+            };
+        }
         this.compValue = value.toLowerCase();
         this.cursorOpenRequest = this.objectStore.index(column).openCursor();
         this.cursorOpenRequest.onerror = function (e) {
@@ -24,144 +47,59 @@ export class Not extends NotWhere {
     }
 
     private executeSkipAndLimit_() {
-        let cursor: IDBCursorWithValue,
-            skip = this.skipRecord;
-        const skipOrPush = (value) => {
-            if (skip === 0) {
-                this.results.push(value);
-            }
-            else {
-                --skip;
+        this.cursorOpenRequest.onsuccess = (e: any) => {
+            cursor = e.target.result;
+            if (this.results.length !== this.limitRecord && cursor) {
+                if (shouldAddValue()) {
+                    skipOrPush(cursor.value);
+                }
+                cursor.continue();
+            } else {
+                this.onQueryFinished();
             }
         };
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (this.results.length !== this.limitRecord && cursor) {
-                    if (this.filterOnOccurence(cursor.key) &&
-                        this.whereCheckerInstance.check(cursor.value)) {
-                        skipOrPush(cursor.value);
-                    }
-                    cursor.continue();
-                } else {
-                    this.onQueryFinished();
-                }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (this.results.length !== this.limitRecord && cursor) {
-                    if (this.filterOnOccurence(cursor.key)) {
-                        skipOrPush(cursor.value);
-                    }
-                    cursor.continue();
-                } else {
-                    this.onQueryFinished();
-                }
-            };
-        }
     }
 
     private executeSkip_() {
-        let cursor: IDBCursorWithValue;
-        let skip = this.skipRecord;
-        const skipOrPush = (value) => {
-            if (skip === 0) {
-                this.results.push(value);
-            }
-            else {
-                --skip;
+        this.cursorOpenRequest.onsuccess = (e: any) => {
+            cursor = e.target.result;
+            if (cursor) {
+                if (shouldAddValue()) {
+                    skipOrPush((cursor.value));
+                }
+                cursor.continue();
+            } else {
+                this.onQueryFinished();
             }
         };
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (this.filterOnOccurence(cursor.key) &&
-                        this.whereCheckerInstance.check(cursor.value)) {
-                        skipOrPush((cursor.value));
-                    }
-                    cursor.continue();
-                } else {
-                    this.onQueryFinished();
-                }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (this.filterOnOccurence(cursor.key)) {
-                        skipOrPush((cursor.value));
-                    }
-                    cursor.continue();
-                } else {
-                    this.onQueryFinished();
-                }
-            };
-        }
     }
 
     private executeLimit_() {
-        let cursor: IDBCursorWithValue;
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (this.results.length !== this.limitRecord && cursor) {
-                    if (this.filterOnOccurence(cursor.key) &&
-                        this.whereCheckerInstance.check(cursor.value)) {
-                        this.results.push(cursor.value);
-                    }
-                    cursor.continue();
-                } else {
-                    this.onQueryFinished();
+
+        this.cursorOpenRequest.onsuccess = (e: any) => {
+            cursor = e.target.result;
+            if (this.results.length !== this.limitRecord && cursor) {
+                if (shouldAddValue()) {
+                    this.results.push(cursor.value);
                 }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (this.results.length !== this.limitRecord && cursor) {
-                    if (this.filterOnOccurence(cursor.key)) {
-                        this.results.push(cursor.value);
-                    }
-                    cursor.continue();
-                } else {
-                    this.onQueryFinished();
-                }
-            };
-        }
+                cursor.continue();
+            } else {
+                this.onQueryFinished();
+            }
+        };
     }
 
     private executeSimple_() {
-        let cursor: IDBCursorWithValue;
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (this.filterOnOccurence(cursor.key) &&
-                        this.whereCheckerInstance.check(cursor.value)) {
-                        this.results.push(cursor.value);
-                    }
-                    cursor.continue();
-                } else {
-                    this.onQueryFinished();
+        this.cursorOpenRequest.onsuccess = (e: any) => {
+            cursor = e.target.result;
+            if (cursor) {
+                if (shouldAddValue()) {
+                    this.results.push(cursor.value);
                 }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (this.filterOnOccurence(cursor.key)) {
-                        this.results.push(cursor.value);
-                    }
-                    cursor.continue();
-                } else {
-                    this.onQueryFinished();
-                }
-            };
-        }
+                cursor.continue();
+            } else {
+                this.onQueryFinished();
+            }
+        };
     }
 }

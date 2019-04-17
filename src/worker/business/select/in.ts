@@ -1,8 +1,31 @@
 import { NotWhere } from "./not_where";
 import { promiseAll, promise } from "../../helpers/index";
 
+let shouldAddValue: () => boolean;
+let skipOrPush: (val) => void;
+let skip;
+let cursor: IDBCursorWithValue;
 export class In extends NotWhere {
     protected executeInLogic(column, values) {
+        skip = this.skipRecord;
+        skipOrPush = (val) => {
+            if (skip === 0) {
+                this.results.push(val);
+            }
+            else {
+                --skip;
+            }
+        };
+        if (this.checkFlag) {
+            shouldAddValue = () => {
+                return this.whereCheckerInstance.check(cursor.value);
+            };
+        }
+        else {
+            shouldAddValue = function () {
+                return true;
+            };
+        }
         if (this.skipRecord && this.limitRecord) {
             this.executeSkipAndLimitForIn_(column, values);
         }
@@ -18,57 +41,27 @@ export class In extends NotWhere {
     }
 
     private executeSkipAndLimitForIn_(column, values) {
-        let cursor: IDBCursorWithValue,
-            cursorRequest: IDBRequest,
-            skip = this.skipRecord;
+        let cursorRequest: IDBRequest;
         const columnStore = this.objectStore.index(column);
-        const skipOrPush = (value) => {
-            if (skip === 0) {
-                this.results.push(value);
-            }
-            else {
-                --skip;
-            }
-        };
-        let runInLogic: (val) => Promise<void>;
-        if (this.checkFlag) {
-            runInLogic = (value) => {
-                return promise((res, rej) => {
-                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
-                    cursorRequest.onsuccess = (e: any) => {
-                        cursor = e.target.result;
-                        if (this.results.length !== this.limitRecord && cursor) {
-                            if (this.whereCheckerInstance.check(cursor.value)) {
-                                skipOrPush(cursor.value);
-                            }
-                            cursor.continue();
-                        }
-                        else {
-                            res();
-                        }
-                    };
-                    cursorRequest.onerror = rej;
-                });
-            };
-        }
-        else {
-            runInLogic = (value) => {
-                return promise((res, rej) => {
-                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
-                    cursorRequest.onsuccess = (e: any) => {
-                        cursor = e.target.result;
-                        if (this.results.length !== this.limitRecord && cursor) {
+
+        const runInLogic: (val) => Promise<void> = (value) => {
+            return promise((res, rej) => {
+                cursorRequest = columnStore.openCursor(this.getKeyRange(value));
+                cursorRequest.onsuccess = (e: any) => {
+                    cursor = e.target.result;
+                    if (this.results.length !== this.limitRecord && cursor) {
+                        if (shouldAddValue()) {
                             skipOrPush(cursor.value);
-                            cursor.continue();
                         }
-                        else {
-                            res();
-                        }
-                    };
-                    cursorRequest.onerror = rej;
-                });
-            };
-        }
+                        cursor.continue();
+                    }
+                    else {
+                        res();
+                    }
+                };
+                cursorRequest.onerror = rej;
+            });
+        };
 
         promiseAll(
             values.map(function (val) {
@@ -82,57 +75,27 @@ export class In extends NotWhere {
     }
 
     private executeSkipForIn_(column, values) {
-        let cursor: IDBCursorWithValue,
-            skip = this.skipRecord,
-            cursorRequest: IDBRequest;
+
+        let cursorRequest: IDBRequest;
         const columnStore = this.objectStore.index(column);
-        const skipOrPush = (value) => {
-            if (skip === 0) {
-                this.results.push(value);
-            }
-            else {
-                --skip;
-            }
-        };
-        let runInLogic: (val) => Promise<void>;
-        if (this.checkFlag) {
-            runInLogic = (value) => {
-                return promise((res, rej) => {
-                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
-                    cursorRequest.onsuccess = (e: any) => {
-                        cursor = e.target.result;
-                        if (cursor) {
-                            if (this.whereCheckerInstance.check(cursor.value)) {
-                                skipOrPush((cursor.value));
-                            }
-                            cursor.continue();
-                        }
-                        else {
-                            res();
-                        }
-                    };
-                    cursorRequest.onerror = rej;
-                });
-            };
-        }
-        else {
-            runInLogic = (value) => {
-                return promise((res, rej) => {
-                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
-                    cursorRequest.onsuccess = (e: any) => {
-                        cursor = e.target.result;
-                        if (cursor) {
+        const runInLogic: (val) => Promise<void> = (value) => {
+            return promise((res, rej) => {
+                cursorRequest = columnStore.openCursor(this.getKeyRange(value));
+                cursorRequest.onsuccess = (e: any) => {
+                    cursor = e.target.result;
+                    if (cursor) {
+                        if (shouldAddValue()) {
                             skipOrPush((cursor.value));
-                            cursor.continue();
                         }
-                        else {
-                            res();
-                        }
-                    };
-                    cursorRequest.onerror = rej;
-                });
-            };
-        }
+                        cursor.continue();
+                    }
+                    else {
+                        res();
+                    }
+                };
+                cursorRequest.onerror = rej;
+            });
+        };
 
         promiseAll(
             values.map(function (val) {
@@ -146,48 +109,26 @@ export class In extends NotWhere {
     }
 
     private executeLimitForIn_(column, values) {
-        let cursor: IDBCursorWithValue,
-            cursorRequest: IDBRequest;
+        let cursorRequest: IDBRequest;
         const columnStore = this.objectStore.index(column);
-        let runInLogic: (val) => Promise<void>;
-        if (this.checkFlag) {
-            runInLogic = (value) => {
-                return promise((res, rej) => {
-                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
-                    cursorRequest.onsuccess = (e: any) => {
-                        cursor = e.target.result;
-                        if (cursor && this.results.length !== this.limitRecord) {
-                            if (this.whereCheckerInstance.check(cursor.value)) {
-                                this.results.push(cursor.value);
-                            }
-                            cursor.continue();
-                        }
-                        else {
-                            res();
-                        }
-                    };
-                    cursorRequest.onerror = rej;
-                });
-            };
-        }
-        else {
-            runInLogic = (value) => {
-                return promise((res, rej) => {
-                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
-                    cursorRequest.onsuccess = (e: any) => {
-                        cursor = e.target.result;
-                        if (cursor && this.results.length !== this.limitRecord) {
+        const runInLogic = (value) => {
+            return promise((res, rej) => {
+                cursorRequest = columnStore.openCursor(this.getKeyRange(value));
+                cursorRequest.onsuccess = (e: any) => {
+                    cursor = e.target.result;
+                    if (cursor && this.results.length !== this.limitRecord) {
+                        if (shouldAddValue()) {
                             this.results.push(cursor.value);
-                            cursor.continue();
                         }
-                        else {
-                            res();
-                        }
-                    };
-                    cursorRequest.onerror = rej;
-                });
-            };
-        }
+                        cursor.continue();
+                    }
+                    else {
+                        res();
+                    }
+                };
+                cursorRequest.onerror = rej;
+            });
+        };
 
         promiseAll(
             values.map(function (val) {
@@ -201,48 +142,26 @@ export class In extends NotWhere {
     }
 
     private executeSimpleForIn_(column, values) {
-        let cursor: IDBCursorWithValue,
-            cursorRequest: IDBRequest;
+        let cursorRequest: IDBRequest;
         const columnStore = this.objectStore.index(column);
-        let runInLogic: (val) => Promise<void>;
-        if (this.checkFlag) {
-            runInLogic = (value) => {
-                return promise((res, rej) => {
-                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
-                    cursorRequest.onsuccess = (e: any) => {
-                        cursor = e.target.result;
-                        if (cursor) {
-                            if (this.whereCheckerInstance.check(cursor.value)) {
-                                this.results.push(cursor.value);
-                            }
-                            cursor.continue();
-                        }
-                        else {
-                            res();
-                        }
-                    };
-                    cursorRequest.onerror = rej;
-                });
-            };
-        }
-        else {
-            runInLogic = (value) => {
-                return promise((res, rej) => {
-                    cursorRequest = columnStore.openCursor(this.getKeyRange(value));
-                    cursorRequest.onsuccess = (e: any) => {
-                        cursor = e.target.result;
-                        if (cursor) {
+        const runInLogic = (value) => {
+            return promise((res, rej) => {
+                cursorRequest = columnStore.openCursor(this.getKeyRange(value));
+                cursorRequest.onsuccess = (e: any) => {
+                    cursor = e.target.result;
+                    if (cursor) {
+                        if (shouldAddValue()) {
                             this.results.push(cursor.value);
-                            cursor.continue();
                         }
-                        else {
-                            res();
-                        }
-                    };
-                    cursorRequest.onerror = rej;
-                });
-            };
-        }
+                        cursor.continue();
+                    }
+                    else {
+                        res();
+                    }
+                };
+                cursorRequest.onerror = rej;
+            });
+        };
 
         promiseAll(
             values.map(function (val) {

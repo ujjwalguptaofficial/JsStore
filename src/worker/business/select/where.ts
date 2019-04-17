@@ -1,151 +1,21 @@
 import { LikeRegex } from "./regex";
 
+let shouldAddValue: () => boolean;
+let cursor: IDBCursorWithValue;
 export class Where extends LikeRegex {
-    private executeSkipAndLimitForWhere_() {
-        let recordSkipped = false;
-        let cursor;
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (recordSkipped && this.results.length !== this.limitRecord) {
-                        if (this.whereCheckerInstance.check(cursor.value)) {
-                            this.results.push(cursor.value);
-                        }
-                        cursor.continue();
-                    }
-                    else {
-                        recordSkipped = true;
-                        cursor.advance(this.skipRecord);
-                    }
-                }
-                else {
-                    this.onQueryFinished();
-                }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (recordSkipped && this.results.length !== this.limitRecord) {
-                        this.results.push(cursor.value);
-                        cursor.continue();
-                    }
-                    else {
-                        recordSkipped = true;
-                        cursor.advance(this.skipRecord);
-                    }
-                }
-                else {
-                    this.onQueryFinished();
-                }
-            };
-        }
-    }
-
-    private executeSkipForWhere_() {
-        let recordSkipped = false,
-            cursor;
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (recordSkipped) {
-                        if (this.whereCheckerInstance.check(cursor.value)) {
-                            this.results.push(cursor.value);
-                        }
-                        cursor.continue();
-                    }
-                    else {
-                        recordSkipped = true;
-                        cursor.advance(this.skipRecord);
-                    }
-                }
-                else {
-                    this.onQueryFinished();
-                }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (recordSkipped) {
-                        this.results.push(cursor.value);
-                        cursor.continue();
-                    }
-                    else {
-                        recordSkipped = true;
-                        cursor.advance(this.skipRecord);
-                    }
-                }
-                else {
-                    this.onQueryFinished();
-                }
-            };
-        }
-    }
-
-    private executeLimitForWhere_() {
-        let cursor;
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor && this.results.length !== this.limitRecord &&
-                    this.whereCheckerInstance.check(cursor.value)) {
-                    this.results.push(cursor.value);
-                    cursor.continue();
-                }
-                else {
-                    this.onQueryFinished();
-                }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor && this.results.length !== this.limitRecord) {
-                    this.results.push(cursor.value);
-                    cursor.continue();
-                }
-                else {
-                    this.onQueryFinished();
-                }
-            };
-        }
-    }
-
-    private executeSimpleForWhere_() {
-        let cursor;
-        if (this.checkFlag) {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (this.whereCheckerInstance.check(cursor.value)) {
-                        this.results.push(cursor.value);
-                    }
-                    cursor.continue();
-                }
-                else {
-                    this.onQueryFinished();
-                }
-            };
-        }
-        else {
-            this.cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    this.results.push(cursor.value);
-                    cursor.continue();
-                } else {
-                    this.onQueryFinished();
-                }
-            };
-        }
-    }
 
     protected executeWhereLogic(column, value, op, dir) {
+
+        if (this.checkFlag) {
+            shouldAddValue = () => {
+                return this.whereCheckerInstance.check(cursor.value);
+            };
+        }
+        else {
+            shouldAddValue = function () {
+                return true;
+            };
+        }
         value = op ? value[op] : value;
         this.cursorOpenRequest = this.objectStore.index(column).openCursor(
             this.getKeyRange(value, op),
@@ -177,5 +47,80 @@ export class Where extends LikeRegex {
             }
         }
 
+    }
+
+    private executeSkipAndLimitForWhere_() {
+        let recordSkipped = false;
+        this.cursorOpenRequest.onsuccess = (e: any) => {
+            cursor = e.target.result;
+            if (cursor) {
+                if (recordSkipped && this.results.length !== this.limitRecord) {
+                    if (shouldAddValue()) {
+                        this.results.push(cursor.value);
+                    }
+                    cursor.continue();
+                }
+                else {
+                    recordSkipped = true;
+                    cursor.advance(this.skipRecord);
+                }
+            }
+            else {
+                this.onQueryFinished();
+            }
+        };
+    }
+
+    private executeSkipForWhere_() {
+        let recordSkipped = false;
+
+        this.cursorOpenRequest.onsuccess = (e: any) => {
+            cursor = e.target.result;
+            if (cursor) {
+                if (recordSkipped) {
+                    if (shouldAddValue()) {
+                        this.results.push(cursor.value);
+                    }
+                    cursor.continue();
+                }
+                else {
+                    recordSkipped = true;
+                    cursor.advance(this.skipRecord);
+                }
+            }
+            else {
+                this.onQueryFinished();
+            }
+        };
+    }
+
+    private executeLimitForWhere_() {
+        this.cursorOpenRequest.onsuccess = (e: any) => {
+            cursor = e.target.result;
+            if (cursor && this.results.length !== this.limitRecord &&
+                shouldAddValue()) {
+                this.results.push(cursor.value);
+                cursor.continue();
+            }
+            else {
+                this.onQueryFinished();
+            }
+        };
+
+    }
+
+    private executeSimpleForWhere_() {
+        this.cursorOpenRequest.onsuccess = (e: any) => {
+            cursor = e.target.result;
+            if (cursor) {
+                if (shouldAddValue()) {
+                    this.results.push(cursor.value);
+                }
+                cursor.continue();
+            }
+            else {
+                this.onQueryFinished();
+            }
+        };
     }
 }
