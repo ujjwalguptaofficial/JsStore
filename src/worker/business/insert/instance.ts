@@ -43,39 +43,38 @@ export class Instance extends Base {
 
     private insertData_(values: any[]) {
         // let valueIndex = 0;
-        let insertDataIntoTable: (value: object) => Promise<void>;
-        let objectStore;
-        const processName = this.query.upsert === true ? "put" : "add";
-        if (this.query.return === true) {
-            insertDataIntoTable = (value) => {
-                return promise((res, rej) => {
-                    const addResult = objectStore[processName](value);
-                    addResult.onerror = rej;
-                    addResult.onsuccess = (e) => {
-                        this.valuesAffected_.push(value);
-                        res();
-                    };
-                });
 
+        let objectStore: IDBObjectStore;
+        const processName = this.query.upsert === true ? "put" : "add";
+        let onInsertData;
+        if (this.query.return === true) {
+            onInsertData = (value) => {
+                this.valuesAffected_.push(value);
             };
+
         }
         else {
-            insertDataIntoTable = (value) => {
-                return promise((res, rej) => {
-                    const addResult = objectStore[processName](value);
-                    addResult.onerror = rej;
-                    addResult.onsuccess = (e) => {
-                        ++this.rowAffected;
-                        res();
-                    };
-                });
+            onInsertData = (value) => {
+                ++this.rowAffected;
             };
+        }
+
+        let primaryKey = this.query.upsert && this.getPrimaryKey(this.query.into);
+        if (primaryKey && !this.getColumnInfo(primaryKey).autoIncrement) {
+            primaryKey = undefined;
         }
         this.createTransaction([this.query.into], this.onTransactionCompleted_);
         objectStore = this.transaction.objectStore(this.query.into);
         promiseAll(
-            values.map(function (val) {
-                return insertDataIntoTable(val);
+            values.map(function (value) {
+                return promise(function (res, rej) {
+                    const addResult = objectStore[processName](value, primaryKey);
+                    addResult.onerror = rej;
+                    addResult.onsuccess = function () {
+                        onInsertData(value);
+                        res();
+                    };
+                });
             })
         ).then(() => {
             this.onQueryFinished_();
