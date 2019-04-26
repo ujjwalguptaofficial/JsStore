@@ -7,15 +7,15 @@ describe('Test insert', function () {
         con.insert({
             into: 'Customer'
         }).
-        catch(function (err) {
-            console.log(err);
-            var error = {
-                message: "Table 'Customer' does not exist",
-                type: 'table_not_exist'
-            };
-            expect(err).to.be.an('object').eql(error);
-            done();
-        })
+            catch(function (err) {
+                console.log(err);
+                var error = {
+                    message: "Table 'Customer' does not exist",
+                    type: 'table_not_exist'
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            })
     });
 
     it('insert customers', function (done) {
@@ -27,11 +27,36 @@ describe('Test insert', function () {
                 expect(results).to.be.an('number').to.equal(93);
                 done();
             }).
-            catch(function (err) {
-                done(err);
-            })
+                catch(function (err) {
+                    done(err);
+                })
         });
     });
+
+    // it('insert customer using upsert - already inserted data', function (done) {
+    //     con.insert({
+    //         into: 'Customers',
+    //         upsert: true,
+    //         values: [{ "CustomerName": "ujjwal gupta", "ContactName": "ujjwal", "Address": "bhubaneswar odisha", "City": "bhubaneswar", "PostalCode": "12345", "Country": "India" }]
+    //     }).then(function (results) {
+    //         expect(results).to.be.an('number').to.equal(1);
+    //         done();
+    //     }).catch(function (err) {
+    //         done(err);
+    //     })
+    // });
+
+    it('check total no of customer', function (done) {
+        con.count({
+            from: 'Customers',
+        }).then(function (results) {
+            expect(results).to.be.an('number').to.equal(93);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
 
     it('insert Orders', function (done) {
         $.getJSON("test/static/Orders.json", function (results) {
@@ -160,12 +185,12 @@ describe('Test insert', function () {
                 values: results,
                 skipDataCheck: true
             }).
-            then(function (results) {
-                expect(results).to.be.an('number').to.equal(77);
-                done();
-            }).catch(function (err) {
-                done(err);
-            });
+                then(function (results) {
+                    expect(results).to.be.an('number').to.equal(77);
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
         });
     });
 
@@ -322,15 +347,15 @@ describe('Test insert', function () {
             values: [value],
             return: true
         }).
-        then(function (results) {
-            var returned_value = results[0];
-            value['ShipperID'] = returned_value.ShipperID;
-            expect(returned_value).to.be.an('object').eql(value);
-            done();
-        }).
-        catch(function (err) {
-            done(err);
-        });
+            then(function (results) {
+                var returned_value = results[0];
+                value['ShipperID'] = returned_value.ShipperID;
+                expect(returned_value).to.be.an('object').eql(value);
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            });
     });
 
     it('EnableSearch column test', function (done) {
@@ -347,18 +372,18 @@ describe('Test insert', function () {
             into: 'Customers',
             values: [value]
         }).
-        then(function (results) {
-            expect(results).to.be.an('number').to.equal(3);
-            done();
-        }).
-        catch(function (err) {
-            var error = {
-                "message": "Supplied value for column 'Email' have wrong data type",
-                "type": "wrong_data_type"
-            };
-            expect(err).to.be.an('object').eql(error);
-            done();
-        });
+            then(function (results) {
+                expect(results).to.be.an('number').to.equal(3);
+                done();
+            }).
+            catch(function (err) {
+                var error = {
+                    "message": "Supplied value for column 'Email' have wrong data type",
+                    "type": "wrong_data_type"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            });
     });
 
     it('insert things', function (done) {
