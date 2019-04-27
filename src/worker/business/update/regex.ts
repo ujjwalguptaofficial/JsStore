@@ -34,7 +34,6 @@ export class Regex extends Like {
             else {
                 this.onQueryFinished();
             }
-
         };
     }
 }

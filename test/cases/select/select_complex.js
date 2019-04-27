@@ -36,56 +36,6 @@ describe('Test select complex case', function () {
         })
     });
 
-    it('select with 1 regex', function (done) {
-        con.select({
-            from: 'Customers',
-            where: {
-                Country: {
-                    regex: /mexico|brazil/i
-                }
-            }
-        }).then(function (results) {
-            expect(results).to.be.an('array').length(5 + 9);
-            done();
-        }).catch(function (err) {
-            done(err);
-        })
-    });
-
-    it('select with multiple regex', function (done) {
-        debugger;
-        con.select({
-            from: 'Customers',
-            where: {
-                Country: { regex: /mexico|brazil/i },
-                City: { regex: /.ampinas/ }
-            }
-        }).then(function (results) {
-            expect(results).to.be.an('array').length(1);
-            done();
-        }).catch(function (err) {
-            done(err);
-        })
-    });
-
-
-    it('select with mutliple regex and other fields', function (done) {
-        con.select({
-            from: 'Customers',
-            where: {
-                Country: { regex: /mexico|brazil/i },
-                City: { regex: /.ampinas|.*Paulo/ },
-                ContactName: { like: "Lúcia%" }
-            }
-        }).then(function (results) {
-            expect(results).to.be.an('array').length(1);
-            done();
-        }).catch(function (err) {
-            done(err);
-        })
-    });
-
-
     it('select with and "&" not', function (done) {
         con.select({
             from: 'Customers',
