@@ -1,8 +1,8 @@
-import { LikeRegex } from "./regex";
+import { Regex } from "./regex";
 
 let shouldAddValue: () => boolean;
 let cursor: IDBCursorWithValue;
-export class Where extends LikeRegex {
+export class Where extends Regex {
 
     protected executeWhereLogic(column, value, op, dir) {
 

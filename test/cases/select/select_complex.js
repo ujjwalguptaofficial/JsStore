@@ -53,6 +53,7 @@ describe('Test select complex case', function () {
     });
 
     it('select with multiple regex', function (done) {
+        debugger;
         con.select({
             from: 'Customers',
             where: {

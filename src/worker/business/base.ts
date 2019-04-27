@@ -112,7 +112,6 @@ export class Base extends BaseHelper {
             }
         }
         else {
-            this.errorOccured = true;
             const column: Column = this.getColumnInfo(columnName);
             const error = column == null ?
                 new LogHelper(ERROR_TYPE.ColumnNotExist, { ColumnName: columnName }) :

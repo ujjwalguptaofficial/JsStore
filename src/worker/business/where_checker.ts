@@ -17,34 +17,37 @@ export class WhereChecker {
   check(rowValue) {
     this.status = true;
     for (const columnName in this.where) {
-        if ( !this.status) {
-             break;
-        }
-        const columnValue = this.where[columnName];
-        if (typeof columnValue === 'object') {
-          for (const key in columnValue) {
-            if (!this.status) {
-                break;
-            }
-            switch (key) {
-              case QUERY_OPTION.In: this.checkIn(columnName, rowValue[columnName]); break;
-              case QUERY_OPTION.Like: this.checkLike(columnName, rowValue[columnName]); break;
-              case QUERY_OPTION.Regex: this.checkRegex(columnName, rowValue[columnName]); break;
-              case QUERY_OPTION.Between:
-              case QUERY_OPTION.GreaterThan:
-              case QUERY_OPTION.LessThan:
-              case QUERY_OPTION.GreaterThanEqualTo:
-              case QUERY_OPTION.LessThanEqualTo:
-              case QUERY_OPTION.NotEqualTo:
-                this.checkComparisionOp(columnName, rowValue[columnName], key);
-                break;
-            }
-          }
-        }
-        else {
-          this.status = columnValue === rowValue[columnName];
-          }
+      if (!this.status) {
+        break;
       }
+      const columnValue = this.where[columnName];
+      if (typeof columnValue === 'object') {
+        for (const key in columnValue) {
+          if (!this.status) {
+            break;
+          }
+          switch (key) {
+            case QUERY_OPTION.In:
+              this.checkIn(columnName, rowValue[columnName]); break;
+            case QUERY_OPTION.Like:
+              this.checkLike(columnName, rowValue[columnName]); break;
+            case QUERY_OPTION.Regex:
+              this.checkRegex(columnName, rowValue[columnName]); break;
+            case QUERY_OPTION.Between:
+            case QUERY_OPTION.GreaterThan:
+            case QUERY_OPTION.LessThan:
+            case QUERY_OPTION.GreaterThanEqualTo:
+            case QUERY_OPTION.LessThanEqualTo:
+            case QUERY_OPTION.NotEqualTo:
+              this.checkComparisionOp(columnName, rowValue[columnName], key);
+              break;
+          }
+        }
+      }
+      else {
+        this.status = columnValue === rowValue[columnName];
+      }
+    }
     return this.status;
   }
 
@@ -97,7 +100,7 @@ export class WhereChecker {
   private checkRegex(column, value) {
     const expr = this.where[column][QUERY_OPTION.Regex];
 
-    this.status = expr.test( value ) ;
+    this.status = expr.test(value);
   }
 
   private checkComparisionOp(column, value, symbol) {

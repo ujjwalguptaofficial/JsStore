@@ -8,7 +8,9 @@ export class BaseHelper {
     compSymbol: OCCURENCE;
     compValue;
     compValueLength: number;
-    // static method helpers
+
+    regexExpression: RegExp;
+    //   method helpers
 
     protected get activeDb(): DataBase {
         return IdbHelper.activeDb;
@@ -22,16 +24,8 @@ export class BaseHelper {
         return Util.getObjectFirstKey(value);
     }
 
-    protected isNull(value) {
-        return Util.isNull(value);
-    }
-
     protected getType(value) {
         return Util.getType(value);
-    }
-
-    protected isObject(value) {
-        return Util.isObject(value);
     }
 
     protected isString(value) {
@@ -69,6 +63,15 @@ export class BaseHelper {
             }
         }
         return found;
+    }
+
+    protected regexTest(value) {
+        const status = this.regexExpression.test(value);
+        if (status === true) {
+            //ignore-tslint-next-line
+            debugger;
+        }
+        return this.regexExpression.test(value);
     }
 
     protected isTableExist(tableName: string): boolean {
