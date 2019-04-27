@@ -5,37 +5,36 @@ export class Where extends Regex {
         value = op ? value[op] : value;
         let cursorRequest;
         let cursor: IDBCursorWithValue;
-
-        const initCursorAndFilter = () => {
-            cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
-            cursorRequest.onsuccess = (e) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (this.whereCheckerInstance.check(cursor.value)) {
-                        ++this.resultCount;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    this.onQueryFinished();
-                }
-            };
-        };
-        if (this.checkFlag) {
-            initCursorAndFilter();
-        }
-        else {
-            if (this.objectStore.count) {
+        let initCursorAndFilter;
+        if (this.objectStore.count) {
+            initCursorAndFilter = () => {
                 cursorRequest = this.objectStore.index(column).count(this.getKeyRange(value, op));
                 cursorRequest.onsuccess = () => {
                     this.resultCount = cursorRequest.result;
                     this.onQueryFinished();
                 };
-            }
-            else {
-                initCursorAndFilter();
-            }
+            };
+
         }
+        else {
+            initCursorAndFilter = () => {
+                cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
+                cursorRequest.onsuccess = (e) => {
+                    cursor = e.target.result;
+                    if (cursor) {
+                        if (this.whereCheckerInstance.check(cursor.value)) {
+                            ++this.resultCount;
+                        }
+                        cursor.continue();
+                    }
+                    else {
+                        this.onQueryFinished();
+                    }
+                };
+            };
+        }
+        initCursorAndFilter();
+
         cursorRequest.onerror = this.onErrorOccured;
     }
 }

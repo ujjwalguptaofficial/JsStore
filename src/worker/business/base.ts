@@ -17,7 +17,6 @@ export class Base extends BaseHelper {
     tableName: string;
     isTransaction: boolean;
     cursorOpenRequest: IDBRequest;
-    checkFlag = false;
     skipRecord;
     limitRecord;
 
@@ -85,11 +84,11 @@ export class Base extends BaseHelper {
         if (this.objectStore.indexNames.contains(columnName)) {
             const value = this.query.where[columnName];
             if (typeof value === 'object') {
-                this.checkFlag = Boolean(
+                const checkFlag = Boolean(
                     Object.keys(value).length > 1 ||
                     Object.keys(this.query.where).length > 1
                 );
-                this.whereCheckerInstance = new WhereChecker(this.query.where, this.checkFlag);
+                this.whereCheckerInstance = new WhereChecker(this.query.where, checkFlag);
                 const key = this.getObjectFirstKey(value);
                 switch (key) {
                     case QUERY_OPTION.Like: {
@@ -114,8 +113,8 @@ export class Base extends BaseHelper {
                 }
             }
             else {
-                this.checkFlag = Boolean(Object.keys(this.query.where).length > 1);
-                this.whereCheckerInstance = new WhereChecker(this.query.where, this.checkFlag);
+                const checkFlag = Boolean(Object.keys(this.query.where).length > 1);
+                this.whereCheckerInstance = new WhereChecker(this.query.where, checkFlag);
                 this.executeWhereLogic(columnName, value, null, "next");
             }
         }
