@@ -17,8 +17,8 @@ export class Join extends BaseSelect {
         const tableList = []; // used to open the multiple object store
 
         const convertQueryIntoStack = (qry: JoinQuery) => {
-            if (qry.table1 !== undefined) {
-                qry.table2['joinType'] = qry.join === undefined ? 'inner' : qry.join.toLowerCase();
+            if (qry.table1 != null) {
+                qry.table2['joinType'] = qry.join == null ? 'inner' : qry.join.toLowerCase();
                 this.queryStack.push(qry.table2);
                 if (this.queryStack.length % 2 === 0) {
                     this.queryStack[this.queryStack.length - 1].nextJoin = (qry as any).nextJoin;
@@ -38,7 +38,8 @@ export class Join extends BaseSelect {
         if (!this.error) {
             const selectObject = new Select.Instance({
                 from: this.queryStack[0].table,
-                where: this.queryStack[0].where
+                where: this.queryStack[0].where,
+                order: this.queryStack[0].order
             } as SelectQuery, (results) => {
                 const tableName = this.queryStack[0].table;
                 results.forEach((item, index) => {
@@ -51,7 +52,7 @@ export class Join extends BaseSelect {
         }
     }
 
-    private onTransactionCompleted_(e) {
+    private onTransactionCompleted_() {
         if (this.onSuccess != null && (this.queryStack.length === this.currentQueryStackIndex + 1)) {
             if (this.query[QUERY_OPTION.Count]) {
                 this.onSuccess(this.results.length);
@@ -100,7 +101,7 @@ export class Join extends BaseSelect {
                 this.startExecutionJoinLogic_();
             }
             else {
-                this.onTransactionCompleted_(null);
+                this.onTransactionCompleted_( );
             }
 
         }, this.onErrorOccured);
@@ -148,7 +149,7 @@ export class Join extends BaseSelect {
                 this.startExecutionJoinLogic_();
             }
             else {
-                this.onTransactionCompleted_(null);
+                this.onTransactionCompleted_( );
             }
         };
         const doRightJoin = (results) => {
@@ -208,7 +209,7 @@ export class Join extends BaseSelect {
                 this.startExecutionJoinLogic_();
             }
             else {
-                this.onTransactionCompleted_(null);
+                this.onTransactionCompleted_( );
             }
         };
         const doJoin = (results) => {

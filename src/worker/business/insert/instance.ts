@@ -59,18 +59,10 @@ export class Instance extends Base {
             };
         }
 
-        // let primaryKey = this.query.upsert && this.getPrimaryKey(this.query.into);
-        // if (primaryKey && !this.getColumnInfo(primaryKey).autoIncrement) {
-        //     primaryKey = null;
-        // }
         this.createTransaction([this.query.into], this.onTransactionCompleted_);
         objectStore = this.transaction.objectStore(this.query.into);
         promiseAll(
             values.map(function (value) {
-                // let primaryKeyVal;
-                // if (primaryKey) {
-                //     primaryKeyVal = value[primaryKeyVal];
-                // }
                 return promise(function (res, rej) {
                     const addResult = objectStore[processName](value);
                     addResult.onerror = rej;
