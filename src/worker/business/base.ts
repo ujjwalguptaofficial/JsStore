@@ -6,7 +6,7 @@ import { ERROR_TYPE, OCCURENCE, DATA_TYPE } from "../enums";
 import { Column } from "../model/index";
 import { QUERY_OPTION } from "../enums";
 
-export class Base extends BaseHelper {
+export abstract class Base extends BaseHelper {
     error: IError;
     rowAffected = 0;
     onSuccess: (result?) => void;
@@ -20,6 +20,9 @@ export class Base extends BaseHelper {
     skipRecord;
     limitRecord;
 
+    // abstract executeRegexLogic(column: string, exp: RegExp): void;
+    // abstract executeInLogic(column: string, value: any[]): void;
+    // abstract executeWhereLogic(column: string, value, op, dir?): void;
     protected onErrorOccured(e, customError = false) {
         if (customError) {
             e.logError();
@@ -76,7 +79,7 @@ export class Base extends BaseHelper {
         }
     }
 
-    protected goToWhereLogic = function () {
+    protected goToWhereLogic() {
         const columnName = this.getObjectFirstKey(this.query.where);
         if (this.query.ignoreCase === true) {
             this.query.where = this.makeQryInCaseSensitive(this.query.where);
@@ -93,29 +96,29 @@ export class Base extends BaseHelper {
                 switch (key) {
                     case QUERY_OPTION.Like: {
                         const regexVal = this.getRegexFromLikeExpression_(value[QUERY_OPTION.Like]);
-                        this.executeRegexLogic(columnName, regexVal);
+                        (this as any).executeRegexLogic(columnName, regexVal);
                     } break;
                     case QUERY_OPTION.Regex:
-                        this.executeRegexLogic(columnName, value[QUERY_OPTION.Regex]);
+                        (this as any).executeRegexLogic(columnName, value[QUERY_OPTION.Regex]);
                         break;
                     case QUERY_OPTION.In:
-                        this.executeInLogic(columnName, value[QUERY_OPTION.In]);
+                        (this as any).executeInLogic(columnName, value[QUERY_OPTION.In]);
                         break;
                     case QUERY_OPTION.Between:
                     case QUERY_OPTION.GreaterThan:
                     case QUERY_OPTION.LessThan:
                     case QUERY_OPTION.GreaterThanEqualTo:
                     case QUERY_OPTION.LessThanEqualTo:
-                        this.executeWhereLogic(columnName, value, key, "next");
+                        (this as any).executeWhereLogic(columnName, value, key, "next");
                         break;
                     case QUERY_OPTION.Aggregate: break;
-                    default: this.executeWhereLogic(columnName, value, null, "next");
+                    default: (this as any).executeWhereLogic(columnName, value, null, "next");
                 }
             }
             else {
                 const checkFlag = Boolean(Object.keys(this.query.where).length > 1);
                 this.whereCheckerInstance = new WhereChecker(this.query.where, checkFlag);
-                this.executeWhereLogic(columnName, value, null, "next");
+                (this as any).executeWhereLogic(columnName, value, null, "next");
             }
         }
         else {
@@ -126,7 +129,7 @@ export class Base extends BaseHelper {
 
             this.onErrorOccured(error, true);
         }
-    };
+    }
 
     protected makeQryInCaseSensitive(qry) {
         let results = [];
