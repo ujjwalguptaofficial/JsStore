@@ -1,6 +1,6 @@
-import { LikeRegex } from "./regex";
+import { Regex } from "./regex";
 
-export class Where extends LikeRegex {
+export class Where extends Regex {
     protected executeWhereLogic(column, value, op) {
         let cursor: IDBCursorWithValue,
             cursorRequest;

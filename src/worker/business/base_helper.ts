@@ -67,10 +67,6 @@ export class BaseHelper {
 
     protected regexTest(value) {
         const status = this.regexExpression.test(value);
-        if (status === true) {
-            //ignore-tslint-next-line
-            debugger;
-        }
         return this.regexExpression.test(value);
     }
 

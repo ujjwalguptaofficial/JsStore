@@ -1,6 +1,6 @@
 import { Like } from "./like";
 
-export class LikeRegex extends Like {
+export class Regex extends Like {
     protected executeRegexLogic(column: string, exp: RegExp) {
         let cursor: IDBCursorWithValue;
         this.regexExpression = exp;

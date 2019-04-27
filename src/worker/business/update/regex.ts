@@ -1,45 +1,40 @@
 import { Like } from "./like";
 import { updateValue } from "./base_update";
 
-export class LikeRegex extends Like {
-    protected executeRegexLogic(column, value) {
+export class Regex extends Like {
+    protected executeRegexLogic(column: string, exp: RegExp) {
         let cursor: IDBCursorWithValue;
-        this.compValue = value; // (value as string).toLowerCase();
-        this.compValueLength = this.compValue.length;
+        this.regexExpression = exp;
         const cursorOpenRequest = this.objectStore.index(column).openCursor();
         cursorOpenRequest.onerror = this.onErrorOccured;
+        let shouldAddValue: () => boolean;
 
         if (this.checkFlag) {
-            cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (this.filterOnOccurence(cursor.key) &&
-                        this.whereCheckerInstance.check(cursor.value)) {
-                        cursor.update(updateValue(this.query.set, cursor.value));
-                        ++this.rowAffected;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    this.onQueryFinished();
-                }
-
+            shouldAddValue = () => {
+                return this.regexTest(cursor.key) &&
+                    this.whereCheckerInstance.check(cursor.value);
             };
+
         }
         else {
-            cursorOpenRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (this.filterOnOccurence(cursor.key)) {
-                        cursor.update(updateValue(this.query.set, cursor.value));
-                        ++this.rowAffected;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    this.onQueryFinished();
-                }
+            shouldAddValue = () => {
+                return this.regexTest(cursor.key);
             };
         }
+
+        cursorOpenRequest.onsuccess = (e: any) => {
+            cursor = e.target.result;
+            if (cursor) {
+                if (shouldAddValue()) {
+                    cursor.update(updateValue(this.query.set, cursor.value));
+                    ++this.rowAffected;
+                }
+                cursor.continue();
+            }
+            else {
+                this.onQueryFinished();
+            }
+
+        };
     }
 }

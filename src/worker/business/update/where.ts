@@ -1,7 +1,7 @@
 import { updateValue } from "./base_update";
-import { Like } from "./like";
+import { Regex } from "./regex";
 
-export class Where extends Like {
+export class Where extends Regex {
     protected executeWhereLogic(column, value, op) {
         let cursor: IDBCursorWithValue,
             cursorRequest;
