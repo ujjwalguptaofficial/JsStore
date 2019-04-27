@@ -89,15 +89,12 @@ export class Base extends BaseHelper {
                     Object.keys(value).length > 1 ||
                     Object.keys(this.query.where).length > 1
                 );
-                if (this.checkFlag === true) {
-                    this.whereCheckerInstance = new WhereChecker(this.query.where);
-                }
+                this.whereCheckerInstance = new WhereChecker(this.query.where, this.checkFlag);
                 const key = this.getObjectFirstKey(value);
                 switch (key) {
                     case QUERY_OPTION.Like: {
-                        const regexVal = this.getRegexBasedOnOccurance(value[QUERY_OPTION.Like]);
+                        const regexVal = this.getRegexFromLikeExpression_(value[QUERY_OPTION.Like]);
                         this.executeRegexLogic(columnName, regexVal);
-                        break;
                     } break;
                     case QUERY_OPTION.Regex:
                         this.executeRegexLogic(columnName, value[QUERY_OPTION.Regex]);
@@ -118,9 +115,7 @@ export class Base extends BaseHelper {
             }
             else {
                 this.checkFlag = Boolean(Object.keys(this.query.where).length > 1);
-                if (this.checkFlag === true) {
-                    this.whereCheckerInstance = new WhereChecker(this.query.where);
-                }
+                this.whereCheckerInstance = new WhereChecker(this.query.where, this.checkFlag);
                 this.executeWhereLogic(columnName, value, null, "next");
             }
         }

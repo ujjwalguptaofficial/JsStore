@@ -7,13 +7,13 @@ export class In extends NotWhere {
         let cursor: IDBCursorWithValue;
         const columnStore = this.objectStore.index(column);
         let cursorRequest;
-        let runInLogic: (val) => Promise<void> = (value) => {
+        const runInLogic: (val) => Promise<void> = (value) => {
             return promise((res, rej) => {
                 cursorRequest = columnStore.openCursor(this.getKeyRange(value));
                 cursorRequest.onsuccess = (e) => {
                     cursor = e.target.result;
                     if (cursor) {
-                        if (shouldAddValue()) {
+                        if (this.whereCheckerInstance.check(cursor.value)) {
                             cursor.update(updateValue(this.query.set, cursor.value));
                             ++this.rowAffected;
                         }
@@ -26,17 +26,6 @@ export class In extends NotWhere {
                 cursorRequest.onerror = rej;
             });
         };
-        let shouldAddValue: () => boolean;
-        if (this.checkFlag) {
-            shouldAddValue = () => {
-                return this.whereCheckerInstance.check(cursor.value);
-            };
-        }
-        else {
-            shouldAddValue = () => {
-                return true;
-            };
-        }
 
         promiseAll(
             values.map(function (val) {

@@ -7,23 +7,11 @@ export class Where extends Regex {
             cursorRequest;
         value = op ? value[op] : value;
         cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
-        let shouldAddValue: () => boolean;
-
-        if (this.checkFlag) {
-            shouldAddValue = () => {
-                return this.whereCheckerInstance.check(cursor.value);
-            };
-
-        }
-        else {
-            shouldAddValue = () => {
-                return true;
-            };
-        }
+       
         cursorRequest.onsuccess = (e) => {
             cursor = e.target.result;
             if (cursor) {
-                if (shouldAddValue()) {
+                if (this.whereCheckerInstance.check(cursor.value)) {
                     cursor.update(updateValue(this.query.set, cursor.value));
                     ++this.rowAffected;
                 }
