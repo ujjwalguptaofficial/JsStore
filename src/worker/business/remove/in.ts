@@ -10,7 +10,7 @@ export class In extends NotWhere {
                 cursorRequest.onsuccess = (e) => {
                     cursor = e.target.result;
                     if (cursor) {
-                        if (shouldAddValue()) {
+                        if (this.whereCheckerInstance.check(cursor.value)) {
                             cursor.delete();
                             ++this.rowAffected;
                         }
@@ -23,18 +23,6 @@ export class In extends NotWhere {
                 cursorRequest.onerror = rej;
             });
         };
-        let shouldAddValue: () => boolean;
-
-        if (this.checkFlag) {
-            shouldAddValue = () => {
-                return this.whereCheckerInstance.check(cursor.value);
-            };
-        }
-        else {
-            shouldAddValue = () => {
-                return true;
-            };
-        }
 
         promiseAll(
             values.map(function (val) {
