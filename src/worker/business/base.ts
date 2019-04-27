@@ -55,6 +55,17 @@ export class Base extends BaseHelper {
         return this.getTable(this.tableName).columns.find(column => column.name === columnName);
     }
 
+    protected getRegexBasedOnOccurance(value: string, occurence: OCCURENCE) {
+        switch (occurence) {
+            case OCCURENCE.First:
+                return new RegExp(`^${value}`, 'i');
+            case OCCURENCE.Last:
+                return new RegExp(`${value}$`, 'i');
+            default:
+                return new RegExp(`${value}`, 'i');
+        }
+    }
+
     protected goToWhereLogic = function () {
         const columnName = this.getObjectFirstKey(this.query.where);
         if (this.query.ignoreCase === true) {
@@ -84,7 +95,10 @@ export class Base extends BaseHelper {
                             filterValue = filterValues[0];
                             occurence = OCCURENCE.First;
                         }
-                        this.executeLikeLogic(columnName, filterValue, occurence);
+                        const regexVal = this.getRegexBasedOnOccurance(filterValue, occurence);
+                        this.executeRegexLogic(columnName, regexVal);
+                        break;
+                        // this.executeLikeLogic(columnName, filterValue, occurence);
                     } break;
                     case QUERY_OPTION.Regex:
                         this.executeRegexLogic(columnName, value[QUERY_OPTION.Regex]);

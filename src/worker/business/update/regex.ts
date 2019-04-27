@@ -1,7 +1,7 @@
-import { Like } from "./like";
+import { In } from "./in";
 import { updateValue } from "./base_update";
 
-export class Regex extends Like {
+export class Regex extends In {
     protected executeRegexLogic(column: string, exp: RegExp) {
         let cursor: IDBCursorWithValue;
         this.regexExpression = exp;

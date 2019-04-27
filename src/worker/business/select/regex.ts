@@ -1,10 +1,10 @@
-import { Like } from "./like";
+import { In } from "./in";
 
 let shouldAddValue: () => boolean;
 let skipOrPush: (val) => void;
 let skip;
 let cursor: IDBCursorWithValue;
-export class Regex extends Like {
+export class Regex extends In {
     protected executeRegexLogic(column, exp: RegExp) {
 
         skip = this.skipRecord;
