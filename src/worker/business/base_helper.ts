@@ -5,9 +5,7 @@ import { Util } from "../util";
 import { DataBase } from "../model/index";
 
 export class BaseHelper {
-    compSymbol: OCCURENCE;
-    compValue;
-    compValueLength: number;
+
 
     regexExpression: RegExp;
     //   method helpers
@@ -44,29 +42,7 @@ export class BaseHelper {
         IdbHelper.createTransaction(tableNames, callBack, mode);
     }
 
-    protected filterOnOccurence(value) {
-        let found = false;
-        value = value.toLowerCase();
-        switch (this.compSymbol) {
-            case OCCURENCE.Any: if (value.indexOf(this.compValue) >= 0) {
-                found = true;
-            } break;
-            case OCCURENCE.First: if (value.indexOf(this.compValue) === 0) {
-                found = true;
-            } break;
-            case OCCURENCE.Last:
-                if (value.lastIndexOf(this.compValue) === value.length - this.compValueLength) {
-                    found = true;
-                } break;
-            default: if (value !== this.compValue) {
-                found = true;
-            }
-        }
-        return found;
-    }
-
     protected regexTest(value) {
-        const status = this.regexExpression.test(value);
         return this.regexExpression.test(value);
     }
 
