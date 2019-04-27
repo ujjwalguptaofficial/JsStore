@@ -17,17 +17,10 @@ export class Regex extends In {
                 --skip;
             }
         };
-        if (this.checkFlag) {
-            shouldAddValue = () => {
-                return this.regexTest(cursor.key) &&
-                    this.whereCheckerInstance.check(cursor.value);
-            };
-        }
-        else {
-            shouldAddValue = () => {
-                return this.regexTest(cursor.key);
-            };
-        }
+        shouldAddValue = () => {
+            return this.regexTest(cursor.key) &&
+                this.whereCheckerInstance.check(cursor.value);
+        };
 
         this.cursorOpenRequest = this.objectStore.index(column).openCursor();
         this.cursorOpenRequest.onerror = this.onErrorOccured;

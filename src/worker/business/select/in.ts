@@ -16,16 +16,9 @@ export class In extends NotWhere {
                 --skip;
             }
         };
-        if (this.checkFlag) {
-            shouldAddValue = () => {
-                return this.whereCheckerInstance.check(cursor.value);
-            };
-        }
-        else {
-            shouldAddValue = function () {
-                return true;
-            };
-        }
+        shouldAddValue = () => {
+            return this.whereCheckerInstance.check(cursor.value);
+        };
         if (this.skipRecord && this.limitRecord) {
             this.executeSkipAndLimitForIn_(column, values);
         }

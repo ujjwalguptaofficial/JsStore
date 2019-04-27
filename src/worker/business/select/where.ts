@@ -5,17 +5,9 @@ let cursor: IDBCursorWithValue;
 export class Where extends Regex {
 
     protected executeWhereLogic(column, value, op, dir) {
-
-        if (this.checkFlag) {
-            shouldAddValue = () => {
-                return this.whereCheckerInstance.check(cursor.value);
-            };
-        }
-        else {
-            shouldAddValue = function () {
-                return true;
-            };
-        }
+        shouldAddValue = () => {
+            return this.whereCheckerInstance.check(cursor.value);
+        };
         value = op ? value[op] : value;
         this.cursorOpenRequest = this.objectStore.index(column).openCursor(
             this.getKeyRange(value, op),
