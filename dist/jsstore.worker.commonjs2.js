@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.11.0 - 17/04/2019
+ * @license :jsstore - V2.11.1 - 27/04/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -1565,39 +1565,32 @@ var Instance = /** @class */ (function (_super) {
         }
     };
     Instance.prototype.insertData_ = function (values) {
-        var _this = this;
         // let valueIndex = 0;
-        var insertDataIntoTable;
+        var _this = this;
         var objectStore;
         var processName = this.query.upsert === true ? "put" : "add";
+        var onInsertData;
         if (this.query.return === true) {
-            insertDataIntoTable = function (value) {
-                return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (res, rej) {
-                    var addResult = objectStore[processName](value);
-                    addResult.onerror = rej;
-                    addResult.onsuccess = function (e) {
-                        _this.valuesAffected_.push(value);
-                        res();
-                    };
-                });
+            onInsertData = function (value) {
+                _this.valuesAffected_.push(value);
             };
         }
         else {
-            insertDataIntoTable = function (value) {
-                return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (res, rej) {
-                    var addResult = objectStore[processName](value);
-                    addResult.onerror = rej;
-                    addResult.onsuccess = function (e) {
-                        ++_this.rowAffected;
-                        res();
-                    };
-                });
+            onInsertData = function (value) {
+                ++_this.rowAffected;
             };
         }
         this.createTransaction([this.query.into], this.onTransactionCompleted_);
         objectStore = this.transaction.objectStore(this.query.into);
-        Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promiseAll"])(values.map(function (val) {
-            return insertDataIntoTable(val);
+        Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promiseAll"])(values.map(function (value) {
+            return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__["promise"])(function (res, rej) {
+                var addResult = objectStore[processName](value);
+                addResult.onerror = rej;
+                addResult.onsuccess = function () {
+                    onInsertData(value);
+                    res();
+                };
+            });
         })).then(function () {
             _this.onQueryFinished_();
         }).catch(function (err) {
@@ -3591,8 +3584,8 @@ var Join = /** @class */ (function (_super) {
         _this.query = query;
         var tableList = []; // used to open the multiple object store
         var convertQueryIntoStack = function (qry) {
-            if (qry.table1 !== undefined) {
-                qry.table2['joinType'] = qry.join === undefined ? 'inner' : qry.join.toLowerCase();
+            if (qry.table1 != null) {
+                qry.table2['joinType'] = qry.join == null ? 'inner' : qry.join.toLowerCase();
                 _this.queryStack.push(qry.table2);
                 if (_this.queryStack.length % 2 === 0) {
                     _this.queryStack[_this.queryStack.length - 1].nextJoin = qry.nextJoin;
@@ -3612,7 +3605,8 @@ var Join = /** @class */ (function (_super) {
         if (!_this.error) {
             var selectObject = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
                 from: _this.queryStack[0].table,
-                where: _this.queryStack[0].where
+                where: _this.queryStack[0].where,
+                order: _this.queryStack[0].order
             }, function (results) {
                 var tableName = _this.queryStack[0].table;
                 results.forEach(function (item, index) {
@@ -3625,7 +3619,7 @@ var Join = /** @class */ (function (_super) {
         }
         return _this;
     }
-    Join.prototype.onTransactionCompleted_ = function (e) {
+    Join.prototype.onTransactionCompleted_ = function () {
         if (this.onSuccess != null && (this.queryStack.length === this.currentQueryStackIndex + 1)) {
             if (this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Count]) {
                 this.onSuccess(this.results.length);
@@ -3669,7 +3663,7 @@ var Join = /** @class */ (function (_super) {
                 _this.startExecutionJoinLogic_();
             }
             else {
-                _this.onTransactionCompleted_(null);
+                _this.onTransactionCompleted_();
             }
         }, this.onErrorOccured);
         selectObject.execute();
@@ -3708,7 +3702,7 @@ var Join = /** @class */ (function (_super) {
                 _this.startExecutionJoinLogic_();
             }
             else {
-                _this.onTransactionCompleted_(null);
+                _this.onTransactionCompleted_();
             }
         };
         var doRightJoin = function (results) {
@@ -3763,7 +3757,7 @@ var Join = /** @class */ (function (_super) {
                 _this.startExecutionJoinLogic_();
             }
             else {
-                _this.onTransactionCompleted_(null);
+                _this.onTransactionCompleted_();
             }
         };
         var doJoin = function (results) {
