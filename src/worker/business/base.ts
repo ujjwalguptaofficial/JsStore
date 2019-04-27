@@ -55,14 +55,25 @@ export class Base extends BaseHelper {
         return this.getTable(this.tableName).columns.find(column => column.name === columnName);
     }
 
-    protected getRegexBasedOnOccurance(value: string, occurence: OCCURENCE) {
+    private getRegexFromLikeExpression_(likeExpression: string) {
+        const filterValues = likeExpression.split('%');
+        let filterValue: string;
+        let occurence: OCCURENCE;
+        if (filterValues[1]) {
+            filterValue = filterValues[1];
+            occurence = filterValues.length > 2 ? OCCURENCE.Any : OCCURENCE.Last;
+        }
+        else {
+            filterValue = filterValues[0];
+            occurence = OCCURENCE.First;
+        }
         switch (occurence) {
             case OCCURENCE.First:
-                return new RegExp(`^${value}`, 'i');
+                return new RegExp(`^${filterValue}`, 'i');
             case OCCURENCE.Last:
-                return new RegExp(`${value}$`, 'i');
+                return new RegExp(`${filterValue}$`, 'i');
             default:
-                return new RegExp(`${value}`, 'i');
+                return new RegExp(`${filterValue}`, 'i');
         }
     }
 
@@ -84,21 +95,9 @@ export class Base extends BaseHelper {
                 const key = this.getObjectFirstKey(value);
                 switch (key) {
                     case QUERY_OPTION.Like: {
-                        const filterValues = value[QUERY_OPTION.Like].split('%');
-                        let filterValue: string,
-                            occurence: OCCURENCE;
-                        if (filterValues[1]) {
-                            filterValue = filterValues[1];
-                            occurence = filterValues.length > 2 ? OCCURENCE.Any : OCCURENCE.Last;
-                        }
-                        else {
-                            filterValue = filterValues[0];
-                            occurence = OCCURENCE.First;
-                        }
-                        const regexVal = this.getRegexBasedOnOccurance(filterValue, occurence);
+                        const regexVal = this.getRegexBasedOnOccurance(value[QUERY_OPTION.Like]);
                         this.executeRegexLogic(columnName, regexVal);
                         break;
-                        // this.executeLikeLogic(columnName, filterValue, occurence);
                     } break;
                     case QUERY_OPTION.Regex:
                         this.executeRegexLogic(columnName, value[QUERY_OPTION.Regex]);
