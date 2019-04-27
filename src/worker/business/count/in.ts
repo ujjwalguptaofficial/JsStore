@@ -11,7 +11,7 @@ export class In extends NotWhere {
                 cursorRequest.onsuccess = (e) => {
                     cursor = e.target.result;
                     if (cursor) {
-                        if (shouldAddValue()) {
+                        if (this.whereCheckerInstance.check(cursor.value)) {
                             ++this.resultCount;
                         }
                         cursor.continue();
@@ -23,31 +23,18 @@ export class In extends NotWhere {
                 cursorRequest.onerror = rej;
             });
         };
-        let shouldAddValue: () => boolean;
 
-        if (this.checkFlag) {
-            shouldAddValue = () => {
-                return this.whereCheckerInstance.check(cursor.value);
+        if (this.objectStore.count) {
+            runInLogic = (value) => {
+                return promise((res, rej) => {
+                    cursorRequest = columnStore.count(this.getKeyRange(value));
+                    cursorRequest.onsuccess = (e) => {
+                        this.resultCount += e.target.result;
+                        res();
+                    };
+                    cursorRequest.onerror = rej;
+                });
             };
-        }
-        else {
-            if (this.objectStore.count) {
-                runInLogic = (value) => {
-                    return promise((res, rej) => {
-                        cursorRequest = columnStore.count(this.getKeyRange(value));
-                        cursorRequest.onsuccess = (e) => {
-                            this.resultCount += e.target.result;
-                            res();
-                        };
-                        cursorRequest.onerror = rej;
-                    });
-                };
-            }
-            else {
-                shouldAddValue = () => {
-                    return true;
-                };
-            }
         }
 
         promiseAll(

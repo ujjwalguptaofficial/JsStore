@@ -5,24 +5,12 @@ export class Regex extends In {
         this.regexExpression = exp;
         const cursorRequest = this.objectStore.index(column).openCursor();
         cursorRequest.onerror = this.onErrorOccured;
-        let shouldAddValue: () => boolean;
-        if (this.checkFlag) {
-            shouldAddValue = () => {
-                return this.regexTest(cursor.key) &&
-                    this.whereCheckerInstance.check(cursor.value);
-            };
-
-        }
-        else {
-            shouldAddValue = () => {
-                return this.regexTest(cursor.key);
-            };
-        }
 
         cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (cursor) {
-                if (shouldAddValue()) {
+                if (this.regexTest(cursor.key) &&
+                    this.whereCheckerInstance.check(cursor.value)) {
                     ++this.resultCount;
                 }
                 cursor.continue();

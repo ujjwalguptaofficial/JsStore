@@ -3,15 +3,15 @@ import { Regex } from "./regex";
 export class Where extends Regex {
     protected executeWhereLogic(column, value, op) {
         value = op ? value[op] : value;
-        let cursorRequest,
-            cursor: IDBCursorWithValue;
-        let shouldAddValue: () => boolean;
+        let cursorRequest;
+        let cursor: IDBCursorWithValue;
+
         const initCursorAndFilter = () => {
             cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
             cursorRequest.onsuccess = (e) => {
                 cursor = e.target.result;
                 if (cursor) {
-                    if (shouldAddValue()) {
+                    if (this.whereCheckerInstance.check(cursor.value)) {
                         ++this.resultCount;
                     }
                     cursor.continue();
@@ -22,9 +22,6 @@ export class Where extends Regex {
             };
         };
         if (this.checkFlag) {
-            shouldAddValue = () => {
-                return this.whereCheckerInstance.check(cursor.value);
-            };
             initCursorAndFilter();
         }
         else {
@@ -36,9 +33,6 @@ export class Where extends Regex {
                 };
             }
             else {
-                shouldAddValue = () => {
-                    return true;
-                };
                 initCursorAndFilter();
             }
         }
