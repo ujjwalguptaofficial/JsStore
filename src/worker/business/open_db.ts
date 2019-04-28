@@ -30,11 +30,11 @@ export class OpenDb extends BaseDb {
             dbRequest.onsuccess = (event) => {
                 this.dbStatus.conStatus = CONNECTION_STATUS.Connected;
                 this.dbConnection = dbRequest.result;
-                (this.dbConnection as any).onclose = this.onDbClose;
+                (this.dbConnection as any).onclose = this.onDbClose.bind(this);
 
-                this.dbConnection.onversionchange = this.onDbVersionChange;
+                this.dbConnection.onversionchange = this.onDbVersionChange.bind(this);
 
-                this.dbConnection.onerror = this.onDbConError;
+                this.dbConnection.onerror = this.onDbConError.bind(this);
 
                 if (this.onSuccess != null) {
                     this.onSuccess();

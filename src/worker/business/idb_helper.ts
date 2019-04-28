@@ -21,7 +21,11 @@ export class IdbHelper {
         if (IdbHelper.dbStatus.conStatus === CONNECTION_STATUS.Connected) {
             IdbHelper.isDbDeletedByBrowser = true;
             if (deleteMetaData === true) {
-                const dropDbObject = new DropDb(IdbHelper.onDbDroppedByBrowser, null);
+                const dropDbObject = new DropDb(function () {
+
+                }, function () {
+
+                });
                 dropDbObject.deleteMetaData();
             }
         }
