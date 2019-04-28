@@ -67,8 +67,8 @@ export class LogHelper implements IError {
                 break;
             case ERROR_TYPE.ColumnNotExist:
                 errMsg = this.info_['isOrder'] ?
-                    `Column '${this.info_['ColumnName']}' in order query does not exist` :
-                    `Column '${this.info_['ColumnName']}' does not exist`;
+                    `Column '${this.info_['column']}' in order query does not exist` :
+                    `Column '${this.info_['column']}' does not exist`;
                 break;
             case ERROR_TYPE.EnableSearchOff:
                 errMsg = "Search is turned off for the Column '" + this.info_['ColumnName'] + "'";
@@ -96,9 +96,6 @@ export class LogHelper implements IError {
                 break;
             case ERROR_TYPE.DbBlocked:
                 errMsg = `database is blocked, cant be deleted right now`;
-                break;
-            case ERROR_TYPE.InvalidColumn:
-                errMsg = `Invalid column name ${this.info_['column']}`;
                 break;
             case ERROR_TYPE.NullValueInWhere:
                 errMsg = `Null/undefined is not allowed in where. Column '${this.info_['column']}' has null`;

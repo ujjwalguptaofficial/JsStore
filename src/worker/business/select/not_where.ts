@@ -13,7 +13,7 @@ export class NotWhere extends BaseSelect {
                     openCursor(null, orderType);
             }
             else {
-                const error = new LogHelper(ERROR_TYPE.ColumnNotExist, { ColumnName: this.query.order.by, isOrder: true });
+                const error = new LogHelper(ERROR_TYPE.ColumnNotExist, { column: this.query.order.by, isOrder: true });
                 this.onErrorOccured(error, true);
                 return;
             }

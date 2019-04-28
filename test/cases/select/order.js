@@ -90,8 +90,8 @@ describe('Test Select with order', function () {
         }).
         catch(function (err) {
             var error = {
-                "message": "Invalid column name invalid column",
-                "type": "invalid_column"
+                "message": "Column 'invalid column' in order query does not exist",
+                "type": "column_not_exist"
             };
             expect(err).to.be.an('object').eql(error);
             done();
