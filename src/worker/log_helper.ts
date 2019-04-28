@@ -66,7 +66,9 @@ export class LogHelper implements IError {
                 errMsg = "Invalid Op Value '" + this.info_['Op'] + "'";
                 break;
             case ERROR_TYPE.ColumnNotExist:
-                errMsg = "Column '" + this.info_['ColumnName'] + "' does not exist";
+                errMsg = this.info_['isOrder'] ?
+                    `Column '${this.info_['ColumnName']}' in order query does not exist` :
+                    `Column '${this.info_['ColumnName']}' does not exist`;
                 break;
             case ERROR_TYPE.EnableSearchOff:
                 errMsg = "Search is turned off for the Column '" + this.info_['ColumnName'] + "'";

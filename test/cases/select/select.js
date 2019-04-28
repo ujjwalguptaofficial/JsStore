@@ -47,8 +47,9 @@ describe('Test Select Api', function () {
     //         where: {
     //             Email: 'uk@gmail.com'
     //         }
-    //     }).
-    //     catch(function (err) {
+    //     }).then(function () {
+    //         done();
+    //     }).catch(function (err) {
     //         var error = {
     //             "message": "Search is turned off for the Column 'Email'",
     //             "type": "enable_search_off"

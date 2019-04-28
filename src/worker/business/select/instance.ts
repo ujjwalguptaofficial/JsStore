@@ -141,7 +141,7 @@ export class Instance extends Helper {
     }
 
     private onTransactionCompleted_ = () => {
-        if (!this.error) {
+        if (this.error == null) {
             this.processOrderBy();
             if (!this.error) {
                 if (this.isOrderWithLimit === true) {
@@ -174,6 +174,9 @@ export class Instance extends Helper {
             else {
                 this.onError(this.error);
             }
+        }
+        else {
+            this.onError(this.error);
         }
     }
 

@@ -53,6 +53,28 @@ describe('Test Select with order', function () {
         con.select({
             from: 'Products',
             limit: 1,
+            order: {
+                by: 'invalid column',
+                type: 'asc'
+            }
+        }).
+        then(function (err) {
+            done(err);
+        }).
+        catch(function (err) {
+            var error = {
+                "message": "Column 'invalid column' in order query does not exist",
+                "type": "column_not_exist"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    });
+
+    it('invalid order column test with where query', function (done) {
+        con.select({
+            from: 'Products',
+            limit: 1,
             where: {
                 SupplierID: {
                     '>': 18

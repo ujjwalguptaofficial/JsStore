@@ -16,7 +16,6 @@ describe("Regex", function () {
     });
 
     it('select with regex on two column', function (done) {
-        debugger;
         con.select({
             from: 'Customers',
             where: {
