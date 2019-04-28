@@ -1,4 +1,4 @@
-import { Like } from "./like";
-export declare class LikeRegex extends Like {
-    protected executeRegexLogic(column: any, value: any): void;
+import { In } from "./in";
+export declare class Regex extends In {
+    protected executeRegexLogic(column: string, exp: RegExp): void;
 }

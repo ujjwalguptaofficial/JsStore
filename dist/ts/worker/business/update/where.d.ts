@@ -1,4 +1,4 @@
-import { Like } from "./like";
-export declare class Where extends Like {
+import { Regex } from "./regex";
+export declare class Where extends Regex {
     protected executeWhereLogic(column: any, value: any, op: any): void;
 }
