@@ -5,8 +5,10 @@ import { Config } from "./config";
 
 declare var JsStoreWorker;
 export class InstanceHelper {
+  protected activeDbName: string;
   private worker_: Worker;
   private isDbOpened_ = false;
+  private isDbIdle_ = true;
   private requestQueue_: WebWorkerRequest[] = [];
   private isCodeExecuting_ = false;
 
@@ -29,13 +31,25 @@ export class InstanceHelper {
     if (worker) {
       this.worker_ = worker;
       this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
-      this.pushApi({
-        name: API.InitKeyStore
-      } as WebWorkerRequest);
     } else {
       Config.isRuningInWorker = false;
+    }
+    this.initKeyStore_();
+  }
+
+  private initKeyStore_() {
+    if (Config.isRuningInWorker) {
+      this.prcoessExecutionOfQry_({
+        name: API.InitKeyStore,
+        onSuccess: function () {
+
+        }
+      }, 0);
+    }
+    else {
       JsStoreWorker.KeyStore.init();
     }
+
   }
 
   private onMessageFromWorker_(msg) {
@@ -43,6 +57,7 @@ export class InstanceHelper {
   }
 
   private processFinishedQuery_(message: WebWorkerResult) {
+
     const finishedRequest: WebWorkerRequest = this.requestQueue_.shift();
     if (finishedRequest) {
       LogHelper.log("request finished : " + finishedRequest.name);
@@ -59,6 +74,14 @@ export class InstanceHelper {
               this.worker_.terminate();
             }
             break;
+          case API.CloseDb:
+            if (this.requestQueue_.length > 0) {
+              this.openDb_();
+            }
+            else {
+              this.isDbIdle_ = true;
+            }
+            break;
         }
         finishedRequest.onSuccess(message.returnedValue);
       }
@@ -67,7 +90,19 @@ export class InstanceHelper {
     }
   }
 
+  private openDb_() {
+    this.initKeyStore_();
+    this.prcoessExecutionOfQry_({
+      name: API.OpenDb,
+      query: this.activeDbName,
+      onSuccess: function () {
+
+      }
+    }, 1);
+  }
+
   protected pushApi<T>(request: WebWorkerRequest): Promise<T> {
+
     return new Promise((resolve, reject) => {
       request.onSuccess = result => {
         resolve(result as T);
@@ -75,18 +110,28 @@ export class InstanceHelper {
       request.onError = error => {
         reject(error);
       };
+      if (this.isDbIdle_ && this.isDbOpened_) {
+        this.openDb_();
+      }
       this.prcoessExecutionOfQry_(request);
     });
   }
 
-  private prcoessExecutionOfQry_(request: WebWorkerRequest) {
-    this.requestQueue_.push(request);
+  private prcoessExecutionOfQry_(request: WebWorkerRequest, index?: number) {
+    this.isDbIdle_ = false;
+    if (index != null) {
+      this.requestQueue_.splice(index, 0, request);
+    }
+    else {
+      this.requestQueue_.push(request);
+    }
     LogHelper.log("request pushed: " + request.name);
     this.executeQry_();
   }
 
   private executeQry_() {
-    if (!this.isCodeExecuting_ && this.requestQueue_.length > 0) {
+    const requestQueueLength = this.requestQueue_.length;
+    if (!this.isCodeExecuting_ && requestQueueLength > 0) {
       if (this.isDbOpened_ === true) {
         this.sendRequestToWorker_(this.requestQueue_[0]);
         return;
@@ -105,6 +150,14 @@ export class InstanceHelper {
         );
         this.sendRequestToWorker_(this.requestQueue_[0]);
       }
+    }
+    else if (requestQueueLength === 0 && this.isDbIdle_ === false && this.isDbOpened_) {
+      this.prcoessExecutionOfQry_({
+        name: API.CloseDb,
+        onSuccess: function () {
+
+        }
+      });
     }
   }
 

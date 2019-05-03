@@ -47,5 +47,6 @@ export enum API {
     ChangeLogStatus = "change_log_status",
     Terminate = "terminate",
     Transaction = "transaction",
-    InitKeyStore = "init_keystore"
+    InitKeyStore = "init_keystore",
+    CloseDb = "close_db"
 }

@@ -23,6 +23,7 @@ export class Instance extends InstanceHelper {
      * @memberof Instance
      */
     openDb(dbName: string) {
+        this.activeDbName = dbName;
         return this.pushApi<null>({
             name: API.OpenDb,
             query: dbName
@@ -37,6 +38,7 @@ export class Instance extends InstanceHelper {
      * @memberof Instance
      */
     createDb(dataBase: IDataBase) {
+        this.activeDbName = dataBase.name;
         return this.pushApi<string[]>({
             name: API.CreateDb,
             query: dataBase

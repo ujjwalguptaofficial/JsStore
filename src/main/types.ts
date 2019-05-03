@@ -46,7 +46,7 @@ export type AggregateOption = {
 
 export type WebWorkerRequest = {
     name: API;
-    query: any;
+    query?: any;
     onSuccess?: (results) => void;
     onError?: (err: IError) => void;
 };

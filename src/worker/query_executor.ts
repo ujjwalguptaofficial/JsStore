@@ -147,6 +147,7 @@ export class QueryExecutor {
             case API.Transaction:
                 this.transaction_(request.query, onSuccess, onError);
                 break;
+            case API.CloseDb:
             case API.Terminate:
                 this.terminate_(onSuccess, onError);
                 break;
