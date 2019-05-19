@@ -43,6 +43,9 @@ export class InstanceHelper {
         name: API.InitKeyStore,
         onSuccess: function () {
 
+        },
+        onError: function (err) {
+          console.error(err);
         }
       }, 0);
     }
@@ -97,6 +100,9 @@ export class InstanceHelper {
       query: this.activeDbName,
       onSuccess: function () {
 
+      },
+      onError: function (err) {
+        console.error(err);
       }
     }, 1);
   }
@@ -156,6 +162,9 @@ export class InstanceHelper {
         name: API.CloseDb,
         onSuccess: function () {
 
+        },
+        onError: function (err) {
+          console.error(err);
         }
       });
     }

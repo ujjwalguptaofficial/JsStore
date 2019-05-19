@@ -210,7 +210,7 @@ export class QueryExecutor {
                 err.logError();
                 onError(err.get());
             }
-        });
+        }).catch(onError);
 
     }
 

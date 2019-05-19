@@ -13,36 +13,8 @@ export class Main {
         this.onQueryFinished = onQueryFinished;
     }
 
-    set(query: IInsert, onSuccess: (result) => void, onError: (err: IError) => void) {
-        const insertInstance = new Set(query, onSuccess, onError);
-        insertInstance.execute();
-    }
-
-    remove(key: string, onSuccess: (result) => void, onError: (err: IError) => void) {
-        const deleteInstance = new Remove(key, onSuccess, onError);
-        deleteInstance.execute();
-    }
-
-    get(key: string, onSuccess: (result) => void, onError: (err: IError) => void) {
-        const getInstance = new Get(key, onSuccess, onError);
-        getInstance.execute();
-    }
-
-    createDb(onSuccess: () => void, onError: (err: IError) => void) {
-        const dbName = "KeyStore";
-        const initDbInstance = new InitDb(dbName, onSuccess, onError);
-    }
-
-    closeDb(onSuccess: () => void, onError: (err: IError) => void) {
-        if (IdbHelper.dbStatus.conStatus === CONNECTION_STATUS.Connected) {
-            IdbHelper.dbStatus.conStatus = CONNECTION_STATUS.Closed;
-            IdbHelper.dbConnection.close();
-        }
-        onSuccess();
-    }
-
     checkConnectionAndExecuteLogic(request: IQueryRequest) {
-        if (request.name === 'create_db' || request.name === 'open_db') {
+        if (request.name === 'init_db') {
             this.executeLogic(request);
         }
         else {
@@ -90,8 +62,36 @@ export class Main {
                 break;
             case 'remove': this.remove(request.query, onSuccess, onError);
                 break;
-            case 'create_db': this.createDb(onSuccess, onError); break;
+            case 'init_db': this.createDb(onSuccess, onError); break;
             case 'close_db': this.closeDb(onSuccess, onError); break;
         }
+    }
+
+    set(query: IInsert, onSuccess: (result) => void, onError: (err: IError) => void) {
+        const insertInstance = new Set(query, onSuccess, onError);
+        insertInstance.execute();
+    }
+
+    remove(key: string, onSuccess: (result) => void, onError: (err: IError) => void) {
+        const deleteInstance = new Remove(key, onSuccess, onError);
+        deleteInstance.execute();
+    }
+
+    get(key: string, onSuccess: (result) => void, onError: (err: IError) => void) {
+        const getInstance = new Get(key, onSuccess, onError);
+        getInstance.execute();
+    }
+
+    createDb(onSuccess: () => void, onError: (err: IError) => void) {
+        const dbName = "KeyStore";
+        const initDbInstance = new InitDb(dbName, onSuccess, onError);
+    }
+
+    closeDb(onSuccess: () => void, onError: (err: IError) => void) {
+        if (IdbHelper.dbStatus.conStatus === CONNECTION_STATUS.Connected) {
+            IdbHelper.dbStatus.conStatus = CONNECTION_STATUS.Closed;
+            IdbHelper.dbConnection.close();
+        }
+        onSuccess();
     }
 }

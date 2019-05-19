@@ -11,7 +11,7 @@ export class KeyStore {
         Utils.setDbType();
         if (indexedDB) {
             QueryExecutor.prcoessQuery({
-                name: 'create_db',
+                name: 'init_db',
                 query: null
             } as IQueryRequest);
         }

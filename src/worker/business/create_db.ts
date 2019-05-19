@@ -3,6 +3,7 @@ import { IError } from "../interfaces";
 import { CONNECTION_STATUS } from "../enums";
 import { KeyStore } from "../keystore/index";
 import { BaseDb } from "./base_db";
+import { promise } from "../helpers/index";
 
 export class CreateDb extends BaseDb {
 
@@ -31,11 +32,11 @@ export class CreateDb extends BaseDb {
             this.dbConnection.onerror = this.onDbConError.bind(this);
 
             // save in database list
-            this.savedbNameIntoDbList_();
-            if (this.onSuccess != null) {
-                this.onSuccess(listofTableCreated);
-            }
-
+            this.savedbNameIntoDbList_().then(() => {
+                if (this.onSuccess != null) {
+                    this.onSuccess(listofTableCreated);
+                }
+            });
         };
 
         dbRequest.onupgradeneeded = (event) => {
@@ -89,11 +90,16 @@ export class CreateDb extends BaseDb {
     }
 
     private savedbNameIntoDbList_() {
-        this.getDbList().then(dbList => {
-            if (dbList.indexOf(this.dbName) < 0) {
-                dbList.push(this.dbName);
-                this.setDbList(dbList);
-            }
+        return promise((res, rej) => {
+            this.getDbList().then(dbList => {
+                if (dbList.indexOf(this.dbName) < 0) {
+                    dbList.push(this.dbName);
+                    this.setDbList(dbList).then(res).catch(rej);
+                }
+                else {
+                    res();
+                }
+            }).catch(rej);
         });
     }
 }
