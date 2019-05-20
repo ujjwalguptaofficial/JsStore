@@ -15,14 +15,8 @@ export class Column implements IColumn {
     enableSearch: boolean;
     keyPath: string[];
 
-    constructor(key: IColumn, tableName: string) {
-        if (key.name != null) {
-            this.name = key.name;
-        }
-        else {
-            const err = new LogHelper(ERROR_TYPE.UndefinedColumnName, { TableName: tableName });
-            err.throw();
-        }
+    constructor(key: IColumn) {
+        this.name = key.name;
         this.autoIncrement = key.autoIncrement != null ? key.autoIncrement : false;
         this.primaryKey = key.primaryKey != null ? key.primaryKey : false;
         this.unique = key.unique != null ? key.unique : false;

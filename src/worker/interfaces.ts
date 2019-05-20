@@ -18,7 +18,9 @@ export interface IDataBase {
 
 export interface ITable {
     name: string;
-    columns: IColumn[];
+    columns: {
+        [columnName: string]: string[]
+    };
     version?: number;
 }
 

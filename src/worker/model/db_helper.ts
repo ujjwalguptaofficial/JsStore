@@ -18,21 +18,5 @@ export class DbHelper {
                 return new TableHelper(table).createMetaData(this.dbName);
             })
         );
-        // const createMetaDataForTable = () => {
-        //     if (index < this.tables.length) {
-        //         const table: Table = this.tables[index];
-        //         const tableHelperInstance: TableHelper = new TableHelper(table);
-        //         tableHelperInstance.createMetaData(this.name, function () {
-        //             tableHelperInstance.callback = null;
-        //             tableHelperList.push(tableHelperInstance);
-        //             createMetaDataForTable();
-        //         });
-        //         ++index;
-        //     }
-        //     else {
-        //         callBack(tableHelperList);
-        //     }
-        // };
-        // createMetaDataForTable();
     }
 }

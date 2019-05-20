@@ -118,7 +118,7 @@ export class InstanceHelper {
       request.onError = error => {
         reject(error);
       };
-      if (this.isDbIdle_ && this.isDbOpened_) {
+      if (this.isDbIdle_ === true && this.isDbOpened_ === true) {
         this.openDb_();
       }
       else {
@@ -176,8 +176,6 @@ export class InstanceHelper {
       }, 100) as any;
     }
   }
-
-
 
   private sendRequestToWorker_(request: WebWorkerRequest) {
     this.isCodeExecuting_ = true;
