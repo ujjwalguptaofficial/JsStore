@@ -40,6 +40,8 @@ export class Table {
                         break;
                     case 'enablesearch':
                         column.enableSearch = true; break;
+                    case '!enableSearch':
+                        column.enableSearch = false; break;
                     case 'keypath':
                         column.keyPath = item.split(',');
                         break;

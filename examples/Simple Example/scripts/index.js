@@ -1,6 +1,6 @@
 
 
-var jsstoreCon = new JsStore.Instance(new Worker("scripts/jsstore.worker.min.js"));
+var jsstoreCon = new JsStore.Instance(new Worker("scripts/jsstore.worker.js"));
 
 window.onload = function () {
     refreshTableData();
@@ -27,20 +27,12 @@ function initDb() {
 function getDbSchema() {
     var table = {
         name: 'Student',
-        columns: [{
-            name: 'id',
-            autoIncrement: true,
-            primaryKey: true
-        }, {
-            name: 'name',
-            dataType: 'string'
-        }, {
-            name: 'gender'
-        }, {
-            name: 'country'
-        }, {
-            name: 'city'
-        }]
+        columns: {
+            id: ['autoIncrement', 'primaryKey'],
+            name: ['string'],
+            country: [],
+            city: []
+        }
     }
 
     var db = {

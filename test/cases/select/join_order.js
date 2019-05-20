@@ -1,6 +1,6 @@
 describe('select join order test', function () {
     it('create db student', function (done) {
-        con.createDb(getDatabase()).then(function () {
+        con.createDb(getStudentDatabase()).then(function () {
             done();
         }).catch(function (err) {
             done(err);
@@ -128,7 +128,7 @@ describe('select join order test', function () {
         return Details;
     }
 
-    function getDatabase() {
+    function getStudentDatabase() {
         var tblStudent = {
             name: "Student",
             columns: [

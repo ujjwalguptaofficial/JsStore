@@ -19,14 +19,6 @@ export enum DATA_TYPE {
     DateTime = "date_time"
 }
 
-export enum COL_OPTION {
-    PrimaryKey = "primary_key",
-    AutoIncrement = "auto_increment",
-    Unique = "unique",
-    NotNull = "not_null",
-    MultiEntry = "multi_entry"
-}
-
 export enum API {
     CreateDb = "create_db",
     IsDbExist = "is_db_exist",

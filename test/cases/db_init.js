@@ -1,3 +1,4 @@
+
 describe("initiate database", function () {
     before(function () {
         console.log('initiate database');
@@ -18,7 +19,7 @@ describe("initiate database", function () {
                 // con.setLogStatus(true);
             }
         }
-        con.setLogStatus(true);
+        // con.setLogStatus(true);
     })
 
     it("db exist", function (done) {
@@ -27,7 +28,7 @@ describe("initiate database", function () {
             if (exist) {
                 con.openDb('Demo').then(done);
             } else {
-                con.createDb(getDbSchema()).then(function () {
+                con.createDb(getDemoDbSchema()).then(function () {
                     console.log('Database created');
                     done();
                 });
@@ -38,251 +39,107 @@ describe("initiate database", function () {
     })
 })
 
-function getDbSchema() {
-    var Column = JsStore.Column;
-    var COL_OPTION = JsStore.COL_OPTION;
-    var DATA_TYPE = JsStore.DATA_TYPE;
+const getDemoDbSchema = function () {
 
     var customers = {
         name: 'Customers',
-        columns: [{
-            name: "CustomerID",
-            primaryKey: true,
-            autoIncrement: true
-        },
-        {
-            name: "CustomerName",
-            notNull: true,
-            dataType: DATA_TYPE.String
-        },
-        {
-            name: "ContactName",
-            notNull: true,
-            dataType: DATA_TYPE.String
-        },
-        {
-            name: "Address",
-            notNull: true,
-            dataType: 'string',
-            advTextSearch: true
-        },
-        {
-            name: "City",
-            notNull: true,
-            dataType: 'string'
-        },
-        {
-            name: "PostalCode",
-            dataType: 'string'
-        },
-        {
-            name: "Country",
-            notNull: true,
-            dataType: 'string'
-        },
-        {
-            name: "Email",
-            dataType: 'string',
-            enableSearch: false
+        columns: {
+            CustomerID: ['primaryKey', 'autoIncrement'],
+            CustomerName: ['notNull', 'string'],
+            ContactName: ['notNull', 'string'],
+            Address: ['notNull', 'string'],
+            City: ['notNull', 'string'],
+            PostalCode: ['string'],
+            Country: ['notNull', 'string'],
+            Email: ['string', '!enableSearch']
         }
-        ]
     };
 
     var categories = {
         name: 'Categories',
-        columns: [{
-            name: "CategoryID",
-            primaryKey: true,
-            autoIncrement: true
-        },
-        {
-            name: "CategoryName",
-            notNull: true,
-            dataType: 'string'
-        },
-        {
-            name: "Description",
-            notNull: true,
-            dataType: 'string'
+        columns: {
+            CategoryID: ['primaryKey', 'autoIncrement'],
+            CategoryName: ['notNull', 'string'],
+            Description: ['notNull', 'string']
         }
-        ]
     }
 
 
 
     var employees = {
         name: 'Employees',
-        columns: [
-            new Column('employeeId').options([COL_OPTION.PrimaryKey, COL_OPTION.AutoIncrement]),
-            new Column('lastName').options([COL_OPTION.NotNull]).setDataType(DATA_TYPE.String),
-            new Column('birthDate').options([COL_OPTION.NotNull]).setDataType(DATA_TYPE.DateTime),
-            new Column('photo').options([COL_OPTION.NotNull]).setDataType(DATA_TYPE.String),
-            new Column('notes').setDataType(DATA_TYPE.String),
-            new Column('state').options([COL_OPTION.NotNull]).setDataType(DATA_TYPE.String),
-            new Column('jobSuspendedFlag').options([COL_OPTION.NotNull]).setDataType(DATA_TYPE.Number)
-        ]
+        columns: {
+            employeeId: ['primaryKey', 'autoIncrement'],
+            lastName: ['notNull', 'string'],
+            birthDate: ['notNull', 'Date_Time'],
+            photo: ['notNull', 'string'],
+            notes: ['string'],
+            state: ['notnull', 'string'],
+            jobSuspendedFlag: ['notnull', 'number']
+        }
     }
 
     var orderDetails = {
         name: 'OrderDetails',
-        columns: [{
-            name: "OrderDetailID",
-            primaryKey: true,
-            autoIncrement: true
-        },
-        {
-            name: "OrderID",
-            notNull: true,
-            dataType: DATA_TYPE.Number
-        },
-        {
-            name: "ProductID",
-            notNull: true,
-            dataType: DATA_TYPE.Number
-        },
-        {
-            name: "Quantity",
-            notNull: true,
-            dataType: 'number'
+        columns: {
+            OrderDetailID: ['primaryKey', 'autoIncrement'],
+            OrderID: ['notnull', 'number'],
+            ProductID: ['notnull', 'number'],
+            Quantity: ['notnull', 'number'],
         }
-        ]
     }
 
     var orders = {
         name: 'Orders',
-        columns: [{
-            name: "OrderID",
-            primaryKey: true
-        },
-        {
-            name: "CustomerID",
-            notNull: true,
-            dataType: 'number'
-        },
-        {
-            name: "EmployeeID",
-            notNull: true,
-            dataType: 'number'
-        },
-        {
-            name: "OrderDate",
-            notNull: true,
-            dataType: 'string'
-        },
-        {
-            name: "ShipperID",
-            notNull: true,
-            dataType: 'number'
+        columns: {
+            OrderID: ['primaryKey'],
+            CustomerID: ['notNull'],
+            EmployeeID: ['notnull', 'number'],
+            OrderDate: ['notnull', 'string'],
+            ShipperID: ['notnull', 'number']
         }
-        ]
     }
 
     var products = {
         name: 'Products',
-        columns: [{
-            name: "ProductID",
-            primaryKey: true,
-            autoIncrement: true
-        },
-        {
-            name: "ProductName",
-            notNull: true,
-            dataType: 'string'
-        },
-        {
-            name: "SupplierID",
-            notNull: true,
-            dataType: 'number'
-        },
-        {
-            name: "CategoryID",
-            notNull: true,
-            dataType: 'number'
-        },
-        {
-            name: "Unit",
-            notNull: true,
-            dataType: 'string'
-        },
-        {
-            name: "Price",
-            notNull: true,
-            dataType: 'number'
+        columns: {
+            ProductID: ['primaryKey', 'autoIncrement'],
+            ProductName: ['notnull', 'string'],
+            SupplierID: ['notnull', 'number'],
+            CategoryID: ['notnull', 'number'],
+            Unit: ['notnull', 'string'],
+            Price: ['notnull', 'number'],
         }
-        ]
     }
 
     var shippers = {
         name: 'Shippers',
-        columns: [{
-            name: "ShipperID",
-            primaryKey: true,
-            autoIncrement: true
-        },
-        {
-            name: "ShipperName",
-            notNull: true,
-            dataType: 'string'
-        },
-        {
-            name: "Phone",
-            notNull: true,
-            dataType: 'string'
+        columns: {
+            ShipperID: ['primaryKey', 'autoIncrement'],
+            ShipperName: ['notnull', 'string'],
+            Phone: ['notnull', 'string']
         }
-        ]
     }
 
     var suppliers = {
         name: 'Suppliers',
-        columns: [{
-            name: "SupplierID",
-            primaryKey: true,
-            autoIncrement: true
-        },
-        {
-            name: "SupplierName",
-            notNull: true,
-            dataType: 'string'
-        },
-        {
-            name: "ContactName",
-            notNull: true,
-            dataType: 'string'
-        },
-        {
-            name: "Address",
-            notNull: true,
-            dataType: 'string'
-        },
-        {
-            name: "City",
-            notNull: true,
-            dataType: 'string'
-        },
-        {
-            name: "PostalCode",
-            notNull: true,
-            dataType: 'string'
-        },
-        {
-            name: "Country",
-            notNull: true,
-            dataType: 'string'
-        },
-        {
-            name: "Phone",
-            notNull: true,
-            dataType: 'string'
+        columns: {
+            SupplierID: ['primaryKey', 'autoIncrement'],
+            SupplierName: ['notnull', 'string'],
+            ContactName: ['notnull', 'string'],
+            Address: ['notnull', 'string'],
+            City: ['notnull', 'string'],
+            PostalCode: ['notnull', 'string'],
+            Country: ['notnull', 'string'],
+            Phone: ['notnull', 'string'],
         }
-        ]
     }
 
     var things = {
         name: "things",
-        columns: [{
-            name: 'value',
-            dataType: 'string'
-        }]
+        columns: {
+            value: ['string']
+        }
     }
 
     var dataBase = {
