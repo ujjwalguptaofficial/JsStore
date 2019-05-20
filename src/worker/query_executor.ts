@@ -41,6 +41,7 @@ export class QueryExecutor {
             case API.Terminate:
             case API.OpenDb:
             case API.InitKeyStore:
+            case API.CloseDb:
                 this.executeLogic_(request);
                 break;
             default:

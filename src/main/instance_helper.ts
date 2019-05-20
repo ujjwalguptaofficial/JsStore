@@ -12,6 +12,8 @@ export class InstanceHelper {
   private requestQueue_: WebWorkerRequest[] = [];
   private isCodeExecuting_ = false;
 
+  private inactivityTimer = -1000;
+
   // these apis have special permissions. These apis dont wait for database open.
   private whiteListApi_ = [
     API.CreateDb,
@@ -63,7 +65,7 @@ export class InstanceHelper {
 
     const finishedRequest: WebWorkerRequest = this.requestQueue_.shift();
     if (finishedRequest) {
-      LogHelper.log("request finished : " + finishedRequest.name);
+      LogHelper.log(`request ${finishedRequest.name} finished`);
       if (message.errorOccured) {
         finishedRequest.onError(message.errorDetails);
       } else {
@@ -119,6 +121,9 @@ export class InstanceHelper {
       if (this.isDbIdle_ && this.isDbOpened_) {
         this.openDb_();
       }
+      else {
+        clearTimeout(this.inactivityTimer);
+      }
       this.prcoessExecutionOfQry_(request);
     });
   }
@@ -158,17 +163,21 @@ export class InstanceHelper {
       }
     }
     else if (requestQueueLength === 0 && this.isDbIdle_ === false && this.isDbOpened_) {
-      this.prcoessExecutionOfQry_({
-        name: API.CloseDb,
-        onSuccess: function () {
+      this.inactivityTimer = setTimeout(() => {
+        this.prcoessExecutionOfQry_({
+          name: API.CloseDb,
+          onSuccess: function () {
 
-        },
-        onError: function (err) {
-          console.error(err);
-        }
-      });
+          },
+          onError: function (err) {
+            console.error(err);
+          }
+        });
+      }, 100) as any;
     }
   }
+
+
 
   private sendRequestToWorker_(request: WebWorkerRequest) {
     this.isCodeExecuting_ = true;

@@ -24,9 +24,9 @@ describe('Multi Entry Test', function () {
                 });
             }
         }).
-        catch(function (err) {
-            done(err);
-        });
+            catch(function (err) {
+                done(err);
+            });
     });
 
     it('insert data into table', function (done) {
@@ -34,13 +34,13 @@ describe('Multi Entry Test', function () {
             into: 'people',
             values: MultiEntryTest.getValues()
         }).
-        then(function (results) {
-            expect(results).to.be.an('number').equal(3);
-            done();
-        }).
-        catch(function (err) {
-            done(err);
-        })
+            then(function (results) {
+                expect(results).to.be.an('number').equal(3);
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('multientry test without multientry column - select data from array', function (done) {
@@ -50,13 +50,13 @@ describe('Multi Entry Test', function () {
                 tags: 'mongo'
             }
         }).
-        then(function (results) {
-            expect(results).to.be.an('array').length(0);
-            done();
-        }).
-        catch(function (err) {
-            done(err);
-        })
+            then(function (results) {
+                expect(results).to.be.an('array').length(0);
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('change db with multientry column', function (done) {
@@ -93,13 +93,13 @@ describe('Multi Entry Test', function () {
             into: 'people',
             values: values
         }).
-        then(function (results) {
-            expect(results).to.be.an('number').equal(3);
-            done();
-        }).
-        catch(function (err) {
-            done(err);
-        })
+            then(function (results) {
+                expect(results).to.be.an('number').equal(3);
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('multientry test with multientry column - select data from array', function (done) {
@@ -109,22 +109,22 @@ describe('Multi Entry Test', function () {
                 tags: 'mongo'
             }
         }).
-        then(function (results) {
-            // Internet Explorer 6-11
-            var isIE = /*@cc_on!@*/ false || !!document.documentMode;
+            then(function (results) {
+                // Internet Explorer 6-11
+                var isIE = /*@cc_on!@*/ false || !!document.documentMode;
 
-            // Edge 20+
-            var isEdge = !isIE && !!window.StyleMedia;
-            if (results.length == 0 && (isIE || isEdge)) {
-                console.log('Bypassing multi entry test in ie');
-            } else {
-                expect(results).to.be.an('array').length(1);
-            }
-            done();
-        }).
-        catch(function (err) {
-            done(err);
-        })
+                // Edge 20+
+                var isEdge = !isIE && !!window.StyleMedia;
+                if (results.length == 0 && (isIE || isEdge)) {
+                    console.log('Bypassing multi entry test in ie');
+                } else {
+                    expect(results).to.be.an('array').length(1);
+                }
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('unique column test', function (done) {
@@ -136,17 +136,17 @@ describe('Multi Entry Test', function () {
             into: 'people',
             values: [value]
         }).
-        then(function (err) {
-            done(err);
-        }).
-        catch(function (err) {
-            var error = {
-                "message": "Unable to add key to index 'name': at least one key does not satisfy the uniqueness requirements.",
-                "type": "ConstraintError"
-            }
-            expect(err.type).to.be.an('string').eql(error.type);
-            done();
-        })
+            then(function (err) {
+                done(err);
+            }).
+            catch(function (err) {
+                var error = {
+                    "message": "Unable to add key to index 'name': at least one key does not satisfy the uniqueness requirements.",
+                    "type": "ConstraintError"
+                }
+                expect(err.type).to.be.an('string').eql(error.type);
+                done();
+            })
 
     });
 
@@ -159,14 +159,14 @@ describe('Multi Entry Test', function () {
             into: 'people',
             values: [value]
         }).
-        catch(function (err) {
-            var error = {
-                "message": "Supplied value for column 'tags' have wrong data type",
-                "type": "wrong_data_type"
-            };
-            expect(err).to.be.an('object').eql(error);
-            done();
-        })
+            catch(function (err) {
+                var error = {
+                    "message": "Supplied value for column 'tags' have wrong data type",
+                    "type": "wrong_data_type"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            })
     });
 
     it('Array column update to empty value', function (done) {
@@ -192,20 +192,20 @@ describe('Multi Entry Test', function () {
                 name: 'Scott'
             }
         }).
-        then(function (results) {
-            var result = results[0];
-            expect(results).to.be.an('array').length(1);
-            // if (window.navigator.userAgent.indexOf("Mac") && GetBrowserName().toLowerCase() == 'firefox') {
-            //     console.log('bypassing test');
-            // } else {
-            //     expect(result['tags']).to.be.an('array').eql([]);
-            // }
-            expect(result['tags']).to.be.an('array').eql([]);
-            done();
-        }).
-        catch(function (err) {
-            done(err);
-        })
+            then(function (results) {
+                var result = results[0];
+                expect(results).to.be.an('array').length(1);
+                // if (window.navigator.userAgent.indexOf("Mac") && GetBrowserName().toLowerCase() == 'firefox') {
+                //     console.log('bypassing test');
+                // } else {
+                //     expect(result['tags']).to.be.an('array').eql([]);
+                // }
+                expect(result['tags']).to.be.an('array').eql([]);
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            })
     })
 
     it('Array column update to null value', function (done) {
@@ -218,42 +218,44 @@ describe('Multi Entry Test', function () {
                 tags: null
             }
         }).then(function (rowsUpdated) {
-            con.select({
-                from: 'people',
-                where: {
-                    name: 'Scott'
-                }
-            }).
-            then(function (results) {
-                var result = results[0];
-                expect(results).to.be.an('array').length(1);
-                expect(result['tags']).to.be.an('null');
-                done();
-            }).
-            catch(function (err) {
-                done(err);
-            })
+            done();
         }).catch(function (err) {
             done(err);
         })
     });
+
+    it('check if data has been updated to null', function (done) {
+        con.select({
+            from: 'people',
+            where: {
+                name: 'Scott'
+            }
+        }).then(function (results) {
+            var result = results[0];
+            expect(results).to.be.an('array').length(1);
+            expect(result['tags']).to.be.an('null');
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    })
 });
 
 var MultiEntryTest = {
     getDbSchema: function () {
         var people = {
-                name: 'people',
-                columns: [{
-                        name: 'name',
-                        unique: true,
-                        dataType: JsStore.DATA_TYPE.String
-                    },
-                    {
-                        name: 'tags',
-                        dataType: JsStore.DATA_TYPE.Array
-                    }
-                ]
+            name: 'people',
+            columns: [{
+                name: 'name',
+                unique: true,
+                dataType: JsStore.DATA_TYPE.String
             },
+            {
+                name: 'tags',
+                dataType: JsStore.DATA_TYPE.Array
+            }
+            ]
+        },
             dataBase = {
                 name: 'MultiEntryTest',
                 tables: [people]
@@ -262,16 +264,16 @@ var MultiEntryTest = {
     },
     getValues: function () {
         var values = [{
-                name: "Ray",
-                tags: ["apple", "banana", "beer"]
-            },
-            {
-                name: "Scott",
-                tags: ["beer"]
-            }, {
-                name: "Marc",
-                tags: ["mongo", "jenkins"]
-            }
+            name: "Ray",
+            tags: ["apple", "banana", "beer"]
+        },
+        {
+            name: "Scott",
+            tags: ["beer"]
+        }, {
+            name: "Marc",
+            tags: ["mongo", "jenkins"]
+        }
         ];
         return values;
     }

@@ -4,6 +4,7 @@ import { Table, Column } from "../model/index";
 import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
 import { LogHelper } from "../log_helper";
 import { BaseDb } from "./base_db";
+import { promise } from "../helpers/index";
 
 export class DropDb extends BaseDb {
     private onSuccess_: () => void;
@@ -16,21 +17,24 @@ export class DropDb extends BaseDb {
     }
 
     deleteMetaData() {
-        KeyStore.remove(`JsStore_${this.dbName}_Db_Version`);
-        this.activeDb.tables.forEach((table: Table) => {
-            KeyStore.remove(`JsStore_${this.dbName}_${table.name}_Version`);
-            table.columns.forEach((column: Column) => {
-                if (column.autoIncrement) {
-                    KeyStore.remove(`JsStore_${this.dbName}_${table.name}_${column.name}_Value`);
-                }
+        return promise((res, rej) => {
+            KeyStore.remove(`JsStore_${this.dbName}_Db_Version`);
+            this.activeDb.tables.forEach((table: Table) => {
+                KeyStore.remove(`JsStore_${this.dbName}_${table.name}_Version`);
+                table.columns.forEach((column: Column) => {
+                    if (column.autoIncrement) {
+                        KeyStore.remove(`JsStore_${this.dbName}_${table.name}_${column.name}_Value`);
+                    }
+                });
             });
-        });
-        // remove from database_list 
-        this.getDbList().then(dbList => {
-            dbList.splice(dbList.indexOf(this.dbName), 1);
-            this.setDbList(dbList).then(() => {
-                // remove db schema from keystore
-                KeyStore.remove(`JsStore_${this.dbName}_Schema`).then(this.onSuccess_.bind(this));
+            // remove from database_list 
+            this.getDbList().then(dbList => {
+                dbList.splice(dbList.indexOf(this.dbName), 1);
+                this.setDbList(dbList).then(() => {
+                    // remove db schema from keystore
+                    KeyStore.remove(`JsStore_${this.dbName}_Schema`).
+                        then(res).catch(rej);
+                });
             });
         });
     }
@@ -49,8 +53,10 @@ export class DropDb extends BaseDb {
                 }
             };
             dropDbRequest.onsuccess = () => {
-                this.dbStatus.conStatus = CONNECTION_STATUS.Closed;
-                this.deleteMetaData();
+                this.deleteMetaData().then(() => {
+                    this.onSuccess_();
+                    this.dbStatus.conStatus = CONNECTION_STATUS.Closed;
+                }).catch(this.onError_);
             };
         }, 100);
     }
