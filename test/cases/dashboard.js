@@ -3,210 +3,180 @@ function getDashboardSchema() {
         "name": "Dashboard",
         "tables": [{
             "name": "Job",
-            "columns": [{
-                    "name": "__lastEdit",
+            "columns": {
+                __lastEdit: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "__id",
+                __id: {
                     "primaryKey": true,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "job_assignedFutureDTS",
+                job_assignedFutureDTS: {
+                    "name": "",
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "job_assignedLab_External__id",
+                job_assignedLab_External__id: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "job_assignedLab_Primary__id",
+                job_assignedLab_Primary__id: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "job_assignedLab_Secondary__id",
+                job_assignedLab_Secondary__id: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "job_assignedPartner__id",
+                job_assignedPartner__id: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "job_assignedPoS__id",
+                job_assignedPoS__id: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getAssignedLab_Primary__location____id",
+                _getAssignedLab_Primary__location____id: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getAssignedLab_Secondary__location____id",
+                _getAssignedLab_Secondary__location____id: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getAssignedPoS__location____id",
+                _getAssignedPoS__location____id: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "__lastOperationTimestamp",
+                __lastOperationTimestamp: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getClientFullName",
+                _getClientFullName: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "device_details__fullDescription",
+                device_details__fullDescription: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "device_details__category",
+                device_details__category: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "device_details__family",
+                device_details__family: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "device_details__vendor",
+                device_details__vendor: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getReadableFullTicket",
+                _getReadableFullTicket: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getCurrentDts",
+                _getCurrentDts: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getCurrentState",
+                _getCurrentState: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getLastAssignedTechnicianFullName",
+                _getLastAssignedTechnicianFullName: {
+                    "name": "",
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "job_suspended_flag",
+                job_suspended_flag: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getCurrentDept__location__id",
+                _getCurrentDept__location__id: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "job_expiryEndDate",
+                job_expiryEndDate: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "job_expiryStartDate",
+                job_expiryStartDate: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getDateClosure",
+                _getDateClosure: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getDateCreation",
+                _getDateCreation: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getDateEndJob",
+                _getDateEndJob: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getDateFirstEntryLab1",
+                _getDateFirstEntryLab1: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getDateFirstEntryLab2",
+                _getDateFirstEntryLab2: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getDateLastExitLab1",
+                _getDateLastExitLab1: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getDateLastExitLab2",
+                _getDateLastExitLab2: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
                 },
-                {
-                    "name": "_getDateStartJob",
+                _getDateStartJob: {
                     "primaryKey": false,
                     "dataType": "string",
                     "enableSearch": true
-                }, {
-                    name: '__lastStateChange',
+                }, __lastStateChange: {
                     dataType: 'number'
                 }
-            ],
+            },
             "version": 1
-        }]
+        }
+        ]
     };
     return db;
 }
@@ -248,7 +218,8 @@ describe("dashboard test", function () {
         connection.select({
             from: 'Job',
             where: [{
-                _getCurrentState: { in: ['Send', 'Transit', 'WaitStart', 'Diagnostics', 'ExternalLab', 'WaitApproval', 'WaitContinue',
+                _getCurrentState: {
+                    in: ['Send', 'Transit', 'WaitStart', 'Diagnostics', 'ExternalLab', 'WaitApproval', 'WaitContinue',
                         'Working', 'WaitParts', 'FinalTest'
                     ],
                 },

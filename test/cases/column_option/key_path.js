@@ -44,9 +44,9 @@ describe('keyPath test', function () {
                     expect(results).to.be.an('undefined');
                     done();
                 }).
-                catch(function (err) {
-                    done(err);
-                });
+                    catch(function (err) {
+                        done(err);
+                    });
             });
         })
 
@@ -77,47 +77,36 @@ describe('keyPath test', function () {
 function getDbSchemaOfPinCodes() {
     var table = {
         name: 'pinCodes',
-        columns: [{
-                name: 'id',
+        columns: {
+            id: {
                 primaryKey: true,
                 autoIncrement: true
             },
-            {
-                name: 'officename',
+            officename: {
                 dataType: 'string'
-            }, {
-                name: 'pincode',
+            }, pincode: {
                 dataType: 'string'
             },
-            {
-                name: 'officetype',
+            officetype: {
                 dataType: 'string'
-            }, {
-                name: 'Deliverystatus',
+            }, Deliverystatus: {
                 dataType: 'string'
-            }, {
-                name: 'officetypeAndDeliverystatus',
+            }, officetypeAndDeliverystatus: {
                 keyPath: ['officetype', 'Deliverystatus']
-            }, {
-                name: 'divisionname',
+            }, divisionname: {
                 dataType: 'string'
-            }, {
-                name: 'regionname',
+            }, regionname: {
                 dataType: 'string'
-            }, {
-                name: 'circlename',
+            }, circlename: {
                 dataType: 'string'
-            }, {
-                name: 'taluk',
+            }, taluk: {
                 dataType: 'string'
-            }, {
-                name: 'districtname',
+            }, districtname: {
                 dataType: 'string'
-            }, {
-                name: 'statename',
+            }, statename: {
                 dataType: 'string'
             }
-        ]
+        }
     }
     var database = {
         name: 'pinCodeDetails',

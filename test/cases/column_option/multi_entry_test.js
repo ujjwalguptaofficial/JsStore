@@ -72,10 +72,10 @@ describe('Multi Entry Test', function () {
                 con.openDb('MultiEntryTest');
                 done();
             } else {
-                var Db = MultiEntryTest.getDbSchema();
-                Db.tables[0].version = 2;
-                Db.tables[0].columns[1].multiEntry = true;
-                con.createDb(Db).then(function (tableList) {
+                var db = MultiEntryTest.getDbSchema();
+                db.tables[0].version = 2;
+                db.tables[0].columns[Object.keys(db.tables[0].columns)[1]].multiEntry = true;
+                con.createDb(db).then(function (tableList) {
                     expect(tableList).to.be.an('array').length(1);
                     console.log('Database created');
                     done();
@@ -245,16 +245,15 @@ var MultiEntryTest = {
     getDbSchema: function () {
         var people = {
             name: 'people',
-            columns: [{
-                name: 'name',
-                unique: true,
-                dataType: JsStore.DATA_TYPE.String
-            },
-            {
-                name: 'tags',
-                dataType: JsStore.DATA_TYPE.Array
+            columns: {
+                name: {
+                    unique: true,
+                    dataType: JsStore.DATA_TYPE.String
+                },
+                tags: {
+                    dataType: JsStore.DATA_TYPE.Array
+                }
             }
-            ]
         },
             dataBase = {
                 name: 'MultiEntryTest',

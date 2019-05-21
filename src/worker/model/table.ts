@@ -28,7 +28,7 @@ export class Table {
                     case 'multiEntry':
                     case 'default':
                     case 'notNull':
-                        column.default = value; break;
+                        column[feature] = value; break;
                 }
             }
             this.columns.push(new Column(column));
