@@ -223,113 +223,95 @@ describe('real time transaction', function () {
 });
 
 function getShopDbSchema() {
-   
+
+    var DATA_TYPE = JsStore.DATA_TYPE;
     var customerTable = {
         name: 'customers',
-        columns: [{
-                name: 'id',
+        columns: {
+            id: {
                 primaryKey: true,
                 autoIncrement: true,
-            }, {
-                name: 'customerName',
+            },
+            customerName: {
                 notNull: true,
                 dataType: 'string'
-            }, {
-                name: "address",
+            }, address: {
                 notNull: true,
                 dataType: 'string',
-                advTextSearch: true
             },
-            {
-                name: "city",
+            city: {
+                notNull: true,
+                dataType: 'string'
+            }, postalCode: {
+                dataType: 'string'
+            }, country: {
                 notNull: true,
                 dataType: 'string'
             },
-            {
-                name: "postalCode",
-                dataType: 'string'
-            },
-            {
-                name: "country",
-                notNull: true,
-                dataType: 'string'
-            },
-            {
-                name: "email",
+            email: {
                 dataType: 'string',
                 enableSearch: false
             }
-        ]
+        }
     };
 
     var orderDetails = {
         name: 'orderDetails',
-        columns: [{
-                name: "orderDetailId",
+        columns: {
+            orderDetailId: {
                 primaryKey: true,
                 autoIncrement: true
-            },
-            {
-                name: "orderId",
+            }, orderId: {
                 notNull: true,
                 dataType: DATA_TYPE.Number
-            },
-            {
-                name: "productId",
+            }, productId: {
                 notNull: true,
                 dataType: DATA_TYPE.Number
-            },
-            {
-                name: "quantity",
+            }, quantity: {
                 notNull: true,
                 dataType: 'number'
             }
-        ]
+        }
     }
 
     var orders = {
         name: 'orders',
-        columns: [{
-                name: "orderId",
+        columns: {
+            orderId: {
                 primaryKey: true,
                 autoIncrement: true,
             },
-            {
-                name: "customerId",
+            customerId: {
                 notNull: true,
                 dataType: 'number'
             },
-            {
-                name: "orderDate",
+            orderDate: {
                 notNull: true,
                 dataType: 'date_time'
             }
-        ]
+        }
     }
 
     var products = {
         name: 'products',
-        columns: [{
-                name: "productId",
+        columns: {
+            productId: {
                 primaryKey: true,
                 autoIncrement: true
             },
-            {
-                name: "productName",
+            productName: {
                 notNull: true,
                 dataType: 'string'
             },
-            {
-                name: "unit",
+            unit: {
                 notNull: true,
                 dataType: 'number'
             },
-            {
-                name: "price",
+            price: {
                 notNull: true,
                 dataType: 'number'
             }
-        ]
+        }
     }
 
     var db = {

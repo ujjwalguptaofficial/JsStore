@@ -1,6 +1,6 @@
 describe('select join order test', function () {
     it('create db student', function (done) {
-        con.createDb(getStudentDatabase()).then(function () {
+        con.createDb(getDatabase()).then(function () {
             done();
         }).catch(function (err) {
             done(err);
@@ -128,23 +128,23 @@ describe('select join order test', function () {
         return Details;
     }
 
-    function getStudentDatabase() {
+    function getDatabase() {
         var tblStudent = {
             name: "Student",
             columns: {
-                Id: ['primaryKey', 'autoIncrement'],
-                Name: ['notNull', 'string'],
-                Gender: ['string', 'male'],
-                Order: ['notNull', 'string']
+                Id: { primaryKey: true, autoIncrement: true },
+                Name: { notNull: true, dataType: "string" },
+                Gender: { dataType: "string", default: 'male' },
+                Order: { notNull: true, dataType: "string" }
             }
         }
         var tblStudentDetail = {
             name: "StudentDetail",
             columns: {
-                Id: ['primaryKey', 'autoIncrement'],
-                Name: ['notNull', 'string'],
-                Card: ['string', { default: '--' }],
-                Phone: ['notNull', 'string']
+                Id: { primaryKey: true, autoIncrement: true },
+                Name: { notNull: true, dataType: "string" },
+                Card: { dataType: "string", default: '--' },
+                Phone: { notNull: true, dataType: "string" }
             }
         }
         var dataBase = {

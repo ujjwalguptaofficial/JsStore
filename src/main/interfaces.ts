@@ -14,13 +14,13 @@ export interface IDataBase {
 export interface ITable {
     name: string;
     columns: {
-        [columnName: string]: string[]
+        [columnName: string]: IColumn
     };
     version?: number;
 }
 
 export interface IColumn {
-    name: string;
+
     primaryKey?: boolean;
     autoIncrement?: boolean;
     unique?: boolean;

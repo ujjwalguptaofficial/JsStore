@@ -1,9 +1,6 @@
-
 import { Column } from "./column";
-import { ITable } from "../interfaces";
-import { IColumn } from "../../main/index";
-import { DATA_TYPE } from "../enums";
-import { Util } from "../util";
+import { ITable, IColumn } from "../interfaces";
+
 
 export class Table {
     name: string;
@@ -18,55 +15,22 @@ export class Table {
             const column = {
                 name: columnName
             } as IColumn;
-            table.columns[columnName].forEach(function (item) {
-                const type = Util.getType(item);
-                if (type === DATA_TYPE.String) {
-                    item = item.toLowerCase().replace(/\s/g, "");
-                    switch (item) {
-                        case 'primarykey':
-                            column.primaryKey = true;
-                            break;
-                        case 'autoincrement':
-                            column.autoIncrement = true;
-                            break;
-                        case 'unique':
-                            column.unique = true;
-                            break;
-                        case DATA_TYPE.Array:
-                        case DATA_TYPE.Boolean:
-                        case DATA_TYPE.DateTime:
-                        case DATA_TYPE.Null:
-                        case DATA_TYPE.Number:
-                        case DATA_TYPE.String:
-                        case DATA_TYPE.Object:
-                            column.dataType = item;
-                            break;
-                        case 'enablesearch':
-                            column.enableSearch = true; break;
-                        case '!enableSearch':
-                            column.enableSearch = false; break;
-                        case 'keypath':
-                            column.keyPath = item.split(',');
-                            break;
-                        case 'multiEntry':
-                            column.multiEntry = true;
-                            break;
-                        default:
-                            if (item.includes('default')) {
-                                const splittedItem = item.split('=');
-                                column.default = splittedItem[1];
-                            }
-                    }
+
+            for (const feature in table.columns[columnName]) {
+                const value = table.columns[columnName][feature];
+                switch (feature) {
+                    case 'primaryKey':
+                    case 'autoIncrement':
+                    case 'unique':
+                    case 'dataType':
+                    case 'enableSearch':
+                    case 'keyPath':
+                    case 'multiEntry':
+                    case 'default':
+                    case 'notNull':
+                        column.default = value; break;
                 }
-                else if (type === DATA_TYPE.Object) {
-                    for (const feature in item) {
-                        switch (feature) {
-                            case 'default':
-                                column.default = item[feature]; break;
-                        }
-                    }
-                }
-            });
+            }
             this.columns.push(new Column(column));
         }
     }
