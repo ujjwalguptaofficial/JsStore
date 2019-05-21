@@ -223,9 +223,7 @@ describe('real time transaction', function () {
 });
 
 function getShopDbSchema() {
-    var Column = JsStore.Column;
-    var COL_OPTION = JsStore.COL_OPTION;
-    var DATA_TYPE = JsStore.DATA_TYPE;
+   
     var customerTable = {
         name: 'customers',
         columns: [{

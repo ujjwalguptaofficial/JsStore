@@ -256,9 +256,6 @@ describe('Test insert', function () {
         con.insert({
             into: 'Customers',
             values: [{}]
-        }).then(function (results) {
-            expect(results).to.be.an('number').to.equal(196);
-            done();
         }).catch(function (err) {
             console.log(err);
             var error = {

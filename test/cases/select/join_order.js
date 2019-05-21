@@ -131,21 +131,21 @@ describe('select join order test', function () {
     function getStudentDatabase() {
         var tblStudent = {
             name: "Student",
-            columns: [
-                { name: "Id", primaryKey: true, autoIncrement: true },
-                { name: "Name", notNull: true, dataType: "string" },
-                { name: "Gender", dataType: "string", default: 'male' },
-                { name: "Order", notNull: true, dataType: "string" }
-            ]
+            columns: {
+                Id: ['primaryKey', 'autoIncrement'],
+                Name: ['notNull', 'string'],
+                Gender: ['string', 'male'],
+                Order: ['notNull', 'string']
+            }
         }
         var tblStudentDetail = {
             name: "StudentDetail",
-            columns: [
-                { name: "Id", primaryKey: true, autoIncrement: true },
-                { name: "Name", notNull: true, dataType: "string" },
-                { name: "Card", dataType: "string", default: '--' },
-                { name: "Phone", notNull: true, dataType: "string" }
-            ]
+            columns: {
+                Id: ['primaryKey', 'autoIncrement'],
+                Name: ['notNull', 'string'],
+                Card: ['string', { default: '--' }],
+                Phone: ['notNull', 'string']
+            }
         }
         var dataBase = {
             name: "Students",

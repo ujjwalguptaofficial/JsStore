@@ -19,7 +19,7 @@ export interface IDataBase {
 export interface ITable {
     name: string;
     columns: {
-        [columnName: string]: string[]
+        [columnName: string]: string[] | object[]
     };
     version?: number;
 }
