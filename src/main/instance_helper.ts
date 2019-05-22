@@ -16,7 +16,7 @@ export class InstanceHelper {
 
   // these apis have special permissions. These apis dont wait for database open.
   private whiteListApi_ = [
-    API.CreateDb,
+    API.InitDb,
     API.IsDbExist,
     API.GetDbVersion,
     API.GetDbList,
@@ -71,7 +71,7 @@ export class InstanceHelper {
       } else {
         switch (finishedRequest.name) {
           case API.OpenDb:
-          case API.CreateDb:
+          case API.InitDb:
             this.isDbOpened_ = true; break;
           case API.Terminate:
             this.isDbOpened_ = false;
@@ -163,17 +163,17 @@ export class InstanceHelper {
       }
     }
     else if (requestQueueLength === 0 && this.isDbIdle_ === false && this.isDbOpened_) {
-      this.inactivityTimer = setTimeout(() => {
-        this.prcoessExecutionOfQry_({
-          name: API.CloseDb,
-          onSuccess: function () {
+      // this.inactivityTimer = setTimeout(() => {
+      //   this.prcoessExecutionOfQry_({
+      //     name: API.CloseDb,
+      //     onSuccess: function () {
 
-          },
-          onError: function (err) {
-            console.error(err);
-          }
-        });
-      }, 100) as any;
+      //     },
+      //     onError: function (err) {
+      //       console.error(err);
+      //     }
+      //   });
+      // }, 100) as any;
     }
   }
 

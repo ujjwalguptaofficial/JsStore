@@ -1,4 +1,4 @@
-import { IdbHelper, OpenDb, DropDb, CreateDb, Clear, BulkInsert, QueryHelper } from "./business/index";
+import { IdbHelper, OpenDb, DropDb, InitDb, Clear, BulkInsert, QueryHelper } from "./business/index";
 import * as Select from './business/select/index';
 import * as Count from './business/count/index';
 import * as Insert from './business/insert/index';
@@ -30,7 +30,7 @@ export class QueryExecutor {
     checkConnectionAndExecuteLogic(request: WebWorkerRequest) {
         LogHelper.log('request executing:' + request.name);
         switch (request.name) {
-            case API.CreateDb:
+            case API.InitDb:
             case API.IsDbExist:
             case API.GetDbVersion:
             case API.GetDbList:
@@ -51,13 +51,13 @@ export class QueryExecutor {
                     } break;
                     case CONNECTION_STATUS.Closed: {
                         if (this.isDbDeletedByBrowser_ === true) {
-                            this.createDb_(null, () => {
+                            this.initDb_(null, () => {
                                 this.isDbDeletedByBrowser_ = false;
                                 this.checkConnectionAndExecuteLogic(request);
                             }, request.onError);
                         }
                         else {
-                            this.openDb_(this.activeDb_.name, () => {
+                            this.initDb_(this.activeDb_ as any, () => {
                                 this.checkConnectionAndExecuteLogic(request);
                             }, request.onError);
                         }
@@ -117,18 +117,16 @@ export class QueryExecutor {
             case API.GetDbSchema:
                 this.getDbSchema_(request.query as string).then(onSuccess).catch(onError);
                 break;
-            case API.OpenDb:
+            case API.InitDb:
                 if (this.isDbDeletedByBrowser_ === true) {
-                    this.createDb_(null, () => {
+                    this.initDb_(null, () => {
                         this.isDbDeletedByBrowser_ = false;
                         onSuccess();
                     }, onError);
                 }
                 else {
-                    this.openDb_(request.query, onSuccess, onError);
+                    this.initDb_(request.query as IDataBase, onSuccess, onError);
                 }
-                break;
-            case API.CreateDb: this.createDb_(request.query as IDataBase, onSuccess, onError);
                 break;
             case API.Clear: this.clear_(request.query as string, onSuccess, onError);
                 break;
@@ -194,25 +192,6 @@ export class QueryExecutor {
 
     private set activeDb_(value) {
         IdbHelper.activeDb = value;
-    }
-
-    private openDb_(dbName, onSuccess: () => void, onError: (err: IError) => void) {
-        this.getDbVersion_(dbName).then(dbVersion => {
-            if (dbVersion !== 0) {
-                this.activeDbVersion_ = dbVersion;
-                this.getDbSchema_(dbName).then(result => {
-                    this.activeDb_ = result;
-                    const openDbProject = new OpenDb(onSuccess, onError);
-                    openDbProject.execute();
-                });
-            }
-            else {
-                const err = new LogHelper(ERROR_TYPE.DbNotExist, { DbName: dbName });
-                err.logError();
-                onError(err.get());
-            }
-        }).catch(onError);
-
     }
 
     private closeDb_() {
@@ -320,7 +299,7 @@ export class QueryExecutor {
         }
     }
 
-    private createDb_(
+    private initDb_(
         dataBase: IDataBase, onSuccess: () => void, onError: (err: IError) => void
     ) {
         const processCreateDb = () => {
@@ -329,7 +308,7 @@ export class QueryExecutor {
             // create meta data
             const dbHelper = new DbHelper(IdbHelper.activeDb);
             dbHelper.createMetaData().then(function (tablesMetaData: TableHelper[]) {
-                const createDbInstance = new CreateDb(onSuccess, onError);
+                const createDbInstance = new InitDb(onSuccess, onError);
                 createDbInstance.execute(tablesMetaData);
             });
         };

@@ -37,10 +37,10 @@ export class Instance extends InstanceHelper {
      * @returns 
      * @memberof Instance
      */
-    createDb(dataBase: IDataBase) {
+    initDb(dataBase: IDataBase) {
         this.activeDbName = dataBase.name;
         return this.pushApi<string[]>({
-            name: API.CreateDb,
+            name: API.InitDb,
             query: dataBase
         });
     }

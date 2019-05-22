@@ -3,7 +3,7 @@ import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
 import { IError } from "../interfaces";
 import { Util } from "../util";
 export class BaseDb {
-    onSuccess: (listOfTablesCreated?: string[]) => void;
+  
     onError: (err: IError) => void;
     protected get dbName() {
         return IdbHelper.activeDb.name;

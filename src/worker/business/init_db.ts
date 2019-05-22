@@ -5,9 +5,10 @@ import { KeyStore } from "../keystore/index";
 import { BaseDb } from "./base_db";
 import { promise } from "../helpers/index";
 
-export class CreateDb extends BaseDb {
+export class InitDb extends BaseDb {
+    onSuccess: (isDbCreated: boolean) => void;
 
-    constructor(onSuccess: (listOf) => void, onError: (err: IError) => void) {
+    constructor(onSuccess: (isDbCreated: boolean) => void, onError: (err: IError) => void) {
         super();
         this.onSuccess = onSuccess;
         this.onError = onError;
@@ -16,7 +17,7 @@ export class CreateDb extends BaseDb {
     execute(tablesMetaData: TableHelper[]) {
         const listofTableCreated = [];
         const dbRequest = indexedDB.open(this.dbName, this.dbVersion);
-
+        let isDbCreated = false;
         dbRequest.onerror = (event) => {
             if (this.onError != null) {
                 this.onError((event as any).target.error);
@@ -31,15 +32,22 @@ export class CreateDb extends BaseDb {
             this.dbConnection.onversionchange = this.onDbVersionChange.bind(this);
             this.dbConnection.onerror = this.onDbConError.bind(this);
 
-            // save in database list
-            this.savedbNameIntoDbList_().then(() => {
-                if (this.onSuccess != null) {
-                    this.onSuccess(listofTableCreated);
-                }
-            });
+            if (isDbCreated) {
+                // save in database list
+                this.savedbNameIntoDbList_().then(() => {
+                    if (this.onSuccess != null) {
+                        this.onSuccess(isDbCreated);
+                    }
+                });
+            }
+            else {
+                this.setPrimaryKey_();
+                this.onSuccess(isDbCreated);
+            }
         };
 
         dbRequest.onupgradeneeded = (event) => {
+            isDbCreated = true;
             const dbConnection = (event as any).target.result;
             const createObjectStore = (item: TableHelper, index) => {
                 try {
@@ -100,6 +108,15 @@ export class CreateDb extends BaseDb {
                     res();
                 }
             }).catch(rej);
+        });
+    }
+
+    private setPrimaryKey_() {
+        this.activeDb.tables.forEach((table, index) => {
+            table.columns.every(item => {
+                this.activeDb.tables[index].primaryKey = item.primaryKey ? item.name : "";
+                return !item.primaryKey;
+            });
         });
     }
 }

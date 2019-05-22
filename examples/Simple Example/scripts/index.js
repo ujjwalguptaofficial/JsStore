@@ -10,18 +10,21 @@ window.onload = function () {
 
 function initDb() {
     var dbName = "My-Db";
-    jsstoreCon.isDbExist(dbName).then(function (isExist) {
-        if (isExist) {
-            jsstoreCon.openDb(dbName).then(function () {
-                console.log('opened');
-            })
-        }
-        else {
-            jsstoreCon.createDb(getDbSchema()).then(function () {
-                console.log('created');
-            })
-        }
+    jsstoreCon.initDb(getDbSchema()).then(function (isDbCreated) {
+        console.log('created',isDbCreated);
     })
+    // jsstoreCon.isDbExist(dbName).then(function (isExist) {
+    //     if (isExist) {
+    //         jsstoreCon.openDb(dbName).then(function () {
+    //             console.log('opened');
+    //         })
+    //     }
+    //     else {
+    //         jsstoreCon.createDb(getDbSchema()).then(function () {
+    //             console.log('created');
+    //         })
+    //     }
+    // })
 }
 
 function getDbSchema() {
