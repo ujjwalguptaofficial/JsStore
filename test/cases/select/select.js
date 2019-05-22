@@ -156,6 +156,7 @@ describe('Test Select Api', function () {
             }
         }).
             then(function (results) {
+                console.log(results);
                 expect(results).to.be.an('array').length(1);
                 done();
             }).

@@ -1592,12 +1592,25 @@ var ValueChecker = /** @class */ (function () {
         }
     };
     ValueChecker.prototype.checkAndModifyColumnValue_ = function (column) {
+        var columnValue = this.value[column.name];
         // check auto increment scheme
         if (column.autoIncrement) {
-            this.value[column.name] = ++this.autoIncrementValue[column.name];
+            // if value is null, then create the autoincrement value
+            if (this.isNull_(columnValue)) {
+                this.value[column.name] = ++this.autoIncrementValue[column.name];
+            }
+            else {
+                if (this.getType_(columnValue) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Number) {
+                    // if column value is greater than autoincrement value saved, then make the
+                    // column value as autoIncrement value
+                    if (columnValue > this.autoIncrementValue[column.name]) {
+                        this.autoIncrementValue[column.name] = columnValue;
+                    }
+                }
+            }
         }
         // check Default Schema
-        else if (column.default && this.isNull_(this.value[column.name])) {
+        else if (column.default && this.isNull_(columnValue)) {
             this.value[column.name] = column.default;
         }
         this.checkNotNullAndDataType_(column);

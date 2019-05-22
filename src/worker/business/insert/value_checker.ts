@@ -1,6 +1,6 @@
 import { Table, Column } from "../../model/index";
 import { Util } from "../../util";
-import { ERROR_TYPE } from "../../enums";
+import { ERROR_TYPE, DATA_TYPE } from "../../enums";
 import { LogHelper } from "../../log_helper";
 
 export class ValueChecker {
@@ -45,12 +45,25 @@ export class ValueChecker {
     }
 
     private checkAndModifyColumnValue_(column: Column) {
+        const columnValue = this.value[column.name];
         // check auto increment scheme
         if (column.autoIncrement) {
-            this.value[column.name] = ++this.autoIncrementValue[column.name];
+            // if value is null, then create the autoincrement value
+            if (this.isNull_(columnValue)) {
+                this.value[column.name] = ++this.autoIncrementValue[column.name];
+            }
+            else {
+                if (this.getType_(columnValue) === DATA_TYPE.Number) {
+                    // if column value is greater than autoincrement value saved, then make the
+                    // column value as autoIncrement value
+                    if (columnValue > this.autoIncrementValue[column.name]) {
+                        this.autoIncrementValue[column.name] = columnValue;
+                    }
+                }
+            }
         }
         // check Default Schema
-        else if (column.default && this.isNull_(this.value[column.name])) {
+        else if (column.default && this.isNull_(columnValue)) {
             this.value[column.name] = column.default;
         }
         this.checkNotNullAndDataType_(column);

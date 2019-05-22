@@ -26,25 +26,45 @@ describe('Test insert', function () {
             }).then(function (results) {
                 expect(results).to.be.an('number').to.equal(93);
                 done();
-            }).
-                catch(function (err) {
-                    done(err);
-                })
+            }).catch(function (err) {
+                done(err);
+            })
         });
     });
 
-    // it('insert customer using upsert - already inserted data', function (done) {
-    //     con.insert({
-    //         into: 'Customers',
-    //         upsert: true,
-    //         values: [{ "CustomerName": "ujjwal gupta", "ContactName": "ujjwal", "Address": "bhubaneswar odisha", "City": "bhubaneswar", "PostalCode": "12345", "Country": "India" }]
-    //     }).then(function (results) {
-    //         expect(results).to.be.an('number').to.equal(1);
-    //         done();
-    //     }).catch(function (err) {
-    //         done(err);
-    //     })
-    // });
+    it('insert customers', function (done) {
+        con.insert({
+            into: 'Customers',
+            values: [{ "CustomerID": 93, "CustomerName": "ujjwal gupta", "ContactName": "ujjwal", "Address": "bhubaneswar odisha", "City": "bhubaneswar", "PostalCode": "12345", "Country": "India" }]
+        }).catch(function (err) {
+            var error = { "message": "Key already exists in the object store.", "type": "ConstraintError" };
+            expect(err).to.be.an('object').to.haveOwnProperty('type').equal('ConstraintError')
+            done();
+        })
+    });
+
+    it('insert customer using upsert - already inserted data', function (done) {
+        con.select({
+            from: 'Customers',
+            where: {
+                CustomerID: 91
+            }
+        }).then(function (customers) {
+            expect(customers[0]).to.haveOwnProperty('CustomerName').equal('Wolski');
+            con.insert({
+                into: 'Customers',
+                upsert: true,
+                return: true,
+                values: [{ "CustomerID": 91, "CustomerName": "Jon Snow", "ContactName": "Zbyszek", "Address": "ul. Filtrowa 68", "City": "Walla", "PostalCode": "01-012", "Country": "Poland" }]
+            }).then(function (results) {
+                expect(results).to.be.an('array').length(1);
+                expect(results[0]).to.haveOwnProperty('CustomerName').equal('Jon Snow');
+                done();
+            }).catch(function (err) {
+                done(err);
+            })
+        })
+    });
 
     it('check total no of customer', function (done) {
         con.count({
