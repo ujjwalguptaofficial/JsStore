@@ -1,6 +1,7 @@
 describe('select join order test', function () {
     it('create db student', function (done) {
-        con.createDb(getDatabase()).then(function () {
+        con.initDb(getDatabase()).then(function (isDbCreated) {
+            expect(isDbCreated).to.be.an('boolean').equal(true);
             done();
         }).catch(function (err) {
             done(err);
@@ -59,7 +60,8 @@ describe('select join order test', function () {
     });
 
     it('open db Demo', function (done) {
-        con.openDb("Demo").then(function () {
+        con.initDb(getDemoDbSchema()).then(function (isDbCreated) {
+            expect(isDbCreated).to.be.an('boolean').equal(false);
             done();
         }).catch(function (err) {
             done(err);

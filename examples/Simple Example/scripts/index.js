@@ -11,7 +11,7 @@ window.onload = function () {
 function initDb() {
     var dbName = "My-Db";
     jsstoreCon.initDb(getDbSchema()).then(function (isDbCreated) {
-        console.log('created',isDbCreated);
+        console.log('created', isDbCreated);
     })
     // jsstoreCon.isDbExist(dbName).then(function (isExist) {
     //     if (isExist) {
@@ -31,10 +31,15 @@ function getDbSchema() {
     var table = {
         name: 'Student',
         columns: {
-            id: ['autoIncrement', 'primaryKey'],
-            name: ['string'],
-            country: [],
-            city: []
+            id: {
+                autoIncrement: true,
+                primaryKey: true
+            },
+            name: {
+                dataType: 'string'
+            },
+            country: {},
+            city: {}
         }
     }
 

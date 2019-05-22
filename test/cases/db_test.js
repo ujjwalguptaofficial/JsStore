@@ -26,11 +26,12 @@ describe('Db Test', function () {
     });
 
     it('open db test', function (done) {
-        con.openDb('Demo').then(function () {
+        con.initDb(getDemoDbSchema()).then(function (isDbCreated) {
+            expect(isDbCreated).to.be.an('boolean').equal(false);
             done();
         }).catch(function (err) {
             done(err);
-        });
+        })
     });
 
     it('drop db test', function (done) {
@@ -50,8 +51,9 @@ describe('Db Test', function () {
         });
     });
 
-    it('drop db test', function (done) {
-        con.openDb('shop').then(function () {
+    it('drop db shop', function (done) {
+        con.initDb(getShopDbSchema()).then(function (isDbCreated) {
+            expect(isDbCreated).to.be.an('boolean').equal(false);
             con.dropDb().then(function () {
                 done();
             }).catch(done);
@@ -65,20 +67,6 @@ describe('Db Test', function () {
         }).catch(function (err) {
             done(err);
         });
-    });
-
-
-    it('open db test - invalid db', function (done) {
-        con.openDb('invalid_db').then(function (results) {
-            done();
-        }).catch(function (err) {
-            var error = {
-                "message": "Database 'invalid_db' does not exist",
-                "type": "db_not_exist"
-            };
-            expect(err).to.be.an('object').eql(error);
-            done();
-        })
     });
 
     it('terminate test', function (done) {

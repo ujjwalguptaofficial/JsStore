@@ -186,16 +186,11 @@ describe("dashboard test", function () {
     it('create dashboard database', function (done) {
         connection = new JsStore.Instance();
         var dbName = "Dashboard";
-        connection.isDbExist(dbName).then(function (isExist) {
-            if (isExist) {
-                connection.openDb(dbName);
-            } else {
-                var db = getDashboardSchema();
-                connection.createDb(db);
-            }
+        var db = getDashboardSchema();
+        connection.initDb(db).then(function (isDbCreated) {
+            expect(isDbCreated).to.be.an('boolean').equal(true);
+            console.log('Database created');
             done();
-        }).catch(function (err) {
-            done(err);
         });
     });
 

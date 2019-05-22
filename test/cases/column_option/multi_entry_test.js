@@ -9,24 +9,11 @@ describe('Multi Entry Test', function () {
     });
 
     it('create db with promise', function (done) {
-        con.isDbExist('MultiEntryTest').then(function (exist) {
-            console.log('db exist :' + exist);
-            if (exist) {
-                con.openDb('MultiEntryTest').then(function () {
-                    done();
-                });
-
-            } else {
-                con.createDb(MultiEntryTest.getDbSchema()).then(function (tableList) {
-                    expect(tableList).to.be.an('array').length(1);
-                    console.log('Database created');
-                    done();
-                });
-            }
-        }).
-            catch(function (err) {
-                done(err);
-            });
+        con.initDb(MultiEntryTest.getDbSchema()).then(function (isDbCreated) {
+            expect(isDbCreated).to.be.an('boolean').equal(true);
+            console.log('Database created');
+            done();
+        });
     });
 
     it('insert data into table', function (done) {
@@ -66,21 +53,15 @@ describe('Multi Entry Test', function () {
                 name: 'person',
                 version: 2
             }
-        }).then(function (exist) {
-            console.log('db exist :' + exist);
-            if (exist) {
-                con.openDb('MultiEntryTest');
+        }).then(function (isExist) {
+            expect(isExist).to.be.an('boolean').equal(false);
+            var db = MultiEntryTest.getDbSchema();
+            db.tables[0].version = 2;
+            db.tables[0].columns[Object.keys(db.tables[0].columns)[1]].multiEntry = true;
+            con.initDb(db).then(function (isDbCreated) {
+                expect(isDbCreated).to.be.an('boolean').equal(true);
                 done();
-            } else {
-                var db = MultiEntryTest.getDbSchema();
-                db.tables[0].version = 2;
-                db.tables[0].columns[Object.keys(db.tables[0].columns)[1]].multiEntry = true;
-                con.createDb(db).then(function (tableList) {
-                    expect(tableList).to.be.an('array').length(1);
-                    console.log('Database created');
-                    done();
-                });
-            }
+            })
         }).catch(function (err) {
             done(err);
         });

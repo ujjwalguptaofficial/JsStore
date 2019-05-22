@@ -31,6 +31,7 @@ export class ValuesChecker {
             }
         });
     }
+    
     private startChecking() {
         return promise((resolve, reject) => {
             let isError = false;

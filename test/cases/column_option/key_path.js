@@ -16,18 +16,10 @@ describe('keyPath test', function () {
         });
 
         it('create db', function (done) {
-            var dbName = 'pinCodeDetails';
-            con.isDbExist(dbName).then(function (isExist) {
-                if (isExist) {
-                    con.openDb(dbName).then(done)
-                } else {
-                    var db = getDbSchemaOfPinCodes();
-                    con.createDb(db).then(function (result) {
-                        done();
-                    })
-                }
-            }).catch(function (err) {
-                done(err);
+            var db = getDbSchemaOfPinCodes();
+            con.initDb(db).then(function (isDbCreated) {
+                expect(isDbCreated).to.be.an('boolean').equal(true);
+                done();
             })
         });
 
