@@ -101,7 +101,7 @@ export class Join extends BaseSelect {
                 this.startExecutionJoinLogic_();
             }
             else {
-                this.onTransactionCompleted_( );
+                this.onTransactionCompleted_();
             }
 
         }, this.onErrorOccured);
@@ -132,65 +132,7 @@ export class Join extends BaseSelect {
         };
     }
 
-    private executeRightJoin_(joinQuery: TableJoinQuery, query: TableJoinQuery) {
-        const joinresults = [],
-            joinIndex = 0,
-            column = query.column,
-            tmpresults = this.results,
-            resultLength = tmpresults.length,
-            where = {};
 
-        let itemIndex = 0;
-
-        const onExecutionFinished = () => {
-            this.results = joinresults;
-            // check if further execution needed
-            if (this.queryStack.length > this.currentQueryStackIndex + 1) {
-                this.startExecutionJoinLogic_();
-            }
-            else {
-                this.onTransactionCompleted_( );
-            }
-        };
-        const doRightJoin = (results) => {
-            let valueFound = false;
-            results.forEach(function (item, index) {
-                for (itemIndex = 0; itemIndex < resultLength; itemIndex++) {
-                    if (item[query.column] ===
-                        tmpresults[itemIndex][joinQuery.table][joinQuery.column]) {
-                        valueFound = true;
-                        break;
-                    }
-                }
-                joinresults[index] = {};
-                joinresults[index][query.table] = item;
-                if (valueFound) {
-                    valueFound = false;
-                    for (let j = 0; j < this.currentQueryStackIndex; j++) {
-                        joinresults[index][this.queryStack[j].table] =
-                            tmpresults[itemIndex][this.queryStack[j].table];
-                    }
-                }
-                else {
-                    for (let j = 0; j < this.currentQueryStackIndex; j++) {
-                        joinresults[index][this.queryStack[j].table] = null;
-                    }
-                }
-            }, this);
-        };
-        const executeLogic = () => {
-            const selectObject = new Select.Instance({
-                from: query.table,
-                order: query.order,
-                where: query.where
-            } as SelectQuery, (results) => {
-                doRightJoin(results);
-                onExecutionFinished();
-            }, this.onErrorOccured);
-            selectObject.execute();
-        };
-        executeLogic();
-    }
 
     private executeWhereUndefinedLogicForJoin_(joinQuery: TableJoinQuery, query: TableJoinQuery) {
         const joinresults = [],
@@ -209,7 +151,7 @@ export class Join extends BaseSelect {
                 this.startExecutionJoinLogic_();
             }
             else {
-                this.onTransactionCompleted_( );
+                this.onTransactionCompleted_();
             }
         };
         const doJoin = (results) => {
@@ -274,10 +216,7 @@ export class Join extends BaseSelect {
         }
 
         const query = this.queryStack[this.currentQueryStackIndex];
-        if (query.joinType === 'right') {
-            this.executeRightJoin_(joinQuery, query);
-        }
-        else if (query.where) {
+        if (query.where) {
             this.executeWhereJoinLogic_(joinQuery, query);
         }
         else {

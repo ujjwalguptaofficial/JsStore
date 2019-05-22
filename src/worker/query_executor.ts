@@ -1,4 +1,4 @@
-import { IdbHelper, OpenDb, DropDb, InitDb, Clear, BulkInsert, QueryHelper } from "./business/index";
+import { IdbHelper, DropDb, InitDb, Clear, BulkInsert, QueryHelper } from "./business/index";
 import * as Select from './business/select/index';
 import * as Count from './business/count/index';
 import * as Insert from './business/insert/index';

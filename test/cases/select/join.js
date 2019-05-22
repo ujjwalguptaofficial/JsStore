@@ -43,15 +43,15 @@ describe('Test join', function () {
         })
     });
 
-    it('right join', function (done) {
+    it('right join using left', function (done) {
         var joinLogic = {
             table1: {
-                table: 'Orders',
+                table: 'Customers',
                 column: 'CustomerID'
             },
-            join: 'right',
+            join: 'left',
             table2: {
-                table: 'Customers',
+                table: 'Orders',
                 column: 'CustomerID'
             }
         };
@@ -64,29 +64,6 @@ describe('Test join', function () {
             done(err);
         })
     });
-
-    it('right join', function (done) {
-        var joinLogic = {
-            table1: {
-                table: 'Orders',
-                column: 'CustomerID'
-            },
-            join: 'right',
-            table2: {
-                table: 'Customers',
-                column: 'CustomerID'
-            }
-        };
-        con.select({
-            from: joinLogic
-        }).then(function (results) {
-            expect(results).to.be.an('array').length(93);
-            done();
-        }).catch(function (err) {
-            done(err);
-        })
-    });
-
 
     it('three table join', function (done) {
         //first join between two tables

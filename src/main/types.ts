@@ -24,8 +24,15 @@ export type OrderQuery = {
     idbSorting?: boolean
 };
 
+export type JoinQuery = {
+    type: string //'inner',
+    with: string // 'Customers',
+    on: string // "Customers.customerId = Orders.customerId"
+};
+
 export type SelectQuery = {
-    from: any;
+    from: string;
+    join: JoinQuery | JoinQuery[];
     where?: any;
     skip?: number;
     limit?: number;
@@ -84,33 +91,6 @@ export type InsertQuery = {
     return?: boolean;
     skipDataCheck?: boolean;
     upsert?: boolean;
-};
-
-export type TableJoinQuery = {
-    column: string;
-    table: string;
-    where?: any;
-    order?: OrderQuery;
-    joinType?: string;
-    nextJoin?: NextJoinQuery;
-};
-
-export type SelectJoinQuery = {
-    from: JoinQuery; // IJoin
-    count?: boolean;
-    skip?: number;
-    limit?: number;
-};
-
-export type JoinQuery = {
-    table1: TableJoinQuery;
-    join: string; // inner,left,right,outer
-    table2: TableJoinQuery;
-};
-
-export type NextJoinQuery = {
-    table: string;
-    column: string;
 };
 
 export type WebWorkerResult = {
