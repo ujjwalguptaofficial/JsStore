@@ -16,7 +16,7 @@ describe('Test join', function () {
     });
 
     it('left join', function (done) {
-        
+
         con.select({
             from: "Orders",
             join: {
@@ -32,20 +32,14 @@ describe('Test join', function () {
         })
     });
 
-    it('right join using left', function (done) {
-        var joinLogic = {
-            table1: {
-                table: 'Customers',
-                column: 'CustomerID'
-            },
-            join: 'left',
-            table2: {
-                table: 'Orders',
-                column: 'CustomerID'
-            }
-        };
+    it('left join reverse', function (done) {
         con.select({
-            from: joinLogic
+            from: "Customers",
+            join: {
+                with: "Orders",
+                type: "left",
+                on: "Orders.CustomerID=Customers.CustomerID"
+            }
         }).then(function (results) {
             expect(results).to.be.an('array').length(93);
             done();
