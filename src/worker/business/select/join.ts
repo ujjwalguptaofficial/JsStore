@@ -26,7 +26,7 @@ export class Join extends Helper {
         }, (results) => {
             results.forEach((item, index) => {
                 this.results[index] = {
-                    [tableName]: item
+                    [this.currentQueryStackIndex_]: item
                 };
             });
             this.tablesFetched.push(tableName);
@@ -52,10 +52,10 @@ export class Join extends Helper {
             const tables = Object.keys(this.results[0]);
             const tablesLength = tables.length;
             this.results.forEach((result) => {
-                let data = result[this.query.from];
+                let data = result["0"];
                 for (let i = 1; i < tablesLength; i++) {
                     const query = this.joinQueryStack_[i - 1];
-                    data = { ...data, ...mapWithAlias(query, result[tables[i]]) };
+                    data = { ...data, ...mapWithAlias(query, result[i]) };
                 }
                 results.push(data);
             });
@@ -76,7 +76,7 @@ export class Join extends Helper {
     }
 
     private startExecutionJoinLogic_() {
-        const query = this.joinQueryStack_[this.currentQueryStackIndex_++];
+        const query = this.joinQueryStack_[this.currentQueryStackIndex_];
         if (query) {
             let jointblInfo = this.getJoinTableInfo_(query.on);
             // table 1 is fetched & table2 needs to be fetched for join
@@ -92,6 +92,7 @@ export class Join extends Helper {
             }, (results) => {
                 this.jointables(query.type, jointblInfo, results);
                 this.tablesFetched.push(jointblInfo.table2.table);
+                ++this.currentQueryStackIndex_;
                 this.startExecutionJoinLogic_();
             }, this.onErrorOccured).execute();
         }
@@ -103,18 +104,17 @@ export class Join extends Helper {
     private jointables(joinType: string, jointblInfo: JoinTableInfo, secondtableData: any[]) {
 
         const results = [];
-        const table1 = jointblInfo.table1.table;
         const column1 = jointblInfo.table1.column;
-        const table2 = jointblInfo.table2.table;
         const column2 = jointblInfo.table2.column;
-
+        const table1Index = this.tablesFetched.indexOf(jointblInfo.table1.table);
+        const table2Index = this.currentQueryStackIndex_ + 1;
         const performInnerJoin = () => {
             let index = 0;
             this.results.forEach(valueFromFirstTable => {
-                secondtableData.every(function (valueFromSecondTable) {
-                    if (valueFromFirstTable[table1][column1] === valueFromSecondTable[column2]) {
+                secondtableData.every((valueFromSecondTable) => {
+                    if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
                         results[index] = valueFromFirstTable;
-                        results[index++][table2] = valueFromSecondTable;
+                        results[index++][table2Index] = valueFromSecondTable;
                         return false;
                     }
                     return true;
@@ -123,13 +123,11 @@ export class Join extends Helper {
         };
         const performleftOuterJoin = () => {
             this.results.forEach((valueFromFirstTable, index) => {
-                results[index] = {
-                    [table1]: valueFromFirstTable[table1],
-                    [table2]: null
-                };
+                results[index] = valueFromFirstTable;
+                results[index][table2Index] = null;
                 secondtableData.every(function (valueFromSecondTable) {
-                    if (valueFromFirstTable[table1][column1] === valueFromSecondTable[column2]) {
-                        results[index][table2] = valueFromSecondTable;
+                    if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
+                        results[index][table2Index] = valueFromSecondTable;
                         return false;
                     }
                     return true;
