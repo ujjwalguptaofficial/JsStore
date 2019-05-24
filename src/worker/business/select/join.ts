@@ -156,20 +156,20 @@ export class Join extends Helper {
     }
 
     private getJoinTableInfo_(joinOn: string) {
-        joinOn = joinOn.replace(/\s/g, '');
+        joinOn = this.removeSpace(joinOn);
         const splittedjoinOn = joinOn.split("=");
-        let splittedjoinOnbydot = splittedjoinOn[0].split(".");
+        const splittedjoinOnbydotFirst = splittedjoinOn[0].split(".");
+        const splittedjoinOnbydotSecond = splittedjoinOn[1].split(".");
         const info = {
             table1: {
-                table: splittedjoinOnbydot[0],
-                column: splittedjoinOnbydot[1]
+                table: splittedjoinOnbydotFirst[0],
+                column: splittedjoinOnbydotFirst[1]
+            },
+            table2: {
+                table: splittedjoinOnbydotSecond[0],
+                column: splittedjoinOnbydotSecond[1]
             }
         } as JoinTableInfo;
-        splittedjoinOnbydot = splittedjoinOn[1].split(".");
-        info.table2 = {
-            table: splittedjoinOnbydot[0],
-            column: splittedjoinOnbydot[1]
-        };
         return info;
     }
 }
