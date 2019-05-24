@@ -1,4 +1,3 @@
-import { BaseSelect } from "./base_select";
 import { JoinQuery, SelectQuery } from "../../types";
 import * as Select from './instance';
 import { QUERY_OPTION, DATA_TYPE } from "../../enums";
@@ -121,10 +120,13 @@ export class Join extends Helper {
             this.results.forEach(valueFromFirstTable => {
                 secondtableData.every(function (valueFromSecondTable) {
                     if (valueFromFirstTable[table1][column1] === valueFromSecondTable[column2]) {
-                        results[index++] = {
-                            [table1]: valueFromFirstTable[table1],
-                            [table2]: valueFromSecondTable,
-                        };
+                        // results[index++] = {
+                        //     [table1]: valueFromFirstTable[table1],
+                        //     [table2]: valueFromSecondTable,
+                        // };
+                        results[index] = valueFromFirstTable;
+                        results[index++][table2] = valueFromSecondTable;
+
                         return false;
                     }
                     return true;

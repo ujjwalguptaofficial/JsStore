@@ -49,6 +49,7 @@ describe('Test join', function () {
     });
 
     it('three table join', function (done) {
+        debugger;
         con.select({
             from: "Orders",
             join: [{
