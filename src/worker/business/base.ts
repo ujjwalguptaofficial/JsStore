@@ -5,6 +5,7 @@ import { LogHelper } from "../log_helper";
 import { ERROR_TYPE, OCCURENCE, DATA_TYPE } from "../enums";
 import { Column } from "../model/index";
 import { QUERY_OPTION } from "../enums";
+import { Util } from "../util";
 
 export abstract class Base extends BaseHelper {
     error: IError;
@@ -53,8 +54,8 @@ export abstract class Base extends BaseHelper {
         }
     }
 
-    protected getColumnInfo(columnName) {
-        return this.getTable(this.tableName).columns.find(column => column.name === columnName);
+    protected getColumnInfo(columnName: string, tableName: string) {
+        return this.getTable(tableName).columns.find(column => column.name === columnName);
     }
 
     private getRegexFromLikeExpression_(likeExpression: string) {
@@ -122,7 +123,7 @@ export abstract class Base extends BaseHelper {
             }
         }
         else {
-            const column: Column = this.getColumnInfo(columnName);
+            const column: Column = this.getColumnInfo(columnName, this.tableName);
             const error = column == null ?
                 new LogHelper(ERROR_TYPE.ColumnNotExist, { ColumnName: columnName }) :
                 new LogHelper(ERROR_TYPE.EnableSearchOff, { ColumnName: columnName });
@@ -165,5 +166,9 @@ export abstract class Base extends BaseHelper {
             }
         }
         return qry;
+    }
+
+    protected removeSpace(value: string) {
+        return Util.removeSpace(value);
     }
 }

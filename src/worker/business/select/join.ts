@@ -3,11 +3,12 @@ import { JoinQuery, SelectQuery } from "../../types";
 import * as Select from './instance';
 import { QUERY_OPTION, DATA_TYPE } from "../../enums";
 import { IError } from "../../interfaces";
+import { Helper } from "./helper";
 
-export class Join extends BaseSelect {
+export class Join extends Helper {
     query: SelectQuery;
-    joinStack: JoinQuery[] = [];
-    currentQueryStackIndex = 0;
+    private joinQueryStack_: JoinQuery[] = [];
+    private currentQueryStackIndex_ = 0;
     tablesFetched = [];
 
     constructor(query: SelectQuery, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
@@ -16,10 +17,10 @@ export class Join extends BaseSelect {
         this.onError = onError;
         this.query = query;
         if (this.getType(query.join) === DATA_TYPE.Object) {
-            this.joinStack = [query.join as JoinQuery];
+            this.joinQueryStack_ = [query.join as JoinQuery];
         }
         else {
-            this.joinStack = query.join as JoinQuery[];
+            this.joinQueryStack_ = query.join as JoinQuery[];
         }
     }
 
@@ -29,7 +30,7 @@ export class Join extends BaseSelect {
         new Select.Instance({
             from: tableName,
             where: this.query.where,
-            order: this.query.order
+            // order: this.query.order
         }, (results) => {
             results.forEach((item, index) => {
                 this.results[index] = {
@@ -46,6 +47,28 @@ export class Join extends BaseSelect {
             this.onSuccess(this.results.length);
         }
         else {
+            const mapWithAlias = (query: JoinQuery, value: object) => {
+                if (query.as) {
+                    for (const key in query.as) {
+                        value[(query.as as any)[key]] = value[key];
+                        delete value[key];
+                    }
+                }
+                return value;
+            };
+            const results = [];
+            const tables = Object.keys(this.results[0]);
+            const tablesLength = tables.length;
+            this.results.forEach((result) => {
+                let data = result[this.query.from];
+                for (let i = 1; i < tablesLength; i++) {
+                    const query = this.joinQueryStack_[i - 1];
+                    data = { ...data, ...mapWithAlias(query, result[tables[i]]) };
+                }
+                results.push(data);
+            });
+            this.results = results;
+            this.processOrderBy();
             if (this.query[QUERY_OPTION.Skip] && this.query[QUERY_OPTION.Limit]) {
                 this.results.splice(0, this.query[QUERY_OPTION.Skip]);
                 this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
@@ -61,7 +84,7 @@ export class Join extends BaseSelect {
     }
 
     private startExecutionJoinLogic_() {
-        const query = this.joinStack.shift();
+        const query = this.joinQueryStack_[this.currentQueryStackIndex_++];
         if (query) {
             let jointblInfo = this.getJoinTableInfo_(query.on);
             // table 1 is fetched & table2 needs to be fetched for join

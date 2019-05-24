@@ -12,7 +12,7 @@ export class Helper extends GroupByHelper {
         const order = this.query.order;
         if (order && this.results.length > 0 && !this.sorted && order.by) {
             order.type = order.type ? order.type.toLowerCase() : 'asc';
-            const orderColumn = order.by;
+            let orderColumn = order.by;
             const sortNumberInAsc = () => {
                 this.results.sort((a, b) => {
                     return a[orderColumn] - b[orderColumn];
@@ -43,7 +43,15 @@ export class Helper extends GroupByHelper {
                     return b[orderColumn].localeCompare(a[orderColumn]);
                 });
             };
-            const column = this.getColumnInfo(orderColumn);
+            let column;
+            if (this.query.join == null) {
+                column = this.getColumnInfo(orderColumn, this.query.from);
+            }
+            else {
+                const splittedByDot = this.removeSpace(orderColumn).split(".");
+                orderColumn = splittedByDot[1];
+                column = this.getColumnInfo(orderColumn, splittedByDot[0]);
+            }
             if (column == null) {
                 this.onErrorOccured(new LogHelper(ERROR_TYPE.ColumnNotExist, { column: orderColumn, isOrder: true }), true);
             }

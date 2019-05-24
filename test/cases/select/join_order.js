@@ -39,16 +39,11 @@ describe('select join order test', function () {
                 with: "StudentDetail",
                 on: "Student.Name=StudentDetail.Name"
             },
-            order: { by: 'Order', type: 'asc' }
-            // from: {
-            //     table1: { table: 'Student', column: 'Name', order: { by: 'Order', type: 'asc' } },
-            //     join: 'left',
-            //     table2: { table: 'StudentDetail', column: 'Name' }
-            // }
+            order: { by: 'Student.Order', type: 'asc' }
         }).then(function (results) {
             expect(results).to.be.an('array').length(5);
             for (var i = 0; i < results.length; i++) {
-                expect(results[i]['Student']['Order']).to.be.equal((i + 1).toString());
+                expect(results[i]['Order']).to.be.equal((i + 1).toString());
             }
             done();
         }).catch(function (err) {

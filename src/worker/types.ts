@@ -32,6 +32,7 @@ export type JoinQuery = {
     on: string // "Customers.customerId = Orders.customerId",
     where?: object;
     order?: OrderQuery;
+    as?: { [originalColumnName: string]: [string] }
 };
 
 export type SelectQuery = {
@@ -80,33 +81,6 @@ export type InsertQuery = {
     skipDataCheck?: boolean;
     upsert?: boolean;
 };
-
-// export type TableJoinQuery = {
-//     column: string;
-//     table: string;
-//     where?: object;
-//     order?: OrderQuery;
-//     joinType?: string;
-//     nextJoin?: NextJoinQuery;
-// };
-
-// export type SelectJoinQuery = {
-//     from: JoinQuery; // IJoin
-//     count?: boolean;
-//     skip?: number;
-//     limit?: number;
-// };
-
-// export type JoinQuery = {
-//     table1: TableJoinQuery;
-//     join: string; // inner,left,right,outer
-//     table2: TableJoinQuery;
-// };
-
-// export type NextJoinQuery = {
-//     table: string;
-//     column: string;
-// };
 
 export type AggregateOption = {
     max?: string | string[];

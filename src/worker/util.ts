@@ -101,4 +101,7 @@ export class Util {
         }));
     }
 
+    static removeSpace(value: string) {
+        return value.replace(/\s/g, '');
+    }
 }

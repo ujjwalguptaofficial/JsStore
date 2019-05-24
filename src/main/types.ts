@@ -25,11 +25,12 @@ export type OrderQuery = {
 };
 
 export type JoinQuery = {
-    type: string //'inner',
+    type?: string //'inner',
     with: string // 'Customers',
     on: string // "Customers.customerId = Orders.customerId"
     where?: object;
     order?: OrderQuery;
+    as?: { [originalColumnName: string]: [string] }
 };
 
 export type SelectQuery = {
