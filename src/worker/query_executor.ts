@@ -269,42 +269,31 @@ export class QueryExecutor {
     }
 
     private select_(query: SelectQuery, onSuccess: (result) => void, onError: (err: IError) => void) {
-        if (query.join != null) {
-            new Select.Join(query, onSuccess, onError).execute();
+        const queryHelper = new QueryHelper(API.Select, query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            const selectInstance = new Select.Instance(query, onSuccess, onError);
+            selectInstance.execute();
         }
         else {
-            const queryHelper = new QueryHelper(API.Select, query);
-            queryHelper.checkAndModify();
-            if (queryHelper.error == null) {
-                const selectInstance = new Select.Instance(query, onSuccess, onError);
-                selectInstance.execute();
-            }
-            else {
-                onError(
-                    queryHelper.error
-                );
-            }
+            onError(
+                queryHelper.error
+            );
         }
     }
 
 
     private count_(query: CountQuery, onSuccess: () => void, onError: (err: IError) => void) {
-        if (query.join != null) {
-            query['count'] = true;
-            new Select.Join(query, onSuccess, onError).execute();
+        const queryHelper = new QueryHelper(API.Count, query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            const countInstance = new Count.Instance(query, onSuccess, onError);
+            countInstance.execute();
         }
         else {
-            const queryHelper = new QueryHelper(API.Count, query);
-            queryHelper.checkAndModify();
-            if (queryHelper.error == null) {
-                const countInstance = new Count.Instance(query, onSuccess, onError);
-                countInstance.execute();
-            }
-            else {
-                onError(
-                    queryHelper.error
-                );
-            }
+            onError(
+                queryHelper.error
+            );
         }
     }
 

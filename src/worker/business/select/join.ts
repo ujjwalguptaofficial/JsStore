@@ -5,30 +5,24 @@ import { IError } from "../../interfaces";
 import { Helper } from "./helper";
 
 export class Join extends Helper {
-    query: SelectQuery;
+
     private joinQueryStack_: JoinQuery[] = [];
     private currentQueryStackIndex_ = 0;
     tablesFetched = [];
 
-    constructor(query: SelectQuery, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
-        super();
-        this.onSuccess = onSuccess;
-        this.onError = onError;
-        this.query = query;
+    executeJoinQuery() {
+        const query = this.query;
         if (this.getType(query.join) === DATA_TYPE.Object) {
             this.joinQueryStack_ = [query.join as JoinQuery];
         }
         else {
             this.joinQueryStack_ = query.join as JoinQuery[];
         }
-    }
-
-    execute() {
         // get the data for first table
-        const tableName = this.query.from;
+        const tableName = query.from;
         new Select.Instance({
             from: tableName,
-            where: this.query.where,
+            where: query.where,
             // order: this.query.order
         }, (results) => {
             results.forEach((item, index) => {
@@ -41,7 +35,7 @@ export class Join extends Helper {
         }, this.onErrorOccured).execute();
     }
 
-    private onTransactionCompleted_() {
+    private onFinished_() {
         if (this.query[QUERY_OPTION.Count]) {
             this.onSuccess(this.results.length);
         }
@@ -103,7 +97,7 @@ export class Join extends Helper {
             }, this.onErrorOccured).execute();
         }
         else {
-            this.onTransactionCompleted_();
+            this.onFinished_();
         }
     }
 
@@ -120,13 +114,8 @@ export class Join extends Helper {
             this.results.forEach(valueFromFirstTable => {
                 secondtableData.every(function (valueFromSecondTable) {
                     if (valueFromFirstTable[table1][column1] === valueFromSecondTable[column2]) {
-                        // results[index++] = {
-                        //     [table1]: valueFromFirstTable[table1],
-                        //     [table2]: valueFromSecondTable,
-                        // };
                         results[index] = valueFromFirstTable;
                         results[index++][table2] = valueFromSecondTable;
-
                         return false;
                     }
                     return true;

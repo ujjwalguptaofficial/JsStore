@@ -1,9 +1,9 @@
 import { SelectQuery } from "../../types";
-import { Helper } from "./helper";
-import { ERROR_TYPE, IDB_MODE, QUERY_OPTION } from "../../enums";
+import { IDB_MODE, QUERY_OPTION } from "../../enums";
 import { IError } from "../../interfaces";
+import { Join } from "./join";
 
-export class Instance extends Helper {
+export class Instance extends Join {
 
     constructor(query: SelectQuery, onSuccess: (results: object[]) => void, onError: (err: IError) => void) {
         super();
@@ -20,18 +20,24 @@ export class Instance extends Helper {
 
     execute() {
         try {
-            if (this.query.where != null) {
-                this.initTransaction_();
-                if (this.isArray(this.query.where)) {
-                    this.processWhereArrayQry();
+            if (this.query.join == null) {
+                if (this.query.where != null) {
+                    this.initTransaction_();
+                    if (this.isArray(this.query.where)) {
+                        this.processWhereArrayQry();
+                    }
+                    else {
+                        this.processWhere_();
+                    }
                 }
                 else {
-                    this.processWhere_();
+                    this.initTransaction_();
+                    this.executeWhereUndefinedLogic();
                 }
+
             }
             else {
-                this.initTransaction_();
-                this.executeWhereUndefinedLogic();
+                this.executeJoinQuery();
             }
         }
         catch (ex) {
