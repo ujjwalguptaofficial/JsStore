@@ -49,7 +49,6 @@ describe('Test join', function () {
     });
 
     it('three table join', function (done) {
-        debugger;
         con.select({
             from: "Orders",
             join: [{
@@ -63,6 +62,10 @@ describe('Test join', function () {
             }]
         }).then(function (results) {
             expect(results).to.be.an('array').length(196);
+            const result = results[0];
+            expect(result.CustomerID).to.be.an('number');
+            expect(result.OrderID).to.be.an('number');
+            expect(result.ShipperID).to.be.an('number');
             done();
         }).catch(function (err) {
             done(err);
