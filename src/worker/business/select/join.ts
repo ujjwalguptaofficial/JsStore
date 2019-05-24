@@ -1,7 +1,6 @@
-import { JoinQuery, SelectQuery } from "../../types";
+import { JoinQuery } from "../../types";
 import * as Select from './instance';
 import { QUERY_OPTION, DATA_TYPE } from "../../enums";
-import { IError } from "../../interfaces";
 import { Helper } from "./helper";
 
 export class Join extends Helper {
