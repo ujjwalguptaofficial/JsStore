@@ -25,8 +25,18 @@ export type DbInfo = {
     };
 };
 
+
+export type JoinQuery = {
+    type: string //'inner',
+    with: string // 'Customers',
+    on: string // "Customers.customerId = Orders.customerId",
+    where?: object;
+    order?: OrderQuery;
+};
+
 export type SelectQuery = {
-    from: string | object;
+    from: string;
+    join?: JoinQuery | JoinQuery[];
     where?;
     skip?: number;
     limit?: number;
@@ -45,6 +55,7 @@ export type OrderQuery = {
 
 export type CountQuery = {
     from: any;
+    join?: JoinQuery;
     ignoreCase?: boolean;
     where?;
 };
@@ -70,32 +81,32 @@ export type InsertQuery = {
     upsert?: boolean;
 };
 
-export type TableJoinQuery = {
-    column: string;
-    table: string;
-    where?: object;
-    order?: OrderQuery;
-    joinType?: string;
-    nextJoin?: NextJoinQuery;
-};
+// export type TableJoinQuery = {
+//     column: string;
+//     table: string;
+//     where?: object;
+//     order?: OrderQuery;
+//     joinType?: string;
+//     nextJoin?: NextJoinQuery;
+// };
 
-export type SelectJoinQuery = {
-    from: JoinQuery; // IJoin
-    count?: boolean;
-    skip?: number;
-    limit?: number;
-};
+// export type SelectJoinQuery = {
+//     from: JoinQuery; // IJoin
+//     count?: boolean;
+//     skip?: number;
+//     limit?: number;
+// };
 
-export type JoinQuery = {
-    table1: TableJoinQuery;
-    join: string; // inner,left,right,outer
-    table2: TableJoinQuery;
-};
+// export type JoinQuery = {
+//     table1: TableJoinQuery;
+//     join: string; // inner,left,right,outer
+//     table2: TableJoinQuery;
+// };
 
-export type NextJoinQuery = {
-    table: string;
-    column: string;
-};
+// export type NextJoinQuery = {
+//     table: string;
+//     column: string;
+// };
 
 export type AggregateOption = {
     max?: string | string[];

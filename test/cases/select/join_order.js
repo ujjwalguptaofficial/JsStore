@@ -34,11 +34,17 @@ describe('select join order test', function () {
 
     it('select from student left join with studentdetail', function (done) {
         con.select({
-            from: {
-                table1: { table: 'Student', column: 'Name', order: { by: 'Order', type: 'asc' } },
-                join: 'left',
-                table2: { table: 'StudentDetail', column: 'Name' }
-            }
+            from: "Student",
+            join: {
+                with: "StudentDetail",
+                on: "Student.Name=StudentDetail.Name"
+            },
+            order: { by: 'Order', type: 'asc' }
+            // from: {
+            //     table1: { table: 'Student', column: 'Name', order: { by: 'Order', type: 'asc' } },
+            //     join: 'left',
+            //     table2: { table: 'StudentDetail', column: 'Name' }
+            // }
         }).then(function (results) {
             expect(results).to.be.an('array').length(5);
             for (var i = 0; i < results.length; i++) {
@@ -48,8 +54,7 @@ describe('select join order test', function () {
         }).catch(function (err) {
             done(err);
         })
-    })
-
+    });
 
     it('drop db', function (done) {
         con.dropDb().then(function () {

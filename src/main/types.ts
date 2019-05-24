@@ -28,11 +28,13 @@ export type JoinQuery = {
     type: string //'inner',
     with: string // 'Customers',
     on: string // "Customers.customerId = Orders.customerId"
+    where?: object;
+    order?: OrderQuery;
 };
 
 export type SelectQuery = {
     from: string;
-    join: JoinQuery | JoinQuery[];
+    join?: JoinQuery | JoinQuery[];
     where?: any;
     skip?: number;
     limit?: number;

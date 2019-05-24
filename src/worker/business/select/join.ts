@@ -1,226 +1,157 @@
 import { BaseSelect } from "./base_select";
-import { SelectJoinQuery, TableJoinQuery, JoinQuery, SelectQuery } from "../../types";
+import { JoinQuery, SelectQuery } from "../../types";
 import * as Select from './instance';
-import { QUERY_OPTION } from "../../enums";
+import { QUERY_OPTION, DATA_TYPE } from "../../enums";
 import { IError } from "../../interfaces";
 
 export class Join extends BaseSelect {
-    query: SelectJoinQuery;
-    queryStack: TableJoinQuery[] = [];
+    query: SelectQuery;
+    joinStack: JoinQuery[] = [];
     currentQueryStackIndex = 0;
+    tablesFetched = [];
 
-    constructor(query: SelectJoinQuery, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
+    constructor(query: SelectQuery, onSuccess: (results: any[]) => void, onError: (err: IError) => void) {
         super();
         this.onSuccess = onSuccess;
         this.onError = onError;
         this.query = query;
-        const tableList = []; // used to open the multiple object store
-
-        const convertQueryIntoStack = (qry: JoinQuery) => {
-            if (qry.table1 != null) {
-                qry.table2['joinType'] = qry.join == null ? 'inner' : qry.join.toLowerCase();
-                this.queryStack.push(qry.table2);
-                if (this.queryStack.length % 2 === 0) {
-                    this.queryStack[this.queryStack.length - 1].nextJoin = (qry as any).nextJoin;
-                }
-                tableList.push(qry.table2.table);
-                return convertQueryIntoStack(qry.table1 as any);
-            }
-            else {
-                this.queryStack.push(qry as any);
-                tableList.push((qry as any).table);
-                return;
-            }
-        };
-        convertQueryIntoStack(query.from);
-        this.queryStack.reverse();
-        // get the data for first table
-        if (!this.error) {
-            const selectObject = new Select.Instance({
-                from: this.queryStack[0].table,
-                where: this.queryStack[0].where,
-                order: this.queryStack[0].order
-            } as SelectQuery, (results) => {
-                const tableName = this.queryStack[0].table;
-                results.forEach((item, index) => {
-                    this.results[index] = {};
-                    this.results[index][tableName] = item;
-                });
-                this.startExecutionJoinLogic_();
-            }, this.onErrorOccured);
-            selectObject.execute();
+        if (this.getType(query.join) === DATA_TYPE.Object) {
+            this.joinStack = [query.join as JoinQuery];
         }
+        else {
+            this.joinStack = query.join as JoinQuery[];
+        }
+    }
+
+    execute() {
+        // get the data for first table
+        const tableName = this.query.from;
+        new Select.Instance({
+            from: tableName,
+            where: this.query.where,
+            order: this.query.order
+        }, (results) => {
+            results.forEach((item, index) => {
+                this.results[index] = {
+                    [tableName]: item
+                };
+            });
+            this.tablesFetched.push(tableName);
+            this.startExecutionJoinLogic_();
+        }, this.onErrorOccured).execute();
     }
 
     private onTransactionCompleted_() {
-        if (this.onSuccess != null && (this.queryStack.length === this.currentQueryStackIndex + 1)) {
-            if (this.query[QUERY_OPTION.Count]) {
-                this.onSuccess(this.results.length);
-            }
-            else {
-                if (this.query[QUERY_OPTION.Skip] && this.query[QUERY_OPTION.Limit]) {
-                    this.results.splice(0, this.query[QUERY_OPTION.Skip]);
-                    this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
-                }
-                else if (this.query[QUERY_OPTION.Skip]) {
-                    this.results.splice(0, this.query[QUERY_OPTION.Skip]);
-                }
-                else if (this.query[QUERY_OPTION.Limit]) {
-                    this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
-                }
-                this.onSuccess(this.results);
-            }
-
+        if (this.query[QUERY_OPTION.Count]) {
+            this.onSuccess(this.results.length);
         }
-    }
-
-    private executeWhereJoinLogic_(joinQuery: TableJoinQuery, query: TableJoinQuery) {
-        const results = [],
-            column = query.column,
-            tmpresults = this.results,
-            resultLength = tmpresults.length;
-        let item, joinIndex = 0;
-
-        // get the data from query table
-        const selectObject = new Select.Instance({
-            from: query.table,
-            order: query.order,
-            where: query.where
-        } as SelectQuery, (selectResults) => {
-            // perform join
-            selectResults.forEach((value, index) => {
-                // search item through each global result
-                for (let i = 0; i < resultLength; i++) {
-                    item = tmpresults[i][joinQuery.table][joinQuery.column];
-                    doJoin(item, value, i);
-                }
-            });
-            this.results = results;
-            // check if further execution needed
-            if (this.queryStack.length > this.currentQueryStackIndex + 1) {
-                this.startExecutionJoinLogic_();
+        else {
+            if (this.query[QUERY_OPTION.Skip] && this.query[QUERY_OPTION.Limit]) {
+                this.results.splice(0, this.query[QUERY_OPTION.Skip]);
+                this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
             }
-            else {
-                this.onTransactionCompleted_();
+            else if (this.query[QUERY_OPTION.Skip]) {
+                this.results.splice(0, this.query[QUERY_OPTION.Skip]);
             }
-
-        }, this.onErrorOccured);
-        selectObject.execute();
-
-        const doJoin = (value1, value2, itemIndex) => {
-            results[joinIndex] = {};
-            if (value1 === value2[query.column]) {
-                results[joinIndex][query.table] = value2;
-                // copy other relative data into current result
-                for (let j = 0; j < this.currentQueryStackIndex; j++) {
-                    results[joinIndex][this.queryStack[j].table] =
-                        tmpresults[itemIndex][this.queryStack[j].table];
-                }
-                ++joinIndex;
+            else if (this.query[QUERY_OPTION.Limit]) {
+                this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
             }
-            else if (query.joinType === 'left') {
-                // left join
-                results[joinIndex] = {};
-                results[joinIndex][query.table] = null;
-                // copy other relative data into current result
-                for (let j = 0; j < this.currentQueryStackIndex; j++) {
-                    results[joinIndex][this.queryStack[j].table] =
-                        tmpresults[itemIndex][this.queryStack[j].table];
-                }
-                ++joinIndex;
-            }
-        };
-    }
-
-
-
-    private executeWhereUndefinedLogicForJoin_(joinQuery: TableJoinQuery, query: TableJoinQuery) {
-        const joinresults = [],
-            column = query.column,
-            tmpresults = this.results,
-            where = {},
-            // Item,
-            resultLength = tmpresults.length;
-
-        let joinIndex = 0,
-            itemIndex = 0;
-        const onExecutionFinished = () => {
-            this.results = joinresults;
-            // check if further execution needed
-            if (this.queryStack.length > this.currentQueryStackIndex + 1) {
-                this.startExecutionJoinLogic_();
-            }
-            else {
-                this.onTransactionCompleted_();
-            }
-        };
-        const doJoin = (results) => {
-            if (results.length > 0) {
-                results.forEach((value) => {
-                    joinresults[joinIndex] = {};
-                    joinresults[joinIndex][query.table] = value;
-                    // copy other relative data into current result
-                    for (let k = 0; k < this.currentQueryStackIndex; k++) {
-                        joinresults[joinIndex][this.queryStack[k].table] =
-                            tmpresults[itemIndex][this.queryStack[k].table];
-                    }
-                    ++joinIndex;
-                });
-            }
-            else if (query.joinType === 'left') {
-                // left join
-                joinresults[joinIndex] = {};
-                joinresults[joinIndex][query.table] = null;
-                // copy other relative data into current result
-                for (let j = 0; j < this.currentQueryStackIndex; j++) {
-                    joinresults[joinIndex][this.queryStack[j].table] =
-                        tmpresults[itemIndex][this.queryStack[j].table];
-                }
-                ++joinIndex;
-            }
-        };
-        const executeLogic = () => {
-            if (itemIndex < resultLength) {
-                if (!this.error) {
-                    where[query.column] = tmpresults[itemIndex][joinQuery.table][joinQuery.column];
-                    const selectInstance = new Select.Instance({
-                        from: query.table,
-                        order: query.order,
-                        where: where
-                    } as SelectQuery, (results) => {
-                        doJoin(results);
-                        ++itemIndex;
-                        executeLogic();
-                    }, this.onErrorOccured.bind(this));
-                    selectInstance.execute();
-                }
-            }
-            else {
-                onExecutionFinished();
-            }
-        };
-        executeLogic();
+            this.onSuccess(this.results);
+        }
     }
 
     private startExecutionJoinLogic_() {
-        let joinQuery;
-        if (this.currentQueryStackIndex >= 1 && this.currentQueryStackIndex % 2 === 1) {
-            joinQuery = {
-                column: this.queryStack[this.currentQueryStackIndex].nextJoin.column,
-                table: this.queryStack[this.currentQueryStackIndex].nextJoin.table
-            } as TableJoinQuery;
-            this.currentQueryStackIndex++;
+        const query = this.joinStack.shift();
+        if (query) {
+            let jointblInfo = this.getJoinTableInfo_(query.on);
+            // table 1 is fetched & table2 needs to be fetched for join
+            if (this.tablesFetched.indexOf(jointblInfo.table1.table) < 0) {
+                jointblInfo = {
+                    table1: jointblInfo.table2,
+                    table2: jointblInfo.table1
+                };
+            }
+            new Select.Instance({
+                from: jointblInfo.table2.table,
+                where: query.where
+            }, (results) => {
+                this.jointables(query.type, jointblInfo, results);
+                this.tablesFetched.push(jointblInfo.table2.table);
+                this.startExecutionJoinLogic_();
+            }, this.onErrorOccured).execute();
         }
         else {
-            joinQuery = this.queryStack[this.currentQueryStackIndex++];
-        }
-
-        const query = this.queryStack[this.currentQueryStackIndex];
-        if (query.where) {
-            this.executeWhereJoinLogic_(joinQuery, query);
-        }
-        else {
-            this.executeWhereUndefinedLogicForJoin_(joinQuery, query);
+            this.onTransactionCompleted_();
         }
     }
+
+    private jointables(joinType: string, jointblInfo: JoinTableInfo, secondtableData: any[]) {
+
+        const results = [];
+        const table1 = jointblInfo.table1.table;
+        const column1 = jointblInfo.table1.column;
+        const table2 = jointblInfo.table2.table;
+        const column2 = jointblInfo.table2.column;
+
+        const performInnerJoin = () => {
+            let index = 0;
+            this.results.forEach(valueFromFirstTable => {
+                secondtableData.every(function (valueFromSecondTable) {
+                    if (valueFromFirstTable[table1][column1] === valueFromSecondTable[column2]) {
+                        results[index++] = {
+                            [table1]: valueFromFirstTable[table1],
+                            [table2]: valueFromSecondTable,
+                        };
+                        return false;
+                    }
+                    return true;
+                });
+            });
+        };
+        const performleftOuterJoin = () => {
+            this.results.forEach((valueFromFirstTable, index) => {
+                results[index] = {
+                    [table1]: valueFromFirstTable[table1],
+                    [table2]: null
+                };
+                secondtableData.every(function (valueFromSecondTable) {
+                    if (valueFromFirstTable[table1][column1] === valueFromSecondTable[column2]) {
+                        results[index][table2] = valueFromSecondTable;
+                        return false;
+                    }
+                    return true;
+                });
+            });
+        };
+        switch (joinType) {
+            case "left":
+                performleftOuterJoin(); break;
+            default:
+                performInnerJoin();
+        }
+        this.results = results;
+    }
+
+    private getJoinTableInfo_(joinOn: string) {
+        joinOn = joinOn.replace(/\s/g, '');
+        const splittedjoinOn = joinOn.split("=");
+        let splittedjoinOnbydot = splittedjoinOn[0].split(".");
+        const info = {
+            table1: {
+                table: splittedjoinOnbydot[0],
+                column: splittedjoinOnbydot[1]
+            }
+        } as JoinTableInfo;
+        splittedjoinOnbydot = splittedjoinOn[1].split(".");
+        info.table2 = {
+            table: splittedjoinOnbydot[0],
+            column: splittedjoinOnbydot[1]
+        };
+        return info;
+    }
 }
+
+type JoinTableInfo = {
+    table1: { table: string, column: string }
+    table2: { table: string, column: string }
+};

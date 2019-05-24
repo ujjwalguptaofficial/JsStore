@@ -8,7 +8,7 @@ import * as Transaction from "./business/transaction/index";
 import { LogHelper } from "./log_helper";
 import {
     TranscationQuery, UpdateQuery,
-    InsertQuery, RemoveQuery, SelectQuery, SelectJoinQuery, CountQuery, SetQuery
+    InsertQuery, RemoveQuery, SelectQuery, CountQuery, SetQuery
 } from "./types";
 import { CONNECTION_STATUS, ERROR_TYPE, DATA_TYPE, API } from "./enums";
 import { Config } from "./config";
@@ -17,6 +17,7 @@ import { TableHelper, DbHelper, DataBase } from "./model/index";
 import { Util } from "./util";
 import { WebWorkerResult, WebWorkerRequest } from "./types";
 import { IDataBase, IError } from "./interfaces";
+import { promise } from "./helpers/index";
 
 export class QueryExecutor {
     static isTransactionQuery = false;
@@ -97,6 +98,8 @@ export class QueryExecutor {
 
         QueryExecutor.isTransactionQuery = request.name === API.Transaction;
         switch (request.name) {
+            case API.OpenDb:
+                this.openDb_(request.query, onSuccess, onError); break;
             case API.Select:
                 this.select_(request.query as SelectQuery, onSuccess, onError);
                 break;
@@ -156,6 +159,12 @@ export class QueryExecutor {
             default:
                 console.error('The Api:-' + request.name + ' does not support.');
         }
+    }
+
+    private openDb_(dbName: string, onSuccess, onError) {
+        this.getDbSchema_(dbName).then((db) => {
+            this.processCreateDb(db).then(onSuccess).catch(onError);
+        }).catch(onError);
     }
 
     private initKeyStore_(onSuccess) {
@@ -260,8 +269,8 @@ export class QueryExecutor {
     }
 
     private select_(query: SelectQuery, onSuccess: (result) => void, onError: (err: IError) => void) {
-        if (typeof query.from === 'object') {
-            const selectJoinInstance = new Select.Join(query as SelectJoinQuery, onSuccess, onError);
+        if (query.join != null) {
+            new Select.Join(query, onSuccess, onError).execute();
         }
         else {
             const queryHelper = new QueryHelper(API.Select, query);
@@ -280,9 +289,9 @@ export class QueryExecutor {
 
 
     private count_(query: CountQuery, onSuccess: () => void, onError: (err: IError) => void) {
-        if (typeof query.from === 'object') {
+        if (query.join != null) {
             query['count'] = true;
-            const selectJoinInstance = new Select.Join(query as SelectJoinQuery, onSuccess, onError);
+            new Select.Join(query, onSuccess, onError).execute();
         }
         else {
             const queryHelper = new QueryHelper(API.Count, query);
@@ -299,28 +308,44 @@ export class QueryExecutor {
         }
     }
 
+    private processCreateDb(db: DataBase) {
+        return promise((res, rej) => {
+            // create meta data
+            const dbHelper = new DbHelper(db);
+            dbHelper.createMetaData().then((tablesMetaData: TableHelper[]) => {
+                this.activeDb_ = db;
+                const createDbInstance = new InitDb((isDbCreated) => {
+                    this.activeDb_ = db;
+                    // save dbSchema in keystore
+                    KeyStore.set("JsStore_" + db.name + "_Schema", db);
+                    res(isDbCreated);
+                }, rej);
+                createDbInstance.execute(tablesMetaData);
+            });
+        });
+    }
+
     private initDb_(
         dataBase: IDataBase, onSuccess: () => void, onError: (err: IError) => void
     ) {
-        const processCreateDb = () => {
-            // save dbSchema in keystore
-            KeyStore.set("JsStore_" + this.activeDb_.name + "_Schema", this.activeDb_);
-            // create meta data
-            const dbHelper = new DbHelper(IdbHelper.activeDb);
-            dbHelper.createMetaData().then(function (tablesMetaData: TableHelper[]) {
-                const createDbInstance = new InitDb(onSuccess, onError);
-                createDbInstance.execute(tablesMetaData);
-            });
-        };
+        // const processCreateDb = () => {
+        //     // save dbSchema in keystore
+        //     KeyStore.set("JsStore_" + this.activeDb_.name + "_Schema", this.activeDb_);
+        //     // create meta data
+        //     const dbHelper = new DbHelper(IdbHelper.activeDb);
+        //     dbHelper.createMetaData().then(function (tablesMetaData: TableHelper[]) {
+        //         const createDbInstance = new InitDb(onSuccess, onError);
+        //         createDbInstance.execute(tablesMetaData);
+        //     });
+        // };
         if (dataBase == null) {
-            processCreateDb();
+            this.processCreateDb(this.activeDb_);
         }
         else {
             this.closeDb_();
             this.getDbVersion_(dataBase.name).then(version => {
                 this.activeDbVersion_ = version ? version : 1;
-                IdbHelper.activeDb = new DataBase(dataBase);
-                processCreateDb();
+                this.processCreateDb(new DataBase(dataBase)).then(onSuccess).catch(onError);
             });
         }
     }
