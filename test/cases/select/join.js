@@ -55,7 +55,6 @@ describe('Test join', function () {
     });
 
     it('left join', function (done) {
-
         con.select({
             from: "Orders",
             join: {
@@ -77,10 +76,7 @@ describe('Test join', function () {
             join: {
                 with: "Orders",
                 type: "left",
-                on: "Orders.CustomerID=Customers.CustomerID",
-                // as:{
-                //     CustomerID:'orderCId'
-                // }
+                on: "Orders.CustomerID=Customers.CustomerID"
             }
         }).then(function (results) {
             console.table(results);
