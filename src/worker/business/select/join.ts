@@ -87,10 +87,12 @@ export class Join extends Helper {
         const query = this.joinQueryStack_[this.currentQueryStackIndex_];
         if (query) {
             let jointblInfo = this.getJoinTableInfo_(query.on);
-            this.checkJoinTableShema(jointblInfo, query);
-            if (this.error != null) {
-                this.onJoinQueryFinished_();
-                return;
+            if (process.env.NODE_ENV === 'dev') {
+                this.checkJoinTableShema(jointblInfo, query);
+                if (this.error != null) {
+                    this.onJoinQueryFinished_();
+                    return;
+                }
             }
             // table 1 is fetched & table2 needs to be fetched for join
             if (this.tablesFetched.indexOf(jointblInfo.table1.table) < 0) {

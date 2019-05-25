@@ -41,11 +41,26 @@ describe('select join order test', function () {
             },
             order: { by: 'Student.Order', type: 'asc' }
         }).then(function (results) {
-            done(results);
+            if (isRuningForProd() || isRuningForSauce()) {
+                expect(results).to.be.an('array').length(5);
+                for (var i = 0; i < results.length; i++) {
+                    expect(results[i]['Order']).to.be.equal((i + 1).toString());
+                }
+                done();
+            }
+            else {
+                done(results);
+            }
         }).catch(function (err) {
-            const error = { "message": "column Id exist in both table Student & StudentDetail", "type": "invalid_join_query" };
-            expect(error).to.be.eql(err);
-            done();
+            if (isRuningForProd() || isRuningForSauce()) {
+                done(err);
+            }
+            else {
+                const error = { "message": "column Id exist in both table Student & StudentDetail", "type": "invalid_join_query" };
+                expect(error).to.be.eql(err);
+                done();
+            }
+
         })
     });
 

@@ -7,10 +7,10 @@ describe("initiate database", function () {
             console.log('test runing for ie');
             con = new JsStore.Instance(new Worker('../output/jsstore.worker.ie.min.js'));
         } else {
-            if (typeof isRuningForSauceLab != 'undefined' && isRuningForSauceLab) {
+            if (isRuningForSauce()) {
                 console.log("test runing for sauce lab");
                 con = new JsStore.Instance(new Worker('../output/jsstore.worker.min.js'));
-            } else if (typeof isRuningForProd != 'undefined' && isRuningForProd) {
+            } else if (isRuningForProd()) {
                 console.log("test runing for production");
                 con = new JsStore.Instance(new Worker('../output/jsstore.worker.min.js'));
             } else {

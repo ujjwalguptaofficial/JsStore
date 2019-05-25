@@ -1,1 +1,1 @@
-const isRuningForProd = true;
+const isRuningForProduction = true;
