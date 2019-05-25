@@ -95,8 +95,7 @@ describe('select join order test', function () {
     });
 
     it('open db Demo', function (done) {
-        con.initDb(getDemoDbSchema()).then(function (isDbCreated) {
-            expect(isDbCreated).to.be.an('boolean').equal(false);
+        con.openDb("Demo").then(function (isDbCreated) {
             done();
         }).catch(function (err) {
             done(err);
