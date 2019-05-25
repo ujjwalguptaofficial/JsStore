@@ -33,6 +33,27 @@ describe('Test join', function () {
         })
     });
 
+    it('inner join with reversed table', function (done) {
+        con.select({
+            from: "Customers",
+            join: {
+                with: "Orders",
+                type: "inner",
+                on: "Orders.CustomerID=Customers.CustomerID",
+                as: {
+                    CustomerName: "name",
+                    ContactName: "cName",
+                    CustomerID:"cId"
+                }
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(196);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
     it('left join', function (done) {
 
         con.select({

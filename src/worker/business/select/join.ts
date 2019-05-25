@@ -2,7 +2,6 @@ import { JoinQuery } from "../../types";
 import * as Select from './instance';
 import { QUERY_OPTION, DATA_TYPE, ERROR_TYPE } from "../../enums";
 import { Helper } from "./helper";
-import { IError } from "../../interfaces";
 import { LogHelper } from "../../log_helper";
 
 export class Join extends Helper {
@@ -127,17 +126,15 @@ export class Join extends Helper {
         const performInnerJoin = () => {
             let index = 0;
             this.results.forEach(valueFromFirstTable => {
-                secondtableData.every((valueFromSecondTable) => {
+                secondtableData.forEach((valueFromSecondTable) => {
                     if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
                         results[index] = valueFromFirstTable;
                         results[index++][table2Index] = valueFromSecondTable;
-                        return false;
                     }
-                    return true;
                 });
             });
         };
-        const performleftOuterJoin = () => {
+        const performleftJoin = () => {
             this.results.forEach((valueFromFirstTable, index) => {
                 results[index] = valueFromFirstTable;
                 results[index][table2Index] = null;
@@ -152,7 +149,7 @@ export class Join extends Helper {
         };
         switch (joinType) {
             case "left":
-                performleftOuterJoin(); break;
+                performleftJoin(); break;
             default:
                 performInnerJoin();
         }
