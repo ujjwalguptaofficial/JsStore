@@ -32,12 +32,32 @@ describe('select join order test', function () {
         })
     });
 
-    it('select from student left join with studentdetail', function (done) {
+    it('select from student left join with studentdetail without as', function (done) {
         con.select({
             from: "Student",
             join: {
                 with: "StudentDetail",
                 on: "Student.Name=StudentDetail.Name"
+            },
+            order: { by: 'Student.Order', type: 'asc' }
+        }).then(function (results) {
+            done(results);
+        }).catch(function (err) {
+            const error = { "message": "column Id exist in both table Student & StudentDetail", "type": "invalid_join_query" };
+            expect(error).to.be.eql(err);
+            done();
+        })
+    });
+
+    it('select from student left join with studentdetail with as', function (done) {
+        con.select({
+            from: "Student",
+            join: {
+                with: "StudentDetail",
+                on: "Student.Name=StudentDetail.Name",
+                as: {
+                    Id: 'StudentDetailId'
+                }
             },
             order: { by: 'Student.Order', type: 'asc' }
         }).then(function (results) {

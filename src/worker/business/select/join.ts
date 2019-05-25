@@ -1,7 +1,9 @@
 import { JoinQuery } from "../../types";
 import * as Select from './instance';
-import { QUERY_OPTION, DATA_TYPE } from "../../enums";
+import { QUERY_OPTION, DATA_TYPE, ERROR_TYPE } from "../../enums";
 import { Helper } from "./helper";
+import { IError } from "../../interfaces";
+import { LogHelper } from "../../log_helper";
 
 export class Join extends Helper {
 
@@ -34,44 +36,50 @@ export class Join extends Helper {
         }, this.onErrorOccured).execute();
     }
 
-    private onFinished_() {
-        if (this.query[QUERY_OPTION.Count]) {
-            this.onSuccess(this.results.length);
+    private onJoinQueryFinished_() {
+        if (this.error == null) {
+
+            if (this.query[QUERY_OPTION.Count]) {
+                this.onSuccess(this.results.length);
+            }
+            else {
+                const mapWithAlias = (query: JoinQuery, value: object) => {
+                    if (query.as) {
+                        for (const key in query.as) {
+                            value[(query.as as any)[key]] = value[key];
+                            delete value[key];
+                        }
+                    }
+                    return value;
+                };
+                const results = [];
+                const tables = Object.keys(this.results[0]);
+                const tablesLength = tables.length;
+                this.results.forEach((result) => {
+                    let data = result["0"];
+                    for (let i = 1; i < tablesLength; i++) {
+                        const query = this.joinQueryStack_[i - 1];
+                        data = { ...data, ...mapWithAlias(query, result[i]) };
+                    }
+                    results.push(data);
+                });
+                this.results = results;
+                this.processOrderBy();
+                if (this.query[QUERY_OPTION.Skip] && this.query[QUERY_OPTION.Limit]) {
+                    this.results.splice(0, this.query[QUERY_OPTION.Skip]);
+                    this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
+                }
+                else if (this.query[QUERY_OPTION.Skip]) {
+                    this.results.splice(0, this.query[QUERY_OPTION.Skip]);
+                }
+                else if (this.query[QUERY_OPTION.Limit]) {
+                    this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
+                }
+                this.onSuccess(this.results);
+            }
         }
         else {
-            const mapWithAlias = (query: JoinQuery, value: object) => {
-                if (query.as) {
-                    for (const key in query.as) {
-                        value[(query.as as any)[key]] = value[key];
-                        delete value[key];
-                    }
-                }
-                return value;
-            };
-            const results = [];
-            const tables = Object.keys(this.results[0]);
-            const tablesLength = tables.length;
-            this.results.forEach((result) => {
-                let data = result["0"];
-                for (let i = 1; i < tablesLength; i++) {
-                    const query = this.joinQueryStack_[i - 1];
-                    data = { ...data, ...mapWithAlias(query, result[i]) };
-                }
-                results.push(data);
-            });
-            this.results = results;
-            this.processOrderBy();
-            if (this.query[QUERY_OPTION.Skip] && this.query[QUERY_OPTION.Limit]) {
-                this.results.splice(0, this.query[QUERY_OPTION.Skip]);
-                this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
-            }
-            else if (this.query[QUERY_OPTION.Skip]) {
-                this.results.splice(0, this.query[QUERY_OPTION.Skip]);
-            }
-            else if (this.query[QUERY_OPTION.Limit]) {
-                this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
-            }
-            this.onSuccess(this.results);
+            this.onError(this.error);
         }
     }
 
@@ -79,6 +87,11 @@ export class Join extends Helper {
         const query = this.joinQueryStack_[this.currentQueryStackIndex_];
         if (query) {
             let jointblInfo = this.getJoinTableInfo_(query.on);
+            this.checkJoinTableShema(jointblInfo, query);
+            if (this.error != null) {
+                this.onJoinQueryFinished_();
+                return;
+            }
             // table 1 is fetched & table2 needs to be fetched for join
             if (this.tablesFetched.indexOf(jointblInfo.table1.table) < 0) {
                 jointblInfo = {
@@ -86,6 +99,7 @@ export class Join extends Helper {
                     table2: jointblInfo.table1
                 };
             }
+
             new Select.Instance({
                 from: jointblInfo.table2.table,
                 where: query.where
@@ -97,7 +111,7 @@ export class Join extends Helper {
             }, this.onErrorOccured).execute();
         }
         else {
-            this.onFinished_();
+            this.onJoinQueryFinished_();
         }
     }
 
@@ -159,6 +173,29 @@ export class Join extends Helper {
             }
         } as JoinTableInfo;
         return info;
+    }
+
+    private checkJoinTableShema(jointblInfo: JoinTableInfo, qry: JoinQuery) {
+        const tableSchemaOf1stTable = this.getTable(jointblInfo.table1.table);
+        const tableSchemaOf2ndTable = this.getTable(jointblInfo.table2.table);
+        let err: LogHelper;
+        if (qry.as == null) {
+            qry.as = {};
+        }
+        tableSchemaOf1stTable.columns.every(function (column) {
+            const columnFound = tableSchemaOf2ndTable.columns.find(q => q.name === column.name && q.name !== jointblInfo.table1.column);
+            if (columnFound != null && qry.as[columnFound.name] == null) {
+                err = new LogHelper(ERROR_TYPE.InvalidJoinQuery, {
+                    column: column.name, table1: jointblInfo.table1.table,
+                    table2: jointblInfo.table2.table
+                });
+                return false;
+            }
+            return true;
+        });
+        if (err != null) {
+            this.onErrorOccured(err, true);
+        }
     }
 }
 
