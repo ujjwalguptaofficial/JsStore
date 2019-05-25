@@ -135,15 +135,21 @@ export class Join extends Helper {
             });
         };
         const performleftJoin = () => {
-            this.results.forEach((valueFromFirstTable, index) => {
-                results[index] = valueFromFirstTable;
-                results[index][table2Index] = null;
-                secondtableData.every(function (valueFromSecondTable) {
+            let index = 0;
+            let valueMatchedFromSecondTable: any[];
+            this.results.forEach((valueFromFirstTable) => {
+                valueMatchedFromSecondTable = [];
+                secondtableData.forEach(function (valueFromSecondTable) {
                     if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
-                        results[index][table2Index] = valueFromSecondTable;
-                        return false;
+                        valueMatchedFromSecondTable.push(valueFromSecondTable);
                     }
-                    return true;
+                });
+                if (valueMatchedFromSecondTable.length === 0) {
+                    valueMatchedFromSecondTable = [null];
+                }
+                valueMatchedFromSecondTable.forEach(function (value) {
+                    results[index] = valueFromFirstTable;
+                    results[index++][table2Index] = value;
                 });
             });
         };

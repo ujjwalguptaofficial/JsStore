@@ -9,7 +9,7 @@ describe('Test join', function () {
                 as: {
                     CustomerName: "name",
                     ContactName: "cName",
-                    CustomerID:"cId"
+                    CustomerID: "cId"
                 }
             }
         }).then(function (results) {
@@ -43,7 +43,7 @@ describe('Test join', function () {
                 as: {
                     CustomerName: "name",
                     ContactName: "cName",
-                    CustomerID:"cId"
+                    CustomerID: "cId"
                 }
             }
         }).then(function (results) {
@@ -77,10 +77,14 @@ describe('Test join', function () {
             join: {
                 with: "Orders",
                 type: "left",
-                on: "Orders.CustomerID=Customers.CustomerID"
+                on: "Orders.CustomerID=Customers.CustomerID",
+                // as:{
+                //     CustomerID:'orderCId'
+                // }
             }
         }).then(function (results) {
-            expect(results).to.be.an('array').length(93);
+            console.table(results);
+            expect(results).to.be.an('array').length(215);
             done();
         }).catch(function (err) {
             done(err);
