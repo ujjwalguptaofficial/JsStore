@@ -111,4 +111,56 @@ describe('Test join', function () {
         })
     });
 
+    it('self join ', function (done) {
+        con.select({
+            from: "Customers",
+            join: {
+                with: "Customers",
+                type: "inner",
+                on: "Customers.City=Customers.City",
+                as: {
+                    CustomerName: "name",
+                    ContactName: "cName",
+                    CustomerID: "cId",
+                    Address: "address",
+                    PostalCode: "postalCode",
+                    Country: "country",
+                    Email: "email"
+                }
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(183);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('self join with where', function (done) {
+        con.select({
+            from: "Customers",
+            join: {
+                with: "Customers",
+                type: "inner",
+                on: "Customers.City=Customers.City",
+                as: {
+                    CustomerName: "name",
+                    ContactName: "cName",
+                    CustomerID: "cId",
+                    Address: "address",
+                    PostalCode: "postalCode",
+                    Country: "country",
+                    Email: "email"
+                },
+                where: {
+                    CustomerID: { '<': 90 }
+                }
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(177);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
 });
