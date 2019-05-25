@@ -197,6 +197,6 @@ export class Helper extends GroupByHelper {
         for (const prop in results) {
             datas[0][prop] = results[prop];
         }
-        this.results = datas;
+        this.results = [datas[0]];
     }
 }
