@@ -86,6 +86,28 @@ describe('select join order test', function () {
         })
     });
 
+    it('select from student left join with studentdetail with as & order type desc', function (done) {
+        con.select({
+            from: "Student",
+            join: {
+                with: "StudentDetail",
+                on: "Student.Name=StudentDetail.Name",
+                as: {
+                    Id: 'StudentDetailId'
+                }
+            },
+            order: { by: 'Student.Order', type: 'desc' }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(5);
+            for (var i = 0, length = results.length; i < length; i++) {
+                expect(results[i]['Order']).to.be.equal((length - i).toString());
+            }
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
     it('drop db', function (done) {
         con.dropDb().then(function () {
             done();

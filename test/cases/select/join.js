@@ -79,7 +79,7 @@ describe('Test join', function () {
                 on: "Orders.CustomerID=Customers.CustomerID"
             }
         }).then(function (results) {
-            console.table(results);
+            // console.table(results);
             expect(results).to.be.an('array').length(215);
             done();
         }).catch(function (err) {
