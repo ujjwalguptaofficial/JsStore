@@ -162,9 +162,19 @@ export class QueryExecutor {
     }
 
     private openDb_(dbName: string, onSuccess, onError) {
-        this.getDbSchema_(dbName).then((db) => {
-            this.processCreateDb(db).then(onSuccess).catch(onError);
-        }).catch(onError);
+        if (this.activeDb_ != null && this.activeDb_.name === dbName) {
+            this.processCreateDb(this.activeDb_).then(onSuccess).catch(onError);
+        }
+        else {
+            this.getDbSchema_(dbName).then((db) => {
+                if (db != null) {
+                    this.processCreateDb(db).then(onSuccess).catch(onError);
+                }
+                else {
+                    onError(new LogHelper(ERROR_TYPE.DbNotExist, { dbName: dbName }).get());
+                }
+            }).catch(onError);
+        }
     }
 
     private initKeyStore_(onSuccess) {
@@ -317,16 +327,6 @@ export class QueryExecutor {
     private initDb_(
         dataBase: IDataBase, onSuccess: () => void, onError: (err: IError) => void
     ) {
-        // const processCreateDb = () => {
-        //     // save dbSchema in keystore
-        //     KeyStore.set("JsStore_" + this.activeDb_.name + "_Schema", this.activeDb_);
-        //     // create meta data
-        //     const dbHelper = new DbHelper(IdbHelper.activeDb);
-        //     dbHelper.createMetaData().then(function (tablesMetaData: TableHelper[]) {
-        //         const createDbInstance = new InitDb(onSuccess, onError);
-        //         createDbInstance.execute(tablesMetaData);
-        //     });
-        // };
         if (dataBase == null) {
             this.processCreateDb(this.activeDb_);
         }

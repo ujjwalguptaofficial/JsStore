@@ -86,7 +86,7 @@ export class LogHelper implements IError {
                 errMsg = "Table '" + this.info_['tableName'] + "' does not exist";
                 break;
             case ERROR_TYPE.DbNotExist:
-                errMsg = "Database '" + this.info_['DbName'] + "' does not exist";
+                errMsg = `Database with name ${this.info_['dbName']} does not exist`;
                 break;
             case ERROR_TYPE.NotObject:
                 errMsg = "supplied value is not object";

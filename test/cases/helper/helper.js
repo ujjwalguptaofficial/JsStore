@@ -42,4 +42,14 @@ describe('Test helper Api', function () {
         });
     });
 
+    it('open invalid db', function (done) {
+        con.openDb('invalid_db').then(function (value) {
+            done("error in invalid db open");
+        }).catch(function (err) {
+            var error = { "message": "Database with name invalid_db does not exist", "type": "db_not_exist" };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        });
+    })
+
 });
