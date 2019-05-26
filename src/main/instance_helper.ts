@@ -163,17 +163,17 @@ export class InstanceHelper {
       }
     }
     else if (requestQueueLength === 0 && this.isDbIdle_ === false && this.isDbOpened_) {
-      // this.inactivityTimer = setTimeout(() => {
-      //   this.prcoessExecutionOfQry_({
-      //     name: API.CloseDb,
-      //     onSuccess: function () {
+      this.inactivityTimer = setTimeout(() => {
+        this.prcoessExecutionOfQry_({
+          name: API.CloseDb,
+          onSuccess: function () {
 
-      //     },
-      //     onError: function (err) {
-      //       console.error(err);
-      //     }
-      //   });
-      // }, 100) as any;
+          },
+          onError: function (err) {
+            console.error(err);
+          }
+        });
+      }, 100) as any;
     }
   }
 
