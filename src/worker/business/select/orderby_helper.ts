@@ -78,8 +78,9 @@ export class Helper extends GroupByHelper {
     }
 
     protected processAggregateQry() {
-        const datas = this.results,
-            results = {};
+        const datas = this.results;
+        const datasLength = datas.length;
+        const results = {};
         let columnToAggregate;
         // free results memory
         this.results = undefined;
@@ -119,7 +120,7 @@ export class Helper extends GroupByHelper {
             for (const i in datas) {
                 result += datas[i][columnToAggregate];
             }
-            return result / datas.length;
+            return result / datasLength;
         };
         for (const prop in this.query.aggregate) {
             const aggregateColumn = this.query.aggregate[prop];
