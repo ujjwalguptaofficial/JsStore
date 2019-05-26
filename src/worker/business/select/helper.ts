@@ -88,108 +88,75 @@ export class Helper extends GroupByHelper {
         let columnToAggregate;
         // free results memory
         this.results = undefined;
+        const getCount = () => {
+            let result = 0;
+            for (const i in datas) {
+                result += datas[i][columnToAggregate] ? 1 : 0;
+            }
+            return result;
+        };
+        const getMax = () => {
+            let result = 0;
+            for (const i in datas) {
+                result = result > datas[i][columnToAggregate] ?
+                    result : datas[i][columnToAggregate];
+            }
+            return result;
+        };
+        const getMin = () => {
+            let result = Infinity, value = Infinity;
+            for (const i in datas) {
+                value = datas[i][columnToAggregate] ?
+                    datas[i][columnToAggregate] : Infinity;
+                result = result < value ? result : value;
+            }
+            return result;
+        };
+        const getSum = () => {
+            let result = 0;
+            for (const i in datas) {
+                result += datas[i][columnToAggregate];
+            }
+            return result;
+        };
+        const getAvg = () => {
+            let result = 0;
+            for (const i in datas) {
+                result += datas[i][columnToAggregate];
+            }
+            return result / datas.length;
+        };
         for (const prop in this.query.aggregate) {
             const aggregateColumn = this.query.aggregate[prop];
             const aggregateValType = this.getType(aggregateColumn);
+            let aggregateCalculator;
             switch (prop) {
                 case 'count':
-                    const getCount = () => {
-                        let result = 0;
-                        for (const i in datas) {
-                            result += datas[i][columnToAggregate] ? 1 : 0;
-                        }
-                        return result;
-                    };
-                    if (aggregateValType === DATA_TYPE.String) {
-                        columnToAggregate = aggregateColumn;
-                        results["count(" + columnToAggregate + ")"] = getCount();
-                    }
-                    else if (aggregateValType === DATA_TYPE.Array) {
-                        for (const key in aggregateColumn) {
-                            columnToAggregate = aggregateColumn[key];
-                            results["count(" + columnToAggregate + ")"] = getCount();
-                        }
-                    }
+                    aggregateCalculator = getCount;
                     break;
                 case 'max':
-                    const getMax = () => {
-                        let result = 0;
-                        for (const i in datas) {
-                            result = result > datas[i][columnToAggregate] ?
-                                result : datas[i][columnToAggregate];
-                        }
-                        return result;
-                    };
-                    if (aggregateValType === DATA_TYPE.String) {
-                        columnToAggregate = aggregateColumn;
-                        results["max(" + columnToAggregate + ")"] = getMax();
-                    }
-                    else if (aggregateValType === DATA_TYPE.Array) {
-                        for (const key in aggregateColumn) {
-                            columnToAggregate = aggregateColumn[key];
-                            results["max(" + columnToAggregate + ")"] = getMax();
-                        }
-                    }
+                    aggregateCalculator = getMax;
                     break;
                 case 'min':
-                    const getMin = () => {
-                        let result = Infinity, value = Infinity;
-                        for (const i in datas) {
-                            value = datas[i][columnToAggregate] ?
-                                datas[i][columnToAggregate] : Infinity;
-                            result = result < value ? result : value;
-                        }
-                        return result;
-                    };
-                    if (aggregateValType === DATA_TYPE.String) {
-                        columnToAggregate = aggregateColumn;
-                        results["min(" + columnToAggregate + ")"] = getMin();
-                    }
-                    else if (aggregateValType === DATA_TYPE.Array) {
-                        for (const key in aggregateColumn) {
-                            columnToAggregate = aggregateColumn[key];
-                            results["min(" + columnToAggregate + ")"] = getMin();
-                        }
-                    }
+                    aggregateCalculator = getMin;
                     break;
                 case 'sum':
-                    const getSum = () => {
-                        let result = 0;
-                        for (const i in datas) {
-                            result += datas[i][columnToAggregate];
-                        }
-                        return result;
-                    };
-                    if (aggregateValType === DATA_TYPE.String) {
-                        columnToAggregate = aggregateColumn;
-                        results["sum(" + columnToAggregate + ")"] = getSum();
-                    }
-                    else if (aggregateValType === DATA_TYPE.Array) {
-                        for (const key in aggregateColumn) {
-                            columnToAggregate = aggregateColumn[key];
-                            results["sum(" + columnToAggregate + ")"] = getSum();
-                        }
-                    }
+                    aggregateCalculator = getSum;
                     break;
                 case 'avg':
-                    const getAvg = () => {
-                        let result = 0;
-                        for (const i in datas) {
-                            result += datas[i][columnToAggregate];
-                        }
-                        return result / datas.length;
-                    };
-                    if (aggregateValType === DATA_TYPE.String) {
-                        columnToAggregate = aggregateColumn;
-                        results["avg(" + columnToAggregate + ")"] = getAvg();
-                    }
-                    else if (aggregateValType === DATA_TYPE.Array) {
-                        for (const key in aggregateColumn) {
-                            columnToAggregate = aggregateColumn[key];
-                            results["avg(" + columnToAggregate + ")"] = getAvg();
-                        }
-                    }
+                    aggregateCalculator = getAvg;
                     break;
+            }
+
+            if (aggregateValType === DATA_TYPE.String) {
+                columnToAggregate = aggregateColumn;
+                results[`${prop}(${columnToAggregate})`] = aggregateCalculator();
+            }
+            else if (aggregateValType === DATA_TYPE.Array) {
+                for (const key in aggregateColumn) {
+                    columnToAggregate = aggregateColumn[key];
+                    results[`${prop}(${columnToAggregate})`] = aggregateCalculator();
+                }
             }
         }
 
