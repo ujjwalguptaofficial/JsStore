@@ -23,7 +23,6 @@ export class Join extends Helper {
         new Select.Instance({
             from: tableName,
             where: query.where,
-            // order: this.query.order
         }, (results) => {
             results.forEach((item, index) => {
                 this.results[index] = {

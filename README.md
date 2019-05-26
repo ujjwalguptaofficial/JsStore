@@ -34,16 +34,8 @@ http://jsstore.net/
 
 ## Contributors
 
-This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+You are very welcome to contribute, please see contributing guidelines - [[Contribute](CONTRIBUTING.md)].
 <a href="graphs/contributors"><img src="https://opencollective.com/JsStore/contributors.svg?width=890&button=false" /></a>
-
-
-## Backers
-
-Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/JsStore#backer)]
-
-<a href="https://opencollective.com/JsStore#backers" target="_blank"><img src="https://opencollective.com/JsStore/backers.svg?width=890"></a>
-
 
 ## Sponsors
 
@@ -60,4 +52,8 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 <a href="https://opencollective.com/JsStore/sponsor/8/website" target="_blank"><img src="https://opencollective.com/JsStore/sponsor/8/avatar.svg"></a>
 <a href="https://opencollective.com/JsStore/sponsor/9/website" target="_blank"><img src="https://opencollective.com/JsStore/sponsor/9/avatar.svg"></a>
 
+## Backers
 
+Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/JsStore#backer)]
+
+<a href="https://opencollective.com/JsStore#backers" target="_blank"><img src="https://opencollective.com/JsStore/backers.svg?width=890"></a>
