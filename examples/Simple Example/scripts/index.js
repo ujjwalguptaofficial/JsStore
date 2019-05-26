@@ -8,36 +8,22 @@ window.onload = function () {
     initDb();
 };
 
-function initDb() {
-    var dbName = "My-Db";
-    jsstoreCon.initDb(getDbSchema()).then(function (isDbCreated) {
-        console.log('created', isDbCreated);
-    })
-    // jsstoreCon.isDbExist(dbName).then(function (isExist) {
-    //     if (isExist) {
-    //         jsstoreCon.openDb(dbName).then(function () {
-    //             console.log('opened');
-    //         })
-    //     }
-    //     else {
-    //         jsstoreCon.createDb(getDbSchema()).then(function () {
-    //             console.log('created');
-    //         })
-    //     }
-    // })
+async function initDb() {
+    var isDbCreated = await jsstoreCon.initDb(getDbSchema());
+    if (isDbCreated) {
+        console.log('db created');
+    }
+    else {
+        console.log('db opened');
+    }
 }
 
 function getDbSchema() {
     var table = {
         name: 'Student',
         columns: {
-            id: {
-                autoIncrement: true,
-                primaryKey: true
-            },
-            name: {
-                dataType: 'string'
-            },
+            id: { autoIncrement: true, primaryKey: true },
+            name: { dataType: 'string' },
             country: {},
             city: {}
         }
@@ -71,7 +57,7 @@ function registerEvents() {
         var result = confirm('Are you sure, you want to delete?');
         if (result) {
             var studentId = $(this).parents().eq(1).attr('itemid');
-            deleteStudent(studentId);
+            deleteStudent(Number(studentId));
         }
     });
     $('#btnSubmit').click(function () {
@@ -110,50 +96,50 @@ function refreshTableData() {
 
 
 
-function addStudent() {
+async function addStudent() {
     var student = getStudentFromForm();
-    insertDataIntoDb(student).then(function (noOfDataInserted) {
-        if (noOfDataInserted === 1) {
-            refreshTableData();
-            showGridAndHideForm();
-        }
-    }).catch(function (err) {
-        console.error(err);
-    })
-
-
+    var noOfDataInserted = await jsstoreCon.insert({
+        into: 'Student',
+        values: [student]
+    });
+    if (noOfDataInserted === 1) {
+        refreshTableData();
+        showGridAndHideForm();
+    }
 }
 
-function updateStudent() {
+async function updateStudent() {
     var student = getStudentFromForm();
-    jsstoreCon.update({
+    var noOfDataUpdated = await jsstoreCon.update({
         in: 'Student',
         set: {
             name: student.name,
             gender: student.gender,
             country: student.country,
             city: student.city
+        },
+        where: {
+            id: student.id
         }
-    }).then(function (noOfDataUpdated) {
-        console.log(`data updated ${noOfDataUpdated}`);
-        showGridAndHideForm();
-        $('form').attr('data-student-id', null);
-        refreshTableData();
-        refreshFormData({});
-    }).catch(function (err) {
-        console.error(err);
-    })
-
-
+    });
+    console.log(`data updated ${noOfDataUpdated}`);
+    showGridAndHideForm();
+    $('form').attr('data-student-id', null);
+    refreshTableData();
+    refreshFormData({});
 }
 
-function deleteStudent(id) {
-    var index = students.findIndex(qry => qry.id == id);
-    if (index >= 0) {
-        students.splice(index, 1);
-        refreshTableData();
-    }
+async function deleteStudent(id) {
+    var noOfStudentRemoved = await jsstoreCon.remove({
+        from: 'Student',
+        where: {
+            id: id
+        }
+    });
+    console.log(`${noOfStudentRemoved} students removed`);
+    refreshTableData();
 }
+
 function getStudentFromForm() {
     var student = {
         id: Number($('form').attr('data-student-id')),
@@ -171,7 +157,6 @@ function showFormAndHideGrid() {
 }
 
 function showGridAndHideForm() {
-
     $('#formAddUpdate').hide();
     $('#tblGrid').show();
 }
@@ -182,11 +167,4 @@ function refreshFormData(student) {
     $(`input[name='gender'][value=${student.gender}]`).prop('checked', true);
     $('#txtCountry').val(student.country);
     $('#txtCity').val(student.city);
-}
-
-function insertDataIntoDb(student) {
-    return jsstoreCon.insert({
-        into: 'Student',
-        values: [student]
-    })
 }

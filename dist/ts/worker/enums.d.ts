@@ -47,7 +47,8 @@ export declare enum ERROR_TYPE {
     DbBlocked = "Db_blocked",
     IndexedDbUndefined = "indexeddb_undefined",
     IndexedDbBlocked = "indexeddb_blocked",
-    NullValueInWhere = "null_value_in_where"
+    NullValueInWhere = "null_value_in_where",
+    InvalidJoinQuery = "invalid_join_query"
 }
 export declare enum QUERY_OPTION {
     Where = "where",
@@ -77,7 +78,7 @@ export declare enum IDB_MODE {
     ReadWrite = "readwrite"
 }
 export declare enum API {
-    CreateDb = "create_db",
+    InitDb = "init_db",
     IsDbExist = "is_db_exist",
     GetDbVersion = "get_db_version",
     GetDbList = "get_db_list",
@@ -97,5 +98,6 @@ export declare enum API {
     Transaction = "transaction",
     FinishTransaction = "finish_transaction",
     Terminate = "terminate",
-    InitKeyStore = "init_keystore"
+    InitKeyStore = "init_keystore",
+    CloseDb = "close_db"
 }

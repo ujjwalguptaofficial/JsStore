@@ -19,8 +19,19 @@ export declare type DbInfo = {
         version: number;
     };
 };
+export declare type JoinQuery = {
+    type: string;
+    with: string;
+    on: string;
+    where?: object;
+    order?: OrderQuery;
+    as?: {
+        [originalColumnName: string]: [string];
+    };
+};
 export declare type SelectQuery = {
-    from: string | object;
+    from: string;
+    join?: JoinQuery | JoinQuery[];
     where?: any;
     skip?: number;
     limit?: number;
@@ -37,6 +48,7 @@ export declare type OrderQuery = {
 };
 export declare type CountQuery = {
     from: any;
+    join?: JoinQuery;
     ignoreCase?: boolean;
     where?: any;
 };
@@ -57,29 +69,6 @@ export declare type InsertQuery = {
     return?: boolean;
     skipDataCheck?: boolean;
     upsert?: boolean;
-};
-export declare type TableJoinQuery = {
-    column: string;
-    table: string;
-    where?: object;
-    order?: OrderQuery;
-    joinType?: string;
-    nextJoin?: NextJoinQuery;
-};
-export declare type SelectJoinQuery = {
-    from: JoinQuery;
-    count?: boolean;
-    skip?: number;
-    limit?: number;
-};
-export declare type JoinQuery = {
-    table1: TableJoinQuery;
-    join: string;
-    table2: TableJoinQuery;
-};
-export declare type NextJoinQuery = {
-    table: string;
-    column: string;
 };
 export declare type AggregateOption = {
     max?: string | string[];

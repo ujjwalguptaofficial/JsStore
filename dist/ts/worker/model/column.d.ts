@@ -10,5 +10,5 @@ export declare class Column implements IColumn {
     multiEntry: boolean;
     enableSearch: boolean;
     keyPath: string[];
-    constructor(key: IColumn, tableName: string);
+    constructor(key: IColumn);
 }

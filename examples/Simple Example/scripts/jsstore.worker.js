@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.12.0 - 22/05/2019
+ * @license :jsstore - V3.0.0 - 26/05/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -106,6 +106,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _where_checker__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./where_checker */ "./src/worker/business/where_checker.ts");
 /* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../log_helper */ "./src/worker/log_helper.ts");
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../enums */ "./src/worker/enums.ts");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../util */ "./src/worker/util.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -119,6 +120,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 
 
@@ -163,8 +165,8 @@ var Base = /** @class */ (function (_super) {
             default: console.error(ex);
         }
     };
-    Base.prototype.getColumnInfo = function (columnName) {
-        return this.getTable(this.tableName).columns.find(function (column) { return column.name === columnName; });
+    Base.prototype.getColumnInfo = function (columnName, tableName) {
+        return this.getTable(tableName).columns.find(function (column) { return column.name === columnName; });
     };
     Base.prototype.getRegexFromLikeExpression_ = function (likeExpression) {
         var filterValues = likeExpression.split('%');
@@ -230,7 +232,7 @@ var Base = /** @class */ (function (_super) {
             }
         }
         else {
-            var column = this.getColumnInfo(columnName);
+            var column = this.getColumnInfo(columnName, this.tableName);
             var error = column == null ?
                 new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].ColumnNotExist, { ColumnName: columnName }) :
                 new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].EnableSearchOff, { ColumnName: columnName });
@@ -269,6 +271,9 @@ var Base = /** @class */ (function (_super) {
             }
         }
         return qry;
+    };
+    Base.prototype.removeSpace = function (value) {
+        return _util__WEBPACK_IMPORTED_MODULE_4__["Util"].removeSpace(value);
     };
     return Base;
 }(_base_helper__WEBPACK_IMPORTED_MODULE_0__["BaseHelper"]));
@@ -823,22 +828,30 @@ var Instance = /** @class */ (function (_super) {
     Instance.prototype.execute = function () {
         var _this = this;
         try {
-            if (this.query.where != null) {
-                if (this.query.where.or || this.isArray(this.query.where)) {
-                    var selectInstance = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](this.query, function (results) {
-                        _this.resultCount = results.length;
-                        _this.onTransactionCompleted_();
-                    }, this.onError);
-                    selectInstance.execute();
+            var getDataFromSelect = function () {
+                var selectInstance = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](_this.query, function (results) {
+                    _this.resultCount = results.length;
+                    _this.onTransactionCompleted_();
+                }, _this.onError);
+                selectInstance.execute();
+            };
+            if (this.query.join == null) {
+                if (this.query.where != null) {
+                    if (this.query.where.or || this.isArray(this.query.where)) {
+                        getDataFromSelect();
+                    }
+                    else {
+                        this.initTransaction_();
+                        this.goToWhereLogic();
+                    }
                 }
                 else {
                     this.initTransaction_();
-                    this.goToWhereLogic();
+                    this.executeWhereUndefinedLogic();
                 }
             }
             else {
-                this.initTransaction_();
-                this.executeWhereUndefinedLogic();
+                getDataFromSelect();
             }
         }
         catch (ex) {
@@ -1236,7 +1249,7 @@ var IdbHelper = /** @class */ (function () {
 /*!**************************************!*\
   !*** ./src/worker/business/index.ts ***!
   \**************************************/
-/*! exports provided: IdbHelper, OpenDb, DropDb, InitDb, Clear, BulkInsert, QueryHelper */
+/*! exports provided: IdbHelper, DropDb, InitDb, Clear, BulkInsert, QueryHelper */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1244,24 +1257,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _idb_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./idb_helper */ "./src/worker/business/idb_helper.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "IdbHelper", function() { return _idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"]; });
 
-/* harmony import */ var _open_db__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./open_db */ "./src/worker/business/open_db.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OpenDb", function() { return _open_db__WEBPACK_IMPORTED_MODULE_1__["OpenDb"]; });
+/* harmony import */ var _drop_db__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./drop_db */ "./src/worker/business/drop_db.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DropDb", function() { return _drop_db__WEBPACK_IMPORTED_MODULE_1__["DropDb"]; });
 
-/* harmony import */ var _drop_db__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./drop_db */ "./src/worker/business/drop_db.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DropDb", function() { return _drop_db__WEBPACK_IMPORTED_MODULE_2__["DropDb"]; });
+/* harmony import */ var _init_db__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./init_db */ "./src/worker/business/init_db.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "InitDb", function() { return _init_db__WEBPACK_IMPORTED_MODULE_2__["InitDb"]; });
 
-/* harmony import */ var _init_db__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./init_db */ "./src/worker/business/init_db.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "InitDb", function() { return _init_db__WEBPACK_IMPORTED_MODULE_3__["InitDb"]; });
+/* harmony import */ var _clear__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./clear */ "./src/worker/business/clear.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Clear", function() { return _clear__WEBPACK_IMPORTED_MODULE_3__["Clear"]; });
 
-/* harmony import */ var _clear__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./clear */ "./src/worker/business/clear.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Clear", function() { return _clear__WEBPACK_IMPORTED_MODULE_4__["Clear"]; });
+/* harmony import */ var _bulk_insert__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./bulk_insert */ "./src/worker/business/bulk_insert.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "BulkInsert", function() { return _bulk_insert__WEBPACK_IMPORTED_MODULE_4__["BulkInsert"]; });
 
-/* harmony import */ var _bulk_insert__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./bulk_insert */ "./src/worker/business/bulk_insert.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "BulkInsert", function() { return _bulk_insert__WEBPACK_IMPORTED_MODULE_5__["BulkInsert"]; });
-
-/* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./query_helper */ "./src/worker/business/query_helper.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "QueryHelper", function() { return _query_helper__WEBPACK_IMPORTED_MODULE_6__["QueryHelper"]; });
-
+/* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./query_helper */ "./src/worker/business/query_helper.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "QueryHelper", function() { return _query_helper__WEBPACK_IMPORTED_MODULE_5__["QueryHelper"]; });
 
 
 
@@ -1691,43 +1700,6 @@ var ValuesChecker = /** @class */ (function () {
     };
     return ValuesChecker;
 }());
-
-
-
-/***/ }),
-
-/***/ "./src/worker/business/open_db.ts":
-/*!****************************************!*\
-  !*** ./src/worker/business/open_db.ts ***!
-  \****************************************/
-/*! exports provided: OpenDb */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OpenDb", function() { return OpenDb; });
-/* harmony import */ var _base_db__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./base_db */ "./src/worker/business/base_db.ts");
-var __extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-
-var OpenDb = /** @class */ (function (_super) {
-    __extends(OpenDb, _super);
-    function OpenDb() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return OpenDb;
-}(_base_db__WEBPACK_IMPORTED_MODULE_0__["BaseDb"]));
 
 
 
@@ -2468,7 +2440,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 var GroupByHelper = /** @class */ (function (_super) {
     __extends(GroupByHelper, _super);
     function GroupByHelper() {
-        return _super.call(this) || this;
+        return _super !== null && _super.apply(this, arguments) || this;
     }
     GroupByHelper.prototype.processGroupBy = function () {
         var grpQry = this.query.groupBy;
@@ -2502,128 +2474,94 @@ var GroupByHelper = /** @class */ (function (_super) {
         var _this = this;
         var grpQry = this.query.groupBy;
         var datas = this.results;
-        var lookUpObj = {};
-        // assign aggregate and free aggregate memory
-        var aggregateQry = this.query.aggregate;
-        this.query.aggregate = undefined;
         // free results memory
         this.results = undefined;
+        var lookUpObj = {};
+        // assign aggregate
+        var aggregateQry = this.query.aggregate;
         var index;
         var objKey;
         var value;
         var columnToAggregate;
         var calculateAggregate = function () {
+            var getCount = function () {
+                value = lookUpObj[objKey];
+                // get old value
+                value = value ? value["count(" + columnToAggregate + ")"] : 0;
+                // add with old value if data exist
+                value += datas[index][columnToAggregate] ? 1 : 0;
+                return value;
+            };
+            var getMax = function () {
+                value = lookUpObj[objKey];
+                // get old value
+                value = value ? value["max(" + columnToAggregate + ")"] : 0;
+                datas[index][columnToAggregate] = datas[index][columnToAggregate] ?
+                    datas[index][columnToAggregate] : 0;
+                // compare between old value and new value
+                return value > datas[index][columnToAggregate] ? value : datas[index][columnToAggregate];
+            };
+            var getMin = function () {
+                value = lookUpObj[objKey];
+                // get old value
+                value = value ? value["min(" + columnToAggregate + ")"] : Infinity;
+                datas[index][columnToAggregate] = datas[index][columnToAggregate] ?
+                    datas[index][columnToAggregate] : Infinity;
+                // compare between old value and new value
+                return value < datas[index][columnToAggregate] ? value : datas[index][columnToAggregate];
+            };
+            var getSum = function () {
+                value = lookUpObj[objKey];
+                // get old value
+                value = value ? value["sum(" + columnToAggregate + ")"] : 0;
+                // add with old value if data exist
+                value += datas[index][columnToAggregate] ? datas[index][columnToAggregate] : 0;
+                return value;
+            };
+            var getAvg = function () {
+                value = lookUpObj[objKey];
+                // get old sum value
+                var sumOfColumn = value ? value["sum(" + columnToAggregate + ")"] : 0;
+                // add with old value if data exist
+                sumOfColumn += datas[index][columnToAggregate] ? datas[index][columnToAggregate] : 0;
+                datas[index]["sum(" + columnToAggregate + ")"] = sumOfColumn;
+                // get old count value
+                value = value ? value["count(" + columnToAggregate + ")"] : 0;
+                // add with old value if data exist
+                value += datas[index][columnToAggregate] ? 1 : 0;
+                datas[index]["count(" + columnToAggregate + ")"] = value;
+            };
             for (var prop in aggregateQry) {
                 var aggregateColumn = aggregateQry[prop];
                 var aggregateValType = _this.getType(aggregateColumn);
+                var aggregateCalculator = void 0;
                 switch (prop) {
                     case _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Count:
-                        var getCount = function () {
-                            value = lookUpObj[objKey];
-                            // get old value
-                            value = value ? value["count(" + columnToAggregate + ")"] : 0;
-                            // add with old value if data exist
-                            value += datas[index][columnToAggregate] ? 1 : 0;
-                            return value;
-                        };
-                        if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                            columnToAggregate = aggregateColumn;
-                            datas[index]["count(" + columnToAggregate + ")"] = getCount();
-                        }
-                        else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                            for (var item in aggregateColumn) {
-                                columnToAggregate = aggregateColumn[item];
-                                datas[index]["count(" + columnToAggregate + ")"] = getCount();
-                            }
-                        }
+                        aggregateCalculator = getCount;
                         break;
                     case _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Max:
-                        var getMax = function () {
-                            value = lookUpObj[objKey];
-                            // get old value
-                            value = value ? value["max(" + columnToAggregate + ")"] : 0;
-                            datas[index][columnToAggregate] = datas[index][columnToAggregate] ?
-                                datas[index][columnToAggregate] : 0;
-                            // compare between old value and new value
-                            return value > datas[index][columnToAggregate] ? value : datas[index][columnToAggregate];
-                        };
-                        if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                            columnToAggregate = aggregateColumn;
-                            datas[index]["max(" + columnToAggregate + ")"] = getMax();
-                        }
-                        else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                            for (var item in aggregateColumn) {
-                                columnToAggregate = aggregateColumn[item];
-                                datas[index]["max(" + columnToAggregate + ")"] = getMax();
-                            }
-                        }
+                        aggregateCalculator = getMax;
                         break;
                     case _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Min:
-                        var getMin = function () {
-                            value = lookUpObj[objKey];
-                            // get old value
-                            value = value ? value["min(" + columnToAggregate + ")"] : Infinity;
-                            datas[index][columnToAggregate] = datas[index][columnToAggregate] ?
-                                datas[index][columnToAggregate] : Infinity;
-                            // compare between old value and new value
-                            return value < datas[index][columnToAggregate] ? value : datas[index][columnToAggregate];
-                        };
-                        if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                            columnToAggregate = aggregateColumn;
-                            datas[index]["min(" + columnToAggregate + ")"] = getMin();
-                        }
-                        else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                            for (var item in aggregateColumn) {
-                                columnToAggregate = aggregateColumn[item];
-                                datas[index]["min(" + columnToAggregate + ")"] = getMin();
-                            }
-                        }
+                        aggregateCalculator = getMin;
                         break;
                     case _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Sum:
-                        var getSum = function () {
-                            value = lookUpObj[objKey];
-                            // get old value
-                            value = value ? value["sum(" + columnToAggregate + ")"] : 0;
-                            // add with old value if data exist
-                            value += datas[index][columnToAggregate] ? datas[index][columnToAggregate] : 0;
-                            return value;
-                        };
-                        if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                            columnToAggregate = aggregateColumn;
-                            datas[index]["sum(" + columnToAggregate + ")"] = getSum();
-                        }
-                        else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                            for (var item in aggregateColumn) {
-                                columnToAggregate = aggregateColumn[item];
-                                datas[index]["sum(" + columnToAggregate + ")"] = getSum();
-                            }
-                        }
+                        aggregateCalculator = getSum;
                         break;
                     case _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Avg:
-                        var getAvg = function () {
-                            value = lookUpObj[objKey];
-                            // get old sum value
-                            var sumOfColumn = value ? value["sum(" + columnToAggregate + ")"] : 0;
-                            // add with old value if data exist
-                            sumOfColumn += datas[index][columnToAggregate] ? datas[index][columnToAggregate] : 0;
-                            datas[index]["sum(" + columnToAggregate + ")"] = sumOfColumn;
-                            // get old count value
-                            value = value ? value["count(" + columnToAggregate + ")"] : 0;
-                            // add with old value if data exist
-                            value += datas[index][columnToAggregate] ? 1 : 0;
-                            datas[index]["count(" + columnToAggregate + ")"] = value;
-                        };
-                        if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                            columnToAggregate = aggregateColumn;
-                            getAvg();
-                        }
-                        else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                            for (var item in aggregateColumn) {
-                                columnToAggregate = aggregateColumn[item];
-                                getAvg();
-                            }
-                        }
+                        aggregateCalculator = getAvg;
                         break;
+                }
+                switch (aggregateValType) {
+                    case _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String:
+                        columnToAggregate = aggregateColumn;
+                        datas[index][prop + "(" + columnToAggregate + ")"] = aggregateCalculator();
+                        break;
+                    case _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array:
+                        for (var item in aggregateColumn) {
+                            columnToAggregate = aggregateColumn[item];
+                            datas[index][prop + "(" + columnToAggregate + ")"] = aggregateCalculator();
+                        }
                 }
             }
         };
@@ -2694,228 +2632,6 @@ var GroupByHelper = /** @class */ (function (_super) {
     };
     return GroupByHelper;
 }(_where__WEBPACK_IMPORTED_MODULE_0__["Where"]));
-
-
-
-/***/ }),
-
-/***/ "./src/worker/business/select/helper.ts":
-/*!**********************************************!*\
-  !*** ./src/worker/business/select/helper.ts ***!
-  \**********************************************/
-/*! exports provided: Helper */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Helper", function() { return Helper; });
-/* harmony import */ var _group_by_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./group_by_helper */ "./src/worker/business/select/group_by_helper.ts");
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../enums */ "./src/worker/enums.ts");
-/* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../log_helper */ "./src/worker/log_helper.ts");
-var __extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-
-
-
-var Helper = /** @class */ (function (_super) {
-    __extends(Helper, _super);
-    function Helper() {
-        return _super.call(this) || this;
-    }
-    Helper.prototype.processOrderBy = function () {
-        var _this = this;
-        var order = this.query.order;
-        if (order && this.results.length > 0 && !this.sorted && order.by) {
-            order.type = order.type ? order.type.toLowerCase() : 'asc';
-            var orderColumn_1 = order.by;
-            var sortNumberInAsc = function () {
-                _this.results.sort(function (a, b) {
-                    return a[orderColumn_1] - b[orderColumn_1];
-                });
-            };
-            var sortNumberInDesc = function () {
-                _this.results.sort(function (a, b) {
-                    return b[orderColumn_1] - a[orderColumn_1];
-                });
-            };
-            var sortDateInAsc = function () {
-                _this.results.sort(function (a, b) {
-                    return a[orderColumn_1].getTime() - b[orderColumn_1].getTime();
-                });
-            };
-            var sortDateInDesc = function () {
-                _this.results.sort(function (a, b) {
-                    return b[orderColumn_1].getTime() - a[orderColumn_1].getTime();
-                });
-            };
-            var sortAlphabetInAsc = function () {
-                _this.results.sort(function (a, b) {
-                    return a[orderColumn_1].localeCompare(b[orderColumn_1]);
-                });
-            };
-            var sortAlphabetInDesc = function () {
-                _this.results.sort(function (a, b) {
-                    return b[orderColumn_1].localeCompare(a[orderColumn_1]);
-                });
-            };
-            var column = this.getColumnInfo(orderColumn_1);
-            if (column == null) {
-                this.onErrorOccured(new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].ColumnNotExist, { column: orderColumn_1, isOrder: true }), true);
-            }
-            else if (column.dataType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                if (order.type === 'asc') {
-                    sortAlphabetInAsc();
-                }
-                else {
-                    sortAlphabetInDesc();
-                }
-            }
-            else if (column.dataType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Number) {
-                if (order.type === 'asc') {
-                    sortNumberInAsc();
-                }
-                else {
-                    sortNumberInDesc();
-                }
-            }
-            else if (column.dataType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].DateTime) {
-                if (order.type === 'asc') {
-                    sortDateInAsc();
-                }
-                else {
-                    sortDateInDesc();
-                }
-            }
-        }
-    };
-    Helper.prototype.processAggregateQry = function () {
-        var datas = this.results, results = {};
-        var columnToAggregate;
-        // free results memory
-        this.results = undefined;
-        for (var prop in this.query.aggregate) {
-            var aggregateColumn = this.query.aggregate[prop];
-            var aggregateValType = this.getType(aggregateColumn);
-            switch (prop) {
-                case 'count':
-                    var getCount = function () {
-                        var result = 0;
-                        for (var i in datas) {
-                            result += datas[i][columnToAggregate] ? 1 : 0;
-                        }
-                        return result;
-                    };
-                    if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                        columnToAggregate = aggregateColumn;
-                        results["count(" + columnToAggregate + ")"] = getCount();
-                    }
-                    else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                        for (var key in aggregateColumn) {
-                            columnToAggregate = aggregateColumn[key];
-                            results["count(" + columnToAggregate + ")"] = getCount();
-                        }
-                    }
-                    break;
-                case 'max':
-                    var getMax = function () {
-                        var result = 0;
-                        for (var i in datas) {
-                            result = result > datas[i][columnToAggregate] ?
-                                result : datas[i][columnToAggregate];
-                        }
-                        return result;
-                    };
-                    if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                        columnToAggregate = aggregateColumn;
-                        results["max(" + columnToAggregate + ")"] = getMax();
-                    }
-                    else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                        for (var key in aggregateColumn) {
-                            columnToAggregate = aggregateColumn[key];
-                            results["max(" + columnToAggregate + ")"] = getMax();
-                        }
-                    }
-                    break;
-                case 'min':
-                    var getMin = function () {
-                        var result = Infinity, value = Infinity;
-                        for (var i in datas) {
-                            value = datas[i][columnToAggregate] ?
-                                datas[i][columnToAggregate] : Infinity;
-                            result = result < value ? result : value;
-                        }
-                        return result;
-                    };
-                    if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                        columnToAggregate = aggregateColumn;
-                        results["min(" + columnToAggregate + ")"] = getMin();
-                    }
-                    else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                        for (var key in aggregateColumn) {
-                            columnToAggregate = aggregateColumn[key];
-                            results["min(" + columnToAggregate + ")"] = getMin();
-                        }
-                    }
-                    break;
-                case 'sum':
-                    var getSum = function () {
-                        var result = 0;
-                        for (var i in datas) {
-                            result += datas[i][columnToAggregate];
-                        }
-                        return result;
-                    };
-                    if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                        columnToAggregate = aggregateColumn;
-                        results["sum(" + columnToAggregate + ")"] = getSum();
-                    }
-                    else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                        for (var key in aggregateColumn) {
-                            columnToAggregate = aggregateColumn[key];
-                            results["sum(" + columnToAggregate + ")"] = getSum();
-                        }
-                    }
-                    break;
-                case 'avg':
-                    var getAvg = function () {
-                        var result = 0;
-                        for (var i in datas) {
-                            result += datas[i][columnToAggregate];
-                        }
-                        return result / datas.length;
-                    };
-                    if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                        columnToAggregate = aggregateColumn;
-                        results["avg(" + columnToAggregate + ")"] = getAvg();
-                    }
-                    else if (aggregateValType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
-                        for (var key in aggregateColumn) {
-                            columnToAggregate = aggregateColumn[key];
-                            results["avg(" + columnToAggregate + ")"] = getAvg();
-                        }
-                    }
-                    break;
-            }
-        }
-        // add results to the first index of result
-        for (var prop in results) {
-            datas[0][prop] = results[prop];
-        }
-        this.results = datas;
-    };
-    return Helper;
-}(_group_by_helper__WEBPACK_IMPORTED_MODULE_0__["GroupByHelper"]));
 
 
 
@@ -3115,17 +2831,13 @@ var In = /** @class */ (function (_super) {
 /*!*********************************************!*\
   !*** ./src/worker/business/select/index.ts ***!
   \*********************************************/
-/*! exports provided: Instance, Join */
+/*! exports provided: Instance */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _instance__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./instance */ "./src/worker/business/select/instance.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return _instance__WEBPACK_IMPORTED_MODULE_0__["Instance"]; });
-
-/* harmony import */ var _join__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./join */ "./src/worker/business/select/join.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Join", function() { return _join__WEBPACK_IMPORTED_MODULE_1__["Join"]; });
-
 
 
 
@@ -3142,8 +2854,8 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return Instance; });
-/* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./helper */ "./src/worker/business/select/helper.ts");
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../enums */ "./src/worker/enums.ts");
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../enums */ "./src/worker/enums.ts");
+/* harmony import */ var _join__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./join */ "./src/worker/business/select/join.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -3214,18 +2926,23 @@ var Instance = /** @class */ (function (_super) {
     }
     Instance.prototype.execute = function () {
         try {
-            if (this.query.where != null) {
-                this.initTransaction_();
-                if (this.isArray(this.query.where)) {
-                    this.processWhereArrayQry();
+            if (this.query.join == null) {
+                if (this.query.where != null) {
+                    this.initTransaction_();
+                    if (this.isArray(this.query.where)) {
+                        this.processWhereArrayQry();
+                    }
+                    else {
+                        this.processWhere_();
+                    }
                 }
                 else {
-                    this.processWhere_();
+                    this.initTransaction_();
+                    this.executeWhereUndefinedLogic();
                 }
             }
             else {
-                this.initTransaction_();
-                this.executeWhereUndefinedLogic();
+                this.executeJoinQuery();
             }
         }
         catch (ex) {
@@ -3241,7 +2958,7 @@ var Instance = /** @class */ (function (_super) {
             return output.findIndex(function (item) { return item[pKey] === keyValue; }) >= 0;
         };
         var onSuccess = function () {
-            if (operation === _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].And) {
+            if (operation === _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].And) {
                 var doAnd = function () {
                     var andResults = [];
                     _this.results.forEach(function (item) {
@@ -3286,19 +3003,19 @@ var Instance = /** @class */ (function (_super) {
         };
         var processFirstQry = function () {
             _this.query.where = whereQuery.shift();
-            if (_this.query.where[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Or]) {
+            if (_this.query.where[_enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].Or]) {
                 if (Object.keys(_this.query.where).length === 1) {
-                    operation = _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Or;
-                    _this.query.where = _this.query.where[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Or];
+                    operation = _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].Or;
+                    _this.query.where = _this.query.where[_enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].Or];
                     _this.onWhereArrayQrySuccess = onSuccess;
                 }
                 else {
-                    operation = _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].And;
+                    operation = _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].And;
                     _this.onWhereArrayQrySuccess = onSuccess;
                 }
             }
             else {
-                operation = _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].And;
+                operation = _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"].And;
                 _this.onWhereArrayQrySuccess = onSuccess;
             }
             _this.processWhere_();
@@ -3317,7 +3034,7 @@ var Instance = /** @class */ (function (_super) {
         }
     };
     Instance.prototype.initTransaction_ = function () {
-        this.createTransaction([this.tableName], this.onTransactionCompleted_, _enums__WEBPACK_IMPORTED_MODULE_1__["IDB_MODE"].ReadOnly);
+        this.createTransaction([this.tableName], this.onTransactionCompleted_, _enums__WEBPACK_IMPORTED_MODULE_0__["IDB_MODE"].ReadOnly);
         this.objectStore = this.transaction.objectStore(this.tableName);
     };
     Instance.prototype.processWhere_ = function () {
@@ -3364,7 +3081,7 @@ var Instance = /** @class */ (function (_super) {
         delete this.query.where.or;
     };
     return Instance;
-}(_helper__WEBPACK_IMPORTED_MODULE_0__["Helper"]));
+}(_join__WEBPACK_IMPORTED_MODULE_1__["Join"]));
 
 
 
@@ -3380,9 +3097,10 @@ var Instance = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Join", function() { return Join; });
-/* harmony import */ var _base_select__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./base_select */ "./src/worker/business/select/base_select.ts");
-/* harmony import */ var _instance__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./instance */ "./src/worker/business/select/instance.ts");
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../enums */ "./src/worker/enums.ts");
+/* harmony import */ var _instance__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./instance */ "./src/worker/business/select/instance.ts");
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../enums */ "./src/worker/enums.ts");
+/* harmony import */ var _orderby_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./orderby_helper */ "./src/worker/business/select/orderby_helper.ts");
+/* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../log_helper */ "./src/worker/log_helper.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -3396,268 +3114,216 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (undefined && undefined.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+
 
 
 
 var Join = /** @class */ (function (_super) {
     __extends(Join, _super);
-    function Join(query, onSuccess, onError) {
-        var _this = _super.call(this) || this;
-        _this.queryStack = [];
-        _this.currentQueryStackIndex = 0;
-        _this.onSuccess = onSuccess;
-        _this.onError = onError;
-        _this.query = query;
-        var tableList = []; // used to open the multiple object store
-        var convertQueryIntoStack = function (qry) {
-            if (qry.table1 != null) {
-                qry.table2['joinType'] = qry.join == null ? 'inner' : qry.join.toLowerCase();
-                _this.queryStack.push(qry.table2);
-                if (_this.queryStack.length % 2 === 0) {
-                    _this.queryStack[_this.queryStack.length - 1].nextJoin = qry.nextJoin;
-                }
-                tableList.push(qry.table2.table);
-                return convertQueryIntoStack(qry.table1);
-            }
-            else {
-                _this.queryStack.push(qry);
-                tableList.push(qry.table);
-                return;
-            }
-        };
-        convertQueryIntoStack(query.from);
-        _this.queryStack.reverse();
-        // get the data for first table
-        if (!_this.error) {
-            var selectObject = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
-                from: _this.queryStack[0].table,
-                where: _this.queryStack[0].where,
-                order: _this.queryStack[0].order
-            }, function (results) {
-                var tableName = _this.queryStack[0].table;
-                results.forEach(function (item, index) {
-                    _this.results[index] = {};
-                    _this.results[index][tableName] = item;
-                });
-                _this.startExecutionJoinLogic_();
-            }, _this.onErrorOccured);
-            selectObject.execute();
-        }
+    function Join() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.joinQueryStack_ = [];
+        _this.currentQueryStackIndex_ = 0;
+        _this.tablesFetched = [];
         return _this;
     }
-    Join.prototype.onTransactionCompleted_ = function () {
-        if (this.onSuccess != null && (this.queryStack.length === this.currentQueryStackIndex + 1)) {
-            if (this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Count]) {
-                this.onSuccess(this.results.length);
-            }
-            else {
-                if (this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Skip] && this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Limit]) {
-                    this.results.splice(0, this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Skip]);
-                    this.results.splice(this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Limit] - 1, this.results.length);
-                }
-                else if (this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Skip]) {
-                    this.results.splice(0, this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Skip]);
-                }
-                else if (this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Limit]) {
-                    this.results.splice(this.query[_enums__WEBPACK_IMPORTED_MODULE_2__["QUERY_OPTION"].Limit] - 1, this.results.length);
-                }
-                this.onSuccess(this.results);
-            }
+    Join.prototype.executeJoinQuery = function () {
+        var _this = this;
+        var query = this.query;
+        if (this.getType(query.join) === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Object) {
+            this.joinQueryStack_ = [query.join];
         }
-    };
-    Join.prototype.executeWhereJoinLogic_ = function (joinQuery, query) {
-        var _this = this;
-        var results = [], column = query.column, tmpresults = this.results, resultLength = tmpresults.length;
-        var item, joinIndex = 0;
-        // get the data from query table
-        var selectObject = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
-            from: query.table,
-            order: query.order,
-            where: query.where
-        }, function (selectResults) {
-            // perform join
-            selectResults.forEach(function (value, index) {
-                // search item through each global result
-                for (var i = 0; i < resultLength; i++) {
-                    item = tmpresults[i][joinQuery.table][joinQuery.column];
-                    doJoin(item, value, i);
-                }
-            });
-            _this.results = results;
-            // check if further execution needed
-            if (_this.queryStack.length > _this.currentQueryStackIndex + 1) {
-                _this.startExecutionJoinLogic_();
-            }
-            else {
-                _this.onTransactionCompleted_();
-            }
-        }, this.onErrorOccured);
-        selectObject.execute();
-        var doJoin = function (value1, value2, itemIndex) {
-            results[joinIndex] = {};
-            if (value1 === value2[query.column]) {
-                results[joinIndex][query.table] = value2;
-                // copy other relative data into current result
-                for (var j = 0; j < _this.currentQueryStackIndex; j++) {
-                    results[joinIndex][_this.queryStack[j].table] =
-                        tmpresults[itemIndex][_this.queryStack[j].table];
-                }
-                ++joinIndex;
-            }
-            else if (query.joinType === 'left') {
-                // left join
-                results[joinIndex] = {};
-                results[joinIndex][query.table] = null;
-                // copy other relative data into current result
-                for (var j = 0; j < _this.currentQueryStackIndex; j++) {
-                    results[joinIndex][_this.queryStack[j].table] =
-                        tmpresults[itemIndex][_this.queryStack[j].table];
-                }
-                ++joinIndex;
-            }
-        };
-    };
-    Join.prototype.executeRightJoin_ = function (joinQuery, query) {
-        var _this = this;
-        var joinresults = [], joinIndex = 0, column = query.column, tmpresults = this.results, resultLength = tmpresults.length, where = {};
-        var itemIndex = 0;
-        var onExecutionFinished = function () {
-            _this.results = joinresults;
-            // check if further execution needed
-            if (_this.queryStack.length > _this.currentQueryStackIndex + 1) {
-                _this.startExecutionJoinLogic_();
-            }
-            else {
-                _this.onTransactionCompleted_();
-            }
-        };
-        var doRightJoin = function (results) {
-            var valueFound = false;
+        else {
+            this.joinQueryStack_ = query.join;
+        }
+        // get the data for first table
+        var tableName = query.from;
+        new _instance__WEBPACK_IMPORTED_MODULE_0__["Instance"]({
+            from: tableName,
+            where: query.where,
+        }, function (results) {
             results.forEach(function (item, index) {
-                for (itemIndex = 0; itemIndex < resultLength; itemIndex++) {
-                    if (item[query.column] ===
-                        tmpresults[itemIndex][joinQuery.table][joinQuery.column]) {
-                        valueFound = true;
-                        break;
-                    }
-                }
-                joinresults[index] = {};
-                joinresults[index][query.table] = item;
-                if (valueFound) {
-                    valueFound = false;
-                    for (var j = 0; j < this.currentQueryStackIndex; j++) {
-                        joinresults[index][this.queryStack[j].table] =
-                            tmpresults[itemIndex][this.queryStack[j].table];
-                    }
-                }
-                else {
-                    for (var j = 0; j < this.currentQueryStackIndex; j++) {
-                        joinresults[index][this.queryStack[j].table] = null;
-                    }
-                }
-            }, _this);
-        };
-        var executeLogic = function () {
-            var selectObject = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
-                from: query.table,
-                order: query.order,
-                where: query.where
-            }, function (results) {
-                doRightJoin(results);
-                onExecutionFinished();
-            }, _this.onErrorOccured);
-            selectObject.execute();
-        };
-        executeLogic();
+                var _a;
+                _this.results[index] = (_a = {},
+                    _a[_this.currentQueryStackIndex_] = item,
+                    _a);
+            });
+            _this.tablesFetched.push(tableName);
+            _this.startExecutionJoinLogic_();
+        }, this.onErrorOccured).execute();
     };
-    Join.prototype.executeWhereUndefinedLogicForJoin_ = function (joinQuery, query) {
+    Join.prototype.onJoinQueryFinished_ = function () {
         var _this = this;
-        var joinresults = [], column = query.column, tmpresults = this.results, where = {}, 
-        // Item,
-        resultLength = tmpresults.length;
-        var joinIndex = 0, itemIndex = 0;
-        var onExecutionFinished = function () {
-            _this.results = joinresults;
-            // check if further execution needed
-            if (_this.queryStack.length > _this.currentQueryStackIndex + 1) {
-                _this.startExecutionJoinLogic_();
-            }
-            else {
-                _this.onTransactionCompleted_();
-            }
-        };
-        var doJoin = function (results) {
-            if (results.length > 0) {
-                results.forEach(function (value) {
-                    joinresults[joinIndex] = {};
-                    joinresults[joinIndex][query.table] = value;
-                    // copy other relative data into current result
-                    for (var k = 0; k < _this.currentQueryStackIndex; k++) {
-                        joinresults[joinIndex][_this.queryStack[k].table] =
-                            tmpresults[itemIndex][_this.queryStack[k].table];
+        if (this.error == null) {
+            var mapWithAlias_1 = function (query, value) {
+                if (query.as) {
+                    for (var key in query.as) {
+                        value[query.as[key]] = value[key];
+                        delete value[key];
                     }
-                    ++joinIndex;
-                });
-            }
-            else if (query.joinType === 'left') {
-                // left join
-                joinresults[joinIndex] = {};
-                joinresults[joinIndex][query.table] = null;
-                // copy other relative data into current result
-                for (var j = 0; j < _this.currentQueryStackIndex; j++) {
-                    joinresults[joinIndex][_this.queryStack[j].table] =
-                        tmpresults[itemIndex][_this.queryStack[j].table];
                 }
-                ++joinIndex;
-            }
-        };
-        var executeLogic = function () {
-            if (itemIndex < resultLength) {
-                if (!_this.error) {
-                    where[query.column] = tmpresults[itemIndex][joinQuery.table][joinQuery.column];
-                    var selectInstance = new _instance__WEBPACK_IMPORTED_MODULE_1__["Instance"]({
-                        from: query.table,
-                        order: query.order,
-                        where: where
-                    }, function (results) {
-                        doJoin(results);
-                        ++itemIndex;
-                        executeLogic();
-                    }, _this.onErrorOccured.bind(_this));
-                    selectInstance.execute();
+                return value;
+            };
+            var results_1 = [];
+            var tables = Object.keys(this.results[0]);
+            var tablesLength_1 = tables.length;
+            this.results.forEach(function (result) {
+                var data = result["0"]; // first table data
+                for (var i = 1; i < tablesLength_1; i++) {
+                    var query = _this.joinQueryStack_[i - 1];
+                    data = __assign({}, data, mapWithAlias_1(query, result[i]));
                 }
+                results_1.push(data);
+            });
+            this.results = results_1;
+            this.processOrderBy();
+            if (this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Skip] && this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Limit]) {
+                this.results.splice(0, this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Skip]);
+                this.results.splice(this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Limit] - 1, this.results.length);
             }
-            else {
-                onExecutionFinished();
+            else if (this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Skip]) {
+                this.results.splice(0, this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Skip]);
             }
-        };
-        executeLogic();
+            else if (this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Limit]) {
+                this.results.splice(this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Limit] - 1, this.results.length);
+            }
+            this.onSuccess(this.results);
+        }
+        else {
+            this.onError(this.error);
+        }
     };
     Join.prototype.startExecutionJoinLogic_ = function () {
-        var joinQuery;
-        if (this.currentQueryStackIndex >= 1 && this.currentQueryStackIndex % 2 === 1) {
-            joinQuery = {
-                column: this.queryStack[this.currentQueryStackIndex].nextJoin.column,
-                table: this.queryStack[this.currentQueryStackIndex].nextJoin.table
-            };
-            this.currentQueryStackIndex++;
+        var _this = this;
+        var query = this.joinQueryStack_[this.currentQueryStackIndex_];
+        if (query) {
+            var jointblInfo_1 = this.getJoinTableInfo_(query.on);
+            if (true) {
+                this.checkJoinTableShema(jointblInfo_1, query);
+                if (this.error != null) {
+                    this.onJoinQueryFinished_();
+                    return;
+                }
+            }
+            // table 1 is fetched & table2 needs to be fetched for join
+            if (this.tablesFetched.indexOf(jointblInfo_1.table1.table) < 0) {
+                jointblInfo_1 = {
+                    table1: jointblInfo_1.table2,
+                    table2: jointblInfo_1.table1
+                };
+            }
+            new _instance__WEBPACK_IMPORTED_MODULE_0__["Instance"]({
+                from: jointblInfo_1.table2.table,
+                where: query.where
+            }, function (results) {
+                _this.jointables(query.type, jointblInfo_1, results);
+                _this.tablesFetched.push(jointblInfo_1.table2.table);
+                ++_this.currentQueryStackIndex_;
+                _this.startExecutionJoinLogic_();
+            }, this.onErrorOccured).execute();
         }
         else {
-            joinQuery = this.queryStack[this.currentQueryStackIndex++];
+            this.onJoinQueryFinished_();
         }
-        var query = this.queryStack[this.currentQueryStackIndex];
-        if (query.joinType === 'right') {
-            this.executeRightJoin_(joinQuery, query);
+    };
+    Join.prototype.jointables = function (joinType, jointblInfo, secondtableData) {
+        var _this = this;
+        var results = [];
+        var column1 = jointblInfo.table1.column;
+        var column2 = jointblInfo.table2.column;
+        var table1Index = this.tablesFetched.indexOf(jointblInfo.table1.table);
+        var table2Index = this.currentQueryStackIndex_ + 1;
+        var performInnerJoin = function () {
+            var index = 0;
+            _this.results.forEach(function (valueFromFirstTable) {
+                secondtableData.forEach(function (valueFromSecondTable) {
+                    if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
+                        results[index] = valueFromFirstTable;
+                        results[index++][table2Index] = valueFromSecondTable;
+                    }
+                });
+            });
+        };
+        var performleftJoin = function () {
+            var index = 0;
+            var valueMatchedFromSecondTable;
+            _this.results.forEach(function (valueFromFirstTable) {
+                valueMatchedFromSecondTable = [];
+                secondtableData.forEach(function (valueFromSecondTable) {
+                    if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
+                        valueMatchedFromSecondTable.push(valueFromSecondTable);
+                    }
+                });
+                if (valueMatchedFromSecondTable.length === 0) {
+                    valueMatchedFromSecondTable = [null];
+                }
+                valueMatchedFromSecondTable.forEach(function (value) {
+                    results[index] = valueFromFirstTable;
+                    results[index++][table2Index] = value;
+                });
+            });
+        };
+        switch (joinType) {
+            case "left":
+                performleftJoin();
+                break;
+            default:
+                performInnerJoin();
         }
-        else if (query.where) {
-            this.executeWhereJoinLogic_(joinQuery, query);
+        this.results = results;
+    };
+    Join.prototype.getJoinTableInfo_ = function (joinOn) {
+        joinOn = this.removeSpace(joinOn);
+        var splittedjoinOn = joinOn.split("=");
+        var splittedjoinOnbydotFirst = splittedjoinOn[0].split(".");
+        var splittedjoinOnbydotSecond = splittedjoinOn[1].split(".");
+        var info = {
+            table1: {
+                table: splittedjoinOnbydotFirst[0],
+                column: splittedjoinOnbydotFirst[1]
+            },
+            table2: {
+                table: splittedjoinOnbydotSecond[0],
+                column: splittedjoinOnbydotSecond[1]
+            }
+        };
+        return info;
+    };
+    Join.prototype.checkJoinTableShema = function (jointblInfo, qry) {
+        var tableSchemaOf1stTable = this.getTable(jointblInfo.table1.table);
+        var tableSchemaOf2ndTable = this.getTable(jointblInfo.table2.table);
+        var err;
+        if (qry.as == null) {
+            qry.as = {};
         }
-        else {
-            this.executeWhereUndefinedLogicForJoin_(joinQuery, query);
+        tableSchemaOf1stTable.columns.every(function (column) {
+            var columnFound = tableSchemaOf2ndTable.columns.find(function (q) { return q.name === column.name && q.name !== jointblInfo.table1.column; });
+            if (columnFound != null && qry.as[columnFound.name] == null) {
+                err = new _log_helper__WEBPACK_IMPORTED_MODULE_3__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].InvalidJoinQuery, {
+                    column: column.name, table1: jointblInfo.table1.table,
+                    table2: jointblInfo.table2.table
+                });
+                return false;
+            }
+            return true;
+        });
+        if (err != null) {
+            this.onErrorOccured(err, true);
         }
     };
     return Join;
-}(_base_select__WEBPACK_IMPORTED_MODULE_0__["BaseSelect"]));
+}(_orderby_helper__WEBPACK_IMPORTED_MODULE_2__["Helper"]));
 
 
 
@@ -3798,6 +3464,205 @@ var NotWhere = /** @class */ (function (_super) {
     };
     return NotWhere;
 }(_base_select__WEBPACK_IMPORTED_MODULE_0__["BaseSelect"]));
+
+
+
+/***/ }),
+
+/***/ "./src/worker/business/select/orderby_helper.ts":
+/*!******************************************************!*\
+  !*** ./src/worker/business/select/orderby_helper.ts ***!
+  \******************************************************/
+/*! exports provided: Helper */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Helper", function() { return Helper; });
+/* harmony import */ var _group_by_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./group_by_helper */ "./src/worker/business/select/group_by_helper.ts");
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../enums */ "./src/worker/enums.ts");
+/* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../log_helper */ "./src/worker/log_helper.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+var Helper = /** @class */ (function (_super) {
+    __extends(Helper, _super);
+    function Helper() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Helper.prototype.processOrderBy = function () {
+        var _this = this;
+        var order = this.query.order;
+        if (order && this.results.length > 0 && !this.sorted && order.by) {
+            order.type = order.type ? order.type.toLowerCase() : 'asc';
+            var orderColumn_1 = order.by;
+            var sortNumberInAsc = function () {
+                _this.results.sort(function (a, b) {
+                    return a[orderColumn_1] - b[orderColumn_1];
+                });
+            };
+            var sortNumberInDesc = function () {
+                _this.results.sort(function (a, b) {
+                    return b[orderColumn_1] - a[orderColumn_1];
+                });
+            };
+            var sortDateInAsc = function () {
+                _this.results.sort(function (a, b) {
+                    return a[orderColumn_1].getTime() - b[orderColumn_1].getTime();
+                });
+            };
+            var sortDateInDesc = function () {
+                _this.results.sort(function (a, b) {
+                    return b[orderColumn_1].getTime() - a[orderColumn_1].getTime();
+                });
+            };
+            var sortAlphabetInAsc = function () {
+                _this.results.sort(function (a, b) {
+                    return a[orderColumn_1].localeCompare(b[orderColumn_1]);
+                });
+            };
+            var sortAlphabetInDesc = function () {
+                _this.results.sort(function (a, b) {
+                    return b[orderColumn_1].localeCompare(a[orderColumn_1]);
+                });
+            };
+            var column = void 0;
+            if (this.query.join == null) {
+                column = this.getColumnInfo(orderColumn_1, this.query.from);
+            }
+            else {
+                var splittedByDot = this.removeSpace(orderColumn_1).split(".");
+                orderColumn_1 = splittedByDot[1];
+                column = this.getColumnInfo(orderColumn_1, splittedByDot[0]);
+            }
+            if (column == null) {
+                this.onErrorOccured(new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].ColumnNotExist, { column: orderColumn_1, isOrder: true }), true);
+            }
+            else if (column.dataType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
+                if (order.type === 'asc') {
+                    sortAlphabetInAsc();
+                }
+                else {
+                    sortAlphabetInDesc();
+                }
+            }
+            else if (column.dataType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Number) {
+                if (order.type === 'asc') {
+                    sortNumberInAsc();
+                }
+                else {
+                    sortNumberInDesc();
+                }
+            }
+            else if (column.dataType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].DateTime) {
+                if (order.type === 'asc') {
+                    sortDateInAsc();
+                }
+                else {
+                    sortDateInDesc();
+                }
+            }
+        }
+    };
+    Helper.prototype.processAggregateQry = function () {
+        var datas = this.results;
+        var datasLength = datas.length;
+        var results = {};
+        var columnToAggregate;
+        // free results memory
+        this.results = undefined;
+        var getCount = function () {
+            var result = 0;
+            for (var i in datas) {
+                result += datas[i][columnToAggregate] ? 1 : 0;
+            }
+            return result;
+        };
+        var getMax = function () {
+            var result = 0;
+            for (var i in datas) {
+                result = result > datas[i][columnToAggregate] ?
+                    result : datas[i][columnToAggregate];
+            }
+            return result;
+        };
+        var getMin = function () {
+            var result = Infinity, value = Infinity;
+            for (var i in datas) {
+                value = datas[i][columnToAggregate] ?
+                    datas[i][columnToAggregate] : Infinity;
+                result = result < value ? result : value;
+            }
+            return result;
+        };
+        var getSum = function () {
+            var result = 0;
+            for (var i in datas) {
+                result += datas[i][columnToAggregate];
+            }
+            return result;
+        };
+        var getAvg = function () {
+            var result = 0;
+            for (var i in datas) {
+                result += datas[i][columnToAggregate];
+            }
+            return result / datasLength;
+        };
+        for (var prop in this.query.aggregate) {
+            var aggregateColumn = this.query.aggregate[prop];
+            var aggregateValType = this.getType(aggregateColumn);
+            var aggregateCalculator = void 0;
+            switch (prop) {
+                case 'count':
+                    aggregateCalculator = getCount;
+                    break;
+                case 'max':
+                    aggregateCalculator = getMax;
+                    break;
+                case 'min':
+                    aggregateCalculator = getMin;
+                    break;
+                case 'sum':
+                    aggregateCalculator = getSum;
+                    break;
+                case 'avg':
+                    aggregateCalculator = getAvg;
+                    break;
+            }
+            switch (aggregateValType) {
+                case _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String:
+                    columnToAggregate = aggregateColumn;
+                    results[prop + "(" + columnToAggregate + ")"] = aggregateCalculator();
+                    break;
+                case _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array:
+                    for (var key in aggregateColumn) {
+                        columnToAggregate = aggregateColumn[key];
+                        results[prop + "(" + columnToAggregate + ")"] = aggregateCalculator();
+                    }
+            }
+        }
+        // add results to the first index of result
+        for (var prop in results) {
+            datas[0][prop] = results[prop];
+        }
+        this.results = [datas[0]];
+    };
+    return Helper;
+}(_group_by_helper__WEBPACK_IMPORTED_MODULE_0__["GroupByHelper"]));
 
 
 
@@ -5187,8 +5052,8 @@ var ERROR_TYPE;
     ERROR_TYPE["DbBlocked"] = "Db_blocked";
     ERROR_TYPE["IndexedDbUndefined"] = "indexeddb_undefined";
     ERROR_TYPE["IndexedDbBlocked"] = "indexeddb_blocked";
-    // InvalidColumn = "invalid_column",
     ERROR_TYPE["NullValueInWhere"] = "null_value_in_where";
+    ERROR_TYPE["InvalidJoinQuery"] = "invalid_join_query";
 })(ERROR_TYPE || (ERROR_TYPE = {}));
 var QUERY_OPTION;
 (function (QUERY_OPTION) {
@@ -6215,7 +6080,7 @@ var LogHelper = /** @class */ (function () {
                 errMsg = "Table '" + this.info_['tableName'] + "' does not exist";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].DbNotExist:
-                errMsg = "Database '" + this.info_['DbName'] + "' does not exist";
+                errMsg = "Database with name " + this.info_['dbName'] + " does not exist";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].NotObject:
                 errMsg = "supplied value is not object";
@@ -6228,6 +6093,9 @@ var LogHelper = /** @class */ (function () {
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].NullValueInWhere:
                 errMsg = "Null/undefined is not allowed in where. Column '" + this.info_['column'] + "' has null";
+                break;
+            case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].InvalidJoinQuery:
+                errMsg = "column " + this.info_.column + " exist in both table " + this.info_.table1 + " & " + this.info_.table2;
                 break;
             default:
                 errMsg = this.message;
@@ -6507,6 +6375,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./keystore/index */ "./src/worker/keystore/index.ts");
 /* harmony import */ var _model_index__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./model/index */ "./src/worker/model/index.ts");
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./util */ "./src/worker/util.ts");
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./helpers/index */ "./src/worker/helpers/index.ts");
+
 
 
 
@@ -6595,6 +6465,9 @@ var QueryExecutor = /** @class */ (function () {
         };
         QueryExecutor.isTransactionQuery = request.name === _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Transaction;
         switch (request.name) {
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].OpenDb:
+                this.openDb_(request.query, onSuccess, onError);
+                break;
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Select:
                 this.select_(request.query, onSuccess, onError);
                 break;
@@ -6663,6 +6536,22 @@ var QueryExecutor = /** @class */ (function () {
                 break;
             default:
                 console.error('The Api:-' + request.name + ' does not support.');
+        }
+    };
+    QueryExecutor.prototype.openDb_ = function (dbName, onSuccess, onError) {
+        var _this = this;
+        if (this.activeDb_ != null && this.activeDb_.name === dbName) {
+            this.processCreateDb(this.activeDb_).then(onSuccess).catch(onError);
+        }
+        else {
+            this.getDbSchema_(dbName).then(function (db) {
+                if (db != null) {
+                    _this.processCreateDb(db).then(onSuccess).catch(onError);
+                }
+                else {
+                    onError(new _log_helper__WEBPACK_IMPORTED_MODULE_7__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["ERROR_TYPE"].DbNotExist, { dbName: dbName }).get());
+                }
+            }).catch(onError);
         }
     };
     QueryExecutor.prototype.initKeyStore_ = function (onSuccess) {
@@ -6755,59 +6644,54 @@ var QueryExecutor = /** @class */ (function () {
         }
     };
     QueryExecutor.prototype.select_ = function (query, onSuccess, onError) {
-        if (typeof query.from === 'object') {
-            var selectJoinInstance = new _business_select_index__WEBPACK_IMPORTED_MODULE_1__["Join"](query, onSuccess, onError);
+        var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].Select, query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            var selectInstance = new _business_select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](query, onSuccess, onError);
+            selectInstance.execute();
         }
         else {
-            var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].Select, query);
-            queryHelper.checkAndModify();
-            if (queryHelper.error == null) {
-                var selectInstance = new _business_select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](query, onSuccess, onError);
-                selectInstance.execute();
-            }
-            else {
-                onError(queryHelper.error);
-            }
+            onError(queryHelper.error);
         }
     };
     QueryExecutor.prototype.count_ = function (query, onSuccess, onError) {
-        if (typeof query.from === 'object') {
-            query['count'] = true;
-            var selectJoinInstance = new _business_select_index__WEBPACK_IMPORTED_MODULE_1__["Join"](query, onSuccess, onError);
+        var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].Count, query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            var countInstance = new _business_count_index__WEBPACK_IMPORTED_MODULE_2__["Instance"](query, onSuccess, onError);
+            countInstance.execute();
         }
         else {
-            var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].Count, query);
-            queryHelper.checkAndModify();
-            if (queryHelper.error == null) {
-                var countInstance = new _business_count_index__WEBPACK_IMPORTED_MODULE_2__["Instance"](query, onSuccess, onError);
-                countInstance.execute();
-            }
-            else {
-                onError(queryHelper.error);
-            }
+            onError(queryHelper.error);
         }
+    };
+    QueryExecutor.prototype.processCreateDb = function (db) {
+        var _this = this;
+        return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_13__["promise"])(function (res, rej) {
+            // create meta data
+            var dbHelper = new _model_index__WEBPACK_IMPORTED_MODULE_11__["DbHelper"](db);
+            dbHelper.createMetaData().then(function (tablesMetaData) {
+                _this.activeDb_ = db;
+                var createDbInstance = new _business_index__WEBPACK_IMPORTED_MODULE_0__["InitDb"](function (isDbCreated) {
+                    _this.activeDb_ = db;
+                    // save dbSchema in keystore
+                    _keystore_index__WEBPACK_IMPORTED_MODULE_10__["KeyStore"].set("JsStore_" + db.name + "_Schema", db);
+                    res(isDbCreated);
+                }, rej);
+                createDbInstance.execute(tablesMetaData);
+            });
+        });
     };
     QueryExecutor.prototype.initDb_ = function (dataBase, onSuccess, onError) {
         var _this = this;
-        var processCreateDb = function () {
-            // save dbSchema in keystore
-            _keystore_index__WEBPACK_IMPORTED_MODULE_10__["KeyStore"].set("JsStore_" + _this.activeDb_.name + "_Schema", _this.activeDb_);
-            // create meta data
-            var dbHelper = new _model_index__WEBPACK_IMPORTED_MODULE_11__["DbHelper"](_business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDb);
-            dbHelper.createMetaData().then(function (tablesMetaData) {
-                var createDbInstance = new _business_index__WEBPACK_IMPORTED_MODULE_0__["InitDb"](onSuccess, onError);
-                createDbInstance.execute(tablesMetaData);
-            });
-        };
         if (dataBase == null) {
-            processCreateDb();
+            this.processCreateDb(this.activeDb_);
         }
         else {
             this.closeDb_();
             this.getDbVersion_(dataBase.name).then(function (version) {
                 _this.activeDbVersion_ = version ? version : 1;
-                _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].activeDb = new _model_index__WEBPACK_IMPORTED_MODULE_11__["DataBase"](dataBase);
-                processCreateDb();
+                _this.processCreateDb(new _model_index__WEBPACK_IMPORTED_MODULE_11__["DataBase"](dataBase)).then(onSuccess).catch(onError);
             });
         }
     };
@@ -7018,6 +6902,9 @@ var Util = /** @class */ (function () {
             }
             return _keystore_index__WEBPACK_IMPORTED_MODULE_1__["KeyStore"].set(autoIncrementKey, value);
         }));
+    };
+    Util.removeSpace = function (value) {
+        return value.replace(/\s/g, '');
     };
     return Util;
 }());

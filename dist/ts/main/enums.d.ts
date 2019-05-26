@@ -16,15 +16,8 @@ export declare enum DATA_TYPE {
     Null = "null",
     DateTime = "date_time"
 }
-export declare enum COL_OPTION {
-    PrimaryKey = "primary_key",
-    AutoIncrement = "auto_increment",
-    Unique = "unique",
-    NotNull = "not_null",
-    MultiEntry = "multi_entry"
-}
 export declare enum API {
-    CreateDb = "create_db",
+    InitDb = "init_db",
     IsDbExist = "is_db_exist",
     GetDbVersion = "get_db_version",
     GetDbList = "get_db_list",
@@ -43,5 +36,6 @@ export declare enum API {
     ChangeLogStatus = "change_log_status",
     Terminate = "terminate",
     Transaction = "transaction",
-    InitKeyStore = "init_keystore"
+    InitKeyStore = "init_keystore",
+    CloseDb = "close_db"
 }

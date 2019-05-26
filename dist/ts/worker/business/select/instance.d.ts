@@ -1,7 +1,7 @@
 import { SelectQuery } from "../../types";
-import { Helper } from "./helper";
 import { IError } from "../../interfaces";
-export declare class Instance extends Helper {
+import { Join } from "./join";
+export declare class Instance extends Join {
     constructor(query: SelectQuery, onSuccess: (results: object[]) => void, onError: (err: IError) => void);
     execute(): void;
     private processWhereArrayQry;

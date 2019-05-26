@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.12.0 - 22/05/2019
+ * @license :jsstore - V3.0.0 - 26/05/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -723,16 +723,16 @@ var InstanceHelper = /** @class */ (function () {
             }
         }
         else if (requestQueueLength === 0 && this.isDbIdle_ === false && this.isDbOpened_) {
-            // this.inactivityTimer = setTimeout(() => {
-            //   this.prcoessExecutionOfQry_({
-            //     name: API.CloseDb,
-            //     onSuccess: function () {
-            //     },
-            //     onError: function (err) {
-            //       console.error(err);
-            //     }
-            //   });
-            // }, 100) as any;
+            this.inactivityTimer = setTimeout(function () {
+                _this.prcoessExecutionOfQry_({
+                    name: _enums__WEBPACK_IMPORTED_MODULE_1__["API"].CloseDb,
+                    onSuccess: function () {
+                    },
+                    onError: function (err) {
+                        console.error(err);
+                    }
+                });
+            }, 100);
         }
     };
     InstanceHelper.prototype.sendRequestToWorker_ = function (request) {

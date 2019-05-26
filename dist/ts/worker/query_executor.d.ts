@@ -7,13 +7,13 @@ export declare class QueryExecutor {
     private changeLogStatus_;
     private returnResult_;
     private executeLogic_;
+    private openDb_;
     private initKeyStore_;
     private getDbSchema_;
     private terminate_;
     private isDbDeletedByBrowser_;
     private getDbList_;
     private activeDb_;
-    private openDb_;
     private closeDb_;
     private dropDb_;
     private update_;
@@ -22,7 +22,8 @@ export declare class QueryExecutor {
     private remove_;
     private select_;
     private count_;
-    private createDb_;
+    private processCreateDb;
+    private initDb_;
     private activeDbVersion_;
     private getDbVersion_;
     private readonly dbStatus_;

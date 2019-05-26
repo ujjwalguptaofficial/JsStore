@@ -1,7 +1,6 @@
 import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
 import { IError } from "../interfaces";
 export declare class BaseDb {
-    onSuccess: (listOfTablesCreated?: string[]) => void;
     onError: (err: IError) => void;
     protected readonly dbName: string;
     protected dbStatus: import("../interfaces").IDbStatus;

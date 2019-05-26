@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V2.12.0 - 28/04/2019
+ * @license :jsstore - V3.0.0 - 26/05/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -118,7 +118,7 @@ var Config = /** @class */ (function () {
 /*!***************************!*\
   !*** ./src/main/enums.ts ***!
   \***************************/
-/*! exports provided: ERROR_TYPE, WORKER_STATUS, DATA_TYPE, COL_OPTION, API */
+/*! exports provided: ERROR_TYPE, WORKER_STATUS, DATA_TYPE, API */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -126,7 +126,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ERROR_TYPE", function() { return ERROR_TYPE; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WORKER_STATUS", function() { return WORKER_STATUS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return DATA_TYPE; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "COL_OPTION", function() { return COL_OPTION; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "API", function() { return API; });
 var ERROR_TYPE;
 (function (ERROR_TYPE) {
@@ -149,17 +148,9 @@ var DATA_TYPE;
     DATA_TYPE["Null"] = "null";
     DATA_TYPE["DateTime"] = "date_time";
 })(DATA_TYPE || (DATA_TYPE = {}));
-var COL_OPTION;
-(function (COL_OPTION) {
-    COL_OPTION["PrimaryKey"] = "primary_key";
-    COL_OPTION["AutoIncrement"] = "auto_increment";
-    COL_OPTION["Unique"] = "unique";
-    COL_OPTION["NotNull"] = "not_null";
-    COL_OPTION["MultiEntry"] = "multi_entry";
-})(COL_OPTION || (COL_OPTION = {}));
 var API;
 (function (API) {
-    API["CreateDb"] = "create_db";
+    API["InitDb"] = "init_db";
     API["IsDbExist"] = "is_db_exist";
     API["GetDbVersion"] = "get_db_version";
     API["GetDbList"] = "get_db_list";
@@ -179,6 +170,7 @@ var API;
     API["Terminate"] = "terminate";
     API["Transaction"] = "transaction";
     API["InitKeyStore"] = "init_keystore";
+    API["CloseDb"] = "close_db";
 })(API || (API = {}));
 
 
@@ -235,7 +227,7 @@ var enableLog = function () {
 /*!***************************!*\
   !*** ./src/main/index.ts ***!
   \***************************/
-/*! exports provided: Instance, ERROR_TYPE, WORKER_STATUS, DATA_TYPE, COL_OPTION, API, Config, enableLog, useSqlWeb, Column */
+/*! exports provided: Instance, ERROR_TYPE, WORKER_STATUS, DATA_TYPE, API, Config, enableLog, useSqlWeb */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -250,8 +242,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "COL_OPTION", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["COL_OPTION"]; });
-
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "API", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["API"]; });
 
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./config */ "./src/main/config.ts");
@@ -260,17 +250,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./helper */ "./src/main/helper.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "enableLog", function() { return _helper__WEBPACK_IMPORTED_MODULE_3__["enableLog"]; });
 
-/* harmony import */ var _model_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./model/index */ "./src/main/model/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Column", function() { return _model_index__WEBPACK_IMPORTED_MODULE_4__["Column"]; });
-
-/* harmony import */ var _global__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./global */ "./src/main/global.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "useSqlWeb", function() { return _global__WEBPACK_IMPORTED_MODULE_5__["useSqlWeb"]; });
+/* harmony import */ var _global__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./global */ "./src/main/global.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "useSqlWeb", function() { return _global__WEBPACK_IMPORTED_MODULE_4__["useSqlWeb"]; });
 
 
 
 
 
-
+// export * from './model/index';
 
 
 
@@ -320,6 +307,7 @@ var Instance = /** @class */ (function (_super) {
      * @memberof Instance
      */
     Instance.prototype.openDb = function (dbName) {
+        this.activeDbName = dbName;
         return this.pushApi({
             name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].OpenDb,
             query: dbName
@@ -332,9 +320,10 @@ var Instance = /** @class */ (function (_super) {
      * @returns
      * @memberof Instance
      */
-    Instance.prototype.createDb = function (dataBase) {
+    Instance.prototype.initDb = function (dataBase) {
+        this.activeDbName = dataBase.name;
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].CreateDb,
+            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].InitDb,
             query: dataBase
         });
     };
@@ -598,11 +587,13 @@ __webpack_require__.r(__webpack_exports__);
 var InstanceHelper = /** @class */ (function () {
     function InstanceHelper(worker) {
         this.isDbOpened_ = false;
+        this.isDbIdle_ = true;
         this.requestQueue_ = [];
         this.isCodeExecuting_ = false;
+        this.inactivityTimer = -1000;
         // these apis have special permissions. These apis dont wait for database open.
         this.whiteListApi_ = [
-            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].CreateDb,
+            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].InitDb,
             _enums__WEBPACK_IMPORTED_MODULE_1__["API"].IsDbExist,
             _enums__WEBPACK_IMPORTED_MODULE_1__["API"].GetDbVersion,
             _enums__WEBPACK_IMPORTED_MODULE_1__["API"].GetDbList,
@@ -617,29 +608,41 @@ var InstanceHelper = /** @class */ (function () {
         if (worker) {
             this.worker_ = worker;
             this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
-            this.pushApi({
-                name: _enums__WEBPACK_IMPORTED_MODULE_1__["API"].InitKeyStore
-            });
         }
         else {
             _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker = false;
+        }
+        this.initKeyStore_();
+    }
+    InstanceHelper.prototype.initKeyStore_ = function () {
+        if (_config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker) {
+            this.prcoessExecutionOfQry_({
+                name: _enums__WEBPACK_IMPORTED_MODULE_1__["API"].InitKeyStore,
+                onSuccess: function () {
+                },
+                onError: function (err) {
+                    console.error(err);
+                }
+            }, 0);
+        }
+        else {
             JsStoreWorker.KeyStore.init();
         }
-    }
+    };
     InstanceHelper.prototype.onMessageFromWorker_ = function (msg) {
         this.processFinishedQuery_(msg.data);
     };
     InstanceHelper.prototype.processFinishedQuery_ = function (message) {
         var finishedRequest = this.requestQueue_.shift();
         if (finishedRequest) {
-            _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request finished : " + finishedRequest.name);
+            _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request " + finishedRequest.name + " finished");
             if (message.errorOccured) {
                 finishedRequest.onError(message.errorDetails);
             }
             else {
                 switch (finishedRequest.name) {
                     case _enums__WEBPACK_IMPORTED_MODULE_1__["API"].OpenDb:
-                    case _enums__WEBPACK_IMPORTED_MODULE_1__["API"].CreateDb:
+                    case _enums__WEBPACK_IMPORTED_MODULE_1__["API"].InitDb:
                         this.isDbOpened_ = true;
                         break;
                     case _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Terminate:
@@ -648,12 +651,32 @@ var InstanceHelper = /** @class */ (function () {
                             this.worker_.terminate();
                         }
                         break;
+                    case _enums__WEBPACK_IMPORTED_MODULE_1__["API"].CloseDb:
+                        if (this.requestQueue_.length > 0) {
+                            this.openDb_();
+                        }
+                        else {
+                            this.isDbIdle_ = true;
+                        }
+                        break;
                 }
                 finishedRequest.onSuccess(message.returnedValue);
             }
             this.isCodeExecuting_ = false;
             this.executeQry_();
         }
+    };
+    InstanceHelper.prototype.openDb_ = function () {
+        this.initKeyStore_();
+        this.prcoessExecutionOfQry_({
+            name: _enums__WEBPACK_IMPORTED_MODULE_1__["API"].OpenDb,
+            query: this.activeDbName,
+            onSuccess: function () {
+            },
+            onError: function (err) {
+                console.error(err);
+            }
+        }, 1);
     };
     InstanceHelper.prototype.pushApi = function (request) {
         var _this = this;
@@ -664,17 +687,30 @@ var InstanceHelper = /** @class */ (function () {
             request.onError = function (error) {
                 reject(error);
             };
+            if (_this.isDbIdle_ === true && _this.isDbOpened_ === true) {
+                _this.openDb_();
+            }
+            else {
+                clearTimeout(_this.inactivityTimer);
+            }
             _this.prcoessExecutionOfQry_(request);
         });
     };
-    InstanceHelper.prototype.prcoessExecutionOfQry_ = function (request) {
-        this.requestQueue_.push(request);
+    InstanceHelper.prototype.prcoessExecutionOfQry_ = function (request, index) {
+        this.isDbIdle_ = false;
+        if (index != null) {
+            this.requestQueue_.splice(index, 0, request);
+        }
+        else {
+            this.requestQueue_.push(request);
+        }
         _log_helper__WEBPACK_IMPORTED_MODULE_0__["LogHelper"].log("request pushed: " + request.name);
         this.executeQry_();
     };
     InstanceHelper.prototype.executeQry_ = function () {
         var _this = this;
-        if (!this.isCodeExecuting_ && this.requestQueue_.length > 0) {
+        var requestQueueLength = this.requestQueue_.length;
+        if (!this.isCodeExecuting_ && requestQueueLength > 0) {
             if (this.isDbOpened_ === true) {
                 this.sendRequestToWorker_(this.requestQueue_[0]);
                 return;
@@ -685,6 +721,18 @@ var InstanceHelper = /** @class */ (function () {
                 this.requestQueue_.splice(0, 0, this.requestQueue_.splice(allowedQueryIndex, 1)[0]);
                 this.sendRequestToWorker_(this.requestQueue_[0]);
             }
+        }
+        else if (requestQueueLength === 0 && this.isDbIdle_ === false && this.isDbOpened_) {
+            this.inactivityTimer = setTimeout(function () {
+                _this.prcoessExecutionOfQry_({
+                    name: _enums__WEBPACK_IMPORTED_MODULE_1__["API"].CloseDb,
+                    onSuccess: function () {
+                    },
+                    onError: function (err) {
+                        console.error(err);
+                    }
+                });
+            }, 100);
         }
     };
     InstanceHelper.prototype.sendRequestToWorker_ = function (request) {
@@ -765,81 +813,6 @@ var LogHelper = /** @class */ (function () {
     };
     return LogHelper;
 }());
-
-
-
-/***/ }),
-
-/***/ "./src/main/model/column.ts":
-/*!**********************************!*\
-  !*** ./src/main/model/column.ts ***!
-  \**********************************/
-/*! exports provided: Column */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Column", function() { return Column; });
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../enums */ "./src/main/enums.ts");
-
-var Column = /** @class */ (function () {
-    function Column(name) {
-        this.name = name;
-    }
-    Column.prototype.options = function (columnOptions) {
-        var _this = this;
-        columnOptions.forEach(function (option) {
-            switch (option) {
-                case _enums__WEBPACK_IMPORTED_MODULE_0__["COL_OPTION"].AutoIncrement:
-                    _this.autoIncrement = true;
-                    break;
-                case _enums__WEBPACK_IMPORTED_MODULE_0__["COL_OPTION"].MultiEntry:
-                    _this.multiEntry = true;
-                    break;
-                case _enums__WEBPACK_IMPORTED_MODULE_0__["COL_OPTION"].NotNull:
-                    _this.notNull = true;
-                    break;
-                case _enums__WEBPACK_IMPORTED_MODULE_0__["COL_OPTION"].PrimaryKey:
-                    _this.primaryKey = true;
-                    break;
-                case _enums__WEBPACK_IMPORTED_MODULE_0__["COL_OPTION"].Unique:
-                    _this.unique = true;
-                    break;
-            }
-        });
-        return this;
-    };
-    Column.prototype.setDataType = function (type) {
-        this.dataType = type;
-        return this;
-    };
-    Column.prototype.setDefault = function (value) {
-        this.default = value;
-        return this;
-    };
-    Column.prototype.disableSearch = function () {
-        this.enableSearch = false;
-        return this;
-    };
-    return Column;
-}());
-
-
-
-/***/ }),
-
-/***/ "./src/main/model/index.ts":
-/*!*********************************!*\
-  !*** ./src/main/model/index.ts ***!
-  \*********************************/
-/*! exports provided: Column */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _column__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./column */ "./src/main/model/column.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Column", function() { return _column__WEBPACK_IMPORTED_MODULE_0__["Column"]; });
-
 
 
 

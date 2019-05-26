@@ -17,8 +17,9 @@ export declare abstract class Base extends BaseHelper {
     limitRecord: any;
     protected onErrorOccured(e: any, customError?: boolean): void;
     protected onExceptionOccured(ex: DOMException, info: any): void;
-    protected getColumnInfo(columnName: any): Column;
+    protected getColumnInfo(columnName: string, tableName: string): Column;
     private getRegexFromLikeExpression_;
     protected goToWhereLogic(): void;
     protected makeQryInCaseSensitive(qry: any): any;
+    protected removeSpace(value: string): string;
 }

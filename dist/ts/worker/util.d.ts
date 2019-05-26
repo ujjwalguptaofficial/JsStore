@@ -20,4 +20,5 @@ export declare class Util {
         [columnName: string]: number;
     }>;
     static setAutoIncrementValue(table: Table, autoIncrementValue: object): Promise<{}[]>;
+    static removeSpace(value: string): string;
 }

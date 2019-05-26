@@ -20,8 +20,19 @@ export declare type OrderQuery = {
      */
     idbSorting?: boolean;
 };
+export declare type JoinQuery = {
+    type?: string;
+    with: string;
+    on: string;
+    where?: object;
+    order?: OrderQuery;
+    as?: {
+        [originalColumnName: string]: [string];
+    };
+};
 export declare type SelectQuery = {
-    from: any;
+    from: string;
+    join?: JoinQuery | JoinQuery[];
     where?: any;
     skip?: number;
     limit?: number;
@@ -40,7 +51,7 @@ export declare type AggregateOption = {
 };
 export declare type WebWorkerRequest = {
     name: API;
-    query: any;
+    query?: any;
     onSuccess?: (results: any) => void;
     onError?: (err: IError) => void;
 };
@@ -73,29 +84,6 @@ export declare type InsertQuery = {
     return?: boolean;
     skipDataCheck?: boolean;
     upsert?: boolean;
-};
-export declare type TableJoinQuery = {
-    column: string;
-    table: string;
-    where?: any;
-    order?: OrderQuery;
-    joinType?: string;
-    nextJoin?: NextJoinQuery;
-};
-export declare type SelectJoinQuery = {
-    from: JoinQuery;
-    count?: boolean;
-    skip?: number;
-    limit?: number;
-};
-export declare type JoinQuery = {
-    table1: TableJoinQuery;
-    join: string;
-    table2: TableJoinQuery;
-};
-export declare type NextJoinQuery = {
-    table: string;
-    column: string;
 };
 export declare type WebWorkerResult = {
     errorOccured: boolean;
