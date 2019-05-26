@@ -2,10 +2,6 @@ import { Where } from "./where";
 import { DATA_TYPE, QUERY_OPTION } from "../../enums";
 
 export class GroupByHelper extends Where {
-    constructor() {
-        super();
-    }
-
     protected processGroupBy() {
         const grpQry = this.query.groupBy as any;
         let datas = this.results;

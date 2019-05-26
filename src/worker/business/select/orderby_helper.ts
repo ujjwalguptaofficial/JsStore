@@ -3,11 +3,6 @@ import { DATA_TYPE, ERROR_TYPE } from "../../enums";
 import { LogHelper } from "../../log_helper";
 
 export class Helper extends GroupByHelper {
-
-    constructor() {
-        super();
-    }
-
     protected processOrderBy() {
         const order = this.query.order;
         if (order && this.results.length > 0 && !this.sorted && order.by) {
@@ -132,20 +127,15 @@ export class Helper extends GroupByHelper {
             let aggregateCalculator;
             switch (prop) {
                 case 'count':
-                    aggregateCalculator = getCount;
-                    break;
+                    aggregateCalculator = getCount; break;
                 case 'max':
-                    aggregateCalculator = getMax;
-                    break;
+                    aggregateCalculator = getMax; break;
                 case 'min':
-                    aggregateCalculator = getMin;
-                    break;
+                    aggregateCalculator = getMin; break;
                 case 'sum':
-                    aggregateCalculator = getSum;
-                    break;
+                    aggregateCalculator = getSum; break;
                 case 'avg':
-                    aggregateCalculator = getAvg;
-                    break;
+                    aggregateCalculator = getAvg; break;
             }
             switch (aggregateValType) {
                 case DATA_TYPE.String:

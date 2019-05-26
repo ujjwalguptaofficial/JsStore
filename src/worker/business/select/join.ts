@@ -1,7 +1,7 @@
 import { JoinQuery } from "../../types";
 import * as Select from './instance';
 import { QUERY_OPTION, DATA_TYPE, ERROR_TYPE } from "../../enums";
-import { Helper } from "./helper";
+import { Helper } from "./orderby_helper";
 import { LogHelper } from "../../log_helper";
 
 export class Join extends Helper {
