@@ -147,16 +147,16 @@ export class Helper extends GroupByHelper {
                     aggregateCalculator = getAvg;
                     break;
             }
-
-            if (aggregateValType === DATA_TYPE.String) {
-                columnToAggregate = aggregateColumn;
-                results[`${prop}(${columnToAggregate})`] = aggregateCalculator();
-            }
-            else if (aggregateValType === DATA_TYPE.Array) {
-                for (const key in aggregateColumn) {
-                    columnToAggregate = aggregateColumn[key];
+            switch (aggregateValType) {
+                case DATA_TYPE.String:
+                    columnToAggregate = aggregateColumn;
                     results[`${prop}(${columnToAggregate})`] = aggregateCalculator();
-                }
+                    break;
+                case DATA_TYPE.Array:
+                    for (const key in aggregateColumn) {
+                        columnToAggregate = aggregateColumn[key];
+                        results[`${prop}(${columnToAggregate})`] = aggregateCalculator();
+                    }
             }
         }
 

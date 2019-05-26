@@ -38,132 +38,95 @@ export class GroupByHelper extends Where {
     protected executeAggregateGroupBy() {
         const grpQry = this.query.groupBy as any;
         let datas = this.results;
-        const lookUpObj = {};
-        // assign aggregate and free aggregate memory
-        const aggregateQry = this.query.aggregate;
-        this.query.aggregate = undefined;
         // free results memory
         this.results = undefined;
+        const lookUpObj = {};
+        // assign aggregate
+        const aggregateQry = this.query.aggregate;
 
         let index;
         let objKey;
         let value;
         let columnToAggregate;
         const calculateAggregate = () => {
+            const getCount = () => {
+                value = lookUpObj[objKey];
+                // get old value
+                value = value ? value["count(" + columnToAggregate + ")"] : 0;
+                // add with old value if data exist
+                value += datas[index][columnToAggregate] ? 1 : 0;
+                return value;
+            };
+            const getMax = () => {
+                value = lookUpObj[objKey];
+                // get old value
+                value = value ? value["max(" + columnToAggregate + ")"] : 0;
+                datas[index][columnToAggregate] = datas[index][columnToAggregate] ?
+                    datas[index][columnToAggregate] : 0;
+                // compare between old value and new value
+                return value > datas[index][columnToAggregate] ? value : datas[index][columnToAggregate];
+            };
+            const getMin = () => {
+                value = lookUpObj[objKey];
+                // get old value
+                value = value ? value["min(" + columnToAggregate + ")"] : Infinity;
+                datas[index][columnToAggregate] = datas[index][columnToAggregate] ?
+                    datas[index][columnToAggregate] : Infinity;
+                // compare between old value and new value
+                return value < datas[index][columnToAggregate] ? value : datas[index][columnToAggregate];
+            };
+            const getSum = () => {
+                value = lookUpObj[objKey];
+                // get old value
+                value = value ? value["sum(" + columnToAggregate + ")"] : 0;
+                // add with old value if data exist
+                value += datas[index][columnToAggregate] ? datas[index][columnToAggregate] : 0;
+                return value;
+            };
+            const getAvg = () => {
+                value = lookUpObj[objKey];
+                // get old sum value
+                let sumOfColumn = value ? value["sum(" + columnToAggregate + ")"] : 0;
+                // add with old value if data exist
+                sumOfColumn += datas[index][columnToAggregate] ? datas[index][columnToAggregate] : 0;
+                datas[index]["sum(" + columnToAggregate + ")"] = sumOfColumn;
+                // get old count value
+                value = value ? value["count(" + columnToAggregate + ")"] : 0;
+                // add with old value if data exist
+                value += datas[index][columnToAggregate] ? 1 : 0;
+                datas[index]["count(" + columnToAggregate + ")"] = value;
+            };
             for (const prop in aggregateQry) {
                 const aggregateColumn = aggregateQry[prop];
                 const aggregateValType = this.getType(aggregateColumn);
+                let aggregateCalculator;
                 switch (prop) {
                     case QUERY_OPTION.Count:
-                        const getCount = () => {
-                            value = lookUpObj[objKey];
-                            // get old value
-                            value = value ? value["count(" + columnToAggregate + ")"] : 0;
-                            // add with old value if data exist
-                            value += datas[index][columnToAggregate] ? 1 : 0;
-                            return value;
-                        };
-                        if (aggregateValType === DATA_TYPE.String) {
-                            columnToAggregate = aggregateColumn;
-                            datas[index]["count(" + columnToAggregate + ")"] = getCount();
-                        }
-                        else if (aggregateValType === DATA_TYPE.Array) {
-                            for (const item in aggregateColumn) {
-                                columnToAggregate = aggregateColumn[item];
-                                datas[index]["count(" + columnToAggregate + ")"] = getCount();
-                            }
-                        }
+                        aggregateCalculator = getCount;
                         break;
                     case QUERY_OPTION.Max:
-                        const getMax = () => {
-                            value = lookUpObj[objKey];
-                            // get old value
-                            value = value ? value["max(" + columnToAggregate + ")"] : 0;
-                            datas[index][columnToAggregate] = datas[index][columnToAggregate] ?
-                                datas[index][columnToAggregate] : 0;
-                            // compare between old value and new value
-                            return value > datas[index][columnToAggregate] ? value : datas[index][columnToAggregate];
-                        };
-
-                        if (aggregateValType === DATA_TYPE.String) {
-                            columnToAggregate = aggregateColumn;
-                            datas[index]["max(" + columnToAggregate + ")"] = getMax();
-                        }
-                        else if (aggregateValType === DATA_TYPE.Array) {
-                            for (const item in aggregateColumn) {
-                                columnToAggregate = aggregateColumn[item];
-                                datas[index]["max(" + columnToAggregate + ")"] = getMax();
-                            }
-                        }
+                        aggregateCalculator = getMax;
                         break;
                     case QUERY_OPTION.Min:
-                        const getMin = () => {
-                            value = lookUpObj[objKey];
-                            // get old value
-                            value = value ? value["min(" + columnToAggregate + ")"] : Infinity;
-                            datas[index][columnToAggregate] = datas[index][columnToAggregate] ?
-                                datas[index][columnToAggregate] : Infinity;
-                            // compare between old value and new value
-                            return value < datas[index][columnToAggregate] ? value : datas[index][columnToAggregate];
-                        };
-
-                        if (aggregateValType === DATA_TYPE.String) {
-                            columnToAggregate = aggregateColumn;
-                            datas[index]["min(" + columnToAggregate + ")"] = getMin();
-                        }
-                        else if (aggregateValType === DATA_TYPE.Array) {
-                            for (const item in aggregateColumn) {
-                                columnToAggregate = aggregateColumn[item];
-                                datas[index]["min(" + columnToAggregate + ")"] = getMin();
-                            }
-                        }
+                        aggregateCalculator = getMin;
                         break;
                     case QUERY_OPTION.Sum:
-                        const getSum = () => {
-                            value = lookUpObj[objKey];
-                            // get old value
-                            value = value ? value["sum(" + columnToAggregate + ")"] : 0;
-                            // add with old value if data exist
-                            value += datas[index][columnToAggregate] ? datas[index][columnToAggregate] : 0;
-                            return value;
-                        };
-                        if (aggregateValType === DATA_TYPE.String) {
-                            columnToAggregate = aggregateColumn;
-                            datas[index]["sum(" + columnToAggregate + ")"] = getSum();
-                        }
-                        else if (aggregateValType === DATA_TYPE.Array) {
-                            for (const item in aggregateColumn) {
-                                columnToAggregate = aggregateColumn[item];
-                                datas[index]["sum(" + columnToAggregate + ")"] = getSum();
-                            }
-                        }
+                        aggregateCalculator = getSum;
                         break;
                     case QUERY_OPTION.Avg:
-                        const getAvg = () => {
-                            value = lookUpObj[objKey];
-                            // get old sum value
-                            let sumOfColumn = value ? value["sum(" + columnToAggregate + ")"] : 0;
-                            // add with old value if data exist
-                            sumOfColumn += datas[index][columnToAggregate] ? datas[index][columnToAggregate] : 0;
-                            datas[index]["sum(" + columnToAggregate + ")"] = sumOfColumn;
-                            // get old count value
-                            value = value ? value["count(" + columnToAggregate + ")"] : 0;
-                            // add with old value if data exist
-                            value += datas[index][columnToAggregate] ? 1 : 0;
-                            datas[index]["count(" + columnToAggregate + ")"] = value;
-                        };
-
-                        if (aggregateValType === DATA_TYPE.String) {
-                            columnToAggregate = aggregateColumn;
-                            getAvg();
-                        }
-                        else if (aggregateValType === DATA_TYPE.Array) {
-                            for (const item in aggregateColumn) {
-                                columnToAggregate = aggregateColumn[item];
-                                getAvg();
-                            }
-                        }
+                        aggregateCalculator = getAvg;
                         break;
+                }
+                switch (aggregateValType) {
+                    case DATA_TYPE.String:
+                        columnToAggregate = aggregateColumn;
+                        datas[index][`${prop}(${columnToAggregate})`] = aggregateCalculator();
+                        break;
+                    case DATA_TYPE.Array:
+                        for (const item in aggregateColumn) {
+                            columnToAggregate = aggregateColumn[item];
+                            datas[index][`${prop}(${columnToAggregate})`] = aggregateCalculator();
+                        }
                 }
             }
         };
