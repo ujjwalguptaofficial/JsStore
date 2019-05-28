@@ -6,7 +6,7 @@ export class StudentService extends BaseService {
 
     constructor() {
         super();
-        this.tableName = "students";
+        this.tableName = "Students";
     }
 
     getStudents() {

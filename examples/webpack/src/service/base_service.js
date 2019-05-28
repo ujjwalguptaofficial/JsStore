@@ -1,12 +1,15 @@
- import {
-     idbCon
- } from "./idb_service";
- export class BaseService {
+import {
+    idbCon, initJsStore
+} from "./idb_service";
+export class BaseService {
+
+    constructor() {
+        initJsStore();
+    }
+
+    get connection() {
+        return idbCon;
+    }
 
 
-     get connection() {
-         return idbCon;
-     }
-
-
- }
+}

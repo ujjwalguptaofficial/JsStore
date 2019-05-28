@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "jquery": "^3.3.1",
-    "jsstore": "^2.9.2"
+    "jsstore": "^3.0.0"
   },
   "devDependencies": {
     "file-loader": "^3.0.1",
