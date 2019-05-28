@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "jquery": "^3.3.1",
-    "jsstore": "^2.9.2"
+    "jsstore": "^3.0.0"
   },
   "devDependencies": {
     "css-loader": "^0.28.11",

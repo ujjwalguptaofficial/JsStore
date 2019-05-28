@@ -1,63 +1,60 @@
-import * as JsStore from "jsstore";
-import {
-    DATA_TYPE
-} from "jsstore";
-import * as workerPath from 'file-loader?name=scripts/[name].[hash].js!jsstore/dist/jsstore.worker.min.js';
+import * as JsStore from 'jsstore';
+import { IDataBase, DATA_TYPE, ITable } from 'jsstore';
+
+const getWorkerPath = () => {
+    if (process.env.NODE_ENV === 'development') {
+        return require("file-loader?name=scripts/[name].[hash].js!jsstore/dist/jsstore.worker.js");
+    }
+    else {
+        return require("file-loader?name=scripts/[name].[hash].js!jsstore/dist/jsstore.worker.min.js");
+    }
+};
 
 // This will ensure that we are using only one instance. 
 // Otherwise due to multiple instance multiple worker will be created.
+const workerPath = getWorkerPath();
 export const idbCon = new JsStore.Instance(new Worker(workerPath));
-export const dbName = "Ts_Student_Demo";
+export const dbname = 'Demo';
 
-const initJsStore = async () => {
-    try {
-        const isDbCreated = await idbCon.isDbExist(dbName);
-        if (isDbCreated) {
-            idbCon.openDb(dbName);
-        } else {
-            idbCon.createDb(getDbSchema());
+const getDatabase = () => {
+    const tblStudent: ITable = {
+        name: 'Students',
+        columns: {
+            id: {
+                primaryKey: true,
+                autoIncrement: true
+            },
+            name: {
+                notNull: true,
+                dataType: DATA_TYPE.String
+            },
+            gender: {
+                dataType: DATA_TYPE.String,
+                default: 'male'
+            },
+            country: {
+                notNull: true,
+                dataType: DATA_TYPE.String
+            },
+            city: {
+                dataType: DATA_TYPE.String,
+                notNull: true
+            }
         }
+    };
+    const dataBase: IDataBase = {
+        name: dbname,
+        tables: [tblStudent]
+    };
+    return dataBase;
+};
 
-    } catch (ex) {
+export const initJsStore = () => {
+    try {
+        const dataBase = getDatabase();
+        idbCon.initDb(dataBase);
+    }
+    catch (ex) {
         console.error(ex);
     }
-}
-
-const getDbSchema = () => {
-    var studentsTable = {
-        name: 'students',
-        columns: [{
-            name: 'id',
-            primaryKey: true,
-            autoIncrement: true
-        },
-        {
-            name: 'name',
-            notNull: true,
-            dataType: DATA_TYPE.String
-        },
-        {
-            name: 'gender',
-            dataType: DATA_TYPE.String,
-            default: 'male'
-        },
-        {
-            name: 'country',
-            notNull: true,
-            dataType: DATA_TYPE.String
-        },
-        {
-            name: 'city',
-            dataType: DATA_TYPE.String,
-            notNull: true
-        }
-        ]
-    }
-
-    return {
-        name: dbName,
-        tables: [studentsTable]
-    }
-}
-
-initJsStore();
+};
