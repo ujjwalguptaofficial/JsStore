@@ -8,58 +8,42 @@ export const idbCon = new JsStore.Instance(new Worker(workerPath));
 export const dbname = 'Angular_Demo';
 
 
-const initJsStore = async () => {
-  try {
-    const isDbCreated = await idbCon.isDbExist(dbname);
-    if (isDbCreated) {
-      idbCon.openDb(dbname);
-    } else {
-      const dataBase = getDatabase();
-      idbCon.createDb(dataBase);
-    }
-  }
-  catch (err) {
-    // this will be fired when indexedDB is not supported.
-    alert(err.message);
-  }
 
-}
 
 const getDatabase = () => {
   const tblStudent: ITable = {
     name: 'Students',
-    columns: [{
-      name: 'id',
-      primaryKey: true,
-      autoIncrement: true
-    },
-    {
-      name: 'name',
-      notNull: true,
-      dataType: DATA_TYPE.String
-    },
-    {
-      name: 'gender',
-      dataType: DATA_TYPE.String,
-      default: 'male'
-    },
-    {
-      name: 'country',
-      notNull: true,
-      dataType: DATA_TYPE.String
-    },
-    {
-      name: 'city',
-      dataType: DATA_TYPE.String,
-      notNull: true
+    columns: {
+      id: {
+        primaryKey: true,
+        autoIncrement: true
+      },
+      name: {
+        notNull: true,
+        dataType: DATA_TYPE.String
+      },
+      gender: {
+        dataType: DATA_TYPE.String,
+        default: 'male'
+      },
+      country: {
+        notNull: true,
+        dataType: DATA_TYPE.String
+      },
+      city: {
+        dataType: DATA_TYPE.String,
+        notNull: true
+      }
     }
-    ]
   };
   const dataBase: IDataBase = {
     name: dbname,
     tables: [tblStudent]
   };
   return dataBase;
-}
+};
 
-initJsStore();
+export const initJsStore = () => {
+  const dataBase = getDatabase();
+  idbCon.initDb(dataBase);
+};

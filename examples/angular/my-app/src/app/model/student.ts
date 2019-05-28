@@ -7,7 +7,7 @@ export class IStudent {
 }
 
 export class Student implements IStudent {
-    id = 0;
+    id = null;
     name = '';
     gender = 'm';
     country = '';

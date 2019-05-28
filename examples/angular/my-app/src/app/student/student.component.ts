@@ -34,7 +34,7 @@ export class StudentComponent implements OnInit {
 
   async getStudents() {
     try {
-      this.students = await this.service.getStudents()
+      this.students = await this.service.getStudents();
     }
     catch (error) {
       console.error(error);
