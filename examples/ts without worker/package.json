@@ -2,11 +2,12 @@
   "name": "jsstore_typescript_example",
   "version": "1.0.0",
   "scripts": {
-    "build": "webpack"
+    "build": "webpack",
+    "start":"webpack-dev-server"
   },
   "dependencies": {
     "jquery": "^3.3.1",
-    "jsstore": "^2.3.1"
+    "jsstore": "^3.0.0"
   },
   "devDependencies": {
     "css-loader": "^0.28.11",
@@ -14,7 +15,8 @@
     "html-webpack-plugin": "^3.2.0",
     "ts-loader": "^4.1.0",
     "typescript": "^2.7.2",
-    "webpack": "^4.1.1",
-    "webpack-cli": "^2.0.12"
+    "webpack": "^4.32.2",
+    "webpack-cli": "^3.3.2",
+    "webpack-dev-server": "^3.4.1"
   }
 }
