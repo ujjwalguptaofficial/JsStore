@@ -5,24 +5,14 @@ module.exports = {
     mode: 'development',
     devtool: 'source-map',
     module: {
-        rules: [{
-            test: /\.js|.jsx?$/,
-            exclude: /(node_modules|bower_components)/,
-            use: {
-                loader: 'babel-loader',
-                query: {
-                    presets: ['es2015']
-                }
-            },
-            
-        }]
+         
     },
     resolve: {
         extensions: ['.js']
     },
     output: {
         filename: 'scripts/bundle.js',
-        path: path.resolve(__dirname, 'dist/')
+        path: path.resolve(__dirname, 'bin/')
     },
     plugins: [
         new HtmlWebpackPlugin({

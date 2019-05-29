@@ -82,7 +82,7 @@ export class StudentGrid {
         $('#btnAdd').click(() => {
             const addRow = $('table thead tr')[1];
             const student = new Student(
-                0,
+                null,
                 $(addRow.cells[0]).find('input').val(),
                 $(addRow.cells[1]).find('input').val(),
                 $(addRow.cells[2]).find('input').val(),
