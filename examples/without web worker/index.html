@@ -9,170 +9,9 @@
     <link rel="stylesheet" type="text/css" href="style/bootstrap.css" />
     <script src="scripts/bootstrap.js"></script>
     <link rel="stylesheet" href="style/font-awesome.min.css" />
-    <script src="scripts/jsstore.worker.min.js "></script>
-    <script src="scripts/jsstore.min.js "></script>
-    <script>
-        var connection = new JsStore.Instance();
-        window.onload = function () {
-            initiateDb();
-            $('#btnAddStudent').click(function () {
-                window.location.href = 'add.html';
-            })
-            $('#tblGrid tbody').on('click', '.edit', function () {
-                var StudentId = $(this).parents().eq(1).attr('itemid');
-                window.location.href = 'add.html?id=' + StudentId;
-            });
-            $('#tblGrid tbody').on('click', '.delete', function () {
-                var Result = confirm('Are you sure, you want to delete?');
-                if (Result) {
-                    var StudentId = $(this).parents().eq(1).attr('itemid');
-                    deleteData(StudentId);
-                }
-            });
-        };
-
-        function deleteData(studentId) {
-            connection.remove({
-                from: 'Student',
-                where: {
-                    Id: Number(studentId)
-                }
-            }).then(function (rowsDeleted) {
-                console.log(rowsDeleted + ' rows deleted');
-                if (rowsDeleted > 0) {
-                    showTableData();
-                }
-            }).catch(function (error) {
-                console.log(err);
-                alert(error.message);
-            });
-        }
-
-        function initiateDb() {
-            var DbName = "Students";
-            connection.isDbExist(DbName).then(function (isExist) {
-                if (isExist) {
-                    connection.openDb(DbName).then(function () {
-                        console.log('db opened');
-                    });
-                    showTableData();
-                } else {
-                    var DataBase = getDatabase();
-                    connection.createDb(DataBase).then(function (tables) {
-                        console.log(tables);
-                    });
-                    insertStudents();
-                    showTableData();
-                }
-            }).catch(function (err) {
-                console.log(err);
-                alert(err.message);
-            });
-        }
-
-        function insertStudents() {
-            var Students = getStudents();
-            connection.insert({
-                into: "Student",
-                values: Students
-            }).then(function (rowsAdded) {
-                if (rowsAdded > 0) {
-                    alert('Successfully added');
-                }
-            }).catch(function (err) {
-                console.log(err);
-                alert('Error Occured while adding data')
-            });
-        }
-
-        function getDatabase() {
-            var tblStudent = {
-                name: "Student",
-                columns: [{
-                        name: "Id",
-                        primaryKey: true,
-                        autoIncrement: true
-                    },
-                    {
-                        name: "Name",
-                        notNull: true,
-                        dataType: "string"
-                    },
-                    {
-                        name: "Gender",
-                        dataType: "string",
-                        default: 'male'
-                    },
-                    {
-                        name: "Country",
-                        notNull: true,
-                        dataType: "string"
-                    },
-                    {
-                        name: "City",
-                        notNull: true
-                    }
-                ]
-            }
-            var dataBase = {
-                name: "Students",
-                tables: [tblStudent]
-            }
-
-            return dataBase;
-        }
-
-        //This function refreshes the table
-        function showTableData() {
-            connection.select({
-                from: "Student"
-            }).then(function (students) {
-                var HtmlString = "";
-                students.forEach(function (student) {
-                    HtmlString += "<tr ItemId=" + student.Id + "><td>" +
-                        student.Name + "</td><td>" +
-                        student.Gender + "</td><td>" +
-                        student.Country + "</td><td>" +
-                        student.City + "</td><td>" +
-                        "<a href='#' class='edit'>Edit</a></td>" +
-                        "<td><a href='#' class='delete''>Delete</a></td>";
-                })
-                $('#tblGrid tbody').html(HtmlString);
-            }).catch(function (error) {
-                console.log(error);
-            });
-        }
-
-        function getStudents() {
-            //Student Array
-            var Students = [{
-                    Name: 'Alfreds',
-                    Gender: 'male',
-                    Country: 'Germany',
-                    City: 'Berlin'
-                },
-                {
-                    Name: 'george',
-                    Gender: 'male',
-                    Country: 'America',
-                    City: 'xyx'
-                },
-                {
-                    Name: 'Berglunds',
-                    Gender: 'female',
-                    Country: 'Sweden',
-                    City: 'Luleå'
-                },
-                {
-                    Name: 'Eastern',
-                    Gender: 'male',
-                    Country: 'Canada',
-                    City: 'qwe'
-                },
-            ]
-            return Students;
-        }
-    </script>
+    <script src="scripts/jsstore.js"></script>
+    <script src="scripts/jsstore.worker.js"></script>
+    <script src="scripts/index.js"></script>
 </head>
 
 <body>
@@ -183,7 +22,9 @@
                     <i class="fa fa-plus" aria-hidden="true"></i> Add Student</button>
             </div>
             <table id="tblGrid" class="table table-hover ">
-                <caption style="text-align:center;padding:7px 0px 7px 0px;background:#4f4f86;color:white;font-family:cursive;font-size:18px; ">Student's Details</caption>
+                <caption
+                    style="text-align:center;padding:7px 0px 7px 0px;background:#4f4f86;color:white;font-family:cursive;font-size:18px; ">
+                    Student's Details</caption>
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -196,6 +37,47 @@
                 </thead>
                 <tbody></tbody>
             </table>
+            <form id="formAddUpdate" class="form-horizontal" role="form" style="margin-top:50px; display: none;">
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="txtName">Name:</label>
+                    <div class="col-sm-7">
+                        <input type="text" class="form-control" id="txtName" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="txtLastName">Gender:</label>
+                    <div class="col-sm-7">
+                        <label class="radio-inline">
+                            <input type="radio" value="male" name="gender" />Male</label>
+                        <label class="radio-inline">
+                            <input type="radio" value="female" name="gender" />FeMale</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="txtCountry">Country:</label>
+                    <div class="col-sm-7">
+                        <input type="text" class="form-control" id="txtCountry" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="txtCity">City:</label>
+                    <div class="col-sm-7">
+                        <input type="text" class="form-control" id="txtCity" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-12" style="text-align:center;margin-top:30px;">
+                        <button id="btnSubmit" type="button" class="btn btn-primary" style="padding:9px 15px 9px 15px;">
+                            <i class="fa fa-check" aria-hidden="true"></i>
+                            <span>Submit</span>
+                        </button>
+                        <button id="btnCancel " type="button" class="btn btn-primary "
+                            style="padding:9px 15px 9px 15px;margin-left:10px; ">
+                            <i class="fa fa-times" aria-hidden="true"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
     <link href="style/main.css " rel="stylesheet " type="text/css " />
