@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.0.0 - 26/05/2019
+ * @license :jsstore - V3.0.1 - 08/06/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -3167,7 +3167,7 @@ var Join = /** @class */ (function (_super) {
         var _this = this;
         if (this.error == null) {
             var mapWithAlias_1 = function (query, value) {
-                if (query.as) {
+                if (query.as && value) {
                     for (var key in query.as) {
                         value[query.as[key]] = value[key];
                         delete value[key];

@@ -37,7 +37,7 @@ export class Join extends Helper {
     private onJoinQueryFinished_() {
         if (this.error == null) {
             const mapWithAlias = (query: JoinQuery, value: object) => {
-                if (query.as) {
+                if (query.as && value) {
                     for (const key in query.as) {
                         value[(query.as as any)[key]] = value[key];
                         delete value[key];
