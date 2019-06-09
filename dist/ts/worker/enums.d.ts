@@ -48,7 +48,8 @@ export declare enum ERROR_TYPE {
     IndexedDbUndefined = "indexeddb_undefined",
     IndexedDbBlocked = "indexeddb_blocked",
     NullValueInWhere = "null_value_in_where",
-    InvalidJoinQuery = "invalid_join_query"
+    InvalidJoinQuery = "invalid_join_query",
+    InvalidOrderQuery = "invalid_order_query"
 }
 export declare enum QUERY_OPTION {
     Where = "where",

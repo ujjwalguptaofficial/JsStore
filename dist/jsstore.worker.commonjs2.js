@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.0.2 - 10/06/2019
+ * @license :jsstore - V3.0.1 - 09/06/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -152,7 +152,9 @@ var Base = /** @class */ (function (_super) {
                 error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](e.target.error.name);
                 error.message = e.target.error.message;
             }
-            error.logError();
+            if (true) {
+                error.logError();
+            }
             this.error = error.get();
         }
     };
@@ -3161,7 +3163,10 @@ var Join = /** @class */ (function (_super) {
             });
             _this.tablesFetched.push(tableName);
             _this.startExecutionJoinLogic_();
-        }, this.onErrorOccured).execute();
+        }, this.onError_.bind(this)).execute();
+    };
+    Join.prototype.onError_ = function (err) {
+        this.onErrorOccured(err);
     };
     Join.prototype.onJoinQueryFinished_ = function () {
         var _this = this;
@@ -3176,20 +3181,32 @@ var Join = /** @class */ (function (_super) {
                 return value;
             };
             var results_1 = [];
-            if (this.results && this.results.length > 0) {
-                var tables = Object.keys(this.results[0]);
-                var tablesLength_1 = tables.length;
-                this.results.forEach(function (result) {
-                    var data = result["0"]; // first table data
-                    for (var i = 1; i < tablesLength_1; i++) {
-                        var query = _this.joinQueryStack_[i - 1];
-                        data = __assign({}, data, mapWithAlias_1(query, result[i]));
-                    }
-                    results_1.push(data);
-                });
-            }
+            var tables = Object.keys(this.results[0]);
+            var tablesLength_1 = tables.length;
+            this.results.forEach(function (result) {
+                var data = result["0"]; // first table data
+                for (var i = 1; i < tablesLength_1; i++) {
+                    var query = _this.joinQueryStack_[i - 1];
+                    data = __assign({}, data, mapWithAlias_1(query, result[i]));
+                }
+                results_1.push(data);
+            });
             this.results = results_1;
-            this.processOrderBy();
+            // free results memory
+            results_1 = null;
+            if (true) {
+                try {
+                    this.processOrderBy();
+                }
+                catch (ex) {
+                    this.onError({
+                        message: ex.message,
+                        type: _enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].InvalidOrderQuery
+                    });
+                    return;
+                }
+            }
+            else {}
             if (this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Skip] && this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Limit]) {
                 this.results.splice(0, this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Skip]);
                 this.results.splice(this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Limit] - 1, this.results.length);
@@ -3210,30 +3227,38 @@ var Join = /** @class */ (function (_super) {
         var _this = this;
         var query = this.joinQueryStack_[this.currentQueryStackIndex_];
         if (query) {
-            var jointblInfo_1 = this.getJoinTableInfo_(query.on);
-            if (true) {
-                this.checkJoinTableShema(jointblInfo_1, query);
-                if (this.error != null) {
-                    this.onJoinQueryFinished_();
-                    return;
+            try {
+                var jointblInfo_1 = this.getJoinTableInfo_(query.on);
+                if (true) {
+                    this.checkJoinTableShema(jointblInfo_1, query);
+                    if (this.error != null) {
+                        this.onJoinQueryFinished_();
+                        return;
+                    }
                 }
+                // table 1 is fetched & table2 needs to be fetched for join
+                if (this.tablesFetched.indexOf(jointblInfo_1.table1.table) < 0) {
+                    jointblInfo_1 = {
+                        table1: jointblInfo_1.table2,
+                        table2: jointblInfo_1.table1
+                    };
+                }
+                new _instance__WEBPACK_IMPORTED_MODULE_0__["Instance"]({
+                    from: jointblInfo_1.table2.table,
+                    where: query.where
+                }, function (results) {
+                    _this.jointables(query.type, jointblInfo_1, results);
+                    _this.tablesFetched.push(jointblInfo_1.table2.table);
+                    ++_this.currentQueryStackIndex_;
+                    _this.startExecutionJoinLogic_();
+                }, this.onError_.bind(this)).execute();
             }
-            // table 1 is fetched & table2 needs to be fetched for join
-            if (this.tablesFetched.indexOf(jointblInfo_1.table1.table) < 0) {
-                jointblInfo_1 = {
-                    table1: jointblInfo_1.table2,
-                    table2: jointblInfo_1.table1
-                };
+            catch (ex) {
+                this.onError_({
+                    message: ex.message,
+                    type: 'invalid_query'
+                });
             }
-            new _instance__WEBPACK_IMPORTED_MODULE_0__["Instance"]({
-                from: jointblInfo_1.table2.table,
-                where: query.where
-            }, function (results) {
-                _this.jointables(query.type, jointblInfo_1, results);
-                _this.tablesFetched.push(jointblInfo_1.table2.table);
-                ++_this.currentQueryStackIndex_;
-                _this.startExecutionJoinLogic_();
-            }, this.onErrorOccured).execute();
         }
         else {
             this.onJoinQueryFinished_();
@@ -5056,6 +5081,7 @@ var ERROR_TYPE;
     ERROR_TYPE["IndexedDbBlocked"] = "indexeddb_blocked";
     ERROR_TYPE["NullValueInWhere"] = "null_value_in_where";
     ERROR_TYPE["InvalidJoinQuery"] = "invalid_join_query";
+    ERROR_TYPE["InvalidOrderQuery"] = "invalid_order_query";
 })(ERROR_TYPE || (ERROR_TYPE = {}));
 var QUERY_OPTION;
 (function (QUERY_OPTION) {
