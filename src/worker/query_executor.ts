@@ -101,7 +101,7 @@ export class QueryExecutor {
             case API.OpenDb:
                 this.openDb_(request.query, onSuccess, onError); break;
             case API.Select:
-                this.select_(request.query as SelectQuery, onSuccess, onError);
+                new Select.Instance(request.query as SelectQuery, onSuccess, onError).execute();
                 break;
             case API.Insert: this.insert_(request.query as InsertQuery, onSuccess, onError);
                 break;
@@ -135,7 +135,8 @@ export class QueryExecutor {
                 break;
             case API.DropDb: this.dropDb_(onSuccess, onError);
                 break;
-            case API.Count: this.count_(request.query as CountQuery, onSuccess, onError);
+            case API.Count:
+                new Count.Instance(request.query as CountQuery, onSuccess, onError).execute();
                 break;
             case API.BulkInsert: this.bulkInsert_(request.query as InsertQuery, onSuccess, onError);
                 break;
@@ -270,25 +271,6 @@ export class QueryExecutor {
         if (queryHelper.error == null) {
             const deleteObject = new Remove.Instance(query, onSuccess, onError);
             deleteObject.execute();
-        }
-        else {
-            onError(
-                queryHelper.error
-            );
-        }
-    }
-
-    private select_(query: SelectQuery, onSuccess: (result) => void, onError: (err: IError) => void) {
-        new Select.Instance(query, onSuccess, onError).execute();
-    }
-
-
-    private count_(query: CountQuery, onSuccess: () => void, onError: (err: IError) => void) {
-        const queryHelper = new QueryHelper(API.Count, query);
-        queryHelper.checkAndModify();
-        if (queryHelper.error == null) {
-            const countInstance = new Count.Instance(query, onSuccess, onError);
-            countInstance.execute();
         }
         else {
             onError(

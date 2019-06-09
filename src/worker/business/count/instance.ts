@@ -1,8 +1,9 @@
 import { Where } from "./where";
 import { CountQuery } from "../../types";
 import * as Select from '../select/index';
-import { IDB_MODE } from "../../enums";
+import { IDB_MODE, API } from "../../enums";
 import { IError } from "../../interfaces";
+import { QueryHelper } from "../query_helper";
 
 export class Instance extends Where {
 
@@ -14,36 +15,45 @@ export class Instance extends Where {
     }
 
     execute() {
-        try {
-            const getDataFromSelect = () => {
-                const selectInstance = new Select.Instance(this.query as any,
-                    (results) => {
-                        this.resultCount = results.length;
-                        this.onTransactionCompleted_();
-                    }, this.onError);
-                selectInstance.execute();
-            };
-            if (this.query.join == null) {
-                if (this.query.where != null) {
-                    if (this.query.where.or || this.isArray(this.query.where)) {
-                        getDataFromSelect();
+        const queryHelper = new QueryHelper(API.Count, this.query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            try {
+                const getDataFromSelect = () => {
+                    const selectInstance = new Select.Instance(this.query as any,
+                        (results) => {
+                            this.resultCount = results.length;
+                            this.onTransactionCompleted_();
+                        }, this.onError);
+                    selectInstance.execute();
+                };
+                if (this.query.join == null) {
+                    if (this.query.where != null) {
+                        if (this.query.where.or || this.isArray(this.query.where)) {
+                            getDataFromSelect();
+                        }
+                        else {
+                            this.initTransaction_();
+                            this.goToWhereLogic();
+                        }
                     }
                     else {
                         this.initTransaction_();
-                        this.goToWhereLogic();
+                        this.executeWhereUndefinedLogic();
                     }
                 }
                 else {
-                    this.initTransaction_();
-                    this.executeWhereUndefinedLogic();
+                    getDataFromSelect();
                 }
             }
-            else {
-                getDataFromSelect();
+            catch (ex) {
+                this.onExceptionOccured(ex);
             }
         }
-        catch (ex) {
-            this.onExceptionOccured(ex);
+        else {
+            this.onError(
+                queryHelper.error
+            );
         }
     }
 
