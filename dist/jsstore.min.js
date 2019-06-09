@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.0.0 - 26/05/2019
+ * @license :jsstore - V3.0.1 - 08/06/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
