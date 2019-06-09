@@ -98,6 +98,17 @@ export class QueryExecutor {
 
         QueryExecutor.isTransactionQuery = request.name === API.Transaction;
         switch (request.name) {
+            case API.InitDb:
+                if (this.isDbDeletedByBrowser_ === true) {
+                    this.initDb_(null, () => {
+                        this.isDbDeletedByBrowser_ = false;
+                        onSuccess();
+                    }, onError);
+                }
+                else {
+                    this.initDb_(request.query as IDataBase, onSuccess, onError);
+                }
+                break;
             case API.OpenDb:
                 this.openDb_(request.query, onSuccess, onError); break;
             case API.Select:
@@ -105,7 +116,8 @@ export class QueryExecutor {
                 break;
             case API.Insert: this.insert_(request.query as InsertQuery, onSuccess, onError);
                 break;
-            case API.Update: this.update_(request.query as UpdateQuery, onSuccess, onError);
+            case API.Update:
+                new Update.Instance(request.query as UpdateQuery, onSuccess, onError).execute();
                 break;
             case API.Remove:
                 new Remove.Instance(request.query as RemoveQuery, onSuccess, onError).execute();
@@ -120,17 +132,6 @@ export class QueryExecutor {
                 break;
             case API.GetDbSchema:
                 this.getDbSchema_(request.query as string).then(onSuccess).catch(onError);
-                break;
-            case API.InitDb:
-                if (this.isDbDeletedByBrowser_ === true) {
-                    this.initDb_(null, () => {
-                        this.isDbDeletedByBrowser_ = false;
-                        onSuccess();
-                    }, onError);
-                }
-                else {
-                    this.initDb_(request.query as IDataBase, onSuccess, onError);
-                }
                 break;
             case API.Clear: new Clear(request.query as string, onSuccess, onError).execute();
                 break;
@@ -148,8 +149,7 @@ export class QueryExecutor {
             case API.ChangeLogStatus:
                 this.changeLogStatus_(request.query as boolean, onSuccess, onError);
                 break;
-            case API.Transaction:
-                this.transaction_(request.query, onSuccess, onError);
+            case API.Transaction: new Transaction.Instance(request.query, onSuccess, onError).execute();
                 break;
             case API.CloseDb:
             case API.Terminate:
@@ -224,22 +224,7 @@ export class QueryExecutor {
 
     private dropDb_(onSuccess: () => void, onError: (err: IError) => void) {
         this.closeDb_();
-        const dropDbInstance = new DropDb(onSuccess, onError);
-        dropDbInstance.deleteDb();
-    }
-
-    private update_(query: UpdateQuery, onSuccess: () => void, onError: (err: IError) => void) {
-        const queryHelper = new QueryHelper(API.Update, query);
-        queryHelper.checkAndModify();
-        if (queryHelper.error == null) {
-            const updateDbInstance = new Update.Instance(query, onSuccess, onError);
-            updateDbInstance.execute();
-        }
-        else {
-            onError(
-                queryHelper.error
-            );
-        }
+        new DropDb(onSuccess, onError).deleteDb();
     }
 
     private insert_(query: InsertQuery, onSuccess: () => void, onError: (err: IError) => void) {
@@ -353,10 +338,5 @@ export class QueryExecutor {
 
     private set_(query: SetQuery) {
         return KeyStore.set(query.key, query.value);
-    }
-
-    private transaction_(qry: TranscationQuery, onSuccess: (value) => void, onError: (err: IError) => void) {
-        const transaction = new Transaction.Instance(qry, onSuccess, onError);
-        transaction.execute();
     }
 }
