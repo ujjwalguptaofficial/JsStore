@@ -3,6 +3,7 @@ import * as Select from './instance';
 import { QUERY_OPTION, DATA_TYPE, ERROR_TYPE } from "../../enums";
 import { Helper } from "./orderby_helper";
 import { LogHelper } from "../../log_helper";
+import { IError } from "../../../main/index";
 
 export class Join extends Helper {
 
@@ -31,7 +32,11 @@ export class Join extends Helper {
             });
             this.tablesFetched.push(tableName);
             this.startExecutionJoinLogic_();
-        }, this.onErrorOccured).execute();
+        }, this.onError_.bind(this)).execute();
+    }
+
+    private onError_(err: IError) {
+        this.onErrorOccured(err);
     }
 
     private onJoinQueryFinished_() {
@@ -45,7 +50,7 @@ export class Join extends Helper {
                 }
                 return value;
             };
-            const results = [];
+            let results = [];
             const tables = Object.keys(this.results[0]);
             const tablesLength = tables.length;
             this.results.forEach((result) => {
@@ -57,7 +62,24 @@ export class Join extends Helper {
                 results.push(data);
             });
             this.results = results;
-            this.processOrderBy();
+            // free results memory
+            results = null;
+            if (process.env.NODE_ENV === 'dev') {
+                try {
+                    this.processOrderBy();
+                }
+                catch (ex) {
+                    this.onError({
+                        message: ex.message,
+                        type: ERROR_TYPE.InvalidOrderQuery
+                    });
+                    return;
+                }
+            }
+            else {
+                this.processOrderBy();
+            }
+
             if (this.query[QUERY_OPTION.Skip] && this.query[QUERY_OPTION.Limit]) {
                 this.results.splice(0, this.query[QUERY_OPTION.Skip]);
                 this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
@@ -78,31 +100,39 @@ export class Join extends Helper {
     private startExecutionJoinLogic_() {
         const query = this.joinQueryStack_[this.currentQueryStackIndex_];
         if (query) {
-            let jointblInfo = this.getJoinTableInfo_(query.on);
-            if (process.env.NODE_ENV === 'dev') {
-                this.checkJoinTableShema(jointblInfo, query);
-                if (this.error != null) {
-                    this.onJoinQueryFinished_();
-                    return;
+            try {
+                let jointblInfo = this.getJoinTableInfo_(query.on);
+                if (process.env.NODE_ENV === 'dev') {
+                    this.checkJoinTableShema(jointblInfo, query);
+                    if (this.error != null) {
+                        this.onJoinQueryFinished_();
+                        return;
+                    }
                 }
-            }
-            // table 1 is fetched & table2 needs to be fetched for join
-            if (this.tablesFetched.indexOf(jointblInfo.table1.table) < 0) {
-                jointblInfo = {
-                    table1: jointblInfo.table2,
-                    table2: jointblInfo.table1
-                };
-            }
+                // table 1 is fetched & table2 needs to be fetched for join
+                if (this.tablesFetched.indexOf(jointblInfo.table1.table) < 0) {
+                    jointblInfo = {
+                        table1: jointblInfo.table2,
+                        table2: jointblInfo.table1
+                    };
+                }
 
-            new Select.Instance({
-                from: jointblInfo.table2.table,
-                where: query.where
-            }, (results) => {
-                this.jointables(query.type, jointblInfo, results);
-                this.tablesFetched.push(jointblInfo.table2.table);
-                ++this.currentQueryStackIndex_;
-                this.startExecutionJoinLogic_();
-            }, this.onErrorOccured).execute();
+                new Select.Instance({
+                    from: jointblInfo.table2.table,
+                    where: query.where
+                }, (results) => {
+                    this.jointables(query.type, jointblInfo, results);
+                    this.tablesFetched.push(jointblInfo.table2.table);
+                    ++this.currentQueryStackIndex_;
+                    this.startExecutionJoinLogic_();
+                }, this.onError_.bind(this)).execute();
+            }
+            catch (ex) {
+                this.onError_({
+                    message: ex.message,
+                    type: 'invalid_query' as any
+                });
+            }
         }
         else {
             this.onJoinQueryFinished_();

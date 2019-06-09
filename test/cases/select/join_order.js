@@ -86,6 +86,26 @@ describe('select join order test', function () {
         })
     });
 
+    if (!(isRuningForProd() || isRuningForSauce())) {
+        it('select from student left join with studentdetail with as & invalid order query', function (done) {
+            con.select({
+                from: "Student",
+                join: {
+                    with: "StudentDetail",
+                    on: "Student.Name=StudentDetail.Name",
+                    as: {
+                        Id: 'StudentDetailId'
+                    }
+                },
+                order: { by: 'Order', type: 'asc' }
+            }).catch(function (err) {
+                const error = { "message": "Cannot read property 'columns' of undefined", "type": "invalid_order_query" };
+                expect(error).to.be.eql(err);
+                done();
+            })
+        });
+    }
+
     it('select from student left join with studentdetail with as & order type desc', function (done) {
         con.select({
             from: "Student",
