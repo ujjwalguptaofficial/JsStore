@@ -46,16 +46,18 @@ export class Join extends Helper {
                 return value;
             };
             const results = [];
-            const tables = Object.keys(this.results[0]);
-            const tablesLength = tables.length;
-            this.results.forEach((result) => {
-                let data = result["0"]; // first table data
-                for (let i = 1; i < tablesLength; i++) {
-                    const query = this.joinQueryStack_[i - 1];
-                    data = { ...data, ...mapWithAlias(query, result[i]) };
-                }
-                results.push(data);
-            });
+            if (this.results && this.results.length > 0) {
+                const tables = Object.keys(this.results[0]);
+                const tablesLength = tables.length;
+                this.results.forEach((result) => {
+                    let data = result["0"]; // first table data
+                    for (let i = 1; i < tablesLength; i++) {
+                        const query = this.joinQueryStack_[i - 1];
+                        data = { ...data, ...mapWithAlias(query, result[i]) };
+                    }
+                    results.push(data);
+                });
+            }
             this.results = results;
             this.processOrderBy();
             if (this.query[QUERY_OPTION.Skip] && this.query[QUERY_OPTION.Limit]) {

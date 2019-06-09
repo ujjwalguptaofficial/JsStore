@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.0.1 - 08/06/2019
+ * @license :jsstore - V3.0.2 - 10/06/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -3176,16 +3176,18 @@ var Join = /** @class */ (function (_super) {
                 return value;
             };
             var results_1 = [];
-            var tables = Object.keys(this.results[0]);
-            var tablesLength_1 = tables.length;
-            this.results.forEach(function (result) {
-                var data = result["0"]; // first table data
-                for (var i = 1; i < tablesLength_1; i++) {
-                    var query = _this.joinQueryStack_[i - 1];
-                    data = __assign({}, data, mapWithAlias_1(query, result[i]));
-                }
-                results_1.push(data);
-            });
+            if (this.results && this.results.length > 0) {
+                var tables = Object.keys(this.results[0]);
+                var tablesLength_1 = tables.length;
+                this.results.forEach(function (result) {
+                    var data = result["0"]; // first table data
+                    for (var i = 1; i < tablesLength_1; i++) {
+                        var query = _this.joinQueryStack_[i - 1];
+                        data = __assign({}, data, mapWithAlias_1(query, result[i]));
+                    }
+                    results_1.push(data);
+                });
+            }
             this.results = results_1;
             this.processOrderBy();
             if (this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Skip] && this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Limit]) {
