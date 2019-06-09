@@ -1,7 +1,8 @@
 import { SelectQuery } from "../../types";
-import { IDB_MODE, QUERY_OPTION } from "../../enums";
+import { IDB_MODE, QUERY_OPTION, API } from "../../enums";
 import { IError } from "../../interfaces";
 import { Join } from "./join";
+import { QueryHelper } from "../query_helper";
 
 export class Instance extends Join {
 
@@ -19,29 +20,38 @@ export class Instance extends Join {
     }
 
     execute() {
-        try {
-            if (this.query.join == null) {
-                if (this.query.where != null) {
-                    this.initTransaction_();
-                    if (this.isArray(this.query.where)) {
-                        this.processWhereArrayQry();
+        const queryHelper = new QueryHelper(API.Select, this.query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            try {
+                if (this.query.join == null) {
+                    if (this.query.where != null) {
+                        this.initTransaction_();
+                        if (this.isArray(this.query.where)) {
+                            this.processWhereArrayQry();
+                        }
+                        else {
+                            this.processWhere_();
+                        }
                     }
                     else {
-                        this.processWhere_();
+                        this.initTransaction_();
+                        this.executeWhereUndefinedLogic();
                     }
+
                 }
                 else {
-                    this.initTransaction_();
-                    this.executeWhereUndefinedLogic();
+                    this.executeJoinQuery();
                 }
-
             }
-            else {
-                this.executeJoinQuery();
+            catch (ex) {
+                this.onExceptionOccured(ex, { tableName: this.tableName });
             }
         }
-        catch (ex) {
-            this.onExceptionOccured(ex, { tableName:  this.tableName });
+        else {
+            this.onError(
+                queryHelper.error
+            );
         }
     }
 

@@ -279,17 +279,7 @@ export class QueryExecutor {
     }
 
     private select_(query: SelectQuery, onSuccess: (result) => void, onError: (err: IError) => void) {
-        const queryHelper = new QueryHelper(API.Select, query);
-        queryHelper.checkAndModify();
-        if (queryHelper.error == null) {
-            const selectInstance = new Select.Instance(query, onSuccess, onError);
-            selectInstance.execute();
-        }
-        else {
-            onError(
-                queryHelper.error
-            );
-        }
+        new Select.Instance(query, onSuccess, onError).execute();
     }
 
 

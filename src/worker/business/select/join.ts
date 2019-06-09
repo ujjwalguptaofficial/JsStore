@@ -123,25 +123,15 @@ export class Join extends Helper {
                     }
                 }
 
-                const selectQry = {
+                new Select.Instance({
                     from: query.with,
                     where: query.where
-                } as SelectQuery;
-                const queryHelper = new QueryHelper(API.Select, selectQry);
-                queryHelper.checkAndModify();
-                if (queryHelper.error == null) {
-                    new Select.Instance(selectQry, (results) => {
-                        this.jointables(query.type, jointblInfo, results);
-                        this.tablesFetched.push(jointblInfo.table2.table);
-                        ++this.currentQueryStackIndex_;
-                        this.startExecutingJoinLogic_();
-                    }, this.onError).execute();
-                }
-                else {
-                    this.onError(
-                        queryHelper.error
-                    );
-                }
+                }, (results) => {
+                    this.jointables(query.type, jointblInfo, results);
+                    this.tablesFetched.push(jointblInfo.table2.table);
+                    ++this.currentQueryStackIndex_;
+                    this.startExecutingJoinLogic_();
+                }, this.onError).execute();
             }
             catch (ex) {
                 this.onError({
