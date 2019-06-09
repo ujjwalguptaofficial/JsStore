@@ -114,7 +114,7 @@ export class QueryExecutor {
             case API.Select:
                 new Select.Instance(request.query as SelectQuery, onSuccess, onError).execute();
                 break;
-            case API.Insert: this.insert_(request.query as InsertQuery, onSuccess, onError);
+            case API.Insert: new Insert.Instance(request.query as InsertQuery, onSuccess, onError).execute();
                 break;
             case API.Update:
                 new Update.Instance(request.query as UpdateQuery, onSuccess, onError).execute();
@@ -140,7 +140,8 @@ export class QueryExecutor {
             case API.Count:
                 new Count.Instance(request.query as CountQuery, onSuccess, onError).execute();
                 break;
-            case API.BulkInsert: this.bulkInsert_(request.query as InsertQuery, onSuccess, onError);
+            case API.BulkInsert:
+                new BulkInsert(request.query as InsertQuery, onSuccess, onError).execute();
                 break;
             case API.Get: this.get_(request.query as string).then(onSuccess).catch(onError);
                 break;
@@ -159,7 +160,9 @@ export class QueryExecutor {
                 this.initKeyStore_(onSuccess);
                 break;
             default:
-                console.error('The Api:-' + request.name + ' does not support.');
+                if (process.env.NODE_ENV === 'dev') {
+                    console.error('The Api:-' + request.name + ' does not support.');
+                }
         }
     }
 
@@ -227,29 +230,7 @@ export class QueryExecutor {
         new DropDb(onSuccess, onError).deleteDb();
     }
 
-    private insert_(query: InsertQuery, onSuccess: () => void, onError: (err: IError) => void) {
-        const queryHelper = new QueryHelper(API.Insert, query);
-        queryHelper.checkAndModify().then(function () {
-            query = queryHelper.query;
-            const insertInstance = new Insert.Instance(query, onSuccess, onError);
-            insertInstance.execute();
-        }).catch(onError);
-    }
 
-    private bulkInsert_(query: InsertQuery, onSuccess: () => void, onError: (err: IError) => void) {
-        const queryHelper = new QueryHelper(API.BulkInsert, query);
-        queryHelper.checkAndModify();
-        if (queryHelper.error == null) {
-            const bulkInsertInstance = new BulkInsert(query, onSuccess, onError);
-            bulkInsertInstance.execute();
-        }
-        else {
-            onError(
-                queryHelper.error
-            );
-        }
-
-    }
 
     private processCreateDb(db: DataBase) {
         return promise((res, rej) => {

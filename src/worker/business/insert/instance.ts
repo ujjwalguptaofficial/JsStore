@@ -3,6 +3,8 @@ import { InsertQuery } from "../../types";
 import { Table } from "../../model/index";
 import { IError } from "../../interfaces";
 import { promiseAll, promise } from "../../helpers/index";
+import { QueryHelper } from "../query_helper";
+import { API } from "../../enums";
 
 export class Instance extends Base {
     private valuesAffected_ = [];
@@ -18,12 +20,11 @@ export class Instance extends Base {
     }
 
     execute() {
-        try {
+        const queryHelper = new QueryHelper(API.Insert, this.query);
+        queryHelper.checkAndModify().then(() => {
+            this.query = queryHelper.query;
             this.insertData_(this.query.values);
-        }
-        catch (ex) {
-            this.onExceptionOccured(ex);
-        }
+        }).catch(this.onError);
     }
 
     private onTransactionCompleted_ = () => {

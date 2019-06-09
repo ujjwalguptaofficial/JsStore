@@ -1,6 +1,8 @@
 import { Base } from "./base";
 import { InsertQuery } from "../types";
 import { IError } from "../interfaces";
+import { QueryHelper } from "./query_helper";
+import { API } from "../enums";
 
 export class BulkInsert extends Base {
     query: InsertQuery;
@@ -13,12 +15,21 @@ export class BulkInsert extends Base {
     }
 
     execute() {
-        try {
-            this.bulkinsertData(this.query.values);
-            this.query.values = null;
+        const queryHelper = new QueryHelper(API.BulkInsert, this.query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            try {
+                this.bulkinsertData(this.query.values);
+                this.query.values = null;
+            }
+            catch (ex) {
+                this.onExceptionOccured(ex);
+            }
         }
-        catch (ex) {
-            this.onExceptionOccured(ex);
+        else {
+            this.onError(
+                queryHelper.error
+            );
         }
     }
 
