@@ -134,10 +134,11 @@ export class Join extends Helper {
                 }, this.onError).execute();
             }
             catch (ex) {
-                this.onError({
-                    message: ex.message,
-                    type: 'invalid_query' as any
-                });
+                this.onExceptionOccured(ex);
+                // this.onError({
+                //     message: ex.message,
+                //     type: 'invalid_query' as any
+                // });
             }
         }
         else {

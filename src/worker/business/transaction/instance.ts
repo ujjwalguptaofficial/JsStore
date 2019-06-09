@@ -109,7 +109,7 @@ export class Instance extends Base {
             this.processExecutionOfQry_();
         }
         catch (ex) {
-            this.onExceptionOccured(ex, { tableName: this.query.tables });
+            this.onExceptionOccured(ex);
         }
     }
 

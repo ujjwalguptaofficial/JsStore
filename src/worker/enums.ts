@@ -53,7 +53,8 @@ export enum ERROR_TYPE {
     IndexedDbBlocked = "indexeddb_blocked",
     NullValueInWhere = "null_value_in_where",
     InvalidJoinQuery = 'invalid_join_query',
-    InvalidOrderQuery = 'invalid_order_query'
+    InvalidOrderQuery = 'invalid_order_query',
+    InvalidQuery = 'invalid_query'
 }
 
 export enum QUERY_OPTION {

@@ -34,7 +34,7 @@ export class Instance extends Where {
 
         }
         catch (ex) {
-            this.onExceptionOccured(ex, { tableName: this.query.from });
+            this.onExceptionOccured(ex);
         }
     }
 

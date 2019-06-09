@@ -45,7 +45,7 @@ export class Instance extends Join {
                 }
             }
             catch (ex) {
-                this.onExceptionOccured(ex, { tableName: this.tableName });
+                this.onExceptionOccured(ex);
             }
         }
         else {

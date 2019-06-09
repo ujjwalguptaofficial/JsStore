@@ -18,7 +18,7 @@ export class BulkInsert extends Base {
             this.query.values = null;
         }
         catch (ex) {
-            this.onExceptionOccured(ex, { tableName: this.query.into });
+            this.onExceptionOccured(ex);
         }
     }
 

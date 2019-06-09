@@ -22,7 +22,7 @@ export class Instance extends Base {
             this.insertData_(this.query.values);
         }
         catch (ex) {
-            this.onExceptionOccured(ex, { tableName: this.tableName });
+            this.onExceptionOccured(ex);
         }
     }
 

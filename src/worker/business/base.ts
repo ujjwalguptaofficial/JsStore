@@ -46,14 +46,22 @@ export abstract class Base extends BaseHelper {
         }
     }
 
-    protected onExceptionOccured(ex: DOMException, info) {
-        switch (ex.name) {
-            case 'NotFoundError':
-                const error = new LogHelper(ERROR_TYPE.TableNotExist, info);
-                this.onErrorOccured(error, true);
-                break;
-            default: console.error(ex);
-        }
+    // protected onExceptionOccured(ex: DOMException, info) {
+    //     switch (ex.name) {
+    //         case 'NotFoundError':
+    //             const error = new LogHelper(ERROR_TYPE.TableNotExist, info);
+    //             this.onErrorOccured(error, true);
+    //             break;
+    //         default: console.error(ex);
+    //     }
+    // }
+
+    protected onExceptionOccured(ex: DOMException) {
+        console.error(ex);
+        this.onError({
+            message: ex.message,
+            type: ERROR_TYPE.InvalidQuery
+        });
     }
 
     protected getColumnInfo(columnName: string, tableName: string) {
