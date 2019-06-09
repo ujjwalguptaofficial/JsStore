@@ -70,6 +70,25 @@ describe('Test join', function () {
         })
     });
 
+    it('left join with alias', function (done) {
+        con.select({
+            from: "Customers",
+            join: {
+                with: "Orders",
+                type: "left",
+                on: "Customers.CustomerID=Orders.CustomerID",
+                as: {
+                    OrderID: 'oid'
+                }
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(215);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
     it('left join reverse', function (done) {
         con.select({
             from: "Customers",
