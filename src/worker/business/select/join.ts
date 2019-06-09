@@ -1,9 +1,9 @@
-import { JoinQuery } from "../../types";
+import { JoinQuery, SelectQuery } from "../../types";
 import * as Select from './instance';
-import { QUERY_OPTION, DATA_TYPE, ERROR_TYPE } from "../../enums";
+import { QUERY_OPTION, DATA_TYPE, ERROR_TYPE, API } from "../../enums";
 import { Helper } from "./orderby_helper";
 import { LogHelper } from "../../log_helper";
-import { IError } from "../../../main/index";
+import { QueryHelper } from "../query_helper";
 
 export class Join extends Helper {
 
@@ -31,12 +31,8 @@ export class Join extends Helper {
                 };
             });
             this.tablesFetched.push(tableName);
-            this.startExecutionJoinLogic_();
-        }, this.onError_.bind(this)).execute();
-    }
-
-    private onError_(err: IError) {
-        this.onErrorOccured(err);
+            this.startExecutingJoinLogic_();
+        }, this.onError).execute();
     }
 
     private onJoinQueryFinished_() {
@@ -97,38 +93,49 @@ export class Join extends Helper {
         }
     }
 
-    private startExecutionJoinLogic_() {
+    private startExecutingJoinLogic_() {
         const query = this.joinQueryStack_[this.currentQueryStackIndex_];
         if (query) {
             try {
                 let jointblInfo = this.getJoinTableInfo_(query.on);
-                if (process.env.NODE_ENV === 'dev') {
-                    this.checkJoinTableShema(jointblInfo, query);
-                    if (this.error != null) {
-                        this.onJoinQueryFinished_();
-                        return;
-                    }
-                }
                 // table 1 is fetched & table2 needs to be fetched for join
-                if (this.tablesFetched.indexOf(jointblInfo.table1.table) < 0) {
+                if (query.with === jointblInfo.table1.table) {
                     jointblInfo = {
                         table1: jointblInfo.table2,
                         table2: jointblInfo.table1
                     };
                 }
 
-                new Select.Instance({
-                    from: jointblInfo.table2.table,
+                if (process.env.NODE_ENV === 'dev') {
+                    this.checkJoinQuery_(jointblInfo, query);
+                    if (this.error != null) {
+                        this.onJoinQueryFinished_();
+                        return;
+                    }
+                }
+
+                const selectQry = {
+                    from: query.with,
                     where: query.where
-                }, (results) => {
-                    this.jointables(query.type, jointblInfo, results);
-                    this.tablesFetched.push(jointblInfo.table2.table);
-                    ++this.currentQueryStackIndex_;
-                    this.startExecutionJoinLogic_();
-                }, this.onError_.bind(this)).execute();
+                } as SelectQuery;
+                const queryHelper = new QueryHelper(API.Select, selectQry);
+                queryHelper.checkAndModify();
+                if (queryHelper.error == null) {
+                    new Select.Instance(selectQry, (results) => {
+                        this.jointables(query.type, jointblInfo, results);
+                        this.tablesFetched.push(jointblInfo.table2.table);
+                        ++this.currentQueryStackIndex_;
+                        this.startExecutingJoinLogic_();
+                    }, this.onError).execute();
+                }
+                else {
+                    this.onError(
+                        queryHelper.error
+                    );
+                }
             }
             catch (ex) {
-                this.onError_({
+                this.onError({
                     message: ex.message,
                     type: 'invalid_query' as any
                 });
@@ -203,20 +210,47 @@ export class Join extends Helper {
         return info;
     }
 
-    private checkJoinTableShema(jointblInfo: JoinTableInfo, qry: JoinQuery) {
-        const tableSchemaOf1stTable = this.getTable(jointblInfo.table1.table);
-        const tableSchemaOf2ndTable = this.getTable(jointblInfo.table2.table);
+    private checkJoinQuery_(jointblInfo: JoinTableInfo, qry: JoinQuery) {
+        const table1 = jointblInfo.table1;
+        const table2 = jointblInfo.table2;
+        const tableSchemaOf1stTable = this.getTable(table1.table);
+        const tableSchemaOf2ndTable = this.getTable(table2.table);
         let err: LogHelper;
+
+        // check on info & with info 
+        if (qry.with !== table2.table) {
+            err = new LogHelper(ERROR_TYPE.InvalidJoinQuery,
+                `on value should contains value of with`
+            );
+        }
+
+        // check for column existance
+
+        if (tableSchemaOf1stTable.columns.find(q => q.name === table1.column) == null) {
+            err = new LogHelper(ERROR_TYPE.InvalidJoinQuery,
+                `column ${table1.column} does not exist in table ${table1.table}`
+            );
+        }
+        else if (tableSchemaOf2ndTable.columns.find(q => q.name === table2.column) == null) {
+            err = new LogHelper(ERROR_TYPE.InvalidJoinQuery,
+                `column ${table2.column} does not exist in table ${table2.table}`
+            );
+        }
+        if (err) {
+            this.onErrorOccured(err, true);
+            return;
+        }
+
+        // check for column match in both table
         if (qry.as == null) {
             qry.as = {};
         }
         tableSchemaOf1stTable.columns.every(function (column) {
-            const columnFound = tableSchemaOf2ndTable.columns.find(q => q.name === column.name && q.name !== jointblInfo.table1.column);
+            const columnFound = tableSchemaOf2ndTable.columns.find(q => q.name === column.name && q.name !== table1.column);
             if (columnFound != null && qry.as[columnFound.name] == null) {
-                err = new LogHelper(ERROR_TYPE.InvalidJoinQuery, {
-                    column: column.name, table1: jointblInfo.table1.table,
-                    table2: jointblInfo.table2.table
-                });
+                err = new LogHelper(ERROR_TYPE.InvalidJoinQuery,
+                    `column ${column.name} exist in both table ${table1.table} & ${table2.table}`
+                );
                 return false;
             }
             return true;

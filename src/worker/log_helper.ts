@@ -27,9 +27,7 @@ export class LogHelper implements IError {
         console.error(this.get());
     }
 
-    // logWarning() {
-    //     console.warn(this.get());
-    // }
+
 
     get() {
         return {
@@ -101,7 +99,7 @@ export class LogHelper implements IError {
                 errMsg = `Null/undefined is not allowed in where. Column '${this.info_['column']}' has null`;
                 break;
             case ERROR_TYPE.InvalidJoinQuery:
-                errMsg = `column ${this.info_.column} exist in both table ${this.info_.table1} & ${this.info_.table2}`;
+                errMsg = this.info_;
                 break;
             default:
                 errMsg = this.message;

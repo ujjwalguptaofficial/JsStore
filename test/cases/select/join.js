@@ -54,38 +54,6 @@ describe('Test join', function () {
         })
     });
 
-    it('inner join with invalid first table', function (done) {
-        con.select({
-            from: "invalid_table",
-            join: {
-                with: "Orders",
-                type: "inner",
-                on: "Orders.CustomerID=Customers.CustomerID"
-            }
-        }).catch(function (err) {
-            const error = { "message": "Table 'invalid_table' does not exist", "type": "table_not_exist" };
-            expect(err).to.eql(error);
-            done();
-        })
-    });
-
-    it('inner join with invalid join table', function (done) {
-        con.select({
-            from: "Customers",
-            join: {
-                with: "invalid_table",
-                type: "inner",
-                on: "Orders.CustomerID=Customers.CustomerID"
-            }
-        }).then(function (result) {
-            done(result);
-        }).catch(function (err) {
-            // const error = { "message": "Table 'invalid_table' does not exist", "type": "table_not_exist" };
-            // expect(err).to.eql(error);
-            done(err);
-        })
-    });
-
     it('left join', function (done) {
         con.select({
             from: "Orders",
@@ -214,4 +182,76 @@ describe('Test join', function () {
             done(err);
         })
     });
+
+    it('inner join with invalid first table', function (done) {
+        con.select({
+            from: "invalid_table",
+            join: {
+                with: "Orders",
+                type: "inner",
+                on: "Orders.CustomerID=Customers.CustomerID"
+            }
+        }).catch(function (err) {
+            const error = { "message": "Table 'invalid_table' does not exist", "type": "table_not_exist" };
+            expect(err).to.eql(error);
+            done();
+        })
+    });
+
+    it('inner join with invalid join table', function (done) {
+        con.select({
+            from: "Customers",
+            join: {
+                with: "invalid_table",
+                type: "inner",
+                on: "Orders.CustomerID=Customers.CustomerID"
+            }
+        }).then(function (result) {
+            done(result);
+        }).catch(function (err) {
+            if (isRuningForProd() || isRuningForSauce()) {
+                const error = { "message": "Table 'invalid_table' does not exist", "type": "table_not_exist" };
+                expect(err).to.eql(error);
+            }
+            else {
+                const error = {
+                    "message": "on value should contains value of with", "type": "invalid_join_query"
+                }
+                expect(err).to.eql(error);
+            }
+            done();
+        })
+    });
+
+    if (!(isRuningForProd() || isRuningForSauce())) {
+        it('inner join with invalid column in first table', function (done) {
+            con.select({
+                from: "Customers",
+                join: {
+                    with: "Orders",
+                    type: "inner",
+                    on: "Orders.CustomerId=Customers.CustomerID"
+                }
+            }).catch(function (err) {
+                const error = { "message": "column CustomerId does not exist in table Orders", "type": "invalid_join_query" };
+                expect(err).to.eql(error);
+                done();
+            })
+        });
+
+        it('inner join with invalid column in first table', function (done) {
+            con.select({
+                from: "Customers",
+                join: {
+                    with: "Orders",
+                    type: "inner",
+                    on: "Orders.CustomerID=Customers.CustomerId"
+                }
+            }).catch(function (err) {
+                const error = { "message": "column CustomerId does not exist in table Customers", "type": "invalid_join_query" };
+                expect(err).to.eql(error);
+                done();
+            })
+        });
+    }
 });
