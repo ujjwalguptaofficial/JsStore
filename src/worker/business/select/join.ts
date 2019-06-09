@@ -236,10 +236,6 @@ export class Join extends Helper {
                 `column ${table2.column} does not exist in table ${table2.table}`
             );
         }
-        if (err) {
-            this.onErrorOccured(err, true);
-            return;
-        }
 
         // check for column match in both table
         if (qry.as == null) {
