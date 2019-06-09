@@ -1,8 +1,9 @@
 import { Where } from "./where";
 import { RemoveQuery } from "../../types";
 import * as Select from '../select/index';
-import { QUERY_OPTION } from "../../enums";
+import { QUERY_OPTION, API } from "../../enums";
 import { IError } from "../../interfaces";
+import { QueryHelper } from "../index";
 
 export class Instance extends Where {
 
@@ -18,23 +19,32 @@ export class Instance extends Where {
     }
 
     execute() {
-        try {
-            this.initTransaction_();
-            if (this.query.where != null) {
-                if (this.isArray(this.query.where)) {
-                    this.processWhereArrayQry();
+        const queryHelper = new QueryHelper(API.Remove, this.query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            try {
+                this.initTransaction_();
+                if (this.query.where != null) {
+                    if (this.isArray(this.query.where)) {
+                        this.processWhereArrayQry();
+                    }
+                    else {
+                        this.processWhere_();
+                    }
                 }
                 else {
-                    this.processWhere_();
+                    this.executeWhereUndefinedLogic();
                 }
-            }
-            else {
-                this.executeWhereUndefinedLogic();
-            }
 
+            }
+            catch (ex) {
+                this.onExceptionOccured(ex);
+            }
         }
-        catch (ex) {
-            this.onExceptionOccured(ex);
+        else {
+            this.onError(
+                queryHelper.error
+            );
         }
     }
 

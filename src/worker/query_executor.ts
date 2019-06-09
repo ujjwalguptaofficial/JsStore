@@ -107,7 +107,8 @@ export class QueryExecutor {
                 break;
             case API.Update: this.update_(request.query as UpdateQuery, onSuccess, onError);
                 break;
-            case API.Remove: this.remove_(request.query as RemoveQuery, onSuccess, onError);
+            case API.Remove:
+                new Remove.Instance(request.query as RemoveQuery, onSuccess, onError).execute();
                 break;
             case API.IsDbExist: this.isDbExist_(request.query, onSuccess, onError);
                 break;
@@ -131,7 +132,7 @@ export class QueryExecutor {
                     this.initDb_(request.query as IDataBase, onSuccess, onError);
                 }
                 break;
-            case API.Clear: this.clear_(request.query as string, onSuccess, onError);
+            case API.Clear: new Clear(request.query as string, onSuccess, onError).execute();
                 break;
             case API.DropDb: this.dropDb_(onSuccess, onError);
                 break;
@@ -265,20 +266,6 @@ export class QueryExecutor {
 
     }
 
-    private remove_(query: RemoveQuery, onSuccess: () => void, onError: (err: IError) => void) {
-        const queryHelper = new QueryHelper(API.Remove, query);
-        queryHelper.checkAndModify();
-        if (queryHelper.error == null) {
-            const deleteObject = new Remove.Instance(query, onSuccess, onError);
-            deleteObject.execute();
-        }
-        else {
-            onError(
-                queryHelper.error
-            );
-        }
-    }
-
     private processCreateDb(db: DataBase) {
         return promise((res, rej) => {
             // create meta data
@@ -326,12 +313,6 @@ export class QueryExecutor {
     private get dbStatus_() {
         return IdbHelper.dbStatus;
     }
-
-    private clear_(tableName: string, onSuccess: () => void, onError: (err: IError) => void) {
-        const clearInstance = new Clear(tableName, onSuccess, onError);
-        clearInstance.execute();
-    }
-
 
     private getType_(value) {
         return Util.getType(value);
