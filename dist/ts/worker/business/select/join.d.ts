@@ -4,6 +4,7 @@ export declare class Join extends Helper {
     private currentQueryStackIndex_;
     tablesFetched: any[];
     executeJoinQuery(): void;
+    private onError_;
     private onJoinQueryFinished_;
     private startExecutionJoinLogic_;
     private jointables;
