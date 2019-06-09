@@ -86,25 +86,28 @@ describe('select join order test', function () {
         })
     });
 
-    if (!(isRuningForProd() || isRuningForSauce())) {
-        it('select from student left join with studentdetail with as & invalid order query', function (done) {
-            con.select({
-                from: "Student",
-                join: {
-                    with: "StudentDetail",
-                    on: "Student.Name=StudentDetail.Name",
-                    as: {
-                        Id: 'StudentDetailId'
-                    }
-                },
-                order: { by: 'Order', type: 'asc' }
-            }).catch(function (err) {
+    it('select from student left join with studentdetail with as & invalid order query', function (done) {
+        con.select({
+            from: "Student",
+            join: {
+                with: "StudentDetail",
+                on: "Student.Name=StudentDetail.Name",
+                as: {
+                    Id: 'StudentDetailId'
+                }
+            },
+            order: { by: 'Order', type: 'asc' }
+        }).catch(function (err) {
+            if (isRuningForProd() || isRuningForSauce()) {
+                expect(err).to.be.an('object').haveOwnProperty('type').equal('invalid_join_query');
+            }
+            else {
                 const error = { "message": "Cannot read property 'columns' of undefined", "type": "invalid_order_query" };
                 expect(error).to.be.eql(err);
-                done();
-            })
-        });
-    }
+            }
+            done();
+        })
+    });
 
     it('select from student left join with studentdetail with as & order type desc', function (done) {
         con.select({

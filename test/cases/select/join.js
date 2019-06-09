@@ -223,41 +223,52 @@ describe('Test join', function () {
         })
     });
 
-    if (!(isRuningForProd() || isRuningForSauce())) {
-        it('inner join with invalid column in first table', function (done) {
-            con.select({
-                from: "Customers",
-                join: {
-                    with: "Orders",
-                    type: "inner",
-                    on: "Orders.CustomerId=Customers.CustomerID",
-                    as: {
-                        CustomerID: 'cId'
-                    }
+    it('inner join with invalid column in first table', function (done) {
+        con.select({
+            from: "Customers",
+            join: {
+                with: "Orders",
+                type: "inner",
+                on: "Orders.CustomerId=Customers.CustomerID",
+                as: {
+                    CustomerID: 'cId'
                 }
-            }).catch(function (err) {
+            }
+        }).then(function (result) {
+            done(result);
+        }).catch(function (err) {
+            if (isRuningForProd() || isRuningForSauce()) {
+                expect(err).to.be.an('object').haveOwnProperty('type').equal('invalid_join_query');
+            }
+            else {
                 const error = { "message": "column CustomerId does not exist in table Orders", "type": "invalid_join_query" };
                 expect(err).to.eql(error);
-                done();
-            })
-        });
+            }
+            done();
+        })
+    });
 
-        it('inner join with invalid column in second table', function (done) {
-            con.select({
-                from: "Customers",
-                join: {
-                    with: "Orders",
-                    type: "inner",
-                    on: "Orders.CustomerID=Customers.CustomerId",
-                    as: {
-                        CustomerID: 'cId'
-                    }
+    it('inner join with invalid column in second table', function (done) {
+        con.select({
+            from: "Customers",
+            join: {
+                with: "Orders",
+                type: "inner",
+                on: "Orders.CustomerID=Customers.CustomerId",
+                as: {
+                    CustomerID: 'cId'
                 }
-            }).catch(function (err) {
+            }
+        }).catch(function (err) {
+            if (isRuningForProd() || isRuningForSauce()) {
+                expect(err).to.be.an('object').haveOwnProperty('type').equal('invalid_join_query');
+            }
+            else {
                 const error = { "message": "column CustomerId does not exist in table Customers", "type": "invalid_join_query" };
                 expect(err).to.eql(error);
-                done();
-            })
-        });
-    }
+            }
+            done();
+        })
+    });
+    // }
 });
