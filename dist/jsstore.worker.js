@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.0.2 - 10/06/2019
+ * @license :jsstore - V3.1.0 - 10/06/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -158,14 +158,21 @@ var Base = /** @class */ (function (_super) {
             this.error = error.get();
         }
     };
-    Base.prototype.onExceptionOccured = function (ex, info) {
-        switch (ex.name) {
-            case 'NotFoundError':
-                var error = new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].TableNotExist, info);
-                this.onErrorOccured(error, true);
-                break;
-            default: console.error(ex);
-        }
+    // protected onExceptionOccured(ex: DOMException, info) {
+    //     switch (ex.name) {
+    //         case 'NotFoundError':
+    //             const error = new LogHelper(ERROR_TYPE.TableNotExist, info);
+    //             this.onErrorOccured(error, true);
+    //             break;
+    //         default: console.error(ex);
+    //     }
+    // }
+    Base.prototype.onExceptionOccured = function (ex) {
+        console.error(ex);
+        this.onError({
+            message: ex.message,
+            type: _enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].InvalidQuery
+        });
     };
     Base.prototype.getColumnInfo = function (columnName, tableName) {
         return this.getTable(tableName).columns.find(function (column) { return column.name === columnName; });
@@ -525,6 +532,8 @@ var BaseHelper = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BulkInsert", function() { return BulkInsert; });
 /* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./base */ "./src/worker/business/base.ts");
+/* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./query_helper */ "./src/worker/business/query_helper.ts");
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../enums */ "./src/worker/enums.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -539,6 +548,8 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
+
+
 var BulkInsert = /** @class */ (function (_super) {
     __extends(BulkInsert, _super);
     function BulkInsert(query, onSuccess, onError) {
@@ -549,12 +560,19 @@ var BulkInsert = /** @class */ (function (_super) {
         return _this;
     }
     BulkInsert.prototype.execute = function () {
-        try {
-            this.bulkinsertData(this.query.values);
-            this.query.values = null;
+        var queryHelper = new _query_helper__WEBPACK_IMPORTED_MODULE_1__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["API"].BulkInsert, this.query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            try {
+                this.bulkinsertData(this.query.values);
+                this.query.values = null;
+            }
+            catch (ex) {
+                this.onExceptionOccured(ex);
+            }
         }
-        catch (ex) {
-            this.onExceptionOccured(ex, { tableName: this.query.into });
+        else {
+            this.onError(queryHelper.error);
         }
     };
     BulkInsert.prototype.bulkinsertData = function (values) {
@@ -802,6 +820,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _where__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./where */ "./src/worker/business/count/where.ts");
 /* harmony import */ var _select_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../select/index */ "./src/worker/business/select/index.ts");
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../enums */ "./src/worker/enums.ts");
+/* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../query_helper */ "./src/worker/business/query_helper.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -818,6 +837,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+
 var Instance = /** @class */ (function (_super) {
     __extends(Instance, _super);
     function Instance(query, onSuccess, onError) {
@@ -829,35 +849,42 @@ var Instance = /** @class */ (function (_super) {
     }
     Instance.prototype.execute = function () {
         var _this = this;
-        try {
-            var getDataFromSelect = function () {
-                var selectInstance = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](_this.query, function (results) {
-                    _this.resultCount = results.length;
-                    _this.onTransactionCompleted_();
-                }, _this.onError);
-                selectInstance.execute();
-            };
-            if (this.query.join == null) {
-                if (this.query.where != null) {
-                    if (this.query.where.or || this.isArray(this.query.where)) {
-                        getDataFromSelect();
+        var queryHelper = new _query_helper__WEBPACK_IMPORTED_MODULE_3__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["API"].Count, this.query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            try {
+                var getDataFromSelect = function () {
+                    var selectInstance = new _select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](_this.query, function (results) {
+                        _this.resultCount = results.length;
+                        _this.onTransactionCompleted_();
+                    }, _this.onError);
+                    selectInstance.execute();
+                };
+                if (this.query.join == null) {
+                    if (this.query.where != null) {
+                        if (this.query.where.or || this.isArray(this.query.where)) {
+                            getDataFromSelect();
+                        }
+                        else {
+                            this.initTransaction_();
+                            this.goToWhereLogic();
+                        }
                     }
                     else {
                         this.initTransaction_();
-                        this.goToWhereLogic();
+                        this.executeWhereUndefinedLogic();
                     }
                 }
                 else {
-                    this.initTransaction_();
-                    this.executeWhereUndefinedLogic();
+                    getDataFromSelect();
                 }
             }
-            else {
-                getDataFromSelect();
+            catch (ex) {
+                this.onExceptionOccured(ex);
             }
         }
-        catch (ex) {
-            this.onExceptionOccured(ex, { tableName: this.query.from });
+        else {
+            this.onError(queryHelper.error);
         }
     };
     Instance.prototype.initTransaction_ = function () {
@@ -1465,6 +1492,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return Instance; });
 /* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../base */ "./src/worker/business/base.ts");
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../helpers/index */ "./src/worker/helpers/index.ts");
+/* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../query_helper */ "./src/worker/business/query_helper.ts");
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../enums */ "./src/worker/enums.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -1478,6 +1507,8 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
+
 
 
 var Instance = /** @class */ (function (_super) {
@@ -1500,12 +1531,12 @@ var Instance = /** @class */ (function (_super) {
         return _this;
     }
     Instance.prototype.execute = function () {
-        try {
-            this.insertData_(this.query.values);
-        }
-        catch (ex) {
-            this.onExceptionOccured(ex, { tableName: this.tableName });
-        }
+        var _this = this;
+        var queryHelper = new _query_helper__WEBPACK_IMPORTED_MODULE_2__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_3__["API"].Insert, this.query);
+        queryHelper.checkAndModify().then(function () {
+            _this.query = queryHelper.query;
+            _this.insertData_(_this.query.values);
+        }).catch(this.onError);
     };
     Instance.prototype.onQueryFinished_ = function () {
         if (this.isTransaction === true) {
@@ -2070,6 +2101,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _where__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./where */ "./src/worker/business/remove/where.ts");
 /* harmony import */ var _select_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../select/index */ "./src/worker/business/select/index.ts");
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../enums */ "./src/worker/enums.ts");
+/* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../index */ "./src/worker/business/index.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -2083,6 +2115,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 
 
@@ -2104,22 +2137,29 @@ var Instance = /** @class */ (function (_super) {
         return _this;
     }
     Instance.prototype.execute = function () {
-        try {
-            this.initTransaction_();
-            if (this.query.where != null) {
-                if (this.isArray(this.query.where)) {
-                    this.processWhereArrayQry();
+        var queryHelper = new _index__WEBPACK_IMPORTED_MODULE_3__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["API"].Remove, this.query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            try {
+                this.initTransaction_();
+                if (this.query.where != null) {
+                    if (this.isArray(this.query.where)) {
+                        this.processWhereArrayQry();
+                    }
+                    else {
+                        this.processWhere_();
+                    }
                 }
                 else {
-                    this.processWhere_();
+                    this.executeWhereUndefinedLogic();
                 }
             }
-            else {
-                this.executeWhereUndefinedLogic();
+            catch (ex) {
+                this.onExceptionOccured(ex);
             }
         }
-        catch (ex) {
-            this.onExceptionOccured(ex, { tableName: this.query.from });
+        else {
+            this.onError(queryHelper.error);
         }
     };
     Instance.prototype.processWhereArrayQry = function () {
@@ -2858,6 +2898,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return Instance; });
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../enums */ "./src/worker/enums.ts");
 /* harmony import */ var _join__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./join */ "./src/worker/business/select/join.ts");
+/* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../query_helper */ "./src/worker/business/query_helper.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -2871,6 +2912,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 
 var Instance = /** @class */ (function (_super) {
@@ -2927,28 +2969,35 @@ var Instance = /** @class */ (function (_super) {
         return _this;
     }
     Instance.prototype.execute = function () {
-        try {
-            if (this.query.join == null) {
-                if (this.query.where != null) {
-                    this.initTransaction_();
-                    if (this.isArray(this.query.where)) {
-                        this.processWhereArrayQry();
+        var queryHelper = new _query_helper__WEBPACK_IMPORTED_MODULE_2__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_0__["API"].Select, this.query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            try {
+                if (this.query.join == null) {
+                    if (this.query.where != null) {
+                        this.initTransaction_();
+                        if (this.isArray(this.query.where)) {
+                            this.processWhereArrayQry();
+                        }
+                        else {
+                            this.processWhere_();
+                        }
                     }
                     else {
-                        this.processWhere_();
+                        this.initTransaction_();
+                        this.executeWhereUndefinedLogic();
                     }
                 }
                 else {
-                    this.initTransaction_();
-                    this.executeWhereUndefinedLogic();
+                    this.executeJoinQuery();
                 }
             }
-            else {
-                this.executeJoinQuery();
+            catch (ex) {
+                this.onExceptionOccured(ex);
             }
         }
-        catch (ex) {
-            this.onExceptionOccured(ex, { TableName: this.query.from });
+        else {
+            this.onError(queryHelper.error);
         }
     };
     Instance.prototype.processWhereArrayQry = function () {
@@ -3162,62 +3211,68 @@ var Join = /** @class */ (function (_super) {
                     _a);
             });
             _this.tablesFetched.push(tableName);
-            _this.startExecutionJoinLogic_();
-        }, this.onError_.bind(this)).execute();
-    };
-    Join.prototype.onError_ = function (err) {
-        this.onErrorOccured(err);
+            _this.startExecutingJoinLogic_();
+        }, this.onError).execute();
     };
     Join.prototype.onJoinQueryFinished_ = function () {
         var _this = this;
         if (this.error == null) {
-            var mapWithAlias_1 = function (query, value) {
-                if (query.as && value) {
-                    for (var key in query.as) {
-                        value[query.as[key]] = value[key];
-                        delete value[key];
-                    }
-                }
-                return value;
-            };
-            var results_1 = [];
-            if (this.results && this.results.length) {
-                var tables = Object.keys(this.results[0]);
-                var tablesLength_1 = tables.length;
-                this.results.forEach(function (result) {
-                    var data = result["0"]; // first table data
-                    for (var i = 1; i < tablesLength_1; i++) {
-                        var query = _this.joinQueryStack_[i - 1];
-                        data = __assign({}, data, mapWithAlias_1(query, result[i]));
-                    }
-                    results_1.push(data);
-                });
-            }
-            this.results = results_1;
-            // free results memory
-            results_1 = null;
-            if (true) {
+            if (this.results.length > 0) {
                 try {
-                    this.processOrderBy();
+                    var mapWithAlias_1 = function (query, value) {
+                        if (query.as && value) {
+                            for (var key in query.as) {
+                                value[query.as[key]] = value[key];
+                                delete value[key];
+                            }
+                        }
+                        return value;
+                    };
+                    var results_1 = [];
+                    var tables = Object.keys(this.results[0]);
+                    var tablesLength_1 = tables.length;
+                    this.results.forEach(function (result) {
+                        var data = result["0"]; // first table data
+                        for (var i = 1; i < tablesLength_1; i++) {
+                            var query = _this.joinQueryStack_[i - 1];
+                            data = __assign({}, data, mapWithAlias_1(query, result[i]));
+                        }
+                        results_1.push(data);
+                    });
+                    this.results = results_1;
+                    // free results memory
+                    results_1 = null;
+                    if (true) {
+                        try {
+                            this.processOrderBy();
+                        }
+                        catch (ex) {
+                            this.onError({
+                                message: ex.message,
+                                type: _enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].InvalidOrderQuery
+                            });
+                            return;
+                        }
+                    }
+                    else {}
                 }
                 catch (ex) {
                     this.onError({
                         message: ex.message,
-                        type: _enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].InvalidOrderQuery
+                        type: _enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].InvalidJoinQuery
                     });
                     return;
                 }
-            }
-            else {}
-            if (this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Skip] && this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Limit]) {
-                this.results.splice(0, this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Skip]);
-                this.results.splice(this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Limit] - 1, this.results.length);
-            }
-            else if (this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Skip]) {
-                this.results.splice(0, this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Skip]);
-            }
-            else if (this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Limit]) {
-                this.results.splice(this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Limit] - 1, this.results.length);
+                if (this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Skip] && this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Limit]) {
+                    this.results.splice(0, this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Skip]);
+                    this.results.splice(this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Limit] - 1, this.results.length);
+                }
+                else if (this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Skip]) {
+                    this.results.splice(0, this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Skip]);
+                }
+                else if (this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Limit]) {
+                    this.results.splice(this.query[_enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"].Limit] - 1, this.results.length);
+                }
             }
             this.onSuccess(this.results);
         }
@@ -3225,41 +3280,38 @@ var Join = /** @class */ (function (_super) {
             this.onError(this.error);
         }
     };
-    Join.prototype.startExecutionJoinLogic_ = function () {
+    Join.prototype.startExecutingJoinLogic_ = function () {
         var _this = this;
         var query = this.joinQueryStack_[this.currentQueryStackIndex_];
         if (query) {
             try {
                 var jointblInfo_1 = this.getJoinTableInfo_(query.on);
-                if (true) {
-                    this.checkJoinTableShema(jointblInfo_1, query);
-                    if (this.error != null) {
-                        this.onJoinQueryFinished_();
-                        return;
-                    }
-                }
                 // table 1 is fetched & table2 needs to be fetched for join
-                if (this.tablesFetched.indexOf(jointblInfo_1.table1.table) < 0) {
+                if (query.with === jointblInfo_1.table1.table) {
                     jointblInfo_1 = {
                         table1: jointblInfo_1.table2,
                         table2: jointblInfo_1.table1
                     };
                 }
+                if (true) {
+                    this.checkJoinQuery_(jointblInfo_1, query);
+                    if (this.error != null) {
+                        this.onJoinQueryFinished_();
+                        return;
+                    }
+                }
                 new _instance__WEBPACK_IMPORTED_MODULE_0__["Instance"]({
-                    from: jointblInfo_1.table2.table,
+                    from: query.with,
                     where: query.where
                 }, function (results) {
                     _this.jointables(query.type, jointblInfo_1, results);
                     _this.tablesFetched.push(jointblInfo_1.table2.table);
                     ++_this.currentQueryStackIndex_;
-                    _this.startExecutionJoinLogic_();
-                }, this.onError_.bind(this)).execute();
+                    _this.startExecutingJoinLogic_();
+                }, this.onError).execute();
             }
             catch (ex) {
-                this.onError_({
-                    message: ex.message,
-                    type: 'invalid_query'
-                });
+                this.onExceptionOccured(ex);
             }
         }
         else {
@@ -3329,20 +3381,31 @@ var Join = /** @class */ (function (_super) {
         };
         return info;
     };
-    Join.prototype.checkJoinTableShema = function (jointblInfo, qry) {
-        var tableSchemaOf1stTable = this.getTable(jointblInfo.table1.table);
-        var tableSchemaOf2ndTable = this.getTable(jointblInfo.table2.table);
+    Join.prototype.checkJoinQuery_ = function (jointblInfo, qry) {
+        var table1 = jointblInfo.table1;
+        var table2 = jointblInfo.table2;
+        var tableSchemaOf1stTable = this.getTable(table1.table);
+        var tableSchemaOf2ndTable = this.getTable(table2.table);
         var err;
+        // check on info & with info 
+        if (qry.with !== table2.table) {
+            err = new _log_helper__WEBPACK_IMPORTED_MODULE_3__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].InvalidJoinQuery, "on value should contains value of with");
+        }
+        // check for column existance
+        if (tableSchemaOf1stTable.columns.find(function (q) { return q.name === table1.column; }) == null) {
+            err = new _log_helper__WEBPACK_IMPORTED_MODULE_3__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].InvalidJoinQuery, "column " + table1.column + " does not exist in table " + table1.table);
+        }
+        else if (tableSchemaOf2ndTable.columns.find(function (q) { return q.name === table2.column; }) == null) {
+            err = new _log_helper__WEBPACK_IMPORTED_MODULE_3__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].InvalidJoinQuery, "column " + table2.column + " does not exist in table " + table2.table);
+        }
+        // check for column match in both table
         if (qry.as == null) {
             qry.as = {};
         }
         tableSchemaOf1stTable.columns.every(function (column) {
-            var columnFound = tableSchemaOf2ndTable.columns.find(function (q) { return q.name === column.name && q.name !== jointblInfo.table1.column; });
+            var columnFound = tableSchemaOf2ndTable.columns.find(function (q) { return q.name === column.name && q.name !== table1.column; });
             if (columnFound != null && qry.as[columnFound.name] == null) {
-                err = new _log_helper__WEBPACK_IMPORTED_MODULE_3__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].InvalidJoinQuery, {
-                    column: column.name, table1: jointblInfo.table1.table,
-                    table2: jointblInfo.table2.table
-                });
+                err = new _log_helper__WEBPACK_IMPORTED_MODULE_3__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].InvalidJoinQuery, "column " + column.name + " exist in both table " + table1.table + " & " + table2.table);
                 return false;
             }
             return true;
@@ -4125,7 +4188,7 @@ var Instance = /** @class */ (function (_super) {
             this.processExecutionOfQry_();
         }
         catch (ex) {
-            this.onExceptionOccured(ex, { tableName: this.query.tables });
+            this.onExceptionOccured(ex);
         }
     };
     Instance.prototype.initTransaction_ = function (tableNames) {
@@ -4449,6 +4512,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _where__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./where */ "./src/worker/business/update/where.ts");
 /* harmony import */ var _select_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../select/index */ "./src/worker/business/select/index.ts");
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../enums */ "./src/worker/enums.ts");
+/* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../query_helper */ "./src/worker/business/query_helper.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -4465,6 +4529,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+
 var Instance = /** @class */ (function (_super) {
     __extends(Instance, _super);
     function Instance(query, onSuccess, onError) {
@@ -4476,22 +4541,29 @@ var Instance = /** @class */ (function (_super) {
         return _this;
     }
     Instance.prototype.execute = function () {
-        try {
-            this.initTransaction();
-            if (this.query.where != null) {
-                if (this.query.where.or || this.isArray(this.query.where)) {
-                    this.executeComplexLogic_();
+        var queryHelper = new _query_helper__WEBPACK_IMPORTED_MODULE_3__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_2__["API"].Update, this.query);
+        queryHelper.checkAndModify();
+        if (queryHelper.error == null) {
+            try {
+                this.initTransaction();
+                if (this.query.where != null) {
+                    if (this.query.where.or || this.isArray(this.query.where)) {
+                        this.executeComplexLogic_();
+                    }
+                    else {
+                        this.goToWhereLogic();
+                    }
                 }
                 else {
-                    this.goToWhereLogic();
+                    this.executeWhereUndefinedLogic();
                 }
             }
-            else {
-                this.executeWhereUndefinedLogic();
+            catch (ex) {
+                this.onExceptionOccured(ex);
             }
         }
-        catch (ex) {
-            this.onExceptionOccured.call(this, ex, { tableName: this.query.in });
+        else {
+            this.onError(queryHelper.error);
         }
     };
     Instance.prototype.executeComplexLogic_ = function () {
@@ -5084,6 +5156,7 @@ var ERROR_TYPE;
     ERROR_TYPE["NullValueInWhere"] = "null_value_in_where";
     ERROR_TYPE["InvalidJoinQuery"] = "invalid_join_query";
     ERROR_TYPE["InvalidOrderQuery"] = "invalid_order_query";
+    ERROR_TYPE["InvalidQuery"] = "invalid_query";
 })(ERROR_TYPE || (ERROR_TYPE = {}));
 var QUERY_OPTION;
 (function (QUERY_OPTION) {
@@ -6052,9 +6125,6 @@ var LogHelper = /** @class */ (function () {
     LogHelper.prototype.logError = function () {
         console.error(this.get());
     };
-    // logWarning() {
-    //     console.warn(this.get());
-    // }
     LogHelper.prototype.get = function () {
         return {
             message: this.message,
@@ -6125,7 +6195,7 @@ var LogHelper = /** @class */ (function () {
                 errMsg = "Null/undefined is not allowed in where. Column '" + this.info_['column'] + "' has null";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].InvalidJoinQuery:
-                errMsg = "column " + this.info_.column + " exist in both table " + this.info_.table1 + " & " + this.info_.table2;
+                errMsg = this.info_;
                 break;
             default:
                 errMsg = this.message;
@@ -6495,20 +6565,31 @@ var QueryExecutor = /** @class */ (function () {
         };
         QueryExecutor.isTransactionQuery = request.name === _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Transaction;
         switch (request.name) {
+            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].InitDb:
+                if (this.isDbDeletedByBrowser_ === true) {
+                    this.initDb_(null, function () {
+                        _this.isDbDeletedByBrowser_ = false;
+                        onSuccess();
+                    }, onError);
+                }
+                else {
+                    this.initDb_(request.query, onSuccess, onError);
+                }
+                break;
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].OpenDb:
                 this.openDb_(request.query, onSuccess, onError);
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Select:
-                this.select_(request.query, onSuccess, onError);
+                new _business_select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](request.query, onSuccess, onError).execute();
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Insert:
-                this.insert_(request.query, onSuccess, onError);
+                new _business_insert_index__WEBPACK_IMPORTED_MODULE_3__["Instance"](request.query, onSuccess, onError).execute();
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Update:
-                this.update_(request.query, onSuccess, onError);
+                new _business_update_index__WEBPACK_IMPORTED_MODULE_5__["Instance"](request.query, onSuccess, onError).execute();
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Remove:
-                this.remove_(request.query, onSuccess, onError);
+                new _business_remove_index__WEBPACK_IMPORTED_MODULE_4__["Instance"](request.query, onSuccess, onError).execute();
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].IsDbExist:
                 this.isDbExist_(request.query, onSuccess, onError);
@@ -6522,28 +6603,17 @@ var QueryExecutor = /** @class */ (function () {
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].GetDbSchema:
                 this.getDbSchema_(request.query).then(onSuccess).catch(onError);
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].InitDb:
-                if (this.isDbDeletedByBrowser_ === true) {
-                    this.initDb_(null, function () {
-                        _this.isDbDeletedByBrowser_ = false;
-                        onSuccess();
-                    }, onError);
-                }
-                else {
-                    this.initDb_(request.query, onSuccess, onError);
-                }
-                break;
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Clear:
-                this.clear_(request.query, onSuccess, onError);
+                new _business_index__WEBPACK_IMPORTED_MODULE_0__["Clear"](request.query, onSuccess, onError).execute();
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].DropDb:
                 this.dropDb_(onSuccess, onError);
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Count:
-                this.count_(request.query, onSuccess, onError);
+                new _business_count_index__WEBPACK_IMPORTED_MODULE_2__["Instance"](request.query, onSuccess, onError).execute();
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].BulkInsert:
-                this.bulkInsert_(request.query, onSuccess, onError);
+                new _business_index__WEBPACK_IMPORTED_MODULE_0__["BulkInsert"](request.query, onSuccess, onError).execute();
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Get:
                 this.get_(request.query).then(onSuccess).catch(onError);
@@ -6555,7 +6625,7 @@ var QueryExecutor = /** @class */ (function () {
                 this.changeLogStatus_(request.query, onSuccess, onError);
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Transaction:
-                this.transaction_(request.query, onSuccess, onError);
+                new _business_transaction_index__WEBPACK_IMPORTED_MODULE_6__["Instance"](request.query, onSuccess, onError).execute();
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].CloseDb:
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].Terminate:
@@ -6565,7 +6635,9 @@ var QueryExecutor = /** @class */ (function () {
                 this.initKeyStore_(onSuccess);
                 break;
             default:
-                console.error('The Api:-' + request.name + ' does not support.');
+                if (true) {
+                    console.error('The Api:-' + request.name + ' does not support.');
+                }
         }
     };
     QueryExecutor.prototype.openDb_ = function (dbName, onSuccess, onError) {
@@ -6629,71 +6701,7 @@ var QueryExecutor = /** @class */ (function () {
     };
     QueryExecutor.prototype.dropDb_ = function (onSuccess, onError) {
         this.closeDb_();
-        var dropDbInstance = new _business_index__WEBPACK_IMPORTED_MODULE_0__["DropDb"](onSuccess, onError);
-        dropDbInstance.deleteDb();
-    };
-    QueryExecutor.prototype.update_ = function (query, onSuccess, onError) {
-        var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].Update, query);
-        queryHelper.checkAndModify();
-        if (queryHelper.error == null) {
-            var updateDbInstance = new _business_update_index__WEBPACK_IMPORTED_MODULE_5__["Instance"](query, onSuccess, onError);
-            updateDbInstance.execute();
-        }
-        else {
-            onError(queryHelper.error);
-        }
-    };
-    QueryExecutor.prototype.insert_ = function (query, onSuccess, onError) {
-        var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].Insert, query);
-        queryHelper.checkAndModify().then(function () {
-            query = queryHelper.query;
-            var insertInstance = new _business_insert_index__WEBPACK_IMPORTED_MODULE_3__["Instance"](query, onSuccess, onError);
-            insertInstance.execute();
-        }).catch(onError);
-    };
-    QueryExecutor.prototype.bulkInsert_ = function (query, onSuccess, onError) {
-        var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].BulkInsert, query);
-        queryHelper.checkAndModify();
-        if (queryHelper.error == null) {
-            var bulkInsertInstance = new _business_index__WEBPACK_IMPORTED_MODULE_0__["BulkInsert"](query, onSuccess, onError);
-            bulkInsertInstance.execute();
-        }
-        else {
-            onError(queryHelper.error);
-        }
-    };
-    QueryExecutor.prototype.remove_ = function (query, onSuccess, onError) {
-        var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].Remove, query);
-        queryHelper.checkAndModify();
-        if (queryHelper.error == null) {
-            var deleteObject = new _business_remove_index__WEBPACK_IMPORTED_MODULE_4__["Instance"](query, onSuccess, onError);
-            deleteObject.execute();
-        }
-        else {
-            onError(queryHelper.error);
-        }
-    };
-    QueryExecutor.prototype.select_ = function (query, onSuccess, onError) {
-        var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].Select, query);
-        queryHelper.checkAndModify();
-        if (queryHelper.error == null) {
-            var selectInstance = new _business_select_index__WEBPACK_IMPORTED_MODULE_1__["Instance"](query, onSuccess, onError);
-            selectInstance.execute();
-        }
-        else {
-            onError(queryHelper.error);
-        }
-    };
-    QueryExecutor.prototype.count_ = function (query, onSuccess, onError) {
-        var queryHelper = new _business_index__WEBPACK_IMPORTED_MODULE_0__["QueryHelper"](_enums__WEBPACK_IMPORTED_MODULE_8__["API"].Count, query);
-        queryHelper.checkAndModify();
-        if (queryHelper.error == null) {
-            var countInstance = new _business_count_index__WEBPACK_IMPORTED_MODULE_2__["Instance"](query, onSuccess, onError);
-            countInstance.execute();
-        }
-        else {
-            onError(queryHelper.error);
-        }
+        new _business_index__WEBPACK_IMPORTED_MODULE_0__["DropDb"](onSuccess, onError).deleteDb();
     };
     QueryExecutor.prototype.processCreateDb = function (db) {
         var _this = this;
@@ -6745,10 +6753,6 @@ var QueryExecutor = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    QueryExecutor.prototype.clear_ = function (tableName, onSuccess, onError) {
-        var clearInstance = new _business_index__WEBPACK_IMPORTED_MODULE_0__["Clear"](tableName, onSuccess, onError);
-        clearInstance.execute();
-    };
     QueryExecutor.prototype.getType_ = function (value) {
         return _util__WEBPACK_IMPORTED_MODULE_12__["Util"].getType(value);
     };
@@ -6787,10 +6791,6 @@ var QueryExecutor = /** @class */ (function () {
     };
     QueryExecutor.prototype.set_ = function (query) {
         return _keystore_index__WEBPACK_IMPORTED_MODULE_10__["KeyStore"].set(query.key, query.value);
-    };
-    QueryExecutor.prototype.transaction_ = function (qry, onSuccess, onError) {
-        var transaction = new _business_transaction_index__WEBPACK_IMPORTED_MODULE_6__["Instance"](qry, onSuccess, onError);
-        transaction.execute();
     };
     QueryExecutor.isTransactionQuery = false;
     return QueryExecutor;

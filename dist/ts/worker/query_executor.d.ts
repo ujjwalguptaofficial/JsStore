@@ -16,21 +16,13 @@ export declare class QueryExecutor {
     private activeDb_;
     private closeDb_;
     private dropDb_;
-    private update_;
-    private insert_;
-    private bulkInsert_;
-    private remove_;
-    private select_;
-    private count_;
     private processCreateDb;
     private initDb_;
     private activeDbVersion_;
     private getDbVersion_;
     private readonly dbStatus_;
-    private clear_;
     private getType_;
     private isDbExist_;
     private get_;
     private set_;
-    private transaction_;
 }
