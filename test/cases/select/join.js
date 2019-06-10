@@ -235,7 +235,8 @@ describe('Test join', function () {
                 }
             }
         }).then(function (result) {
-            done(result);
+            expect(result).to.be.an('array').length(0);
+            done();
         }).catch(function (err) {
             if (isRuningForProd() || isRuningForSauce()) {
                 expect(err).to.be.an('object').haveOwnProperty('type').equal('invalid_join_query');
@@ -259,6 +260,9 @@ describe('Test join', function () {
                     CustomerID: 'cId'
                 }
             }
+        }).then(function (result) {
+            expect(result).to.be.an('array').length(0);
+            done();
         }).catch(function (err) {
             if (isRuningForProd() || isRuningForSauce()) {
                 expect(err).to.be.an('object').haveOwnProperty('type').equal('invalid_join_query');
@@ -270,7 +274,6 @@ describe('Test join', function () {
             done();
         })
     });
-    // }
 
     it('join with zero records', function (done) {
         con.select({
