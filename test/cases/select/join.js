@@ -182,4 +182,25 @@ describe('Test join', function () {
             done(err);
         })
     });
+
+    it('join with zero records', function (done) {
+        con.select({
+            from: "Customers",
+            where: {
+                CustomerID: {
+                    '=': 500000
+                }
+            },
+            join: {
+                with: "Orders",
+                type: "left",
+                on: "Customers.CustomerID=Orders.CustomerID"
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(0);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
 });
