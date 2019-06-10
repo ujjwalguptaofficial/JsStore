@@ -2,6 +2,7 @@
 <img src="logos/JsStore_400_177.png">
 </p>
 
+[![GitHub version](https://badge.fury.io/gh/ujjwalguptaofficial%2FJsStore.svg)](https://badge.fury.io/gh/ujjwalguptaofficial%2FJsStore)
 [![Build Status](https://travis-ci.org/ujjwalguptaofficial/JsStore.svg?branch=master)](https://travis-ci.org/ujjwalguptaofficial/JsStore)
 [![Backers on Open Collective](https://opencollective.com/JsStore/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/JsStore/sponsors/badge.svg)](#sponsors) [![npm version](https://badge.fury.io/js/jsstore.svg)](https://badge.fury.io/js/jsstore)
 [![](https://data.jsdelivr.com/v1/package/npm/jsstore/badge)](https://www.jsdelivr.com/package/npm/jsstore)
@@ -34,7 +35,7 @@ http://jsstore.net/
 
 ## Contributors
 
-You are very welcome to contribute, please see contributing guidelines - [[Contribute](CONTRIBUTING.md)].
+You are very welcome to contribute, please see contributing guidelines - [[Contribute](CONTRIBUTING.MD)].
 <a href="graphs/contributors"><img src="https://opencollective.com/JsStore/contributors.svg?width=890&button=false" /></a>
 
 ## Sponsors
