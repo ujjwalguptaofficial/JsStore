@@ -37,63 +37,66 @@ export class Join extends Helper {
 
     private onJoinQueryFinished_() {
         if (this.error == null) {
-            try {
-                const mapWithAlias = (query: JoinQuery, value: object) => {
-                    if (query.as && value) {
-                        for (const key in query.as) {
-                            value[(query.as as any)[key]] = value[key];
-                            delete value[key];
+            if (this.results.length > 0) {
+                try {
+                    const mapWithAlias = (query: JoinQuery, value: object) => {
+                        if (query.as && value) {
+                            for (const key in query.as) {
+                                value[(query.as as any)[key]] = value[key];
+                                delete value[key];
+                            }
+                        }
+                        return value;
+                    };
+
+                    let results = [];
+                    const tables = Object.keys(this.results[0]);
+                    const tablesLength = tables.length;
+                    this.results.forEach((result) => {
+                        let data = result["0"]; // first table data
+                        for (let i = 1; i < tablesLength; i++) {
+                            const query = this.joinQueryStack_[i - 1];
+                            data = { ...data, ...mapWithAlias(query, result[i]) };
+                        }
+                        results.push(data);
+                    });
+                    this.results = results;
+                    // free results memory
+                    results = null;
+                    if (process.env.NODE_ENV === 'dev') {
+                        try {
+                            this.processOrderBy();
+                        }
+                        catch (ex) {
+                            this.onError({
+                                message: ex.message,
+                                type: ERROR_TYPE.InvalidOrderQuery
+                            });
+                            return;
                         }
                     }
-                    return value;
-                };
-                let results = [];
-                const tables = Object.keys(this.results[0]);
-                const tablesLength = tables.length;
-                this.results.forEach((result) => {
-                    let data = result["0"]; // first table data
-                    for (let i = 1; i < tablesLength; i++) {
-                        const query = this.joinQueryStack_[i - 1];
-                        data = { ...data, ...mapWithAlias(query, result[i]) };
-                    }
-                    results.push(data);
-                });
-                this.results = results;
-                // free results memory
-                results = null;
-                if (process.env.NODE_ENV === 'dev') {
-                    try {
+                    else {
                         this.processOrderBy();
                     }
-                    catch (ex) {
-                        this.onError({
-                            message: ex.message,
-                            type: ERROR_TYPE.InvalidOrderQuery
-                        });
-                        return;
-                    }
                 }
-                else {
-                    this.processOrderBy();
+                catch (ex) {
+                    this.onError({
+                        message: ex.message,
+                        type: ERROR_TYPE.InvalidJoinQuery
+                    });
+                    return;
                 }
-            }
-            catch (ex) {
-                this.onError({
-                    message: ex.message,
-                    type: ERROR_TYPE.InvalidJoinQuery
-                });
-                return;
-            }
 
-            if (this.query[QUERY_OPTION.Skip] && this.query[QUERY_OPTION.Limit]) {
-                this.results.splice(0, this.query[QUERY_OPTION.Skip]);
-                this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
-            }
-            else if (this.query[QUERY_OPTION.Skip]) {
-                this.results.splice(0, this.query[QUERY_OPTION.Skip]);
-            }
-            else if (this.query[QUERY_OPTION.Limit]) {
-                this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
+                if (this.query[QUERY_OPTION.Skip] && this.query[QUERY_OPTION.Limit]) {
+                    this.results.splice(0, this.query[QUERY_OPTION.Skip]);
+                    this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
+                }
+                else if (this.query[QUERY_OPTION.Skip]) {
+                    this.results.splice(0, this.query[QUERY_OPTION.Skip]);
+                }
+                else if (this.query[QUERY_OPTION.Limit]) {
+                    this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
+                }
             }
             this.onSuccess(this.results);
         }
