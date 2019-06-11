@@ -36,7 +36,9 @@ http://jsstore.net/
 ## Contributors
 
 You are very welcome to contribute, please see contributing guidelines - [[Contribute](CONTRIBUTING.MD)].
-<a href="graphs/contributors"><img src="https://opencollective.com/JsStore/contributors.svg?width=890&button=false" /></a>
+
+Thank you to all the people who already contributed to JsStore!
+<a href="https://github.com/ujjwalguptaofficial/JsStore/graphs/contributors"><img src="https://opencollective.com/JsStore/contributors.svg?width=890&button=false" /></a>
 
 ## Sponsors
 

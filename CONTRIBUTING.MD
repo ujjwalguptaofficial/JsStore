@@ -79,4 +79,4 @@ Some things that will increase the chance that your pull request is accepted:
 
 ## Discussions
 
-Gitter is only for small questions. To discuss a subject in detail, please send a link to your forum or blog in the Gitter chat.
+You can discuss on [Gitter](https://gitter.im/jsstore/Lobby).
