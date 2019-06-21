@@ -16,8 +16,12 @@ export class InitDb {
                     conStatus: JsStore.CONNECTION_STATUS.UnableToStart,
                     lastError: JsStore.ERROR_TYPE.IndexedDbBlocked,
                 };
+                onError({
+                    message: "Indexeddb is blocked",
+                    type: JsStore.ERROR_TYPE.IndexedDbBlocked
+                } as IError);
             }
-            if (onError != null) {
+            else {
                 onError((event as any).target.error);
             }
         };

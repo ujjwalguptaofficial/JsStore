@@ -9,7 +9,7 @@ export class Utils {
      * 
      * @memberOf UtilityLogic
      */
-    static setDbType() {
+    static setCrossBrowserIndexedDb() {
         if (!indexedDB) {
             indexedDB = (self as any).mozIndexedDB ||
                 (self as any).webkitIndexedDB || (self as any).msIndexedDB;

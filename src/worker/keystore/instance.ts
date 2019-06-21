@@ -8,9 +8,9 @@ export class KeyStore {
      * 
      */
     static init = () => {
-        Utils.setDbType();
+        Utils.setCrossBrowserIndexedDb();
         if (indexedDB) {
-            QueryExecutor.prcoessQuery({
+            return QueryExecutor.prcoessQuery({
                 name: 'init_db',
                 query: null
             } as IQueryRequest);

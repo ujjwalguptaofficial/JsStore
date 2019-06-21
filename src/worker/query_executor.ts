@@ -252,16 +252,23 @@ export class QueryExecutor {
     private initDb_(
         dataBase: IDataBase, onSuccess: () => void, onError: (err: IError) => void
     ) {
-        if (dataBase == null) {
-            this.processCreateDb(this.activeDb_);
+        const err = this.checkForIdbSupport_();
+        if (err == null) {
+            if (dataBase == null) {
+                this.processCreateDb(this.activeDb_);
+            }
+            else {
+                this.closeDb_();
+                this.getDbVersion_(dataBase.name).then(version => {
+                    this.activeDbVersion_ = version ? version : 1;
+                    this.processCreateDb(new DataBase(dataBase)).then(onSuccess).catch(onError);
+                }).catch(onError);
+            }
         }
         else {
-            this.closeDb_();
-            this.getDbVersion_(dataBase.name).then(version => {
-                this.activeDbVersion_ = version ? version : 1;
-                this.processCreateDb(new DataBase(dataBase)).then(onSuccess).catch(onError);
-            });
+            onError(err);
         }
+
     }
 
     private get activeDbVersion_() {
@@ -284,22 +291,9 @@ export class QueryExecutor {
         return Util.getType(value);
     }
 
-    private isDbExist_(dbInfo, onSuccess: (isExist: boolean) => void, onError: (err: IError) => void) {
-        if (this.dbStatus_.conStatus !== CONNECTION_STATUS.UnableToStart) {
-            if (this.getType_(dbInfo) === DATA_TYPE.String) {
-                this.getDbVersion_(dbInfo).then(function (dbVersion) {
-                    onSuccess(Boolean(dbVersion));
-                });
-            }
-            else {
-                this.getDbVersion_(dbInfo.dbName).then(function (dbVersion) {
-                    onSuccess(dbInfo.table.version <= dbVersion);
-                });
-            }
-        }
-        else {
+    private checkForIdbSupport_() {
+        if (this.dbStatus_.conStatus === CONNECTION_STATUS.UnableToStart) {
             const error = {
-                message: null,
                 type: this.dbStatus_.lastError,
             } as IError;
             switch (error.type) {
@@ -307,9 +301,23 @@ export class QueryExecutor {
                     error.message = "IndexedDB is blocked"; break;
                 case ERROR_TYPE.IndexedDbUndefined:
                     error.message = "IndexedDB is not supported"; break;
-                default: break;
+                default:
+                    error.message = "unknown error occured";
             }
-            onError(error);
+            return error;
+        }
+    }
+
+    private isDbExist_(dbInfo, onSuccess: (isExist: boolean) => void, onError: (err: IError) => void) {
+        if (this.getType_(dbInfo) === DATA_TYPE.String) {
+            this.getDbVersion_(dbInfo).then(function (dbVersion) {
+                onSuccess(Boolean(dbVersion));
+            });
+        }
+        else {
+            this.getDbVersion_(dbInfo.dbName).then(function (dbVersion) {
+                onSuccess(dbInfo.table.version <= dbVersion);
+            });
         }
     }
 
