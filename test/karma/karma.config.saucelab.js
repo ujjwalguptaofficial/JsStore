@@ -29,7 +29,7 @@ var createCustomLauncher = function (browser, platform, version, debug) {
 if (program.batch1) {
     createCustomLauncher('firefox', 'macOS 10.13', 'latest', true);
     createCustomLauncher('firefox', 'Windows 10', '61.0', true);
-    createCustomLauncher('chrome', 'ubuntu', 'latest', true);
+    // createCustomLauncher('chrome', 'linux', 'latest', true);
     createCustomLauncher('chrome', 'macOS 10.13', 'latest', true);
 
 } else if (program.batch2) {
@@ -39,8 +39,8 @@ if (program.batch1) {
     createCustomLauncher('internet explorer', 'Windows 10', 'latest', true);
 }
 else {
-    createCustomLauncher('Safari', 'iOS', 'latest', true);
-    createCustomLauncher('chrome', 'android', 'latest', true);
+    // createCustomLauncher('Safari', 'iOS', 'latest', true);
+    // createCustomLauncher('chrome', 'android', 'latest', true);
 }
 
 module.exports = function (config) {
