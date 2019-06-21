@@ -195,7 +195,7 @@ export class QueryExecutor {
         KeyStore.init().then(onSuccess()).catch(() => {
             IdbHelper.dbStatus = {
                 conStatus: CONNECTION_STATUS.UnableToStart,
-                lastError: ERROR_TYPE.IndexedDbBlocked,
+                lastError: ERROR_TYPE.IndexedDbNotSupported,
             };
         });
     }
@@ -304,10 +304,8 @@ export class QueryExecutor {
                 type: this.dbStatus_.lastError,
             } as IError;
             switch (error.type) {
-                case ERROR_TYPE.IndexedDbBlocked:
-                    error.message = "IndexedDB is blocked"; break;
-                case ERROR_TYPE.IndexedDbUndefined:
-                    error.message = "IndexedDB is not supported"; break;
+                case ERROR_TYPE.IndexedDbNotSupported:
+                    error.message = "Browser does not support IndexedDB"; break;
                 default:
                     error.message = "unknown error occured";
             }

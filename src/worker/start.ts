@@ -24,7 +24,7 @@ const setCrossBrowserIndexedDb = () => {
     else {
         IdbHelper.dbStatus = {
             conStatus: CONNECTION_STATUS.UnableToStart,
-            lastError: ERROR_TYPE.IndexedDbUndefined
+            lastError: ERROR_TYPE.IndexedDbNotSupported
         };
     }
 };

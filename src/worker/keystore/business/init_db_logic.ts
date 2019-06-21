@@ -12,10 +12,9 @@ export class InitDb {
         IdbHelper.isDbDeletedByBrowser = false;
         dbRequest.onerror = (event) => {
             if ((event as any).target.error.name === 'InvalidStateError') {
-               
                 onError({
                     message: "Indexeddb is blocked",
-                    type: Worker.ERROR_TYPE.IndexedDbBlocked
+                    type: Worker.ERROR_TYPE.IndexedDbNotSupported
                 } as IError);
             }
             else {
