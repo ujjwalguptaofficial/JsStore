@@ -43,7 +43,16 @@ export class QueryExecutor {
             case API.OpenDb:
             case API.InitKeyStore:
             case API.CloseDb:
-                this.executeLogic_(request);
+                const err = this.checkForIdbSupport_();
+                if (err == null) {
+                    this.executeLogic_(request);
+                }
+                else {
+                    this.returnResult_({
+                        errorDetails: err,
+                        errorOccured: true
+                    } as WebWorkerResult);
+                }
                 break;
             default:
                 switch (this.dbStatus_.conStatus) {
@@ -183,8 +192,12 @@ export class QueryExecutor {
     }
 
     private initKeyStore_(onSuccess) {
-        KeyStore.init();
-        onSuccess();
+        KeyStore.init().then(onSuccess()).catch(() => {
+            IdbHelper.dbStatus = {
+                conStatus: CONNECTION_STATUS.UnableToStart,
+                lastError: ERROR_TYPE.IndexedDbBlocked,
+            };
+        });
     }
 
     private getDbSchema_(dbName: string) {
@@ -252,21 +265,15 @@ export class QueryExecutor {
     private initDb_(
         dataBase: IDataBase, onSuccess: () => void, onError: (err: IError) => void
     ) {
-        const err = this.checkForIdbSupport_();
-        if (err == null) {
-            if (dataBase == null) {
-                this.processCreateDb(this.activeDb_);
-            }
-            else {
-                this.closeDb_();
-                this.getDbVersion_(dataBase.name).then(version => {
-                    this.activeDbVersion_ = version ? version : 1;
-                    this.processCreateDb(new DataBase(dataBase)).then(onSuccess).catch(onError);
-                }).catch(onError);
-            }
+        if (dataBase == null) {
+            this.processCreateDb(this.activeDb_);
         }
         else {
-            onError(err);
+            this.closeDb_();
+            this.getDbVersion_(dataBase.name).then(version => {
+                this.activeDbVersion_ = version ? version : 1;
+                this.processCreateDb(new DataBase(dataBase)).then(onSuccess).catch(onError);
+            }).catch(onError);
         }
 
     }

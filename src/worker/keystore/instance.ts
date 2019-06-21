@@ -1,4 +1,3 @@
-import { Utils } from "./utils_logic";
 import { QueryExecutor } from './query_executor';
 import { IQueryRequest, IError, IInsert } from "./interfaces";
 
@@ -8,7 +7,6 @@ export class KeyStore {
      * 
      */
     static init = () => {
-        Utils.setCrossBrowserIndexedDb();
         if (indexedDB) {
             return QueryExecutor.prcoessQuery({
                 name: 'init_db',
