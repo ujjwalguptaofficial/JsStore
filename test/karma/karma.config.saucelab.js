@@ -39,8 +39,8 @@ if (program.batch1) {
     createCustomLauncher('internet explorer', 'Windows 10', 'latest', true);
 }
 else {
-    createCustomLauncher('iphone', 'Mac 10.14', 'latest', true);
-    createCustomLauncher('android', 'Linux', 'latest', true);
+    createCustomLauncher('Safari', 'iOS', 'latest', true);
+    createCustomLauncher('chrome', 'android', 'latest', true);
 }
 
 module.exports = function (config) {
