@@ -30,10 +30,6 @@ export class Util {
         return Array.isArray(value);
     }
 
-    static isObject(value) {
-        return typeof value === DATA_TYPE.Object;
-    }
-
     static getObjectFirstKey(value) {
         for (const key in value) {
             return key;
