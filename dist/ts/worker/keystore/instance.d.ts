@@ -3,7 +3,7 @@ export declare class KeyStore {
      * Initialize KeyStore
      *
      */
-    static init: () => void;
+    static init: () => Promise<{}>;
     static close: () => Promise<{}>;
     /**
      * return the value by key

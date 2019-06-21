@@ -22,6 +22,7 @@ export declare class QueryExecutor {
     private getDbVersion_;
     private readonly dbStatus_;
     private getType_;
+    private checkForIdbSupport_;
     private isDbExist_;
     private get_;
     private set_;

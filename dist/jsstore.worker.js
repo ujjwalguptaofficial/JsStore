@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.1.0 - 10/06/2019
+ * @license :jsstore - V3.1.1 - 21/06/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -5151,8 +5151,7 @@ var ERROR_TYPE;
     ERROR_TYPE["NotObject"] = "not_object";
     ERROR_TYPE["InvalidConfig"] = "invalid_config";
     ERROR_TYPE["DbBlocked"] = "Db_blocked";
-    ERROR_TYPE["IndexedDbUndefined"] = "indexeddb_undefined";
-    ERROR_TYPE["IndexedDbBlocked"] = "indexeddb_blocked";
+    ERROR_TYPE["IndexedDbNotSupported"] = "indexeddb_not_supported";
     ERROR_TYPE["NullValueInWhere"] = "null_value_in_where";
     ERROR_TYPE["InvalidJoinQuery"] = "invalid_join_query";
     ERROR_TYPE["InvalidOrderQuery"] = "invalid_order_query";
@@ -5220,31 +5219,27 @@ var API;
 /*!******************************!*\
   !*** ./src/worker/export.ts ***!
   \******************************/
-/*! exports provided: OCCURENCE, WEBWORKER_STATUS, CONNECTION_STATUS, DATA_TYPE, ERROR_TYPE, QUERY_OPTION, IDB_MODE, API, IdbHelper */
+/*! exports provided: OCCURENCE, WEBWORKER_STATUS, CONNECTION_STATUS, DATA_TYPE, ERROR_TYPE, QUERY_OPTION, IDB_MODE, API */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./business/idb_helper */ "./src/worker/business/idb_helper.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "IdbHelper", function() { return _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"]; });
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./enums */ "./src/worker/enums.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OCCURENCE", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"]; });
 
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./enums */ "./src/worker/enums.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OCCURENCE", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["OCCURENCE"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WEBWORKER_STATUS", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["WEBWORKER_STATUS"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WEBWORKER_STATUS", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["WEBWORKER_STATUS"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CONNECTION_STATUS", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["CONNECTION_STATUS"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CONNECTION_STATUS", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["CONNECTION_STATUS"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["DATA_TYPE"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ERROR_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ERROR_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "QUERY_OPTION", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "QUERY_OPTION", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["QUERY_OPTION"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "IDB_MODE", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["IDB_MODE"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "IDB_MODE", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["IDB_MODE"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "API", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["API"]; });
-
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "API", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["API"]; });
 
 
 
@@ -5510,12 +5505,12 @@ var InitDb = /** @class */ (function () {
         _idb_helper__WEBPACK_IMPORTED_MODULE_3__["IdbHelper"].isDbDeletedByBrowser = false;
         dbRequest.onerror = function (event) {
             if (event.target.error.name === 'InvalidStateError') {
-                _export__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbStatus = {
-                    conStatus: _export__WEBPACK_IMPORTED_MODULE_0__["CONNECTION_STATUS"].UnableToStart,
-                    lastError: _export__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].IndexedDbBlocked,
-                };
+                onError({
+                    message: "Indexeddb is blocked",
+                    type: _export__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].IndexedDbNotSupported
+                });
             }
-            if (onError != null) {
+            else {
                 onError(event.target.error);
             }
         };
@@ -5889,9 +5884,7 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KeyStore", function() { return KeyStore; });
-/* harmony import */ var _utils_logic__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils_logic */ "./src/worker/keystore/utils_logic.ts");
-/* harmony import */ var _query_executor__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./query_executor */ "./src/worker/keystore/query_executor.ts");
-
+/* harmony import */ var _query_executor__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./query_executor */ "./src/worker/keystore/query_executor.ts");
 
 var KeyStore = /** @class */ (function () {
     function KeyStore() {
@@ -5901,16 +5894,15 @@ var KeyStore = /** @class */ (function () {
      *
      */
     KeyStore.init = function () {
-        _utils_logic__WEBPACK_IMPORTED_MODULE_0__["Utils"].setDbType();
         if (indexedDB) {
-            _query_executor__WEBPACK_IMPORTED_MODULE_1__["QueryExecutor"].prcoessQuery({
+            return _query_executor__WEBPACK_IMPORTED_MODULE_0__["QueryExecutor"].prcoessQuery({
                 name: 'init_db',
                 query: null
             });
         }
     };
     KeyStore.close = function () {
-        return _query_executor__WEBPACK_IMPORTED_MODULE_1__["QueryExecutor"].prcoessQuery({
+        return _query_executor__WEBPACK_IMPORTED_MODULE_0__["QueryExecutor"].prcoessQuery({
             name: 'close_db',
             query: null
         });
@@ -5924,7 +5916,7 @@ var KeyStore = /** @class */ (function () {
      * @returns
      */
     KeyStore.get = function (key) {
-        return _query_executor__WEBPACK_IMPORTED_MODULE_1__["QueryExecutor"].prcoessQuery({
+        return _query_executor__WEBPACK_IMPORTED_MODULE_0__["QueryExecutor"].prcoessQuery({
             name: 'get',
             query: key
         });
@@ -5943,7 +5935,7 @@ var KeyStore = /** @class */ (function () {
             Key: key,
             Value: value
         };
-        return _query_executor__WEBPACK_IMPORTED_MODULE_1__["QueryExecutor"].prcoessQuery({
+        return _query_executor__WEBPACK_IMPORTED_MODULE_0__["QueryExecutor"].prcoessQuery({
             name: 'set',
             query: query
         });
@@ -5957,7 +5949,7 @@ var KeyStore = /** @class */ (function () {
      * @returns
      */
     KeyStore.remove = function (key) {
-        return _query_executor__WEBPACK_IMPORTED_MODULE_1__["QueryExecutor"].prcoessQuery({
+        return _query_executor__WEBPACK_IMPORTED_MODULE_0__["QueryExecutor"].prcoessQuery({
             name: 'remove',
             query: key
         });
@@ -6044,43 +6036,17 @@ var QueryExecutor = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Utils", function() { return Utils; });
-/* harmony import */ var _export__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../export */ "./src/worker/export.ts");
-/* harmony import */ var _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./business/idb_helper */ "./src/worker/keystore/business/idb_helper.ts");
-
+/* harmony import */ var _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./business/idb_helper */ "./src/worker/keystore/business/idb_helper.ts");
 
 var Utils = /** @class */ (function () {
     function Utils() {
     }
-    /**
-     * determine and set the DataBase Type
-     *
-     *
-     * @memberOf UtilityLogic
-     */
-    Utils.setDbType = function () {
-        if (!indexedDB) {
-            indexedDB = self.mozIndexedDB ||
-                self.webkitIndexedDB || self.msIndexedDB;
-        }
-        if (indexedDB) {
-            IDBTransaction = IDBTransaction ||
-                self.webkitIDBTransaction || self.msIDBTransaction;
-            self.IDBKeyRange = self.IDBKeyRange ||
-                self.webkitIDBKeyRange || self.msIDBKeyRange;
-        }
-        else {
-            _export__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbStatus = {
-                conStatus: _export__WEBPACK_IMPORTED_MODULE_0__["CONNECTION_STATUS"].UnableToStart,
-                lastError: _export__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].IndexedDbUndefined
-            };
-        }
-    };
     Utils.updateDbStatus = function (status, err) {
         if (err === undefined) {
-            _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].dbStatus.conStatus = status;
+            _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbStatus.conStatus = status;
         }
         else {
-            _business_idb_helper__WEBPACK_IMPORTED_MODULE_1__["IdbHelper"].dbStatus = {
+            _business_idb_helper__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbStatus = {
                 conStatus: status,
                 lastError: err
             };
@@ -6511,7 +6477,16 @@ var QueryExecutor = /** @class */ (function () {
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].OpenDb:
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].InitKeyStore:
             case _enums__WEBPACK_IMPORTED_MODULE_8__["API"].CloseDb:
-                this.executeLogic_(request);
+                var err = this.checkForIdbSupport_();
+                if (err == null) {
+                    this.executeLogic_(request);
+                }
+                else {
+                    this.returnResult_({
+                        errorDetails: err,
+                        errorOccured: true
+                    });
+                }
                 break;
             default:
                 switch (this.dbStatus_.conStatus) {
@@ -6657,8 +6632,12 @@ var QueryExecutor = /** @class */ (function () {
         }
     };
     QueryExecutor.prototype.initKeyStore_ = function (onSuccess) {
-        _keystore_index__WEBPACK_IMPORTED_MODULE_10__["KeyStore"].init();
-        onSuccess();
+        _keystore_index__WEBPACK_IMPORTED_MODULE_10__["KeyStore"].init().then(onSuccess()).catch(function () {
+            _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].dbStatus = {
+                conStatus: _enums__WEBPACK_IMPORTED_MODULE_8__["CONNECTION_STATUS"].UnableToStart,
+                lastError: _enums__WEBPACK_IMPORTED_MODULE_8__["ERROR_TYPE"].IndexedDbNotSupported,
+            };
+        });
     };
     QueryExecutor.prototype.getDbSchema_ = function (dbName) {
         return _business_index__WEBPACK_IMPORTED_MODULE_0__["IdbHelper"].getDbSchema(dbName);
@@ -6730,7 +6709,7 @@ var QueryExecutor = /** @class */ (function () {
             this.getDbVersion_(dataBase.name).then(function (version) {
                 _this.activeDbVersion_ = version ? version : 1;
                 _this.processCreateDb(new _model_index__WEBPACK_IMPORTED_MODULE_11__["DataBase"](dataBase)).then(onSuccess).catch(onError);
-            });
+            }).catch(onError);
         }
     };
     Object.defineProperty(QueryExecutor.prototype, "activeDbVersion_", {
@@ -6756,34 +6735,31 @@ var QueryExecutor = /** @class */ (function () {
     QueryExecutor.prototype.getType_ = function (value) {
         return _util__WEBPACK_IMPORTED_MODULE_12__["Util"].getType(value);
     };
-    QueryExecutor.prototype.isDbExist_ = function (dbInfo, onSuccess, onError) {
-        if (this.dbStatus_.conStatus !== _enums__WEBPACK_IMPORTED_MODULE_8__["CONNECTION_STATUS"].UnableToStart) {
-            if (this.getType_(dbInfo) === _enums__WEBPACK_IMPORTED_MODULE_8__["DATA_TYPE"].String) {
-                this.getDbVersion_(dbInfo).then(function (dbVersion) {
-                    onSuccess(Boolean(dbVersion));
-                });
-            }
-            else {
-                this.getDbVersion_(dbInfo.dbName).then(function (dbVersion) {
-                    onSuccess(dbInfo.table.version <= dbVersion);
-                });
-            }
-        }
-        else {
+    QueryExecutor.prototype.checkForIdbSupport_ = function () {
+        if (this.dbStatus_.conStatus === _enums__WEBPACK_IMPORTED_MODULE_8__["CONNECTION_STATUS"].UnableToStart) {
             var error = {
-                message: null,
                 type: this.dbStatus_.lastError,
             };
             switch (error.type) {
-                case _enums__WEBPACK_IMPORTED_MODULE_8__["ERROR_TYPE"].IndexedDbBlocked:
-                    error.message = "IndexedDB is blocked";
+                case _enums__WEBPACK_IMPORTED_MODULE_8__["ERROR_TYPE"].IndexedDbNotSupported:
+                    error.message = "Browser does not support IndexedDB";
                     break;
-                case _enums__WEBPACK_IMPORTED_MODULE_8__["ERROR_TYPE"].IndexedDbUndefined:
-                    error.message = "IndexedDB is not supported";
-                    break;
-                default: break;
+                default:
+                    error.message = "unknown error occured";
             }
-            onError(error);
+            return error;
+        }
+    };
+    QueryExecutor.prototype.isDbExist_ = function (dbInfo, onSuccess, onError) {
+        if (this.getType_(dbInfo) === _enums__WEBPACK_IMPORTED_MODULE_8__["DATA_TYPE"].String) {
+            this.getDbVersion_(dbInfo).then(function (dbVersion) {
+                onSuccess(Boolean(dbVersion));
+            });
+        }
+        else {
+            this.getDbVersion_(dbInfo.dbName).then(function (dbVersion) {
+                onSuccess(dbInfo.table.version <= dbVersion);
+            });
         }
     };
     QueryExecutor.prototype.get_ = function (key) {
@@ -6812,6 +6788,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "initialize", function() { return initialize; });
 /* harmony import */ var _query_executor__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./query_executor */ "./src/worker/query_executor.ts");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./src/worker/config.ts");
+/* harmony import */ var _business_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./business/index */ "./src/worker/business/index.ts");
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./enums */ "./src/worker/enums.ts");
+
+
 
 
 var initialize = function () {
@@ -6822,6 +6802,25 @@ var initialize = function () {
         };
     }
 };
+var setCrossBrowserIndexedDb = function () {
+    if (!indexedDB) {
+        indexedDB = self.mozIndexedDB ||
+            self.webkitIndexedDB || self.msIndexedDB;
+    }
+    if (indexedDB) {
+        IDBTransaction = IDBTransaction ||
+            self.webkitIDBTransaction || self.msIDBTransaction;
+        self.IDBKeyRange = self.IDBKeyRange ||
+            self.webkitIDBKeyRange || self.msIDBKeyRange;
+    }
+    else {
+        _business_index__WEBPACK_IMPORTED_MODULE_2__["IdbHelper"].dbStatus = {
+            conStatus: _enums__WEBPACK_IMPORTED_MODULE_3__["CONNECTION_STATUS"].UnableToStart,
+            lastError: _enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].IndexedDbNotSupported
+        };
+    }
+};
+setCrossBrowserIndexedDb();
 initialize();
 
 
@@ -6870,9 +6869,6 @@ var Util = /** @class */ (function () {
     };
     Util.isArray = function (value) {
         return Array.isArray(value);
-    };
-    Util.isObject = function (value) {
-        return typeof value === _enums__WEBPACK_IMPORTED_MODULE_0__["DATA_TYPE"].Object;
     };
     Util.getObjectFirstKey = function (value) {
         for (var key in value) {
