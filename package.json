@@ -64,9 +64,7 @@
     "webpack-merge": "^4.1.4"
   },
   "displayName": "JsStore",
-  "dependencies": {
-    "lodash": "^4.17.11"
-  },
+  "dependencies": {},
   "collective": {
     "type": "opencollective",
     "url": "https://opencollective.com/JsStore"
