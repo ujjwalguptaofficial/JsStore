@@ -2,8 +2,9 @@ var program = require('commander');
 var files = require('../files');
 
 program.option('-b1, --batch1', 'start the batch1').
-option('-b2, --batch2', 'start the batch1').
-parse(process.argv);
+    option('-b2, --batch2', 'start the batch2').
+    option('-b3, --batch3', 'start the batch3').
+    parse(process.argv);
 
 var customLaunchers = {};
 var createCustomLauncher = function (browser, platform, version, debug) {
@@ -31,11 +32,15 @@ if (program.batch1) {
     createCustomLauncher('chrome', 'linux', 'latest', true);
     createCustomLauncher('chrome', 'macOS 10.13', 'latest', true);
 
-} else {
+} else if (program.batch2) {
     createCustomLauncher('Safari', 'macOS 10.13', 'latest', true);
     createCustomLauncher('chrome', 'Windows 10', 'latest', true);
     createCustomLauncher('microsoftedge', 'Windows 10', 'latest', true);
     createCustomLauncher('internet explorer', 'Windows 10', 'latest', true);
+}
+else {
+    createCustomLauncher('iphone', 'Mac 10.14', 'latest', true);
+    createCustomLauncher('android', 'Linux', 'latest', true);
 }
 
 module.exports = function (config) {
