@@ -27,21 +27,20 @@ var createCustomLauncher = function (browser, platform, version, debug) {
 }
 
 if (program.batch1) {
-    createCustomLauncher('firefox', 'macOS 10.13', 'latest', true);
+    createCustomLauncher('firefox', 'macOS 10.14', 'latest', true);
     createCustomLauncher('firefox', 'Windows 10', '61.0', true);
-    // createCustomLauncher('chrome', 'linux', 'latest', true);
-    createCustomLauncher('chrome', 'macOS 10.13', 'latest', true);
+    createCustomLauncher('chrome', 'macOS 10.14', 'latest', true);
 
 } else if (program.batch2) {
-    createCustomLauncher('Safari', 'macOS 10.13', 'latest', true);
+    createCustomLauncher('Safari', 'macOS 10.14', 'latest', true);
     createCustomLauncher('chrome', 'Windows 10', 'latest', true);
     createCustomLauncher('microsoftedge', 'Windows 10', 'latest', true);
     createCustomLauncher('internet explorer', 'Windows 10', 'latest', true);
 }
-else {
-    // createCustomLauncher('Safari', 'iOS', 'latest', true);
-    // createCustomLauncher('chrome', 'android', 'latest', true);
-}
+// else {
+//     // createCustomLauncher('Safari', 'iOS', 'latest', true);
+//     // createCustomLauncher('chrome', 'android', 'latest', true);
+// }
 
 module.exports = function (config) {
 
