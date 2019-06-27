@@ -44,7 +44,7 @@
     "chai": "^4.2.0",
     "copy-webpack-plugin": "^4.5.2",
     "fs-extra": "^7.0.0",
-    "karma": "^4.1.0",
+    "karma": "^4.0.1",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-html-reporter": "^0.2.7",
