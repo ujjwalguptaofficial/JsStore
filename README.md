@@ -6,7 +6,9 @@
 [![Build Status](https://travis-ci.org/ujjwalguptaofficial/JsStore.svg?branch=master)](https://travis-ci.org/ujjwalguptaofficial/JsStore)
 [![Backers on Open Collective](https://opencollective.com/JsStore/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/JsStore/sponsors/badge.svg)](#sponsors) [![npm version](https://badge.fury.io/js/jsstore.svg)](https://badge.fury.io/js/jsstore)
 [![](https://data.jsdelivr.com/v1/package/npm/jsstore/badge)](https://www.jsdelivr.com/package/npm/jsstore)
-[![Sauce Test Status](https://saucelabs.com/buildstatus/ujjwalgupta)](https://saucelabs.com/u/ujjwalgupta)
+[![Join the chat at https://gitter.im/jsstore/lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jsstore/lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+<!-- [![npm Downloads](https://img.shields.io/npm/dm/jsstore.svg?style=flat-square)](https://npmcharts.com/compare/jsstore?minimal=true) -->
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/ujjwalgupta.svg)](https://saucelabs.com/u/ujjwalgupta)
 

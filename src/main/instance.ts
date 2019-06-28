@@ -39,7 +39,7 @@ export class Instance extends InstanceHelper {
      */
     initDb(dataBase: IDataBase) {
         this.activeDbName = dataBase.name;
-        return this.pushApi<string[]>({
+        return this.pushApi<boolean>({
             name: API.InitDb,
             query: dataBase
         });
