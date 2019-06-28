@@ -3,7 +3,7 @@ import { DATA_TYPE } from 'jsstore';
 
 const getWorkerPath = () => {
     if (process.env.NODE_ENV === 'development') {
-        return require("file-loader?name=scripts/[name].[hash].js!jsstore/dist/jsstore.worker.js");
+        return require("file-loader?name=scripts/[name].[hash].js!jsstore/dist/jsstore.worker.ie.js");
     }
     else {
         return require("file-loader?name=scripts/[name].[hash].js!jsstore/dist/jsstore.worker.ie.min.js");
@@ -50,11 +50,6 @@ const getDatabase = () => {
 };
 
 export const initJsStore = () => {
-    try {
-        const dataBase = getDatabase();
-        idbCon.initDb(dataBase);
-    }
-    catch (ex) {
-        console.error(ex);
-    }
+    const dataBase = getDatabase();
+    idbCon.initDb(dataBase);
 };

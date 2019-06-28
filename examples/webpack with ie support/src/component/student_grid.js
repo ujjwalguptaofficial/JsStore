@@ -5,6 +5,7 @@ import {
     Student
 } from "../model/student";
 import * as $ from "jquery";
+import { initJsStore } from "../service/idb_service";
 
 export class StudentGrid {
 
@@ -34,6 +35,13 @@ export class StudentGrid {
     }
 
     async init() {
+        try {
+            initJsStore();
+        }
+        catch (ex) {
+            alert(ex.message);
+            return;
+        }
         var studentService = new StudentService();
         var html = '';
         try {
