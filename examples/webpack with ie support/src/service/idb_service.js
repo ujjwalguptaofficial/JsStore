@@ -49,7 +49,7 @@ const getDatabase = () => {
     return dataBase;
 };
 
-export const initJsStore = () => {
+export const initJsStore = async () => {
     const dataBase = getDatabase();
-    idbCon.initDb(dataBase);
+    return await idbCon.initDb(dataBase);
 };

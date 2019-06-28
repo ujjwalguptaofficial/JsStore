@@ -36,7 +36,7 @@ export class StudentGrid {
 
     async init() {
         try {
-            initJsStore();
+           await initJsStore();
         }
         catch (ex) {
             alert(ex.message);

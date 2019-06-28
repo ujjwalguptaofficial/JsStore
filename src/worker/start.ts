@@ -10,23 +10,33 @@ export const initialize = function () {
         };
     }
 };
+
+const onIdbNotSupproted = () => {
+    IdbHelper.dbStatus = {
+        conStatus: CONNECTION_STATUS.UnableToStart,
+        lastError: ERROR_TYPE.IndexedDbNotSupported
+    };
+};
+
 const setCrossBrowserIndexedDb = () => {
-    if (!indexedDB) {
-        indexedDB = (self as any).mozIndexedDB ||
-            (self as any).webkitIndexedDB || (self as any).msIndexedDB;
-    }
-    if (indexedDB) {
-        IDBTransaction = IDBTransaction ||
-            (self as any).webkitIDBTransaction || (self as any).msIDBTransaction;
-        (self as any).IDBKeyRange = (self as any).IDBKeyRange ||
-            (self as any).webkitIDBKeyRange || (self as any).msIDBKeyRange;
-    }
-    else {
-        IdbHelper.dbStatus = {
-            conStatus: CONNECTION_STATUS.UnableToStart,
-            lastError: ERROR_TYPE.IndexedDbNotSupported
-        };
+    try {
+        if (!indexedDB) {
+            indexedDB = (self as any).mozIndexedDB ||
+                (self as any).webkitIndexedDB || (self as any).msIndexedDB;
+        }
+        if (indexedDB) {
+            IDBTransaction = IDBTransaction ||
+                (self as any).webkitIDBTransaction || (self as any).msIDBTransaction;
+            (self as any).IDBKeyRange = (self as any).IDBKeyRange ||
+                (self as any).webkitIDBKeyRange || (self as any).msIDBKeyRange;
+        }
+        else {
+            onIdbNotSupproted();
+        }
+    } catch (ex) {
+        onIdbNotSupproted();
     }
 };
+
 setCrossBrowserIndexedDb();
 initialize();
