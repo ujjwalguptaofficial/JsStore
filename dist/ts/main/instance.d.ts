@@ -18,7 +18,7 @@ export declare class Instance extends InstanceHelper {
      * @returns
      * @memberof Instance
      */
-    initDb(dataBase: IDataBase): Promise<string[]>;
+    initDb(dataBase: IDataBase): Promise<boolean>;
     /**
      * drop dataBase
      *

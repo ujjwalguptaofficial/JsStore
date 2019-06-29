@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.1.2 - 26/06/2019
+ * @license :jsstore - V3.1.3 - 29/06/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -6802,22 +6802,30 @@ var initialize = function () {
         };
     }
 };
+var onIdbNotSupproted = function () {
+    _business_index__WEBPACK_IMPORTED_MODULE_2__["IdbHelper"].dbStatus = {
+        conStatus: _enums__WEBPACK_IMPORTED_MODULE_3__["CONNECTION_STATUS"].UnableToStart,
+        lastError: _enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].IndexedDbNotSupported
+    };
+};
 var setCrossBrowserIndexedDb = function () {
-    if (!indexedDB) {
-        indexedDB = self.mozIndexedDB ||
-            self.webkitIndexedDB || self.msIndexedDB;
+    try {
+        if (!indexedDB) {
+            indexedDB = self.mozIndexedDB ||
+                self.webkitIndexedDB || self.msIndexedDB;
+        }
+        if (indexedDB) {
+            IDBTransaction = IDBTransaction ||
+                self.webkitIDBTransaction || self.msIDBTransaction;
+            self.IDBKeyRange = self.IDBKeyRange ||
+                self.webkitIDBKeyRange || self.msIDBKeyRange;
+        }
+        else {
+            onIdbNotSupproted();
+        }
     }
-    if (indexedDB) {
-        IDBTransaction = IDBTransaction ||
-            self.webkitIDBTransaction || self.msIDBTransaction;
-        self.IDBKeyRange = self.IDBKeyRange ||
-            self.webkitIDBKeyRange || self.msIDBKeyRange;
-    }
-    else {
-        _business_index__WEBPACK_IMPORTED_MODULE_2__["IdbHelper"].dbStatus = {
-            conStatus: _enums__WEBPACK_IMPORTED_MODULE_3__["CONNECTION_STATUS"].UnableToStart,
-            lastError: _enums__WEBPACK_IMPORTED_MODULE_3__["ERROR_TYPE"].IndexedDbNotSupported
-        };
+    catch (ex) {
+        onIdbNotSupproted();
     }
 };
 setCrossBrowserIndexedDb();
