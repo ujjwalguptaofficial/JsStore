@@ -2,7 +2,6 @@ describe('Test Select with order', function () {
     it('order by country & city', function (done) {
         con.select({
             from: 'Customers',
-            // limit: 10,
             order: [{
                 by: 'Country'
             }, {

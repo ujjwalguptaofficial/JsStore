@@ -1,4 +1,21 @@
 describe('Test Select with order', function () {
+
+    it('order by country ', function (done) {
+        con.select({
+            from: 'Customers',
+            limit: 10,
+            order: {
+
+            }
+        }).then(function (results) {
+            done(results);
+        }).catch(function (err) {
+            const error = { "message": "Column 'undefined' in order query does not exist", "type": "column_not_exist" };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    })
+
     it('order by country ', function (done) {
         con.select({
             from: 'Customers',

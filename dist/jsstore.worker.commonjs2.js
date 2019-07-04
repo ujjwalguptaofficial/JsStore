@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.1.3 - 29/06/2019
+ * @license :jsstore - V3.2.0 - 04/07/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -2963,8 +2963,13 @@ var Instance = /** @class */ (function (_super) {
         _this.skipRecord = query.skip;
         _this.limitRecord = query.limit;
         _this.tableName = query.from;
-        if (query.order && query.order.by && query.limit != null) {
-            _this.isOrderWithLimit = true;
+        if (query.order) {
+            if (_this.isArray(query.order)) {
+                query.order.idbSorting = false;
+            }
+            if (query.limit != null) {
+                _this.isOrderWithLimit = true;
+            }
         }
         return _this;
     }
@@ -3473,19 +3478,29 @@ var NotWhere = /** @class */ (function (_super) {
         else {
             this.cursorOpenRequest = this.objectStore.openCursor();
         }
-        if (this.skipRecord && this.limitRecord) {
-            this.executeSkipAndLimitForNoWhere_();
-        }
-        else if (this.skipRecord) {
-            this.executeSkipForNoWhere_();
-        }
-        else if (this.limitRecord) {
-            this.executeLimitForNotWhere_();
+        this.cursorOpenRequest.onerror = this.onErrorOccured;
+        if (this.isOrderWithLimit === false) {
+            if (this.skipRecord && this.limitRecord) {
+                this.executeSkipAndLimitForNoWhere_();
+            }
+            else if (this.skipRecord) {
+                this.executeSkipForNoWhere_();
+            }
+            else if (this.limitRecord) {
+                this.executeLimitForNotWhere_();
+            }
+            else {
+                this.executeSimpleForNotWhere_();
+            }
         }
         else {
-            this.executeSimpleForNotWhere_();
+            if (this.skipRecord) {
+                this.executeSkipForNoWhere_();
+            }
+            else {
+                this.executeSimpleForNotWhere_();
+            }
         }
-        this.cursorOpenRequest.onerror = this.onErrorOccured;
     };
     NotWhere.prototype.executeSkipAndLimitForNoWhere_ = function () {
         var _this = this;
@@ -3595,76 +3610,114 @@ var Helper = /** @class */ (function (_super) {
     function Helper() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    Helper.prototype.getOrderColumnInfo_ = function (orderColumn) {
+        var column;
+        if (this.query.join == null) {
+            column = this.getColumnInfo(orderColumn, this.query.from);
+        }
+        else {
+            var splittedByDot = this.removeSpace(orderColumn).split(".");
+            orderColumn = splittedByDot[1];
+            column = this.getColumnInfo(orderColumn, splittedByDot[0]);
+        }
+        if (column == null) {
+            this.onErrorOccured(new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].ColumnNotExist, { column: orderColumn, isOrder: true }), true);
+        }
+        return column;
+    };
+    Helper.prototype.compareAlphabetInDesc_ = function (a, b) {
+        return b.localeCompare(a);
+    };
+    Helper.prototype.compareAlphabetinAsc_ = function (a, b) {
+        return a.localeCompare(b);
+    };
+    Helper.prototype.compareNumberInDesc_ = function (a, b) {
+        return b - a;
+    };
+    Helper.prototype.compareNumberinAsc_ = function (a, b) {
+        return a - b;
+    };
+    Helper.prototype.compareDateInDesc_ = function (a, b) {
+        return b.getTime() - a.getTime();
+    };
+    Helper.prototype.compareDateInAsc_ = function (a, b) {
+        return a.getTime() - b.getTime();
+    };
+    Helper.prototype.getValueComparer_ = function (column, order) {
+        var orderMethod;
+        switch (column.dataType) {
+            case _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String:
+                if (order.type === 'asc') {
+                    orderMethod = this.compareAlphabetinAsc_;
+                }
+                else {
+                    orderMethod = this.compareAlphabetInDesc_;
+                }
+                break;
+            case _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Number:
+                if (order.type === 'asc') {
+                    orderMethod = this.compareNumberinAsc_;
+                }
+                else {
+                    orderMethod = this.compareNumberInDesc_;
+                }
+                break;
+            case _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].DateTime:
+                if (order.type === 'asc') {
+                    orderMethod = this.compareDateInAsc_;
+                }
+                else {
+                    orderMethod = this.compareDateInDesc_;
+                }
+        }
+        return orderMethod;
+    };
+    Helper.prototype.orderBy = function (order) {
+        order.type = this.getOrderType(order.type);
+        var orderColumn = order.by;
+        var columnInfo = this.getOrderColumnInfo_(orderColumn);
+        if (columnInfo != null) {
+            var orderMethod_1 = this.getValueComparer_(columnInfo, order);
+            orderColumn = columnInfo.name;
+            this.results.sort(function (a, b) {
+                return orderMethod_1(a[orderColumn], b[orderColumn]);
+            });
+        }
+    };
+    Helper.prototype.getOrderType = function (type) {
+        return type == null ? 'asc' : type.toLowerCase();
+    };
     Helper.prototype.processOrderBy = function () {
-        var _this = this;
         var order = this.query.order;
-        if (order && this.results.length > 0 && !this.sorted && order.by) {
-            order.type = order.type ? order.type.toLowerCase() : 'asc';
-            var orderColumn_1 = order.by;
-            var sortNumberInAsc = function () {
-                _this.results.sort(function (a, b) {
-                    return a[orderColumn_1] - b[orderColumn_1];
-                });
-            };
-            var sortNumberInDesc = function () {
-                _this.results.sort(function (a, b) {
-                    return b[orderColumn_1] - a[orderColumn_1];
-                });
-            };
-            var sortDateInAsc = function () {
-                _this.results.sort(function (a, b) {
-                    return a[orderColumn_1].getTime() - b[orderColumn_1].getTime();
-                });
-            };
-            var sortDateInDesc = function () {
-                _this.results.sort(function (a, b) {
-                    return b[orderColumn_1].getTime() - a[orderColumn_1].getTime();
-                });
-            };
-            var sortAlphabetInAsc = function () {
-                _this.results.sort(function (a, b) {
-                    return a[orderColumn_1].localeCompare(b[orderColumn_1]);
-                });
-            };
-            var sortAlphabetInDesc = function () {
-                _this.results.sort(function (a, b) {
-                    return b[orderColumn_1].localeCompare(a[orderColumn_1]);
-                });
-            };
-            var column = void 0;
-            if (this.query.join == null) {
-                column = this.getColumnInfo(orderColumn_1, this.query.from);
+        if (order && this.results.length > 0 && !this.sorted) {
+            var orderQueryType = this.getType(order);
+            if (orderQueryType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Object) {
+                this.orderBy(order);
             }
-            else {
-                var splittedByDot = this.removeSpace(orderColumn_1).split(".");
-                orderColumn_1 = splittedByDot[1];
-                column = this.getColumnInfo(orderColumn_1, splittedByDot[0]);
-            }
-            if (column == null) {
-                this.onErrorOccured(new _log_helper__WEBPACK_IMPORTED_MODULE_2__["LogHelper"](_enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"].ColumnNotExist, { column: orderColumn_1, isOrder: true }), true);
-            }
-            else if (column.dataType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].String) {
-                if (order.type === 'asc') {
-                    sortAlphabetInAsc();
-                }
-                else {
-                    sortAlphabetInDesc();
-                }
-            }
-            else if (column.dataType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Number) {
-                if (order.type === 'asc') {
-                    sortNumberInAsc();
-                }
-                else {
-                    sortNumberInDesc();
-                }
-            }
-            else if (column.dataType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].DateTime) {
-                if (order.type === 'asc') {
-                    sortDateInAsc();
-                }
-                else {
-                    sortDateInDesc();
+            else if (orderQueryType === _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"].Array) {
+                this.orderBy(order[0]);
+                var _loop_1 = function (i, length_1) {
+                    if (this_1.error == null) {
+                        var prevOrderQueryBy_1 = order[i - 1].by;
+                        var currentOrderQuery = order[i];
+                        var currentorderQueryBy_1 = currentOrderQuery.by;
+                        var orderColumnDetail = this_1.getOrderColumnInfo_(currentorderQueryBy_1);
+                        if (orderColumnDetail != null) {
+                            currentorderQueryBy_1 = orderColumnDetail.name;
+                            currentOrderQuery.type = this_1.getOrderType(currentOrderQuery.type);
+                            var orderMethod_2 = this_1.getValueComparer_(orderColumnDetail, currentOrderQuery);
+                            this_1.results.sort(function (a, b) {
+                                if (a[prevOrderQueryBy_1] === b[prevOrderQueryBy_1]) {
+                                    return orderMethod_2(a[currentorderQueryBy_1], b[currentorderQueryBy_1]);
+                                }
+                                return 0;
+                            });
+                        }
+                    }
+                };
+                var this_1 = this;
+                for (var i = 1, length_1 = order.length; i < length_1; i++) {
+                    _loop_1(i, length_1);
                 }
             }
         }
