@@ -12,6 +12,7 @@ export class Helper extends GroupByHelper {
             column = this.getColumnInfo(orderColumn, this.query.from);
         }
         else {
+            debugger;
             const splittedByDot = this.removeSpace(orderColumn).split(".");
             orderColumn = splittedByDot[1];
             column = this.getColumnInfo(orderColumn, splittedByDot[0]);
@@ -78,10 +79,11 @@ export class Helper extends GroupByHelper {
 
     private orderBy(order: OrderQuery) {
         order.type = this.getOrderType(order.type);
-        const orderColumn = order.by;
+        let orderColumn = order.by;
         const columnInfo = this.getOrderColumnInfo_(orderColumn);
         if (columnInfo != null) {
             const orderMethod = this.getValueComparer_(columnInfo, order);
+            orderColumn = columnInfo.name;
             this.results.sort((a, b) => {
                 return orderMethod(a[orderColumn], b[orderColumn]);
             });
@@ -105,9 +107,10 @@ export class Helper extends GroupByHelper {
                     if (this.error == null) {
                         const prevOrderQueryBy = order[i - 1].by;
                         const currentOrderQuery: OrderQuery = order[i];
-                        const currentorderQueryBy = currentOrderQuery.by;
+                        let currentorderQueryBy = currentOrderQuery.by;
                         const orderColumnDetail = this.getOrderColumnInfo_(currentorderQueryBy);
                         if (orderColumnDetail != null) {
+                            currentorderQueryBy = orderColumnDetail.name;
                             currentOrderQuery.type = this.getOrderType(currentOrderQuery.type);
                             const orderMethod = this.getValueComparer_(orderColumnDetail, currentOrderQuery);
                             this.results.sort((a, b) => {

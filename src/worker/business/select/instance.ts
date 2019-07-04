@@ -17,9 +17,10 @@ export class Instance extends Join {
         if (query.order) {
             if (this.isArray(query.order)) {
                 query.order.idbSorting = false;
-                if (query.limit != null) {
-                    this.isOrderWithLimit = true;
-                }
+            }
+
+            if (query.limit != null) {
+                this.isOrderWithLimit = true;
             }
         }
 
