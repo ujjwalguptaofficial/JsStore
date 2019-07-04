@@ -1,77 +1,123 @@
 import { GroupByHelper } from "./group_by_helper";
 import { DATA_TYPE, ERROR_TYPE } from "../../enums";
 import { LogHelper } from "../../log_helper";
+import { IColumn } from "../../interfaces";
+import { OrderQuery } from "../../types";
 
 export class Helper extends GroupByHelper {
+
+    private getOrderColumnInfo_(orderColumn: string): IColumn {
+        let column: IColumn;
+        if (this.query.join == null) {
+            column = this.getColumnInfo(orderColumn, this.query.from);
+        }
+        else {
+            const splittedByDot = this.removeSpace(orderColumn).split(".");
+            orderColumn = splittedByDot[1];
+            column = this.getColumnInfo(orderColumn, splittedByDot[0]);
+        }
+        if (column == null) {
+            this.onErrorOccured(new LogHelper(ERROR_TYPE.ColumnNotExist, { column: orderColumn, isOrder: true }), true);
+        }
+        return column;
+    }
+
+    private compareAlphabetInDesc_(a: string, b: string) {
+        return b.localeCompare(a);
+    }
+
+    private compareAlphabetinAsc_(a: string, b: string) {
+        return a.localeCompare(b);
+    }
+
+    private compareNumberInDesc_(a: number, b: number) {
+        return b - a;
+    }
+
+    private compareNumberinAsc_(a: number, b: number) {
+        return a - b;
+    }
+
+    private compareDateInDesc_(a: Date, b: Date) {
+        return b.getTime() - a.getTime();
+    }
+
+    private compareDateInAsc_(a: Date, b: Date) {
+        return a.getTime() - b.getTime();
+    }
+
+    private getValueComparer_(column: IColumn, order: OrderQuery) {
+        let orderMethod: (a, b) => number;
+        switch (column.dataType) {
+            case DATA_TYPE.String:
+                if (order.type === 'asc') {
+                    orderMethod = this.compareAlphabetinAsc_;
+                }
+                else {
+                    orderMethod = this.compareAlphabetInDesc_;
+                }
+                break;
+            case DATA_TYPE.Number:
+                if (order.type === 'asc') {
+                    orderMethod = this.compareNumberinAsc_;
+                }
+                else {
+                    orderMethod = this.compareNumberInDesc_;
+                }
+                break;
+            case DATA_TYPE.DateTime:
+                if (order.type === 'asc') {
+                    orderMethod = this.compareDateInAsc_;
+                }
+                else {
+                    orderMethod = this.compareDateInDesc_;
+                }
+        }
+        return orderMethod;
+    }
+
+    private orderBy(order: OrderQuery) {
+        order.type = this.getOrderType(order.type);
+        const orderColumn = order.by;
+        const columnInfo = this.getOrderColumnInfo_(orderColumn);
+        if (columnInfo != null) {
+            const orderMethod = this.getValueComparer_(columnInfo, order);
+            this.results.sort((a, b) => {
+                return orderMethod(a[orderColumn], b[orderColumn]);
+            });
+        }
+    }
+
+    private getOrderType(type: string) {
+        return type == null ? 'asc' : type.toLowerCase();
+    }
+
     protected processOrderBy() {
         const order = this.query.order;
-        if (order && this.results.length > 0 && !this.sorted && order.by) {
-            order.type = order.type ? order.type.toLowerCase() : 'asc';
-            let orderColumn = order.by;
-            const sortNumberInAsc = () => {
-                this.results.sort((a, b) => {
-                    return a[orderColumn] - b[orderColumn];
-                });
-            };
-            const sortNumberInDesc = () => {
-                this.results.sort((a, b) => {
-                    return b[orderColumn] - a[orderColumn];
-                });
-            };
-            const sortDateInAsc = () => {
-                this.results.sort((a, b) => {
-                    return a[orderColumn].getTime() - b[orderColumn].getTime();
-                });
-            };
-            const sortDateInDesc = () => {
-                this.results.sort((a, b) => {
-                    return b[orderColumn].getTime() - a[orderColumn].getTime();
-                });
-            };
-            const sortAlphabetInAsc = () => {
-                this.results.sort((a, b) => {
-                    return a[orderColumn].localeCompare(b[orderColumn]);
-                });
-            };
-            const sortAlphabetInDesc = () => {
-                this.results.sort((a, b) => {
-                    return b[orderColumn].localeCompare(a[orderColumn]);
-                });
-            };
-            let column;
-            if (this.query.join == null) {
-                column = this.getColumnInfo(orderColumn, this.query.from);
+        if (order && this.results.length > 0 && !this.sorted) {
+            const orderQueryType = this.getType(order);
+            if (orderQueryType === DATA_TYPE.Object) {
+                this.orderBy(order as OrderQuery);
             }
-            else {
-                const splittedByDot = this.removeSpace(orderColumn).split(".");
-                orderColumn = splittedByDot[1];
-                column = this.getColumnInfo(orderColumn, splittedByDot[0]);
-            }
-            if (column == null) {
-                this.onErrorOccured(new LogHelper(ERROR_TYPE.ColumnNotExist, { column: orderColumn, isOrder: true }), true);
-            }
-            else if (column.dataType === DATA_TYPE.String) {
-                if (order.type === 'asc') {
-                    sortAlphabetInAsc();
-                }
-                else {
-                    sortAlphabetInDesc();
-                }
-            }
-            else if (column.dataType === DATA_TYPE.Number) {
-                if (order.type === 'asc') {
-                    sortNumberInAsc();
-                }
-                else {
-                    sortNumberInDesc();
-                }
-            }
-            else if (column.dataType === DATA_TYPE.DateTime) {
-                if (order.type === 'asc') {
-                    sortDateInAsc();
-                }
-                else {
-                    sortDateInDesc();
+            else if (orderQueryType === DATA_TYPE.Array) {
+                this.orderBy(order[0]);
+                for (let i = 1, length = (order as any).length; i < length; i++) {
+                    if (this.error == null) {
+                        const prevOrderQueryBy = order[i - 1].by;
+                        const currentOrderQuery: OrderQuery = order[i];
+                        const currentorderQueryBy = currentOrderQuery.by;
+                        const orderColumnDetail = this.getOrderColumnInfo_(currentorderQueryBy);
+                        if (orderColumnDetail != null) {
+                            currentOrderQuery.type = this.getOrderType(currentOrderQuery.type);
+                            const orderMethod = this.getValueComparer_(orderColumnDetail, currentOrderQuery);
+                            this.results.sort((a, b) => {
+                                if (a[prevOrderQueryBy] === b[prevOrderQueryBy]) {
+                                    return orderMethod(a[currentorderQueryBy], b[currentorderQueryBy]);
+                                }
+                                return 0;
+                            });
+                        }
+                    }
                 }
             }
         }

@@ -14,9 +14,15 @@ export class Instance extends Join {
         this.skipRecord = query.skip;
         this.limitRecord = query.limit;
         this.tableName = query.from as string;
-        if (query.order && query.order.by && query.limit != null) {
-            this.isOrderWithLimit = true;
+        if (query.order) {
+            if (this.isArray(query.order)) {
+                query.order.idbSorting = false;
+                if (query.limit != null) {
+                    this.isOrderWithLimit = true;
+                }
+            }
         }
+
     }
 
     execute() {
