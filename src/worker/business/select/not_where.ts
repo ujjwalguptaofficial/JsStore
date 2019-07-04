@@ -22,21 +22,30 @@ export class NotWhere extends BaseSelect {
             this.cursorOpenRequest = this.objectStore.openCursor();
         }
 
-        if (this.skipRecord && this.limitRecord) {
-            this.executeSkipAndLimitForNoWhere_();
-        }
-        else if (this.skipRecord) {
-            this.executeSkipForNoWhere_();
-        }
-        else if (this.limitRecord) {
-            this.executeLimitForNotWhere_();
-        }
-        else {
-            this.executeSimpleForNotWhere_();
-        }
-
         this.cursorOpenRequest.onerror = this.onErrorOccured;
 
+        if (this.isOrderWithLimit === false) {
+            if (this.skipRecord && this.limitRecord) {
+                this.executeSkipAndLimitForNoWhere_();
+            }
+            else if (this.skipRecord) {
+                this.executeSkipForNoWhere_();
+            }
+            else if (this.limitRecord) {
+                this.executeLimitForNotWhere_();
+            }
+            else {
+                this.executeSimpleForNotWhere_();
+            }
+        }
+        else {
+            if (this.skipRecord) {
+                this.executeSkipForNoWhere_();
+            }
+            else {
+                this.executeSimpleForNotWhere_();
+            }
+        }
     }
 
     private executeSkipAndLimitForNoWhere_() {
