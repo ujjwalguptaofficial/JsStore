@@ -12,7 +12,6 @@ export class Helper extends GroupByHelper {
             column = this.getColumnInfo(orderColumn, this.query.from);
         }
         else {
-            debugger;
             const splittedByDot = this.removeSpace(orderColumn).split(".");
             orderColumn = splittedByDot[1];
             column = this.getColumnInfo(orderColumn, splittedByDot[0]);

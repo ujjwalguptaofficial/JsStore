@@ -58,7 +58,7 @@
     "puppeteer": "^1.18.1",
     "smart-banner-webpack-plugin": "^3.0.1",
     "ts-loader": "^5.3.3",
-    "tslint": "^5.11.0",
+    "tslint": "^5.18.0",
     "typescript": "^3.2.4",
     "uglify-js": "^3.4.9",
     "webpack": "^4.29.6",
