@@ -39,7 +39,7 @@ export class Join extends Helper {
             if (this.results.length > 0) {
                 try {
                     const mapWithAlias = (query: JoinQuery, value: object) => {
-                        if (query.as && value) {
+                        if (query.as && value != null) {
                             for (const key in query.as) {
                                 value[(query.as as any)[key]] = value[key];
                                 delete value[key];
@@ -165,15 +165,28 @@ export class Join extends Helper {
         const performleftJoin = () => {
             let index = 0;
             let valueMatchedFromSecondTable: any[];
+            let callBack;
+
             this.results.forEach((valueFromFirstTable) => {
                 valueMatchedFromSecondTable = [];
-                secondtableData.forEach(function (valueFromSecondTable) {
-                    if (valueFromFirstTable[table1Index] [column1] === valueFromSecondTable[column2]) {
-                        valueMatchedFromSecondTable.push(valueFromSecondTable);
-                    }
-                });
+                if (table2Index === 1) {
+                    callBack = function (valueFromSecondTable) {
+                        if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
+                            valueMatchedFromSecondTable.push(valueFromSecondTable);
+                        }
+                    };
+                }
+                else {
+                    callBack = function (valueFromSecondTable) {
+                        const value = valueFromFirstTable[table1Index];
+                        if (value != null && value[column1] === valueFromSecondTable[column2]) {
+                            valueMatchedFromSecondTable.push(valueFromSecondTable);
+                        }
+                    };
+                }
+                secondtableData.forEach(callBack);
                 if (valueMatchedFromSecondTable.length === 0) {
-                    valueMatchedFromSecondTable = [{}];
+                    valueMatchedFromSecondTable = [null];
                 }
                 valueMatchedFromSecondTable.forEach(function (value) {
                     results[index] = valueFromFirstTable;
