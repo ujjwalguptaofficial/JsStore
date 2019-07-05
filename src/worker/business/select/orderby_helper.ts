@@ -3,6 +3,7 @@ import { DATA_TYPE, ERROR_TYPE } from "../../enums";
 import { LogHelper } from "../../log_helper";
 import { IColumn } from "../../interfaces";
 import { OrderQuery } from "../../types";
+import { getDataType, removeSpace } from "../../utils/index";
 
 export class Helper extends GroupByHelper {
 
@@ -12,7 +13,7 @@ export class Helper extends GroupByHelper {
             column = this.getColumnInfo(orderColumn, this.query.from);
         }
         else {
-            const splittedByDot = this.removeSpace(orderColumn).split(".");
+            const splittedByDot = removeSpace(orderColumn).split(".");
             orderColumn = splittedByDot[1];
             column = this.getColumnInfo(orderColumn, splittedByDot[0]);
         }
@@ -96,7 +97,7 @@ export class Helper extends GroupByHelper {
     protected processOrderBy() {
         const order = this.query.order;
         if (order && this.results.length > 0 && !this.sorted) {
-            const orderQueryType = this.getType(order);
+            const orderQueryType = getDataType(order);
             if (orderQueryType === DATA_TYPE.Object) {
                 this.orderBy(order as OrderQuery);
             }
@@ -172,7 +173,7 @@ export class Helper extends GroupByHelper {
         };
         for (const prop in this.query.aggregate) {
             const aggregateColumn = this.query.aggregate[prop];
-            const aggregateValType = this.getType(aggregateColumn);
+            const aggregateValType = getDataType(aggregateColumn);
             let aggregateCalculator;
             switch (prop) {
                 case 'count':

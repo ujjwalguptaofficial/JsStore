@@ -1,7 +1,6 @@
 import { IdbHelper } from "./idb_helper";
 import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
 import { IError } from "../interfaces";
-import { Util } from "../util";
 export class BaseDb {
   
     onError: (err: IError) => void;
@@ -50,10 +49,7 @@ export class BaseDb {
         return IdbHelper.setDbList(value);
     }
 
-    protected isNullOrEmpty(value) {
-        return Util.isNullOrEmpty(value);
-    }
-
+    
     protected onDbClose(event) {
         this.onDbDroppedByBrowser();
         this.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);

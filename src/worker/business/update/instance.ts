@@ -4,6 +4,7 @@ import * as Select from "../select/index";
 import { QUERY_OPTION, API } from "../../enums";
 import { IError } from "../../interfaces";
 import { QueryHelper } from "../query_helper";
+import { isArray } from "../../utils/index";
 
 export class Instance extends Where {
 
@@ -22,7 +23,7 @@ export class Instance extends Where {
             try {
                 this.initTransaction();
                 if (this.query.where != null) {
-                    if (this.query.where.or || this.isArray(this.query.where)) {
+                    if (this.query.where.or || isArray(this.query.where)) {
                         this.executeComplexLogic_();
                     }
                     else {

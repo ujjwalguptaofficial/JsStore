@@ -1,7 +1,6 @@
 import { Table } from "../../model/index";
 import { ValueChecker } from "./value_checker";
-import { promise } from "../../helpers/index";
-import { Util } from "../../util";
+import { promise, getAutoIncrementValues, setAutoIncrementValue } from "../../helpers/index";
 import { QueryExecutor } from "../../query_executor";
 import { QueryHelper } from "../query_helper";
 
@@ -22,7 +21,7 @@ export class ValuesChecker {
                 this.startChecking().then(resolve).catch(reject);
             };
             if (QueryExecutor.isTransactionQuery === false) {
-                Util.getAutoIncrementValues(this.table).then(autoIncValues => {
+                getAutoIncrementValues(this.table).then(autoIncValues => {
                     onAutoIncValueEvaluated(autoIncValues);
                 }).catch(reject);
             }
@@ -43,7 +42,7 @@ export class ValuesChecker {
                 const error = this.valueCheckerObj.log.get();
                 reject(error);
             }
-            const promiseObj = Util.setAutoIncrementValue(this.table, this.valueCheckerObj.autoIncrementValue);
+            const promiseObj = setAutoIncrementValue(this.table, this.valueCheckerObj.autoIncrementValue);
             if (QueryExecutor.isTransactionQuery === false) {
                 promiseObj.then(resolve).catch(reject);
             }

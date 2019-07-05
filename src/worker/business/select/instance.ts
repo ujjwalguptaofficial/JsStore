@@ -3,6 +3,7 @@ import { IDB_MODE, QUERY_OPTION, API } from "../../enums";
 import { IError } from "../../interfaces";
 import { Join } from "./join";
 import { QueryHelper } from "../query_helper";
+import { isArray, getObjectFirstKey } from "../../utils/index";
 
 export class Instance extends Join {
 
@@ -15,7 +16,7 @@ export class Instance extends Join {
         this.limitRecord = query.limit;
         this.tableName = query.from as string;
         if (query.order) {
-            if (this.isArray(query.order)) {
+            if (isArray(query.order)) {
                 query.order.idbSorting = false;
             }
 
@@ -34,7 +35,7 @@ export class Instance extends Join {
                 if (this.query.join == null) {
                     if (this.query.where != null) {
                         this.initTransaction_();
-                        if (this.isArray(this.query.where)) {
+                        if (isArray(this.query.where)) {
                             this.processWhereArrayQry();
                         }
                         else {
@@ -216,7 +217,7 @@ export class Instance extends Join {
         this.orInfo.results = [... this.orInfo.results, ...this.results];
         if (!this.query.limit || (this.query.limit > this.orInfo.results.length)) {
             this.results = [];
-            const key = this.getObjectFirstKey(this.orInfo.orQuery);
+            const key = getObjectFirstKey(this.orInfo.orQuery);
             if (key != null) {
                 const where = {};
                 where[key] = this.orInfo.orQuery[key];

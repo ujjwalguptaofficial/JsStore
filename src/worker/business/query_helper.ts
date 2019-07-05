@@ -2,12 +2,12 @@ import { API, ERROR_TYPE, QUERY_OPTION, DATA_TYPE } from "../enums";
 import { IdbHelper } from "./idb_helper";
 import { InsertQuery } from "../types";
 import { LogHelper } from "../log_helper";
-import { Util } from "../util";
 import * as Update from "./update/index";
 import * as Insert from "./insert/index";
 import { Table } from "../model/index";
 import { IError } from "../interfaces";
 import { promise } from "../helpers/index";
+import { getDataType } from "../utils/index";
 
 export class QueryHelper {
     api: API;
@@ -59,7 +59,7 @@ export class QueryHelper {
         const table = this.getTable_((this.query as InsertQuery).into);
         let log: LogHelper;
         if (table) {
-            switch (this.getType_(this.query.values)) {
+            switch (getDataType(this.query.values)) {
                 case DATA_TYPE.Array:
                     break;
                 case DATA_TYPE.Null:
@@ -180,7 +180,7 @@ export class QueryHelper {
             });
             return qry;
         };
-        switch (this.getType_(whereQuery)) {
+        switch (getDataType(whereQuery)) {
             case DATA_TYPE.Object:
                 const queryKeys = Object.keys(whereQuery);
                 if (containsNot(whereQuery, queryKeys)) {
@@ -209,8 +209,6 @@ export class QueryHelper {
         }
     }
 
-    private getType_(value) {
-        return Util.getType(value);
-    }
+    
 
 }

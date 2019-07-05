@@ -4,6 +4,7 @@ import * as Select from '../select/index';
 import { QUERY_OPTION, API } from "../../enums";
 import { IError } from "../../interfaces";
 import { QueryHelper } from "../index";
+import { getObjectFirstKey, isArray } from "../../utils/index";
 
 export class Instance extends Where {
 
@@ -25,7 +26,7 @@ export class Instance extends Where {
             try {
                 this.initTransaction_();
                 if (this.query.where != null) {
-                    if (this.isArray(this.query.where)) {
+                    if (isArray(this.query.where)) {
                         this.processWhereArrayQry();
                     }
                     else {
@@ -96,7 +97,7 @@ export class Instance extends Where {
     }
 
     private orQuerySuccess_() {
-        const key = this.getObjectFirstKey((this as any)._orInfo.OrQuery);
+        const key = getObjectFirstKey((this as any)._orInfo.OrQuery);
         if (key != null) {
             const where = {};
             where[key] = (this as any)._orInfo.OrQuery[key];

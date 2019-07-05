@@ -1,5 +1,6 @@
 import { Where } from "./where";
 import { DATA_TYPE, QUERY_OPTION } from "../../enums";
+import { getDataType } from "../../utils/index";
 
 export class GroupByHelper extends Where {
     protected processGroupBy() {
@@ -8,7 +9,7 @@ export class GroupByHelper extends Where {
         const lookUpObj = {};
         // free results memory
         this.results = this.query.groupBy = undefined;
-        if (this.getType(grpQry) === DATA_TYPE.String) {
+        if (getDataType(grpQry) === DATA_TYPE.String) {
             for (const i in datas) {
                 lookUpObj[datas[i][grpQry as string]] = datas[i];
             }
@@ -94,7 +95,7 @@ export class GroupByHelper extends Where {
             };
             for (const prop in aggregateQry) {
                 const aggregateColumn = aggregateQry[prop];
-                const aggregateValType = this.getType(aggregateColumn);
+                const aggregateValType = getDataType(aggregateColumn);
                 let aggregateCalculator;
                 switch (prop) {
                     case QUERY_OPTION.Count:
@@ -127,7 +128,7 @@ export class GroupByHelper extends Where {
             }
         };
 
-        if (this.getType(grpQry) === DATA_TYPE.String) {
+        if (getDataType(grpQry) === DATA_TYPE.String) {
             for (index in datas) {
                 objKey = datas[index][grpQry];
                 calculateAggregate();
@@ -152,7 +153,7 @@ export class GroupByHelper extends Where {
         }
         // Checking for avg and if exist then fill the datas;
         if (aggregateQry.avg) {
-            if (this.getType(aggregateQry.avg) === DATA_TYPE.String) {
+            if (getDataType(aggregateQry.avg) === DATA_TYPE.String) {
                 for (index in datas) {
                     const sumForAvg = datas[index]["sum(" + aggregateQry.avg + ")"],
                         countForAvg = datas[index]["count(" + aggregateQry.avg + ")"];
@@ -166,8 +167,8 @@ export class GroupByHelper extends Where {
                 }
             }
             else {
-                const isCountTypeString = this.getType(aggregateQry.count) === DATA_TYPE.String;
-                const isSumTypeString = this.getType(aggregateQry.sum) === DATA_TYPE.String;
+                const isCountTypeString = getDataType(aggregateQry.count) === DATA_TYPE.String;
+                const isSumTypeString = getDataType(aggregateQry.sum) === DATA_TYPE.String;
                 for (index in datas) {
                     for (const column in aggregateQry.avg as any) {
                         const avgColumn = aggregateQry.avg[column],

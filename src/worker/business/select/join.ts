@@ -3,6 +3,7 @@ import * as Select from './instance';
 import { QUERY_OPTION, DATA_TYPE, ERROR_TYPE, API } from "../../enums";
 import { Helper } from "./orderby_helper";
 import { LogHelper } from "../../log_helper";
+import { getDataType, removeSpace } from "../../utils/index";
 
 export class Join extends Helper {
 
@@ -12,7 +13,7 @@ export class Join extends Helper {
 
     executeJoinQuery() {
         const query = this.query;
-        if (this.getType(query.join) === DATA_TYPE.Object) {
+        if (getDataType(query.join) === DATA_TYPE.Object) {
             this.joinQueryStack_ = [query.join as JoinQuery];
         }
         else {
@@ -204,7 +205,7 @@ export class Join extends Helper {
     }
 
     private getJoinTableInfo_(joinOn: string) {
-        joinOn = this.removeSpace(joinOn);
+        joinOn = removeSpace(joinOn);
         const splittedjoinOn = joinOn.split("=");
         const splittedjoinOnbydotFirst = splittedjoinOn[0].split(".");
         const splittedjoinOnbydotSecond = splittedjoinOn[1].split(".");

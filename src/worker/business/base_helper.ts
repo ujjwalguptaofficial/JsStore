@@ -1,7 +1,5 @@
-import { OCCURENCE } from "../enums";
 import { IdbHelper } from "./idb_helper";
 import { QUERY_OPTION } from "../enums";
-import { Util } from "../util";
 import { DataBase } from "../model/index";
 
 export class BaseHelper {
@@ -16,22 +14,6 @@ export class BaseHelper {
 
     protected get dbConnection() {
         return IdbHelper.dbConnection;
-    }
-
-    protected getObjectFirstKey(value: object) {
-        return Util.getObjectFirstKey(value);
-    }
-
-    protected getType(value) {
-        return Util.getType(value);
-    }
-
-    protected isString(value) {
-        return Util.isString(value);
-    }
-
-    protected isArray(value) {
-        return Util.isArray(value);
     }
 
     protected get transaction() {

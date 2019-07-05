@@ -7,17 +7,17 @@ import * as Update from './business/update/index';
 import * as Transaction from "./business/transaction/index";
 import { LogHelper } from "./log_helper";
 import {
-    TranscationQuery, UpdateQuery,
+    UpdateQuery,
     InsertQuery, RemoveQuery, SelectQuery, CountQuery, SetQuery
 } from "./types";
 import { CONNECTION_STATUS, ERROR_TYPE, DATA_TYPE, API } from "./enums";
 import { Config } from "./config";
 import { KeyStore } from "./keystore/index";
 import { TableHelper, DbHelper, DataBase } from "./model/index";
-import { Util } from "./util";
 import { WebWorkerResult, WebWorkerRequest } from "./types";
 import { IDataBase, IError } from "./interfaces";
 import { promise } from "./helpers/index";
+import { getDataType } from "./utils/index";
 
 export class QueryExecutor {
     static isTransactionQuery = false;
@@ -294,10 +294,6 @@ export class QueryExecutor {
         return IdbHelper.dbStatus;
     }
 
-    private getType_(value) {
-        return Util.getType(value);
-    }
-
     private checkForIdbSupport_() {
         if (this.dbStatus_.conStatus === CONNECTION_STATUS.UnableToStart) {
             const error = {
@@ -314,7 +310,7 @@ export class QueryExecutor {
     }
 
     private isDbExist_(dbInfo, onSuccess: (isExist: boolean) => void, onError: (err: IError) => void) {
-        if (this.getType_(dbInfo) === DATA_TYPE.String) {
+        if (getDataType(dbInfo) === DATA_TYPE.String) {
             this.getDbVersion_(dbInfo).then(function (dbVersion) {
                 onSuccess(Boolean(dbVersion));
             });

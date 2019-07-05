@@ -1,11 +1,11 @@
 import { Base } from "../base";
 import { UpdateQuery } from "../../types";
 import { DATA_TYPE } from "../../enums";
-import { Util } from "../../util";
+import { getDataType } from "../../utils/index";
 
 export const updateValue = (suppliedValue, storedValue) => {
     for (const key in suppliedValue) {
-        if (Util.getType(suppliedValue[key]) !== DATA_TYPE.Object) {
+        if (getDataType(suppliedValue[key]) !== DATA_TYPE.Object) {
             storedValue[key] = suppliedValue[key];
         }
         else {

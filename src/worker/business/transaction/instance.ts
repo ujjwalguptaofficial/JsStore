@@ -9,8 +9,7 @@ import { API, ERROR_TYPE } from "../../enums";
 import { QueryHelper } from "../query_helper";
 import { IError } from "../../interfaces";
 import { LogHelper } from "../../log_helper";
-import { Util } from "../../util";
-import { promise, promiseAll } from "../../helpers/index";
+import { promise, promiseAll, getAutoIncrementValues } from "../../helpers/index";
 
 export class Instance extends Base {
     query: TranscationQuery;
@@ -35,7 +34,7 @@ export class Instance extends Base {
             return;
         }
         promiseAll<number>(this.query.tables.map(table => {
-            return Util.getAutoIncrementValues(this.getTable(table));
+            return getAutoIncrementValues(this.getTable(table));
         })).then(results => {
             results.forEach((result: any, index) => {
                 QueryHelper.autoIncrementValues[this.query.tables[index]] = result;

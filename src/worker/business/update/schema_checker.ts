@@ -1,9 +1,9 @@
 import { Table } from "../../model/table";
-import { IError, IColumn } from "../../interfaces";
+import { IColumn } from "../../interfaces";
 import { Column } from "../../model/column";
 import { LogHelper } from "../../log_helper";
 import { ERROR_TYPE, DATA_TYPE } from "../../enums";
-import { Util } from "../../util";
+import { isNull, getDataType } from "../../utils/index";
 
 export class SchemaChecker {
     table: Table;
@@ -41,23 +41,17 @@ export class SchemaChecker {
         return null;
     }
 
-    private isNull_(value) {
-        return Util.isNull(value);
-    }
-
-    private getType_(value) {
-        return Util.getType(value);
-    }
+    
 
     private checkByColumn_(column: IColumn, value) {
         let log: LogHelper = null;
         // check not null schema
-        if (column.notNull === true && this.isNull_(value)) {
+        if (column.notNull === true && isNull(value)) {
             log = new LogHelper(ERROR_TYPE.NullValue, { ColumnName: column.name });
         }
 
         // check datatype
-        const type = this.getType_(value);
+        const type = getDataType(value);
         const checkFurther = value != null;
         if (column.dataType && checkFurther) {
             if (type !== column.dataType && type !== 'object') {

@@ -4,6 +4,7 @@ import * as Select from '../select/index';
 import { IDB_MODE, API } from "../../enums";
 import { IError } from "../../interfaces";
 import { QueryHelper } from "../query_helper";
+import { isArray } from "../../utils/index";
 
 export class Instance extends Where {
 
@@ -29,7 +30,7 @@ export class Instance extends Where {
                 };
                 if (this.query.join == null) {
                     if (this.query.where != null) {
-                        if (this.query.where.or || this.isArray(this.query.where)) {
+                        if (this.query.where.or || isArray(this.query.where)) {
                             getDataFromSelect();
                         }
                         else {

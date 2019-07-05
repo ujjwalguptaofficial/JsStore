@@ -5,7 +5,7 @@ import { LogHelper } from "../log_helper";
 import { ERROR_TYPE, OCCURENCE, DATA_TYPE } from "../enums";
 import { Column } from "../model/index";
 import { QUERY_OPTION } from "../enums";
-import { Util } from "../util";
+import { getDataType, isString, getObjectFirstKey } from "../utils/index";
 
 export abstract class Base extends BaseHelper {
     error: IError;
@@ -91,7 +91,7 @@ export abstract class Base extends BaseHelper {
     }
 
     protected goToWhereLogic() {
-        const columnName = this.getObjectFirstKey(this.query.where);
+        const columnName = getObjectFirstKey(this.query.where);
         if (this.query.ignoreCase === true) {
             this.query.where = this.makeQryInCaseSensitive(this.query.where);
         }
@@ -103,7 +103,7 @@ export abstract class Base extends BaseHelper {
                     Object.keys(this.query.where).length > 1
                 );
                 this.whereCheckerInstance = new WhereChecker(this.query.where, checkFlag);
-                const key = this.getObjectFirstKey(value);
+                const key = getObjectFirstKey(value);
                 switch (key) {
                     case QUERY_OPTION.Like: {
                         const regexVal = this.getRegexFromLikeExpression_(value[QUERY_OPTION.Like]);
@@ -149,7 +149,7 @@ export abstract class Base extends BaseHelper {
         for (const column in qry) {
             columnValue = qry[column];
 
-            switch (this.getType(columnValue)) {
+            switch (getDataType(columnValue)) {
                 case DATA_TYPE.String:
                     results = results.concat(this.getAllCombinationOfWord(columnValue));
                     qry[column] = {};
@@ -158,7 +158,7 @@ export abstract class Base extends BaseHelper {
                 case DATA_TYPE.Object:
                     for (const key in columnValue) {
                         keyValue = columnValue[key];
-                        if (this.isString(keyValue)) {
+                        if (isString(keyValue)) {
                             switch (key) {
                                 case QUERY_OPTION.In:
                                     results = results.concat(this.getAllCombinationOfWord(keyValue, true));
@@ -178,7 +178,5 @@ export abstract class Base extends BaseHelper {
         return qry;
     }
 
-    protected removeSpace(value: string) {
-        return Util.removeSpace(value);
-    }
+     
 }
