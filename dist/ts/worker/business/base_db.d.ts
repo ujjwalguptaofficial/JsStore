@@ -11,7 +11,6 @@ export declare class BaseDb {
     protected readonly activeDb: import("../model/database").DataBase;
     protected getDbList(): Promise<string[]>;
     protected setDbList(value: any): Promise<{}>;
-    protected isNullOrEmpty(value: any): boolean;
     protected onDbClose(event: any): void;
     protected onDbVersionChange(e: IDBVersionChangeEvent): void;
     protected onDbConError(e: any): void;

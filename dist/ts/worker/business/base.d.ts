@@ -21,5 +21,4 @@ export declare abstract class Base extends BaseHelper {
     private getRegexFromLikeExpression_;
     protected goToWhereLogic(): void;
     protected makeQryInCaseSensitive(qry: any): any;
-    protected removeSpace(value: string): string;
 }

@@ -22,5 +22,4 @@ export declare class QueryHelper {
     private readonly activeDb_;
     private getTable_;
     private addGreatAndLessToNotOp_;
-    private getType_;
 }
