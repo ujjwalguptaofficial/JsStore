@@ -293,4 +293,17 @@ describe('Test join', function () {
             done(err);
         })
     });
+
+    it('multiple left join', function (done) {
+        con.select({
+            from: "Customers",
+            join: [
+                { with: "Orders", type: "left", on: "Customers.CustomerID=Orders.CustomerID" },
+                { with: "Employees", type: "left", on: "Orders.EmployeeID=Employees.employeeId" }
+            ]
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(215);
+            done();
+        }).catch(done);
+    });
 });
