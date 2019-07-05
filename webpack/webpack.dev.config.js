@@ -48,7 +48,7 @@ function createConfigsForAllLibraryTargetForWebWorker() {
 
     const getConfigForTaget = function (target) {
         return {
-            mode: "development",
+            mode: "production",
             devtool: 'source-map',
             output: {
                 path: path.join(__dirname, "./../build"),
@@ -60,7 +60,10 @@ function createConfigsForAllLibraryTargetForWebWorker() {
                 new webpack.DefinePlugin({
                     'process.env.NODE_ENV': JSON.stringify("dev")
                 }),
-            ]
+            ],
+            optimization: {
+                minimize: false
+            }
         }
     }
     var configs = [];
@@ -72,5 +75,5 @@ function createConfigsForAllLibraryTargetForWebWorker() {
 
 
 module.exports = [...createConfigsForAllLibraryTarget(),
-    ...createConfigsForAllLibraryTargetForWebWorker()
+...createConfigsForAllLibraryTargetForWebWorker()
 ]
