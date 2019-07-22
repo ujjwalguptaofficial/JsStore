@@ -48,4 +48,29 @@ describe('Test Select with order', function () {
             done(err);
         })
     })
+
+    it('order by country from both method', function (done) {
+        con.select({
+            from: 'Customers',
+            order: {
+                by: 'Country',
+                type: 'desc',
+                idbSorting: false
+            }
+        }).then(function (results1) {
+            con.select({
+                from: 'Customers',
+                order: [{
+                    by: 'Country',
+                    type: 'desc'
+                }]
+            }).then(function (results2) {
+                expect(results1).to.be.an('array').deep.equal(results2);
+                done();
+                done();
+            }).catch(done);
+        }).catch(function (err) {
+            done(err);
+        })
+    })
 });
