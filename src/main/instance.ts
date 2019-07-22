@@ -1,4 +1,4 @@
-import { API } from "./enums";
+import { API, EVENT } from "./enums";
 import { InstanceHelper } from "./instance_helper";
 import {
     SelectQuery, CountQuery, InsertQuery,
@@ -295,5 +295,9 @@ export class Instance extends InstanceHelper {
     runSql(query: string | object): Promise<any> {
         const result = Util.sqlWeb.parseSql(query);
         return this[result.api](result.data);
+    }
+
+    on(event: EVENT, eventCallBack: Function) {
+        
     }
 }

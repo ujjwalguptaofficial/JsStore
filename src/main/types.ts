@@ -1,5 +1,5 @@
 import { IError } from "./interfaces";
-import { API } from "./enums";
+import { API, EVENT } from "./enums";
 
 export type OrderQuery = {
     /**
@@ -112,4 +112,9 @@ export type TranscationQuery = {
 export type SqlWebResult = {
     api: string;
     data: any;
+};
+
+export type EventQueue = {
+    event: EVENT;
+    callback: Function
 };

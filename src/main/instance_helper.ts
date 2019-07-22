@@ -1,6 +1,6 @@
 import { LogHelper } from "./log_helper";
-import { API } from "./enums";
-import { WebWorkerRequest, WebWorkerResult } from "./types";
+import { API, EVENT } from "./enums";
+import { WebWorkerRequest, WebWorkerResult, EventQueue } from "./types";
 import { Config } from "./config";
 
 declare var JsStoreWorker;
@@ -12,7 +12,9 @@ export class InstanceHelper {
   private requestQueue_: WebWorkerRequest[] = [];
   private isCodeExecuting_ = false;
 
-  private inactivityTimer = -1000;
+  private inactivityTimer_ = -1000;
+
+  private eventQueue: EventQueue[] = [];
 
   // these apis have special permissions. These apis dont wait for database open.
   private whiteListApi_ = [
@@ -85,6 +87,7 @@ export class InstanceHelper {
             }
             else {
               this.isDbIdle_ = true;
+              this.callEvent(EVENT.RequestQueueEmpty, []);
             }
             break;
         }
@@ -122,7 +125,7 @@ export class InstanceHelper {
         this.openDb_();
       }
       else {
-        clearTimeout(this.inactivityTimer);
+        clearTimeout(this.inactivityTimer_);
       }
       this.prcoessExecutionOfQry_(request);
     });
@@ -163,7 +166,7 @@ export class InstanceHelper {
       }
     }
     else if (requestQueueLength === 0 && this.isDbIdle_ === false && this.isDbOpened_) {
-      this.inactivityTimer = setTimeout(() => {
+      this.inactivityTimer_ = setTimeout(() => {
         this.prcoessExecutionOfQry_({
           name: API.CloseDb,
           onSuccess: function () {
@@ -190,5 +193,16 @@ export class InstanceHelper {
       new JsStoreWorker.QueryExecutor(this.processFinishedQuery_.bind(this)).checkConnectionAndExecuteLogic(requestForWorker);
     }
 
+  }
+
+  private callEvent(event: EVENT, args: any[]) {
+    const events = this.eventQueue.filter(function (ev) {
+      if (ev.event === event) {
+        return ev;
+      }
+    });
+    events.forEach(function (ev) {
+      ev.callback(...args);
+    });
   }
 }

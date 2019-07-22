@@ -8,3 +8,4 @@ import { Util } from "./util";
 export const useSqlWeb = (value) => {
     Util.sqlWeb = value;
 };
+
