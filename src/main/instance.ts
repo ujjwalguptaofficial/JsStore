@@ -298,6 +298,20 @@ export class Instance extends InstanceHelper {
     }
 
     on(event: EVENT, eventCallBack: Function) {
-        
+        this.eventQueue.push({
+            event: event,
+            callback: eventCallBack
+        });
+    }
+
+    off(event: EVENT, eventCallBack: Function) {
+        const indexes = this.eventQueue.map((ev, i) => {
+            if (ev.event === event) {
+                return i;
+            }
+        });
+        indexes.forEach(i => {
+            this.eventQueue.splice(i, 0);
+        });
     }
 }

@@ -14,7 +14,7 @@ export class InstanceHelper {
 
   private inactivityTimer_ = -1000;
 
-  private eventQueue: EventQueue[] = [];
+  protected eventQueue: EventQueue[] = [];
 
   // these apis have special permissions. These apis dont wait for database open.
   private whiteListApi_ = [
