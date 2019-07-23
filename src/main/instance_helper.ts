@@ -38,7 +38,6 @@ export class InstanceHelper {
     } else {
       Config.isRuningInWorker = false;
     }
-    this.initKeyStore_();
   }
 
   private initKeyStore_() {
@@ -121,6 +120,10 @@ export class InstanceHelper {
       request.onError = error => {
         reject(error);
       };
+      if (this.requestQueue_.length === 0) {
+        this.callEvent(EVENT.RequestQueueFilled, []);
+        this.initKeyStore_();
+      }
       if (this.isDbIdle_ === true && this.isDbOpened_ === true) {
         this.openDb_();
       }

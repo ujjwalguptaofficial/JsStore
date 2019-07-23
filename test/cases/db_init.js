@@ -33,9 +33,14 @@ describe("initiate database", function () {
         // }).catch(function (err) {
         //     done(err);
         // });
+        var isFilled = false;
+        con.on("requestQueueFilled", function () {
+            isFilled = true;
+        });
         con.initDb(getDemoDbSchema()).then(function (isDbCreated) {
             console.log('Database created', isDbCreated);
             expect(isDbCreated).to.be.an('boolean').equal(true);
+            expect(isFilled).to.be.an('boolean').equal(true);
             done();
         });
     })

@@ -44,5 +44,6 @@ export enum API {
 }
 
 export enum EVENT {
-    RequestQueueEmpty = "request_queue_empty"
+    RequestQueueEmpty = "requestQueueEmpty",
+    RequestQueueFilled = "requestQueueFilled"
 }
