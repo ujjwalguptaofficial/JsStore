@@ -1,5 +1,5 @@
 import { IError } from "./interfaces";
-import { API } from "./enums";
+import { API, EVENT } from "./enums";
 export declare type OrderQuery = {
     /**
      * sorting column name
@@ -99,4 +99,8 @@ export declare type TranscationQuery = {
 export declare type SqlWebResult = {
     api: string;
     data: any;
+};
+export declare type EventQueue = {
+    event: EVENT;
+    callback: Function;
 };

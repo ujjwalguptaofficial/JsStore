@@ -39,3 +39,7 @@ export declare enum API {
     InitKeyStore = "init_keystore",
     CloseDb = "close_db"
 }
+export declare enum EVENT {
+    RequestQueueEmpty = "requestQueueEmpty",
+    RequestQueueFilled = "requestQueueFilled"
+}

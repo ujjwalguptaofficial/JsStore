@@ -1,4 +1,4 @@
-import { WebWorkerRequest } from "./types";
+import { WebWorkerRequest, EventQueue } from "./types";
 export declare class InstanceHelper {
     protected activeDbName: string;
     private worker_;
@@ -6,7 +6,8 @@ export declare class InstanceHelper {
     private isDbIdle_;
     private requestQueue_;
     private isCodeExecuting_;
-    private inactivityTimer;
+    private inactivityTimer_;
+    protected eventQueue: EventQueue[];
     private whiteListApi_;
     constructor(worker?: Worker);
     private initKeyStore_;
@@ -17,4 +18,5 @@ export declare class InstanceHelper {
     private prcoessExecutionOfQry_;
     private executeQry_;
     private sendRequestToWorker_;
+    private callEvent;
 }

@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.2.2 - 05/07/2019
+ * @license :jsstore - V3.3.0 - 23/07/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -118,7 +118,7 @@ var Config = /** @class */ (function () {
 /*!***************************!*\
   !*** ./src/main/enums.ts ***!
   \***************************/
-/*! exports provided: ERROR_TYPE, WORKER_STATUS, DATA_TYPE, API */
+/*! exports provided: ERROR_TYPE, WORKER_STATUS, DATA_TYPE, API, EVENT */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -127,6 +127,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WORKER_STATUS", function() { return WORKER_STATUS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return DATA_TYPE; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "API", function() { return API; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EVENT", function() { return EVENT; });
 var ERROR_TYPE;
 (function (ERROR_TYPE) {
     ERROR_TYPE["WorkerNotSupplied"] = "worker_not_supplied";
@@ -172,6 +173,11 @@ var API;
     API["InitKeyStore"] = "init_keystore";
     API["CloseDb"] = "close_db";
 })(API || (API = {}));
+var EVENT;
+(function (EVENT) {
+    EVENT["RequestQueueEmpty"] = "requestQueueEmpty";
+    EVENT["RequestQueueFilled"] = "requestQueueFilled";
+})(EVENT || (EVENT = {}));
 
 
 /***/ }),
@@ -227,7 +233,7 @@ var enableLog = function () {
 /*!***************************!*\
   !*** ./src/main/index.ts ***!
   \***************************/
-/*! exports provided: Instance, ERROR_TYPE, WORKER_STATUS, DATA_TYPE, API, Config, enableLog, useSqlWeb */
+/*! exports provided: Instance, ERROR_TYPE, WORKER_STATUS, DATA_TYPE, API, EVENT, Config, enableLog, useSqlWeb */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -243,6 +249,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "API", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["API"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EVENT", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["EVENT"]; });
 
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./config */ "./src/main/config.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Config", function() { return _config__WEBPACK_IMPORTED_MODULE_2__["Config"]; });
@@ -561,6 +569,23 @@ var Instance = /** @class */ (function (_super) {
         var result = _util__WEBPACK_IMPORTED_MODULE_3__["Util"].sqlWeb.parseSql(query);
         return this[result.api](result.data);
     };
+    Instance.prototype.on = function (event, eventCallBack) {
+        this.eventQueue.push({
+            event: event,
+            callback: eventCallBack
+        });
+    };
+    Instance.prototype.off = function (event, eventCallBack) {
+        var _this = this;
+        var indexes = this.eventQueue.map(function (ev, i) {
+            if (ev.event === event) {
+                return i;
+            }
+        });
+        indexes.forEach(function (i) {
+            _this.eventQueue.splice(i, 0);
+        });
+    };
     return Instance;
 }(_instance_helper__WEBPACK_IMPORTED_MODULE_1__["InstanceHelper"]));
 
@@ -590,7 +615,8 @@ var InstanceHelper = /** @class */ (function () {
         this.isDbIdle_ = true;
         this.requestQueue_ = [];
         this.isCodeExecuting_ = false;
-        this.inactivityTimer = -1000;
+        this.inactivityTimer_ = -1000;
+        this.eventQueue = [];
         // these apis have special permissions. These apis dont wait for database open.
         this.whiteListApi_ = [
             _enums__WEBPACK_IMPORTED_MODULE_1__["API"].InitDb,
@@ -612,7 +638,6 @@ var InstanceHelper = /** @class */ (function () {
         else {
             _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker = false;
         }
-        this.initKeyStore_();
     }
     InstanceHelper.prototype.initKeyStore_ = function () {
         if (_config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker) {
@@ -657,6 +682,7 @@ var InstanceHelper = /** @class */ (function () {
                         }
                         else {
                             this.isDbIdle_ = true;
+                            this.callEvent(_enums__WEBPACK_IMPORTED_MODULE_1__["EVENT"].RequestQueueEmpty, []);
                         }
                         break;
                 }
@@ -687,11 +713,15 @@ var InstanceHelper = /** @class */ (function () {
             request.onError = function (error) {
                 reject(error);
             };
-            if (_this.isDbIdle_ === true && _this.isDbOpened_ === true) {
-                _this.openDb_();
-            }
-            else {
-                clearTimeout(_this.inactivityTimer);
+            if (_this.requestQueue_.length === 0) {
+                _this.callEvent(_enums__WEBPACK_IMPORTED_MODULE_1__["EVENT"].RequestQueueFilled, []);
+                if (_this.isDbIdle_ === true && _this.isDbOpened_ === true) {
+                    _this.openDb_();
+                }
+                else {
+                    clearTimeout(_this.inactivityTimer_);
+                    _this.initKeyStore_();
+                }
             }
             _this.prcoessExecutionOfQry_(request);
         });
@@ -723,7 +753,7 @@ var InstanceHelper = /** @class */ (function () {
             }
         }
         else if (requestQueueLength === 0 && this.isDbIdle_ === false && this.isDbOpened_) {
-            this.inactivityTimer = setTimeout(function () {
+            this.inactivityTimer_ = setTimeout(function () {
                 _this.prcoessExecutionOfQry_({
                     name: _enums__WEBPACK_IMPORTED_MODULE_1__["API"].CloseDb,
                     onSuccess: function () {
@@ -747,6 +777,16 @@ var InstanceHelper = /** @class */ (function () {
         else {
             new JsStoreWorker.QueryExecutor(this.processFinishedQuery_.bind(this)).checkConnectionAndExecuteLogic(requestForWorker);
         }
+    };
+    InstanceHelper.prototype.callEvent = function (event, args) {
+        var events = this.eventQueue.filter(function (ev) {
+            if (ev.event === event) {
+                return ev;
+            }
+        });
+        events.forEach(function (ev) {
+            ev.callback.apply(ev, args);
+        });
     };
     return InstanceHelper;
 }());

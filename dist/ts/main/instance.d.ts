@@ -1,3 +1,4 @@
+import { EVENT } from "./enums";
 import { InstanceHelper } from "./instance_helper";
 import { SelectQuery, CountQuery, InsertQuery, UpdateQuery, RemoveQuery, DbInfo, TranscationQuery } from "./types";
 import { IDataBase } from "./interfaces";
@@ -161,4 +162,6 @@ export declare class Instance extends InstanceHelper {
      * @memberof Instance
      */
     runSql(query: string | object): Promise<any>;
+    on(event: EVENT, eventCallBack: Function): void;
+    off(event: EVENT, eventCallBack: Function): void;
 }
