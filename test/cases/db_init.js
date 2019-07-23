@@ -34,15 +34,38 @@ describe("initiate database", function () {
         //     done(err);
         // });
         var isFilled = false;
+        var isEmpty = false;
         con.on("requestQueueFilled", function () {
             isFilled = true;
+        });
+        con.on("requestQueueEmpty", function () {
+            isEmpty = true;
         });
         con.initDb(getDemoDbSchema()).then(function (isDbCreated) {
             console.log('Database created', isDbCreated);
             expect(isDbCreated).to.be.an('boolean').equal(true);
             expect(isFilled).to.be.an('boolean').equal(true);
-            done();
+            setTimeout(function () {
+                expect(isEmpty).to.be.an('boolean').equal(true);
+                expect(con.requestQueue_.length).to.be.equal(0);
+                done();
+            }, 2000);
         });
+    })
+
+    it('off event', function (done) {
+        con.off("requestQueueFilled");
+        const indexes = con.requestQueue_.map(function (ev, i) {
+            if (ev.event === event) {
+                return i;
+            }
+        });
+        if (indexes.length > 0) {
+            done('event is not removed');
+        }
+        else {
+            done('');
+        }
     })
 })
 

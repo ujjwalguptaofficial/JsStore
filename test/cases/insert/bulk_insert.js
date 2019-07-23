@@ -1,4 +1,8 @@
 describe('Test bulkInsert', function () {
+    it('settimeout', function (done) {
+        setTimeout(done, 2000);
+    });
+    
     it('insert OrderDetails', function (done) {
         $.getJSON("test/static/OrderDetails.json", function (results) {
             con.bulkInsert({
@@ -8,9 +12,9 @@ describe('Test bulkInsert', function () {
                 expect(results).to.be.an('undefined');
                 done();
             }).
-            catch(function (err) {
-                done(err);
-            });
+                catch(function (err) {
+                    done(err);
+                });
         });
     });
 
@@ -18,29 +22,29 @@ describe('Test bulkInsert', function () {
         con.bulkInsert({
             into: 'Custamer'
         }).
-        catch(function (err) {
-            console.log(err);
-            var error = {
-                message: "Table 'Custamer' does not exist",
-                type: "table_not_exist"
-            };
-            expect(err).to.be.an('object').eql(error);
-            done();
-        })
+            catch(function (err) {
+                console.log(err);
+                var error = {
+                    message: "Table 'Custamer' does not exist",
+                    type: "table_not_exist"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            })
     });
 
     it('without value', function (done) {
         con.bulkInsert({
             into: 'Customers'
         }).
-        catch(function (err) {
-            console.log(err);
-            var error = {
-                message: 'No value is supplied',
-                type: 'no_value_supplied'
-            };
-            expect(err).to.be.an('object').eql(error);
-            done();
-        })
+            catch(function (err) {
+                console.log(err);
+                var error = {
+                    message: 'No value is supplied',
+                    type: 'no_value_supplied'
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            })
     });
 });

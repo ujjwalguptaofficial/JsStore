@@ -122,13 +122,13 @@ export class InstanceHelper {
       };
       if (this.requestQueue_.length === 0) {
         this.callEvent(EVENT.RequestQueueFilled, []);
-        this.initKeyStore_();
-      }
-      if (this.isDbIdle_ === true && this.isDbOpened_ === true) {
-        this.openDb_();
-      }
-      else {
-        clearTimeout(this.inactivityTimer_);
+        if (this.isDbIdle_ === true && this.isDbOpened_ === true) {
+          this.openDb_();
+        }
+        else {
+          clearTimeout(this.inactivityTimer_);
+          this.initKeyStore_();
+        }
       }
       this.prcoessExecutionOfQry_(request);
     });
