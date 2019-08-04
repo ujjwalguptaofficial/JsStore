@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.3.0 - 23/07/2019
+ * @license :jsstore - V3.3.1 - 04/08/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -873,7 +873,7 @@ var Util = /** @class */ (function () {
     }
     Object.defineProperty(Util, "sqlWeb", {
         get: function () {
-            return Util.sqlWeb_ == null ? window['SqlWeb'] : Util.sqlWeb_;
+            return Util.sqlWeb_ == null ? self['SqlWeb'] : Util.sqlWeb_;
         },
         set: function (value) {
             Util.sqlWeb_ = value;
