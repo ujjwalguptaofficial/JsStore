@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.3.1 - 04/08/2019
+ * @license :jsstore - V3.3.2 - 02/09/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -5901,6 +5901,7 @@ var getObjectFirstKey = function (value) {
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(13);
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(23);
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(12);
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(8);
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -5914,6 +5915,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 
 
@@ -6002,8 +6004,17 @@ var Instance = /** @class */ (function (_super) {
             });
         };
         var txLogic = null;
-        eval("txLogic =" + this.query.logic);
-        txLogic.call(this, this.query.data);
+        if (_config__WEBPACK_IMPORTED_MODULE_12__[/* Config */ "a"].isRuningInWorker === true) {
+            eval("txLogic =" + this.query.logic);
+        }
+        else {
+            txLogic = this.query.logic;
+        }
+        txLogic.call(this, {
+            data: this.query.data,
+            insert: insert, select: select, update: update, remove: remove,
+            count: count, setResult: setResult, getResult: getResult, abort: abort, start: start
+        });
         if (true) {
             console.log("transaction query started");
         }

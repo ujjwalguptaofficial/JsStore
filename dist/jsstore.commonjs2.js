@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.3.1 - 04/08/2019
+ * @license :jsstore - V3.3.2 - 02/09/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -552,7 +552,9 @@ var Instance = /** @class */ (function (_super) {
      * @memberof Instance
      */
     Instance.prototype.transaction = function (query) {
-        query.logic = query.logic.toString();
+        if (_config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker === true) {
+            query.logic = query.logic.toString();
+        }
         return this.pushApi({
             name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Transaction,
             query: query
