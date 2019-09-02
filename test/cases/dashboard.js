@@ -198,17 +198,15 @@ describe("dashboard test", function () {
         $.getJSON("test/static/Jobs.json", function (results) {
             var transaction_query = {
                 tables: ['Job'],
-                logic: function (data, ctx) {
-                    debugger;
-                    insert({
+                logic: function (ctx) {
+                    ctx.insert({
                         into: 'Job',
                         values: results,
                         skipDataCheck: true
                     }).then(function (recordInserted) {
-                        setResult('recordInserted', recordInserted);
+                        ctx.setResult('recordInserted', recordInserted);
                     })
-                    start()
-
+                    ctx.start()
                 }
             }
             connection.transaction(transaction_query).then(function (results) {
