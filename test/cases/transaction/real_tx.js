@@ -35,7 +35,7 @@ describe('real time transaction', function () {
     it('buying products', function (done) {
         var txQuery = {
             tables: ['customers', 'orders', 'products', 'orderDetails'],
-            logic: function (data) {
+            logic: function (ctx) {
                 const insertOrder = function (customer) {
                     const order = {
                         customerId: customer.id,
@@ -59,7 +59,7 @@ describe('real time transaction', function () {
                 };
 
                 const insertOrderDetail = function (orderId) {
-                    const orderDetails = data.orderDetails.map(function (value) {
+                    const orderDetails = ctx.data.orderDetails.map(function (value) {
                         value.orderId = orderId
                         return value;
                     });
@@ -81,7 +81,7 @@ describe('real time transaction', function () {
                 // update the product inventory and evaluate price
                 const updateProductAndEvaluatePrice = function () {
                     setResult('totalPrice', 0);
-                    data.orderDetails.forEach(function (orderDetail, index) {
+                    ctx.data.orderDetails.forEach(function (orderDetail, index) {
                         const where = {
                             productId: orderDetail.productId
                         };
@@ -123,7 +123,7 @@ describe('real time transaction', function () {
 
                 insert({
                     into: 'customers',
-                    values: [data.customer],
+                    values: [ctx.data.customer],
                     return: true
                 }).then(function (customers) {
                     if (customers.length > 0) {

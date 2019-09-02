@@ -153,10 +153,10 @@ describe('Transaction - error test', function () {
                     Country: 'BangKok'
                 }
             },
-            logic: function (data) {
+            logic: function (ctx) {
 
                 update({ in: 'Customers',
-                    set: data.updateValue,
+                    set: ctx.data.updateValue,
                     where: {
                         CustomerID: 5
                     }

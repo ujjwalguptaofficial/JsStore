@@ -84,7 +84,7 @@ describe('Test transaction', function () {
                     Country: 'BangKok'
                 }]
             },
-            logic: function (data) {
+            logic: function (ctx) {
                 select({
                     from: 'Customers'
                 }).then(function (result) {
@@ -93,7 +93,7 @@ describe('Test transaction', function () {
                 insert({
                     into: 'Customers',
                     return: true,
-                    values: data.insertValues
+                    values: ctx.data.insertValues
                 }).then(function (insertedcustomer) {
                     setResult('insertedcustomer', insertedcustomer);
                 })
@@ -130,11 +130,11 @@ describe('Test transaction', function () {
                     Country: 'BangKok'
                 }
             },
-            logic: function (data) {
+            logic: function (ctx) {
 
                 update({
                     in: 'Customers',
-                    set: data.updateValue,
+                    set: ctx.data.updateValue,
                     where: {
                         CustomerID: 5
                     }

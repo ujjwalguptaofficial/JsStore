@@ -92,22 +92,22 @@ export class Instance extends Base {
                 this.onError(err);
             });
         };
-
+        let txLogic = null;
         if (Config.isRuningInWorker === true) {
-            const txLogic = null;
             eval("txLogic =" + this.query.logic);
-            txLogic.call(this, this.query.data);
+
         }
         else {
-            this.query.logic.call(
-                this,
-                {
-                    data: this.query.data,
-                    insert, select, update, remove,
-                    count, setResult, getResult, abort, start
-                }
-            );
+            txLogic = this.query.logic;
         }
+        txLogic.call(
+            this,
+            {
+                data: this.query.data,
+                insert, select, update, remove,
+                count, setResult, getResult, abort, start
+            }
+        );
 
         if (process.env.NODE_ENV === 'dev') {
             console.log(`transaction query started`);
