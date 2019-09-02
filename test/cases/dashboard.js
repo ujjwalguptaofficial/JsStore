@@ -196,12 +196,23 @@ describe("dashboard test", function () {
 
     it('insert into job', function (done) {
         $.getJSON("test/static/Jobs.json", function (results) {
-            connection.insert({
-                into: 'Job',
-                values: results,
-                skipDataCheck: true
-            }).then(function (recordInserted) {
-                expect(recordInserted).to.be.an('number').equal(26);
+            var transaction_query = {
+                tables: ['Job'],
+                logic: function (data, ctx) {
+                    debugger;
+                    insert({
+                        into: 'Job',
+                        values: results,
+                        skipDataCheck: true
+                    }).then(function (recordInserted) {
+                        setResult('recordInserted', recordInserted);
+                    })
+                    start()
+
+                }
+            }
+            connection.transaction(transaction_query).then(function (results) {
+                expect(results.recordInserted).to.be.an('number').equal(26);
                 done();
             }).catch(function (err) {
                 done(err);

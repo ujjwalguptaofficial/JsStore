@@ -278,7 +278,9 @@ export class Instance extends InstanceHelper {
      * @memberof Instance
      */
     transaction(query: TranscationQuery) {
-        (query.logic as any) = query.logic.toString();
+        if (Config.isRuningInWorker === true) {
+            (query.logic as any) = query.logic.toString();
+        }
         return this.pushApi<any>({
             name: API.Transaction,
             query: query

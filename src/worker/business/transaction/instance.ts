@@ -10,6 +10,7 @@ import { QueryHelper } from "../query_helper";
 import { IError } from "../../interfaces";
 import { LogHelper } from "../../log_helper";
 import { promise, promiseAll, getAutoIncrementValues } from "../../helpers/index";
+import { Config } from "../../config";
 
 export class Instance extends Base {
     query: TranscationQuery;
@@ -92,10 +93,22 @@ export class Instance extends Base {
             });
         };
 
+        if (Config.isRuningInWorker === true) {
+            const txLogic = null;
+            eval("txLogic =" + this.query.logic);
+            txLogic.call(this, this.query.data);
+        }
+        else {
+            this.query.logic.call(
+                this,
+                {
+                    data: this.query.data,
+                    insert, select, update, remove,
+                    count, setResult, getResult, abort, start
+                }
+            );
+        }
 
-        const txLogic = null;
-        eval("txLogic =" + this.query.logic);
-        txLogic.call(this, this.query.data);
         if (process.env.NODE_ENV === 'dev') {
             console.log(`transaction query started`);
         }
