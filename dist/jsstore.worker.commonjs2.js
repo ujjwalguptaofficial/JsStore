@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.3.2 - 02/09/2019
+ * @license :jsstore - V3.3.3 - 03/09/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -4302,13 +4302,13 @@ var join_Join = /** @class */ (function (_super) {
                 }
                 if (this.query[enums["g" /* QUERY_OPTION */].Skip] && this.query[enums["g" /* QUERY_OPTION */].Limit]) {
                     this.results.splice(0, this.query[enums["g" /* QUERY_OPTION */].Skip]);
-                    this.results.splice(this.query[enums["g" /* QUERY_OPTION */].Limit] - 1, this.results.length);
+                    this.results = this.results.slice(0, this.query[enums["g" /* QUERY_OPTION */].Limit]);
                 }
                 else if (this.query[enums["g" /* QUERY_OPTION */].Skip]) {
                     this.results.splice(0, this.query[enums["g" /* QUERY_OPTION */].Skip]);
                 }
                 else if (this.query[enums["g" /* QUERY_OPTION */].Limit]) {
-                    this.results.splice(this.query[enums["g" /* QUERY_OPTION */].Limit] - 1, this.results.length);
+                    this.results = this.results.slice(0, this.query[enums["g" /* QUERY_OPTION */].Limit]);
                 }
             }
             this.onSuccess(this.results);
