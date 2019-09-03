@@ -89,13 +89,13 @@ export class Join extends Helper {
 
                 if (this.query[QUERY_OPTION.Skip] && this.query[QUERY_OPTION.Limit]) {
                     this.results.splice(0, this.query[QUERY_OPTION.Skip]);
-                    this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
+                    this.results = this.results.slice(0, this.query[QUERY_OPTION.Limit]);
                 }
                 else if (this.query[QUERY_OPTION.Skip]) {
                     this.results.splice(0, this.query[QUERY_OPTION.Skip]);
                 }
                 else if (this.query[QUERY_OPTION.Limit]) {
-                    this.results.splice(this.query[QUERY_OPTION.Limit] - 1, this.results.length);
+                    this.results = this.results.slice(0, this.query[QUERY_OPTION.Limit]);
                 }
             }
             this.onSuccess(this.results);
