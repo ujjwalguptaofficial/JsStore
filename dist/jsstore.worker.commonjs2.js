@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.3.4 - 05/09/2019
+ * @license :jsstore - V3.3.5 - 05/09/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -4266,19 +4266,20 @@ var join_Join = /** @class */ (function (_super) {
                     this.results = this.results.slice(0, this.query[enums["g" /* QUERY_OPTION */].Limit]);
                 }
                 try {
+                    var results_1 = [];
+                    var tables = Object.keys(this.results[0]);
+                    var tablesLength_1 = tables.length;
                     var mapWithAlias_1 = function (query, value) {
-                        if (query.as && value != null) {
-                            value = __assign({}, value);
+                        if (query.as != null) {
                             for (var key in query.as) {
-                                value[query.as[key]] = value[key];
-                                delete value[key];
+                                if (value[key] != null) {
+                                    value[query.as[key]] = value[key];
+                                    delete value[key];
+                                }
                             }
                         }
                         return value;
                     };
-                    var results_1 = [];
-                    var tables = Object.keys(this.results[0]);
-                    var tablesLength_1 = tables.length;
                     this.results.forEach(function (result) {
                         var data = result["0"]; // first table data
                         for (var i = 1; i < tablesLength_1; i++) {
@@ -4378,6 +4379,10 @@ var join_Join = /** @class */ (function (_super) {
             var index = 0;
             var valueMatchedFromSecondTable;
             var callBack;
+            var columnDefaultValue = {};
+            _this.getTable(jointblInfo.table2.table).columns.forEach(function (col) {
+                columnDefaultValue[col.name] = null;
+            });
             _this.results.forEach(function (valueFromFirstTable) {
                 valueMatchedFromSecondTable = [];
                 if (table2Index === 1) {
@@ -4397,7 +4402,7 @@ var join_Join = /** @class */ (function (_super) {
                 }
                 secondtableData.forEach(callBack);
                 if (valueMatchedFromSecondTable.length === 0) {
-                    valueMatchedFromSecondTable = [null];
+                    valueMatchedFromSecondTable = [columnDefaultValue];
                 }
                 valueMatchedFromSecondTable.forEach(function (value) {
                     results[index] = valueFromFirstTable;
