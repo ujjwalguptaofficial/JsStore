@@ -14,8 +14,8 @@ describe('Test join', function () {
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(196);
-            const firstValue = results[0];
-            console.log(firstValue);
+            var firstValue = results[0];
+            // console.log(firstValue);
             expect(firstValue).to.be.an('object').to.haveOwnProperty('name');
             expect(firstValue).to.be.an('object').to.haveOwnProperty('cName');
             expect(firstValue).to.be.an('object').to.haveOwnProperty('OrderID');
@@ -64,6 +64,48 @@ describe('Test join', function () {
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(196);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('left join when some data does not match from first table', function (done) {
+        con.update({
+            in: "Orders",
+            set: {
+                ShipperID: 1234567890
+            },
+            where: {
+                OrderID: 10248
+            }
+        });
+
+        con.select({
+            from: "Orders",
+            join: {
+                with: "Shippers",
+                on: "Shippers.ShipperID = Orders.ShipperID",
+                type: "left"
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(196);
+            expect(results[0]).to.be.an('object').to.haveOwnProperty('ShipperName').equal(null);
+            expect(results[1]).to.be.an('object').to.haveOwnProperty('ShipperName').equal("Speedy Express");
+
+        }).catch(function (err) {
+            done(err);
+        })
+
+        con.update({
+            in: "Orders",
+            set: {
+                ShipperID: 3
+            },
+            where: {
+                OrderID: 10248
+            }
+        }).then(function () {
             done();
         }).catch(function (err) {
             done(err);
@@ -120,7 +162,7 @@ describe('Test join', function () {
             }]
         }).then(function (results) {
             expect(results).to.be.an('array').length(196);
-            const result = results[0];
+            var result = results[0];
             expect(result.CustomerID).to.be.an('number');
             expect(result.OrderID).to.be.an('number');
             expect(result.ShipperID).to.be.an('number');
@@ -388,7 +430,7 @@ describe('Test join', function () {
                 on: "Shippers.ShipperID = Orders.ShipperID",
                 as: {
                     ShipperID: "shipperId",
-                    ShipperName:"shipperName"
+                    ShipperName: "shipperName"
                 }
             },
             limit: 5

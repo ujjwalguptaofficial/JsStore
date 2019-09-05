@@ -49,20 +49,20 @@ export class Join extends Helper {
                     this.results = this.results.slice(0, this.query[QUERY_OPTION.Limit]);
                 }
                 try {
+                    let results = [];
+                    const tables = Object.keys(this.results[0]);
+                    const tablesLength = tables.length;
                     const mapWithAlias = (query: JoinQuery, value: object) => {
-                        if (query.as && value != null) {
-                            value = { ...value };
+                        if (query.as!= null) {
                             for (const key in query.as) {
-                                value[(query.as as any)[key]] = value[key];
-                                delete value[key];
+                                if (value[key] != null) {
+                                    value[(query.as as any)[key]] = value[key];
+                                    delete value[key];
+                                }
                             }
                         }
                         return value;
                     };
-
-                    let results = [];
-                    const tables = Object.keys(this.results[0]);
-                    const tablesLength = tables.length;
                     this.results.forEach((result) => {
                         let data = result["0"]; // first table data
                         for (let i = 1; i < tablesLength; i++) {
@@ -169,7 +169,10 @@ export class Join extends Helper {
             let index = 0;
             let valueMatchedFromSecondTable: any[];
             let callBack;
-
+            const columnDefaultValue = {};
+            this.getTable(jointblInfo.table2.table).columns.forEach(col => {
+                columnDefaultValue[col.name] = null;
+            });
             this.results.forEach((valueFromFirstTable) => {
                 valueMatchedFromSecondTable = [];
                 if (table2Index === 1) {
@@ -189,7 +192,7 @@ export class Join extends Helper {
                 }
                 secondtableData.forEach(callBack);
                 if (valueMatchedFromSecondTable.length === 0) {
-                    valueMatchedFromSecondTable = [null];
+                    valueMatchedFromSecondTable = [columnDefaultValue];
                 }
                 valueMatchedFromSecondTable.forEach(function (value) {
                     results[index] = valueFromFirstTable;

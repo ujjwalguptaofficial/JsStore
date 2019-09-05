@@ -55,7 +55,7 @@ describe("initiate database", function () {
 
     it('off event', function (done) {
         con.off("requestQueueFilled");
-        const indexes = con.requestQueue_.map(function (ev, i) {
+        var indexes = con.requestQueue_.map(function (ev, i) {
             if (ev.event === event) {
                 return i;
             }

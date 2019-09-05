@@ -56,7 +56,7 @@ describe('select join order test', function () {
                 done(err);
             }
             else {
-                const error = { "message": "column Id exist in both table Student & StudentDetail", "type": "invalid_join_query" };
+                var error = { "message": "column Id exist in both table Student & StudentDetail", "type": "invalid_join_query" };
                 expect(error).to.be.eql(err);
                 done();
             }
@@ -102,7 +102,7 @@ describe('select join order test', function () {
                 expect(err).to.be.an('object').haveOwnProperty('type').equal('invalid_join_query');
             }
             else {
-                const error = { "message": "Cannot read property 'columns' of undefined", "type": "invalid_order_query" };
+                var error = { "message": "Cannot read property 'columns' of undefined", "type": "invalid_order_query" };
                 expect(error).to.be.eql(err);
             }
             done();
