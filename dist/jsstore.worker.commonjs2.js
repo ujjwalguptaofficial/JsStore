@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.3.3 - 03/09/2019
+ * @license :jsstore - V3.3.4 - 05/09/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -4255,9 +4255,20 @@ var join_Join = /** @class */ (function (_super) {
         var _this = this;
         if (this.error == null) {
             if (this.results.length > 0) {
+                if (this.query[enums["g" /* QUERY_OPTION */].Skip] && this.query[enums["g" /* QUERY_OPTION */].Limit]) {
+                    this.results.splice(0, this.query[enums["g" /* QUERY_OPTION */].Skip]);
+                    this.results = this.results.slice(0, this.query[enums["g" /* QUERY_OPTION */].Limit]);
+                }
+                else if (this.query[enums["g" /* QUERY_OPTION */].Skip]) {
+                    this.results.splice(0, this.query[enums["g" /* QUERY_OPTION */].Skip]);
+                }
+                else if (this.query[enums["g" /* QUERY_OPTION */].Limit]) {
+                    this.results = this.results.slice(0, this.query[enums["g" /* QUERY_OPTION */].Limit]);
+                }
                 try {
                     var mapWithAlias_1 = function (query, value) {
                         if (query.as && value != null) {
+                            value = __assign({}, value);
                             for (var key in query.as) {
                                 value[query.as[key]] = value[key];
                                 delete value[key];
@@ -4299,16 +4310,6 @@ var join_Join = /** @class */ (function (_super) {
                         type: enums["d" /* ERROR_TYPE */].InvalidJoinQuery
                     });
                     return;
-                }
-                if (this.query[enums["g" /* QUERY_OPTION */].Skip] && this.query[enums["g" /* QUERY_OPTION */].Limit]) {
-                    this.results.splice(0, this.query[enums["g" /* QUERY_OPTION */].Skip]);
-                    this.results = this.results.slice(0, this.query[enums["g" /* QUERY_OPTION */].Limit]);
-                }
-                else if (this.query[enums["g" /* QUERY_OPTION */].Skip]) {
-                    this.results.splice(0, this.query[enums["g" /* QUERY_OPTION */].Skip]);
-                }
-                else if (this.query[enums["g" /* QUERY_OPTION */].Limit]) {
-                    this.results = this.results.slice(0, this.query[enums["g" /* QUERY_OPTION */].Limit]);
                 }
             }
             this.onSuccess(this.results);

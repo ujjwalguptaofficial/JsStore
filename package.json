@@ -1,6 +1,6 @@
 {
   "name": "jsstore",
-  "version": "3.3.3",
+  "version": "3.3.4",
   "description": "A complete IndexedDB wrapper with SQL like syntax.",
   "main": "dist/jsstore.commonjs2.js",
   "types": "dist/ts/main/index.d.ts",
