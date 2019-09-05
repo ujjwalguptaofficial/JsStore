@@ -379,4 +379,27 @@ describe('Test join', function () {
             done(err);
         })
     });
+
+    it('join data check for undefined issue when using as', function (done) {
+        con.select({
+            from: "Orders",
+            join: {
+                with: "Shippers",
+                on: "Shippers.ShipperID = Orders.ShipperID",
+                as: {
+                    ShipperID: "shipperId",
+                    ShipperName:"shipperName"
+                }
+            },
+            limit: 5
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(5);
+            const fourthValue = results[3];
+            expect(fourthValue).to.be.an('object').to.haveOwnProperty('shipperId').equal(1);
+            expect(fourthValue).to.be.an('object').to.haveOwnProperty('shipperName').equal("Speedy Express");
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
 });
