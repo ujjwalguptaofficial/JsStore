@@ -38,6 +38,16 @@ export class Join extends Helper {
     private onJoinQueryFinished_() {
         if (this.error == null) {
             if (this.results.length > 0) {
+                if (this.query[QUERY_OPTION.Skip] && this.query[QUERY_OPTION.Limit]) {
+                    this.results.splice(0, this.query[QUERY_OPTION.Skip]);
+                    this.results = this.results.slice(0, this.query[QUERY_OPTION.Limit]);
+                }
+                else if (this.query[QUERY_OPTION.Skip]) {
+                    this.results.splice(0, this.query[QUERY_OPTION.Skip]);
+                }
+                else if (this.query[QUERY_OPTION.Limit]) {
+                    this.results = this.results.slice(0, this.query[QUERY_OPTION.Limit]);
+                }
                 try {
                     const mapWithAlias = (query: JoinQuery, value: object) => {
                         if (query.as && value != null) {
@@ -88,16 +98,7 @@ export class Join extends Helper {
                     return;
                 }
 
-                if (this.query[QUERY_OPTION.Skip] && this.query[QUERY_OPTION.Limit]) {
-                    this.results.splice(0, this.query[QUERY_OPTION.Skip]);
-                    this.results = this.results.slice(0, this.query[QUERY_OPTION.Limit]);
-                }
-                else if (this.query[QUERY_OPTION.Skip]) {
-                    this.results.splice(0, this.query[QUERY_OPTION.Skip]);
-                }
-                else if (this.query[QUERY_OPTION.Limit]) {
-                    this.results = this.results.slice(0, this.query[QUERY_OPTION.Limit]);
-                }
+
             }
             this.onSuccess(this.results);
         }
