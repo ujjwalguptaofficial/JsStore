@@ -10,7 +10,7 @@ describe('Test Select with order', function () {
         }).then(function (results) {
             done(results);
         }).catch(function (err) {
-            const error = { "message": "Column 'undefined' in order query does not exist", "type": "column_not_exist" };
+            var error = { "message": "Column 'undefined' in order query does not exist", "type": "column_not_exist" };
             expect(err).to.be.an('object').eql(error);
             done();
         })
@@ -173,7 +173,7 @@ describe('Test Select with order', function () {
                 expect(results).to.be.an('array').length(34);
                 var isSorted = true;
                 results.every(function (value, index) {
-                    const nextVal = results[index + 1];
+                    var nextVal = results[index + 1];
                     if (nextVal != null && value.birthDate.getTime() > nextVal.birthDate.getTime()) {
                         isSorted = false;
                     }
@@ -204,7 +204,7 @@ describe('Test Select with order', function () {
                 expect(results).to.be.an('array').length(34);
                 var isSorted = true;
                 results.every(function (value, index) {
-                    const nextVal = results[index + 1];
+                    var nextVal = results[index + 1];
                     // check for wrong condition
                     if (nextVal != null && value.birthDate.getTime() < nextVal.birthDate.getTime()) {
                         isSorted = false;

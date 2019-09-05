@@ -234,7 +234,7 @@ describe('Test join', function () {
                 on: "Orders.CustomerID=Customers.CustomerID"
             }
         }).catch(function (err) {
-            const error = { "message": "Table 'invalid_table' does not exist", "type": "table_not_exist" };
+            var error = { "message": "Table 'invalid_table' does not exist", "type": "table_not_exist" };
             expect(err).to.eql(error);
             done();
         })
@@ -252,11 +252,11 @@ describe('Test join', function () {
             done(result);
         }).catch(function (err) {
             if (isRuningForProd() || isRuningForSauce()) {
-                const error = { "message": "Table 'invalid_table' does not exist", "type": "table_not_exist" };
+                var error = { "message": "Table 'invalid_table' does not exist", "type": "table_not_exist" };
                 expect(err).to.eql(error);
             }
             else {
-                const error = {
+                var error = {
                     "message": "on value should contains value of with", "type": "invalid_join_query"
                 }
                 expect(err).to.eql(error);
@@ -284,7 +284,7 @@ describe('Test join', function () {
                 expect(err).to.be.an('object').haveOwnProperty('type').equal('invalid_join_query');
             }
             else {
-                const error = { "message": "column CustomerId does not exist in table Orders", "type": "invalid_join_query" };
+                var error = { "message": "column CustomerId does not exist in table Orders", "type": "invalid_join_query" };
                 expect(err).to.eql(error);
             }
             done();
@@ -310,7 +310,7 @@ describe('Test join', function () {
                 expect(err).to.be.an('object').haveOwnProperty('type').equal('invalid_join_query');
             }
             else {
-                const error = { "message": "column CustomerId does not exist in table Customers", "type": "invalid_join_query" };
+                var error = { "message": "column CustomerId does not exist in table Customers", "type": "invalid_join_query" };
                 expect(err).to.eql(error);
             }
             done();
@@ -365,7 +365,7 @@ describe('Test join', function () {
             limit: 10
         }).then(function (results) {
             expect(results).to.be.an('array').length(10);
-            const firstValue = results[0];
+            var firstValue = results[0];
             expect(firstValue).to.be.an('object').to.haveOwnProperty('OrderID').equal(10248);
             done();
         }).catch(function (err) {
@@ -389,7 +389,7 @@ describe('Test join', function () {
             skip: 10
         }).then(function (results) {
             expect(results).to.be.an('array').length(186);
-            const firstValue = results[0];
+            var firstValue = results[0];
             expect(firstValue).to.be.an('object').to.haveOwnProperty('OrderID').equal(10258);
             done();
         }).catch(function (err) {
@@ -414,7 +414,7 @@ describe('Test join', function () {
             skip: 5
         }).then(function (results) {
             expect(results).to.be.an('array').length(10);
-            const firstValue = results[0];
+            var firstValue = results[0];
             expect(firstValue).to.be.an('object').to.haveOwnProperty('OrderID').equal(10253);
             done();
         }).catch(function (err) {
@@ -436,7 +436,7 @@ describe('Test join', function () {
             limit: 5
         }).then(function (results) {
             expect(results).to.be.an('array').length(5);
-            const fourthValue = results[3];
+            var fourthValue = results[3];
             expect(fourthValue).to.be.an('object').to.haveOwnProperty('shipperId').equal(1);
             expect(fourthValue).to.be.an('object').to.haveOwnProperty('shipperName').equal("Speedy Express");
             done();

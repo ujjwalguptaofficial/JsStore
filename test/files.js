@@ -1,4 +1,4 @@
-const nodeModules = "node_modules/"
+var nodeModules = "node_modules/"
 exports.list_of_files = [
     'test/scripts/common.js',
     'test/helpers/*.js',

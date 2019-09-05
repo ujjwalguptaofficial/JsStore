@@ -13,7 +13,7 @@ describe('Test Select with order', function () {
             var cities = ["Buenos Aires", "Buenos Aires", "Buenos Aires", "Graz", "Salzburg",
                 "Bruxelles", "Charleroi", "Campinas", "Resende", "Rio de Janeiro"];
             for (var i = 0; i < 10; i++) {
-                const result = results[i];
+                var result = results[i];
                 expect(result.Country).to.be.equal(countries[i]);
                 expect(result.City).to.be.equal(cities[i]);
             }
@@ -39,7 +39,7 @@ describe('Test Select with order', function () {
             var cities = ["Buenos Aires", "Buenos Aires", "Buenos Aires", "Graz", "Salzburg",
                 "Bruxelles", "Charleroi", "Campinas", "Resende", "Rio de Janeiro"];
             for (var i = 0; i < 10; i++) {
-                const result = results[i];
+                var result = results[i];
                 expect(result.Country).to.be.equal(countries[i]);
                 expect(result.City).to.be.equal(cities[i]);
             }

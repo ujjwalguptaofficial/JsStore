@@ -101,7 +101,7 @@ describe('Test count complex case', function () {
             }
         }).then(function (results) {
             expect(results).to.be.an('number').equal(196);
-            let firstValue = results[0];
+            var firstValue = results[0];
             done();
         }).catch(function (err) {
             done(err);

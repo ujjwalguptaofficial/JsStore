@@ -1,4 +1,4 @@
-const getDemoDbSchema = function () {
+var getDemoDbSchema = function () {
 
     var DATA_TYPE = JsStore.DATA_TYPE;
 

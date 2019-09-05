@@ -1,1 +1,1 @@
-const isRuningForSauceLab = true;
+var isRuningForSauceLab = true;

@@ -36,8 +36,8 @@ describe('real time transaction', function () {
         var txQuery = {
             tables: ['customers', 'orders', 'products', 'orderDetails'],
             logic: function (ctx) {
-                const insertOrder = function (customer) {
-                    const order = {
+                var insertOrder = function (customer) {
+                    var order = {
                         customerId: customer.id,
                         orderDate: new Date(),
                     }
@@ -58,8 +58,8 @@ describe('real time transaction', function () {
                     })
                 };
 
-                const insertOrderDetail = function (orderId) {
-                    const orderDetails = ctx.data.orderDetails.map(function (value) {
+                var insertOrderDetail = function (orderId) {
+                    var orderDetails = ctx.data.orderDetails.map(function (value) {
                         value.orderId = orderId
                         return value;
                     });
@@ -79,10 +79,10 @@ describe('real time transaction', function () {
                 };
 
                 // update the product inventory and evaluate price
-                const updateProductAndEvaluatePrice = function () {
+                var updateProductAndEvaluatePrice = function () {
                     setResult('totalPrice', 0);
                     ctx.data.orderDetails.forEach(function (orderDetail, index) {
-                        const where = {
+                        var where = {
                             productId: orderDetail.productId
                         };
                         update({
@@ -108,8 +108,8 @@ describe('real time transaction', function () {
                             where: where
                         }).then(function (results) {
                             if (results.length > 0) {
-                                const product = results[0];
-                                const price = product.price * orderDetail.quantity
+                                var product = results[0];
+                                var price = product.price * orderDetail.quantity
                                 setResult('totalPrice', getResult('totalPrice') + price);
                             } else {
                                 abort("no products found");
