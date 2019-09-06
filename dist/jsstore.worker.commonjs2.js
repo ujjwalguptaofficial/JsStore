@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.3.6 - 06/09/2019
+ * @license :jsstore - V3.3.7 - 06/09/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -160,6 +160,7 @@ var ERROR_TYPE;
     ERROR_TYPE["InvalidJoinQuery"] = "invalid_join_query";
     ERROR_TYPE["InvalidOrderQuery"] = "invalid_order_query";
     ERROR_TYPE["InvalidQuery"] = "invalid_query";
+    ERROR_TYPE["InvalidGroupQuery"] = "invalid_group_query";
 })(ERROR_TYPE || (ERROR_TYPE = {}));
 var QUERY_OPTION;
 (function (QUERY_OPTION) {
@@ -3987,6 +3988,29 @@ var orderby_helper_Helper = /** @class */ (function (_super) {
     function Helper() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    Helper.prototype.processGroupDistinctAggr = function () {
+        if (this.query.distinct) {
+            var groupBy = [];
+            var result = this.results[0];
+            for (var key in result) {
+                groupBy.push(key);
+            }
+            var primaryKey = this.getPrimaryKey(this.query.from), index = groupBy.indexOf(primaryKey);
+            groupBy.splice(index, 1);
+            this.query.groupBy = groupBy.length > 0 ? groupBy : null;
+        }
+        if (this.query.groupBy) {
+            if (this.query.aggregate) {
+                this.executeAggregateGroupBy();
+            }
+            else {
+                this.processGroupBy();
+            }
+        }
+        else if (this.query.aggregate) {
+            this.processAggregateQry();
+        }
+    };
     Helper.prototype.getOrderColumnInfo_ = function (orderColumn) {
         var column;
         if (this.query.join == null) {
@@ -4049,8 +4073,8 @@ var orderby_helper_Helper = /** @class */ (function (_super) {
         }
         return orderMethod;
     };
-    Helper.prototype.orderBy = function (order) {
-        order.type = this.getOrderType(order.type);
+    Helper.prototype.orderBy_ = function (order) {
+        order.type = this.getOrderType_(order.type);
         var orderColumn = order.by;
         var columnInfo = this.getOrderColumnInfo_(orderColumn);
         if (columnInfo != null) {
@@ -4061,7 +4085,7 @@ var orderby_helper_Helper = /** @class */ (function (_super) {
             });
         }
     };
-    Helper.prototype.getOrderType = function (type) {
+    Helper.prototype.getOrderType_ = function (type) {
         return type == null ? 'asc' : type.toLowerCase();
     };
     Helper.prototype.processOrderBy = function () {
@@ -4069,10 +4093,10 @@ var orderby_helper_Helper = /** @class */ (function (_super) {
         if (order && this.results.length > 0 && !this.sorted) {
             var orderQueryType = Object(get_data_type["a" /* getDataType */])(order);
             if (orderQueryType === enums["c" /* DATA_TYPE */].Object) {
-                this.orderBy(order);
+                this.orderBy_(order);
             }
             else if (orderQueryType === enums["c" /* DATA_TYPE */].Array) {
-                this.orderBy(order[0]);
+                this.orderBy_(order[0]);
                 var _loop_1 = function (i, length_1) {
                     if (this_1.error == null) {
                         var prevOrderQueryBy_1 = order[i - 1].by;
@@ -4081,7 +4105,7 @@ var orderby_helper_Helper = /** @class */ (function (_super) {
                         var orderColumnDetail = this_1.getOrderColumnInfo_(currentorderQueryBy_1);
                         if (orderColumnDetail != null) {
                             currentorderQueryBy_1 = orderColumnDetail.name;
-                            currentOrderQuery.type = this_1.getOrderType(currentOrderQuery.type);
+                            currentOrderQuery.type = this_1.getOrderType_(currentOrderQuery.type);
                             var orderMethod_2 = this_1.getValueComparer_(orderColumnDetail, currentOrderQuery);
                             this_1.results.sort(function (a, b) {
                                 if (a[prevOrderQueryBy_1] === b[prevOrderQueryBy_1]) {
@@ -4255,15 +4279,8 @@ var join_Join = /** @class */ (function (_super) {
         var _this = this;
         if (this.error == null) {
             if (this.results.length > 0) {
-                if (this.query[enums["g" /* QUERY_OPTION */].Skip] && this.query[enums["g" /* QUERY_OPTION */].Limit]) {
+                if (this.query[enums["g" /* QUERY_OPTION */].Skip] && !this.query[enums["g" /* QUERY_OPTION */].Limit]) {
                     this.results.splice(0, this.query[enums["g" /* QUERY_OPTION */].Skip]);
-                    this.results = this.results.slice(0, this.query[enums["g" /* QUERY_OPTION */].Limit]);
-                }
-                else if (this.query[enums["g" /* QUERY_OPTION */].Skip]) {
-                    this.results.splice(0, this.query[enums["g" /* QUERY_OPTION */].Skip]);
-                }
-                else if (this.query[enums["g" /* QUERY_OPTION */].Limit]) {
-                    this.results = this.results.slice(0, this.query[enums["g" /* QUERY_OPTION */].Limit]);
                 }
                 try {
                     var results_1 = [];
@@ -4304,6 +4321,19 @@ var join_Join = /** @class */ (function (_super) {
                         }
                     }
                     else {}
+                    if (true) {
+                        try {
+                            this.processGroupDistinctAggr();
+                        }
+                        catch (ex) {
+                            this.onError({
+                                message: ex.message,
+                                type: enums["d" /* ERROR_TYPE */].InvalidGroupQuery
+                            });
+                            return;
+                        }
+                    }
+                    else {}
                 }
                 catch (ex) {
                     this.onError({
@@ -4311,6 +4341,13 @@ var join_Join = /** @class */ (function (_super) {
                         type: enums["d" /* ERROR_TYPE */].InvalidJoinQuery
                     });
                     return;
+                }
+                if (this.query[enums["g" /* QUERY_OPTION */].Skip] && this.query[enums["g" /* QUERY_OPTION */].Limit]) {
+                    this.results.splice(0, this.query[enums["g" /* QUERY_OPTION */].Skip]);
+                    this.results = this.results.slice(0, this.query[enums["g" /* QUERY_OPTION */].Limit]);
+                }
+                else if (this.query[enums["g" /* QUERY_OPTION */].Limit]) {
+                    this.results = this.results.slice(0, this.query[enums["g" /* QUERY_OPTION */].Limit]);
                 }
             }
             this.onSuccess(this.results);
@@ -4512,27 +4549,7 @@ var instance_Instance = /** @class */ (function (_super) {
                     if (_this.isOrderWithLimit === true) {
                         _this.results = _this.results.slice(0, _this.query.limit);
                     }
-                    if (_this.query.distinct) {
-                        var groupBy = [];
-                        var result = _this.results[0];
-                        for (var key in result) {
-                            groupBy.push(key);
-                        }
-                        var primaryKey = _this.getPrimaryKey(_this.query.from), index = groupBy.indexOf(primaryKey);
-                        groupBy.splice(index, 1);
-                        _this.query.groupBy = groupBy.length > 0 ? groupBy : null;
-                    }
-                    if (_this.query.groupBy) {
-                        if (_this.query.aggregate) {
-                            _this.executeAggregateGroupBy();
-                        }
-                        else {
-                            _this.processGroupBy();
-                        }
-                    }
-                    else if (_this.query.aggregate) {
-                        _this.processAggregateQry();
-                    }
+                    _this.processGroupDistinctAggr();
                     _this.onSuccess(_this.results);
                 }
                 else {

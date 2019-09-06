@@ -1,5 +1,6 @@
 import { GroupByHelper } from "./group_by_helper";
 export declare class Helper extends GroupByHelper {
+    processGroupDistinctAggr(): void;
     private getOrderColumnInfo_;
     private compareAlphabetInDesc_;
     private compareAlphabetinAsc_;
@@ -8,8 +9,8 @@ export declare class Helper extends GroupByHelper {
     private compareDateInDesc_;
     private compareDateInAsc_;
     private getValueComparer_;
-    private orderBy;
-    private getOrderType;
+    private orderBy_;
+    private getOrderType_;
     protected processOrderBy(): void;
     protected processAggregateQry(): void;
 }
