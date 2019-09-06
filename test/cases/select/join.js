@@ -134,7 +134,7 @@ describe('Test join', function () {
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(196);
-            console.log('results', results[1]);
+            //console.log('results', results[1]);
             expect(results[0]).to.be.an('object').to.haveOwnProperty('shipperId').equal(null);
             expect(results[0]).to.be.an('object').to.haveOwnProperty('shipperName').equal(null);
             expect(results[1]).to.be.an('object').to.haveOwnProperty('shipperName').equal("Speedy Express");

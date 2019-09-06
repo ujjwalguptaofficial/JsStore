@@ -86,6 +86,30 @@ describe('select join order test', function () {
         })
     });
 
+    it('select from student left join with studentdetail with as & limit 3', function (done) {
+        con.select({
+            from: "Student",
+            join: {
+                with: "StudentDetail",
+                on: "Student.Name=StudentDetail.Name",
+                as: {
+                    Id: 'StudentDetailId'
+                }
+            },
+            order: { by: 'Student.Order', type: 'asc' },
+            limit: 3
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(3);
+            console.log(JSON.stringify(results));
+            for (var i = 0; i < results.length; i++) {
+                expect(results[i]['Order']).to.be.equal((i + 1).toString());
+            }
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
     it('select from student left join with studentdetail with as & invalid order query', function (done) {
         con.select({
             from: "Student",
