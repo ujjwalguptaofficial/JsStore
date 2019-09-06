@@ -62,8 +62,8 @@
     "tslint": "^5.18.0",
     "typescript": "^3.2.4",
     "uglify-js": "^3.4.9",
-    "webpack": "^4.35.2",
-    "webpack-cli": "^3.2.1",
+    "webpack": "^4.39.3",
+    "webpack-cli": "^3.3.8",
     "webpack-merge": "^4.1.4"
   },
   "displayName": "JsStore",
