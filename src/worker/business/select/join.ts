@@ -84,6 +84,22 @@ export class Join extends Helper {
                     else {
                         this.processOrderBy();
                     }
+
+                    if (process.env.NODE_ENV === 'dev') {
+                        try {
+                            this.processGroupDistinctAggr();
+                        }
+                        catch (ex) {
+                            this.onError({
+                                message: ex.message,
+                                type: ERROR_TYPE.InvalidGroupQuery
+                            });
+                            return;
+                        }
+                    }
+                    else {
+                        this.processGroupDistinctAggr();
+                    }
                 }
                 catch (ex) {
                     this.onError({

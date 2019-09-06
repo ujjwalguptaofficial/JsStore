@@ -171,28 +171,7 @@ export class Instance extends Join {
                 if (this.isOrderWithLimit === true) {
                     this.results = this.results.slice(0, this.query.limit);
                 }
-                if (this.query.distinct) {
-                    const groupBy = [];
-                    const result = this.results[0];
-                    for (const key in result) {
-                        groupBy.push(key);
-                    }
-                    const primaryKey = this.getPrimaryKey(this.query.from),
-                        index = groupBy.indexOf(primaryKey);
-                    groupBy.splice(index, 1);
-                    this.query.groupBy = groupBy.length > 0 ? groupBy : null;
-                }
-                if (this.query.groupBy) {
-                    if (this.query.aggregate) {
-                        this.executeAggregateGroupBy();
-                    }
-                    else {
-                        this.processGroupBy();
-                    }
-                }
-                else if (this.query.aggregate) {
-                    this.processAggregateQry();
-                }
+                this.processGroupDistinctAggr();
                 this.onSuccess(this.results);
             }
             else {

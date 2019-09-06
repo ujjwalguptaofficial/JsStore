@@ -7,6 +7,31 @@ import { getDataType, removeSpace } from "../../utils/index";
 
 export class Helper extends GroupByHelper {
 
+    processGroupDistinctAggr() {
+        if (this.query.distinct) {
+            const groupBy = [];
+            const result = this.results[0];
+            for (const key in result) {
+                groupBy.push(key);
+            }
+            const primaryKey = this.getPrimaryKey(this.query.from),
+                index = groupBy.indexOf(primaryKey);
+            groupBy.splice(index, 1);
+            this.query.groupBy = groupBy.length > 0 ? groupBy : null;
+        }
+        if (this.query.groupBy) {
+            if (this.query.aggregate) {
+                this.executeAggregateGroupBy();
+            }
+            else {
+                this.processGroupBy();
+            }
+        }
+        else if (this.query.aggregate) {
+            this.processAggregateQry();
+        }
+    }
+
     private getOrderColumnInfo_(orderColumn: string): IColumn {
         let column: IColumn;
         if (this.query.join == null) {
@@ -77,8 +102,8 @@ export class Helper extends GroupByHelper {
         return orderMethod;
     }
 
-    private orderBy(order: OrderQuery) {
-        order.type = this.getOrderType(order.type);
+    private orderBy_(order: OrderQuery) {
+        order.type = this.getOrderType_(order.type);
         let orderColumn = order.by;
         const columnInfo = this.getOrderColumnInfo_(orderColumn);
         if (columnInfo != null) {
@@ -90,7 +115,7 @@ export class Helper extends GroupByHelper {
         }
     }
 
-    private getOrderType(type: string) {
+    private getOrderType_(type: string) {
         return type == null ? 'asc' : type.toLowerCase();
     }
 
@@ -99,10 +124,10 @@ export class Helper extends GroupByHelper {
         if (order && this.results.length > 0 && !this.sorted) {
             const orderQueryType = getDataType(order);
             if (orderQueryType === DATA_TYPE.Object) {
-                this.orderBy(order as OrderQuery);
+                this.orderBy_(order as OrderQuery);
             }
             else if (orderQueryType === DATA_TYPE.Array) {
-                this.orderBy(order[0]);
+                this.orderBy_(order[0]);
                 for (let i = 1, length = (order as any).length; i < length; i++) {
                     if (this.error == null) {
                         const prevOrderQueryBy = order[i - 1].by;
@@ -111,7 +136,7 @@ export class Helper extends GroupByHelper {
                         const orderColumnDetail = this.getOrderColumnInfo_(currentorderQueryBy);
                         if (orderColumnDetail != null) {
                             currentorderQueryBy = orderColumnDetail.name;
-                            currentOrderQuery.type = this.getOrderType(currentOrderQuery.type);
+                            currentOrderQuery.type = this.getOrderType_(currentOrderQuery.type);
                             const orderMethod = this.getValueComparer_(orderColumnDetail, currentOrderQuery);
                             this.results.sort((a, b) => {
                                 if (a[prevOrderQueryBy] === b[prevOrderQueryBy]) {

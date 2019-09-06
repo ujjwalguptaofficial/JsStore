@@ -53,7 +53,8 @@ export enum ERROR_TYPE {
     NullValueInWhere = "null_value_in_where",
     InvalidJoinQuery = 'invalid_join_query',
     InvalidOrderQuery = 'invalid_order_query',
-    InvalidQuery = 'invalid_query'
+    InvalidQuery = 'invalid_query',
+    InvalidGroupQuery = 'invalid_group_query',
 }
 
 export enum QUERY_OPTION {
