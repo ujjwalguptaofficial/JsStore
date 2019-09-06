@@ -127,7 +127,7 @@ describe('Transaction - error test', function () {
             }
         }
         con.transaction(transaction_query).then(function (results) {
-            console.log(results)
+
             expect(results.countNewCustomer).to.be.an('number').equal(results.countOldCustomer + 1);
             done();
         }).catch(function (err) {
@@ -155,7 +155,8 @@ describe('Transaction - error test', function () {
             },
             logic: function (ctx) {
 
-                update({ in: 'Customers',
+                update({
+                    in: 'Customers',
                     set: ctx.data.updateValue,
                     where: {
                         CustomerID: 5
@@ -178,7 +179,7 @@ describe('Transaction - error test', function () {
         }).catch(function (err) {
             done(err);
         })
-        con.transaction(transaction_query).then(function (results) {}).catch(function (err) {
+        con.transaction(transaction_query).then(function (results) { }).catch(function (err) {
             done(err);
         })
         con.select({

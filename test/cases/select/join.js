@@ -70,6 +70,25 @@ describe('Test join', function () {
         })
     });
 
+    it('left join with alias', function (done) {
+        con.select({
+            from: "Customers",
+            join: {
+                with: "Orders",
+                type: "left",
+                on: "Customers.CustomerID=Orders.CustomerID",
+                as: {
+                    OrderID: 'oid'
+                }
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(215);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
     it('left join when some data does not match from first table', function (done) {
         con.update({
             in: "Orders",
@@ -92,6 +111,33 @@ describe('Test join', function () {
             expect(results).to.be.an('array').length(196);
             expect(results[0]).to.be.an('object').to.haveOwnProperty('ShipperName').equal(null);
             expect(results[1]).to.be.an('object').to.haveOwnProperty('ShipperName').equal("Speedy Express");
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+
+    });
+
+
+    it('left join with alias when data does not match in second table', function (done) {
+        con.select({
+            from: "Orders",
+            join: {
+                with: "Shippers",
+                on: "Shippers.ShipperID = Orders.ShipperID",
+                type: "left",
+                as: {
+                    ShipperID: "shipperId",
+                    ShipperName: "shipperName",
+                    Phone: "phone"
+                }
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(196);
+            console.log('results', results[1]);
+            expect(results[0]).to.be.an('object').to.haveOwnProperty('shipperId').equal(null);
+            expect(results[0]).to.be.an('object').to.haveOwnProperty('shipperName').equal(null);
+            expect(results[1]).to.be.an('object').to.haveOwnProperty('shipperName').equal("Speedy Express");
 
         }).catch(function (err) {
             done(err);
@@ -112,24 +158,6 @@ describe('Test join', function () {
         })
     });
 
-    it('left join with alias', function (done) {
-        con.select({
-            from: "Customers",
-            join: {
-                with: "Orders",
-                type: "left",
-                on: "Customers.CustomerID=Orders.CustomerID",
-                as: {
-                    OrderID: 'oid'
-                }
-            }
-        }).then(function (results) {
-            expect(results).to.be.an('array').length(215);
-            done();
-        }).catch(function (err) {
-            done(err);
-        })
-    });
 
     it('left join reverse', function (done) {
         con.select({
