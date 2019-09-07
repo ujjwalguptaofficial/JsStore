@@ -120,6 +120,16 @@ describe('Test join', function () {
 
 
     it('left join with alias when data does not match in second table', function (done) {
+        con.update({
+            in: "Orders",
+            set: {
+                ShipperID: 1234567890
+            },
+            where: {
+                OrderID: 10249
+            }
+        });
+        
         con.select({
             from: "Orders",
             join: {
@@ -137,11 +147,22 @@ describe('Test join', function () {
             //console.log('results', results[1]);
             expect(results[0]).to.be.an('object').to.haveOwnProperty('shipperId').equal(null);
             expect(results[0]).to.be.an('object').to.haveOwnProperty('shipperName').equal(null);
-            expect(results[1]).to.be.an('object').to.haveOwnProperty('shipperName').equal("Speedy Express");
+            expect(results[1]).to.be.an('object').to.haveOwnProperty('shipperName').equal(null);
+            expect(results[2]).to.be.an('object').to.haveOwnProperty('shipperName').equal("United Package");
 
         }).catch(function (err) {
             done(err);
         })
+
+        con.update({
+            in: "Orders",
+            set: {
+                ShipperID: 1
+            },
+            where: {
+                OrderID: 10249
+            }
+        });
 
         con.update({
             in: "Orders",

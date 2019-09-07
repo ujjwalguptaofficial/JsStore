@@ -50,7 +50,7 @@ export class Join extends Helper {
                     const mapWithAlias = (query: JoinQuery, value: object) => {
                         if (query.as != null) {
                             for (const key in query.as) {
-                                if (value[(query.as as any)[key]] == null) {
+                                if (value[(query.as as any)[key]] === undefined) {
                                     value[(query.as as any)[key]] = value[key];
                                     delete value[key];
                                 }
