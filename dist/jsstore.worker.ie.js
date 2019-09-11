@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.3.8 - 07/09/2019
+ * @license :jsstore - V3.3.9 - 11/09/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -4406,7 +4406,7 @@ var join_Join = /** @class */ (function (_super) {
             _this.results.forEach(function (valueFromFirstTable) {
                 secondtableData.forEach(function (valueFromSecondTable) {
                     if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
-                        results[index] = valueFromFirstTable;
+                        results[index] = __assign({}, valueFromFirstTable);
                         results[index++][table2Index] = valueFromSecondTable;
                     }
                 });
@@ -4442,7 +4442,7 @@ var join_Join = /** @class */ (function (_super) {
                     valueMatchedFromSecondTable = [columnDefaultValue];
                 }
                 valueMatchedFromSecondTable.forEach(function (value) {
-                    results[index] = valueFromFirstTable;
+                    results[index] = __assign({}, valueFromFirstTable);
                     results[index++][table2Index] = value;
                 });
             });
