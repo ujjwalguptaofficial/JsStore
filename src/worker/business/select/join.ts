@@ -176,7 +176,7 @@ export class Join extends Helper {
             this.results.forEach(valueFromFirstTable => {
                 secondtableData.forEach((valueFromSecondTable) => {
                     if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
-                        results[index] = valueFromFirstTable;
+                        results[index] = { ...valueFromFirstTable };
                         results[index++][table2Index] = valueFromSecondTable;
                     }
                 });
@@ -212,7 +212,7 @@ export class Join extends Helper {
                     valueMatchedFromSecondTable = [columnDefaultValue];
                 }
                 valueMatchedFromSecondTable.forEach(function (value) {
-                    results[index] = valueFromFirstTable;
+                    results[index] = { ...valueFromFirstTable };
                     results[index++][table2Index] = value;
                 });
             });

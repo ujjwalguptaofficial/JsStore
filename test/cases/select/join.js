@@ -129,7 +129,7 @@ describe('Test join', function () {
                 OrderID: 10249
             }
         });
-        
+
         con.select({
             from: "Orders",
             join: {
@@ -420,4 +420,45 @@ describe('Test join', function () {
             done(err);
         })
     });
+
+    it('when one row of a table matches with multiple row of another table', function (done) {
+        con.update({
+            in: "Shippers",
+            set: {
+                Phone: "(503) 555-9931"
+            },
+            where: {
+                ShipperID: {
+                    '!=': 6
+                }
+            }
+        });
+        con.select({
+            from: "Suppliers",
+            join: [{
+                with: "Shippers",
+                on: "Shippers.Phone = Suppliers.Phone"
+            }]
+        }).then(function (results1) {
+            con.select({
+                from: "Shippers",
+                join: [{
+                    with: "Suppliers",
+                    on: "Shippers.Phone = Suppliers.Phone"
+                }]
+            }).then(function (results2) {
+                results2.forEach(function (result, i) {
+                    expect(result).to.be.an('object').eql(results1[i]);
+                });
+                done();
+            }).catch(function (err) {
+                done(err);
+            })
+        }).catch(function (err) {
+            done(err);
+        })
+
+    });
+
+
 });
