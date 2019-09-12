@@ -171,6 +171,22 @@ describe('select join order test', function () {
         })
     });
 
+    it('order table test', function (done) {
+        con.select({
+            from: "Orders",
+            order: {
+                by: 'Orders.CustomerID',
+                type: "desc"
+            },
+            join: [{
+                with: "Shippers",
+                on: "Shippers.ShipperID = Orders.ShipperID"
+            }]
+        }).then(function () {
+            done();
+        }).catch(done);
+    })
+
     function getStudents() {
         //Student Array
         var Students = [{

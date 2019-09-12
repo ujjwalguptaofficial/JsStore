@@ -48,12 +48,20 @@ export class Helper extends GroupByHelper {
         return column;
     }
 
-    private compareAlphabetInDesc_(a: string, b: string) {
+    private compareStringInDesc_(a: string, b: string) {
         return b.localeCompare(a);
     }
 
-    private compareAlphabetinAsc_(a: string, b: string) {
+    private compareStringinAsc_(a: string, b: string) {
         return a.localeCompare(b);
+    }
+
+    private compareDefaultInDesc_(a: string, b: string) {
+        return b.toString().localeCompare(a);
+    }
+
+    private compareDefaultinAsc_(a: string, b: string) {
+        return a.toString().localeCompare(b);
     }
 
     private compareNumberInDesc_(a: number, b: number) {
@@ -77,10 +85,10 @@ export class Helper extends GroupByHelper {
         switch (column.dataType) {
             case DATA_TYPE.String:
                 if (order.type === 'asc') {
-                    orderMethod = this.compareAlphabetinAsc_;
+                    orderMethod = this.compareStringinAsc_;
                 }
                 else {
-                    orderMethod = this.compareAlphabetInDesc_;
+                    orderMethod = this.compareStringInDesc_;
                 }
                 break;
             case DATA_TYPE.Number:
@@ -97,6 +105,14 @@ export class Helper extends GroupByHelper {
                 }
                 else {
                     orderMethod = this.compareDateInDesc_;
+                }
+                break;
+            default:
+                if (order.type === 'asc') {
+                    orderMethod = this.compareDefaultinAsc_;
+                }
+                else {
+                    orderMethod = this.compareDefaultInDesc_;
                 }
         }
         return orderMethod;
