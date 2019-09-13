@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.3.9 - 11/09/2019
+ * @license :jsstore - V3.3.10 - 13/09/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -3774,7 +3774,7 @@ var group_by_helper_GroupByHelper = /** @class */ (function (_super) {
         var datas = this.results;
         var lookUpObj = {};
         // free results memory
-        this.results = this.query.groupBy = undefined;
+        this.results = this.query.groupBy = null;
         if (Object(get_data_type["a" /* getDataType */])(grpQry) === enums["c" /* DATA_TYPE */].String) {
             for (var i in datas) {
                 lookUpObj[datas[i][grpQry]] = datas[i];
@@ -4026,11 +4026,17 @@ var orderby_helper_Helper = /** @class */ (function (_super) {
         }
         return column;
     };
-    Helper.prototype.compareAlphabetInDesc_ = function (a, b) {
+    Helper.prototype.compareStringInDesc_ = function (a, b) {
         return b.localeCompare(a);
     };
-    Helper.prototype.compareAlphabetinAsc_ = function (a, b) {
+    Helper.prototype.compareStringinAsc_ = function (a, b) {
         return a.localeCompare(b);
+    };
+    Helper.prototype.compareDefaultInDesc_ = function (a, b) {
+        return b.toString().localeCompare(a);
+    };
+    Helper.prototype.compareDefaultinAsc_ = function (a, b) {
+        return a.toString().localeCompare(b);
     };
     Helper.prototype.compareNumberInDesc_ = function (a, b) {
         return b - a;
@@ -4049,10 +4055,10 @@ var orderby_helper_Helper = /** @class */ (function (_super) {
         switch (column.dataType) {
             case enums["c" /* DATA_TYPE */].String:
                 if (order.type === 'asc') {
-                    orderMethod = this.compareAlphabetinAsc_;
+                    orderMethod = this.compareStringinAsc_;
                 }
                 else {
-                    orderMethod = this.compareAlphabetInDesc_;
+                    orderMethod = this.compareStringInDesc_;
                 }
                 break;
             case enums["c" /* DATA_TYPE */].Number:
@@ -4069,6 +4075,14 @@ var orderby_helper_Helper = /** @class */ (function (_super) {
                 }
                 else {
                     orderMethod = this.compareDateInDesc_;
+                }
+                break;
+            default:
+                if (order.type === 'asc') {
+                    orderMethod = this.compareDefaultinAsc_;
+                }
+                else {
+                    orderMethod = this.compareDefaultInDesc_;
                 }
         }
         return orderMethod;

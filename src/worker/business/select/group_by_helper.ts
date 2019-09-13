@@ -8,7 +8,7 @@ export class GroupByHelper extends Where {
         let datas = this.results;
         const lookUpObj = {};
         // free results memory
-        this.results = this.query.groupBy = undefined;
+        this.results = this.query.groupBy = null;
         if (getDataType(grpQry) === DATA_TYPE.String) {
             for (const i in datas) {
                 lookUpObj[datas[i][grpQry as string]] = datas[i];
