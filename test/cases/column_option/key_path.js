@@ -26,14 +26,15 @@ describe('keyPath test', function () {
         it('bulk insert pinCodes', function (done) {
             var time1 = performance.now();
             $.getJSON("test/static/pinCodes.json", function (results) {
-                con.bulkInsert({
+                con.insert({
                     into: 'pinCodes',
                     values: results,
+                    skipDataCheck: true
                 }).then(function (results) {
                     console.log('pinCodes inserted');
                     var time2 = performance.now();
                     console.log((time2 - time1) / 1000);
-                    expect(results).to.be.an('undefined');
+                    expect(results).to.be.an('number');
                     done();
                 }).
                     catch(function (err) {

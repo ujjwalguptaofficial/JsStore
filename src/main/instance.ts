@@ -144,20 +144,6 @@ export class Instance extends InstanceHelper {
     }
 
     /**
-     * insert bulk amount of data
-     * 
-     * @param {InsertQuery} query 
-     * @returns 
-     * @memberof Instance
-     */
-    bulkInsert(query: InsertQuery) {
-        return this.pushApi<null>({
-            name: API.BulkInsert,
-            query: query
-        });
-    }
-
-    /**
      * set log status
      * 
      * @param {boolean} status 

@@ -48,9 +48,6 @@ export class QueryHelper {
                     this.checkUpdateQuery_();
                     resolveReject();
                     break;
-                case API.BulkInsert:
-                    this.checkBulkInsert_();
-                    break;
             }
         });
     }
@@ -74,12 +71,6 @@ export class QueryHelper {
         }
         callBack(table);
         return log == null ? null : log.get();
-    }
-
-    private checkBulkInsert_() {
-        this.error = this.isInsertQryValid_(function () {
-
-        });
     }
 
     private checkInsertQuery_() {

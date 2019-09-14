@@ -2,14 +2,15 @@ describe('Test bulkInsert', function () {
     it('settimeout', function (done) {
         setTimeout(done, 2000);
     });
-    
+
     it('insert OrderDetails', function (done) {
         $.getJSON("test/static/OrderDetails.json", function (results) {
-            con.bulkInsert({
+            con.insert({
                 into: 'OrderDetails',
                 values: results,
+                skipDataCheck: true
             }).then(function (results) {
-                expect(results).to.be.an('undefined');
+                expect(results).to.be.an('number');
                 done();
             }).
                 catch(function (err) {
@@ -19,7 +20,7 @@ describe('Test bulkInsert', function () {
     });
 
     it('wrong table test', function (done) {
-        con.bulkInsert({
+        con.insert({
             into: 'Custamer'
         }).
             catch(function (err) {
@@ -34,8 +35,9 @@ describe('Test bulkInsert', function () {
     });
 
     it('without value', function (done) {
-        con.bulkInsert({
-            into: 'Customers'
+        con.insert({
+            into: 'Customers',
+            skipDataCheck: true
         }).
             catch(function (err) {
                 console.log(err);

@@ -1,4 +1,4 @@
-import { IdbHelper, DropDb, InitDb, Clear, BulkInsert, QueryHelper } from "./business/index";
+import { IdbHelper, DropDb, InitDb, Clear, QueryHelper } from "./business/index";
 import * as Select from './business/select/index';
 import * as Count from './business/count/index';
 import * as Insert from './business/insert/index';
@@ -148,9 +148,6 @@ export class QueryExecutor {
                 break;
             case API.Count:
                 new Count.Instance(request.query as CountQuery, onSuccess, onError).execute();
-                break;
-            case API.BulkInsert:
-                new BulkInsert(request.query as InsertQuery, onSuccess, onError).execute();
                 break;
             case API.Get: this.get_(request.query as string).then(onSuccess).catch(onError);
                 break;
