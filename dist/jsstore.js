@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.3.10 - 13/09/2019
+ * @license :jsstore - V3.4.0 - 14/09/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -166,7 +166,6 @@ var API;
     API["Clear"] = "clear";
     API["DropDb"] = "drop_db";
     API["Count"] = "count";
-    API["BulkInsert"] = "bulk_insert";
     API["ChangeLogStatus"] = "change_log_status";
     API["Terminate"] = "terminate";
     API["Transaction"] = "transaction";
@@ -424,19 +423,6 @@ var Instance = /** @class */ (function (_super) {
         return this.pushApi({
             name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Clear,
             query: tableName
-        });
-    };
-    /**
-     * insert bulk amount of data
-     *
-     * @param {InsertQuery} query
-     * @returns
-     * @memberof Instance
-     */
-    Instance.prototype.bulkInsert = function (query) {
-        return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].BulkInsert,
-            query: query
         });
     };
     /**

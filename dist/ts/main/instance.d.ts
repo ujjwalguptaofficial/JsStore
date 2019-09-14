@@ -77,14 +77,6 @@ export declare class Instance extends InstanceHelper {
      */
     clear(tableName: string): Promise<null>;
     /**
-     * insert bulk amount of data
-     *
-     * @param {InsertQuery} query
-     * @returns
-     * @memberof Instance
-     */
-    bulkInsert(query: InsertQuery): Promise<null>;
-    /**
      * set log status
      *
      * @param {boolean} status

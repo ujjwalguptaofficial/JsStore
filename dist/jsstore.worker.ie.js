@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.3.10 - 13/09/2019
+ * @license :jsstore - V3.4.0 - 14/09/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -208,7 +208,6 @@ var API;
     API["Clear"] = "clear";
     API["DropDb"] = "drop_db";
     API["Count"] = "count";
-    API["BulkInsert"] = "bulk_insert";
     API["ChangeLogStatus"] = "change_log_status";
     API["Transaction"] = "transaction";
     API["FinishTransaction"] = "finish_transaction";
@@ -225,7 +224,7 @@ var API;
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return LogHelper; });
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(8);
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7);
 
 
 var LogHelper = /** @class */ (function () {
@@ -336,7 +335,7 @@ var LogHelper = /** @class */ (function () {
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return IdbHelper; });
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
-/* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7);
+/* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6);
 /* harmony import */ var _drop_db__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(19);
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(12);
 
@@ -416,7 +415,8 @@ var IdbHelper = /** @class */ (function () {
 
 /***/ }),
 /* 3 */,
-/* 4 */
+/* 4 */,
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -585,7 +585,7 @@ var promise = __webpack_require__(12);
 // EXTERNAL MODULE: ./src/worker/helpers/auto_increment_helper.ts
 var auto_increment_helper = __webpack_require__(23);
 
-// EXTERNAL MODULE: ./src/worker/query_executor.ts + 8 modules
+// EXTERNAL MODULE: ./src/worker/query_executor.ts + 7 modules
 var query_executor = __webpack_require__(9);
 
 // CONCATENATED MODULE: ./src/worker/business/insert/values_checker.ts
@@ -684,9 +684,6 @@ var query_helper_QueryHelper = /** @class */ (function () {
                     _this.checkUpdateQuery_();
                     resolveReject();
                     break;
-                case enums["a" /* API */].BulkInsert:
-                    _this.checkBulkInsert_();
-                    break;
             }
         });
     };
@@ -709,10 +706,6 @@ var query_helper_QueryHelper = /** @class */ (function () {
         }
         callBack(table);
         return log == null ? null : log.get();
-    };
-    QueryHelper.prototype.checkBulkInsert_ = function () {
-        this.error = this.isInsertQryValid_(function () {
-        });
     };
     QueryHelper.prototype.checkInsertQuery_ = function () {
         var _this = this;
@@ -845,468 +838,7 @@ var query_helper_QueryHelper = /** @class */ (function () {
 
 
 /***/ }),
-/* 5 */,
 /* 6 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-
-// EXTERNAL MODULE: ./src/worker/business/idb_helper.ts
-var idb_helper = __webpack_require__(2);
-
-// EXTERNAL MODULE: ./src/worker/enums.ts
-var enums = __webpack_require__(0);
-
-// CONCATENATED MODULE: ./src/worker/business/base_helper.ts
-
-
-var base_helper_BaseHelper = /** @class */ (function () {
-    function BaseHelper() {
-    }
-    Object.defineProperty(BaseHelper.prototype, "activeDb", {
-        //   method helpers
-        get: function () {
-            return idb_helper["a" /* IdbHelper */].activeDb;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(BaseHelper.prototype, "dbConnection", {
-        get: function () {
-            return idb_helper["a" /* IdbHelper */].dbConnection;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(BaseHelper.prototype, "transaction", {
-        get: function () {
-            return idb_helper["a" /* IdbHelper */].transaction;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    BaseHelper.prototype.createTransaction = function (tableNames, callBack, mode) {
-        idb_helper["a" /* IdbHelper */].createTransaction(tableNames, callBack, mode);
-    };
-    BaseHelper.prototype.regexTest = function (value) {
-        return this.regexExpression.test(value);
-    };
-    BaseHelper.prototype.isTableExist = function (tableName) {
-        var index = this.activeDb.tables.findIndex(function (table) { return table.name === tableName; });
-        return index >= 0;
-    };
-    BaseHelper.prototype.getTable = function (tableName) {
-        return idb_helper["a" /* IdbHelper */].getTable(tableName);
-    };
-    BaseHelper.prototype.getKeyRange = function (value, op) {
-        var keyRange;
-        switch (op) {
-            case enums["g" /* QUERY_OPTION */].Between:
-                keyRange = IDBKeyRange.bound(value.low, value.high, false, false);
-                break;
-            case enums["g" /* QUERY_OPTION */].GreaterThan:
-                keyRange = IDBKeyRange.lowerBound(value, true);
-                break;
-            case enums["g" /* QUERY_OPTION */].GreaterThanEqualTo:
-                keyRange = IDBKeyRange.lowerBound(value);
-                break;
-            case enums["g" /* QUERY_OPTION */].LessThan:
-                keyRange = IDBKeyRange.upperBound(value, true);
-                break;
-            case enums["g" /* QUERY_OPTION */].LessThanEqualTo:
-                keyRange = IDBKeyRange.upperBound(value);
-                break;
-            default:
-                keyRange = IDBKeyRange.only(value);
-                break;
-        }
-        return keyRange;
-    };
-    BaseHelper.prototype.getPrimaryKey = function (tableName) {
-        var primaryKey = this.getTable(tableName).primaryKey;
-        return primaryKey ? primaryKey : this.getKeyPath(tableName);
-    };
-    BaseHelper.prototype.getKeyPath = function (tableName) {
-        var transaction = this.dbConnection.transaction([tableName], "readonly"), objectStore = transaction.objectStore(tableName);
-        return objectStore.keyPath;
-    };
-    BaseHelper.prototype.getAllCombinationOfWord = function (word, isArray) {
-        if (isArray) {
-            var results = [];
-            for (var i = 0, length_1 = word.length; i < length_1; i++) {
-                results = results.concat(this.getCombination_(word[i]));
-            }
-            return results;
-        }
-        else {
-            return this.getCombination_(word);
-        }
-    };
-    BaseHelper.prototype.getCombination_ = function (word) {
-        var results = [];
-        var doAndPushCombination = function (subWord, chars, index) {
-            if (index === subWord.length) {
-                results.push(chars.join(""));
-            }
-            else {
-                var ch = subWord.charAt(index);
-                chars[index] = ch.toLowerCase();
-                doAndPushCombination(subWord, chars, index + 1);
-                chars[index] = ch.toUpperCase();
-                doAndPushCombination(subWord, chars, index + 1);
-            }
-        };
-        doAndPushCombination(word, [], 0);
-        return results;
-    };
-    return BaseHelper;
-}());
-
-
-// CONCATENATED MODULE: ./src/worker/business/where_checker.ts
-
-/**
- * For matching the different column value existance for where option
- *
- * @export
- * @class WhereChecker
- */
-var where_checker_WhereChecker = /** @class */ (function () {
-    function WhereChecker(where, checkFlag) {
-        this.where = where;
-        this.checkFlag = checkFlag;
-    }
-    WhereChecker.prototype.check = function (rowValue) {
-        this.status = true;
-        if (this.checkFlag === true) {
-            for (var columnName in this.where) {
-                if (!this.status) {
-                    break;
-                }
-                var columnValue = this.where[columnName];
-                if (typeof columnValue === 'object') {
-                    for (var key in columnValue) {
-                        if (!this.status) {
-                            break;
-                        }
-                        switch (key) {
-                            case enums["g" /* QUERY_OPTION */].In:
-                                this.checkIn(columnName, rowValue[columnName]);
-                                break;
-                            case enums["g" /* QUERY_OPTION */].Like:
-                                this.checkLike(columnName, rowValue[columnName]);
-                                break;
-                            case enums["g" /* QUERY_OPTION */].Regex:
-                                this.checkRegex(columnName, rowValue[columnName]);
-                                break;
-                            case enums["g" /* QUERY_OPTION */].Between:
-                            case enums["g" /* QUERY_OPTION */].GreaterThan:
-                            case enums["g" /* QUERY_OPTION */].LessThan:
-                            case enums["g" /* QUERY_OPTION */].GreaterThanEqualTo:
-                            case enums["g" /* QUERY_OPTION */].LessThanEqualTo:
-                            case enums["g" /* QUERY_OPTION */].NotEqualTo:
-                                this.checkComparisionOp(columnName, rowValue[columnName], key);
-                                break;
-                        }
-                    }
-                }
-                else {
-                    this.status = columnValue === rowValue[columnName];
-                }
-            }
-        }
-        return this.status;
-    };
-    WhereChecker.prototype.checkIn = function (column, value) {
-        for (var i = 0, values = this.where[column][enums["g" /* QUERY_OPTION */].In], length_1 = values.length; i < length_1; i++) {
-            if (values[i] === value) {
-                this.status = true;
-                break;
-            }
-            else {
-                this.status = false;
-            }
-        }
-    };
-    WhereChecker.prototype.checkLike = function (column, value) {
-        var values = this.where[column][enums["g" /* QUERY_OPTION */].Like].split('%');
-        var compSymbol, compValue, symbolIndex;
-        if (values[1]) {
-            compValue = values[1];
-            compSymbol = values.length > 2 ? enums["f" /* OCCURENCE */].Any : enums["f" /* OCCURENCE */].Last;
-        }
-        else {
-            compValue = values[0];
-            compSymbol = enums["f" /* OCCURENCE */].First;
-        }
-        value = value.toLowerCase();
-        switch (compSymbol) {
-            case enums["f" /* OCCURENCE */].Any:
-                symbolIndex = value.indexOf(compValue.toLowerCase());
-                if (symbolIndex < 0) {
-                    this.status = false;
-                }
-                break;
-            case enums["f" /* OCCURENCE */].First:
-                symbolIndex = value.indexOf(compValue.toLowerCase());
-                if (symbolIndex > 0 || symbolIndex < 0) {
-                    this.status = false;
-                }
-                break;
-            default:
-                symbolIndex = value.lastIndexOf(compValue.toLowerCase());
-                if (symbolIndex < value.length - compValue.length) {
-                    this.status = false;
-                }
-        }
-    };
-    WhereChecker.prototype.checkRegex = function (column, value) {
-        var expr = this.where[column][enums["g" /* QUERY_OPTION */].Regex];
-        this.status = expr.test(value);
-    };
-    WhereChecker.prototype.checkComparisionOp = function (column, value, symbol) {
-        var compareValue = this.where[column][symbol];
-        switch (symbol) {
-            // greater than
-            case enums["g" /* QUERY_OPTION */].GreaterThan:
-                if (value <= compareValue) {
-                    this.status = false;
-                }
-                break;
-            // less than
-            case enums["g" /* QUERY_OPTION */].LessThan:
-                if (value >= compareValue) {
-                    this.status = false;
-                }
-                break;
-            // less than equal
-            case enums["g" /* QUERY_OPTION */].LessThanEqualTo:
-                if (value > compareValue) {
-                    this.status = false;
-                }
-                break;
-            // greather than equal
-            case enums["g" /* QUERY_OPTION */].GreaterThanEqualTo:
-                if (value < compareValue) {
-                    this.status = false;
-                }
-                break;
-            // between
-            case enums["g" /* QUERY_OPTION */].Between:
-                if (value < compareValue.Low || value > compareValue.High) {
-                    this.status = false;
-                }
-                break;
-            // Not equal to
-            case enums["g" /* QUERY_OPTION */].NotEqualTo:
-                if (value === compareValue) {
-                    this.status = false;
-                }
-                break;
-        }
-    };
-    return WhereChecker;
-}());
-
-
-// EXTERNAL MODULE: ./src/worker/log_helper.ts
-var log_helper = __webpack_require__(1);
-
-// EXTERNAL MODULE: ./src/worker/utils/get_object_first_key.ts
-var get_object_first_key = __webpack_require__(34);
-
-// EXTERNAL MODULE: ./src/worker/utils/get_data_type.ts
-var get_data_type = __webpack_require__(32);
-
-// CONCATENATED MODULE: ./src/worker/utils/is_string.ts
-
-var isString = function (value) {
-    return typeof value === enums["c" /* DATA_TYPE */].String;
-};
-
-// CONCATENATED MODULE: ./src/worker/business/base.ts
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return base_Base; });
-var __extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-
-
-
-
-
-
-var base_Base = /** @class */ (function (_super) {
-    __extends(Base, _super);
-    function Base() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.rowAffected = 0;
-        return _this;
-    }
-    // abstract executeRegexLogic(column: string, exp: RegExp): void;
-    // abstract executeInLogic(column: string, value: any[]): void;
-    // abstract executeWhereLogic(column: string, value, op, dir?): void;
-    Base.prototype.onErrorOccured = function (e, customError) {
-        if (customError === void 0) { customError = false; }
-        if (customError) {
-            e.logError();
-            this.error = e.get();
-        }
-        else {
-            var error = void 0;
-            if (e.name) {
-                error = new log_helper["a" /* LogHelper */]((e.name));
-                error.message = e.message;
-            }
-            else {
-                error = new log_helper["a" /* LogHelper */](e.target.error.name);
-                error.message = e.target.error.message;
-            }
-            if (true) {
-                error.logError();
-            }
-            this.error = error.get();
-        }
-    };
-    // protected onExceptionOccured(ex: DOMException, info) {
-    //     switch (ex.name) {
-    //         case 'NotFoundError':
-    //             const error = new LogHelper(ERROR_TYPE.TableNotExist, info);
-    //             this.onErrorOccured(error, true);
-    //             break;
-    //         default: console.error(ex);
-    //     }
-    // }
-    Base.prototype.onExceptionOccured = function (ex) {
-        console.error(ex);
-        this.onError({
-            message: ex.message,
-            type: enums["d" /* ERROR_TYPE */].InvalidQuery
-        });
-    };
-    Base.prototype.getColumnInfo = function (columnName, tableName) {
-        return this.getTable(tableName).columns.find(function (column) { return column.name === columnName; });
-    };
-    Base.prototype.getRegexFromLikeExpression_ = function (likeExpression) {
-        var filterValues = likeExpression.split('%');
-        var filterValue;
-        var occurence;
-        if (filterValues[1]) {
-            filterValue = filterValues[1];
-            occurence = filterValues.length > 2 ? enums["f" /* OCCURENCE */].Any : enums["f" /* OCCURENCE */].Last;
-        }
-        else {
-            filterValue = filterValues[0];
-            occurence = enums["f" /* OCCURENCE */].First;
-        }
-        switch (occurence) {
-            case enums["f" /* OCCURENCE */].First:
-                return new RegExp("^" + filterValue, 'i');
-            case enums["f" /* OCCURENCE */].Last:
-                return new RegExp(filterValue + "$", 'i');
-            default:
-                return new RegExp("" + filterValue, 'i');
-        }
-    };
-    Base.prototype.goToWhereLogic = function () {
-        var columnName = Object(get_object_first_key["a" /* getObjectFirstKey */])(this.query.where);
-        if (this.query.ignoreCase === true) {
-            this.query.where = this.makeQryInCaseSensitive(this.query.where);
-        }
-        if (this.objectStore.indexNames.contains(columnName)) {
-            var value = this.query.where[columnName];
-            if (typeof value === 'object') {
-                var checkFlag = Boolean(Object.keys(value).length > 1 ||
-                    Object.keys(this.query.where).length > 1);
-                this.whereCheckerInstance = new where_checker_WhereChecker(this.query.where, checkFlag);
-                var key = Object(get_object_first_key["a" /* getObjectFirstKey */])(value);
-                switch (key) {
-                    case enums["g" /* QUERY_OPTION */].Like:
-                        {
-                            var regexVal = this.getRegexFromLikeExpression_(value[enums["g" /* QUERY_OPTION */].Like]);
-                            this.executeRegexLogic(columnName, regexVal);
-                        }
-                        break;
-                    case enums["g" /* QUERY_OPTION */].Regex:
-                        this.executeRegexLogic(columnName, value[enums["g" /* QUERY_OPTION */].Regex]);
-                        break;
-                    case enums["g" /* QUERY_OPTION */].In:
-                        this.executeInLogic(columnName, value[enums["g" /* QUERY_OPTION */].In]);
-                        break;
-                    case enums["g" /* QUERY_OPTION */].Between:
-                    case enums["g" /* QUERY_OPTION */].GreaterThan:
-                    case enums["g" /* QUERY_OPTION */].LessThan:
-                    case enums["g" /* QUERY_OPTION */].GreaterThanEqualTo:
-                    case enums["g" /* QUERY_OPTION */].LessThanEqualTo:
-                        this.executeWhereLogic(columnName, value, key, "next");
-                        break;
-                    case enums["g" /* QUERY_OPTION */].Aggregate: break;
-                    default: this.executeWhereLogic(columnName, value, null, "next");
-                }
-            }
-            else {
-                var checkFlag = Boolean(Object.keys(this.query.where).length > 1);
-                this.whereCheckerInstance = new where_checker_WhereChecker(this.query.where, checkFlag);
-                this.executeWhereLogic(columnName, value, null, "next");
-            }
-        }
-        else {
-            var column = this.getColumnInfo(columnName, this.tableName);
-            var error = column == null ?
-                new log_helper["a" /* LogHelper */](enums["d" /* ERROR_TYPE */].ColumnNotExist, { ColumnName: columnName }) :
-                new log_helper["a" /* LogHelper */](enums["d" /* ERROR_TYPE */].EnableSearchOff, { ColumnName: columnName });
-            this.onErrorOccured(error, true);
-        }
-    };
-    Base.prototype.makeQryInCaseSensitive = function (qry) {
-        var results = [];
-        var columnValue, keyValue;
-        for (var column in qry) {
-            columnValue = qry[column];
-            switch (Object(get_data_type["a" /* getDataType */])(columnValue)) {
-                case enums["c" /* DATA_TYPE */].String:
-                    results = results.concat(this.getAllCombinationOfWord(columnValue));
-                    qry[column] = {};
-                    qry[column][enums["g" /* QUERY_OPTION */].In] = results;
-                    break;
-                case enums["c" /* DATA_TYPE */].Object:
-                    for (var key in columnValue) {
-                        keyValue = columnValue[key];
-                        if (isString(keyValue)) {
-                            switch (key) {
-                                case enums["g" /* QUERY_OPTION */].In:
-                                    results = results.concat(this.getAllCombinationOfWord(keyValue, true));
-                                    break;
-                                case enums["g" /* QUERY_OPTION */].Like:
-                                case enums["g" /* QUERY_OPTION */].Regex:
-                                    break;
-                                default:
-                                    results = results.concat(this.getAllCombinationOfWord(keyValue));
-                            }
-                        }
-                    }
-                    qry[column][enums["g" /* QUERY_OPTION */].In] = results;
-                    break;
-            }
-        }
-        return qry;
-    };
-    return Base;
-}(base_helper_BaseHelper));
-
-
-
-/***/ }),
-/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1874,7 +1406,7 @@ var instance_KeyStore = /** @class */ (function () {
 
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1890,19 +1422,479 @@ var Config = /** @class */ (function () {
 
 
 /***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+
+// EXTERNAL MODULE: ./src/worker/business/idb_helper.ts
+var idb_helper = __webpack_require__(2);
+
+// EXTERNAL MODULE: ./src/worker/enums.ts
+var enums = __webpack_require__(0);
+
+// CONCATENATED MODULE: ./src/worker/business/base_helper.ts
+
+
+var base_helper_BaseHelper = /** @class */ (function () {
+    function BaseHelper() {
+    }
+    Object.defineProperty(BaseHelper.prototype, "activeDb", {
+        //   method helpers
+        get: function () {
+            return idb_helper["a" /* IdbHelper */].activeDb;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BaseHelper.prototype, "dbConnection", {
+        get: function () {
+            return idb_helper["a" /* IdbHelper */].dbConnection;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BaseHelper.prototype, "transaction", {
+        get: function () {
+            return idb_helper["a" /* IdbHelper */].transaction;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    BaseHelper.prototype.createTransaction = function (tableNames, callBack, mode) {
+        idb_helper["a" /* IdbHelper */].createTransaction(tableNames, callBack, mode);
+    };
+    BaseHelper.prototype.regexTest = function (value) {
+        return this.regexExpression.test(value);
+    };
+    BaseHelper.prototype.isTableExist = function (tableName) {
+        var index = this.activeDb.tables.findIndex(function (table) { return table.name === tableName; });
+        return index >= 0;
+    };
+    BaseHelper.prototype.getTable = function (tableName) {
+        return idb_helper["a" /* IdbHelper */].getTable(tableName);
+    };
+    BaseHelper.prototype.getKeyRange = function (value, op) {
+        var keyRange;
+        switch (op) {
+            case enums["g" /* QUERY_OPTION */].Between:
+                keyRange = IDBKeyRange.bound(value.low, value.high, false, false);
+                break;
+            case enums["g" /* QUERY_OPTION */].GreaterThan:
+                keyRange = IDBKeyRange.lowerBound(value, true);
+                break;
+            case enums["g" /* QUERY_OPTION */].GreaterThanEqualTo:
+                keyRange = IDBKeyRange.lowerBound(value);
+                break;
+            case enums["g" /* QUERY_OPTION */].LessThan:
+                keyRange = IDBKeyRange.upperBound(value, true);
+                break;
+            case enums["g" /* QUERY_OPTION */].LessThanEqualTo:
+                keyRange = IDBKeyRange.upperBound(value);
+                break;
+            default:
+                keyRange = IDBKeyRange.only(value);
+                break;
+        }
+        return keyRange;
+    };
+    BaseHelper.prototype.getPrimaryKey = function (tableName) {
+        var primaryKey = this.getTable(tableName).primaryKey;
+        return primaryKey ? primaryKey : this.getKeyPath(tableName);
+    };
+    BaseHelper.prototype.getKeyPath = function (tableName) {
+        var transaction = this.dbConnection.transaction([tableName], "readonly"), objectStore = transaction.objectStore(tableName);
+        return objectStore.keyPath;
+    };
+    BaseHelper.prototype.getAllCombinationOfWord = function (word, isArray) {
+        if (isArray) {
+            var results = [];
+            for (var i = 0, length_1 = word.length; i < length_1; i++) {
+                results = results.concat(this.getCombination_(word[i]));
+            }
+            return results;
+        }
+        else {
+            return this.getCombination_(word);
+        }
+    };
+    BaseHelper.prototype.getCombination_ = function (word) {
+        var results = [];
+        var doAndPushCombination = function (subWord, chars, index) {
+            if (index === subWord.length) {
+                results.push(chars.join(""));
+            }
+            else {
+                var ch = subWord.charAt(index);
+                chars[index] = ch.toLowerCase();
+                doAndPushCombination(subWord, chars, index + 1);
+                chars[index] = ch.toUpperCase();
+                doAndPushCombination(subWord, chars, index + 1);
+            }
+        };
+        doAndPushCombination(word, [], 0);
+        return results;
+    };
+    return BaseHelper;
+}());
+
+
+// CONCATENATED MODULE: ./src/worker/business/where_checker.ts
+
+/**
+ * For matching the different column value existance for where option
+ *
+ * @export
+ * @class WhereChecker
+ */
+var where_checker_WhereChecker = /** @class */ (function () {
+    function WhereChecker(where, checkFlag) {
+        this.where = where;
+        this.checkFlag = checkFlag;
+    }
+    WhereChecker.prototype.check = function (rowValue) {
+        this.status = true;
+        if (this.checkFlag === true) {
+            for (var columnName in this.where) {
+                if (!this.status) {
+                    break;
+                }
+                var columnValue = this.where[columnName];
+                if (typeof columnValue === 'object') {
+                    for (var key in columnValue) {
+                        if (!this.status) {
+                            break;
+                        }
+                        switch (key) {
+                            case enums["g" /* QUERY_OPTION */].In:
+                                this.checkIn(columnName, rowValue[columnName]);
+                                break;
+                            case enums["g" /* QUERY_OPTION */].Like:
+                                this.checkLike(columnName, rowValue[columnName]);
+                                break;
+                            case enums["g" /* QUERY_OPTION */].Regex:
+                                this.checkRegex(columnName, rowValue[columnName]);
+                                break;
+                            case enums["g" /* QUERY_OPTION */].Between:
+                            case enums["g" /* QUERY_OPTION */].GreaterThan:
+                            case enums["g" /* QUERY_OPTION */].LessThan:
+                            case enums["g" /* QUERY_OPTION */].GreaterThanEqualTo:
+                            case enums["g" /* QUERY_OPTION */].LessThanEqualTo:
+                            case enums["g" /* QUERY_OPTION */].NotEqualTo:
+                                this.checkComparisionOp(columnName, rowValue[columnName], key);
+                                break;
+                        }
+                    }
+                }
+                else {
+                    this.status = columnValue === rowValue[columnName];
+                }
+            }
+        }
+        return this.status;
+    };
+    WhereChecker.prototype.checkIn = function (column, value) {
+        for (var i = 0, values = this.where[column][enums["g" /* QUERY_OPTION */].In], length_1 = values.length; i < length_1; i++) {
+            if (values[i] === value) {
+                this.status = true;
+                break;
+            }
+            else {
+                this.status = false;
+            }
+        }
+    };
+    WhereChecker.prototype.checkLike = function (column, value) {
+        var values = this.where[column][enums["g" /* QUERY_OPTION */].Like].split('%');
+        var compSymbol, compValue, symbolIndex;
+        if (values[1]) {
+            compValue = values[1];
+            compSymbol = values.length > 2 ? enums["f" /* OCCURENCE */].Any : enums["f" /* OCCURENCE */].Last;
+        }
+        else {
+            compValue = values[0];
+            compSymbol = enums["f" /* OCCURENCE */].First;
+        }
+        value = value.toLowerCase();
+        switch (compSymbol) {
+            case enums["f" /* OCCURENCE */].Any:
+                symbolIndex = value.indexOf(compValue.toLowerCase());
+                if (symbolIndex < 0) {
+                    this.status = false;
+                }
+                break;
+            case enums["f" /* OCCURENCE */].First:
+                symbolIndex = value.indexOf(compValue.toLowerCase());
+                if (symbolIndex > 0 || symbolIndex < 0) {
+                    this.status = false;
+                }
+                break;
+            default:
+                symbolIndex = value.lastIndexOf(compValue.toLowerCase());
+                if (symbolIndex < value.length - compValue.length) {
+                    this.status = false;
+                }
+        }
+    };
+    WhereChecker.prototype.checkRegex = function (column, value) {
+        var expr = this.where[column][enums["g" /* QUERY_OPTION */].Regex];
+        this.status = expr.test(value);
+    };
+    WhereChecker.prototype.checkComparisionOp = function (column, value, symbol) {
+        var compareValue = this.where[column][symbol];
+        switch (symbol) {
+            // greater than
+            case enums["g" /* QUERY_OPTION */].GreaterThan:
+                if (value <= compareValue) {
+                    this.status = false;
+                }
+                break;
+            // less than
+            case enums["g" /* QUERY_OPTION */].LessThan:
+                if (value >= compareValue) {
+                    this.status = false;
+                }
+                break;
+            // less than equal
+            case enums["g" /* QUERY_OPTION */].LessThanEqualTo:
+                if (value > compareValue) {
+                    this.status = false;
+                }
+                break;
+            // greather than equal
+            case enums["g" /* QUERY_OPTION */].GreaterThanEqualTo:
+                if (value < compareValue) {
+                    this.status = false;
+                }
+                break;
+            // between
+            case enums["g" /* QUERY_OPTION */].Between:
+                if (value < compareValue.Low || value > compareValue.High) {
+                    this.status = false;
+                }
+                break;
+            // Not equal to
+            case enums["g" /* QUERY_OPTION */].NotEqualTo:
+                if (value === compareValue) {
+                    this.status = false;
+                }
+                break;
+        }
+    };
+    return WhereChecker;
+}());
+
+
+// EXTERNAL MODULE: ./src/worker/log_helper.ts
+var log_helper = __webpack_require__(1);
+
+// EXTERNAL MODULE: ./src/worker/utils/get_object_first_key.ts
+var get_object_first_key = __webpack_require__(34);
+
+// EXTERNAL MODULE: ./src/worker/utils/get_data_type.ts
+var get_data_type = __webpack_require__(32);
+
+// CONCATENATED MODULE: ./src/worker/utils/is_string.ts
+
+var isString = function (value) {
+    return typeof value === enums["c" /* DATA_TYPE */].String;
+};
+
+// CONCATENATED MODULE: ./src/worker/business/base.ts
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return base_Base; });
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
+
+
+var base_Base = /** @class */ (function (_super) {
+    __extends(Base, _super);
+    function Base() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.rowAffected = 0;
+        return _this;
+    }
+    // abstract executeRegexLogic(column: string, exp: RegExp): void;
+    // abstract executeInLogic(column: string, value: any[]): void;
+    // abstract executeWhereLogic(column: string, value, op, dir?): void;
+    Base.prototype.onErrorOccured = function (e, customError) {
+        if (customError === void 0) { customError = false; }
+        if (customError) {
+            e.logError();
+            this.error = e.get();
+        }
+        else {
+            var error = void 0;
+            if (e.name) {
+                error = new log_helper["a" /* LogHelper */]((e.name));
+                error.message = e.message;
+            }
+            else {
+                error = new log_helper["a" /* LogHelper */](e.target.error.name);
+                error.message = e.target.error.message;
+            }
+            if (true) {
+                error.logError();
+            }
+            this.error = error.get();
+        }
+    };
+    // protected onExceptionOccured(ex: DOMException, info) {
+    //     switch (ex.name) {
+    //         case 'NotFoundError':
+    //             const error = new LogHelper(ERROR_TYPE.TableNotExist, info);
+    //             this.onErrorOccured(error, true);
+    //             break;
+    //         default: console.error(ex);
+    //     }
+    // }
+    Base.prototype.onExceptionOccured = function (ex) {
+        console.error(ex);
+        this.onError({
+            message: ex.message,
+            type: enums["d" /* ERROR_TYPE */].InvalidQuery
+        });
+    };
+    Base.prototype.getColumnInfo = function (columnName, tableName) {
+        return this.getTable(tableName).columns.find(function (column) { return column.name === columnName; });
+    };
+    Base.prototype.getRegexFromLikeExpression_ = function (likeExpression) {
+        var filterValues = likeExpression.split('%');
+        var filterValue;
+        var occurence;
+        if (filterValues[1]) {
+            filterValue = filterValues[1];
+            occurence = filterValues.length > 2 ? enums["f" /* OCCURENCE */].Any : enums["f" /* OCCURENCE */].Last;
+        }
+        else {
+            filterValue = filterValues[0];
+            occurence = enums["f" /* OCCURENCE */].First;
+        }
+        switch (occurence) {
+            case enums["f" /* OCCURENCE */].First:
+                return new RegExp("^" + filterValue, 'i');
+            case enums["f" /* OCCURENCE */].Last:
+                return new RegExp(filterValue + "$", 'i');
+            default:
+                return new RegExp("" + filterValue, 'i');
+        }
+    };
+    Base.prototype.goToWhereLogic = function () {
+        var columnName = Object(get_object_first_key["a" /* getObjectFirstKey */])(this.query.where);
+        if (this.query.ignoreCase === true) {
+            this.query.where = this.makeQryInCaseSensitive(this.query.where);
+        }
+        if (this.objectStore.indexNames.contains(columnName)) {
+            var value = this.query.where[columnName];
+            if (typeof value === 'object') {
+                var checkFlag = Boolean(Object.keys(value).length > 1 ||
+                    Object.keys(this.query.where).length > 1);
+                this.whereCheckerInstance = new where_checker_WhereChecker(this.query.where, checkFlag);
+                var key = Object(get_object_first_key["a" /* getObjectFirstKey */])(value);
+                switch (key) {
+                    case enums["g" /* QUERY_OPTION */].Like:
+                        {
+                            var regexVal = this.getRegexFromLikeExpression_(value[enums["g" /* QUERY_OPTION */].Like]);
+                            this.executeRegexLogic(columnName, regexVal);
+                        }
+                        break;
+                    case enums["g" /* QUERY_OPTION */].Regex:
+                        this.executeRegexLogic(columnName, value[enums["g" /* QUERY_OPTION */].Regex]);
+                        break;
+                    case enums["g" /* QUERY_OPTION */].In:
+                        this.executeInLogic(columnName, value[enums["g" /* QUERY_OPTION */].In]);
+                        break;
+                    case enums["g" /* QUERY_OPTION */].Between:
+                    case enums["g" /* QUERY_OPTION */].GreaterThan:
+                    case enums["g" /* QUERY_OPTION */].LessThan:
+                    case enums["g" /* QUERY_OPTION */].GreaterThanEqualTo:
+                    case enums["g" /* QUERY_OPTION */].LessThanEqualTo:
+                        this.executeWhereLogic(columnName, value, key, "next");
+                        break;
+                    case enums["g" /* QUERY_OPTION */].Aggregate: break;
+                    default: this.executeWhereLogic(columnName, value, null, "next");
+                }
+            }
+            else {
+                var checkFlag = Boolean(Object.keys(this.query.where).length > 1);
+                this.whereCheckerInstance = new where_checker_WhereChecker(this.query.where, checkFlag);
+                this.executeWhereLogic(columnName, value, null, "next");
+            }
+        }
+        else {
+            var column = this.getColumnInfo(columnName, this.tableName);
+            var error = column == null ?
+                new log_helper["a" /* LogHelper */](enums["d" /* ERROR_TYPE */].ColumnNotExist, { ColumnName: columnName }) :
+                new log_helper["a" /* LogHelper */](enums["d" /* ERROR_TYPE */].EnableSearchOff, { ColumnName: columnName });
+            this.onErrorOccured(error, true);
+        }
+    };
+    Base.prototype.makeQryInCaseSensitive = function (qry) {
+        var results = [];
+        var columnValue, keyValue;
+        for (var column in qry) {
+            columnValue = qry[column];
+            switch (Object(get_data_type["a" /* getDataType */])(columnValue)) {
+                case enums["c" /* DATA_TYPE */].String:
+                    results = results.concat(this.getAllCombinationOfWord(columnValue));
+                    qry[column] = {};
+                    qry[column][enums["g" /* QUERY_OPTION */].In] = results;
+                    break;
+                case enums["c" /* DATA_TYPE */].Object:
+                    for (var key in columnValue) {
+                        keyValue = columnValue[key];
+                        if (isString(keyValue)) {
+                            switch (key) {
+                                case enums["g" /* QUERY_OPTION */].In:
+                                    results = results.concat(this.getAllCombinationOfWord(keyValue, true));
+                                    break;
+                                case enums["g" /* QUERY_OPTION */].Like:
+                                case enums["g" /* QUERY_OPTION */].Regex:
+                                    break;
+                                default:
+                                    results = results.concat(this.getAllCombinationOfWord(keyValue));
+                            }
+                        }
+                    }
+                    qry[column][enums["g" /* QUERY_OPTION */].In] = results;
+                    break;
+            }
+        }
+        return qry;
+    };
+    return Base;
+}(base_helper_BaseHelper));
+
+
+
+/***/ }),
 /* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 
 // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
-var query_helper = __webpack_require__(4);
+var query_helper = __webpack_require__(5);
 
 // EXTERNAL MODULE: ./src/worker/business/base.ts + 3 modules
-var base = __webpack_require__(6);
+var base = __webpack_require__(8);
 
 // EXTERNAL MODULE: ./src/worker/keystore/instance.ts + 10 modules
-var instance = __webpack_require__(7);
+var instance = __webpack_require__(6);
 
 // CONCATENATED MODULE: ./src/worker/business/clear.ts
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -1954,71 +1946,14 @@ var clear_Clear = /** @class */ (function (_super) {
 }(base["a" /* Base */]));
 
 
-// EXTERNAL MODULE: ./src/worker/enums.ts
-var enums = __webpack_require__(0);
-
-// CONCATENATED MODULE: ./src/worker/business/bulk_insert.ts
-var bulk_insert_extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-
-
-
-var bulk_insert_BulkInsert = /** @class */ (function (_super) {
-    bulk_insert_extends(BulkInsert, _super);
-    function BulkInsert(query, onSuccess, onError) {
-        var _this = _super.call(this) || this;
-        _this.query = query;
-        _this.onSuccess = onSuccess;
-        _this.onError = onError;
-        return _this;
-    }
-    BulkInsert.prototype.execute = function () {
-        var queryHelper = new query_helper["a" /* QueryHelper */](enums["a" /* API */].BulkInsert, this.query);
-        queryHelper.checkAndModify();
-        if (queryHelper.error == null) {
-            try {
-                this.bulkinsertData(this.query.values);
-                this.query.values = null;
-            }
-            catch (ex) {
-                this.onExceptionOccured(ex);
-            }
-        }
-        else {
-            this.onError(queryHelper.error);
-        }
-    };
-    BulkInsert.prototype.bulkinsertData = function (values) {
-        var _this = this;
-        this.createTransaction([this.query.into], function () {
-            _this.onSuccess();
-        });
-        this.objectStore = this.transaction.objectStore(this.query.into);
-        var processName = this.query.upsert === true ? "put" : "add";
-        for (var i = 0, valueLength = values.length; i < valueLength; i++) {
-            this.objectStore[processName](values[i]);
-        }
-    };
-    return BulkInsert;
-}(base["a" /* Base */]));
-
-
 // EXTERNAL MODULE: ./src/worker/business/idb_helper.ts
 var idb_helper = __webpack_require__(2);
 
 // EXTERNAL MODULE: ./src/worker/business/drop_db.ts
 var drop_db = __webpack_require__(19);
+
+// EXTERNAL MODULE: ./src/worker/enums.ts
+var enums = __webpack_require__(0);
 
 // EXTERNAL MODULE: ./src/worker/business/base_db.ts
 var base_db = __webpack_require__(16);
@@ -2180,7 +2115,7 @@ var transaction_instance = __webpack_require__(35);
 var log_helper = __webpack_require__(1);
 
 // EXTERNAL MODULE: ./src/worker/config.ts
-var config = __webpack_require__(8);
+var config = __webpack_require__(7);
 
 // CONCATENATED MODULE: ./src/worker/model/table_helper.ts
 
@@ -2477,9 +2412,6 @@ var query_executor_QueryExecutor = /** @class */ (function () {
             case enums["a" /* API */].Count:
                 new count_instance["a" /* Instance */](request.query, onSuccess, onError).execute();
                 break;
-            case enums["a" /* API */].BulkInsert:
-                new bulk_insert_BulkInsert(request.query, onSuccess, onError).execute();
-                break;
             case enums["a" /* API */].Get:
                 this.get_(request.query).then(onSuccess).catch(onError);
                 break;
@@ -2668,7 +2600,7 @@ var query_executor_QueryExecutor = /** @class */ (function () {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return WhereBase; });
-/* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6);
+/* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(8);
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -2815,7 +2747,7 @@ var BaseDb = /** @class */ (function () {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return DropDb; });
-/* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7);
+/* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6);
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(0);
 /* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(1);
 /* harmony import */ var _base_db__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(16);
@@ -2905,11 +2837,11 @@ var DropDb = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 
-// EXTERNAL MODULE: ./src/worker/query_executor.ts + 8 modules
+// EXTERNAL MODULE: ./src/worker/query_executor.ts + 7 modules
 var query_executor = __webpack_require__(9);
 
 // EXTERNAL MODULE: ./src/worker/config.ts
-var config = __webpack_require__(8);
+var config = __webpack_require__(7);
 
 // EXTERNAL MODULE: ./src/worker/business/idb_helper.ts
 var idb_helper = __webpack_require__(2);
@@ -2960,7 +2892,7 @@ setCrossBrowserIndexedDb();
 initialize();
 
 // EXTERNAL MODULE: ./src/worker/keystore/instance.ts + 10 modules
-var instance = __webpack_require__(7);
+var instance = __webpack_require__(6);
 
 // CONCATENATED MODULE: ./src/worker/index.ts
 /* concated harmony reexport QueryExecutor */__webpack_require__.d(__webpack_exports__, "QueryExecutor", function() { return query_executor["a" /* QueryExecutor */]; });
@@ -2981,8 +2913,8 @@ var instance = __webpack_require__(7);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return getAutoIncrementValues; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return setAutoIncrementValue; });
 /* harmony import */ var _business_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
-/* harmony import */ var _business_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4);
-/* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(7);
+/* harmony import */ var _business_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5);
+/* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6);
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(12);
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(13);
 /* harmony import */ var _query_executor__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(9);
@@ -3026,10 +2958,10 @@ var setAutoIncrementValue = function (table, autoIncrementValue) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Instance; });
-/* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6);
+/* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(8);
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(13);
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(12);
-/* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4);
+/* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5);
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(0);
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -4525,7 +4457,7 @@ var join_Join = /** @class */ (function (_super) {
 
 
 // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
-var query_helper = __webpack_require__(4);
+var query_helper = __webpack_require__(5);
 
 // EXTERNAL MODULE: ./src/worker/utils/is_array.ts
 var is_array = __webpack_require__(33);
@@ -4765,7 +4697,7 @@ var instance_Instance = /** @class */ (function (_super) {
 "use strict";
 
 // EXTERNAL MODULE: ./src/worker/business/base.ts + 3 modules
-var base = __webpack_require__(6);
+var base = __webpack_require__(8);
 
 // EXTERNAL MODULE: ./src/worker/enums.ts
 var enums = __webpack_require__(0);
@@ -5045,7 +4977,7 @@ var where_Where = /** @class */ (function (_super) {
 var instance = __webpack_require__(25);
 
 // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
-var query_helper = __webpack_require__(4);
+var query_helper = __webpack_require__(5);
 
 // EXTERNAL MODULE: ./src/worker/utils/is_array.ts
 var is_array = __webpack_require__(33);
@@ -5368,7 +5300,7 @@ var instance = __webpack_require__(25);
 var enums = __webpack_require__(0);
 
 // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
-var query_helper = __webpack_require__(4);
+var query_helper = __webpack_require__(5);
 
 // EXTERNAL MODULE: ./src/worker/utils/is_array.ts
 var is_array = __webpack_require__(33);
@@ -5782,7 +5714,7 @@ var instance = __webpack_require__(25);
 var enums = __webpack_require__(0);
 
 // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
-var query_helper = __webpack_require__(4);
+var query_helper = __webpack_require__(5);
 
 // EXTERNAL MODULE: ./src/worker/utils/is_array.ts
 var is_array = __webpack_require__(33);
@@ -5926,19 +5858,19 @@ var getObjectFirstKey = function (value) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Instance; });
-/* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6);
+/* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(8);
 /* harmony import */ var _select_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(25);
 /* harmony import */ var _count_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(28);
 /* harmony import */ var _insert_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(24);
 /* harmony import */ var _remove_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(27);
 /* harmony import */ var _update_index__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(26);
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(0);
-/* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(4);
+/* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(5);
 /* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(1);
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(13);
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(23);
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(12);
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(8);
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(7);
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||

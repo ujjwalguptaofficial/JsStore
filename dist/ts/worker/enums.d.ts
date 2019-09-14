@@ -95,7 +95,6 @@ export declare enum API {
     Clear = "clear",
     DropDb = "drop_db",
     Count = "count",
-    BulkInsert = "bulk_insert",
     ChangeLogStatus = "change_log_status",
     Transaction = "transaction",
     FinishTransaction = "finish_transaction",

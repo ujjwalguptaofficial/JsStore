@@ -13,7 +13,6 @@ export declare class QueryHelper {
     constructor(api: API, query: any);
     checkAndModify(): Promise<{}>;
     private isInsertQryValid_;
-    private checkBulkInsert_;
     private checkInsertQuery_;
     private checkUpdateQuery_;
     private checkForNullInWhere_;
