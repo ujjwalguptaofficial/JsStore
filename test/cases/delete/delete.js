@@ -176,7 +176,7 @@ describe('Test remove Api', function () {
         con.count({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     '!=': 20
                 }
             }
@@ -189,7 +189,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     '!=': 20
                 }
             }
@@ -207,7 +207,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">": 20
                 }
             }
@@ -220,7 +220,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">": 20
                 }
             }
@@ -238,7 +238,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">=": 20
                 }
             }
@@ -251,7 +251,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">=": 20
                 }
             }
@@ -269,7 +269,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<": 20
                 }
             }
@@ -282,7 +282,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<": 20
                 }
             }
@@ -299,7 +299,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<=": 20
                 }
             }
@@ -312,7 +312,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<=": 20
                 }
             }
@@ -329,7 +329,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "-": {
                         low: 10,
                         high: 20
@@ -345,7 +345,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "-": {
                         low: 10,
                         high: 20

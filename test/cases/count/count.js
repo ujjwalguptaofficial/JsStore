@@ -98,7 +98,7 @@ describe('Test count Api', function () {
         con.count({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">": 20
                 }
             }
@@ -116,7 +116,7 @@ describe('Test count Api', function () {
         con.count({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">=": 20
                 }
             }
@@ -134,7 +134,7 @@ describe('Test count Api', function () {
         con.count({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<": 20
                 }
             }
@@ -152,7 +152,7 @@ describe('Test count Api', function () {
         con.count({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<=": 20
                 }
             }
@@ -188,7 +188,7 @@ describe('Test count Api', function () {
         con.count({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     '!=': 20
                 }
             }
@@ -206,7 +206,7 @@ describe('Test count Api', function () {
         con.count({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "-": {
                         low: 10,
                         high: 20

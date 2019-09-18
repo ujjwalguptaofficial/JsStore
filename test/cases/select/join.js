@@ -109,8 +109,8 @@ describe('Test join', function () {
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(196);
-            expect(results[0]).to.be.an('object').to.haveOwnProperty('ShipperName').equal(null);
-            expect(results[1]).to.be.an('object').to.haveOwnProperty('ShipperName').equal("Speedy Express");
+            expect(results[0]).to.be.an('object').to.haveOwnProperty('shipperName').equal(null);
+            expect(results[1]).to.be.an('object').to.haveOwnProperty('shipperName').equal("Speedy Express");
             done();
         }).catch(function (err) {
             done(err);
@@ -138,8 +138,8 @@ describe('Test join', function () {
                 type: "left",
                 as: {
                     shipperId: "shipperId",
-                    ShipperName: "shipperName",
-                    Phone: "phone"
+                    shipperName: "shipperName",
+                    phone: "phone"
                 }
             }
         }).then(function (results) {
@@ -406,7 +406,7 @@ describe('Test join', function () {
                 on: "Shippers.shipperId = Orders.shipperId",
                 as: {
                     shipperId: "shipperId",
-                    ShipperName: "shipperName"
+                    shipperName: "shipperName"
                 }
             },
             limit: 5
@@ -425,7 +425,7 @@ describe('Test join', function () {
         con.update({
             in: "Shippers",
             set: {
-                Phone: "(503) 555-9931"
+                phone: "(503) 555-9931"
             },
             where: {
                 shipperId: {
@@ -437,14 +437,14 @@ describe('Test join', function () {
             from: "Suppliers",
             join: [{
                 with: "Shippers",
-                on: "Shippers.Phone = Suppliers.Phone"
+                on: "Shippers.phone = Suppliers.phone"
             }]
         }).then(function (results1) {
             con.select({
                 from: "Shippers",
                 join: [{
                     with: "Suppliers",
-                    on: "Shippers.Phone = Suppliers.Phone"
+                    on: "Shippers.phone = Suppliers.phone"
                 }]
             }).then(function (results2) {
                 results2.forEach(function (result, i) {

@@ -223,27 +223,27 @@ describe('select join order test', function () {
             {
                 Name: 'Test5',
                 Card: 'Test5-card',
-                Phone: '55555555555555'
+                phone: '55555555555555'
             },
             {
                 Name: 'Test3',
                 Card: 'Test3-card',
-                Phone: '33333333333333'
+                phone: '33333333333333'
             },
             {
                 Name: 'Test2',
                 Card: 'Test2-card',
-                Phone: '22222222222222'
+                phone: '22222222222222'
             },
             {
                 Name: 'Test4',
                 Card: 'Test4-card',
-                Phone: '44444444444444'
+                phone: '44444444444444'
             },
             {
                 Name: 'Test1',
                 Card: 'Test1-card',
-                Phone: '11111111111111'
+                phone: '11111111111111'
             }
         ]
         return Details;
@@ -265,7 +265,7 @@ describe('select join order test', function () {
                 Id: { primaryKey: true, autoIncrement: true },
                 Name: { notNull: true, dataType: "string" },
                 Card: { dataType: "string", default: '--' },
-                Phone: { notNull: true, dataType: "string" }
+                phone: { notNull: true, dataType: "string" }
             }
         }
         var dataBase = {

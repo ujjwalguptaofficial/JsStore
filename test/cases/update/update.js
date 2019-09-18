@@ -330,7 +330,7 @@ describe('Test update Api', function () {
         con.count({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     '!=': 20
                 }
             }
@@ -344,7 +344,7 @@ describe('Test update Api', function () {
         con.update({
             in: 'Products',
             where: {
-                Price: {
+                price: {
                     '!=': 20
                 }
             },
@@ -365,7 +365,7 @@ describe('Test update Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">": 20
                 }
             }
@@ -382,12 +382,12 @@ describe('Test update Api', function () {
         con.update({
             in: 'Products',
             where: {
-                Price: {
+                price: {
                     ">": 20
                 }
             },
             set: {
-                ProductName: 'Cofee'
+                productName: 'Cofee'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(37);
@@ -402,7 +402,7 @@ describe('Test update Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">=": 20
                 }
             }
@@ -419,12 +419,12 @@ describe('Test update Api', function () {
         con.update({
             in: 'Products',
             where: {
-                Price: {
+                price: {
                     ">=": 20
                 }
             },
             set: {
-                ProductName: 'Whisky'
+                productName: 'Whisky'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(38);
@@ -439,7 +439,7 @@ describe('Test update Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<": 20
                 }
             }
@@ -456,12 +456,12 @@ describe('Test update Api', function () {
         con.update({
             in: 'Products',
             where: {
-                Price: {
+                price: {
                     "<": 20
                 }
             },
             set: {
-                ProductName: 'Tea'
+                productName: 'Tea'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(39);
@@ -476,7 +476,7 @@ describe('Test update Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<=": 20
                 }
             }
@@ -493,12 +493,12 @@ describe('Test update Api', function () {
         con.update({
             in: 'Products',
             where: {
-                Price: {
+                price: {
                     "<=": 20
                 }
             },
             set: {
-                ProductName: 'Candy'
+                productName: 'Candy'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(40);
@@ -513,7 +513,7 @@ describe('Test update Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "-": {
                         low: 10,
                         high: 20
@@ -533,7 +533,7 @@ describe('Test update Api', function () {
         con.update({
             in: 'Products',
             where: {
-                Price: {
+                price: {
                     "-": {
                         low: 10,
                         high: 20
@@ -541,7 +541,7 @@ describe('Test update Api', function () {
                 }
             },
             set: {
-                ProductName: 'Chocolate'
+                productName: 'Chocolate'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(29);

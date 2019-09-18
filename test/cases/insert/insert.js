@@ -217,29 +217,29 @@ describe('Test insert', function () {
     it('insert suppliers - using return Data', function (done) {
         $.getJSON("test/static/Suppliers.json", function (results) {
             var values = [{
-                SupplierName: "Exotic Liquid",
+                supplierName: "Exotic Liquid",
                 contactName: "Charlotte Cooper",
                 address: "49 Gilbert St.",
                 city: "Londona",
                 postalCode: "43951-1",
                 country: "UK",
-                Phone: "12345"
+                phone: "12345"
             }, {
-                SupplierName: "Exotsic Liquid",
+                supplierName: "Exotsic Liquid",
                 contactName: "Charlotte Cooper",
                 address: "49 Gilbert St.",
                 city: "Londona",
                 postalCode: "43951-1",
                 country: "UK",
-                Phone: "12345"
+                phone: "12345"
             }, {
-                SupplierName: "Exotsic Liqduid",
+                supplierName: "Exotsic Liqduid",
                 contactName: "Charlotte Cooper",
                 address: "49 Gilbert St.",
                 city: "Londona",
                 postalCode: "43951-1",
                 country: "UK",
-                Phone: "12345"
+                phone: "12345"
             }];
             con.insert({
                 into: 'Suppliers',
@@ -288,7 +288,7 @@ describe('Test insert', function () {
 
     it('not null test for last column', function (done) {
         var value = {
-            ShipperName: 'dsfgb'
+            shipperName: 'dsfgb'
         }
         con.insert({
             into: 'Shippers',
@@ -299,7 +299,7 @@ describe('Test insert', function () {
         }).catch(function (err) {
             console.log(err);
             var error = {
-                "message": "Null value is not allowed for column 'Phone'",
+                "message": "Null value is not allowed for column 'phone'",
                 "type": "null_value"
             };
             expect(err).to.be.an('object').eql(error);
@@ -309,8 +309,8 @@ describe('Test insert', function () {
 
     it('wrong data type test - string', function (done) {
         var value = {
-            ShipperName: 'dsfgb',
-            Phone: 91234
+            shipperName: 'dsfgb',
+            phone: 91234
         }
         con.insert({
             into: 'Shippers',
@@ -320,7 +320,7 @@ describe('Test insert', function () {
             done();
         }).catch(function (err) {
             var error = {
-                "message": "Supplied value for column 'Phone' have wrong data type",
+                "message": "Supplied value for column 'phone' have wrong data type",
                 "type": "wrong_data_type"
             };
             expect(err).to.be.an('object').eql(error);
@@ -330,11 +330,11 @@ describe('Test insert', function () {
 
     it('wrong data type test - number', function (done) {
         var value = {
-            ProductName: "dfb",
-            SupplierID: 5,
-            CategoryID: 10,
-            Price: "1123",
-            Unit: 12333
+            productName: "dfb",
+            supplierId: 5,
+            categoryId: 10,
+            price: "1123",
+            unit: 12333
         }
         con.insert({
             into: 'Products',
@@ -344,7 +344,7 @@ describe('Test insert', function () {
             done();
         }).catch(function (err) {
             var error = {
-                "message": "Supplied value for column 'Unit' have wrong data type",
+                "message": "Supplied value for column 'unit' have wrong data type",
                 "type": "wrong_data_type"
             };
             expect(err).to.be.an('object').eql(error);
@@ -354,8 +354,8 @@ describe('Test insert', function () {
 
     it('undefined column insert', function (done) {
         var value = {
-            ShipperName: 'dsfgb',
-            Phone: '91234',
+            shipperName: 'dsfgb',
+            phone: '91234',
             address: 'ewrtgb'
         }
         con.insert({
