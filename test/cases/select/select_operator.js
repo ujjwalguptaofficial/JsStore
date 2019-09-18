@@ -3,7 +3,7 @@ describe('Test operator', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: {
+                country: {
                     '!=': 'Mexico'
                 }
             }
@@ -19,7 +19,7 @@ describe('Test operator', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     '!=': 20
                 }
             }
@@ -35,7 +35,7 @@ describe('Test operator', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">": 20
                 }
             }
@@ -51,7 +51,7 @@ describe('Test operator', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">=": 20
                 }
             }
@@ -67,7 +67,7 @@ describe('Test operator', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<": 20
                 }
             }
@@ -83,7 +83,7 @@ describe('Test operator', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<=": 20
                 }
             }
@@ -99,7 +99,7 @@ describe('Test operator', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "-": {
                         low: 10,
                         high: 20
@@ -118,7 +118,7 @@ describe('Test operator', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">": 10,
                     "<": 20
                 }

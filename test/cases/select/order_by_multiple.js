@@ -3,9 +3,9 @@ describe('Test Select with order', function () {
         con.select({
             from: 'Customers',
             order: [{
-                by: 'Country'
+                by: 'country'
             }, {
-                by: 'City'
+                by: 'city'
             }]
         }).then(function (results) {
             var countries = ["Argentina", "Argentina", "Argentina", "Austria", "Austria",
@@ -14,8 +14,8 @@ describe('Test Select with order', function () {
                 "Bruxelles", "Charleroi", "Campinas", "Resende", "Rio de Janeiro"];
             for (var i = 0; i < 10; i++) {
                 var result = results[i];
-                expect(result.Country).to.be.equal(countries[i]);
-                expect(result.City).to.be.equal(cities[i]);
+                expect(result.country).to.be.equal(countries[i]);
+                expect(result.city).to.be.equal(cities[i]);
             }
             done();
         }).catch(function (err) {
@@ -28,9 +28,9 @@ describe('Test Select with order', function () {
             from: 'Customers',
             limit: 10,
             order: [{
-                by: 'Country'
+                by: 'country'
             }, {
-                by: 'City'
+                by: 'city'
             }]
         }).then(function (results) {
             expect(results).to.be.an('array').length(10);
@@ -40,8 +40,8 @@ describe('Test Select with order', function () {
                 "Bruxelles", "Charleroi", "Campinas", "Resende", "Rio de Janeiro"];
             for (var i = 0; i < 10; i++) {
                 var result = results[i];
-                expect(result.Country).to.be.equal(countries[i]);
-                expect(result.City).to.be.equal(cities[i]);
+                expect(result.country).to.be.equal(countries[i]);
+                expect(result.city).to.be.equal(cities[i]);
             }
             done();
         }).catch(function (err) {
@@ -53,7 +53,7 @@ describe('Test Select with order', function () {
         con.select({
             from: 'Customers',
             order: {
-                by: 'Country',
+                by: 'country',
                 type: 'desc',
                 idbSorting: false
             }
@@ -61,7 +61,7 @@ describe('Test Select with order', function () {
             con.select({
                 from: 'Customers',
                 order: [{
-                    by: 'Country',
+                    by: 'country',
                     type: 'desc'
                 }]
             }).then(function (results2) {

@@ -1,12 +1,12 @@
 describe('Test update complex case', function () {
     it('update with multiple or', function (done) {
         var where_query = {
-                Price: {
+                price: {
                     '<': 10
                 },
                 or: {
-                    SupplierID: 1,
-                    CategoryID: 3
+                    supplierId: 1,
+                    categoryId: 3
                 }
             },
             count;
@@ -24,7 +24,7 @@ describe('Test update complex case', function () {
         con.update({ in: 'Products',
             where: where_query,
             set: {
-                ProductName: 'Cofee'
+                productName: 'Cofee'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(count);
@@ -35,16 +35,16 @@ describe('Test update complex case', function () {
         })
     });
 
-    it("sql - Update Products set ProductName='Tea' WHERE ProductName='Cofee' and (Price < 10 or SupplierID =1)", function (done) {
+    it("sql - Update Products set productName='Tea' WHERE productName='Cofee' and (price < 10 or supplierId =1)", function (done) {
         var where_query = [{
-                    ProductName: 'Cofee'
+                    productName: 'Cofee'
                 },
                 {
-                    Price: {
+                    price: {
                         '<': 10
                     },
                     or: {
-                        SupplierID: 1
+                        supplierId: 1
                     }
                 }
             ],
@@ -63,7 +63,7 @@ describe('Test update complex case', function () {
         con.update({ in: 'Products',
             where: where_query,
             set: {
-                ProductName: 'Tea'
+                productName: 'Tea'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(count);
@@ -74,14 +74,14 @@ describe('Test update complex case', function () {
         })
     });
 
-    it("sql - Update Products set ProductName='Cofee_Tea' WHERE ProductName='Cofee' or (SupplierID=1 and CategoryID = 1)", function (done) {
+    it("sql - Update Products set productName='Cofee_Tea' WHERE productName='Cofee' or (supplierId=1 and categoryId = 1)", function (done) {
         var where_query = [{
-                    ProductName: 'Tea'
+                    productName: 'Tea'
                 },
                 {
                     or: {
-                        SupplierID: 1,
-                        CategoryID: 3
+                        supplierId: 1,
+                        categoryId: 3
                     }
                 }
             ],
@@ -100,7 +100,7 @@ describe('Test update complex case', function () {
         con.update({ in: 'Products',
             where: where_query,
             set: {
-                ProductName: 'Cofee_Tea'
+                productName: 'Cofee_Tea'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(count);
@@ -117,7 +117,7 @@ describe('Test update complex case', function () {
             from: 'Customers',
             ignoreCase: true,
             where: [{
-                City: 'bHuBaneSwar'
+                city: 'bHuBaneSwar'
             }]
         }).then(function (results) {
             count = results;
@@ -129,11 +129,11 @@ describe('Test update complex case', function () {
         con.update({ in: "Customers",
             ignoreCase: true,
             set: {
-                ContactName: 'Ujjwal',
-                City: 'bhubaneswar'
+                contactName: 'Ujjwal',
+                city: 'bhubaneswar'
             },
             where: [{
-                City: 'bHuBaneSwar'
+                city: 'bHuBaneSwar'
             }]
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(count);

@@ -21,14 +21,14 @@ describe('Test Select with order', function () {
             from: 'Customers',
             limit: 10,
             order: {
-                by: 'Country'
+                by: 'country'
             }
         }).then(function (results) {
             var countries = ["Argentina", "Argentina", "Argentina", "Austria", "Austria",
                 "Belgium", "Belgium", "Brazil", "Brazil", "Brazil"];
             expect(results).to.be.an('array').length(10);
             results.forEach(function (result, i) {
-                expect(result.Country).to.be.equal(countries[i]);
+                expect(result.country).to.be.equal(countries[i]);
             });
             done();
         }).catch(function (err) {
@@ -41,19 +41,19 @@ describe('Test Select with order', function () {
             from: 'Products',
             limit: 1,
             where: {
-                SupplierID: {
+                supplierId: {
                     '>': 18
                 }
             },
             order: {
-                by: 'Price',
+                by: 'price',
                 type: 'asc'
             }
         }).
             then(function (results) {
                 expect(results).to.be.an('array').length(1);
                 var product = results[0];
-                expect(product.Price).to.be.eql(7)
+                expect(product.price).to.be.eql(7)
                 done();
             }).
             catch(function (err) {
@@ -66,19 +66,19 @@ describe('Test Select with order', function () {
             from: 'Products',
             limit: 1,
             where: {
-                SupplierID: {
+                supplierId: {
                     '>': 18
                 }
             },
             order: {
-                by: 'Price',
+                by: 'price',
                 type: 'desc'
             }
         }).
             then(function (results) {
                 expect(results).to.be.an('array').length(1);
                 var product = results[0];
-                expect(product.Price).to.be.eql(55)
+                expect(product.price).to.be.eql(55)
                 done();
             }).
             catch(function (err) {
@@ -113,7 +113,7 @@ describe('Test Select with order', function () {
             from: 'Products',
             limit: 1,
             where: {
-                SupplierID: {
+                supplierId: {
                     '>': 18
                 }
             },
@@ -154,7 +154,7 @@ describe('Test Select with order', function () {
                 ];
                 expect(results).to.deep.equal(expecteResult);
                 // var product = results[0];
-                // expect(product.Price).to.be.eql(7)
+                // expect(product.price).to.be.eql(7)
                 done();
             }).
             catch(done)

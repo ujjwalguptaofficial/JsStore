@@ -4,11 +4,11 @@ describe('Test update Api', function () {
         con.update({
             in: "Customers",
             set: {
-                ContactName: 'Ujjwal',
-                City: 'Bhubaneswar'
+                contactName: 'Ujjwal',
+                city: 'Bhubaneswar'
             },
             where: {
-                CustomerID: 1
+                customerId: 1
             }
         }).
         then(function (results) {
@@ -24,11 +24,11 @@ describe('Test update Api', function () {
         con.update({
             in: "Customerss",
             set: {
-                ContactName: 'Ujjwal',
-                City: 'Bhubaneswar'
+                contactName: 'Ujjwal',
+                city: 'Bhubaneswar'
             },
             where: {
-                CustomerID: 1
+                customerId: 1
             }
         }).
         then(function (results) {
@@ -47,7 +47,7 @@ describe('Test update Api', function () {
         con.update({
             in: "Customerss",
             where: {
-                CustomerID: 1
+                customerId: 1
             }
         }).
         catch(function (err) {
@@ -64,7 +64,7 @@ describe('Test update Api', function () {
         con.update({
             in: "Customers",
             where: {
-                CustomerID: 1
+                customerId: 1
             },
             set: 'sss'
         }).
@@ -82,12 +82,12 @@ describe('Test update Api', function () {
         con.update({
             in: 'Customers',
             where: {
-                CustomerName: {
+                customerName: {
                     like: '%or%'
                 }
             },
             set: {
-                Country: 'india'
+                country: 'india'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(11);
@@ -102,12 +102,12 @@ describe('Test update Api', function () {
         con.update({
             in: 'Customers',
             where: {
-                CustomerName: {
+                customerName: {
                     like: 'o%'
                 }
             },
             set: {
-                Country: 'india'
+                country: 'india'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(3);
@@ -122,12 +122,12 @@ describe('Test update Api', function () {
         con.update({
             in: 'Customers',
             where: {
-                CustomerName: {
+                customerName: {
                     like: '%o'
                 }
             },
             set: {
-                Country: 'india'
+                country: 'india'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(6);
@@ -142,12 +142,12 @@ describe('Test update Api', function () {
         con.update({
             in: 'Customers',
             where: {
-                CustomerName: {
+                customerName: {
                     like: '%or%'
                 }
             },
             set: {
-                Country: 'india'
+                country: 'india'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(11);
@@ -162,11 +162,11 @@ describe('Test update Api', function () {
         con.update({
             in: "Customers",
             set: {
-                ContactName: 'Ujjwal',
-                City: 'bhubaneswar'
+                contactName: 'Ujjwal',
+                city: 'bhubaneswar'
             },
             where: {
-                City: 'BhUbaneSwar'
+                city: 'BhUbaneSwar'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(0);
@@ -183,11 +183,11 @@ describe('Test update Api', function () {
             from: 'Customers',
             ignoreCase: true,
             set: {
-                ContactName: 'Ujjwal',
-                City: 'bhubaneswar'
+                contactName: 'Ujjwal',
+                city: 'bhubaneswar'
             },
             where: {
-                City: 'bHuBaneSwar'
+                city: 'bHuBaneSwar'
             }
         }).then(function (results) {
             count = results;
@@ -200,11 +200,11 @@ describe('Test update Api', function () {
             in: "Customers",
             ignoreCase: true,
             set: {
-                ContactName: 'Ujjwal',
-                City: 'bhubaneswar'
+                contactName: 'Ujjwal',
+                city: 'bhubaneswar'
             },
             where: {
-                City: 'bHuBaneSwar'
+                city: 'bHuBaneSwar'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(count);
@@ -219,9 +219,9 @@ describe('Test update Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: 'Mexico',
+                country: 'Mexico',
                 or: {
-                    City: 'Madrid'
+                    city: 'Madrid'
                 }
             }
         }).then(function (results) {
@@ -237,13 +237,13 @@ describe('Test update Api', function () {
         con.update({
             in: 'Customers',
             where: {
-                Country: 'Mexico',
+                country: 'Mexico',
                 or: {
-                    City: 'Madrid'
+                    city: 'Madrid'
                 }
             },
             set: {
-                City: 'madrid'
+                city: 'madrid'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(6);
@@ -259,7 +259,7 @@ describe('Test update Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: {
+                country: {
                     in: ['Germany', 'France', 'UK']
                 }
             }
@@ -272,13 +272,13 @@ describe('Test update Api', function () {
         con.update({
             in: 'Customers',
             where: {
-                Country: {
+                country: {
                     in: ['Germany', 'France', 'UK']
                 }
             },
             set: {
-                ContactName: 'Ujjwal',
-                City: 'bhubaneswar'
+                contactName: 'Ujjwal',
+                city: 'bhubaneswar'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(Count);
@@ -294,7 +294,7 @@ describe('Test update Api', function () {
         con.count({
             from: 'Customers',
             where: {
-                Country: {
+                country: {
                     '!=': 'Mexico'
                 }
             }
@@ -308,13 +308,13 @@ describe('Test update Api', function () {
         con.update({
             in: 'Customers',
             where: {
-                Country: {
+                country: {
                     '!=': 'Mexico'
                 }
             },
             set: {
-                ContactName: 'Ujjwsal',
-                City: 'bhubaneswsar'
+                contactName: 'Ujjwsal',
+                city: 'bhubaneswsar'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(count);
@@ -330,7 +330,7 @@ describe('Test update Api', function () {
         con.count({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     '!=': 20
                 }
             }
@@ -344,13 +344,13 @@ describe('Test update Api', function () {
         con.update({
             in: 'Products',
             where: {
-                Price: {
+                price: {
                     '!=': 20
                 }
             },
             set: {
-                ContactName: 'Ujjwal',
-                City: 'bhubaneswar'
+                contactName: 'Ujjwal',
+                city: 'bhubaneswar'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(count);
@@ -365,7 +365,7 @@ describe('Test update Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">": 20
                 }
             }
@@ -382,12 +382,12 @@ describe('Test update Api', function () {
         con.update({
             in: 'Products',
             where: {
-                Price: {
+                price: {
                     ">": 20
                 }
             },
             set: {
-                ProductName: 'Cofee'
+                productName: 'Cofee'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(37);
@@ -402,7 +402,7 @@ describe('Test update Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">=": 20
                 }
             }
@@ -419,12 +419,12 @@ describe('Test update Api', function () {
         con.update({
             in: 'Products',
             where: {
-                Price: {
+                price: {
                     ">=": 20
                 }
             },
             set: {
-                ProductName: 'Whisky'
+                productName: 'Whisky'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(38);
@@ -439,7 +439,7 @@ describe('Test update Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<": 20
                 }
             }
@@ -456,12 +456,12 @@ describe('Test update Api', function () {
         con.update({
             in: 'Products',
             where: {
-                Price: {
+                price: {
                     "<": 20
                 }
             },
             set: {
-                ProductName: 'Tea'
+                productName: 'Tea'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(39);
@@ -476,7 +476,7 @@ describe('Test update Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<=": 20
                 }
             }
@@ -493,12 +493,12 @@ describe('Test update Api', function () {
         con.update({
             in: 'Products',
             where: {
-                Price: {
+                price: {
                     "<=": 20
                 }
             },
             set: {
-                ProductName: 'Candy'
+                productName: 'Candy'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(40);
@@ -513,7 +513,7 @@ describe('Test update Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "-": {
                         low: 10,
                         high: 20
@@ -533,7 +533,7 @@ describe('Test update Api', function () {
         con.update({
             in: 'Products',
             where: {
-                Price: {
+                price: {
                     "-": {
                         low: 10,
                         high: 20
@@ -541,7 +541,7 @@ describe('Test update Api', function () {
                 }
             },
             set: {
-                ProductName: 'Chocolate'
+                productName: 'Chocolate'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(29);
@@ -556,17 +556,17 @@ describe('Test update Api', function () {
         con.update({
             in: "Customers",
             set: {
-                ContactName: 'Ujjwal',
-                City: 'Bhubaneswar'
+                contactName: 'Ujjwal',
+                city: 'Bhubaneswar'
             },
             where: {
-                CustomerID: null
+                customerId: null
             }
         }).
 
         catch(function (err) {
             var error = {
-                "message": "Null/undefined is not allowed in where. Column 'CustomerID' has null",
+                "message": "Null/undefined is not allowed in where. Column 'customerId' has null",
                 "type": "null_value_in_where"
             };
             expect(err).to.be.an('object').eql(error);

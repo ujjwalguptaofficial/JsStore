@@ -3,11 +3,11 @@ describe('Test Aggregate option', function () {
         con.select({
             from: 'Products',
             aggregate: {
-                min: "Price"
+                min: "price"
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(1);
-            expect(results[0]).to.have.property('min(Price)').to.equal(2.5)
+            expect(results[0]).to.have.property('min(price)').to.equal(2.5)
             done();
         }).catch(function (err) {
             done(err);
@@ -18,11 +18,11 @@ describe('Test Aggregate option', function () {
         con.select({
             from: 'Products',
             aggregate: {
-                max: "Price"
+                max: "price"
             },
         }).then(function (results) {
             expect(results).to.be.an('array').length(1);
-            expect(results[0]).to.have.property('max(Price)').to.equal(263.5)
+            expect(results[0]).to.have.property('max(price)').to.equal(263.5)
             done();
         }).catch(function (err) {
             done(err);
@@ -33,11 +33,11 @@ describe('Test Aggregate option', function () {
         con.select({
             from: 'Products',
             aggregate: {
-                sum: "Price"
+                sum: "price"
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(1);
-            expect(results[0]).to.have.property('sum(Price)').to.equal(2222.71)
+            expect(results[0]).to.have.property('sum(price)').to.equal(2222.71)
             done();
         }).catch(function (err) {
             done(err);
@@ -48,11 +48,11 @@ describe('Test Aggregate option', function () {
         con.select({
             from: 'Products',
             aggregate: {
-                count: "Price"
+                count: "price"
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(1);
-            expect(results[0]).to.have.property('count(Price)').to.equal(77)
+            expect(results[0]).to.have.property('count(price)').to.equal(77)
             done();
         }).catch(function (err) {
             done(err);
@@ -63,11 +63,11 @@ describe('Test Aggregate option', function () {
         con.select({
             from: 'Products',
             aggregate: {
-                avg: "Price"
+                avg: "price"
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(1);
-            expect(results[0]).to.have.property('avg(Price)').to.equal(28.866363636363637);
+            expect(results[0]).to.have.property('avg(price)').to.equal(28.866363636363637);
             done();
         }).catch(function (err) {
             done(err);
@@ -78,13 +78,13 @@ describe('Test Aggregate option', function () {
         con.select({
             from: 'Products',
             aggregate: {
-                min: "Price",
-                max: "Price"
+                min: "price",
+                max: "price"
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(1);
-            expect(results[0]).to.have.property('min(Price)').to.equal(2.5)
-            expect(results[0]).to.have.property('max(Price)').to.equal(263.5)
+            expect(results[0]).to.have.property('min(price)').to.equal(2.5)
+            expect(results[0]).to.have.property('max(price)').to.equal(263.5)
             done();
         }).catch(function (err) {
             done(err);
@@ -95,15 +95,15 @@ describe('Test Aggregate option', function () {
         con.select({
             from: 'Products',
             aggregate: {
-                min: "Price",
-                max: "Price",
-                avg: "Price"
+                min: "price",
+                max: "price",
+                avg: "price"
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(1);
-            expect(results[0]).to.have.property('min(Price)').to.equal(2.5)
-            expect(results[0]).to.have.property('max(Price)').to.equal(263.5)
-            expect(results[0]).to.have.property('avg(Price)').to.equal(28.866363636363637)
+            expect(results[0]).to.have.property('min(price)').to.equal(2.5)
+            expect(results[0]).to.have.property('max(price)').to.equal(263.5)
+            expect(results[0]).to.have.property('avg(price)').to.equal(28.866363636363637)
             done();
         }).catch(function (err) {
             done(err);
@@ -114,18 +114,18 @@ describe('Test Aggregate option', function () {
         con.select({
             from: 'Products',
             aggregate: {
-                min: "Price",
-                max: "Price",
-                avg: "Price",
-                count: ["Price","ProductName"]
+                min: "price",
+                max: "price",
+                avg: "price",
+                count: ["price","productName"]
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(1);
-            expect(results[0]).to.have.property('min(Price)').to.equal(2.5)
-            expect(results[0]).to.have.property('max(Price)').to.equal(263.5)
-            expect(results[0]).to.have.property('avg(Price)').to.equal(28.866363636363637)
-            expect(results[0]).to.have.property('count(Price)').to.equal(77)
-            expect(results[0]).to.have.property('count(ProductName)').to.equal(77)
+            expect(results[0]).to.have.property('min(price)').to.equal(2.5)
+            expect(results[0]).to.have.property('max(price)').to.equal(263.5)
+            expect(results[0]).to.have.property('avg(price)').to.equal(28.866363636363637)
+            expect(results[0]).to.have.property('count(price)').to.equal(77)
+            expect(results[0]).to.have.property('count(productName)').to.equal(77)
             done();
         }).catch(function (err) {
             done(err);

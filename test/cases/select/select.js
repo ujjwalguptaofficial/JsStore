@@ -45,13 +45,13 @@ describe('Test Select Api', function () {
     //     con.select({
     //         from: 'Customers',
     //         where: {
-    //             Email: 'uk@gmail.com'
+    //             email: 'uk@gmail.com'
     //         }
     //     }).then(function () {
     //         done();
     //     }).catch(function (err) {
     //         var error = {
-    //             "message": "Search is turned off for the Column 'Email'",
+    //             "message": "Search is turned off for the Column 'email'",
     //             "type": "enable_search_off"
     //         };
     //         expect(err).to.be.an('object').eql(error);
@@ -63,7 +63,7 @@ describe('Test Select Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: 'Mexico'
+                country: 'Mexico'
             }
         }).
             then(function (results) {
@@ -79,7 +79,7 @@ describe('Test Select Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: 'mexico'
+                country: 'mexico'
             }
         }).
             then(function (results) {
@@ -96,7 +96,7 @@ describe('Test Select Api', function () {
             from: 'Customers',
             ignoreCase: true,
             where: {
-                Country: 'meXico'
+                country: 'meXico'
             }
         }).
             then(function (results) {
@@ -113,8 +113,8 @@ describe('Test Select Api', function () {
             from: 'Customers',
             ignoreCase: true,
             where: {
-                Country: 'meXico',
-                CustomerID: 3
+                country: 'meXico',
+                customerId: 3
             }
         }).
             then(function (results) {
@@ -131,8 +131,8 @@ describe('Test Select Api', function () {
             from: 'Customers',
             ignoreCase: true,
             where: {
-                Country: 'meXico',
-                CustomerID: {
+                country: 'meXico',
+                customerId: {
                     '!=': 3
                 }
             }
@@ -152,7 +152,7 @@ describe('Test Select Api', function () {
             distinct: true,
             ignoreCase: true,
             where: {
-                City: 'bhubaneswar'
+                city: 'bhubaneswar'
             }
         }).
             then(function (results) {
@@ -169,9 +169,9 @@ describe('Test Select Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: 'Mexico',
+                country: 'Mexico',
                 or: {
-                    City: 'Madrid'
+                    city: 'Madrid'
                 }
             }
         }).
@@ -188,7 +188,7 @@ describe('Test Select Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: {
+                country: {
                     in: ['Germany', 'France', 'UK']
                 }
             }
@@ -206,7 +206,7 @@ describe('Test Select Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                CustomerName: {
+                customerName: {
                     like: '%or%'
                 }
             }
@@ -224,7 +224,7 @@ describe('Test Select Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                CustomerName: {
+                customerName: {
                     like: 'o%'
                 }
             }
@@ -233,7 +233,7 @@ describe('Test Select Api', function () {
             var expected_id_list = [54, 55, 56];
             var id_list = [];
             results.forEach(function (element) {
-                id_list.push(element.CustomerID);
+                id_list.push(element.customerId);
             });
             expect(id_list).to.be.an('array').length(3).deep.equal(expected_id_list);
             done();
@@ -247,7 +247,7 @@ describe('Test Select Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                CustomerName: {
+                customerName: {
                     like: '%o'
                 }
             }
@@ -255,7 +255,7 @@ describe('Test Select Api', function () {
             var expected_id_list = [15, 21, 29, 46, 69, 73];
             var id_list = [];
             results.forEach(function (element) {
-                id_list.push(element.CustomerID);
+                id_list.push(element.customerId);
             });
             expect(id_list).to.be.an('array').length(6).deep.equal(expected_id_list);
             done();
@@ -267,7 +267,7 @@ describe('Test Select Api', function () {
     it('select with GroupBy', function (done) {
         con.select({
             from: 'Customers',
-            groupBy: "Country"
+            groupBy: "country"
         }).
             then(function (results) {
                 expect(results).to.be.an('array').length(22);
@@ -282,7 +282,7 @@ describe('Test Select Api', function () {
         con.select({
             from: 'Customers',
             Order: {
-                by: 'Country',
+                by: 'country',
                 type: "desc"
             }
         }).
@@ -299,52 +299,52 @@ describe('Test Select Api', function () {
         con.select({
             from: 'Customers',
             order: {
-                by: 'Country',
+                by: 'country',
                 type: "desc"
             },
             limit: 5
         }).
             then(function (results) {
                 var datas = [{
-                    "CustomerID": 47,
-                    "CustomerName": "LINO-Delicateses",
-                    "ContactName": "Felipe Izquierdo",
-                    "Address": "Ave. 5 de Mayo Porlamar",
-                    "City": "I. de Margarita",
-                    "PostalCode": "4980",
-                    "Country": "Venezuela"
+                    "customerId": 47,
+                    "customerName": "LINO-Delicateses",
+                    "contactName": "Felipe Izquierdo",
+                    "address": "Ave. 5 de Mayo Porlamar",
+                    "city": "I. de Margarita",
+                    "postalCode": "4980",
+                    "country": "Venezuela"
                 }, {
-                    "CustomerID": 46,
-                    "CustomerName": "LILA-Supermercado",
-                    "ContactName": "Carlos González",
-                    "Address": "Carrera 52 con Ave. Bolívar #65-98 Llano Largo",
-                    "City": "Barquisimeto",
-                    "PostalCode": "3508",
-                    "Country": "Venezuela"
+                    "customerId": 46,
+                    "customerName": "LILA-Supermercado",
+                    "contactName": "Carlos González",
+                    "address": "Carrera 52 con Ave. Bolívar #65-98 Llano Largo",
+                    "city": "Barquisimeto",
+                    "postalCode": "3508",
+                    "country": "Venezuela"
                 }, {
-                    "CustomerID": 35,
-                    "CustomerName": "HILARIÓN-Abastos",
-                    "ContactName": "Carlos Hernández",
-                    "Address": "Carrera 22 con Ave. Carlos Soublette #8-35",
-                    "City": "San Cristóbal",
-                    "PostalCode": "5022",
-                    "Country": "Venezuela"
+                    "customerId": 35,
+                    "customerName": "HILARIÓN-Abastos",
+                    "contactName": "Carlos Hernández",
+                    "address": "Carrera 22 con Ave. Carlos Soublette #8-35",
+                    "city": "San Cristóbal",
+                    "postalCode": "5022",
+                    "country": "Venezuela"
                 }, {
-                    "CustomerID": 33,
-                    "CustomerName": "GROSELLA-Restaurante",
-                    "ContactName": "Manuel Pereira",
-                    "Address": "5ª Ave. Los Palos Grandes",
-                    "City": "Caracas",
-                    "PostalCode": "1081",
-                    "Country": "Venezuela"
+                    "customerId": 33,
+                    "customerName": "GROSELLA-Restaurante",
+                    "contactName": "Manuel Pereira",
+                    "address": "5ª Ave. Los Palos Grandes",
+                    "city": "Caracas",
+                    "postalCode": "1081",
+                    "country": "Venezuela"
                 }, {
-                    "CustomerID": 89,
-                    "CustomerName": "White Clover Markets",
-                    "ContactName": "Karl Jablonski",
-                    "Address": "305 - 14th Ave. S. Suite 3B",
-                    "City": "Seattle",
-                    "PostalCode": "98128",
-                    "Country": "USA"
+                    "customerId": 89,
+                    "customerName": "White Clover Markets",
+                    "contactName": "Karl Jablonski",
+                    "address": "305 - 14th Ave. S. Suite 3B",
+                    "city": "Seattle",
+                    "postalCode": "98128",
+                    "country": "USA"
                 }];
                 expect(results).to.be.an('array').length(5).deep.equal(datas);
                 done();
@@ -354,11 +354,11 @@ describe('Test Select Api', function () {
             })
     });
 
-    it('select * from suppliers where PostalCode like - "43951%"', function (done) {
+    it('select * from suppliers where postalCode like - "43951%"', function (done) {
         con.select({
             from: 'Suppliers',
             where: {
-                PostalCode: {
+                postalCode: {
                     like: '43951%'
                 }
             }
@@ -380,12 +380,12 @@ describe('Test Select Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: null
+                country: null
             }
         }).
             catch(function (err) {
                 var error = {
-                    "message": "Null/undefined is not allowed in where. Column 'Country' has null",
+                    "message": "Null/undefined is not allowed in where. Column 'country' has null",
                     "type": "null_value_in_where"
                 };
                 expect(err).to.be.an('object').eql(error);

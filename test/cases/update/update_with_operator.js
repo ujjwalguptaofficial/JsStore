@@ -1,26 +1,26 @@
 describe('Test update with operator option', function () {
 
     it('update with operator - +', function (done) {
-        var Price;
+        var price;
         con.select({
             from: "Products",
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
-            Price = results[0].Price;
+            price = results[0].price;
         }).catch(function (err) {
             done(err);
         });
 
         con.update({ in: "Products",
             set: {
-                Price: {
+                price: {
                     '+': 5
                 }
             },
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(1);
@@ -31,10 +31,10 @@ describe('Test update with operator option', function () {
         con.select({
             from: "Products",
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
-            expect(results[0].Price).to.be.an('number').to.equal(Price + 5);
+            expect(results[0].price).to.be.an('number').to.equal(price + 5);
             done();
         }).catch(function (err) {
             done(err);
@@ -42,26 +42,26 @@ describe('Test update with operator option', function () {
     });
 
     it('update with operator - "-" ', function (done) {
-        var Price;
+        var price;
         con.select({
             from: "Products",
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
-            Price = results[0].Price;
+            price = results[0].price;
         }).catch(function (err) {
             done(err);
         });
 
         con.update({ in: "Products",
             set: {
-                Price: {
+                price: {
                     '-': 5
                 }
             },
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(1);
@@ -72,10 +72,10 @@ describe('Test update with operator option', function () {
         con.select({
             from: "Products",
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
-            expect(results[0].Price).to.be.an('number').to.equal(Price - 5);
+            expect(results[0].price).to.be.an('number').to.equal(price - 5);
             done();
         }).catch(function (err) {
             done(err);
@@ -83,25 +83,25 @@ describe('Test update with operator option', function () {
     });
 
     it('update with operator - *', function (done) {
-        var Price;
+        var price;
         con.select({
             from: "Products",
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
-            Price = results[0].Price;
+            price = results[0].price;
         }).catch(function (err) {
             done(err);
         });
         con.update({ in: "Products",
             set: {
-                Price: {
+                price: {
                     '*': 5
                 }
             },
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(1);
@@ -112,10 +112,10 @@ describe('Test update with operator option', function () {
         con.select({
             from: "Products",
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
-            expect(results[0].Price).to.be.an('number').to.equal(Price * 5);
+            expect(results[0].price).to.be.an('number').to.equal(price * 5);
             done();
         }).catch(function (err) {
             done(err);
@@ -123,25 +123,25 @@ describe('Test update with operator option', function () {
     });
 
     it('update with operator - *', function (done) {
-        var Price;
+        var price;
         con.select({
             from: "Products",
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
-            Price = results[0].Price;
+            price = results[0].price;
         }).catch(function (err) {
             done(err);
         });
         con.update({ in: "Products",
             set: {
-                Price: {
+                price: {
                     '/': 5
                 }
             },
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(1);
@@ -152,10 +152,10 @@ describe('Test update with operator option', function () {
         con.select({
             from: "Products",
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
-            expect(results[0].Price).to.be.an('number').to.equal(Price / 5);
+            expect(results[0].price).to.be.an('number').to.equal(price / 5);
             done();
         }).catch(function (err) {
             done(err);
@@ -167,21 +167,21 @@ describe('Test update with operator option', function () {
         con.select({
             from: "Products",
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
-            Name = results[0].ProductName;
+            Name = results[0].productName;
         }).catch(function (err) {
             done(err);
         });
         con.update({ in: "Products",
             set: {
-                ProductName: {
+                productName: {
                     '+': 'temp'
                 }
             },
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(1);
@@ -192,10 +192,10 @@ describe('Test update with operator option', function () {
         con.select({
             from: "Products",
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
-            expect(results[0].ProductName).to.be.an('string').to.equal(Name + 'temp');
+            expect(results[0].productName).to.be.an('string').to.equal(Name + 'temp');
             done();
         }).catch(function (err) {
             done(err);
@@ -205,18 +205,18 @@ describe('Test update with operator option', function () {
     it('update with wrong operator - #', function (done) {
         con.update({ in: "Products",
             set: {
-                ProductName: {
+                productName: {
                     '#': 'temp'
                 }
             },
             where: {
-                ProductID: 1
+                productId: 1
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(1);
         }).catch(function (err) {
             var error = {
-                "message": "Supplied value for column 'ProductName' have wrong data type",
+                "message": "Supplied value for column 'productName' have wrong data type",
                 "type": "wrong_data_type"
             };
             expect(err).to.be.an('object').eql(error);

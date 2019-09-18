@@ -5,23 +5,23 @@ var getDemoDbSchema = function () {
     var customers = {
         name: 'Customers',
         columns: {
-            CustomerID: { primaryKey: true, autoIncrement: true },
-            CustomerName: { notNull: true, dataType: DATA_TYPE.String },
-            ContactName: { notNull: true, dataType: DATA_TYPE.String },
-            Address: { notNull: true, dataType: 'string' },
-            City: { notNull: true, dataType: 'string' },
-            PostalCode: { dataType: 'string' },
-            Country: { notNull: true, dataType: 'string' },
-            Email: { dataType: 'string' }
+            customerId: { primaryKey: true, autoIncrement: true },
+            customerName: { notNull: true, dataType: DATA_TYPE.String },
+            contactName: { notNull: true, dataType: DATA_TYPE.String },
+            address: { notNull: true, dataType: 'string' },
+            city: { notNull: true, dataType: 'string' },
+            postalCode: { dataType: 'string' },
+            country: { notNull: true, dataType: 'string' },
+            email: { dataType: 'string' }
         }
     };
 
     var categories = {
         name: 'Categories',
         columns: {
-            CategoryID: { primaryKey: true, autoIncrement: true },
-            CategoryName: { notNull: true, dataType: 'string' },
-            Description: { notNull: true, dataType: 'string' }
+            categoryId: { primaryKey: true, autoIncrement: true },
+            categoryName: { notNull: true, dataType: 'string' },
+            description: { notNull: true, dataType: 'string' }
         }
     }
 
@@ -43,56 +43,56 @@ var getDemoDbSchema = function () {
     var orderDetails = {
         name: 'OrderDetails',
         columns: {
-            OrderDetailID: { primaryKey: true, autoIncrement: true },
-            OrderID: { notNull: true, dataType: 'number' },
-            ProductID: { notNull: true, dataType: 'number' },
-            Quantity: { notNull: true, dataType: 'number' },
+            orderDetailId: { primaryKey: true, autoIncrement: true },
+            orderId: { notNull: true, dataType: 'number' },
+            productId: { notNull: true, dataType: 'number' },
+            quantity: { notNull: true, dataType: 'number' },
         }
     }
 
     var orders = {
         name: 'Orders',
         columns: {
-            OrderID: { primaryKey: true },
-            CustomerID: { notNull: true },
-            EmployeeID: { notNull: true, dataType: 'number' },
-            OrderDate: { notNull: true, dataType: 'string' },
-            ShipperID: { notNull: true, dataType: 'number' }
+            orderId: { primaryKey: true },
+            customerId: { notNull: true },
+            employeeId: { notNull: true, dataType: 'number' },
+            orderDate: { notNull: true, dataType: 'string' },
+            shipperId: { notNull: true, dataType: 'number' }
         }
     }
 
     var products = {
         name: 'Products',
         columns: {
-            ProductID: { primaryKey: true, autoIncrement: true },
-            ProductName: { notNull: true, dataType: 'string' },
-            SupplierID: { notNull: true, dataType: 'number' },
-            CategoryID: { notNull: true, dataType: 'number' },
-            Unit: { notNull: true, dataType: 'string' },
-            Price: { notNull: true, dataType: 'number' },
+            productId: { primaryKey: true, autoIncrement: true },
+            productName: { notNull: true, dataType: 'string' },
+            supplierId: { notNull: true, dataType: 'number' },
+            categoryId: { notNull: true, dataType: 'number' },
+            unit: { notNull: true, dataType: 'string' },
+            price: { notNull: true, dataType: 'number' },
         }
     }
 
     var shippers = {
         name: 'Shippers',
         columns: {
-            ShipperID: { primaryKey: true, autoIncrement: true },
-            ShipperName: { notNull: true, dataType: 'string' },
-            Phone: { notNull: true, dataType: 'string' }
+            shipperId: { primaryKey: true, autoIncrement: true },
+            shipperName: { notNull: true, dataType: 'string' },
+            phone: { notNull: true, dataType: 'string' }
         }
     }
 
     var suppliers = {
         name: 'Suppliers',
         columns: {
-            SupplierID: { primaryKey: true, autoIncrement: true },
-            SupplierName: { notNull: true, dataType: 'string' },
-            ContactName: { notNull: true, dataType: 'string' },
-            Address: { notNull: true, dataType: 'string' },
-            City: { notNull: true, dataType: 'string' },
-            PostalCode: { notNull: true, dataType: 'string' },
-            Country: { notNull: true, dataType: 'string' },
-            Phone: { notNull: true, dataType: 'string' },
+            supplierId: { primaryKey: true, autoIncrement: true },
+            supplierName: { notNull: true, dataType: 'string' },
+            contactName: { notNull: true, dataType: 'string' },
+            address: { notNull: true, dataType: 'string' },
+            city: { notNull: true, dataType: 'string' },
+            postalCode: { notNull: true, dataType: 'string' },
+            country: { notNull: true, dataType: 'string' },
+            phone: { notNull: true, dataType: 'string' },
         }
     }
 

@@ -1,1 +1,1 @@
-[{"ShipperID":1,"ShipperName":"Speedy Express","Phone":"(503) 555-9831"},{"ShipperID":2,"ShipperName":"United Package","Phone":"(503) 555-3199"},{"ShipperID":3,"ShipperName":"Federal Shipping","Phone":"(503) 555-9931"}]
+[{"shipperId":1,"shipperName":"Speedy Express","phone":"(503) 555-9831"},{"shipperId":2,"shipperName":"United Package","phone":"(503) 555-3199"},{"shipperId":3,"shipperName":"Federal Shipping","phone":"(503) 555-9931"}]

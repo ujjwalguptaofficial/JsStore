@@ -1,10 +1,10 @@
 describe('Test remove complex case', function () {
     it('remove with multiple or', function (done) {
         var where_query = {
-                Country: 'Mexico',
+                country: 'Mexico',
                 or: {
-                    City: 'Madrid',
-                    Address: {
+                    city: 'Madrid',
+                    address: {
                         like: '%a%'
                     }
                 }
@@ -30,14 +30,14 @@ describe('Test remove complex case', function () {
         })
     });
 
-    it("sql - SELECT * FROM Customers WHERE Country='Mexico' and (City='London' or Address like '%a%')", function (done) {
+    it("sql - SELECT * FROM Customers WHERE country='Mexico' and (city='London' or address like '%a%')", function (done) {
         var where_query = [{
-                    Country: 'Mexico'
+                    country: 'Mexico'
                 },
                 {
-                    City: 'London',
+                    city: 'London',
                     or: {
-                        Address: {
+                        address: {
                             like: '%a%'
                         }
                     }
@@ -64,14 +64,14 @@ describe('Test remove complex case', function () {
         })
     });
 
-    it("sql - SELECT * FROM Customers WHERE Country='Mexico' or (City='London' and Address like '%a%')", function (done) {
+    it("sql - SELECT * FROM Customers WHERE country='Mexico' or (city='London' and address like '%a%')", function (done) {
         var where_query = [{
-                    Country: 'Mexico'
+                    country: 'Mexico'
                 },
                 {
                     or: {
-                        City: 'London',
-                        Address: {
+                        city: 'London',
+                        address: {
                             like: '%a%'
                         }
                     }
@@ -99,9 +99,9 @@ describe('Test remove complex case', function () {
     });
 
 
-    it("sql - DELETE FROM Customers WHERE Country regex /Mexico|Brazil/", function (done) {
+    it("sql - DELETE FROM Customers WHERE country regex /Mexico|Brazil/", function (done) {
         var from  = 'Customers'
-          , where = { Country: { regex: /Mexico|Brazil/ } }
+          , where = { country: { regex: /Mexico|Brazil/ } }
           , count ;
 
         con.select({from, where})

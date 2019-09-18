@@ -4,7 +4,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: 'Mexico'
+                country: 'Mexico'
             }
         }).then(function (results) {
             Count = results.length
@@ -15,7 +15,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Customers',
             where: {
-                Country: 'Mexico'
+                country: 'Mexico'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(Count);
@@ -30,7 +30,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: 'mexico'
+                country: 'mexico'
             }
         }).then(function (results) {
             Count = results.length;
@@ -41,7 +41,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Customers',
             where: {
-                Country: 'mexico'
+                country: 'mexico'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(Count);
@@ -57,7 +57,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: 'meXico'
+                country: 'meXico'
             }
         }).then(function (results) {
             Count = results.length;
@@ -69,7 +69,7 @@ describe('Test remove Api', function () {
             from: 'Customers',
             ignoreCase: true,
             where: {
-                Country: 'meXico'
+                country: 'meXico'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(Count);
@@ -85,9 +85,9 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: 'Mexico',
+                country: 'Mexico',
                 or: {
-                    City: 'Madrid'
+                    city: 'Madrid'
                 }
             }
         }).then(function (results) {
@@ -99,9 +99,9 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Customers',
             where: {
-                Country: 'Mexico',
+                country: 'Mexico',
                 or: {
-                    City: 'Madrid'
+                    city: 'Madrid'
                 }
             }
         }).then(function (results) {
@@ -118,7 +118,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: { in: ['Germany', 'France', 'UK']
+                country: { in: ['Germany', 'France', 'UK']
                 }
             }
         }).then(function (results) {
@@ -130,7 +130,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Customers',
             where: {
-                Country: { in: ['Germany', 'France', 'UK']
+                country: { in: ['Germany', 'France', 'UK']
                 }
             }
         }).then(function (results) {
@@ -146,7 +146,7 @@ describe('Test remove Api', function () {
         con.count({
             from: 'Customers',
             where: {
-                Country: {
+                country: {
                     '!=': 'Mexico'
                 }
             }
@@ -159,7 +159,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Customers',
             where: {
-                Country: {
+                country: {
                     '!=': 'Mexico'
                 }
             }
@@ -176,7 +176,7 @@ describe('Test remove Api', function () {
         con.count({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     '!=': 20
                 }
             }
@@ -189,7 +189,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     '!=': 20
                 }
             }
@@ -207,7 +207,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">": 20
                 }
             }
@@ -220,7 +220,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">": 20
                 }
             }
@@ -238,7 +238,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">=": 20
                 }
             }
@@ -251,7 +251,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     ">=": 20
                 }
             }
@@ -269,7 +269,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<": 20
                 }
             }
@@ -282,7 +282,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<": 20
                 }
             }
@@ -299,7 +299,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<=": 20
                 }
             }
@@ -312,7 +312,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "<=": 20
                 }
             }
@@ -329,7 +329,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "-": {
                         low: 10,
                         high: 20
@@ -345,7 +345,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Products',
             where: {
-                Price: {
+                price: {
                     "-": {
                         low: 10,
                         high: 20
@@ -365,7 +365,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                CustomerName: {
+                customerName: {
                     like: '%or%'
                 }
             }
@@ -378,7 +378,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Customers',
             where: {
-                CustomerName: {
+                customerName: {
                     like: '%or%'
                 }
             }
@@ -395,7 +395,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                CustomerName: {
+                customerName: {
                     like: '%or'
                 }
             }
@@ -404,7 +404,7 @@ describe('Test remove Api', function () {
             con.remove({
                 from: 'Customers',
                 where: {
-                    CustomerName: {
+                    customerName: {
                         like: '%or'
                     }
                 }
@@ -425,7 +425,7 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                CustomerName: {
+                customerName: {
                     like: 'or%'
                 }
             }
@@ -438,7 +438,7 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Customers',
             where: {
-                CustomerName: {
+                customerName: {
                     like: 'or%'
                 }
             }

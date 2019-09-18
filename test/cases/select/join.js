@@ -5,11 +5,11 @@ describe('Test join', function () {
             join: {
                 with: "Customers",
                 type: "inner",
-                on: "Orders.CustomerID=Customers.CustomerID",
+                on: "Orders.customerId=Customers.customerId",
                 as: {
-                    CustomerName: "name",
-                    ContactName: "cName",
-                    CustomerID: "cId"
+                    customerName: "name",
+                    contactName: "cName",
+                    customerId: "cId"
                 }
             }
         }).then(function (results) {
@@ -18,15 +18,15 @@ describe('Test join', function () {
             // console.log(firstValue);
             expect(firstValue).to.be.an('object').to.haveOwnProperty('name');
             expect(firstValue).to.be.an('object').to.haveOwnProperty('cName');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('OrderID');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('CustomerID');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('EmployeeID');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('orderId');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('customerId');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('employeeId');
             expect(firstValue).to.be.an('object').to.haveOwnProperty('cId');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('ShipperID');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('Address');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('City');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('PostalCode');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('Country');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('shipperId');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('address');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('city');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('postalCode');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('country');
             done();
         }).catch(function (err) {
             done(err);
@@ -39,11 +39,11 @@ describe('Test join', function () {
             join: {
                 with: "Orders",
                 type: "inner",
-                on: "Orders.CustomerID=Customers.CustomerID",
+                on: "Orders.customerId=Customers.customerId",
                 as: {
-                    CustomerName: "name",
-                    ContactName: "cName",
-                    CustomerID: "cId"
+                    customerName: "name",
+                    contactName: "cName",
+                    customerId: "cId"
                 }
             }
         }).then(function (results) {
@@ -60,7 +60,7 @@ describe('Test join', function () {
             join: {
                 with: "Customers",
                 type: "left",
-                on: "Orders.CustomerID=Customers.CustomerID"
+                on: "Orders.customerId=Customers.customerId"
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(196);
@@ -76,9 +76,9 @@ describe('Test join', function () {
             join: {
                 with: "Orders",
                 type: "left",
-                on: "Customers.CustomerID=Orders.CustomerID",
+                on: "Customers.customerId=Orders.customerId",
                 as: {
-                    OrderID: 'oid'
+                    orderId: 'oid'
                 }
             }
         }).then(function (results) {
@@ -93,10 +93,10 @@ describe('Test join', function () {
         con.update({
             in: "Orders",
             set: {
-                ShipperID: 1234567890
+                shipperId: 1234567890
             },
             where: {
-                OrderID: 10248
+                orderId: 10248
             }
         });
 
@@ -104,13 +104,13 @@ describe('Test join', function () {
             from: "Orders",
             join: {
                 with: "Shippers",
-                on: "Shippers.ShipperID = Orders.ShipperID",
+                on: "Shippers.shipperId = Orders.shipperId",
                 type: "left"
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(196);
-            expect(results[0]).to.be.an('object').to.haveOwnProperty('ShipperName').equal(null);
-            expect(results[1]).to.be.an('object').to.haveOwnProperty('ShipperName').equal("Speedy Express");
+            expect(results[0]).to.be.an('object').to.haveOwnProperty('shipperName').equal(null);
+            expect(results[1]).to.be.an('object').to.haveOwnProperty('shipperName').equal("Speedy Express");
             done();
         }).catch(function (err) {
             done(err);
@@ -123,10 +123,10 @@ describe('Test join', function () {
         con.update({
             in: "Orders",
             set: {
-                ShipperID: 1234567890
+                shipperId: 1234567890
             },
             where: {
-                OrderID: 10249
+                orderId: 10249
             }
         });
 
@@ -134,12 +134,12 @@ describe('Test join', function () {
             from: "Orders",
             join: {
                 with: "Shippers",
-                on: "Shippers.ShipperID = Orders.ShipperID",
+                on: "Shippers.shipperId = Orders.shipperId",
                 type: "left",
                 as: {
-                    ShipperID: "shipperId",
-                    ShipperName: "shipperName",
-                    Phone: "phone"
+                    shipperId: "shipperId",
+                    shipperName: "shipperName",
+                    phone: "phone"
                 }
             }
         }).then(function (results) {
@@ -157,20 +157,20 @@ describe('Test join', function () {
         con.update({
             in: "Orders",
             set: {
-                ShipperID: 1
+                shipperId: 1
             },
             where: {
-                OrderID: 10249
+                orderId: 10249
             }
         });
 
         con.update({
             in: "Orders",
             set: {
-                ShipperID: 3
+                shipperId: 3
             },
             where: {
-                OrderID: 10248
+                orderId: 10248
             }
         }).then(function () {
             done();
@@ -186,7 +186,7 @@ describe('Test join', function () {
             join: {
                 with: "Orders",
                 type: "left",
-                on: "Orders.CustomerID=Customers.CustomerID"
+                on: "Orders.customerId=Customers.customerId"
             }
         }).then(function (results) {
             // console.table(results);
@@ -203,18 +203,18 @@ describe('Test join', function () {
             join: [{
                 with: "Customers",
                 type: "inner",
-                on: "Orders.CustomerID=Customers.CustomerID"
+                on: "Orders.customerId=Customers.customerId"
             }, {
                 with: "Shippers",
                 type: "inner",
-                on: "Orders.ShipperID=Shippers.ShipperID"
+                on: "Orders.shipperId=Shippers.shipperId"
             }]
         }).then(function (results) {
             expect(results).to.be.an('array').length(196);
             var result = results[0];
-            expect(result.CustomerID).to.be.an('number');
-            expect(result.OrderID).to.be.an('number');
-            expect(result.ShipperID).to.be.an('number');
+            expect(result.customerId).to.be.an('number');
+            expect(result.orderId).to.be.an('number');
+            expect(result.shipperId).to.be.an('number');
             done();
         }).catch(function (err) {
             done(err);
@@ -227,15 +227,15 @@ describe('Test join', function () {
             join: {
                 with: "Customers",
                 type: "inner",
-                on: "Customers.City=Customers.City",
+                on: "Customers.city=Customers.city",
                 as: {
-                    CustomerName: "name",
-                    ContactName: "cName",
-                    CustomerID: "cId",
-                    Address: "address",
-                    PostalCode: "postalCode",
-                    Country: "country",
-                    Email: "email"
+                    customerName: "name",
+                    contactName: "cName",
+                    customerId: "cId",
+                    address: "address",
+                    postalCode: "postalCode",
+                    country: "country",
+                    email: "email"
                 }
             }
         }).then(function (results) {
@@ -252,18 +252,18 @@ describe('Test join', function () {
             join: {
                 with: "Customers",
                 type: "inner",
-                on: "Customers.City=Customers.City",
+                on: "Customers.city=Customers.city",
                 as: {
-                    CustomerName: "name",
-                    ContactName: "cName",
-                    CustomerID: "cId",
-                    Address: "address",
-                    PostalCode: "postalCode",
-                    Country: "country",
-                    Email: "email"
+                    customerName: "name",
+                    contactName: "cName",
+                    customerId: "cId",
+                    address: "address",
+                    postalCode: "postalCode",
+                    country: "country",
+                    email: "email"
                 },
                 where: {
-                    CustomerID: { '<': 90 }
+                    customerId: { '<': 90 }
                 }
             }
         }).then(function (results) {
@@ -280,7 +280,7 @@ describe('Test join', function () {
             join: {
                 with: "Orders",
                 type: "inner",
-                on: "Orders.CustomerID=Customers.CustomerID"
+                on: "Orders.customerId=Customers.customerId"
             }
         }).catch(function (err) {
             var error = { "message": "Table 'invalid_table' does not exist", "type": "table_not_exist" };
@@ -295,7 +295,7 @@ describe('Test join', function () {
             join: {
                 with: "invalid_table",
                 type: "inner",
-                on: "Orders.CustomerID=Customers.CustomerID"
+                on: "Orders.customerId=Customers.customerId"
             }
         }).then(function (result) {
             done(result);
@@ -320,9 +320,9 @@ describe('Test join', function () {
             join: {
                 with: "Orders",
                 type: "inner",
-                on: "Orders.CustomerId=Customers.CustomerID",
+                on: "Orders.CustomerId=Customers.customerId",
                 as: {
-                    CustomerID: 'cId'
+                    customerId: 'cId'
                 }
             }
         }).then(function (result) {
@@ -346,9 +346,9 @@ describe('Test join', function () {
             join: {
                 with: "Orders",
                 type: "inner",
-                on: "Orders.CustomerID=Customers.CustomerId",
+                on: "Orders.customerId=Customers.CustomerId",
                 as: {
-                    CustomerID: 'cId'
+                    customerId: 'cId'
                 }
             }
         }).then(function (result) {
@@ -370,12 +370,12 @@ describe('Test join', function () {
         con.select({
             from: "Customers",
             where: {
-                CustomerID: 500000
+                customerId: 500000
             },
             join: {
                 with: "Orders",
                 type: "left",
-                on: "Customers.CustomerID=Orders.CustomerID"
+                on: "Customers.customerId=Orders.customerId"
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(0);
@@ -389,8 +389,8 @@ describe('Test join', function () {
         con.select({
             from: "Customers",
             join: [
-                { with: "Orders", type: "left", on: "Customers.CustomerID=Orders.CustomerID" },
-                { with: "Employees", type: "left", on: "Orders.EmployeeID=Employees.employeeId" }
+                { with: "Orders", type: "left", on: "Customers.customerId=Orders.customerId" },
+                { with: "Employees", type: "left", on: "Orders.employeeId=Employees.employeeId" }
             ]
         }).then(function (results) {
             expect(results).to.be.an('array').length(215);
@@ -403,10 +403,10 @@ describe('Test join', function () {
             from: "Orders",
             join: {
                 with: "Shippers",
-                on: "Shippers.ShipperID = Orders.ShipperID",
+                on: "Shippers.shipperId = Orders.shipperId",
                 as: {
-                    ShipperID: "shipperId",
-                    ShipperName: "shipperName"
+                    shipperId: "shipperId",
+                    shipperName: "shipperName"
                 }
             },
             limit: 5
@@ -425,10 +425,10 @@ describe('Test join', function () {
         con.update({
             in: "Shippers",
             set: {
-                Phone: "(503) 555-9931"
+                phone: "(503) 555-9931"
             },
             where: {
-                ShipperID: {
+                shipperId: {
                     '!=': 6
                 }
             }
@@ -437,14 +437,14 @@ describe('Test join', function () {
             from: "Suppliers",
             join: [{
                 with: "Shippers",
-                on: "Shippers.Phone = Suppliers.Phone"
+                on: "Shippers.phone = Suppliers.phone"
             }]
         }).then(function (results1) {
             con.select({
                 from: "Shippers",
                 join: [{
                     with: "Suppliers",
-                    on: "Shippers.Phone = Suppliers.Phone"
+                    on: "Shippers.phone = Suppliers.phone"
                 }]
             }).then(function (results2) {
                 results2.forEach(function (result, i) {

@@ -94,7 +94,7 @@ module.exports = function (config) {
             outputFile: 'report/units.html',
 
             // Optional
-            pageTitle: 'Unit Tests',
+            pageTitle: 'unit Tests',
             subPageTitle: 'A sample project description',
             groupSuites: true,
             useCompactStyle: true,

@@ -5,11 +5,11 @@ describe("join with group by", function () {
             join: {
                 with: "Customers",
                 type: "inner",
-                on: "Orders.CustomerID=Customers.CustomerID",
+                on: "Orders.customerId=Customers.customerId",
                 as: {
-                    CustomerName: "name",
-                    ContactName: "cName",
-                    CustomerID: "cId"
+                    customerName: "name",
+                    contactName: "cName",
+                    customerId: "cId"
                 }
             },
             groupBy:["cId"]
@@ -19,15 +19,15 @@ describe("join with group by", function () {
             // console.log(firstValue);
             expect(firstValue).to.be.an('object').to.haveOwnProperty('name');
             expect(firstValue).to.be.an('object').to.haveOwnProperty('cName');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('OrderID');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('CustomerID');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('EmployeeID');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('orderId');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('customerId');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('employeeId');
             expect(firstValue).to.be.an('object').to.haveOwnProperty('cId');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('ShipperID');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('Address');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('City');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('PostalCode');
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('Country');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('shipperId');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('address');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('city');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('postalCode');
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('country');
             done();
         }).catch(function (err) {
             done(err);

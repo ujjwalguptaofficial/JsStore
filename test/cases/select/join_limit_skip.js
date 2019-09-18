@@ -5,18 +5,18 @@ describe("join with limit & skip", function () {
             join: {
                 with: "Customers",
                 type: "inner",
-                on: "Orders.CustomerID=Customers.CustomerID",
+                on: "Orders.customerId=Customers.customerId",
                 as: {
-                    CustomerName: "name",
-                    ContactName: "cName",
-                    CustomerID: "cId"
+                    customerName: "name",
+                    contactName: "cName",
+                    customerId: "cId"
                 }
             },
             limit: 10
         }).then(function (results) {
             expect(results).to.be.an('array').length(10);
             var firstValue = results[0];
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('OrderID').equal(10248);
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('orderId').equal(10248);
             done();
         }).catch(function (err) {
             done(err);
@@ -29,18 +29,18 @@ describe("join with limit & skip", function () {
             join: {
                 with: "Customers",
                 type: "inner",
-                on: "Orders.CustomerID=Customers.CustomerID",
+                on: "Orders.customerId=Customers.customerId",
                 as: {
-                    CustomerName: "name",
-                    ContactName: "cName",
-                    CustomerID: "cId"
+                    customerName: "name",
+                    contactName: "cName",
+                    customerId: "cId"
                 }
             },
             skip: 10
         }).then(function (results) {
             expect(results).to.be.an('array').length(186);
             var firstValue = results[0];
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('OrderID').equal(10258);
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('orderId').equal(10258);
             done();
         }).catch(function (err) {
             done(err);
@@ -53,11 +53,11 @@ describe("join with limit & skip", function () {
             join: {
                 with: "Customers",
                 type: "inner",
-                on: "Orders.CustomerID=Customers.CustomerID",
+                on: "Orders.customerId=Customers.customerId",
                 as: {
-                    CustomerName: "name",
-                    ContactName: "cName",
-                    CustomerID: "cId"
+                    customerName: "name",
+                    contactName: "cName",
+                    customerId: "cId"
                 }
             },
             limit: 10,
@@ -65,7 +65,7 @@ describe("join with limit & skip", function () {
         }).then(function (results) {
             expect(results).to.be.an('array').length(10);
             var firstValue = results[0];
-            expect(firstValue).to.be.an('object').to.haveOwnProperty('OrderID').equal(10253);
+            expect(firstValue).to.be.an('object').to.haveOwnProperty('orderId').equal(10253);
             done();
         }).catch(function (err) {
             done(err);

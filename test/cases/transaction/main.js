@@ -76,12 +76,12 @@ describe('Test transaction', function () {
             tables: ['Customers'],
             data: {
                 insertValues: [{
-                    CustomerName: 'ujjwalfev gupta',
-                    ContactName: 'ujjwadcvl',
-                    Address: 'bhubaneswdfar odisha',
-                    City: 'bhubaneswar',
-                    PostalCode: '12345',
-                    Country: 'BangKok'
+                    customerName: 'ujjwalfev gupta',
+                    contactName: 'ujjwadcvl',
+                    address: 'bhubaneswdfar odisha',
+                    city: 'bhubaneswar',
+                    postalCode: '12345',
+                    country: 'BangKok'
                 }]
             },
             logic: function (ctx) {
@@ -110,7 +110,7 @@ describe('Test transaction', function () {
             var insertedcustomer = results.insertedcustomer[0];
             var customers = results.customers;
             expect(results.countNewCustomer).to.be.an('number').equal(customers.length + 1);
-            expect(insertedcustomer.CustomerID).to.be.an('number').greaterThan(customers[customers.length - 1].CustomerID);
+            expect(insertedcustomer.customerId).to.be.an('number').greaterThan(customers[customers.length - 1].customerId);
             done();
         }).catch(function (err) {
             done(err);
@@ -122,12 +122,12 @@ describe('Test transaction', function () {
             tables: ['Customers'],
             data: {
                 updateValue: {
-                    CustomerName: 'ujjwalfev gupta',
-                    ContactName: 'ujjwadcvl',
-                    Address: 'bhubaneswdfar odisha',
-                    City: 'bhubaneswar',
-                    PostalCode: '12345',
-                    Country: 'BangKok'
+                    customerName: 'ujjwalfev gupta',
+                    contactName: 'ujjwadcvl',
+                    address: 'bhubaneswdfar odisha',
+                    city: 'bhubaneswar',
+                    postalCode: '12345',
+                    country: 'BangKok'
                 }
             },
             logic: function (ctx) {
@@ -136,7 +136,7 @@ describe('Test transaction', function () {
                     in: 'Customers',
                     set: ctx.data.updateValue,
                     where: {
-                        CustomerID: 5
+                        customerId: 5
                     }
                 }).then(function (result) {
                     setResult('updated', result)

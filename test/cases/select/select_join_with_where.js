@@ -6,10 +6,10 @@ describe('Test join', function () {
             join: {
                 with: "Orders",
                 type: "inner",
-                on: "Orders.CustomerID=Customers.CustomerID"
+                on: "Orders.customerId=Customers.customerId"
             },
             where: {
-                CustomerID: { '<': 90 }
+                customerId: { '<': 90 }
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(194);
@@ -25,13 +25,13 @@ describe('Test join', function () {
             join: {
                 with: "Orders",
                 type: "inner",
-                on: "Orders.CustomerID=Customers.CustomerID",
+                on: "Orders.customerId=Customers.customerId",
                 where:{
-                    CustomerID: { '<': 80 }
+                    customerId: { '<': 80 }
                 }
             },
             where: {
-                CustomerID: { '<': 90 }
+                customerId: { '<': 90 }
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(167);
