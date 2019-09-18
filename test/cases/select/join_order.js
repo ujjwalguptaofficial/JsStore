@@ -175,12 +175,12 @@ describe('select join order test', function () {
         con.select({
             from: "Orders",
             order: {
-                by: 'Orders.CustomerID',
+                by: 'Orders.customerId',
                 type: "desc"
             },
             join: [{
                 with: "Shippers",
-                on: "Shippers.ShipperID = Orders.ShipperID"
+                on: "Shippers.shipperId = Orders.shipperId"
             }]
         }).then(function () {
             done();

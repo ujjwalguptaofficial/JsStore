@@ -3,7 +3,7 @@ describe("Regex", function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: {
+                country: {
                     regex: /mexico|brazil/i
                 }
             }
@@ -19,8 +19,8 @@ describe("Regex", function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: { regex: /mexico|brazil/i },
-                City: { regex: /.ampinas/ }
+                country: { regex: /mexico|brazil/i },
+                city: { regex: /.ampinas/ }
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(1);
@@ -34,7 +34,7 @@ describe("Regex", function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: {
+                country: {
                     regex: /mexico|brazil/i
                 }
             },
@@ -51,7 +51,7 @@ describe("Regex", function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: {
+                country: {
                     regex: /mexico|brazil/i
                 }
             },
@@ -68,7 +68,7 @@ describe("Regex", function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: {
+                country: {
                     regex: /mexico|brazil/i
                 }
             },
@@ -87,9 +87,9 @@ describe("Regex", function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: { regex: /mexico|brazil/i },
-                City: { regex: /.ampinas|.*Paulo/ },
-                ContactName: { like: "Lúcia%" }
+                country: { regex: /mexico|brazil/i },
+                city: { regex: /.ampinas|.*Paulo/ },
+                contactName: { like: "Lúcia%" }
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(1);

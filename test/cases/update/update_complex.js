@@ -117,7 +117,7 @@ describe('Test update complex case', function () {
             from: 'Customers',
             ignoreCase: true,
             where: [{
-                City: 'bHuBaneSwar'
+                city: 'bHuBaneSwar'
             }]
         }).then(function (results) {
             count = results;
@@ -129,11 +129,11 @@ describe('Test update complex case', function () {
         con.update({ in: "Customers",
             ignoreCase: true,
             set: {
-                ContactName: 'Ujjwal',
-                City: 'bhubaneswar'
+                contactName: 'Ujjwal',
+                city: 'bhubaneswar'
             },
             where: [{
-                City: 'bHuBaneSwar'
+                city: 'bHuBaneSwar'
             }]
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(count);

@@ -3,10 +3,10 @@ describe('Test count complex case', function () {
         con.count({
             from: 'Customers',
             where: {
-                Country: 'Mexico',
+                country: 'Mexico',
                 or: {
-                    City: 'Madrid',
-                    Address: {
+                    city: 'Madrid',
+                    address: {
                         like: '%a%'
                     }
                 }
@@ -21,16 +21,16 @@ describe('Test count complex case', function () {
             })
     });
 
-    it("sql - SELECT * FROM Customers WHERE Country='Mexico' and (City='London' or Address like '%a%')", function (done) {
+    it("sql - SELECT * FROM Customers WHERE country='Mexico' and (city='London' or address like '%a%')", function (done) {
         con.count({
             from: 'Customers',
             where: [{
-                Country: 'Mexico'
+                country: 'Mexico'
             },
             {
-                City: 'London',
+                city: 'London',
                 or: {
-                    Address: {
+                    address: {
                         like: '%a%'
                     }
                 }
@@ -46,16 +46,16 @@ describe('Test count complex case', function () {
             })
     });
 
-    it("sql - SELECT * FROM Customers WHERE Country='Mexico' or (City='London' and Address like '%a%')", function (done) {
+    it("sql - SELECT * FROM Customers WHERE country='Mexico' or (city='London' and address like '%a%')", function (done) {
         con.count({
             from: 'Customers',
             where: [{
-                Country: 'Mexico'
+                country: 'Mexico'
             },
             {
                 or: {
-                    City: 'London',
-                    Address: {
+                    city: 'London',
+                    address: {
                         like: '%a%'
                     }
                 }
@@ -75,8 +75,8 @@ describe('Test count complex case', function () {
         con.count({
             from: 'Customers',
             where: {
-                // Country: { regex: /(mexico|brazil)/i },
-                City: { regex: /.ampinas/ }
+                // country: { regex: /(mexico|brazil)/i },
+                city: { regex: /.ampinas/ }
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(1);
@@ -92,11 +92,11 @@ describe('Test count complex case', function () {
             join: {
                 with: "Customers",
                 type: "inner",
-                on: "Orders.CustomerID=Customers.CustomerID",
+                on: "Orders.customerId=Customers.customerId",
                 as: {
-                    CustomerName: "name",
-                    ContactName: "cName",
-                    CustomerID: "cId"
+                    customerName: "name",
+                    contactName: "cName",
+                    customerId: "cId"
                 }
             }
         }).then(function (results) {

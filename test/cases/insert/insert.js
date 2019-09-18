@@ -35,7 +35,7 @@ describe('Test insert', function () {
     it('insert customers', function (done) {
         con.insert({
             into: 'Customers',
-            values: [{ "CustomerID": 93, "CustomerName": "ujjwal gupta", "ContactName": "ujjwal", "Address": "bhubaneswar odisha", "City": "bhubaneswar", "PostalCode": "12345", "Country": "India" }]
+            values: [{ "customerId": 93, "customerName": "ujjwal gupta", "contactName": "ujjwal", "address": "bhubaneswar odisha", "city": "bhubaneswar", "postalCode": "12345", "country": "India" }]
         }).catch(function (err) {
             var error = { "message": "Key already exists in the object store.", "type": "ConstraintError" };
             expect(err).to.be.an('object').to.haveOwnProperty('type').equal('ConstraintError')
@@ -47,18 +47,18 @@ describe('Test insert', function () {
         con.select({
             from: 'Customers',
             where: {
-                CustomerID: 91
+                customerId: 91
             }
         }).then(function (customers) {
-            expect(customers[0]).to.haveOwnProperty('CustomerName').equal('Wolski');
+            expect(customers[0]).to.haveOwnProperty('customerName').equal('Wolski');
             con.insert({
                 into: 'Customers',
                 upsert: true,
                 return: true,
-                values: [{ "CustomerID": 91, "CustomerName": "Jon Snow", "ContactName": "Zbyszek", "Address": "ul. Filtrowa 68", "City": "Walla", "PostalCode": "01-012", "Country": "Poland" }]
+                values: [{ "customerId": 91, "customerName": "Jon Snow", "contactName": "Zbyszek", "address": "ul. Filtrowa 68", "city": "Walla", "postalCode": "01-012", "country": "Poland" }]
             }).then(function (results) {
                 expect(results).to.be.an('array').length(1);
-                expect(results[0]).to.haveOwnProperty('CustomerName').equal('Jon Snow');
+                expect(results[0]).to.haveOwnProperty('customerName').equal('Jon Snow');
                 done();
             }).catch(function (err) {
                 done(err);
@@ -132,11 +132,11 @@ describe('Test insert', function () {
             con.insert({
                 into: 'Orders',
                 values: [{
-                    OrderID: 10248,
-                    CustomerID: 90,
-                    EmployeeID: 5,
-                    OrderDate: "2019-04-05T02:48:32.955Z",
-                    ShipperID: 3
+                    orderId: 10248,
+                    customerId: 90,
+                    employeeId: 5,
+                    orderDate: "2019-04-05T02:48:32.955Z",
+                    shipperId: 3
                 }]
             }).catch(function (err) {
                 var error = {
@@ -218,27 +218,27 @@ describe('Test insert', function () {
         $.getJSON("test/static/Suppliers.json", function (results) {
             var values = [{
                 SupplierName: "Exotic Liquid",
-                ContactName: "Charlotte Cooper",
-                Address: "49 Gilbert St.",
-                City: "Londona",
-                PostalCode: "43951-1",
-                Country: "UK",
+                contactName: "Charlotte Cooper",
+                address: "49 Gilbert St.",
+                city: "Londona",
+                postalCode: "43951-1",
+                country: "UK",
                 Phone: "12345"
             }, {
                 SupplierName: "Exotsic Liquid",
-                ContactName: "Charlotte Cooper",
-                Address: "49 Gilbert St.",
-                City: "Londona",
-                PostalCode: "43951-1",
-                Country: "UK",
+                contactName: "Charlotte Cooper",
+                address: "49 Gilbert St.",
+                city: "Londona",
+                postalCode: "43951-1",
+                country: "UK",
                 Phone: "12345"
             }, {
                 SupplierName: "Exotsic Liqduid",
-                ContactName: "Charlotte Cooper",
-                Address: "49 Gilbert St.",
-                City: "Londona",
-                PostalCode: "43951-1",
-                Country: "UK",
+                contactName: "Charlotte Cooper",
+                address: "49 Gilbert St.",
+                city: "Londona",
+                postalCode: "43951-1",
+                country: "UK",
                 Phone: "12345"
             }];
             con.insert({
@@ -278,7 +278,7 @@ describe('Test insert', function () {
         }).catch(function (err) {
             console.log(err);
             var error = {
-                "message": "Null value is not allowed for column 'CustomerName'",
+                "message": "Null value is not allowed for column 'customerName'",
                 "type": "null_value"
             };
             expect(err).to.be.an('object').eql(error);
@@ -356,7 +356,7 @@ describe('Test insert', function () {
         var value = {
             ShipperName: 'dsfgb',
             Phone: '91234',
-            Address: 'ewrtgb'
+            address: 'ewrtgb'
         }
         con.insert({
             into: 'Shippers',
@@ -365,7 +365,7 @@ describe('Test insert', function () {
         }).
             then(function (results) {
                 var returned_value = results[0];
-                value['ShipperID'] = returned_value.ShipperID;
+                value['shipperId'] = returned_value.shipperId;
                 expect(returned_value).to.be.an('object').eql(value);
                 done();
             }).
@@ -376,13 +376,13 @@ describe('Test insert', function () {
 
     it('EnableSearch column test', function (done) {
         var value = {
-            CustomerName: "dfb",
-            ContactName: "Anders",
-            Address: 'ewrgt',
-            City: "1123",
-            PostalCode: "frfd",
-            Country: 'fesgt',
-            Email: 1234
+            customerName: "dfb",
+            contactName: "Anders",
+            address: 'ewrgt',
+            city: "1123",
+            postalCode: "frfd",
+            country: 'fesgt',
+            email: 1234
         }
         con.insert({
             into: 'Customers',
@@ -394,7 +394,7 @@ describe('Test insert', function () {
             }).
             catch(function (err) {
                 var error = {
-                    "message": "Supplied value for column 'Email' have wrong data type",
+                    "message": "Supplied value for column 'email' have wrong data type",
                     "type": "wrong_data_type"
                 };
                 expect(err).to.be.an('object').eql(error);

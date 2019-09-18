@@ -98,12 +98,12 @@ describe('Transaction - error test', function () {
             tables: ['Customers'],
             data: {
                 insertValues: [{
-                    CustomerName: 'ujjwalfev gupta',
-                    ContactName: 'ujjwadcvl',
-                    Address: 'bhubaneswdfar odisha',
-                    City: 'bhubaneswar',
-                    PostalCode: '12345',
-                    Country: 'BangKok'
+                    customerName: 'ujjwalfev gupta',
+                    contactName: 'ujjwadcvl',
+                    address: 'bhubaneswdfar odisha',
+                    city: 'bhubaneswar',
+                    postalCode: '12345',
+                    country: 'BangKok'
                 }]
             },
             logic: function (data) {
@@ -145,12 +145,12 @@ describe('Transaction - error test', function () {
             tables: ['Customers'],
             data: {
                 updateValue: {
-                    CustomerName: 'ujjwalfev gupta',
-                    ContactName: 'ujjwadcvl',
-                    Address: 'bhubaneswdfar odisha',
-                    City: 'bhubaneswar',
-                    PostalCode: '12345',
-                    Country: 'BangKok'
+                    customerName: 'ujjwalfev gupta',
+                    contactName: 'ujjwadcvl',
+                    address: 'bhubaneswdfar odisha',
+                    city: 'bhubaneswar',
+                    postalCode: '12345',
+                    country: 'BangKok'
                 }
             },
             logic: function (ctx) {
@@ -159,7 +159,7 @@ describe('Transaction - error test', function () {
                     in: 'Customers',
                     set: ctx.data.updateValue,
                     where: {
-                        CustomerID: 5
+                        customerId: 5
                     }
                 }).then(function (result) {
                     abort();
@@ -172,7 +172,7 @@ describe('Transaction - error test', function () {
         con.select({
             from: 'Customers',
             where: {
-                CustomerID: 5
+                customerId: 5
             }
         }).then(function (results) {
             customer = results[0];
@@ -185,7 +185,7 @@ describe('Transaction - error test', function () {
         con.select({
             from: 'Customers',
             where: {
-                CustomerID: 5
+                customerId: 5
             }
         }).then(function (results) {
             expect(results).to.be.an('array');

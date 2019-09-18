@@ -5,14 +5,14 @@ var getDemoDbSchema = function () {
     var customers = {
         name: 'Customers',
         columns: {
-            CustomerID: { primaryKey: true, autoIncrement: true },
-            CustomerName: { notNull: true, dataType: DATA_TYPE.String },
-            ContactName: { notNull: true, dataType: DATA_TYPE.String },
-            Address: { notNull: true, dataType: 'string' },
-            City: { notNull: true, dataType: 'string' },
-            PostalCode: { dataType: 'string' },
-            Country: { notNull: true, dataType: 'string' },
-            Email: { dataType: 'string' }
+            customerId: { primaryKey: true, autoIncrement: true },
+            customerName: { notNull: true, dataType: DATA_TYPE.String },
+            contactName: { notNull: true, dataType: DATA_TYPE.String },
+            address: { notNull: true, dataType: 'string' },
+            city: { notNull: true, dataType: 'string' },
+            postalCode: { dataType: 'string' },
+            country: { notNull: true, dataType: 'string' },
+            email: { dataType: 'string' }
         }
     };
 
@@ -44,7 +44,7 @@ var getDemoDbSchema = function () {
         name: 'OrderDetails',
         columns: {
             OrderDetailID: { primaryKey: true, autoIncrement: true },
-            OrderID: { notNull: true, dataType: 'number' },
+            orderId: { notNull: true, dataType: 'number' },
             ProductID: { notNull: true, dataType: 'number' },
             Quantity: { notNull: true, dataType: 'number' },
         }
@@ -53,11 +53,11 @@ var getDemoDbSchema = function () {
     var orders = {
         name: 'Orders',
         columns: {
-            OrderID: { primaryKey: true },
-            CustomerID: { notNull: true },
-            EmployeeID: { notNull: true, dataType: 'number' },
-            OrderDate: { notNull: true, dataType: 'string' },
-            ShipperID: { notNull: true, dataType: 'number' }
+            orderId: { primaryKey: true },
+            customerId: { notNull: true },
+            employeeId: { notNull: true, dataType: 'number' },
+            orderDate: { notNull: true, dataType: 'string' },
+            shipperId: { notNull: true, dataType: 'number' }
         }
     }
 
@@ -76,7 +76,7 @@ var getDemoDbSchema = function () {
     var shippers = {
         name: 'Shippers',
         columns: {
-            ShipperID: { primaryKey: true, autoIncrement: true },
+            shipperId: { primaryKey: true, autoIncrement: true },
             ShipperName: { notNull: true, dataType: 'string' },
             Phone: { notNull: true, dataType: 'string' }
         }
@@ -87,11 +87,11 @@ var getDemoDbSchema = function () {
         columns: {
             SupplierID: { primaryKey: true, autoIncrement: true },
             SupplierName: { notNull: true, dataType: 'string' },
-            ContactName: { notNull: true, dataType: 'string' },
-            Address: { notNull: true, dataType: 'string' },
-            City: { notNull: true, dataType: 'string' },
-            PostalCode: { notNull: true, dataType: 'string' },
-            Country: { notNull: true, dataType: 'string' },
+            contactName: { notNull: true, dataType: 'string' },
+            address: { notNull: true, dataType: 'string' },
+            city: { notNull: true, dataType: 'string' },
+            postalCode: { notNull: true, dataType: 'string' },
+            country: { notNull: true, dataType: 'string' },
             Phone: { notNull: true, dataType: 'string' },
         }
     }

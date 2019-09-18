@@ -3,7 +3,7 @@ describe('Test operator', function () {
         con.select({
             from: 'Customers',
             where: {
-                Country: {
+                country: {
                     '!=': 'Mexico'
                 }
             }

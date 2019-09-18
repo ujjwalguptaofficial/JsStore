@@ -14,7 +14,7 @@ describe('Test count Api', function () {
         con.count({
             from: 'Customers',
             where: {
-                Country: 'Mexico'
+                country: 'Mexico'
             }
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(5);
@@ -28,7 +28,7 @@ describe('Test count Api', function () {
         con.count({
             from: 'Customers',
             where: {
-                Country: 'mexico'
+                country: 'mexico'
             }
         }).
             then(function (results) {
@@ -45,7 +45,7 @@ describe('Test count Api', function () {
             from: 'Customers',
             ignoreCase: true,
             where: {
-                Country: 'meXico'
+                country: 'meXico'
             }
         }).
             then(function (results) {
@@ -61,9 +61,9 @@ describe('Test count Api', function () {
         con.count({
             from: 'Customers',
             where: {
-                Country: 'Mexico',
+                country: 'Mexico',
                 or: {
-                    City: 'Madrid'
+                    city: 'Madrid'
                 }
             }
         }).
@@ -80,7 +80,7 @@ describe('Test count Api', function () {
         con.count({
             from: 'Customers',
             where: {
-                Country: {
+                country: {
                     in: ['Germany', 'France', 'UK']
                 }
             }
@@ -170,7 +170,7 @@ describe('Test count Api', function () {
         con.count({
             from: 'Customers',
             where: {
-                Country: {
+                country: {
                     '!=': 'Mexico'
                 }
             }
@@ -227,7 +227,7 @@ describe('Test count Api', function () {
         con.count({
             from: 'Customers',
             where: {
-                CustomerName: {
+                customerName: {
                     like: '%or%'
                 }
             }
@@ -245,7 +245,7 @@ describe('Test count Api', function () {
         con.count({
             from: 'Customers',
             where: {
-                CustomerName: {
+                customerName: {
                     like: 'o%'
                 }
             }
@@ -263,7 +263,7 @@ describe('Test count Api', function () {
         con.count({
             from: 'Customers',
             where: {
-                CustomerName: {
+                customerName: {
                     like: '%o'
                 }
             }

@@ -21,14 +21,14 @@ describe('Test Select with order', function () {
             from: 'Customers',
             limit: 10,
             order: {
-                by: 'Country'
+                by: 'country'
             }
         }).then(function (results) {
             var countries = ["Argentina", "Argentina", "Argentina", "Austria", "Austria",
                 "Belgium", "Belgium", "Brazil", "Brazil", "Brazil"];
             expect(results).to.be.an('array').length(10);
             results.forEach(function (result, i) {
-                expect(result.Country).to.be.equal(countries[i]);
+                expect(result.country).to.be.equal(countries[i]);
             });
             done();
         }).catch(function (err) {
