@@ -21,9 +21,6 @@ export abstract class Base extends BaseHelper {
     skipRecord;
     limitRecord;
 
-    // abstract executeRegexLogic(column: string, exp: RegExp): void;
-    // abstract executeInLogic(column: string, value: any[]): void;
-    // abstract executeWhereLogic(column: string, value, op, dir?): void;
     protected onErrorOccured(e, customError = false) {
         if (customError) {
             e.logError();
@@ -45,16 +42,6 @@ export abstract class Base extends BaseHelper {
             this.error = error.get();
         }
     }
-
-    // protected onExceptionOccured(ex: DOMException, info) {
-    //     switch (ex.name) {
-    //         case 'NotFoundError':
-    //             const error = new LogHelper(ERROR_TYPE.TableNotExist, info);
-    //             this.onErrorOccured(error, true);
-    //             break;
-    //         default: console.error(ex);
-    //     }
-    // }
 
     protected onExceptionOccured(ex: DOMException) {
         console.error(ex);
@@ -148,7 +135,6 @@ export abstract class Base extends BaseHelper {
             keyValue;
         for (const column in qry) {
             columnValue = qry[column];
-
             switch (getDataType(columnValue)) {
                 case DATA_TYPE.String:
                     results = results.concat(this.getAllCombinationOfWord(columnValue));
@@ -158,17 +144,24 @@ export abstract class Base extends BaseHelper {
                 case DATA_TYPE.Object:
                     for (const key in columnValue) {
                         keyValue = columnValue[key];
-                        if (isString(keyValue)) {
-                            switch (key) {
-                                case QUERY_OPTION.In:
-                                    results = results.concat(this.getAllCombinationOfWord(keyValue, true));
-                                    break;
-                                case QUERY_OPTION.Like:
-                                case QUERY_OPTION.Regex:
-                                    break;
-                                default:
-                                    results = results.concat(this.getAllCombinationOfWord(keyValue));
-                            }
+                        const keyValueType = getDataType(keyValue);
+                        switch (keyValueType) {
+                            case DATA_TYPE.String:
+                                switch (key) {
+                                    case QUERY_OPTION.Like:
+                                    case QUERY_OPTION.Regex:
+                                        break;
+                                    default:
+                                        results = results.concat(this.getAllCombinationOfWord(keyValue));
+                                }
+                                break;
+                            case DATA_TYPE.Array:
+                                switch (key) {
+                                    case QUERY_OPTION.In:
+                                        results = results.concat(this.getAllCombinationOfWord(keyValue, true));
+                                        break;
+
+                                }
                         }
                     }
                     qry[column][QUERY_OPTION.In] = results;
@@ -178,5 +171,5 @@ export abstract class Base extends BaseHelper {
         return qry;
     }
 
-     
+
 }

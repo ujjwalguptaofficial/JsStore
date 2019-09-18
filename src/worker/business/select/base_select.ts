@@ -15,6 +15,7 @@ export class BaseSelect extends WhereBase {
     isSubQuery = false;
 
     isOrderWithLimit = false;
+    isOrderWithSkip = false;
     protected removeDuplicates() {
         let datas = this.results;
         // free results memory

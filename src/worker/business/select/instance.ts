@@ -23,6 +23,9 @@ export class Instance extends Join {
             if (query.limit != null) {
                 this.isOrderWithLimit = true;
             }
+            if (query.skip != null) {
+                this.isOrderWithSkip = true;
+            }
         }
 
     }
@@ -168,6 +171,9 @@ export class Instance extends Join {
         if (this.error == null) {
             this.processOrderBy();
             if (!this.error) {
+                if (this.query.order && this.query.skip) {
+                    this.results.splice(0, this.query.skip);
+                }
                 if (this.isOrderWithLimit === true) {
                     this.results = this.results.slice(0, this.query.limit);
                 }

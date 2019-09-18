@@ -24,14 +24,19 @@ export class Regex extends In {
 
         this.cursorOpenRequest = this.objectStore.index(column).openCursor();
         this.cursorOpenRequest.onerror = this.onErrorOccured;
-        if (this.skipRecord && this.limitRecord) {
-            this.executeSkipAndLimitForRegex_();
-        }
-        else if (this.skipRecord) {
-            this.executeSkipForRegex_();
-        }
-        else if (this.limitRecord) {
-            this.executeLimitForRegex_();
+        if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
+            if (this.skipRecord && this.limitRecord) {
+                this.executeSkipAndLimitForRegex_();
+            }
+            else if (this.skipRecord) {
+                this.executeSkipForRegex_();
+            }
+            else if (this.limitRecord) {
+                this.executeLimitForRegex_();
+            }
+            else {
+                this.executeSimpleForRegex_();
+            }
         }
         else {
             this.executeSimpleForRegex_();

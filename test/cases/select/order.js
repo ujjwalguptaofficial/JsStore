@@ -222,4 +222,165 @@ describe('Test Select with order', function () {
                 done(err);
             })
     });
+
+    it('order with skip', function (done) {
+        con.select({
+            from: "Customers",
+            order: {
+                by: 'address',
+                type: "asc"
+            },
+        }).then(function (results1) {
+            con.select({
+                from: "Customers",
+                skip: 20,
+                order: {
+                    by: 'address',
+                    type: "asc"
+                },
+            }).then(function (results2) {
+                expect(results2.length).to.equal(results1.length - 20);
+                results1.splice(0, 20)
+                expect(results1).to.eql(results2);
+                done();
+            }).catch(done);
+        }).catch(done);
+    });
+
+    it('order with skip & where', function (done) {
+        con.select({
+            from: "Customers",
+            order: {
+                by: 'address',
+                type: "asc"
+            },
+            where: {
+                customerId: {
+                    '>': 10
+                }
+            },
+        }).then(function (results1) {
+            con.select({
+                from: "Customers",
+                skip: 20,
+                where: {
+                    customerId: {
+                        '>': 10
+                    }
+                },
+                order: {
+                    by: 'address',
+                    type: "asc"
+                },
+            }).then(function (results2) {
+                expect(results2.length).to.equal(results1.length - 20);
+                results1.splice(0, 20)
+                expect(results1).to.eql(results2);
+                done();
+            }).catch(done);
+        }).catch(done);
+    });
+
+    it('order with skip & where & limit', function (done) {
+        con.select({
+            from: "Customers",
+            limit: 10,
+            order: {
+                by: 'address',
+                type: "asc"
+            },
+            where: {
+                customerId: {
+                    '>': 10
+                }
+            },
+        }).then(function (results1) {
+            con.select({
+                from: "Customers",
+                skip: 20,
+                limit: 10,
+                where: {
+                    customerId: {
+                        '>': 10
+                    }
+                },
+                order: {
+                    by: 'address',
+                    type: "asc"
+                },
+            }).then(function (results2) {
+                expect(results1.length).to.eql(results2.length);
+                done();
+            }).catch(done);
+        }).catch(done);
+    });
+
+    it('order with skip & where & regex', function (done) {
+        con.select({
+            from: "Customers",
+            order: {
+                by: 'address',
+                type: "asc"
+            },
+            where: {
+                country: {
+                    regex: /mexico|brazil/i
+                }
+            },
+        }).then(function (results1) {
+            con.select({
+                from: "Customers",
+                skip: 5,
+                where: {
+                    country: {
+                        regex: /mexico|brazil/i
+                    }
+                },
+                order: {
+                    by: 'address',
+                    type: "asc"
+                },
+            }).then(function (results2) {
+                expect(results2.length).to.equal(results1.length - 5);
+                results1.splice(0, 5)
+                expect(results1).to.eql(results2);
+                done();
+            }).catch(done);
+        }).catch(done);
+    });
+
+    it('order with skip & where & in', function (done) {
+        con.select({
+            from: "Customers",
+            order: {
+                by: 'address',
+                type: "asc"
+            },
+            where: {
+                country: {
+                    in: ['Mexico', 'Brazil']
+                }
+            },
+        }).then(function (results1) {
+            con.select({
+                from: "Customers",
+                skip: 5,
+                where: {
+                    country: {
+                        in: ['Mexico', 'Brazil']
+                    }
+                },
+                order: {
+                    by: 'address',
+                    type: "asc"
+                },
+            }).then(function (results2) {
+                expect(results2.length).to.equal(results1.length - 5);
+                results1.splice(0, 5)
+                expect(results1).to.eql(results2);
+                done();
+            }).catch(done);
+        }).catch(done);
+    });
+
 });

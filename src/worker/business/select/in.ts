@@ -19,14 +19,19 @@ export class In extends NotWhere {
         shouldAddValue = () => {
             return this.whereCheckerInstance.check(cursor.value);
         };
-        if (this.skipRecord && this.limitRecord) {
-            this.executeSkipAndLimitForIn_(column, values);
-        }
-        else if (this.skipRecord) {
-            this.executeSkipForIn_(column, values);
-        }
-        else if (this.limitRecord) {
-            this.executeLimitForIn_(column, values);
+        if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
+            if (this.skipRecord && this.limitRecord) {
+                this.executeSkipAndLimitForIn_(column, values);
+            }
+            else if (this.skipRecord) {
+                this.executeSkipForIn_(column, values);
+            }
+            else if (this.limitRecord) {
+                this.executeLimitForIn_(column, values);
+            }
+            else {
+                this.executeSimpleForIn_(column, values);
+            }
         }
         else {
             this.executeSimpleForIn_(column, values);
