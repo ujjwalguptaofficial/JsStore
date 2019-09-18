@@ -17,7 +17,7 @@ export abstract class Base extends BaseHelper {
     whereCheckerInstance: WhereChecker;
     tableName: string;
     isTransaction: boolean;
-    cursorOpenRequest: IDBRequest;
+    
     skipRecord;
     limitRecord;
 

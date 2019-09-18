@@ -2,6 +2,7 @@ import { Regex } from "./regex";
 
 let shouldAddValue: () => boolean;
 let cursor: IDBCursorWithValue;
+let cursorRequest: IDBRequest;
 export class Where extends Regex {
 
     protected executeWhereLogic(column, value, op, dir) {
@@ -9,12 +10,12 @@ export class Where extends Regex {
             return this.whereCheckerInstance.check(cursor.value);
         };
         value = op ? value[op] : value;
-        this.cursorOpenRequest = this.objectStore.index(column).openCursor(
+        cursorRequest = this.objectStore.index(column).openCursor(
             this.getKeyRange(value, op),
             dir
         );
 
-        this.cursorOpenRequest.onerror = this.onErrorOccured;
+        cursorRequest.onerror = this.onErrorOccured;
 
         if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
             if (this.skipRecord && this.limitRecord) {
@@ -38,7 +39,7 @@ export class Where extends Regex {
 
     private executeSkipAndLimitForWhere_() {
         let recordSkipped = false;
-        this.cursorOpenRequest.onsuccess = (e: any) => {
+        cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (cursor) {
                 if (recordSkipped && this.results.length !== this.limitRecord) {
@@ -61,7 +62,7 @@ export class Where extends Regex {
     private executeSkipForWhere_() {
         let recordSkipped = false;
 
-        this.cursorOpenRequest.onsuccess = (e: any) => {
+        cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (cursor) {
                 if (recordSkipped) {
@@ -82,7 +83,7 @@ export class Where extends Regex {
     }
 
     private executeLimitForWhere_() {
-        this.cursorOpenRequest.onsuccess = (e: any) => {
+        cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (cursor && this.results.length !== this.limitRecord &&
                 shouldAddValue()) {
@@ -97,7 +98,7 @@ export class Where extends Regex {
     }
 
     private executeSimpleForWhere_() {
-        this.cursorOpenRequest.onsuccess = (e: any) => {
+        cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (cursor) {
                 if (shouldAddValue()) {

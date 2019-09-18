@@ -4,6 +4,7 @@ let shouldAddValue: () => boolean;
 let skipOrPush: (val) => void;
 let skip;
 let cursor: IDBCursorWithValue;
+let cursorRequest: IDBRequest;
 export class Regex extends In {
     protected executeRegexLogic(column, exp: RegExp) {
 
@@ -22,8 +23,8 @@ export class Regex extends In {
                 this.whereCheckerInstance.check(cursor.value);
         };
 
-        this.cursorOpenRequest = this.objectStore.index(column).openCursor();
-        this.cursorOpenRequest.onerror = this.onErrorOccured;
+       cursorRequest = this.objectStore.index(column).openCursor();
+       cursorRequest.onerror = this.onErrorOccured;
         if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
             if (this.skipRecord && this.limitRecord) {
                 this.executeSkipAndLimitForRegex_();
@@ -44,7 +45,7 @@ export class Regex extends In {
     }
 
     private executeSkipAndLimitForRegex_() {
-        this.cursorOpenRequest.onsuccess = (e: any) => {
+       cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (this.results.length !== this.limitRecord && cursor) {
                 if (shouldAddValue()) {
@@ -58,7 +59,7 @@ export class Regex extends In {
     }
 
     private executeSkipForRegex_() {
-        this.cursorOpenRequest.onsuccess = (e: any) => {
+       cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (cursor) {
                 if (shouldAddValue()) {
@@ -72,7 +73,7 @@ export class Regex extends In {
     }
 
     private executeLimitForRegex_() {
-        this.cursorOpenRequest.onsuccess = (e: any) => {
+       cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (this.results.length !== this.limitRecord && cursor) {
                 if (shouldAddValue()) {
@@ -86,7 +87,7 @@ export class Regex extends In {
     }
 
     private executeSimpleForRegex_() {
-        this.cursorOpenRequest.onsuccess = (e: any) => {
+       cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (cursor) {
                 if (shouldAddValue()) {
