@@ -12,5 +12,6 @@ export declare class BaseSelect extends WhereBase {
     };
     isSubQuery: boolean;
     isOrderWithLimit: boolean;
+    isOrderWithSkip: boolean;
     protected removeDuplicates(): void;
 }

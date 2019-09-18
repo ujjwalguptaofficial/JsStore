@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.4.0 - 14/09/2019
+ * @license :jsstore - V3.4.1 - 18/09/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -1694,12 +1694,6 @@ var get_object_first_key = __webpack_require__(34);
 // EXTERNAL MODULE: ./src/worker/utils/get_data_type.ts
 var get_data_type = __webpack_require__(32);
 
-// CONCATENATED MODULE: ./src/worker/utils/is_string.ts
-
-var isString = function (value) {
-    return typeof value === enums["c" /* DATA_TYPE */].String;
-};
-
 // CONCATENATED MODULE: ./src/worker/business/base.ts
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return base_Base; });
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -1728,9 +1722,6 @@ var base_Base = /** @class */ (function (_super) {
         _this.rowAffected = 0;
         return _this;
     }
-    // abstract executeRegexLogic(column: string, exp: RegExp): void;
-    // abstract executeInLogic(column: string, value: any[]): void;
-    // abstract executeWhereLogic(column: string, value, op, dir?): void;
     Base.prototype.onErrorOccured = function (e, customError) {
         if (customError === void 0) { customError = false; }
         if (customError) {
@@ -1753,15 +1744,6 @@ var base_Base = /** @class */ (function (_super) {
             this.error = error.get();
         }
     };
-    // protected onExceptionOccured(ex: DOMException, info) {
-    //     switch (ex.name) {
-    //         case 'NotFoundError':
-    //             const error = new LogHelper(ERROR_TYPE.TableNotExist, info);
-    //             this.onErrorOccured(error, true);
-    //             break;
-    //         default: console.error(ex);
-    //     }
-    // }
     Base.prototype.onExceptionOccured = function (ex) {
         console.error(ex);
         this.onError({
@@ -1857,17 +1839,23 @@ var base_Base = /** @class */ (function (_super) {
                 case enums["c" /* DATA_TYPE */].Object:
                     for (var key in columnValue) {
                         keyValue = columnValue[key];
-                        if (isString(keyValue)) {
-                            switch (key) {
-                                case enums["g" /* QUERY_OPTION */].In:
-                                    results = results.concat(this.getAllCombinationOfWord(keyValue, true));
-                                    break;
-                                case enums["g" /* QUERY_OPTION */].Like:
-                                case enums["g" /* QUERY_OPTION */].Regex:
-                                    break;
-                                default:
-                                    results = results.concat(this.getAllCombinationOfWord(keyValue));
-                            }
+                        var keyValueType = Object(get_data_type["a" /* getDataType */])(keyValue);
+                        switch (keyValueType) {
+                            case enums["c" /* DATA_TYPE */].String:
+                                switch (key) {
+                                    case enums["g" /* QUERY_OPTION */].Like:
+                                    case enums["g" /* QUERY_OPTION */].Regex:
+                                        break;
+                                    default:
+                                        results = results.concat(this.getAllCombinationOfWord(keyValue));
+                                }
+                                break;
+                            case enums["c" /* DATA_TYPE */].Array:
+                                switch (key) {
+                                    case enums["g" /* QUERY_OPTION */].In:
+                                        results = results.concat(this.getAllCombinationOfWord(keyValue, true));
+                                        break;
+                                }
                         }
                     }
                     qry[column][enums["g" /* QUERY_OPTION */].In] = results;
@@ -1890,7 +1878,7 @@ var base_Base = /** @class */ (function (_super) {
 // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
 var query_helper = __webpack_require__(5);
 
-// EXTERNAL MODULE: ./src/worker/business/base.ts + 3 modules
+// EXTERNAL MODULE: ./src/worker/business/base.ts + 2 modules
 var base = __webpack_require__(8);
 
 // EXTERNAL MODULE: ./src/worker/keystore/instance.ts + 10 modules
@@ -3085,6 +3073,7 @@ var BaseSelect = /** @class */ (function (_super) {
         _this.sorted = false;
         _this.isSubQuery = false;
         _this.isOrderWithLimit = false;
+        _this.isOrderWithSkip = false;
         return _this;
     }
     BaseSelect.prototype.removeDuplicates = function () {
@@ -3127,6 +3116,7 @@ var not_where_extends = (undefined && undefined.__extends) || (function () {
 
 
 
+var not_where_cursorRequest;
 var not_where_NotWhere = /** @class */ (function (_super) {
     not_where_extends(NotWhere, _super);
     function NotWhere() {
@@ -3138,7 +3128,7 @@ var not_where_NotWhere = /** @class */ (function (_super) {
                 var orderType = this.query.order.type &&
                     this.query.order.type.toLowerCase() === 'desc' ? 'prev' : 'next';
                 this.sorted = true;
-                this.cursorOpenRequest = this.objectStore.index(this.query.order.by).
+                not_where_cursorRequest = this.objectStore.index(this.query.order.by).
                     openCursor(null, orderType);
             }
             else {
@@ -3148,10 +3138,10 @@ var not_where_NotWhere = /** @class */ (function (_super) {
             }
         }
         else {
-            this.cursorOpenRequest = this.objectStore.openCursor();
+            not_where_cursorRequest = this.objectStore.openCursor();
         }
-        this.cursorOpenRequest.onerror = this.onErrorOccured;
-        if (this.isOrderWithLimit === false) {
+        not_where_cursorRequest.onerror = this.onErrorOccured;
+        if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
             if (this.skipRecord && this.limitRecord) {
                 this.executeSkipAndLimitForNoWhere_();
             }
@@ -3166,18 +3156,13 @@ var not_where_NotWhere = /** @class */ (function (_super) {
             }
         }
         else {
-            if (this.skipRecord) {
-                this.executeSkipForNoWhere_();
-            }
-            else {
-                this.executeSimpleForNotWhere_();
-            }
+            this.executeSimpleForNotWhere_();
         }
     };
     NotWhere.prototype.executeSkipAndLimitForNoWhere_ = function () {
         var _this = this;
         var recordSkipped = false, cursor;
-        this.cursorOpenRequest.onsuccess = function (e) {
+        not_where_cursorRequest.onsuccess = function (e) {
             cursor = e.target.result;
             if (cursor) {
                 if (recordSkipped && _this.results.length !== _this.limitRecord) {
@@ -3197,7 +3182,7 @@ var not_where_NotWhere = /** @class */ (function (_super) {
     NotWhere.prototype.executeSkipForNoWhere_ = function () {
         var _this = this;
         var recordSkipped = false, cursor;
-        this.cursorOpenRequest.onsuccess = function (e) {
+        not_where_cursorRequest.onsuccess = function (e) {
             cursor = e.target.result;
             if (cursor) {
                 if (recordSkipped) {
@@ -3216,7 +3201,7 @@ var not_where_NotWhere = /** @class */ (function (_super) {
     };
     NotWhere.prototype.executeSimpleForNotWhere_ = function () {
         var cursor;
-        this.cursorOpenRequest.onsuccess = function (e) {
+        not_where_cursorRequest.onsuccess = function (e) {
             cursor = e.target.result;
             if (cursor) {
                 this.results.push(cursor.value);
@@ -3230,7 +3215,7 @@ var not_where_NotWhere = /** @class */ (function (_super) {
     NotWhere.prototype.executeLimitForNotWhere_ = function () {
         var _this = this;
         var cursor;
-        this.cursorOpenRequest.onsuccess = function (e) {
+        not_where_cursorRequest.onsuccess = function (e) {
             cursor = e.target.result;
             if (cursor && _this.results.length !== _this.limitRecord) {
                 _this.results.push(cursor.value);
@@ -3290,14 +3275,19 @@ var in_In = /** @class */ (function (_super) {
         shouldAddValue = function () {
             return _this.whereCheckerInstance.check(cursor.value);
         };
-        if (this.skipRecord && this.limitRecord) {
-            this.executeSkipAndLimitForIn_(column, values);
-        }
-        else if (this.skipRecord) {
-            this.executeSkipForIn_(column, values);
-        }
-        else if (this.limitRecord) {
-            this.executeLimitForIn_(column, values);
+        if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
+            if (this.skipRecord && this.limitRecord) {
+                this.executeSkipAndLimitForIn_(column, values);
+            }
+            else if (this.skipRecord) {
+                this.executeSkipForIn_(column, values);
+            }
+            else if (this.limitRecord) {
+                this.executeLimitForIn_(column, values);
+            }
+            else {
+                this.executeSimpleForIn_(column, values);
+            }
         }
         else {
             this.executeSimpleForIn_(column, values);
@@ -3446,6 +3436,7 @@ var regex_shouldAddValue;
 var regex_skipOrPush;
 var regex_skip;
 var regex_cursor;
+var regex_cursorRequest;
 var Regex = /** @class */ (function (_super) {
     regex_extends(Regex, _super);
     function Regex() {
@@ -3467,16 +3458,21 @@ var Regex = /** @class */ (function (_super) {
             return _this.regexTest(regex_cursor.key) &&
                 _this.whereCheckerInstance.check(regex_cursor.value);
         };
-        this.cursorOpenRequest = this.objectStore.index(column).openCursor();
-        this.cursorOpenRequest.onerror = this.onErrorOccured;
-        if (this.skipRecord && this.limitRecord) {
-            this.executeSkipAndLimitForRegex_();
-        }
-        else if (this.skipRecord) {
-            this.executeSkipForRegex_();
-        }
-        else if (this.limitRecord) {
-            this.executeLimitForRegex_();
+        regex_cursorRequest = this.objectStore.index(column).openCursor();
+        regex_cursorRequest.onerror = this.onErrorOccured;
+        if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
+            if (this.skipRecord && this.limitRecord) {
+                this.executeSkipAndLimitForRegex_();
+            }
+            else if (this.skipRecord) {
+                this.executeSkipForRegex_();
+            }
+            else if (this.limitRecord) {
+                this.executeLimitForRegex_();
+            }
+            else {
+                this.executeSimpleForRegex_();
+            }
         }
         else {
             this.executeSimpleForRegex_();
@@ -3484,7 +3480,7 @@ var Regex = /** @class */ (function (_super) {
     };
     Regex.prototype.executeSkipAndLimitForRegex_ = function () {
         var _this = this;
-        this.cursorOpenRequest.onsuccess = function (e) {
+        regex_cursorRequest.onsuccess = function (e) {
             regex_cursor = e.target.result;
             if (_this.results.length !== _this.limitRecord && regex_cursor) {
                 if (regex_shouldAddValue()) {
@@ -3499,7 +3495,7 @@ var Regex = /** @class */ (function (_super) {
     };
     Regex.prototype.executeSkipForRegex_ = function () {
         var _this = this;
-        this.cursorOpenRequest.onsuccess = function (e) {
+        regex_cursorRequest.onsuccess = function (e) {
             regex_cursor = e.target.result;
             if (regex_cursor) {
                 if (regex_shouldAddValue()) {
@@ -3514,7 +3510,7 @@ var Regex = /** @class */ (function (_super) {
     };
     Regex.prototype.executeLimitForRegex_ = function () {
         var _this = this;
-        this.cursorOpenRequest.onsuccess = function (e) {
+        regex_cursorRequest.onsuccess = function (e) {
             regex_cursor = e.target.result;
             if (_this.results.length !== _this.limitRecord && regex_cursor) {
                 if (regex_shouldAddValue()) {
@@ -3529,7 +3525,7 @@ var Regex = /** @class */ (function (_super) {
     };
     Regex.prototype.executeSimpleForRegex_ = function () {
         var _this = this;
-        this.cursorOpenRequest.onsuccess = function (e) {
+        regex_cursorRequest.onsuccess = function (e) {
             regex_cursor = e.target.result;
             if (regex_cursor) {
                 if (regex_shouldAddValue()) {
@@ -3563,6 +3559,7 @@ var where_extends = (undefined && undefined.__extends) || (function () {
 
 var where_shouldAddValue;
 var where_cursor;
+var where_cursorRequest;
 var Where = /** @class */ (function (_super) {
     where_extends(Where, _super);
     function Where() {
@@ -3574,9 +3571,9 @@ var Where = /** @class */ (function (_super) {
             return _this.whereCheckerInstance.check(where_cursor.value);
         };
         value = op ? value[op] : value;
-        this.cursorOpenRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op), dir);
-        this.cursorOpenRequest.onerror = this.onErrorOccured;
-        if (this.isOrderWithLimit === false) {
+        where_cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op), dir);
+        where_cursorRequest.onerror = this.onErrorOccured;
+        if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
             if (this.skipRecord && this.limitRecord) {
                 this.executeSkipAndLimitForWhere_();
             }
@@ -3591,18 +3588,13 @@ var Where = /** @class */ (function (_super) {
             }
         }
         else {
-            if (this.skipRecord) {
-                this.executeSkipForWhere_();
-            }
-            else {
-                this.executeSimpleForWhere_();
-            }
+            this.executeSimpleForWhere_();
         }
     };
     Where.prototype.executeSkipAndLimitForWhere_ = function () {
         var _this = this;
         var recordSkipped = false;
-        this.cursorOpenRequest.onsuccess = function (e) {
+        where_cursorRequest.onsuccess = function (e) {
             where_cursor = e.target.result;
             if (where_cursor) {
                 if (recordSkipped && _this.results.length !== _this.limitRecord) {
@@ -3624,7 +3616,7 @@ var Where = /** @class */ (function (_super) {
     Where.prototype.executeSkipForWhere_ = function () {
         var _this = this;
         var recordSkipped = false;
-        this.cursorOpenRequest.onsuccess = function (e) {
+        where_cursorRequest.onsuccess = function (e) {
             where_cursor = e.target.result;
             if (where_cursor) {
                 if (recordSkipped) {
@@ -3645,7 +3637,7 @@ var Where = /** @class */ (function (_super) {
     };
     Where.prototype.executeLimitForWhere_ = function () {
         var _this = this;
-        this.cursorOpenRequest.onsuccess = function (e) {
+        where_cursorRequest.onsuccess = function (e) {
             where_cursor = e.target.result;
             if (where_cursor && _this.results.length !== _this.limitRecord &&
                 where_shouldAddValue()) {
@@ -3659,7 +3651,7 @@ var Where = /** @class */ (function (_super) {
     };
     Where.prototype.executeSimpleForWhere_ = function () {
         var _this = this;
-        this.cursorOpenRequest.onsuccess = function (e) {
+        where_cursorRequest.onsuccess = function (e) {
             where_cursor = e.target.result;
             if (where_cursor) {
                 if (where_shouldAddValue()) {
@@ -4211,11 +4203,11 @@ var join_Join = /** @class */ (function (_super) {
             from: tableName,
             where: query.where,
         }, function (results) {
-            results.forEach(function (item, index) {
+            _this.results = results.map(function (item) {
                 var _a;
-                _this.results[index] = (_a = {},
+                return _a = {},
                     _a[_this.currentQueryStackIndex_] = item,
-                    _a);
+                    _a;
             });
             _this.tablesFetched.push(tableName);
             _this.startExecutingJoinLogic_();
@@ -4492,6 +4484,9 @@ var instance_Instance = /** @class */ (function (_super) {
             if (_this.error == null) {
                 _this.processOrderBy();
                 if (!_this.error) {
+                    if (_this.query.order && _this.query.skip) {
+                        _this.results.splice(0, _this.query.skip);
+                    }
                     if (_this.isOrderWithLimit === true) {
                         _this.results = _this.results.slice(0, _this.query.limit);
                     }
@@ -4518,6 +4513,9 @@ var instance_Instance = /** @class */ (function (_super) {
             }
             if (query.limit != null) {
                 _this.isOrderWithLimit = true;
+            }
+            if (query.skip != null) {
+                _this.isOrderWithSkip = true;
             }
         }
         return _this;
@@ -4696,7 +4694,7 @@ var instance_Instance = /** @class */ (function (_super) {
 
 "use strict";
 
-// EXTERNAL MODULE: ./src/worker/business/base.ts + 3 modules
+// EXTERNAL MODULE: ./src/worker/business/base.ts + 2 modules
 var base = __webpack_require__(8);
 
 // EXTERNAL MODULE: ./src/worker/enums.ts
