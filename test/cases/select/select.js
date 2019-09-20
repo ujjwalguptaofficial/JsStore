@@ -392,4 +392,20 @@ describe('Test Select Api', function () {
                 done();
             })
     });
+
+    it('select with where & limit', function (done) {
+        con.select({
+            from: 'Customers',
+            where: {
+                country: 'Germany',
+                city: {
+                    like: '%n%'
+                }
+            },
+            limit: 10
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(9);
+            done();
+        }).catch(done);
+    });
 });

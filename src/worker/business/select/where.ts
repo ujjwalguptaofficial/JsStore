@@ -85,9 +85,10 @@ export class Where extends Regex {
     private executeLimitForWhere_() {
         cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
-            if (cursor && this.results.length !== this.limitRecord &&
-                shouldAddValue()) {
-                this.results.push(cursor.value);
+            if (cursor && this.results.length !== this.limitRecord) {
+                if (shouldAddValue()) {
+                    this.results.push(cursor.value);
+                }
                 cursor.continue();
             }
             else {
