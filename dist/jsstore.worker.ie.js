@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.4.1 - 18/09/2019
+ * @license :jsstore - V3.4.2 - 20/09/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -3639,9 +3639,10 @@ var Where = /** @class */ (function (_super) {
         var _this = this;
         where_cursorRequest.onsuccess = function (e) {
             where_cursor = e.target.result;
-            if (where_cursor && _this.results.length !== _this.limitRecord &&
-                where_shouldAddValue()) {
-                _this.results.push(where_cursor.value);
+            if (where_cursor && _this.results.length !== _this.limitRecord) {
+                if (where_shouldAddValue()) {
+                    _this.results.push(where_cursor.value);
+                }
                 where_cursor.continue();
             }
             else {
