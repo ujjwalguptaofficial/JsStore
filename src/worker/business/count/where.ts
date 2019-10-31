@@ -35,6 +35,6 @@ export class Where extends Regex {
         }
         initCursorAndFilter();
 
-        cursorRequest.onerror = this.onErrorOccured;
+        cursorRequest.onerror = this.onErrorOccured.bind(this);
     }
 }
