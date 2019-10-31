@@ -130,12 +130,31 @@ describe('Multi Entry Test', function () {
     });
 
     it('unique column test for update', function (done) {
-        debugger;
         con.update({
             in: 'people',
             set: {
                 name: 'Ray'
             }
+        }).catch(function (err) {
+            var error = {
+                "message": "Unable to add key to index 'name': at least one key does not satisfy the uniqueness requirements.",
+                "type": "ConstraintError"
+            }
+            expect(err.type).to.be.an('string').eql(error.type);
+            done();
+        })
+
+    });
+
+    it('unique column test for update with where', function (done) {
+        con.update({
+            in: 'people',
+            set: {
+                name: 'Ray'
+            },
+            where: {
+                name: 'Scott'
+            },
         }).catch(function (err) {
             var error = {
                 "message": "Unable to add key to index 'name': at least one key does not satisfy the uniqueness requirements.",

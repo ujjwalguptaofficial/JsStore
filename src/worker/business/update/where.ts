@@ -13,9 +13,12 @@ export class Where extends Regex {
             if (cursor) {
                 if (this.whereCheckerInstance.check(cursor.value)) {
                     try {
-                        cursor.update(updateValue(this.query.set, cursor.value));
-                        ++this.rowAffected;
-                        cursor.continue();
+                        const cursorUpdateRequest = cursor.update(updateValue(this.query.set, cursor.value));
+                        cursorUpdateRequest.onsuccess = () => {
+                            ++this.rowAffected;
+                            cursor.continue();
+                        };
+                        cursorUpdateRequest.onerror = this.onErrorOccured.bind(this);
                     } catch (err) {
                         this.transaction.abort();
                         this.onErrorOccured(err);
