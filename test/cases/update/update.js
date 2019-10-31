@@ -610,4 +610,24 @@ describe('Test update Api', function () {
             done();
         });
     });
+
+    it('update primary key column value with where and regex', function (done) {
+        con.update({
+            in: 'Customers',
+            where: {
+                country: {
+                    regex: /mexico|brazil/i
+                }
+            },
+            set: {
+                contactName: 'Ujjwal',
+                city: 'Bhubaneswar',
+                customerId: 1
+            }
+        }).catch(function (err) {
+            expect(err.type).to.equal('DataError');
+            expect(err.message).to.be.an('string');
+            done();
+        })
+    });
 });

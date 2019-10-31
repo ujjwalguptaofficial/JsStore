@@ -9,12 +9,15 @@ export class NotWhere extends BaseUpdate {
             cursor = (e as any).target.result;
             if (cursor) {
                 try {
-                    cursor.update(updateValue(this.query.set, cursor.value));
-                    ++this.rowAffected;
-                    cursor.continue();
+                    const cursorUpdateRequest = cursor.update(updateValue(this.query.set, cursor.value));
+                    cursorUpdateRequest.onsuccess = () => {
+                        ++this.rowAffected;
+                        cursor.continue();
+                    };
+                    cursorUpdateRequest.onerror = this.onErrorOccured.bind(this);
                 } catch (err) {
-                    this.transaction.abort();
                     this.onErrorOccured(err);
+                    this.transaction.abort();
                 }
             }
             else {
@@ -22,6 +25,6 @@ export class NotWhere extends BaseUpdate {
             }
 
         };
-        cursorRequest.onerror = this.onErrorOccured;
+        cursorRequest.onerror = this.onErrorOccured.bind(this);
     }
 }

@@ -108,7 +108,7 @@ describe('Multi Entry Test', function () {
             })
     });
 
-    it('unique column test', function (done) {
+    it('unique column test for insert', function (done) {
         var value = {
             name: "Ray",
             tags: ["apple", "banana", "beer"]
@@ -116,18 +116,34 @@ describe('Multi Entry Test', function () {
         con.insert({
             into: 'people',
             values: [value]
-        }).
-            then(function (err) {
-                done(err);
-            }).
-            catch(function (err) {
-                var error = {
-                    "message": "Unable to add key to index 'name': at least one key does not satisfy the uniqueness requirements.",
-                    "type": "ConstraintError"
-                }
-                expect(err.type).to.be.an('string').eql(error.type);
-                done();
-            })
+        }).then(function (err) {
+            done(err);
+        }).catch(function (err) {
+            var error = {
+                "message": "Unable to add key to index 'name': at least one key does not satisfy the uniqueness requirements.",
+                "type": "ConstraintError"
+            }
+            expect(err.type).to.be.an('string').eql(error.type);
+            done();
+        })
+
+    });
+
+    it('unique column test for update', function (done) {
+        debugger;
+        con.update({
+            in: 'people',
+            set: {
+                name: 'Ray'
+            }
+        }).catch(function (err) {
+            var error = {
+                "message": "Unable to add key to index 'name': at least one key does not satisfy the uniqueness requirements.",
+                "type": "ConstraintError"
+            }
+            expect(err.type).to.be.an('string').eql(error.type);
+            done();
+        })
 
     });
 

@@ -6,20 +6,29 @@ export class Regex extends In {
         let cursor: IDBCursorWithValue;
         this.regexExpression = exp;
         const cursorOpenRequest = this.objectStore.index(column).openCursor();
-        cursorOpenRequest.onerror = this.onErrorOccured;
         cursorOpenRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (cursor) {
                 if (this.regexTest(cursor.key) &&
                     this.whereCheckerInstance.check(cursor.value)) {
-                    cursor.update(updateValue(this.query.set, cursor.value));
-                    ++this.rowAffected;
+                    try {
+                        cursor.update(updateValue(this.query.set, cursor.value));
+                        ++this.rowAffected;
+                        cursor.continue();
+                    } catch (err) {
+                        this.transaction.abort();
+                        this.onErrorOccured(err);
+                    }
                 }
-                cursor.continue();
+                else {
+                    cursor.continue();
+                }
+
             }
             else {
                 this.onQueryFinished();
             }
         };
+        cursorOpenRequest.onerror = this.onErrorOccured.bind(this);
     }
 }
