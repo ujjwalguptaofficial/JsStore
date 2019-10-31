@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.4.2 - 20/09/2019
+ * @license :jsstore - V3.4.3 - 31/10/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -2085,7 +2085,7 @@ var init_db_InitDb = /** @class */ (function (_super) {
 var select_instance = __webpack_require__(25);
 
 // EXTERNAL MODULE: ./src/worker/business/count/instance.ts + 5 modules
-var count_instance = __webpack_require__(28);
+var count_instance = __webpack_require__(26);
 
 // EXTERNAL MODULE: ./src/worker/business/insert/instance.ts
 var insert_instance = __webpack_require__(24);
@@ -2094,7 +2094,7 @@ var insert_instance = __webpack_require__(24);
 var remove_instance = __webpack_require__(27);
 
 // EXTERNAL MODULE: ./src/worker/business/update/instance.ts + 5 modules
-var update_instance = __webpack_require__(26);
+var update_instance = __webpack_require__(28);
 
 // EXTERNAL MODULE: ./src/worker/business/transaction/instance.ts
 var transaction_instance = __webpack_require__(35);
@@ -3016,8 +3016,8 @@ var Instance = /** @class */ (function (_super) {
                 ++_this.rowAffected;
             };
         }
-        this.createTransaction([this.query.into], this.onTransactionCompleted_);
-        objectStore = this.transaction.objectStore(this.query.into);
+        this.createTransaction([this.tableName], this.onTransactionCompleted_);
+        objectStore = this.transaction.objectStore(this.tableName);
         Object(_helpers_index__WEBPACK_IMPORTED_MODULE_1__[/* promiseAll */ "a"])(values.map(function (value) {
             return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_2__[/* promise */ "a"])(function (res, rej) {
                 var addResult = objectStore[processName](value);
@@ -4695,16 +4695,10 @@ var instance_Instance = /** @class */ (function (_super) {
 
 "use strict";
 
-// EXTERNAL MODULE: ./src/worker/business/base.ts + 2 modules
-var base = __webpack_require__(8);
+// EXTERNAL MODULE: ./src/worker/business/where_base.ts
+var where_base = __webpack_require__(11);
 
-// EXTERNAL MODULE: ./src/worker/enums.ts
-var enums = __webpack_require__(0);
-
-// EXTERNAL MODULE: ./src/worker/utils/get_data_type.ts
-var get_data_type = __webpack_require__(32);
-
-// CONCATENATED MODULE: ./src/worker/business/update/base_update.ts
+// CONCATENATED MODULE: ./src/worker/business/count/base_count.ts
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -4719,64 +4713,31 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
-
-
-var updateValue = function (suppliedValue, storedValue) {
-    for (var key in suppliedValue) {
-        if (Object(get_data_type["a" /* getDataType */])(suppliedValue[key]) !== enums["c" /* DATA_TYPE */].Object) {
-            storedValue[key] = suppliedValue[key];
-        }
-        else {
-            for (var op in suppliedValue[key]) {
-                switch (op) {
-                    case '+':
-                        storedValue[key] += suppliedValue[key][op];
-                        break;
-                    case '-':
-                        storedValue[key] -= suppliedValue[key][op];
-                        break;
-                    case '*':
-                        storedValue[key] *= suppliedValue[key][op];
-                        break;
-                    case '/':
-                        storedValue[key] /= suppliedValue[key][op];
-                        break;
-                    default: storedValue[key] = suppliedValue[key];
-                }
-                break;
-            }
-        }
-    }
-    return storedValue;
-};
-var BaseUpdate = /** @class */ (function (_super) {
-    __extends(BaseUpdate, _super);
-    function BaseUpdate() {
+var BaseCount = /** @class */ (function (_super) {
+    __extends(BaseCount, _super);
+    function BaseCount() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.resultCount = 0;
         _this.onTransactionCompleted_ = function () {
-            if (_this.error) {
-                _this.onError(_this.error);
+            if (_this.error == null) {
+                _this.onSuccess(_this.resultCount);
             }
             else {
-                _this.onSuccess(_this.rowAffected);
+                _this.onError(_this.error);
             }
         };
         return _this;
     }
-    BaseUpdate.prototype.initTransaction = function () {
-        this.createTransaction([this.query.in], this.onTransactionCompleted_);
-        this.objectStore = this.transaction.objectStore(this.query.in);
-    };
-    BaseUpdate.prototype.onQueryFinished = function () {
+    BaseCount.prototype.onQueryFinished = function () {
         if (this.isTransaction === true) {
             this.onTransactionCompleted_();
         }
     };
-    return BaseUpdate;
-}(base["a" /* Base */]));
+    return BaseCount;
+}(where_base["a" /* WhereBase */]));
 
 
-// CONCATENATED MODULE: ./src/worker/business/update/not_where.ts
+// CONCATENATED MODULE: ./src/worker/business/count/not_where.ts
 var not_where_extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -4791,30 +4752,39 @@ var not_where_extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
-var not_where_NotWhere = /** @class */ (function (_super) {
+var NotWhere = /** @class */ (function (_super) {
     not_where_extends(NotWhere, _super);
     function NotWhere() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     NotWhere.prototype.executeWhereUndefinedLogic = function () {
         var _this = this;
-        var cursor;
-        var cursorRequest = this.objectStore.openCursor();
-        cursorRequest.onsuccess = function (e) {
-            cursor = e.target.result;
-            if (cursor) {
-                cursor.update(updateValue(_this.query.set, cursor.value));
-                ++_this.rowAffected;
-                cursor.continue();
-            }
-            else {
+        if (this.objectStore.count) {
+            var countRequest_1 = this.objectStore.count();
+            countRequest_1.onsuccess = function () {
+                _this.resultCount = countRequest_1.result;
                 _this.onQueryFinished();
-            }
-        };
-        cursorRequest.onerror = this.onErrorOccured;
+            };
+            countRequest_1.onerror = this.onErrorOccured;
+        }
+        else {
+            var cursor_1;
+            var cursorRequest = this.objectStore.openCursor();
+            cursorRequest.onsuccess = function (e) {
+                cursor_1 = e.target.result;
+                if (cursor_1) {
+                    ++this._resultCount;
+                    cursor_1.continue();
+                }
+                else {
+                    this.onQueryFinished();
+                }
+            }.bind(this);
+            cursorRequest.onerror = this.onErrorOccured;
+        }
     };
     return NotWhere;
-}(BaseUpdate));
+}(BaseCount));
 
 
 // EXTERNAL MODULE: ./src/worker/helpers/promise.ts
@@ -4823,7 +4793,7 @@ var promise = __webpack_require__(12);
 // EXTERNAL MODULE: ./src/worker/helpers/promise_all.ts
 var promise_all = __webpack_require__(13);
 
-// CONCATENATED MODULE: ./src/worker/business/update/in.ts
+// CONCATENATED MODULE: ./src/worker/business/count/in.ts
 var in_extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -4839,7 +4809,6 @@ var in_extends = (undefined && undefined.__extends) || (function () {
 })();
 
 
-
 var in_In = /** @class */ (function (_super) {
     in_extends(In, _super);
     function In() {
@@ -4847,9 +4816,8 @@ var in_In = /** @class */ (function (_super) {
     }
     In.prototype.executeInLogic = function (column, values) {
         var _this = this;
-        var cursor;
+        var cursor, cursorRequest;
         var columnStore = this.objectStore.index(column);
-        var cursorRequest;
         var runInLogic = function (value) {
             return Object(promise["a" /* promise */])(function (res, rej) {
                 cursorRequest = columnStore.openCursor(_this.getKeyRange(value));
@@ -4857,8 +4825,7 @@ var in_In = /** @class */ (function (_super) {
                     cursor = e.target.result;
                     if (cursor) {
                         if (_this.whereCheckerInstance.check(cursor.value)) {
-                            cursor.update(updateValue(_this.query.set, cursor.value));
-                            ++_this.rowAffected;
+                            ++_this.resultCount;
                         }
                         cursor.continue();
                     }
@@ -4869,6 +4836,18 @@ var in_In = /** @class */ (function (_super) {
                 cursorRequest.onerror = rej;
             });
         };
+        if (this.objectStore.count) {
+            runInLogic = function (value) {
+                return Object(promise["a" /* promise */])(function (res, rej) {
+                    cursorRequest = columnStore.count(_this.getKeyRange(value));
+                    cursorRequest.onsuccess = function (e) {
+                        _this.resultCount += e.target.result;
+                        res();
+                    };
+                    cursorRequest.onerror = rej;
+                });
+            };
+        }
         Object(promise_all["a" /* promiseAll */])(values.map(function (val) {
             return runInLogic(val);
         })).then(function () {
@@ -4878,10 +4857,10 @@ var in_In = /** @class */ (function (_super) {
         });
     };
     return In;
-}(not_where_NotWhere));
+}(NotWhere));
 
 
-// CONCATENATED MODULE: ./src/worker/business/update/regex.ts
+// CONCATENATED MODULE: ./src/worker/business/count/regex.ts
 var regex_extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -4896,8 +4875,7 @@ var regex_extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
-
-var regex_Regex = /** @class */ (function (_super) {
+var Regex = /** @class */ (function (_super) {
     regex_extends(Regex, _super);
     function Regex() {
         return _super !== null && _super.apply(this, arguments) || this;
@@ -4906,15 +4884,14 @@ var regex_Regex = /** @class */ (function (_super) {
         var _this = this;
         var cursor;
         this.regexExpression = exp;
-        var cursorOpenRequest = this.objectStore.index(column).openCursor();
-        cursorOpenRequest.onerror = this.onErrorOccured;
-        cursorOpenRequest.onsuccess = function (e) {
+        var cursorRequest = this.objectStore.index(column).openCursor();
+        cursorRequest.onerror = this.onErrorOccured;
+        cursorRequest.onsuccess = function (e) {
             cursor = e.target.result;
             if (cursor) {
                 if (_this.regexTest(cursor.key) &&
                     _this.whereCheckerInstance.check(cursor.value)) {
-                    cursor.update(updateValue(_this.query.set, cursor.value));
-                    ++_this.rowAffected;
+                    ++_this.resultCount;
                 }
                 cursor.continue();
             }
@@ -4927,7 +4904,7 @@ var regex_Regex = /** @class */ (function (_super) {
 }(in_In));
 
 
-// CONCATENATED MODULE: ./src/worker/business/update/where.ts
+// CONCATENATED MODULE: ./src/worker/business/count/where.ts
 var where_extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -4942,38 +4919,55 @@ var where_extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
-
-var where_Where = /** @class */ (function (_super) {
+var Where = /** @class */ (function (_super) {
     where_extends(Where, _super);
     function Where() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     Where.prototype.executeWhereLogic = function (column, value, op) {
         var _this = this;
-        var cursor, cursorRequest;
         value = op ? value[op] : value;
-        cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
-        cursorRequest.onsuccess = function (e) {
-            cursor = e.target.result;
-            if (cursor) {
-                if (_this.whereCheckerInstance.check(cursor.value)) {
-                    cursor.update(updateValue(_this.query.set, cursor.value));
-                    ++_this.rowAffected;
-                }
-                cursor.continue();
-            }
-            else {
-                _this.onQueryFinished();
-            }
-        };
+        var cursorRequest;
+        var cursor;
+        var initCursorAndFilter;
+        if (this.objectStore.count) {
+            initCursorAndFilter = function () {
+                cursorRequest = _this.objectStore.index(column).count(_this.getKeyRange(value, op));
+                cursorRequest.onsuccess = function () {
+                    _this.resultCount = cursorRequest.result;
+                    _this.onQueryFinished();
+                };
+            };
+        }
+        else {
+            initCursorAndFilter = function () {
+                cursorRequest = _this.objectStore.index(column).openCursor(_this.getKeyRange(value, op));
+                cursorRequest.onsuccess = function (e) {
+                    cursor = e.target.result;
+                    if (cursor) {
+                        if (_this.whereCheckerInstance.check(cursor.value)) {
+                            ++_this.resultCount;
+                        }
+                        cursor.continue();
+                    }
+                    else {
+                        _this.onQueryFinished();
+                    }
+                };
+            };
+        }
+        initCursorAndFilter();
         cursorRequest.onerror = this.onErrorOccured;
     };
     return Where;
-}(regex_Regex));
+}(Regex));
 
 
 // EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 9 modules
 var instance = __webpack_require__(25);
+
+// EXTERNAL MODULE: ./src/worker/enums.ts
+var enums = __webpack_require__(0);
 
 // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
 var query_helper = __webpack_require__(5);
@@ -4981,7 +4975,7 @@ var query_helper = __webpack_require__(5);
 // EXTERNAL MODULE: ./src/worker/utils/is_array.ts
 var is_array = __webpack_require__(33);
 
-// CONCATENATED MODULE: ./src/worker/business/update/instance.ts
+// CONCATENATED MODULE: ./src/worker/business/count/instance.ts
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return instance_Instance; });
 var instance_extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -5005,28 +4999,41 @@ var instance_Instance = /** @class */ (function (_super) {
     instance_extends(Instance, _super);
     function Instance(query, onSuccess, onError) {
         var _this = _super.call(this) || this;
-        _this.onSuccess = onSuccess;
         _this.onError = onError;
+        _this.onSuccess = onSuccess;
         _this.query = query;
-        _this.tableName = _this.query.in;
         return _this;
     }
     Instance.prototype.execute = function () {
-        var queryHelper = new query_helper["a" /* QueryHelper */](enums["a" /* API */].Update, this.query);
+        var _this = this;
+        var queryHelper = new query_helper["a" /* QueryHelper */](enums["a" /* API */].Count, this.query);
         queryHelper.checkAndModify();
         if (queryHelper.error == null) {
             try {
-                this.initTransaction();
-                if (this.query.where != null) {
-                    if (this.query.where.or || Object(is_array["a" /* isArray */])(this.query.where)) {
-                        this.executeComplexLogic_();
+                var getDataFromSelect = function () {
+                    var selectInstance = new instance["a" /* Instance */](_this.query, function (results) {
+                        _this.resultCount = results.length;
+                        _this.onTransactionCompleted_();
+                    }, _this.onError);
+                    selectInstance.execute();
+                };
+                if (this.query.join == null) {
+                    if (this.query.where != null) {
+                        if (this.query.where.or || Object(is_array["a" /* isArray */])(this.query.where)) {
+                            getDataFromSelect();
+                        }
+                        else {
+                            this.initTransaction_();
+                            this.goToWhereLogic();
+                        }
                     }
                     else {
-                        this.goToWhereLogic();
+                        this.initTransaction_();
+                        this.executeWhereUndefinedLogic();
                     }
                 }
                 else {
-                    this.executeWhereUndefinedLogic();
+                    getDataFromSelect();
                 }
             }
             catch (ex) {
@@ -5037,31 +5044,12 @@ var instance_Instance = /** @class */ (function (_super) {
             this.onError(queryHelper.error);
         }
     };
-    Instance.prototype.executeComplexLogic_ = function () {
-        var _this = this;
-        var selectObject = new instance["a" /* Instance */]({
-            from: this.query.in,
-            where: this.query.where,
-            ignoreCase: this.query.ignoreCase
-        }, function (results) {
-            var _a, _b;
-            var key = _this.getPrimaryKey(_this.query.in);
-            var inQuery = [];
-            results.forEach(function (value) {
-                inQuery.push(value[key]);
-            });
-            results = null;
-            var whereQry = (_a = {}, _a[key] = (_b = {}, _b[enums["g" /* QUERY_OPTION */].In] = inQuery, _b), _a);
-            _this.query.ignoreCase = null;
-            _this.query[enums["g" /* QUERY_OPTION */].Where] = whereQry;
-            _this.initTransaction();
-            _this.goToWhereLogic();
-        }, this.onError);
-        selectObject.isSubQuery = true;
-        selectObject.execute();
+    Instance.prototype.initTransaction_ = function () {
+        this.createTransaction([this.query.from], this.onTransactionCompleted_, enums["e" /* IDB_MODE */].ReadOnly);
+        this.objectStore = this.transaction.objectStore(this.query.from);
     };
     return Instance;
-}(where_Where));
+}(Where));
 
 
 
@@ -5438,10 +5426,16 @@ var instance_Instance = /** @class */ (function (_super) {
 
 "use strict";
 
-// EXTERNAL MODULE: ./src/worker/business/where_base.ts
-var where_base = __webpack_require__(11);
+// EXTERNAL MODULE: ./src/worker/business/base.ts + 2 modules
+var base = __webpack_require__(8);
 
-// CONCATENATED MODULE: ./src/worker/business/count/base_count.ts
+// EXTERNAL MODULE: ./src/worker/enums.ts
+var enums = __webpack_require__(0);
+
+// EXTERNAL MODULE: ./src/worker/utils/get_data_type.ts
+var get_data_type = __webpack_require__(32);
+
+// CONCATENATED MODULE: ./src/worker/business/update/base_update.ts
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -5456,31 +5450,64 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
-var BaseCount = /** @class */ (function (_super) {
-    __extends(BaseCount, _super);
-    function BaseCount() {
+
+
+var updateValue = function (suppliedValue, storedValue) {
+    for (var key in suppliedValue) {
+        if (Object(get_data_type["a" /* getDataType */])(suppliedValue[key]) !== enums["c" /* DATA_TYPE */].Object) {
+            storedValue[key] = suppliedValue[key];
+        }
+        else {
+            for (var op in suppliedValue[key]) {
+                switch (op) {
+                    case '+':
+                        storedValue[key] += suppliedValue[key][op];
+                        break;
+                    case '-':
+                        storedValue[key] -= suppliedValue[key][op];
+                        break;
+                    case '*':
+                        storedValue[key] *= suppliedValue[key][op];
+                        break;
+                    case '/':
+                        storedValue[key] /= suppliedValue[key][op];
+                        break;
+                    default: storedValue[key] = suppliedValue[key];
+                }
+                break;
+            }
+        }
+    }
+    return storedValue;
+};
+var BaseUpdate = /** @class */ (function (_super) {
+    __extends(BaseUpdate, _super);
+    function BaseUpdate() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.resultCount = 0;
         _this.onTransactionCompleted_ = function () {
-            if (_this.error == null) {
-                _this.onSuccess(_this.resultCount);
+            if (_this.error) {
+                _this.onError(_this.error);
             }
             else {
-                _this.onError(_this.error);
+                _this.onSuccess(_this.rowAffected);
             }
         };
         return _this;
     }
-    BaseCount.prototype.onQueryFinished = function () {
+    BaseUpdate.prototype.initTransaction = function () {
+        this.createTransaction([this.query.in], this.onTransactionCompleted_);
+        this.objectStore = this.transaction.objectStore(this.query.in);
+    };
+    BaseUpdate.prototype.onQueryFinished = function () {
         if (this.isTransaction === true) {
             this.onTransactionCompleted_();
         }
     };
-    return BaseCount;
-}(where_base["a" /* WhereBase */]));
+    return BaseUpdate;
+}(base["a" /* Base */]));
 
 
-// CONCATENATED MODULE: ./src/worker/business/count/not_where.ts
+// CONCATENATED MODULE: ./src/worker/business/update/not_where.ts
 var not_where_extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -5495,39 +5522,39 @@ var not_where_extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
-var NotWhere = /** @class */ (function (_super) {
+var not_where_NotWhere = /** @class */ (function (_super) {
     not_where_extends(NotWhere, _super);
     function NotWhere() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     NotWhere.prototype.executeWhereUndefinedLogic = function () {
         var _this = this;
-        if (this.objectStore.count) {
-            var countRequest_1 = this.objectStore.count();
-            countRequest_1.onsuccess = function () {
-                _this.resultCount = countRequest_1.result;
+        var cursor;
+        var cursorRequest = this.objectStore.openCursor();
+        cursorRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (cursor) {
+                try {
+                    var cursorUpdateRequest = cursor.update(updateValue(_this.query.set, cursor.value));
+                    cursorUpdateRequest.onsuccess = function () {
+                        ++_this.rowAffected;
+                        cursor.continue();
+                    };
+                    cursorUpdateRequest.onerror = _this.onErrorOccured.bind(_this);
+                }
+                catch (err) {
+                    _this.onErrorOccured(err);
+                    _this.transaction.abort();
+                }
+            }
+            else {
                 _this.onQueryFinished();
-            };
-            countRequest_1.onerror = this.onErrorOccured;
-        }
-        else {
-            var cursor_1;
-            var cursorRequest = this.objectStore.openCursor();
-            cursorRequest.onsuccess = function (e) {
-                cursor_1 = e.target.result;
-                if (cursor_1) {
-                    ++this._resultCount;
-                    cursor_1.continue();
-                }
-                else {
-                    this.onQueryFinished();
-                }
-            }.bind(this);
-            cursorRequest.onerror = this.onErrorOccured;
-        }
+            }
+        };
+        cursorRequest.onerror = this.onErrorOccured.bind(this);
     };
     return NotWhere;
-}(BaseCount));
+}(BaseUpdate));
 
 
 // EXTERNAL MODULE: ./src/worker/helpers/promise.ts
@@ -5536,7 +5563,7 @@ var promise = __webpack_require__(12);
 // EXTERNAL MODULE: ./src/worker/helpers/promise_all.ts
 var promise_all = __webpack_require__(13);
 
-// CONCATENATED MODULE: ./src/worker/business/count/in.ts
+// CONCATENATED MODULE: ./src/worker/business/update/in.ts
 var in_extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -5552,6 +5579,7 @@ var in_extends = (undefined && undefined.__extends) || (function () {
 })();
 
 
+
 var in_In = /** @class */ (function (_super) {
     in_extends(In, _super);
     function In() {
@@ -5559,8 +5587,9 @@ var in_In = /** @class */ (function (_super) {
     }
     In.prototype.executeInLogic = function (column, values) {
         var _this = this;
-        var cursor, cursorRequest;
+        var cursor;
         var columnStore = this.objectStore.index(column);
+        var cursorRequest;
         var runInLogic = function (value) {
             return Object(promise["a" /* promise */])(function (res, rej) {
                 cursorRequest = columnStore.openCursor(_this.getKeyRange(value));
@@ -5568,7 +5597,8 @@ var in_In = /** @class */ (function (_super) {
                     cursor = e.target.result;
                     if (cursor) {
                         if (_this.whereCheckerInstance.check(cursor.value)) {
-                            ++_this.resultCount;
+                            cursor.update(updateValue(_this.query.set, cursor.value));
+                            ++_this.rowAffected;
                         }
                         cursor.continue();
                     }
@@ -5579,18 +5609,6 @@ var in_In = /** @class */ (function (_super) {
                 cursorRequest.onerror = rej;
             });
         };
-        if (this.objectStore.count) {
-            runInLogic = function (value) {
-                return Object(promise["a" /* promise */])(function (res, rej) {
-                    cursorRequest = columnStore.count(_this.getKeyRange(value));
-                    cursorRequest.onsuccess = function (e) {
-                        _this.resultCount += e.target.result;
-                        res();
-                    };
-                    cursorRequest.onerror = rej;
-                });
-            };
-        }
         Object(promise_all["a" /* promiseAll */])(values.map(function (val) {
             return runInLogic(val);
         })).then(function () {
@@ -5600,10 +5618,10 @@ var in_In = /** @class */ (function (_super) {
         });
     };
     return In;
-}(NotWhere));
+}(not_where_NotWhere));
 
 
-// CONCATENATED MODULE: ./src/worker/business/count/regex.ts
+// CONCATENATED MODULE: ./src/worker/business/update/regex.ts
 var regex_extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -5618,7 +5636,8 @@ var regex_extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
-var Regex = /** @class */ (function (_super) {
+
+var regex_Regex = /** @class */ (function (_super) {
     regex_extends(Regex, _super);
     function Regex() {
         return _super !== null && _super.apply(this, arguments) || this;
@@ -5627,27 +5646,40 @@ var Regex = /** @class */ (function (_super) {
         var _this = this;
         var cursor;
         this.regexExpression = exp;
-        var cursorRequest = this.objectStore.index(column).openCursor();
-        cursorRequest.onerror = this.onErrorOccured;
-        cursorRequest.onsuccess = function (e) {
+        var cursorOpenRequest = this.objectStore.index(column).openCursor();
+        cursorOpenRequest.onsuccess = function (e) {
             cursor = e.target.result;
             if (cursor) {
                 if (_this.regexTest(cursor.key) &&
                     _this.whereCheckerInstance.check(cursor.value)) {
-                    ++_this.resultCount;
+                    try {
+                        var cursorUpdateRequest = cursor.update(updateValue(_this.query.set, cursor.value));
+                        cursorUpdateRequest.onsuccess = function () {
+                            ++_this.rowAffected;
+                            cursor.continue();
+                        };
+                        cursorUpdateRequest.onerror = _this.onErrorOccured.bind(_this);
+                    }
+                    catch (err) {
+                        _this.transaction.abort();
+                        _this.onErrorOccured(err);
+                    }
                 }
-                cursor.continue();
+                else {
+                    cursor.continue();
+                }
             }
             else {
                 _this.onQueryFinished();
             }
         };
+        cursorOpenRequest.onerror = this.onErrorOccured.bind(this);
     };
     return Regex;
 }(in_In));
 
 
-// CONCATENATED MODULE: ./src/worker/business/count/where.ts
+// CONCATENATED MODULE: ./src/worker/business/update/where.ts
 var where_extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -5662,55 +5694,50 @@ var where_extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
-var Where = /** @class */ (function (_super) {
+
+var where_Where = /** @class */ (function (_super) {
     where_extends(Where, _super);
     function Where() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     Where.prototype.executeWhereLogic = function (column, value, op) {
         var _this = this;
+        var cursor, cursorRequest;
         value = op ? value[op] : value;
-        var cursorRequest;
-        var cursor;
-        var initCursorAndFilter;
-        if (this.objectStore.count) {
-            initCursorAndFilter = function () {
-                cursorRequest = _this.objectStore.index(column).count(_this.getKeyRange(value, op));
-                cursorRequest.onsuccess = function () {
-                    _this.resultCount = cursorRequest.result;
-                    _this.onQueryFinished();
-                };
-            };
-        }
-        else {
-            initCursorAndFilter = function () {
-                cursorRequest = _this.objectStore.index(column).openCursor(_this.getKeyRange(value, op));
-                cursorRequest.onsuccess = function (e) {
-                    cursor = e.target.result;
-                    if (cursor) {
-                        if (_this.whereCheckerInstance.check(cursor.value)) {
-                            ++_this.resultCount;
-                        }
-                        cursor.continue();
+        cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
+        cursorRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (cursor) {
+                if (_this.whereCheckerInstance.check(cursor.value)) {
+                    try {
+                        var cursorUpdateRequest = cursor.update(updateValue(_this.query.set, cursor.value));
+                        cursorUpdateRequest.onsuccess = function () {
+                            ++_this.rowAffected;
+                            cursor.continue();
+                        };
+                        cursorUpdateRequest.onerror = _this.onErrorOccured.bind(_this);
                     }
-                    else {
-                        _this.onQueryFinished();
+                    catch (err) {
+                        _this.transaction.abort();
+                        _this.onErrorOccured(err);
                     }
-                };
-            };
-        }
-        initCursorAndFilter();
-        cursorRequest.onerror = this.onErrorOccured;
+                }
+                else {
+                    cursor.continue();
+                }
+            }
+            else {
+                _this.onQueryFinished();
+            }
+        };
+        cursorRequest.onerror = this.onErrorOccured.bind(this);
     };
     return Where;
-}(Regex));
+}(regex_Regex));
 
 
 // EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 9 modules
 var instance = __webpack_require__(25);
-
-// EXTERNAL MODULE: ./src/worker/enums.ts
-var enums = __webpack_require__(0);
 
 // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
 var query_helper = __webpack_require__(5);
@@ -5718,7 +5745,7 @@ var query_helper = __webpack_require__(5);
 // EXTERNAL MODULE: ./src/worker/utils/is_array.ts
 var is_array = __webpack_require__(33);
 
-// CONCATENATED MODULE: ./src/worker/business/count/instance.ts
+// CONCATENATED MODULE: ./src/worker/business/update/instance.ts
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return instance_Instance; });
 var instance_extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -5742,41 +5769,28 @@ var instance_Instance = /** @class */ (function (_super) {
     instance_extends(Instance, _super);
     function Instance(query, onSuccess, onError) {
         var _this = _super.call(this) || this;
-        _this.onError = onError;
         _this.onSuccess = onSuccess;
+        _this.onError = onError;
         _this.query = query;
+        _this.tableName = _this.query.in;
         return _this;
     }
     Instance.prototype.execute = function () {
-        var _this = this;
-        var queryHelper = new query_helper["a" /* QueryHelper */](enums["a" /* API */].Count, this.query);
+        var queryHelper = new query_helper["a" /* QueryHelper */](enums["a" /* API */].Update, this.query);
         queryHelper.checkAndModify();
         if (queryHelper.error == null) {
             try {
-                var getDataFromSelect = function () {
-                    var selectInstance = new instance["a" /* Instance */](_this.query, function (results) {
-                        _this.resultCount = results.length;
-                        _this.onTransactionCompleted_();
-                    }, _this.onError);
-                    selectInstance.execute();
-                };
-                if (this.query.join == null) {
-                    if (this.query.where != null) {
-                        if (this.query.where.or || Object(is_array["a" /* isArray */])(this.query.where)) {
-                            getDataFromSelect();
-                        }
-                        else {
-                            this.initTransaction_();
-                            this.goToWhereLogic();
-                        }
+                this.initTransaction();
+                if (this.query.where != null) {
+                    if (this.query.where.or || Object(is_array["a" /* isArray */])(this.query.where)) {
+                        this.executeComplexLogic_();
                     }
                     else {
-                        this.initTransaction_();
-                        this.executeWhereUndefinedLogic();
+                        this.goToWhereLogic();
                     }
                 }
                 else {
-                    getDataFromSelect();
+                    this.executeWhereUndefinedLogic();
                 }
             }
             catch (ex) {
@@ -5787,12 +5801,31 @@ var instance_Instance = /** @class */ (function (_super) {
             this.onError(queryHelper.error);
         }
     };
-    Instance.prototype.initTransaction_ = function () {
-        this.createTransaction([this.query.from], this.onTransactionCompleted_, enums["e" /* IDB_MODE */].ReadOnly);
-        this.objectStore = this.transaction.objectStore(this.query.from);
+    Instance.prototype.executeComplexLogic_ = function () {
+        var _this = this;
+        var selectObject = new instance["a" /* Instance */]({
+            from: this.query.in,
+            where: this.query.where,
+            ignoreCase: this.query.ignoreCase
+        }, function (results) {
+            var _a, _b;
+            var key = _this.getPrimaryKey(_this.query.in);
+            var inQuery = [];
+            results.forEach(function (value) {
+                inQuery.push(value[key]);
+            });
+            results = null;
+            var whereQry = (_a = {}, _a[key] = (_b = {}, _b[enums["g" /* QUERY_OPTION */].In] = inQuery, _b), _a);
+            _this.query.ignoreCase = null;
+            _this.query[enums["g" /* QUERY_OPTION */].Where] = whereQry;
+            _this.initTransaction();
+            _this.goToWhereLogic();
+        }, this.onError);
+        selectObject.isSubQuery = true;
+        selectObject.execute();
     };
     return Instance;
-}(Where));
+}(where_Where));
 
 
 
@@ -5859,10 +5892,10 @@ var getObjectFirstKey = function (value) {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Instance; });
 /* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(8);
 /* harmony import */ var _select_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(25);
-/* harmony import */ var _count_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(28);
+/* harmony import */ var _count_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(26);
 /* harmony import */ var _insert_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(24);
 /* harmony import */ var _remove_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(27);
-/* harmony import */ var _update_index__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(26);
+/* harmony import */ var _update_index__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(28);
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(0);
 /* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(5);
 /* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(1);
