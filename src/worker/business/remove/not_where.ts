@@ -15,6 +15,6 @@ export class NotWhere extends BaseRemove {
                 this.onQueryFinished();
             }
         };
-        cursorRequest.onerror = this.onErrorOccured;
+        cursorRequest.onerror = this.onErrorOccured.bind(this);
     }
 }

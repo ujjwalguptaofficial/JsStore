@@ -5,7 +5,6 @@ export class Regex extends In {
         let cursor: IDBCursorWithValue;
         this.regexExpression = exp;
         const cursorRequest = this.objectStore.index(column).openCursor();
-        cursorRequest.onerror = this.onErrorOccured;
 
         cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
@@ -21,5 +20,6 @@ export class Regex extends In {
                 this.onQueryFinished();
             }
         };
+        cursorRequest.onerror = this.onErrorOccured.bind(this);
     }
 }

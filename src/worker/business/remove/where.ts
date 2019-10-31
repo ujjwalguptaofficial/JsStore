@@ -21,6 +21,6 @@ export class Where extends Regex {
             }
         };
 
-        cursorRequest.onerror = this.onErrorOccured;
+        cursorRequest.onerror = this.onErrorOccured.bind(this);
     }
 }
