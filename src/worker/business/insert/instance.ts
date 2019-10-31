@@ -60,8 +60,8 @@ export class Instance extends Base {
             };
         }
 
-        this.createTransaction([this.query.into], this.onTransactionCompleted_);
-        objectStore = this.transaction.objectStore(this.query.into);
+        this.createTransaction([this.tableName], this.onTransactionCompleted_);
+        objectStore = this.transaction.objectStore(this.tableName);
         promiseAll(
             values.map(function (value) {
                 return promise(function (res, rej) {

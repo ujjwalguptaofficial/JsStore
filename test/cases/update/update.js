@@ -11,13 +11,13 @@ describe('Test update Api', function () {
                 customerId: 1
             }
         }).
-        then(function (results) {
-            expect(results).to.be.an('number').to.equal(1);
-            done();
-        }).
-        catch(function (err) {
-            done(err);
-        })
+            then(function (results) {
+                expect(results).to.be.an('number').to.equal(1);
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('wrong table test', function (done) {
@@ -31,16 +31,16 @@ describe('Test update Api', function () {
                 customerId: 1
             }
         }).
-        then(function (results) {
-            done(results);
-        }).catch(function (err) {
-            var error = {
-                "message": "Table 'Customerss' does not exist",
-                "type": "table_not_exist"
-            };
-            expect(err).to.be.an('object').eql(error);
-            done();
-        })
+            then(function (results) {
+                done(results);
+            }).catch(function (err) {
+                var error = {
+                    "message": "Table 'Customerss' does not exist",
+                    "type": "table_not_exist"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            })
     });
 
     it('update without set option', function (done) {
@@ -50,14 +50,14 @@ describe('Test update Api', function () {
                 customerId: 1
             }
         }).
-        catch(function (err) {
-            var error = {
-                "message": "supplied value is not object",
-                "type": "not_object"
-            };
-            expect(err).to.be.an('object').eql(error);
-            done();
-        })
+            catch(function (err) {
+                var error = {
+                    "message": "supplied value is not object",
+                    "type": "not_object"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            })
     });
 
     it('update with invalid set data', function (done) {
@@ -68,14 +68,14 @@ describe('Test update Api', function () {
             },
             set: 'sss'
         }).
-        catch(function (err) {
-            var error = {
-                "message": "supplied value is not object",
-                "type": "not_object"
-            };
-            expect(err).to.be.an('object').eql(error);
-            done();
-        })
+            catch(function (err) {
+                var error = {
+                    "message": "supplied value is not object",
+                    "type": "not_object"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            })
     });
 
     it('update with like -"%or%', function (done) {
@@ -93,9 +93,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('number').to.equal(11);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('update with like -"o%', function (done) {
@@ -113,9 +113,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('number').to.equal(3);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('update with like -"%o', function (done) {
@@ -133,9 +133,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('number').to.equal(6);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('update with like', function (done) {
@@ -153,9 +153,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('number').to.equal(11);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('update without ignore case', function (done) {
@@ -172,9 +172,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('number').to.equal(0);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('update with ignore case', function (done) {
@@ -192,9 +192,9 @@ describe('Test update Api', function () {
         }).then(function (results) {
             count = results;
         }).
-        catch(function (err) {
-            done(err);
-        });
+            catch(function (err) {
+                done(err);
+            });
 
         con.update({
             in: "Customers",
@@ -210,9 +210,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('number').to.equal(count);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('select with or', function (done) {
@@ -228,9 +228,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('array').length(6);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('update with or', function (done) {
@@ -249,9 +249,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('number').to.equal(6);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('update with in', function (done) {
@@ -266,9 +266,9 @@ describe('Test update Api', function () {
         }).then(function (results) {
             Count = results.length;
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
         con.update({
             in: 'Customers',
             where: {
@@ -284,9 +284,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('number').to.equal(Count);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('update with operator - != (for string)', function (done) {
@@ -301,9 +301,9 @@ describe('Test update Api', function () {
         }).then(function (results) {
             count = results;
         }).
-        catch(function (err) {
-            done(err);
-        });
+            catch(function (err) {
+                done(err);
+            });
 
         con.update({
             in: 'Customers',
@@ -320,9 +320,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('number').to.equal(count);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        });
+            catch(function (err) {
+                done(err);
+            });
     });
 
     it('update with operator - != (for number)', function (done) {
@@ -337,9 +337,9 @@ describe('Test update Api', function () {
         }).then(function (results) {
             count = results;
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
 
         con.update({
             in: 'Products',
@@ -356,9 +356,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('number').to.equal(count);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('select with operator - >', function (done) {
@@ -373,9 +373,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('array').length(37);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('update with operator - >', function (done) {
@@ -393,9 +393,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('number').to.equal(37);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('select with operator - >=', function (done) {
@@ -410,9 +410,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('array').length(38);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('update with operator - >=', function (done) {
@@ -430,9 +430,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('number').to.equal(38);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('select with operator - <', function (done) {
@@ -447,9 +447,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('array').length(39);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('update with operator - <', function (done) {
@@ -467,9 +467,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('number').to.equal(39);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('select with operator - <=', function (done) {
@@ -484,9 +484,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('array').length(40);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('update with operator - <=', function (done) {
@@ -504,9 +504,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('number').to.equal(40);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('select with operator - between', function (done) {
@@ -524,9 +524,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('array').length(29);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('update with operator - between', function (done) {
@@ -547,9 +547,9 @@ describe('Test update Api', function () {
             expect(results).to.be.an('number').to.equal(29);
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('update with where & key null in where', function (done) {
@@ -564,13 +564,50 @@ describe('Test update Api', function () {
             }
         }).
 
-        catch(function (err) {
-            var error = {
-                "message": "Null/undefined is not allowed in where. Column 'customerId' has null",
-                "type": "null_value_in_where"
-            };
-            expect(err).to.be.an('object').eql(error);
+            catch(function (err) {
+                var error = {
+                    "message": "Null/undefined is not allowed in where. Column 'customerId' has null",
+                    "type": "null_value_in_where"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            })
+    });
+
+    it('update primary key column value', function (done) {
+        con.update({
+            in: "Customers",
+            set: {
+                contactName: 'Ujjwal',
+                city: 'Bhubaneswar',
+                customerId: 1
+            }
+        }).
+            catch(function (err) {
+                expect(err.type).to.equal('DataError');
+                expect(err.message).to.be.an('string');
+                done();
+            })
+    });
+
+    it('update primary key column value with where', function (done) {
+        con.update({
+            in: "Customers",
+            set: {
+                contactName: 'Ujjwal',
+                city: 'Bhubaneswar',
+                customerId: 1
+            },
+            where: {
+                customerId: 5
+            }
+        }).then(function (res) {
+            debugger;
+            done(res);
+        }).catch(function (err) {
+            expect(err.type).to.equal('DataError');
+            expect(err.message).to.be.an('string');
             done();
-        })
+        });
     });
 });
