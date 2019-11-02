@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.4.3 - 31/10/2019
+ * @license :jsstore - V3.4.4 - 02/11/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -4759,29 +4759,29 @@ var NotWhere = /** @class */ (function (_super) {
     }
     NotWhere.prototype.executeWhereUndefinedLogic = function () {
         var _this = this;
+        var countRequest;
         if (this.objectStore.count) {
-            var countRequest_1 = this.objectStore.count();
-            countRequest_1.onsuccess = function () {
-                _this.resultCount = countRequest_1.result;
+            countRequest = this.objectStore.count();
+            countRequest.onsuccess = function () {
+                _this.resultCount = countRequest.result;
                 _this.onQueryFinished();
             };
-            countRequest_1.onerror = this.onErrorOccured;
         }
         else {
             var cursor_1;
-            var cursorRequest = this.objectStore.openCursor();
-            cursorRequest.onsuccess = function (e) {
+            countRequest = this.objectStore.openCursor();
+            countRequest.onsuccess = function (e) {
                 cursor_1 = e.target.result;
                 if (cursor_1) {
-                    ++this._resultCount;
+                    ++_this.resultCount;
                     cursor_1.continue();
                 }
                 else {
-                    this.onQueryFinished();
+                    _this.onQueryFinished();
                 }
-            }.bind(this);
-            cursorRequest.onerror = this.onErrorOccured;
+            };
         }
+        countRequest.onerror = this.onErrorOccured.bind(this);
     };
     return NotWhere;
 }(BaseCount));
@@ -4885,7 +4885,6 @@ var Regex = /** @class */ (function (_super) {
         var cursor;
         this.regexExpression = exp;
         var cursorRequest = this.objectStore.index(column).openCursor();
-        cursorRequest.onerror = this.onErrorOccured;
         cursorRequest.onsuccess = function (e) {
             cursor = e.target.result;
             if (cursor) {
@@ -4899,6 +4898,7 @@ var Regex = /** @class */ (function (_super) {
                 _this.onQueryFinished();
             }
         };
+        cursorRequest.onerror = this.onErrorOccured.bind(this);
     };
     return Regex;
 }(in_In));
@@ -4957,7 +4957,7 @@ var Where = /** @class */ (function (_super) {
             };
         }
         initCursorAndFilter();
-        cursorRequest.onerror = this.onErrorOccured;
+        cursorRequest.onerror = this.onErrorOccured.bind(this);
     };
     return Where;
 }(Regex));
@@ -5124,7 +5124,7 @@ var NotWhere = /** @class */ (function (_super) {
                 _this.onQueryFinished();
             }
         };
-        cursorRequest.onerror = this.onErrorOccured;
+        cursorRequest.onerror = this.onErrorOccured.bind(this);
     };
     return NotWhere;
 }(BaseRemove));
@@ -5216,7 +5216,6 @@ var Regex = /** @class */ (function (_super) {
         var cursor;
         this.regexExpression = exp;
         var cursorRequest = this.objectStore.index(column).openCursor();
-        cursorRequest.onerror = this.onErrorOccured;
         cursorRequest.onsuccess = function (e) {
             cursor = e.target.result;
             if (cursor) {
@@ -5231,6 +5230,7 @@ var Regex = /** @class */ (function (_super) {
                 _this.onQueryFinished();
             }
         };
+        cursorRequest.onerror = this.onErrorOccured.bind(this);
     };
     return Regex;
 }(in_In));
@@ -5274,7 +5274,7 @@ var Where = /** @class */ (function (_super) {
                 _this.onQueryFinished();
             }
         };
-        cursorRequest.onerror = this.onErrorOccured;
+        cursorRequest.onerror = this.onErrorOccured.bind(this);
     };
     return Where;
 }(Regex));
