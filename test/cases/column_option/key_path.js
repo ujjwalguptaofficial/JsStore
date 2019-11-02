@@ -34,7 +34,7 @@ describe('keyPath test', function () {
                     console.log('pinCodes inserted');
                     var time2 = performance.now();
                     console.log((time2 - time1) / 1000);
-                    expect(results).to.be.an('number');
+                    expect(results).to.be.an('number').to.equal(5000);
                     done();
                 }).
                     catch(function (err) {
