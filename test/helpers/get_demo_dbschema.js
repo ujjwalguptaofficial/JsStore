@@ -21,7 +21,8 @@ var getDemoDbSchema = function () {
         columns: {
             categoryId: { primaryKey: true, autoIncrement: true },
             categoryName: { notNull: true, dataType: 'string' },
-            description: { notNull: true, dataType: 'string' }
+            description: { notNull: true, dataType: 'string' },
+            invalidColumn: { notNull: true, dataType: 'string', enableSearch: false }
         }
     }
 

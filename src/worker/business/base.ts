@@ -122,8 +122,8 @@ export abstract class Base extends BaseHelper {
         else {
             const column: Column = this.getColumnInfo(columnName, this.tableName);
             const error = column == null ?
-                new LogHelper(ERROR_TYPE.ColumnNotExist, { ColumnName: columnName }) :
-                new LogHelper(ERROR_TYPE.EnableSearchOff, { ColumnName: columnName });
+                new LogHelper(ERROR_TYPE.ColumnNotExist, { column: columnName }) :
+                new LogHelper(ERROR_TYPE.EnableSearchOff, { column: columnName });
 
             this.onErrorOccured(error, true);
         }

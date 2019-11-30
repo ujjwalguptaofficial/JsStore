@@ -69,7 +69,7 @@ export class LogHelper implements IError {
                     `Column '${this.info_['column']}' does not exist`;
                 break;
             case ERROR_TYPE.EnableSearchOff:
-                errMsg = "Search is turned off for the Column '" + this.info_['ColumnName'] + "'";
+                errMsg = "Search is turned off for the Column '" + this.info_['column'] + "'";
                 break;
             case ERROR_TYPE.NullValue:
                 errMsg = "Null value is not allowed for column '" + this.info_['ColumnName'] + "'";

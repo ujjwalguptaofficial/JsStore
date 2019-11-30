@@ -41,23 +41,37 @@ describe('Test Select Api', function () {
             })
     });
 
-    // it('EnableSearch column test', function (done) {
-    //     con.select({
-    //         from: 'Customers',
-    //         where: {
-    //             email: 'uk@gmail.com'
-    //         }
-    //     }).then(function () {
-    //         done();
-    //     }).catch(function (err) {
-    //         var error = {
-    //             "message": "Search is turned off for the Column 'email'",
-    //             "type": "enable_search_off"
-    //         };
-    //         expect(err).to.be.an('object').eql(error);
-    //         done();
-    //     })
-    // });
+    it('undefined column test', function (done) {
+        con.select({
+            from: 'Customers',
+            where: {
+                emailId: 'uk@gmail.com'
+            }
+        }).catch(function (err) {
+            var error = {
+                message: "Column 'emailId' does not exist",
+                type: "column_not_exist"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    });
+
+    it('enable search column test', function (done) {
+        con.select({
+            from: 'Categories',
+            where: {
+                invalidColumn: 'invalidColumn'
+            }
+        }).catch(function (err) {
+            var error = {
+                message: "Search is turned off for the Column 'invalidColumn'",
+                type: "enable_search_off"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    });
 
     it('select with where', function (done) {
         con.select({

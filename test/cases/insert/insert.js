@@ -51,12 +51,20 @@ describe('Test insert', function () {
             }
         }).then(function (customers) {
             expect(customers[0]).to.haveOwnProperty('customerName').equal('Wolski');
+            console.log("before upsert results", customers);
             con.insert({
                 into: 'Customers',
                 upsert: true,
                 return: true,
-                values: [{ "customerId": 91, "customerName": "Jon Snow", "contactName": "Zbyszek", "address": "ul. Filtrowa 68", "city": "Walla", "postalCode": "01-012", "country": "Poland" }]
+                values: [{
+                    "customerId": 91, "customerName": "Jon Snow",
+                    "contactName": "Zbyszek", "address": "ul. Filtrowa 68",
+                    "city": "Walla",
+                    // "postalCode": "01-012", 
+                    "country": "Poland"
+                }]
             }).then(function (results) {
+                console.log("upsert results", results);
                 expect(results).to.be.an('array').length(1);
                 expect(results[0]).to.haveOwnProperty('customerName').equal('Jon Snow');
                 done();
