@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.4.4 - 02/11/2019
+ * @license :jsstore - V3.4.5 - 30/11/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -284,7 +284,7 @@ var LogHelper = /** @class */ (function () {
                     "Column '" + this.info_['column'] + "' does not exist";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__[/* ERROR_TYPE */ "d"].EnableSearchOff:
-                errMsg = "Search is turned off for the Column '" + this.info_['ColumnName'] + "'";
+                errMsg = "Search is turned off for the Column '" + this.info_['column'] + "'";
                 break;
             case _enums__WEBPACK_IMPORTED_MODULE_0__[/* ERROR_TYPE */ "d"].NullValue:
                 errMsg = "Null value is not allowed for column '" + this.info_['ColumnName'] + "'";
@@ -1820,8 +1820,8 @@ var base_Base = /** @class */ (function (_super) {
         else {
             var column = this.getColumnInfo(columnName, this.tableName);
             var error = column == null ?
-                new log_helper["a" /* LogHelper */](enums["d" /* ERROR_TYPE */].ColumnNotExist, { ColumnName: columnName }) :
-                new log_helper["a" /* LogHelper */](enums["d" /* ERROR_TYPE */].EnableSearchOff, { ColumnName: columnName });
+                new log_helper["a" /* LogHelper */](enums["d" /* ERROR_TYPE */].ColumnNotExist, { column: columnName }) :
+                new log_helper["a" /* LogHelper */](enums["d" /* ERROR_TYPE */].EnableSearchOff, { column: columnName });
             this.onErrorOccured(error, true);
         }
     };
