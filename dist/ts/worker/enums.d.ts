@@ -100,5 +100,6 @@ export declare enum API {
     FinishTransaction = "finish_transaction",
     Terminate = "terminate",
     InitKeyStore = "init_keystore",
-    CloseDb = "close_db"
+    CloseDb = "close_db",
+    Union = "union"
 }

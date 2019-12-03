@@ -36,7 +36,8 @@ export declare enum API {
     Terminate = "terminate",
     Transaction = "transaction",
     InitKeyStore = "init_keystore",
-    CloseDb = "close_db"
+    CloseDb = "close_db",
+    Union = "union"
 }
 export declare enum EVENT {
     RequestQueueEmpty = "requestQueueEmpty",

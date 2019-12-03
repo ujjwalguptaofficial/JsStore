@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.4.5 - 30/11/2019
+ * @license :jsstore - V3.5.0 - 03/12/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -171,6 +171,7 @@ var API;
     API["Transaction"] = "transaction";
     API["InitKeyStore"] = "init_keystore";
     API["CloseDb"] = "close_db";
+    API["Union"] = "union";
 })(API || (API = {}));
 var EVENT;
 (function (EVENT) {
@@ -572,6 +573,12 @@ var Instance = /** @class */ (function (_super) {
         });
         indexes.forEach(function (i) {
             _this.eventQueue.splice(i, 0);
+        });
+    };
+    Instance.prototype.union = function (query) {
+        return this.pushApi({
+            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Union,
+            query: query
         });
     };
     return Instance;

@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.4.5 - 30/11/2019
+ * @license :jsstore - V3.5.0 - 03/12/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -214,6 +214,7 @@ var API;
     API["Terminate"] = "terminate";
     API["InitKeyStore"] = "init_keystore";
     API["CloseDb"] = "close_db";
+    API["Union"] = "union";
 })(API || (API = {}));
 
 
@@ -585,7 +586,7 @@ var promise = __webpack_require__(12);
 // EXTERNAL MODULE: ./src/worker/helpers/auto_increment_helper.ts
 var auto_increment_helper = __webpack_require__(23);
 
-// EXTERNAL MODULE: ./src/worker/query_executor.ts + 7 modules
+// EXTERNAL MODULE: ./src/worker/query_executor.ts + 8 modules
 var query_executor = __webpack_require__(9);
 
 // CONCATENATED MODULE: ./src/worker/business/insert/values_checker.ts
@@ -2162,7 +2163,7 @@ var table_helper_TableHelper = /** @class */ (function () {
 
 
 // EXTERNAL MODULE: ./src/worker/helpers/promise_all.ts
-var promise_all = __webpack_require__(13);
+var promise_all = __webpack_require__(14);
 
 // CONCATENATED MODULE: ./src/worker/model/db_helper.ts
 
@@ -2253,8 +2254,44 @@ var database_DataBase = /** @class */ (function () {
 // EXTERNAL MODULE: ./src/worker/utils/get_data_type.ts
 var get_data_type = __webpack_require__(32);
 
+// CONCATENATED MODULE: ./src/worker/business/union/index.ts
+
+var union_Union = /** @class */ (function () {
+    function Union() {
+    }
+    Union.prototype.execute = function (query, onSuccess, onError) {
+        var index = 0;
+        var hashMap = {};
+        var fetchData = function () {
+            if (index < query.length) {
+                new select_instance["a" /* Instance */](query[index++], function (selectResult) {
+                    selectResult.forEach(function (val) {
+                        var columnValKey = "";
+                        for (var key in val) {
+                            columnValKey += val[key];
+                        }
+                        hashMap[columnValKey] = val;
+                    });
+                    fetchData();
+                }, onError).execute();
+            }
+            else {
+                var results = [];
+                for (var key in hashMap) {
+                    results.push(hashMap[key]);
+                }
+                onSuccess(results);
+            }
+        };
+        fetchData();
+    };
+    return Union;
+}());
+
+
 // CONCATENATED MODULE: ./src/worker/query_executor.ts
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return query_executor_QueryExecutor; });
+
 
 
 
@@ -2415,6 +2452,9 @@ var query_executor_QueryExecutor = /** @class */ (function () {
             case enums["a" /* API */].CloseDb:
             case enums["a" /* API */].Terminate:
                 this.terminate_(onSuccess, onError);
+                break;
+            case enums["a" /* API */].Union:
+                new union_Union().execute(request.query, onSuccess, onError);
                 break;
             case enums["a" /* API */].InitKeyStore:
                 this.initKeyStore_(onSuccess);
@@ -2630,7 +2670,8 @@ var promise = function (callBack) {
 
 
 /***/ }),
-/* 13 */
+/* 13 */,
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2641,7 +2682,6 @@ var promiseAll = function (promises) {
 
 
 /***/ }),
-/* 14 */,
 /* 15 */,
 /* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -2825,7 +2865,7 @@ var DropDb = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 
-// EXTERNAL MODULE: ./src/worker/query_executor.ts + 7 modules
+// EXTERNAL MODULE: ./src/worker/query_executor.ts + 8 modules
 var query_executor = __webpack_require__(9);
 
 // EXTERNAL MODULE: ./src/worker/config.ts
@@ -2904,7 +2944,7 @@ var instance = __webpack_require__(6);
 /* harmony import */ var _business_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5);
 /* harmony import */ var _keystore_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6);
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(12);
-/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(13);
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(14);
 /* harmony import */ var _query_executor__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(9);
 
 
@@ -2947,7 +2987,7 @@ var setAutoIncrementValue = function (table, autoIncrementValue) {
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Instance; });
 /* harmony import */ var _base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(8);
-/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(13);
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(14);
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(12);
 /* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5);
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(0);
@@ -3234,7 +3274,7 @@ var not_where_NotWhere = /** @class */ (function (_super) {
 var promise = __webpack_require__(12);
 
 // EXTERNAL MODULE: ./src/worker/helpers/promise_all.ts
-var promise_all = __webpack_require__(13);
+var promise_all = __webpack_require__(14);
 
 // CONCATENATED MODULE: ./src/worker/business/select/in.ts
 var in_extends = (undefined && undefined.__extends) || (function () {
@@ -4791,7 +4831,7 @@ var NotWhere = /** @class */ (function (_super) {
 var promise = __webpack_require__(12);
 
 // EXTERNAL MODULE: ./src/worker/helpers/promise_all.ts
-var promise_all = __webpack_require__(13);
+var promise_all = __webpack_require__(14);
 
 // CONCATENATED MODULE: ./src/worker/business/count/in.ts
 var in_extends = (undefined && undefined.__extends) || (function () {
@@ -5134,7 +5174,7 @@ var NotWhere = /** @class */ (function (_super) {
 var promise = __webpack_require__(12);
 
 // EXTERNAL MODULE: ./src/worker/helpers/promise_all.ts
-var promise_all = __webpack_require__(13);
+var promise_all = __webpack_require__(14);
 
 // CONCATENATED MODULE: ./src/worker/business/remove/in.ts
 var in_extends = (undefined && undefined.__extends) || (function () {
@@ -5561,7 +5601,7 @@ var not_where_NotWhere = /** @class */ (function (_super) {
 var promise = __webpack_require__(12);
 
 // EXTERNAL MODULE: ./src/worker/helpers/promise_all.ts
-var promise_all = __webpack_require__(13);
+var promise_all = __webpack_require__(14);
 
 // CONCATENATED MODULE: ./src/worker/business/update/in.ts
 var in_extends = (undefined && undefined.__extends) || (function () {
@@ -5899,7 +5939,7 @@ var getObjectFirstKey = function (value) {
 /* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(0);
 /* harmony import */ var _query_helper__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(5);
 /* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(1);
-/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(13);
+/* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(14);
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(23);
 /* harmony import */ var _helpers_index__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(12);
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(7);

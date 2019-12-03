@@ -156,4 +156,5 @@ export declare class Instance extends InstanceHelper {
     runSql(query: string | object): Promise<any>;
     on(event: EVENT, eventCallBack: Function): void;
     off(event: EVENT, eventCallBack: Function): void;
+    union<T>(query: SelectQuery[]): Promise<T>;
 }
