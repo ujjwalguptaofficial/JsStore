@@ -18,6 +18,7 @@ import { WebWorkerResult, WebWorkerRequest } from "./types";
 import { IDataBase, IError } from "./interfaces";
 import { promise } from "./helpers/index";
 import { getDataType } from "./utils/index";
+import { Union } from './business/union/index';
 
 export class QueryExecutor {
     static isTransactionQuery = false;
@@ -161,6 +162,9 @@ export class QueryExecutor {
             case API.CloseDb:
             case API.Terminate:
                 this.terminate_(onSuccess, onError);
+                break;
+            case API.Union:
+                new Union().execute(request.query, onSuccess, onError);
                 break;
             case API.InitKeyStore:
                 this.initKeyStore_(onSuccess);

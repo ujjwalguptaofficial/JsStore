@@ -10,6 +10,7 @@ exports.list_of_files = [
     'test/cases/db_init.js',
     'test/cases/insert/*.js',
     'test/cases/select/*.js',
+    'test/cases/union/*.js',
     'test/cases/count/*.js',
     'test/cases/transaction/*.js',
     'test/cases/update/*.js',

@@ -302,4 +302,11 @@ export class Instance extends InstanceHelper {
             this.eventQueue.splice(i, 0);
         });
     }
+
+    union<T>(query: SelectQuery[]) {
+        return this.pushApi<T>({
+            name: API.Union,
+            query
+        });
+    }
 }
