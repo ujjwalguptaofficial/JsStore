@@ -1,9 +1,0 @@
-#################
-## Directories
-#################
-
-node_modules/
-.nuxt/
-output/
-build/
-bin/
