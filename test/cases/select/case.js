@@ -80,8 +80,6 @@ describe('Test Select Api with case', function () {
                 }]
             }
         }).then(function (results) {
-            console.log('results');
-            console.table(results);
             expect(results).to.be.an('array').length(8);
             var spainCount = 0;
             var notSpainCount = 0;
@@ -219,63 +217,42 @@ describe('Test Select Api with case', function () {
         })
     });
 
-    it('select with order by,limit 5, deep eql', function (done) {
+    it('select with order by,limit 5', function (done) {
         con.select({
             from: 'Customers',
             order: {
                 by: 'country',
                 type: "desc"
             },
-            limit: 5
-        }).
-            then(function (results) {
-                var datas = [{
-                    "customerId": 47,
-                    "customerName": "LINO-Delicateses",
-                    "contactName": "Felipe Izquierdo",
-                    "address": "Ave. 5 de Mayo Porlamar",
-                    "city": "I. de Margarita",
-                    "postalCode": "4980",
-                    "country": "Venezuela"
+            limit: 5,
+            case: {
+                country: [{
+                    '!=': 'Venezuela',
+                    then: 'U.S.A.'
                 }, {
-                    "customerId": 46,
-                    "customerName": "LILA-Supermercado",
-                    "contactName": "Carlos González",
-                    "address": "Carrera 52 con Ave. Bolívar #65-98 Llano Largo",
-                    "city": "Barquisimeto",
-                    "postalCode": "3508",
-                    "country": "Venezuela"
-                }, {
-                    "customerId": 35,
-                    "customerName": "HILARIÓN-Abastos",
-                    "contactName": "Carlos Hernández",
-                    "address": "Carrera 22 con Ave. Carlos Soublette #8-35",
-                    "city": "San Cristóbal",
-                    "postalCode": "5022",
-                    "country": "Venezuela"
-                }, {
-                    "customerId": 33,
-                    "customerName": "GROSELLA-Restaurante",
-                    "contactName": "Manuel Pereira",
-                    "address": "5ª Ave. Los Palos Grandes",
-                    "city": "Caracas",
-                    "postalCode": "1081",
-                    "country": "Venezuela"
-                }, {
-                    "customerId": 89,
-                    "customerName": "White Clover Markets",
-                    "contactName": "Karl Jablonski",
-                    "address": "305 - 14th Ave. S. Suite 3B",
-                    "city": "Seattle",
-                    "postalCode": "98128",
-                    "country": "USA"
-                }];
-                expect(results).to.be.an('array').length(5).deep.equal(datas);
-                done();
-            }).
-            catch(function (err) {
-                done(err);
+                    then: 'Venezuela'
+                }]
+            }
+        }).then(function (results) {
+            console.log('results');
+            console.table(results);
+            expect(results).to.be.an('array').length(5);
+            var venezuelaCount = 0;
+            var usaCount = 0;
+            results.forEach(function (result) {
+                if (result.country === 'Venezuela') {
+                    venezuelaCount++;
+                }
+                else if (result.country === 'U.S.A.') {
+                    usaCount++;
+                }
             })
+            expect(venezuelaCount).to.be.equal(4);
+            expect(usaCount).to.be.equal(1);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
     });
 
     it('select * from suppliers where postalCode like - "43951%"', function (done) {
