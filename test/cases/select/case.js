@@ -234,8 +234,6 @@ describe('Test Select Api with case', function () {
                 }]
             }
         }).then(function (results) {
-            console.log('results');
-            console.table(results);
             expect(results).to.be.an('array').length(5);
             var venezuelaCount = 0;
             var usaCount = 0;
@@ -297,5 +295,125 @@ describe('Test Select Api with case', function () {
             expect(otherCount).to.be.equal(7);
             done();
         }).catch(done);
+    });
+
+    it('select with operator - >', function (done) {
+        con.select({
+            from: 'Products',
+            case: {
+                price: [{
+                    ">": 20, then: "200"
+                }, {
+                    then: 2000
+                }]
+            }
+        }).then(function (results) {
+            console.table(results);
+            var twentyCount = 0;
+            var otherCount = 0;
+            results.forEach(function (result) {
+                if (result.price === "200") {
+                    twentyCount++;
+                }
+                else if (result.price === 2000) {
+                    otherCount++;
+                }
+            })
+            expect(twentyCount).to.be.equal(37);
+            expect(otherCount).to.be.equal(40);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('select with operator - >=', function (done) {
+        con.select({
+            from: 'Products',
+            case: {
+                price: [{
+                    ">=": 20, then: 200
+                }, {
+                    then: 2000
+                }]
+            }
+        }).then(function (results) {
+            console.table(results);
+            var twentyCount = 0;
+            var otherCount = 0;
+            results.forEach(function (result) {
+                if (result.price === 200) {
+                    twentyCount++;
+                }
+                else if (result.price === 2000) {
+                    otherCount++;
+                }
+            })
+            expect(twentyCount).to.be.equal(38);
+            expect(otherCount).to.be.equal(39);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('select with operator - <=', function (done) {
+        con.select({
+            from: 'Products',
+            case: {
+                price: [{
+                    "<=": 20, then: 200
+                }, {
+                    then: 2000
+                }]
+            }
+        }).then(function (results) {
+            console.table(results);
+            var twentyCount = 0;
+            var otherCount = 0;
+            results.forEach(function (result) {
+                if (result.price === 200) {
+                    twentyCount++;
+                }
+                else if (result.price === 2000) {
+                    otherCount++;
+                }
+            })
+            expect(twentyCount).to.be.equal(40);
+            expect(otherCount).to.be.equal(37);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('select with operator - <', function (done) {
+        con.select({
+            from: 'Products',
+            case: {
+                price: [{
+                    "<": 20, then: 200
+                }, {
+                    then: 2000
+                }]
+            }
+        }).then(function (results) {
+            console.table(results);
+            var twentyCount = 0;
+            var otherCount = 0;
+            results.forEach(function (result) {
+                if (result.price === 200) {
+                    twentyCount++;
+                }
+                else if (result.price === 2000) {
+                    otherCount++;
+                }
+            })
+            expect(twentyCount).to.be.equal(39);
+            expect(otherCount).to.be.equal(38);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
     });
 });
