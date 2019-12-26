@@ -202,20 +202,20 @@ describe('Test Select Api with case', function () {
         })
     });
 
-    it('select with order by', function (done) {
-        con.select({
-            from: 'Customers',
-            order: {
-                by: 'country',
-                type: "desc"
-            }
-        }).then(function (results) {
-            expect(results).to.be.an('array').length(93);
-            done();
-        }).catch(function (err) {
-            done(err);
-        })
-    });
+    // it('select with order by', function (done) {
+    //     con.select({
+    //         from: 'Customers',
+    //         order: {
+    //             by: 'country',
+    //             type: "desc"
+    //         }
+    //     }).then(function (results) {
+    //         expect(results).to.be.an('array').length(93);
+    //         done();
+    //     }).catch(function (err) {
+    //         done(err);
+    //     })
+    // });
 
     it('select with order by,limit 5', function (done) {
         con.select({
@@ -255,45 +255,6 @@ describe('Test Select Api with case', function () {
         })
     });
 
-    it('select * from suppliers where postalCode like - "43951%"', function (done) {
-        con.select({
-            from: 'Suppliers',
-            where: {
-                postalCode: {
-                    like: '43951%'
-                }
-            }
-        }).
-            then(function (results) {
-                if (results.length > 0) {
-                    expect(results).to.be.an('array').length(3);
-                    done();
-                } else {
-                    done('no results');
-                }
-            }).
-            catch(function (err) {
-                done(err);
-            });
-    });
-
-    it('select with where & key null', function (done) {
-        con.select({
-            from: 'Customers',
-            where: {
-                country: null
-            }
-        }).
-            catch(function (err) {
-                var error = {
-                    "message": "Null/undefined is not allowed in where. Column 'country' has null",
-                    "type": "null_value_in_where"
-                };
-                expect(err).to.be.an('object').eql(error);
-                done();
-            })
-    });
-
     it('select with where & limit', function (done) {
         con.select({
             from: 'Customers',
@@ -303,9 +264,37 @@ describe('Test Select Api with case', function () {
                     like: '%n%'
                 }
             },
-            limit: 10
+            limit: 10,
+            case: {
+                city: [{
+                    '=': "Berlin",
+                    then: 'Berlin Germany'
+                }, {
+                    '=': "Aachen",
+                    then: 'Aachen Germany'
+                }, {
+                    then: 'Others'
+                }]
+            }
         }).then(function (results) {
             expect(results).to.be.an('array').length(9);
+            var berlinCount = 0;
+            var aachenCount = 0;
+            var otherCount = 0;
+            results.forEach(function (result) {
+                if (result.city === 'Berlin Germany') {
+                    berlinCount++;
+                }
+                else if (result.city === 'Aachen Germany') {
+                    aachenCount++;
+                }
+                else if (result.city === 'Others') {
+                    otherCount++;
+                }
+            })
+            expect(berlinCount).to.be.equal(1);
+            expect(aachenCount).to.be.equal(1);
+            expect(otherCount).to.be.equal(7);
             done();
         }).catch(done);
     });
