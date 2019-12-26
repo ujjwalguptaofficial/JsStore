@@ -62,6 +62,7 @@ export enum QUERY_OPTION {
     Like = 'like',
     Regex = 'regex',
     In = 'in',
+    Equal = "=",
     Between = '-',
     GreaterThan = '>',
     LessThan = '<',
@@ -78,7 +79,8 @@ export enum QUERY_OPTION {
     Skip = "skip",
     Limit = "limit",
     And = "and",
-    IgnoreCase = "ignoreCase"
+    IgnoreCase = "ignoreCase",
+    Then = "then"
 }
 
 export enum IDB_MODE {

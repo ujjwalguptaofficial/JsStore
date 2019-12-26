@@ -1,5 +1,6 @@
 import { WhereBase } from "../where_base";
 import { SelectQuery } from "../../types";
+import { QUERY_OPTION } from "../../enums";
 
 export class BaseSelect extends WhereBase {
     sorted = false;
@@ -16,6 +17,58 @@ export class BaseSelect extends WhereBase {
 
     isOrderWithLimit = false;
     isOrderWithSkip = false;
+
+    protected pushResult(value) {
+        const checkCase = (columnName, cond) => {
+            for (const queryOption in cond) {
+                switch (queryOption) {
+                    case QUERY_OPTION.GreaterThan:
+                        if (value[columnName] > cond[queryOption]) {
+                            return true;
+                        }
+                    case QUERY_OPTION.Equal:
+                        if (value[columnName] === cond[queryOption]) {
+                            return true;
+                        }
+                    case QUERY_OPTION.LessThan:
+                        if (value[columnName] < cond[queryOption]) {
+                            return false;
+                        }
+                    case QUERY_OPTION.GreaterThanEqualTo:
+                        if (value[columnName] >= cond[queryOption]) {
+                            return true;
+                        }
+                    case QUERY_OPTION.LessThanEqualTo:
+                        if (value[columnName] <= cond[queryOption]) {
+                            return true;
+                        }
+                    case QUERY_OPTION.NotEqualTo:
+                        if (value[columnName] !== cond[queryOption]) {
+                            return true;
+                        }
+                }
+            }
+            return false;
+        }
+        for (const columnName in this.query.case) {
+            const caseColumnQuery = this.query.case[columnName];
+            // const cond = caseColumnQuery[0];
+            let isNotConditionMet = true;
+            caseColumnQuery.every((qry) => {
+                if (checkCase(columnName, qry) === true) {
+                    isNotConditionMet = false;
+                    value[columnName] = qry.then;
+                    return false;
+                }
+                return true;
+            });
+            if (isNotConditionMet === true) {
+                value[columnName] = caseColumnQuery[caseColumnQuery.length - 1].then;
+            }
+        }
+        return this.results.push(value);
+    }
+
     protected removeDuplicates() {
         let datas = this.results;
         // free results memory

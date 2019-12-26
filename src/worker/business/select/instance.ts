@@ -11,6 +11,9 @@ export class Instance extends Join {
         super();
         this.onError = onError;
         this.onSuccess = onSuccess;
+        if (query.case == null) {
+            query.case = {};
+        }
         this.query = query;
         this.skipRecord = query.skip;
         this.limitRecord = query.limit;

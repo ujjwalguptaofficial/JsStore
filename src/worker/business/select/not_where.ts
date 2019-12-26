@@ -9,7 +9,7 @@ export class NotWhere extends BaseSelect {
                 const orderType: IDBCursorDirection = this.query.order.type &&
                     this.query.order.type.toLowerCase() === 'desc' ? 'prev' : 'next';
                 this.sorted = true;
-               cursorRequest = this.objectStore.index(this.query.order.by).
+                cursorRequest = this.objectStore.index(this.query.order.by).
                     openCursor(null, orderType);
             }
             else {
@@ -19,10 +19,10 @@ export class NotWhere extends BaseSelect {
             }
         }
         else {
-           cursorRequest = this.objectStore.openCursor();
+            cursorRequest = this.objectStore.openCursor();
         }
 
-       cursorRequest.onerror = this.onErrorOccured;
+        cursorRequest.onerror = this.onErrorOccured;
 
         if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
             if (this.skipRecord && this.limitRecord) {
@@ -46,7 +46,7 @@ export class NotWhere extends BaseSelect {
     private executeSkipAndLimitForNoWhere_() {
         let recordSkipped = false,
             cursor: IDBCursorWithValue;
-       cursorRequest.onsuccess = (e) => {
+        cursorRequest.onsuccess = (e) => {
             cursor = (e as any).target.result;
             if (cursor) {
                 if (recordSkipped && this.results.length !== this.limitRecord) {
@@ -66,7 +66,7 @@ export class NotWhere extends BaseSelect {
     private executeSkipForNoWhere_() {
         let recordSkipped = false,
             cursor;
-       cursorRequest.onsuccess = (e: any) => {
+        cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (cursor) {
                 if (recordSkipped) {
@@ -85,21 +85,21 @@ export class NotWhere extends BaseSelect {
 
     private executeSimpleForNotWhere_() {
         let cursor;
-       cursorRequest.onsuccess = function (e) {
+        cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (cursor) {
-                this.results.push(cursor.value);
+                this.pushResult(cursor.value);
                 (cursor as any).continue();
             }
             else {
                 this.onQueryFinished();
             }
-        }.bind(this);
+        };
     }
 
     private executeLimitForNotWhere_() {
         let cursor;
-       cursorRequest.onsuccess = (e: any) => {
+        cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (cursor && this.results.length !== this.limitRecord) {
                 this.results.push(cursor.value);
