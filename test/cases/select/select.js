@@ -282,31 +282,29 @@ describe('Test Select Api', function () {
         con.select({
             from: 'Customers',
             groupBy: "country"
-        }).
-            then(function (results) {
-                expect(results).to.be.an('array').length(22);
-                done();
-            }).
-            catch(function (err) {
-                done(err);
-            })
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(22);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
     });
 
     it('select with order by', function (done) {
         con.select({
             from: 'Customers',
-            Order: {
+            order: {
                 by: 'country',
                 type: "desc"
             }
-        }).
-            then(function (results) {
-                expect(results).to.be.an('array').length(93);
-                done();
-            }).
-            catch(function (err) {
-                done(err);
-            })
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(93);
+            expect(results[0].country).equal("Venezuela");
+            expect(results[results.length - 1].country).equal("Argentina");
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
     });
 
     it('select with order by,limit 5, deep eql', function (done) {

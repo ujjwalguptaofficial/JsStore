@@ -17,7 +17,7 @@ export class Instance extends Join {
         this.query = query;
         this.skipRecord = query.skip;
         this.limitRecord = query.limit;
-        this.tableName = query.from as string;
+        this.tableName = query.from;
         if (query.order) {
             if (isArray(query.order)) {
                 query.order.idbSorting = false;

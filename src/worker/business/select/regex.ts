@@ -12,7 +12,7 @@ export class Regex extends In {
         this.regexExpression = exp;
         skipOrPush = (val) => {
             if (skip === 0) {
-                this.results.push(val);
+                this.pushResult(val);
             }
             else {
                 --skip;
@@ -23,8 +23,8 @@ export class Regex extends In {
                 this.whereCheckerInstance.check(cursor.value);
         };
 
-       cursorRequest = this.objectStore.index(column).openCursor();
-       cursorRequest.onerror = this.onErrorOccured;
+        cursorRequest = this.objectStore.index(column).openCursor();
+        cursorRequest.onerror = this.onErrorOccured;
         if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
             if (this.skipRecord && this.limitRecord) {
                 this.executeSkipAndLimitForRegex_();
@@ -45,7 +45,7 @@ export class Regex extends In {
     }
 
     private executeSkipAndLimitForRegex_() {
-       cursorRequest.onsuccess = (e: any) => {
+        cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (this.results.length !== this.limitRecord && cursor) {
                 if (shouldAddValue()) {
@@ -59,7 +59,7 @@ export class Regex extends In {
     }
 
     private executeSkipForRegex_() {
-       cursorRequest.onsuccess = (e: any) => {
+        cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (cursor) {
                 if (shouldAddValue()) {
@@ -73,11 +73,11 @@ export class Regex extends In {
     }
 
     private executeLimitForRegex_() {
-       cursorRequest.onsuccess = (e: any) => {
+        cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (this.results.length !== this.limitRecord && cursor) {
                 if (shouldAddValue()) {
-                    this.results.push(cursor.value);
+                    this.pushResult(cursor.value);
                 }
                 cursor.continue();
             } else {
@@ -87,11 +87,11 @@ export class Regex extends In {
     }
 
     private executeSimpleForRegex_() {
-       cursorRequest.onsuccess = (e: any) => {
+        cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (cursor) {
                 if (shouldAddValue()) {
-                    this.results.push(cursor.value);
+                    this.pushResult(cursor.value);
                 }
                 cursor.continue();
             } else {

@@ -25,23 +25,23 @@ export class BaseSelect extends WhereBase {
                     case QUERY_OPTION.GreaterThan:
                         if (value[columnName] > cond[queryOption]) {
                             return true;
-                        }
+                        } break;
                     case QUERY_OPTION.Equal:
                         if (value[columnName] === cond[queryOption]) {
                             return true;
-                        }
+                        } break;
                     case QUERY_OPTION.LessThan:
                         if (value[columnName] < cond[queryOption]) {
-                            return false;
-                        }
+                            return true;
+                        } break;
                     case QUERY_OPTION.GreaterThanEqualTo:
                         if (value[columnName] >= cond[queryOption]) {
                             return true;
-                        }
+                        } break;
                     case QUERY_OPTION.LessThanEqualTo:
                         if (value[columnName] <= cond[queryOption]) {
                             return true;
-                        }
+                        } break;
                     case QUERY_OPTION.NotEqualTo:
                         if (value[columnName] !== cond[queryOption]) {
                             return true;
@@ -49,7 +49,7 @@ export class BaseSelect extends WhereBase {
                 }
             }
             return false;
-        }
+        };
         for (const columnName in this.query.case) {
             const caseColumnQuery = this.query.case[columnName];
             // const cond = caseColumnQuery[0];

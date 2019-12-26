@@ -50,7 +50,7 @@ export class NotWhere extends BaseSelect {
             cursor = (e as any).target.result;
             if (cursor) {
                 if (recordSkipped && this.results.length !== this.limitRecord) {
-                    this.results.push(cursor.value);
+                    this.pushResult(cursor.value);
                     cursor.continue();
                 }
                 else {
@@ -70,7 +70,7 @@ export class NotWhere extends BaseSelect {
             cursor = e.target.result;
             if (cursor) {
                 if (recordSkipped) {
-                    this.results.push(cursor.value);
+                    this.pushResult(cursor.value);
                     cursor.continue();
                 }
                 else {
@@ -102,7 +102,7 @@ export class NotWhere extends BaseSelect {
         cursorRequest.onsuccess = (e: any) => {
             cursor = e.target.result;
             if (cursor && this.results.length !== this.limitRecord) {
-                this.results.push(cursor.value);
+                this.pushResult(cursor.value);
                 cursor.continue();
             } else {
                 this.onQueryFinished();

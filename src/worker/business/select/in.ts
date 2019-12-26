@@ -10,7 +10,7 @@ export class In extends NotWhere {
         skip = this.skipRecord;
         skipOrPush = (val) => {
             if (skip === 0) {
-                this.results.push(val);
+                this.pushResult(val);
             }
             else {
                 --skip;
@@ -116,7 +116,7 @@ export class In extends NotWhere {
                     cursor = e.target.result;
                     if (cursor && this.results.length !== this.limitRecord) {
                         if (shouldAddValue()) {
-                            this.results.push(cursor.value);
+                            this.pushResult(cursor.value);
                         }
                         cursor.continue();
                     }
@@ -149,7 +149,7 @@ export class In extends NotWhere {
                     cursor = e.target.result;
                     if (cursor) {
                         if (shouldAddValue()) {
-                            this.results.push(cursor.value);
+                            this.pushResult(cursor.value);
                         }
                         cursor.continue();
                     }

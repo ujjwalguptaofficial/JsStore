@@ -44,7 +44,7 @@ export class Where extends Regex {
             if (cursor) {
                 if (recordSkipped && this.results.length !== this.limitRecord) {
                     if (shouldAddValue()) {
-                        this.results.push(cursor.value);
+                        this.pushResult(cursor.value);
                     }
                     cursor.continue();
                 }
@@ -67,7 +67,7 @@ export class Where extends Regex {
             if (cursor) {
                 if (recordSkipped) {
                     if (shouldAddValue()) {
-                        this.results.push(cursor.value);
+                        this.pushResult(cursor.value);
                     }
                     cursor.continue();
                 }
@@ -87,7 +87,7 @@ export class Where extends Regex {
             cursor = e.target.result;
             if (cursor && this.results.length !== this.limitRecord) {
                 if (shouldAddValue()) {
-                    this.results.push(cursor.value);
+                    this.pushResult(cursor.value);
                 }
                 cursor.continue();
             }
@@ -103,7 +103,7 @@ export class Where extends Regex {
             cursor = e.target.result;
             if (cursor) {
                 if (shouldAddValue()) {
-                    this.results.push(cursor.value);
+                    this.pushResult(cursor.value);
                 }
                 cursor.continue();
             }
