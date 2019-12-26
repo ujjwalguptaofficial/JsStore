@@ -80,42 +80,19 @@ export class Helper extends GroupByHelper {
         return a.getTime() - b.getTime();
     }
 
-    private getValueComparer_(column: IColumn, order: OrderQuery) {
-        let orderMethod: (a, b) => number;
+    private getValueComparer_(column: IColumn, order: OrderQuery): (a, b) => number {
+    
         switch (column.dataType) {
             case DATA_TYPE.String:
-                if (order.type === 'asc') {
-                    orderMethod = this.compareStringinAsc_;
-                }
-                else {
-                    orderMethod = this.compareStringInDesc_;
-                }
-                break;
+                return order.type === 'asc' ? this.compareStringinAsc_ : this.compareStringInDesc_;
             case DATA_TYPE.Number:
-                if (order.type === 'asc') {
-                    orderMethod = this.compareNumberinAsc_;
-                }
-                else {
-                    orderMethod = this.compareNumberInDesc_;
-                }
-                break;
+                return order.type === 'asc' ? this.compareNumberinAsc_ : this.compareNumberInDesc_;
             case DATA_TYPE.DateTime:
-                if (order.type === 'asc') {
-                    orderMethod = this.compareDateInAsc_;
-                }
-                else {
-                    orderMethod = this.compareDateInDesc_;
-                }
-                break;
+                return order.type === 'asc' ? this.compareDateInAsc_ : this.compareDateInDesc_;
             default:
-                if (order.type === 'asc') {
-                    orderMethod = this.compareDefaultinAsc_;
-                }
-                else {
-                    orderMethod = this.compareDefaultInDesc_;
-                }
+                return order.type === 'asc' ? this.compareDefaultinAsc_ : this.compareDefaultInDesc_;
         }
-        return orderMethod;
+        
     }
 
     private orderBy_(order: OrderQuery) {

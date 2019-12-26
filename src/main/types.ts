@@ -44,6 +44,16 @@ export type SelectQuery = {
     aggregate?: AggregateOption;
     ignoreCase?: boolean;
     distinct?: boolean;
+    case?: { [columnName: string]: [SelectCase] }
+};
+
+export type SelectCase = {
+    '>'?: any;
+    '<'?: any;
+    '>='?: any;
+    '<='?: any;
+    '-'?: any;
+    then: any;
 };
 
 export type AggregateOption = {

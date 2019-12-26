@@ -62,6 +62,7 @@ export type OrderQuery = {
     by: string; // Column name
     type: string;
     idbSorting: boolean;
+    case?: { [columnName: string]: [SelectCase] }
 };
 
 export type CountQuery = {
