@@ -308,7 +308,6 @@ describe('Test Select Api with case', function () {
                 }]
             }
         }).then(function (results) {
-            // console.table(results);
             var twentyCount = 0;
             var otherCount = 0;
             results.forEach(function (result) {
@@ -338,7 +337,6 @@ describe('Test Select Api with case', function () {
                 }]
             }
         }).then(function (results) {
-            // console.table(results);
             var twentyCount = 0;
             var otherCount = 0;
             results.forEach(function (result) {
@@ -368,7 +366,6 @@ describe('Test Select Api with case', function () {
                 }]
             }
         }).then(function (results) {
-            // console.table(results);
             var twentyCount = 0;
             var otherCount = 0;
             results.forEach(function (result) {
@@ -398,7 +395,6 @@ describe('Test Select Api with case', function () {
                 }]
             }
         }).then(function (results) {
-            // console.table(results);
             var twentyCount = 0;
             var otherCount = 0;
             results.forEach(function (result) {
@@ -416,4 +412,92 @@ describe('Test Select Api with case', function () {
             done(err);
         })
     });
+
+    it('join', function (done) {
+        con.select({
+            from: "Orders",
+            case: {
+                employeeId: [
+                    {
+                        '>': 8,
+                        then: 'I am 8'
+                    },
+                    {
+                        then: 'others'
+                    }
+                ]
+            },
+            join: {
+                with: "Customers",
+                type: "inner",
+                on: "Orders.customerId=Customers.customerId",
+                as: {
+                    customerName: "name",
+                    contactName: "cName",
+                    customerId: "cId"
+                }
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(196);
+            var eightCount = 0;
+            var otherCount = 0;
+            results.forEach(function (result) {
+                if (result.employeeId === 'I am 8') {
+                    eightCount++;
+                }
+                else if (result.employeeId === 'others') {
+                    otherCount++;
+                }
+            })
+            expect(eightCount).to.be.equal(6);
+            expect(otherCount).to.be.equal(190);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    })
+
+    it('join with order', function (done) {
+        con.select({
+            from: "Orders",
+            case: {
+                employeeId: [
+                    {
+                        '>': 8,
+                        then: 'I am 8'
+                    },
+                    {
+                        then: 'others'
+                    }
+                ]
+            },
+            join: {
+                with: "Customers",
+                type: "inner",
+                on: "Orders.customerId=Customers.customerId",
+                as: {
+                    customerName: "name",
+                    contactName: "cName",
+                    customerId: "cId"
+                }
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(196);
+            var eightCount = 0;
+            var otherCount = 0;
+            results.forEach(function (result) {
+                if (result.employeeId === 'I am 8') {
+                    eightCount++;
+                }
+                else if (result.employeeId === 'others') {
+                    otherCount++;
+                }
+            })
+            expect(eightCount).to.be.equal(6);
+            expect(otherCount).to.be.equal(190);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    })
 });
