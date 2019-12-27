@@ -101,6 +101,7 @@ export class Helper extends GroupByHelper {
         if (columnInfo != null) {
             const orderMethod = this.getValueComparer_(columnInfo, order);
             orderColumn = columnInfo.name;
+
             if (order.case == null || order.case[orderColumn] == null) {
                 this.results.sort((a, b) => {
                     return orderMethod(a[orderColumn], b[orderColumn]);
@@ -108,13 +109,17 @@ export class Helper extends GroupByHelper {
             }
             else {
                 const caseColumnQuery = order.case[orderColumn];
+                const length = caseColumnQuery.length;
+                const lastThen = caseColumnQuery[length - 1].then;
+                const getLastThen = lastThen == null ? (value) => value[orderColumn] : () => lastThen;
+
                 const getOrderValue = (value) => {
-                    for (let i = 0, length = caseColumnQuery.length; i < length; i++) {
+                    for (let i = 0; i < length; i++) {
                         if (this.checkCase(orderColumn, caseColumnQuery[i], value) === true) {
                             return caseColumnQuery[i].then;
                         }
                     }
-                    return caseColumnQuery[caseColumnQuery.length - 1].then;
+                    return getLastThen(value);
                 };
                 this.results.sort((a, b) => {
                     return orderMethod(getOrderValue(a), getOrderValue(b));

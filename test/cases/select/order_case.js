@@ -28,6 +28,34 @@ describe('Select with order & case', function () {
         })
     })
 
+    it('order by country with null as default', function (done) {
+        con.select({
+            from: 'Customers',
+            limit: 10,
+            order: {
+                by: 'country',
+                case: {
+                    country: [{
+                        '=': 'Austria',
+                        then: "a"
+                    }, {
+                        then: null
+                    }]
+                }
+            }
+        }).then(function (results) {
+            var countries = ["Austria", "Austria", "Argentina", "Argentina", "Argentina",
+                "Belgium", "Belgium", "Brazil", "Brazil", "Brazil"];
+            expect(results).to.be.an('array').length(10);
+            results.forEach(function (result, i) {
+                expect(result.country).to.be.equal(countries[i]);
+            });
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    })
+
     it('order having type desc with limit', function (done) {
         con.select({
             from: 'Products',
