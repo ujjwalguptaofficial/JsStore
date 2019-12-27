@@ -126,7 +126,6 @@ describe('Select with order & case', function () {
             var expecteResult = ['Eggs', 'nest', 'bite', 'gator', 'caYman', 'Grip',
                 'grips', 'Jaw', 'crocodilian', 'Bayou'
             ];
-            console.table(results);
             expect(results).to.deep.equal(expecteResult);
             done();
         }).catch(done)

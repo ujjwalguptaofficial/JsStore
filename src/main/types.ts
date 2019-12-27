@@ -21,7 +21,14 @@ export type OrderQuery = {
      * default - true
      * @type {boolean}
      */
-    idbSorting?: boolean
+    idbSorting?: boolean;
+
+    /**
+     * use this option to modify ordering
+     *
+     * @type {{ [columnName: string]: [SelectCase] }}
+     */
+    case?: { [columnName: string]: [SelectCase] }
 };
 
 export type JoinQuery = {

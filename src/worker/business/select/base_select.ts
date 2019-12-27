@@ -1,5 +1,5 @@
 import { WhereBase } from "../where_base";
-import { SelectQuery } from "../../types";
+import { SelectQuery, SelectCase } from "../../types";
 import { QUERY_OPTION } from "../../enums";
 
 export class BaseSelect extends WhereBase {
@@ -38,7 +38,7 @@ export class BaseSelect extends WhereBase {
         return this.results.push(value);
     }
 
-    protected checkCase(columnName, cond, value) {
+    protected checkCase(columnName: string, cond: SelectCase, value) {
         for (const queryOption in cond) {
             switch (queryOption) {
                 case QUERY_OPTION.GreaterThan:
