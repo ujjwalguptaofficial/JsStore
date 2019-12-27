@@ -1,5 +1,5 @@
 import { Where } from "./where";
-import { DATA_TYPE, QUERY_OPTION } from "../../enums";
+import { DATA_TYPE, QUERY_OPTION } from "../../../common/index";
 import { getDataType } from "../../utils/index";
 
 export class GroupByHelper extends Where {

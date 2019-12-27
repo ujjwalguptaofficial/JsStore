@@ -1,11 +1,9 @@
-import { API, ERROR_TYPE, QUERY_OPTION, DATA_TYPE } from "../enums";
+import { API, ERROR_TYPE, QUERY_OPTION, DATA_TYPE, InsertQuery, IError } from "../../common/index";
 import { IdbHelper } from "./idb_helper";
-import { InsertQuery } from "../types";
 import { LogHelper } from "../log_helper";
 import * as Update from "./update/index";
 import * as Insert from "./insert/index";
 import { Table } from "../model/index";
-import { IError } from "../interfaces";
 import { promise } from "../helpers/index";
 import { getDataType } from "../utils/index";
 
@@ -200,6 +198,6 @@ export class QueryHelper {
         }
     }
 
-    
+
 
 }

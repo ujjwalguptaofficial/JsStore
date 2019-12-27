@@ -1,4 +1,4 @@
-import { DATA_TYPE } from "../enums";
+import { DATA_TYPE } from "../../common/index";
 
 export const getDataType = (value) => {
     if (value == null) {

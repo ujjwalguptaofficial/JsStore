@@ -1,9 +1,6 @@
+import { IColumnOption } from "../../common/index";
 
-import { LogHelper } from "../log_helper";
-import { ERROR_TYPE } from "../enums";
-import { IColumn } from "../interfaces";
-
-export class Column implements IColumn {
+export class Column implements IColumnOption {
     name: string;
     autoIncrement: boolean;
     primaryKey: boolean;
@@ -15,7 +12,7 @@ export class Column implements IColumn {
     enableSearch: boolean;
     keyPath: string[];
 
-    constructor(key: IColumn) {
+    constructor(key: Column) {
         this.name = key.name;
         this.autoIncrement = key.autoIncrement != null ? key.autoIncrement : false;
         this.primaryKey = key.primaryKey != null ? key.primaryKey : false;

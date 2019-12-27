@@ -1,7 +1,6 @@
-import { CONNECTION_STATUS, ERROR_TYPE, IDB_MODE } from "../enums";
+import { CONNECTION_STATUS, ERROR_TYPE, IDB_MODE, IDbStatus } from "../../common/index";
 import { KeyStore } from "../keystore/index";
-import { IDbStatus } from "../interfaces";
-import { DataBase, Table } from "../model/index";
+import { DataBase } from "../model/index";
 import { DropDb } from "./drop_db";
 import { promise } from "../helpers/index";
 

@@ -7,15 +7,13 @@ import * as Update from './business/update/index';
 import * as Transaction from "./business/transaction/index";
 import { LogHelper } from "./log_helper";
 import {
-    UpdateQuery,
-    InsertQuery, RemoveQuery, SelectQuery, CountQuery, SetQuery
-} from "./types";
-import { CONNECTION_STATUS, ERROR_TYPE, DATA_TYPE, API } from "./enums";
+    UpdateQuery, InsertQuery, RemoveQuery, SelectQuery, CountQuery, SetQuery,
+    CONNECTION_STATUS, ERROR_TYPE, DATA_TYPE, API,
+    WebWorkerResult, WebWorkerRequest, IDataBase, IError
+} from "../common/index";
 import { Config } from "./config";
 import { KeyStore } from "./keystore/index";
 import { TableHelper, DbHelper, DataBase } from "./model/index";
-import { WebWorkerResult, WebWorkerRequest } from "./types";
-import { IDataBase, IError } from "./interfaces";
 import { promise } from "./helpers/index";
 import { getDataType } from "./utils/index";
 import { Union } from './business/union/index';

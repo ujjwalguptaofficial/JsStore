@@ -1,8 +1,6 @@
 import { Where } from "./where";
-import { RemoveQuery } from "../../types";
+import { RemoveQuery, QUERY_OPTION, API, IError } from "../../../common/index";
 import * as Select from '../select/index';
-import { QUERY_OPTION, API } from "../../enums";
-import { IError } from "../../interfaces";
 import { QueryHelper } from "../index";
 import { getObjectFirstKey, isArray } from "../../utils/index";
 

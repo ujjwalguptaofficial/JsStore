@@ -1,9 +1,9 @@
 import { IError } from "../interfaces";
-import * as Worker from '../../export';
 import { CONNECTION_STATUS } from "../enums";
 import { Utils } from "../utils_logic";
 import { IdbHelper } from "./idb_helper";
 import { QueryExecutor } from "../query_executor";
+import { ERROR_TYPE } from "../../../common/index";
 
 export let tempDatas;
 export class InitDb {
@@ -14,7 +14,7 @@ export class InitDb {
             if ((event as any).target.error.name === 'InvalidStateError') {
                 onError({
                     message: "Indexeddb is blocked",
-                    type: Worker.ERROR_TYPE.IndexedDbNotSupported
+                    type: ERROR_TYPE.IndexedDbNotSupported
                 } as IError);
             }
             else {
@@ -27,14 +27,14 @@ export class InitDb {
             IdbHelper.dbConnection = dbRequest.result;
             IdbHelper.dbConnection.onclose = () => {
                 IdbHelper.callDbDroppedByBrowser();
-                Utils.updateDbStatus(CONNECTION_STATUS.Closed, Worker.ERROR_TYPE.ConnectionClosed);
+                Utils.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
             };
 
             IdbHelper.dbConnection.onversionchange = (e: any) => {
                 if (e.newVersion === null) { // An attempt is made to delete the db
                     e.target.close(); // Manually close our connection to the db
                     IdbHelper.callDbDroppedByBrowser();
-                    Utils.updateDbStatus(CONNECTION_STATUS.Closed, Worker.ERROR_TYPE.ConnectionClosed);
+                    Utils.updateDbStatus(CONNECTION_STATUS.Closed, ERROR_TYPE.ConnectionClosed);
                 }
             };
 

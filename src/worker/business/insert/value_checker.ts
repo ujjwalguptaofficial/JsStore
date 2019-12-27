@@ -1,5 +1,5 @@
 import { Table, Column } from "../../model/index";
-import { ERROR_TYPE, DATA_TYPE } from "../../enums";
+import { ERROR_TYPE, DATA_TYPE } from "../../../common/index";
 import { LogHelper } from "../../log_helper";
 import { isNull, getDataType } from "../../utils/index";
 

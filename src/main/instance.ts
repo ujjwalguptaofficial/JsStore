@@ -1,13 +1,10 @@
-import { API, EVENT } from "./enums";
 import { InstanceHelper } from "./instance_helper";
 import {
-    SelectQuery, CountQuery, InsertQuery,
-    UpdateQuery, RemoveQuery, DbInfo, TranscationQuery
-} from "./types";
+    SelectQuery, CountQuery, InsertQuery, SetQuery,
+    UpdateQuery, RemoveQuery, DbInfo, TranscationQuery, API, IDataBase, EVENT
+} from "../common/index";
 import { Config } from "./config";
-import { SetQuery } from "../worker/types";
 import { Util } from "./util";
-import { IDataBase } from "./interfaces";
 
 export class Instance extends InstanceHelper {
 

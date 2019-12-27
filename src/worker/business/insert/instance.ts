@@ -1,10 +1,8 @@
 import { Base } from "../base";
-import { InsertQuery } from "../../types";
+import { InsertQuery, IError, API } from "../../../common/index";
 import { Table } from "../../model/index";
-import { IError } from "../../interfaces";
 import { promiseAll, promise } from "../../helpers/index";
 import { QueryHelper } from "../query_helper";
-import { API } from "../../enums";
 
 export class Instance extends Base {
     private valuesAffected_ = [];

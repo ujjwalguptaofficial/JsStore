@@ -1,13 +1,14 @@
-import { TranscationQuery, WebWorkerRequest, SelectQuery, RemoveQuery, CountQuery, UpdateQuery, InsertQuery } from "../../types";
+import {
+    TranscationQuery, WebWorkerRequest, SelectQuery, RemoveQuery,
+    CountQuery, UpdateQuery, InsertQuery, ERROR_TYPE, API, IError
+} from "../../../common/index";
 import { Base } from "../base";
 import * as Select from '../select/index';
 import * as Count from '../count/index';
 import * as Insert from '../insert/index';
 import * as Remove from '../remove/index';
 import * as Update from '../update/index';
-import { API, ERROR_TYPE } from "../../enums";
 import { QueryHelper } from "../query_helper";
-import { IError } from "../../interfaces";
 import { LogHelper } from "../../log_helper";
 import { promise, promiseAll, getAutoIncrementValues } from "../../helpers/index";
 import { Config } from "../../config";

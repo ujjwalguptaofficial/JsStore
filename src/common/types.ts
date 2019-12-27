@@ -88,7 +88,8 @@ export type DbInfo = {
 };
 
 export type CountQuery = {
-    from: any;
+    from: string;
+    join?: JoinQuery;
     ignoreCase?: boolean;
     where?: { [columnName: string]: any };
 };
@@ -102,7 +103,7 @@ export type RemoveQuery = {
 export type UpdateQuery = {
     in: string;
     ignoreCase?: boolean;
-    set: any;
+    set: { [columnName: string]: any };
     where?: { [columnName: string]: any };
 };
 
@@ -135,4 +136,9 @@ export type SqlWebResult = {
 export type EventQueue = {
     event: EVENT;
     callback: Function
+};
+
+export type SetQuery = {
+    key: string;
+    value: any;
 };

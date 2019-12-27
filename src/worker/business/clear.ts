@@ -1,5 +1,5 @@
 import { Base } from "./base";
-import { IError } from "../interfaces";
+import { IError } from "../../common/index";
 import { Column } from "../model/index";
 import { KeyStore } from "../keystore/index";
 

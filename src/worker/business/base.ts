@@ -1,11 +1,9 @@
 import { BaseHelper } from "./base_helper";
-import { IError } from "../interfaces";
+import { IError, ERROR_TYPE, OCCURENCE, DATA_TYPE, QUERY_OPTION } from "../../common/index";
 import { WhereChecker } from "./where_checker";
 import { LogHelper } from "../log_helper";
-import { ERROR_TYPE, OCCURENCE, DATA_TYPE } from "../enums";
 import { Column } from "../model/index";
-import { QUERY_OPTION } from "../enums";
-import { getDataType, isString, getObjectFirstKey } from "../utils/index";
+import { getDataType, getObjectFirstKey } from "../utils/index";
 
 export abstract class Base extends BaseHelper {
     error: IError;
@@ -17,7 +15,7 @@ export abstract class Base extends BaseHelper {
     whereCheckerInstance: WhereChecker;
     tableName: string;
     isTransaction: boolean;
-    
+
     skipRecord;
     limitRecord;
 

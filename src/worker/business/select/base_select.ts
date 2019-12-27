@@ -1,6 +1,6 @@
 import { WhereBase } from "../where_base";
-import { SelectQuery, SelectCase } from "../../types";
-import { QUERY_OPTION } from "../../enums";
+import { SelectQuery, SelectCase, QUERY_OPTION } from "../../../common/index";
+
 
 export class BaseSelect extends WhereBase {
     sorted = false;

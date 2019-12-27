@@ -1,6 +1,5 @@
-import { JoinQuery } from "../../types";
 import * as Select from './instance';
-import { QUERY_OPTION, DATA_TYPE, ERROR_TYPE, API } from "../../enums";
+import { QUERY_OPTION, DATA_TYPE, ERROR_TYPE, JoinQuery } from "../../../common/index";
 import { Helper } from "./orderby_helper";
 import { LogHelper } from "../../log_helper";
 import { getDataType, removeSpace } from "../../utils/index";

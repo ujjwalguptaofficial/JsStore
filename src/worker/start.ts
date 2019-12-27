@@ -1,7 +1,8 @@
 import { QueryExecutor } from "./query_executor";
 import { Config } from "./config";
 import { IdbHelper } from "./business/index";
-import { CONNECTION_STATUS, ERROR_TYPE } from "./enums";
+import { CONNECTION_STATUS, ERROR_TYPE } from "../common/index";
+
 export const initialize = function () {
     if (typeof (self as any).alert === 'undefined' && typeof ServiceWorkerGlobalScope === 'undefined') {
         Config.isRuningInWorker = true;

@@ -1,6 +1,6 @@
 import { BaseSelect } from "./base_select";
 import { LogHelper } from "../../log_helper";
-import { ERROR_TYPE } from "../../enums";
+import { ERROR_TYPE } from "../../../common/index";
 let cursorRequest: IDBRequest;
 export class NotWhere extends BaseSelect {
     protected executeWhereUndefinedLogic() {

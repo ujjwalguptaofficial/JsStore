@@ -1,6 +1,6 @@
-import { SelectQuery } from "../../types";
 import * as Select from '../select/index';
-import { IError } from "../../interfaces";
+import { SelectQuery, IError } from '../../../common/index';
+
 
 export class Union {
     execute(query: SelectQuery[], onSuccess: (results: object[]) => void, onError: (err: IError) => void) {

@@ -1,5 +1,5 @@
 import { IdbHelper } from "./idb_helper";
-import { QUERY_OPTION } from "../enums";
+import { QUERY_OPTION } from "../../common/index";
 import { DataBase } from "../model/index";
 
 export class BaseHelper {

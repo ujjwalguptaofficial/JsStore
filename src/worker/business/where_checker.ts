@@ -1,4 +1,4 @@
-import { OCCURENCE, QUERY_OPTION } from "../enums";
+import { OCCURENCE, QUERY_OPTION } from "../../common/index";
 
 /**
  * For matching the different column value existance for where option

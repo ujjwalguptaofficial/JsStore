@@ -1,10 +1,8 @@
 import { Where } from "./where";
-import { UpdateQuery, SelectQuery } from "../../types";
 import * as Select from "../select/index";
-import { QUERY_OPTION, API } from "../../enums";
-import { IError } from "../../interfaces";
 import { QueryHelper } from "../query_helper";
 import { isArray } from "../../utils/index";
+import { UpdateQuery, IError, API, SelectQuery, QUERY_OPTION } from "../../../common/index";
 
 export class Instance extends Where {
 

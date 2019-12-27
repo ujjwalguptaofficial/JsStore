@@ -1,7 +1,6 @@
 import { Base } from "../base";
-import { UpdateQuery } from "../../types";
-import { DATA_TYPE } from "../../enums";
 import { getDataType } from "../../utils/index";
+import { DATA_TYPE, UpdateQuery } from "../../../common/index";
 
 export const updateValue = (suppliedValue, storedValue) => {
     for (const key in suppliedValue) {

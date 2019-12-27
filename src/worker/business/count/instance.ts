@@ -1,8 +1,6 @@
 import { Where } from "./where";
-import { CountQuery } from "../../types";
+import {  IError, API, CountQuery, IDB_MODE } from "../../../common/index";
 import * as Select from '../select/index';
-import { IDB_MODE, API } from "../../enums";
-import { IError } from "../../interfaces";
 import { QueryHelper } from "../query_helper";
 import { isArray } from "../../utils/index";
 

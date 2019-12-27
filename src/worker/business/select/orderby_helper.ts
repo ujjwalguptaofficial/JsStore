@@ -1,9 +1,8 @@
 import { GroupByHelper } from "./group_by_helper";
-import { DATA_TYPE, ERROR_TYPE, QUERY_OPTION } from "../../enums";
+import { DATA_TYPE, ERROR_TYPE, QUERY_OPTION, OrderQuery } from "../../../common/index";
 import { LogHelper } from "../../log_helper";
-import { IColumn } from "../../interfaces";
-import { OrderQuery } from "../../types";
 import { getDataType, removeSpace } from "../../utils/index";
+import { Column } from "../../model/index";
 
 export class Helper extends GroupByHelper {
 
@@ -32,8 +31,8 @@ export class Helper extends GroupByHelper {
         }
     }
 
-    private getOrderColumnInfo_(orderColumn: string): IColumn {
-        let column: IColumn;
+    private getOrderColumnInfo_(orderColumn: string): Column {
+        let column: Column;
         if (this.query.join == null) {
             column = this.getColumnInfo(orderColumn, this.query.from);
         }
@@ -80,7 +79,7 @@ export class Helper extends GroupByHelper {
         return a.getTime() - b.getTime();
     }
 
-    private getValueComparer_(column: IColumn, order: OrderQuery): (a, b) => number {
+    private getValueComparer_(column: Column, order: OrderQuery): (a, b) => number {
 
         switch (column.dataType) {
             case DATA_TYPE.String:
@@ -127,7 +126,7 @@ export class Helper extends GroupByHelper {
     private getOrderType_(type: string) {
         return type == null ? 'asc' : type.toLowerCase();
     }
-    
+
     protected processOrderBy() {
         const order = this.query.order;
         if (order && this.results.length > 0 && !this.sorted) {

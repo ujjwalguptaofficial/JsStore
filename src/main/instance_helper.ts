@@ -1,7 +1,6 @@
 import { LogHelper } from "./log_helper";
-import { API, EVENT } from "./enums";
-import { WebWorkerRequest, WebWorkerResult, EventQueue } from "./types";
 import { Config } from "./config";
+import { WebWorkerRequest, EventQueue, API, WebWorkerResult, EVENT } from "../common/index";
 
 declare var JsStoreWorker;
 export class InstanceHelper {

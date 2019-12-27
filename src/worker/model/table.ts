@@ -1,7 +1,6 @@
 import { Column } from "./column";
-import { ITable, IColumn } from "../interfaces";
-
-
+import { ITable } from "../../common/index";
+ 
 export class Table {
     name: string;
     columns: Column[] = [];
@@ -14,7 +13,7 @@ export class Table {
         for (const columnName in table.columns) {
             const column = {
                 name: columnName
-            } as IColumn;
+            } as Column;
 
             for (const feature in table.columns[columnName]) {
                 const value = table.columns[columnName][feature];

@@ -1,6 +1,4 @@
-import { SelectQuery } from "../../types";
-import { IDB_MODE, QUERY_OPTION, API } from "../../enums";
-import { IError } from "../../interfaces";
+import { SelectQuery, IError, IDB_MODE, QUERY_OPTION, API } from "../../../common/index";
 import { Join } from "./join";
 import { QueryHelper } from "../query_helper";
 import { isArray, getObjectFirstKey } from "../../utils/index";

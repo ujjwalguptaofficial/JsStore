@@ -1,6 +1,5 @@
 import { TableHelper, Column } from "../model/index";
-import { IError } from "../interfaces";
-import { CONNECTION_STATUS } from "../enums";
+import { IError, CONNECTION_STATUS } from "../../common/index";
 import { KeyStore } from "../keystore/index";
 import { BaseDb } from "./base_db";
 import { promise } from "../helpers/index";

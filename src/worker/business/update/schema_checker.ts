@@ -1,9 +1,8 @@
 import { Table } from "../../model/table";
-import { IColumn } from "../../interfaces";
 import { Column } from "../../model/column";
 import { LogHelper } from "../../log_helper";
-import { ERROR_TYPE, DATA_TYPE } from "../../enums";
 import { isNull, getDataType } from "../../utils/index";
+import { DATA_TYPE, ERROR_TYPE } from "../../../common/index";
 
 export class SchemaChecker {
     table: Table;
@@ -41,9 +40,9 @@ export class SchemaChecker {
         return null;
     }
 
-    
 
-    private checkByColumn_(column: IColumn, value) {
+
+    private checkByColumn_(column: Column, value) {
         let log: LogHelper = null;
         // check not null schema
         if (column.notNull === true && isNull(value)) {
