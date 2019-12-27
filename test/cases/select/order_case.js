@@ -1,7 +1,6 @@
 describe('Select with order & case', function () {
 
     it('order by country ', function (done) {
-        debugger;
         con.select({
             from: 'Customers',
             limit: 10,
@@ -17,7 +16,6 @@ describe('Select with order & case', function () {
                 }
             }
         }).then(function (results) {
-            console.table(results);
             var countries = ["Austria", "Austria", "Germany", "Mexico", "Mexico",
                 "UK", "Sweden", "Germany", "France", "Spain"];
             expect(results).to.be.an('array').length(10);
@@ -30,7 +28,7 @@ describe('Select with order & case', function () {
         })
     })
 
-    it('order having type desc with limit ', function (done) {
+    it('order having type desc with limit', function (done) {
         con.select({
             from: 'Products',
             limit: 10,
@@ -41,18 +39,67 @@ describe('Select with order & case', function () {
             },
             order: {
                 by: 'price',
-                type: 'desc'
+                type: 'desc',
+                case: {
+                    price: [{
+                        '<=': 20,
+                        then: 1
+                    }, {
+                        '>=': 30,
+                        then: 2
+                    }, {
+                        then: 3
+                    }],
+                }
             }
-        }).
-            then(function (results) {
-                expect(results).to.be.an('array').length(1);
-                var product = results[0];
-                expect(product.price).to.be.eql(55)
-                done();
-            }).
-            catch(function (err) {
-                done(err);
-            })
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(10);
+            var prices = [24, 28.5, 46, 53, 32.8, 38, 55, 34, 49.3, 18.4];
+            results.forEach(function (result, i) {
+                expect(result.price).to.be.equal(prices[i]);
+            });
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('order having type desc with limit & case with different column', function (done) {
+        con.select({
+            from: 'Products',
+            limit: 10,
+            where: {
+                supplierId: {
+                    '>': 18
+                }
+            },
+            order: {
+                by: 'price',
+                type: 'desc',
+                case: {
+                    categoryId: [{
+                        '=': 1,
+                        then: 1
+                    }, {
+                        '=': 2,
+                        then: 2
+                    }, {
+                        then: 3
+                    }],
+                }
+            }
+        }).then(function (results) {
+
+            expect(results).to.be.an('array').length(10);
+            // var prices = [55, 53, 49.3, 38, 34, 32.8, 24, 20, 28.5, 46,];
+            var prices = [55, 53, 49.3, 46, 38, 34, 32.8, 28.5, 24, 20];
+            results.forEach(function (result, i) {
+                expect(result.price).to.be.equal(prices[i]);
+            });
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
     });
 
     it('things table test', function (done) {
@@ -61,246 +108,28 @@ describe('Select with order & case', function () {
             order: {
                 by: 'value',
                 type: 'asc',
-                idbSorting: false
+                idbSorting: false,
+                case: {
+                    value: [{
+                        '=': 'Eggs',
+                        then: 'a'
+                    }, {
+                        then: 'b'
+                    }]
+                }
             }
-        }).
-            then(function (results) {
-                results = results.map(function (val) {
-                    return val.value;
-                });
-                expect(results).to.be.an('array').length(10);
-                var expecteResult = ['Bayou', 'bite', 'caYman', 'crocodilian', 'Eggs',
-                    'gator', 'Grip', 'grips', 'Jaw', 'nest'
-                ];
-                expect(results).to.deep.equal(expecteResult);
-                // var product = results[0];
-                // expect(product.price).to.be.eql(7)
-                done();
-            }).
-            catch(done)
-    });
-
-    it('order by asc for date', function (done) {
-        con.select({
-            from: 'Employees',
-            order: {
-                by: 'birthDate',
-                type: 'asc',
-                idbSorting: false
-            }
-        }).
-            then(function (results) {
-                expect(results).to.be.an('array').length(34);
-                var isSorted = true;
-                results.every(function (value, index) {
-                    var nextVal = results[index + 1];
-                    if (nextVal != null && value.birthDate.getTime() > nextVal.birthDate.getTime()) {
-                        isSorted = false;
-                    }
-                    return isSorted;
-                })
-                if (isSorted === true) {
-                    done();
-                } else {
-                    done("birth date is not sorted");
-                }
-
-            }).
-            catch(function (err) {
-                done(err);
-            })
-    });
-
-    it('order by desc for date', function (done) {
-        con.select({
-            from: 'Employees',
-            order: {
-                by: 'birthDate',
-                type: 'desc',
-                idbSorting: false
-            }
-        }).
-            then(function (results) {
-                expect(results).to.be.an('array').length(34);
-                var isSorted = true;
-                results.every(function (value, index) {
-                    var nextVal = results[index + 1];
-                    // check for wrong condition
-                    if (nextVal != null && value.birthDate.getTime() < nextVal.birthDate.getTime()) {
-                        isSorted = false;
-                    }
-                    return isSorted;
-                })
-                if (isSorted === true) {
-                    done();
-                } else {
-                    done("birth date is not sorted");
-                }
-
-            }).
-            catch(function (err) {
-                done(err);
-            })
-    });
-
-    it('order with skip', function (done) {
-        con.select({
-            from: "Customers",
-            order: {
-                by: 'address',
-                type: "asc"
-            },
-        }).then(function (results1) {
-            con.select({
-                from: "Customers",
-                skip: 20,
-                order: {
-                    by: 'address',
-                    type: "asc"
-                },
-            }).then(function (results2) {
-                expect(results2.length).to.equal(results1.length - 20);
-                results1.splice(0, 20)
-                expect(results1).to.eql(results2);
-                done();
-            }).catch(done);
-        }).catch(done);
-    });
-
-    it('order with skip & where', function (done) {
-        con.select({
-            from: "Customers",
-            order: {
-                by: 'address',
-                type: "asc"
-            },
-            where: {
-                customerId: {
-                    '>': 10
-                }
-            },
-        }).then(function (results1) {
-            con.select({
-                from: "Customers",
-                skip: 20,
-                where: {
-                    customerId: {
-                        '>': 10
-                    }
-                },
-                order: {
-                    by: 'address',
-                    type: "asc"
-                },
-            }).then(function (results2) {
-                expect(results2.length).to.equal(results1.length - 20);
-                results1.splice(0, 20)
-                expect(results1).to.eql(results2);
-                done();
-            }).catch(done);
-        }).catch(done);
-    });
-
-    it('order with skip & where & limit', function (done) {
-        con.select({
-            from: "Customers",
-            limit: 10,
-            order: {
-                by: 'address',
-                type: "asc"
-            },
-            where: {
-                customerId: {
-                    '>': 10
-                }
-            },
-        }).then(function (results1) {
-            con.select({
-                from: "Customers",
-                skip: 20,
-                limit: 10,
-                where: {
-                    customerId: {
-                        '>': 10
-                    }
-                },
-                order: {
-                    by: 'address',
-                    type: "asc"
-                },
-            }).then(function (results2) {
-                expect(results1.length).to.eql(results2.length);
-                done();
-            }).catch(done);
-        }).catch(done);
-    });
-
-    it('order with skip & where & regex', function (done) {
-        con.select({
-            from: "Customers",
-            order: {
-                by: 'address',
-                type: "asc"
-            },
-            where: {
-                country: {
-                    regex: /mexico|brazil/i
-                }
-            },
-        }).then(function (results1) {
-            con.select({
-                from: "Customers",
-                skip: 5,
-                where: {
-                    country: {
-                        regex: /mexico|brazil/i
-                    }
-                },
-                order: {
-                    by: 'address',
-                    type: "asc"
-                },
-            }).then(function (results2) {
-                expect(results2.length).to.equal(results1.length - 5);
-                results1.splice(0, 5)
-                expect(results1).to.eql(results2);
-                done();
-            }).catch(done);
-        }).catch(done);
-    });
-
-    it('order with skip & where & in', function (done) {
-        con.select({
-            from: "Customers",
-            order: {
-                by: 'address',
-                type: "asc"
-            },
-            where: {
-                country: {
-                    in: ['Mexico', 'Brazil']
-                }
-            },
-        }).then(function (results1) {
-            con.select({
-                from: "Customers",
-                skip: 5,
-                where: {
-                    country: {
-                        in: ['Mexico', 'Brazil']
-                    }
-                },
-                order: {
-                    by: 'address',
-                    type: "asc"
-                },
-            }).then(function (results2) {
-                expect(results2.length).to.equal(results1.length - 5);
-                results1.splice(0, 5)
-                expect(results1).to.eql(results2);
-                done();
-            }).catch(done);
-        }).catch(done);
+        }).then(function (results) {
+            results = results.map(function (val) {
+                return val.value;
+            });
+            expect(results).to.be.an('array').length(10);
+            var expecteResult = ['Eggs', 'nest', 'bite', 'gator', 'caYman', 'Grip',
+                'grips', 'Jaw', 'crocodilian', 'Bayou'
+            ];
+            console.table(results);
+            expect(results).to.deep.equal(expecteResult);
+            done();
+        }).catch(done)
     });
 
 });

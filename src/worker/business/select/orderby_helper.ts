@@ -102,12 +102,13 @@ export class Helper extends GroupByHelper {
         if (columnInfo != null) {
             const orderMethod = this.getValueComparer_(columnInfo, order);
             orderColumn = columnInfo.name;
-            if (order.case == null) {
+            if (order.case == null || order.case[orderColumn] == null) {
                 this.results.sort((a, b) => {
                     return orderMethod(a[orderColumn], b[orderColumn]);
                 });
             }
             else {
+                const caseColumnQuery = order.case[orderColumn];
                 const getOrderValue = (value) => {
                     const checkCase = (columnName, cond) => {
                         for (const queryOption in cond) {
@@ -141,7 +142,7 @@ export class Helper extends GroupByHelper {
                         return false;
                     };
 
-                    const caseColumnQuery = this.query.order.case[orderColumn];
+
                     for (let i = 0, length = caseColumnQuery.length; i < length; i++) {
                         if (checkCase(orderColumn, caseColumnQuery[i]) === true) {
                             return caseColumnQuery[i].then;
