@@ -19,8 +19,8 @@ export class Instance extends Join {
         this.limitRecord = query.limit;
         this.tableName = query.from;
         if (query.order) {
-            if (isArray(query.order)) {
-                query.order.idbSorting = false;
+            if (isArray(query.order) || query.order.case != null) {
+                this.query.order.idbSorting = false;
             }
 
             if (query.limit != null) {

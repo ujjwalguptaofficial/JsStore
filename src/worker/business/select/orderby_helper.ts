@@ -1,5 +1,5 @@
 import { GroupByHelper } from "./group_by_helper";
-import { DATA_TYPE, ERROR_TYPE } from "../../enums";
+import { DATA_TYPE, ERROR_TYPE, QUERY_OPTION } from "../../enums";
 import { LogHelper } from "../../log_helper";
 import { IColumn } from "../../interfaces";
 import { OrderQuery } from "../../types";
@@ -81,7 +81,7 @@ export class Helper extends GroupByHelper {
     }
 
     private getValueComparer_(column: IColumn, order: OrderQuery): (a, b) => number {
-    
+
         switch (column.dataType) {
             case DATA_TYPE.String:
                 return order.type === 'asc' ? this.compareStringinAsc_ : this.compareStringInDesc_;
@@ -92,7 +92,7 @@ export class Helper extends GroupByHelper {
             default:
                 return order.type === 'asc' ? this.compareDefaultinAsc_ : this.compareDefaultInDesc_;
         }
-        
+
     }
 
     private orderBy_(order: OrderQuery) {
@@ -102,11 +102,75 @@ export class Helper extends GroupByHelper {
         if (columnInfo != null) {
             const orderMethod = this.getValueComparer_(columnInfo, order);
             orderColumn = columnInfo.name;
-            this.results.sort((a, b) => {
-                return orderMethod(a[orderColumn], b[orderColumn]);
-            });
+            if (order.case == null) {
+                this.results.sort((a, b) => {
+                    return orderMethod(a[orderColumn], b[orderColumn]);
+                });
+            }
+            else {
+                const getOrderValue = (value) => {
+                    const checkCase = (columnName, cond) => {
+                        for (const queryOption in cond) {
+                            switch (queryOption) {
+                                case QUERY_OPTION.GreaterThan:
+                                    if (value[columnName] > cond[queryOption]) {
+                                        return true;
+                                    } break;
+                                case QUERY_OPTION.Equal:
+                                    if (value[columnName] === cond[queryOption]) {
+                                        return true;
+                                    } break;
+                                case QUERY_OPTION.LessThan:
+                                    if (value[columnName] < cond[queryOption]) {
+                                        return true;
+                                    } break;
+                                case QUERY_OPTION.GreaterThanEqualTo:
+                                    if (value[columnName] >= cond[queryOption]) {
+                                        return true;
+                                    } break;
+                                case QUERY_OPTION.LessThanEqualTo:
+                                    if (value[columnName] <= cond[queryOption]) {
+                                        return true;
+                                    } break;
+                                case QUERY_OPTION.NotEqualTo:
+                                    if (value[columnName] !== cond[queryOption]) {
+                                        return true;
+                                    }
+                            }
+                        }
+                        return false;
+                    };
+
+                    const caseColumnQuery = this.query.order.case[orderColumn];
+                    for (let i = 0, length = caseColumnQuery.length; i < length; i++) {
+                        if (checkCase(orderColumn, caseColumnQuery[i]) === true) {
+                            return caseColumnQuery[i].then;
+                        }
+                    }
+                    return caseColumnQuery[caseColumnQuery.length - 1].then;
+                    // let result;
+                    // let isNotConditionMet = true;
+                    // caseColumnQuery.every((qry) => {
+                    //     if (checkCase(orderColumn, qry) === true) {
+                    //         isNotConditionMet = false;
+                    //         result = qry.then;
+                    //         return false;
+                    //     }
+                    //     return true;
+                    // });
+                    // if (isNotConditionMet === true) {
+                    //     result = caseColumnQuery[caseColumnQuery.length - 1].then;
+                    // }
+                    // return result;
+                };
+                this.results.sort((a, b) => {
+                    return orderMethod(getOrderValue(a), getOrderValue(b));
+                });
+            }
         }
     }
+
+
 
     private getOrderType_(type: string) {
         return type == null ? 'asc' : type.toLowerCase();
@@ -117,7 +181,7 @@ export class Helper extends GroupByHelper {
         if (order && this.results.length > 0 && !this.sorted) {
             const orderQueryType = getDataType(order);
             if (orderQueryType === DATA_TYPE.Object) {
-                this.orderBy_(order as OrderQuery);
+                this.orderBy_(order);
             }
             else if (orderQueryType === DATA_TYPE.Array) {
                 this.orderBy_(order[0]);

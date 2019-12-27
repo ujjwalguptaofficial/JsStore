@@ -52,7 +52,6 @@ export class BaseSelect extends WhereBase {
         };
         for (const columnName in this.query.case) {
             const caseColumnQuery = this.query.case[columnName];
-            // const cond = caseColumnQuery[0];
             let isNotConditionMet = true;
             caseColumnQuery.every((qry) => {
                 if (checkCase(columnName, qry) === true) {

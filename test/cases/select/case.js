@@ -308,7 +308,7 @@ describe('Test Select Api with case', function () {
                 }]
             }
         }).then(function (results) {
-            console.table(results);
+            // console.table(results);
             var twentyCount = 0;
             var otherCount = 0;
             results.forEach(function (result) {
@@ -338,7 +338,7 @@ describe('Test Select Api with case', function () {
                 }]
             }
         }).then(function (results) {
-            console.table(results);
+            // console.table(results);
             var twentyCount = 0;
             var otherCount = 0;
             results.forEach(function (result) {
@@ -368,7 +368,7 @@ describe('Test Select Api with case', function () {
                 }]
             }
         }).then(function (results) {
-            console.table(results);
+            // console.table(results);
             var twentyCount = 0;
             var otherCount = 0;
             results.forEach(function (result) {
@@ -398,7 +398,7 @@ describe('Test Select Api with case', function () {
                 }]
             }
         }).then(function (results) {
-            console.table(results);
+            // console.table(results);
             var twentyCount = 0;
             var otherCount = 0;
             results.forEach(function (result) {
