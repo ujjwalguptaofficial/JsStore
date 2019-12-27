@@ -30,7 +30,7 @@ export type JoinQuery = {
     type: string //'inner',
     with: string // 'Customers',
     on: string // "Customers.customerId = Orders.customerId",
-    where?: object;
+    where?: { [columnName: string]: any };
     order?: OrderQuery;
     as?: { [originalColumnName: string]: [string] }
 };
@@ -38,7 +38,7 @@ export type JoinQuery = {
 export type SelectQuery = {
     from: string;
     join?: JoinQuery | JoinQuery[];
-    where?;
+    where?: { [columnName: string]: any };
     skip?: number;
     limit?: number;
     order?: OrderQuery;
@@ -55,6 +55,7 @@ export type SelectCase = {
     '>='?: any;
     '<='?: any;
     '-'?: any;
+    '!='?: any;
     then: any;
 };
 
@@ -69,20 +70,20 @@ export type CountQuery = {
     from: any;
     join?: JoinQuery;
     ignoreCase?: boolean;
-    where?;
+    where?: { [columnName: string]: any };
 };
 
 export type RemoveQuery = {
     from: string;
     ignoreCase?: boolean;
-    where?;
+    where?: { [columnName: string]: any };
 };
 
 export type UpdateQuery = {
     in: string;
     ignoreCase?: boolean;
     set: object;
-    where?;
+    where?: { [columnName: string]: any };
 };
 
 export type InsertQuery = {
