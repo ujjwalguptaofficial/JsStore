@@ -13,7 +13,8 @@ export declare class BaseSelect extends WhereBase {
     isSubQuery: boolean;
     isOrderWithLimit: boolean;
     isOrderWithSkip: boolean;
-    protected pushResult(value: any): number;
+    protected pushResult(value: any): void;
+    protected getThenValue(columnName: string, value: any, caseQuery: any): any;
     protected checkCase(columnName: string, cond: SelectCase, value: any): boolean;
     protected removeDuplicates(): void;
 }

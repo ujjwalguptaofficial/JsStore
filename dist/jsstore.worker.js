@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.6.1 - 27/12/2019
+ * @license :jsstore - V3.6.2 - 27/12/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -3127,27 +3127,58 @@ var base_select_BaseSelect = /** @class */ (function (_super) {
         return _this;
     }
     BaseSelect.prototype.pushResult = function (value) {
-        var _this = this;
-        var _loop_1 = function (columnName) {
-            var caseColumnQuery = this_1.query.case[columnName];
-            var isNotConditionMet = true;
-            caseColumnQuery.every(function (qry) {
-                if (_this.checkCase(columnName, qry, value) === true) {
-                    isNotConditionMet = false;
-                    value[columnName] = qry.then;
-                    return false;
+        for (var columnName in this.query.case) {
+            value[columnName] = this.getThenValue(columnName, value, this.query.case);
+        }
+        this.results.push(value);
+    };
+    BaseSelect.prototype.getThenValue = function (columnName, value, caseQuery) {
+        var caseColumnQuery = caseQuery[columnName];
+        var length = caseColumnQuery.length;
+        var lastThen = caseColumnQuery[length - 1].then;
+        var getLastThen = lastThen == null ? function () { return value[columnName]; } : function () { return lastThen; };
+        var checkCase = function (cond) {
+            for (var queryOption in cond) {
+                switch (queryOption) {
+                    case enums["g" /* QUERY_OPTION */].GreaterThan:
+                        if (value[columnName] > cond[queryOption]) {
+                            return true;
+                        }
+                        break;
+                    case enums["g" /* QUERY_OPTION */].Equal:
+                        if (value[columnName] === cond[queryOption]) {
+                            return true;
+                        }
+                        break;
+                    case enums["g" /* QUERY_OPTION */].LessThan:
+                        if (value[columnName] < cond[queryOption]) {
+                            return true;
+                        }
+                        break;
+                    case enums["g" /* QUERY_OPTION */].GreaterThanEqualTo:
+                        if (value[columnName] >= cond[queryOption]) {
+                            return true;
+                        }
+                        break;
+                    case enums["g" /* QUERY_OPTION */].LessThanEqualTo:
+                        if (value[columnName] <= cond[queryOption]) {
+                            return true;
+                        }
+                        break;
+                    case enums["g" /* QUERY_OPTION */].NotEqualTo:
+                        if (value[columnName] !== cond[queryOption]) {
+                            return true;
+                        }
                 }
-                return true;
-            });
-            if (isNotConditionMet === true) {
-                value[columnName] = caseColumnQuery[caseColumnQuery.length - 1].then;
+                return false;
             }
         };
-        var this_1 = this;
-        for (var columnName in this.query.case) {
-            _loop_1(columnName);
+        for (var i = 0; i < length; i++) {
+            if (checkCase(caseColumnQuery[i]) === true) {
+                return caseColumnQuery[i].then;
+            }
         }
-        return this.results.push(value);
+        return getLastThen();
     };
     BaseSelect.prototype.checkCase = function (columnName, cond, value) {
         for (var queryOption in cond) {
@@ -4111,17 +4142,8 @@ var orderby_helper_Helper = /** @class */ (function (_super) {
                 });
             }
             else {
-                var caseColumnQuery_1 = order.case[orderColumn];
-                var getOrderValue_1 = function (value) {
-                    for (var i = 0, length_1 = caseColumnQuery_1.length; i < length_1; i++) {
-                        if (_this.checkCase(orderColumn, caseColumnQuery_1[i], value) === true) {
-                            return caseColumnQuery_1[i].then;
-                        }
-                    }
-                    return caseColumnQuery_1[caseColumnQuery_1.length - 1].then;
-                };
                 this.results.sort(function (a, b) {
-                    return orderMethod_1(getOrderValue_1(a), getOrderValue_1(b));
+                    return orderMethod_1(_this.getThenValue(orderColumn, a, order.case), _this.getThenValue(orderColumn, b, order.case));
                 });
             }
         }
@@ -4138,7 +4160,7 @@ var orderby_helper_Helper = /** @class */ (function (_super) {
             }
             else if (orderQueryType === enums["c" /* DATA_TYPE */].Array) {
                 this.orderBy_(order[0]);
-                var _loop_1 = function (i, length_2) {
+                var _loop_1 = function (i, length_1) {
                     if (this_1.error == null) {
                         var prevOrderQueryBy_1 = order[i - 1].by;
                         var currentOrderQuery = order[i];
@@ -4158,8 +4180,8 @@ var orderby_helper_Helper = /** @class */ (function (_super) {
                     }
                 };
                 var this_1 = this;
-                for (var i = 1, length_2 = order.length; i < length_2; i++) {
-                    _loop_1(i, length_2);
+                for (var i = 1, length_1 = order.length; i < length_1; i++) {
+                    _loop_1(i, length_1);
                 }
             }
         }
