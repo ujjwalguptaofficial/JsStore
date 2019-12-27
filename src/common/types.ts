@@ -37,7 +37,8 @@ export type JoinQuery = {
     on: string // "Customers.customerId = Orders.customerId"
     where?: { [columnName: string]: any };
     order?: OrderQuery;
-    as?: { [originalColumnName: string]: [string] }
+    as?: { [originalColumnName: string]: string },
+    case?: { [columnName: string]: [SelectCase] }
 };
 
 export type SelectQuery = {
