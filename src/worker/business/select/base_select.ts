@@ -19,42 +19,12 @@ export class BaseSelect extends WhereBase {
     isOrderWithSkip = false;
 
     protected pushResult(value) {
-        const checkCase = (columnName, cond) => {
-            for (const queryOption in cond) {
-                switch (queryOption) {
-                    case QUERY_OPTION.GreaterThan:
-                        if (value[columnName] > cond[queryOption]) {
-                            return true;
-                        } break;
-                    case QUERY_OPTION.Equal:
-                        if (value[columnName] === cond[queryOption]) {
-                            return true;
-                        } break;
-                    case QUERY_OPTION.LessThan:
-                        if (value[columnName] < cond[queryOption]) {
-                            return true;
-                        } break;
-                    case QUERY_OPTION.GreaterThanEqualTo:
-                        if (value[columnName] >= cond[queryOption]) {
-                            return true;
-                        } break;
-                    case QUERY_OPTION.LessThanEqualTo:
-                        if (value[columnName] <= cond[queryOption]) {
-                            return true;
-                        } break;
-                    case QUERY_OPTION.NotEqualTo:
-                        if (value[columnName] !== cond[queryOption]) {
-                            return true;
-                        }
-                }
-            }
-            return false;
-        };
+
         for (const columnName in this.query.case) {
             const caseColumnQuery = this.query.case[columnName];
             let isNotConditionMet = true;
             caseColumnQuery.every((qry) => {
-                if (checkCase(columnName, qry) === true) {
+                if (this.checkCase(columnName, qry, value) === true) {
                     isNotConditionMet = false;
                     value[columnName] = qry.then;
                     return false;
@@ -66,6 +36,38 @@ export class BaseSelect extends WhereBase {
             }
         }
         return this.results.push(value);
+    }
+
+    protected checkCase(columnName, cond, value) {
+        for (const queryOption in cond) {
+            switch (queryOption) {
+                case QUERY_OPTION.GreaterThan:
+                    if (value[columnName] > cond[queryOption]) {
+                        return true;
+                    } break;
+                case QUERY_OPTION.Equal:
+                    if (value[columnName] === cond[queryOption]) {
+                        return true;
+                    } break;
+                case QUERY_OPTION.LessThan:
+                    if (value[columnName] < cond[queryOption]) {
+                        return true;
+                    } break;
+                case QUERY_OPTION.GreaterThanEqualTo:
+                    if (value[columnName] >= cond[queryOption]) {
+                        return true;
+                    } break;
+                case QUERY_OPTION.LessThanEqualTo:
+                    if (value[columnName] <= cond[queryOption]) {
+                        return true;
+                    } break;
+                case QUERY_OPTION.NotEqualTo:
+                    if (value[columnName] !== cond[queryOption]) {
+                        return true;
+                    }
+            }
+        }
+        return false;
     }
 
     protected removeDuplicates() {

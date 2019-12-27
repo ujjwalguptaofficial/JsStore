@@ -110,59 +110,12 @@ export class Helper extends GroupByHelper {
             else {
                 const caseColumnQuery = order.case[orderColumn];
                 const getOrderValue = (value) => {
-                    const checkCase = (columnName, cond) => {
-                        for (const queryOption in cond) {
-                            switch (queryOption) {
-                                case QUERY_OPTION.GreaterThan:
-                                    if (value[columnName] > cond[queryOption]) {
-                                        return true;
-                                    } break;
-                                case QUERY_OPTION.Equal:
-                                    if (value[columnName] === cond[queryOption]) {
-                                        return true;
-                                    } break;
-                                case QUERY_OPTION.LessThan:
-                                    if (value[columnName] < cond[queryOption]) {
-                                        return true;
-                                    } break;
-                                case QUERY_OPTION.GreaterThanEqualTo:
-                                    if (value[columnName] >= cond[queryOption]) {
-                                        return true;
-                                    } break;
-                                case QUERY_OPTION.LessThanEqualTo:
-                                    if (value[columnName] <= cond[queryOption]) {
-                                        return true;
-                                    } break;
-                                case QUERY_OPTION.NotEqualTo:
-                                    if (value[columnName] !== cond[queryOption]) {
-                                        return true;
-                                    }
-                            }
-                        }
-                        return false;
-                    };
-
-
                     for (let i = 0, length = caseColumnQuery.length; i < length; i++) {
-                        if (checkCase(orderColumn, caseColumnQuery[i]) === true) {
+                        if (this.checkCase(orderColumn, caseColumnQuery[i], value) === true) {
                             return caseColumnQuery[i].then;
                         }
                     }
                     return caseColumnQuery[caseColumnQuery.length - 1].then;
-                    // let result;
-                    // let isNotConditionMet = true;
-                    // caseColumnQuery.every((qry) => {
-                    //     if (checkCase(orderColumn, qry) === true) {
-                    //         isNotConditionMet = false;
-                    //         result = qry.then;
-                    //         return false;
-                    //     }
-                    //     return true;
-                    // });
-                    // if (isNotConditionMet === true) {
-                    //     result = caseColumnQuery[caseColumnQuery.length - 1].then;
-                    // }
-                    // return result;
                 };
                 this.results.sort((a, b) => {
                     return orderMethod(getOrderValue(a), getOrderValue(b));
@@ -171,12 +124,10 @@ export class Helper extends GroupByHelper {
         }
     }
 
-
-
     private getOrderType_(type: string) {
         return type == null ? 'asc' : type.toLowerCase();
     }
-
+    
     protected processOrderBy() {
         const order = this.query.order;
         if (order && this.results.length > 0 && !this.sorted) {
