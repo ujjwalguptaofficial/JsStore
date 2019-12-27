@@ -1,4 +1,5 @@
 export * from './instance';
+export * from './connection';
 export * from './config';
 export * from './helper';
 export * from './global';

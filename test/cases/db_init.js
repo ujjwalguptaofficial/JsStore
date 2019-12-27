@@ -5,17 +5,17 @@ describe("initiate database", function () {
         var isIE = /*@cc_on!@*/ false || !!document.documentMode;
         if (isIE) {
             console.log('test runing for ie');
-            con = new JsStore.Instance(new Worker('../output/jsstore.worker.ie.min.js'));
+            con = new JsStore.Connection(new Worker('../output/jsstore.worker.ie.min.js'));
         } else {
             if (isRuningForSauce()) {
                 console.log("test runing for sauce lab");
-                con = new JsStore.Instance(new Worker('../output/jsstore.worker.min.js'));
+                con = new JsStore.Connection(new Worker('../output/jsstore.worker.min.js'));
             } else if (isRuningForProd()) {
                 console.log("test runing for production");
-                con = new JsStore.Instance(new Worker('../output/jsstore.worker.min.js'));
+                con = new JsStore.Connection(new Worker('../output/jsstore.worker.min.js'));
             } else {
                 console.log("test runing for development");
-                con = new JsStore.Instance(new Worker('output/jsstore.worker.js'));
+                con = new JsStore.Connection(new Worker('output/jsstore.worker.js'));
                 // con.setLogStatus(true);
             }
         }

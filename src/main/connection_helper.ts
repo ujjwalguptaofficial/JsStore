@@ -3,7 +3,7 @@ import { Config } from "./config";
 import { WebWorkerRequest, EventQueue, API, WebWorkerResult, EVENT } from "../common/index";
 
 declare var JsStoreWorker;
-export class InstanceHelper {
+export class ConnectionHelper {
   protected activeDbName: string;
   private worker_: Worker;
   private isDbOpened_ = false;
