@@ -20,21 +20,53 @@ export class BaseSelect extends WhereBase {
 
     protected pushResult(value) {
         for (const columnName in this.query.case) {
-            const caseColumnQuery = this.query.case[columnName];
-            const length = caseColumnQuery.length;
-            const lastThen = caseColumnQuery[length - 1].then;
-            const getLastThen = lastThen == null ? () => value[columnName] : () => lastThen;
-            const modifyValueBasedOnCase = () => {
-                for (let i = 0; i < length; i++) {
-                    if (this.checkCase(columnName, caseColumnQuery[i], value) === true) {
-                        return caseColumnQuery[i].then;
-                    }
-                }
-                return getLastThen();
-            };
-            value[columnName] = modifyValueBasedOnCase();
+            value[columnName] = this.getThenValue(columnName, value, this.query.case);
         }
         this.results.push(value);
+    }
+
+    protected getThenValue(columnName: string, value, caseQuery: any) {
+        const caseColumnQuery = caseQuery[columnName];
+        const length = caseColumnQuery.length;
+        const lastThen = caseColumnQuery[length - 1].then;
+        const getLastThen = lastThen == null ? () => value[columnName] : () => lastThen;
+        const checkCase = (cond: SelectCase) => {
+            for (const queryOption in cond) {
+                switch (queryOption) {
+                    case QUERY_OPTION.GreaterThan:
+                        if (value[columnName] > cond[queryOption]) {
+                            return true;
+                        } break;
+                    case QUERY_OPTION.Equal:
+                        if (value[columnName] === cond[queryOption]) {
+                            return true;
+                        } break;
+                    case QUERY_OPTION.LessThan:
+                        if (value[columnName] < cond[queryOption]) {
+                            return true;
+                        } break;
+                    case QUERY_OPTION.GreaterThanEqualTo:
+                        if (value[columnName] >= cond[queryOption]) {
+                            return true;
+                        } break;
+                    case QUERY_OPTION.LessThanEqualTo:
+                        if (value[columnName] <= cond[queryOption]) {
+                            return true;
+                        } break;
+                    case QUERY_OPTION.NotEqualTo:
+                        if (value[columnName] !== cond[queryOption]) {
+                            return true;
+                        }
+                }
+                return false;
+            }
+        };
+        for (let i = 0; i < length; i++) {
+            if (checkCase(caseColumnQuery[i]) === true) {
+                return caseColumnQuery[i].then;
+            }
+        }
+        return getLastThen();
     }
 
     protected checkCase(columnName: string, cond: SelectCase, value) {
