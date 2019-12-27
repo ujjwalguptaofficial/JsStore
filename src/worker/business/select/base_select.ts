@@ -19,23 +19,22 @@ export class BaseSelect extends WhereBase {
     isOrderWithSkip = false;
 
     protected pushResult(value) {
-
         for (const columnName in this.query.case) {
             const caseColumnQuery = this.query.case[columnName];
-            let isNotConditionMet = true;
-            caseColumnQuery.every((qry) => {
-                if (this.checkCase(columnName, qry, value) === true) {
-                    isNotConditionMet = false;
-                    value[columnName] = qry.then;
-                    return false;
+            const length = caseColumnQuery.length;
+            const lastThen = caseColumnQuery[length - 1].then;
+            const getLastThen = lastThen == null ? () => value[columnName] : () => lastThen;
+            const modifyValueBasedOnCase = () => {
+                for (let i = 0; i < length; i++) {
+                    if (this.checkCase(columnName, caseColumnQuery[i], value) === true) {
+                        return caseColumnQuery[i].then;
+                    }
                 }
-                return true;
-            });
-            if (isNotConditionMet === true) {
-                value[columnName] = caseColumnQuery[caseColumnQuery.length - 1].then;
-            }
+                return getLastThen();
+            };
+            value[columnName] = modifyValueBasedOnCase();
         }
-        return this.results.push(value);
+        this.results.push(value);
     }
 
     protected checkCase(columnName: string, cond: SelectCase, value) {
