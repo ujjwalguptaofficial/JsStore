@@ -1,5 +1,5 @@
 import { BaseHelper } from "./base_helper";
-import { IError } from "../interfaces";
+import { IError } from "../../common/index";
 import { WhereChecker } from "./where_checker";
 import { Column } from "../model/index";
 export declare abstract class Base extends BaseHelper {

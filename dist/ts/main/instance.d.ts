@@ -1,7 +1,5 @@
-import { EVENT } from "./enums";
 import { InstanceHelper } from "./instance_helper";
-import { SelectQuery, CountQuery, InsertQuery, UpdateQuery, RemoveQuery, DbInfo, TranscationQuery } from "./types";
-import { IDataBase } from "./interfaces";
+import { SelectQuery, CountQuery, InsertQuery, UpdateQuery, RemoveQuery, DbInfo, TranscationQuery, IDataBase, EVENT } from "../common/index";
 export declare class Instance extends InstanceHelper {
     constructor(worker?: Worker);
     /**

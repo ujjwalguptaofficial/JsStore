@@ -1,6 +1,5 @@
-import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
-import { IDbStatus } from "../interfaces";
-import { DataBase, Table } from "../model/index";
+import { CONNECTION_STATUS, ERROR_TYPE, IDbStatus } from "../../common/index";
+import { DataBase } from "../model/index";
 export declare class IdbHelper {
     static onDbDroppedByBrowser: () => void;
     static transaction: IDBTransaction;
@@ -16,5 +15,5 @@ export declare class IdbHelper {
     static getDbList(): Promise<string[]>;
     static getDbVersion(dbName: string): Promise<number>;
     static getDbSchema(dbName: string): Promise<DataBase>;
-    static getTable(tableName: string): Table;
+    static getTable(tableName: string): import("../model/table").Table;
 }

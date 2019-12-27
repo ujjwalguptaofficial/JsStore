@@ -1,4 +1,4 @@
-import { IError } from "../interfaces";
+import { IError } from "../../common/index";
 import { BaseDb } from "./base_db";
 export declare class DropDb extends BaseDb {
     private onSuccess_;

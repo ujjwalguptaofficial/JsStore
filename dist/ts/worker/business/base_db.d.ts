@@ -1,9 +1,8 @@
-import { CONNECTION_STATUS, ERROR_TYPE } from "../enums";
-import { IError } from "../interfaces";
+import { CONNECTION_STATUS, ERROR_TYPE, IError } from "../../common/index";
 export declare class BaseDb {
     onError: (err: IError) => void;
     protected readonly dbName: string;
-    protected dbStatus: import("../interfaces").IDbStatus;
+    protected dbStatus: import("../../common/interfaces").IDbStatus;
     protected dbConnection: any;
     protected updateDbStatus(status: CONNECTION_STATUS, err?: ERROR_TYPE): void;
     protected onDbDroppedByBrowser(deleteMetaData?: boolean): void;

@@ -23,7 +23,9 @@ export declare type JoinQuery = {
     type: string;
     with: string;
     on: string;
-    where?: object;
+    where?: {
+        [columnName: string]: any;
+    };
     order?: OrderQuery;
     as?: {
         [originalColumnName: string]: [string];
@@ -32,7 +34,9 @@ export declare type JoinQuery = {
 export declare type SelectQuery = {
     from: string;
     join?: JoinQuery | JoinQuery[];
-    where?: any;
+    where?: {
+        [columnName: string]: any;
+    };
     skip?: number;
     limit?: number;
     order?: OrderQuery;
@@ -40,28 +44,49 @@ export declare type SelectQuery = {
     aggregate?: AggregateOption;
     ignoreCase?: boolean;
     distinct?: boolean;
+    case?: {
+        [columnName: string]: [SelectCase];
+    };
+};
+export declare type SelectCase = {
+    '>'?: any;
+    '<'?: any;
+    '>='?: any;
+    '<='?: any;
+    '-'?: any;
+    '!='?: any;
+    then: any;
 };
 export declare type OrderQuery = {
     by: string;
     type: string;
     idbSorting: boolean;
+    case?: {
+        [columnName: string]: [SelectCase];
+    };
 };
 export declare type CountQuery = {
     from: any;
     join?: JoinQuery;
     ignoreCase?: boolean;
-    where?: any;
+    where?: {
+        [columnName: string]: any;
+    };
 };
 export declare type RemoveQuery = {
     from: string;
     ignoreCase?: boolean;
-    where?: any;
+    where?: {
+        [columnName: string]: any;
+    };
 };
 export declare type UpdateQuery = {
     in: string;
     ignoreCase?: boolean;
     set: object;
-    where?: any;
+    where?: {
+        [columnName: string]: any;
+    };
 };
 export declare type InsertQuery = {
     into: string;

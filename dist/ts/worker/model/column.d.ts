@@ -1,5 +1,5 @@
-import { IColumn } from "../interfaces";
-export declare class Column implements IColumn {
+import { IColumnOption } from "../../common/index";
+export declare class Column implements IColumnOption {
     name: string;
     autoIncrement: boolean;
     primaryKey: boolean;
@@ -10,5 +10,5 @@ export declare class Column implements IColumn {
     multiEntry: boolean;
     enableSearch: boolean;
     keyPath: string[];
-    constructor(key: IColumn);
+    constructor(key: Column);
 }

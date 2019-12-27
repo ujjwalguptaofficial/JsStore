@@ -1,6 +1,5 @@
 import { Where } from "./where";
-import { RemoveQuery } from "../../types";
-import { IError } from "../../interfaces";
+import { RemoveQuery, IError } from "../../../common/index";
 export declare class Instance extends Where {
     constructor(query: RemoveQuery, onSuccess: (recordRemoved: number) => void, onError: (err: IError) => void);
     execute(): void;

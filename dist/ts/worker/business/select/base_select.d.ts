@@ -1,5 +1,5 @@
 import { WhereBase } from "../where_base";
-import { SelectQuery } from "../../types";
+import { SelectQuery, SelectCase } from "../../../common/index";
 export declare class BaseSelect extends WhereBase {
     sorted: boolean;
     isOr: boolean;
@@ -13,5 +13,7 @@ export declare class BaseSelect extends WhereBase {
     isSubQuery: boolean;
     isOrderWithLimit: boolean;
     isOrderWithSkip: boolean;
+    protected pushResult(value: any): number;
+    protected checkCase(columnName: string, cond: SelectCase, value: any): boolean;
     protected removeDuplicates(): void;
 }

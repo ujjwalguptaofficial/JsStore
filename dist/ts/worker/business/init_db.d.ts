@@ -1,5 +1,5 @@
 import { TableHelper } from "../model/index";
-import { IError } from "../interfaces";
+import { IError } from "../../common/index";
 import { BaseDb } from "./base_db";
 export declare class InitDb extends BaseDb {
     onSuccess: (isDbCreated: boolean) => void;

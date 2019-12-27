@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.5.0 - 03/12/2019
+ * @license :jsstore - V3.6.0 - 27/12/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -92,33 +92,11 @@ var JsStore =
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/main/config.ts":
-/*!****************************!*\
-  !*** ./src/main/config.ts ***!
-  \****************************/
-/*! exports provided: Config */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Config", function() { return Config; });
-var Config = /** @class */ (function () {
-    function Config() {
-    }
-    Config.isLogEnabled = false;
-    Config.isRuningInWorker = true;
-    return Config;
-}());
-
-
-
-/***/ }),
-
-/***/ "./src/main/enums.ts":
-/*!***************************!*\
-  !*** ./src/main/enums.ts ***!
-  \***************************/
-/*! exports provided: ERROR_TYPE, WORKER_STATUS, DATA_TYPE, API, EVENT */
+/***/ "./src/common/enums.ts":
+/*!*****************************!*\
+  !*** ./src/common/enums.ts ***!
+  \*****************************/
+/*! exports provided: ERROR_TYPE, WORKER_STATUS, DATA_TYPE, API, EVENT, QUERY_OPTION, IDB_MODE, OCCURENCE, CONNECTION_STATUS */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -128,10 +106,40 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return DATA_TYPE; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "API", function() { return API; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EVENT", function() { return EVENT; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "QUERY_OPTION", function() { return QUERY_OPTION; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IDB_MODE", function() { return IDB_MODE; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OCCURENCE", function() { return OCCURENCE; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CONNECTION_STATUS", function() { return CONNECTION_STATUS; });
 var ERROR_TYPE;
 (function (ERROR_TYPE) {
     ERROR_TYPE["WorkerNotSupplied"] = "worker_not_supplied";
     ERROR_TYPE["IndexedDbUndefined"] = "indexeddb_undefined";
+    ERROR_TYPE["UndefinedColumn"] = "undefined_column";
+    ERROR_TYPE["UndefinedValue"] = "undefined_value";
+    ERROR_TYPE["UndefinedColumnName"] = "undefined_column_name";
+    ERROR_TYPE["UndefinedDbName"] = "undefined_database_name";
+    ERROR_TYPE["UndefinedColumnValue"] = "undefined_column_value";
+    ERROR_TYPE["NotArray"] = "not_array";
+    ERROR_TYPE["NoValueSupplied"] = "no_value_supplied";
+    ERROR_TYPE["ColumnNotExist"] = "column_not_exist";
+    ERROR_TYPE["EnableSearchOff"] = "enable_search_off";
+    ERROR_TYPE["InvalidOp"] = "invalid_operator";
+    ERROR_TYPE["NullValue"] = "null_value";
+    ERROR_TYPE["WrongDataType"] = "wrong_data_type";
+    ERROR_TYPE["NextJoinNotExist"] = "next_join_not_exist";
+    ERROR_TYPE["TableNotExist"] = "table_not_exist";
+    ERROR_TYPE["DbNotExist"] = "db_not_exist";
+    ERROR_TYPE["ConnectionAborted"] = "connection_aborted";
+    ERROR_TYPE["ConnectionClosed"] = "connection_closed";
+    ERROR_TYPE["NotObject"] = "not_object";
+    ERROR_TYPE["InvalidConfig"] = "invalid_config";
+    ERROR_TYPE["DbBlocked"] = "Db_blocked";
+    ERROR_TYPE["IndexedDbNotSupported"] = "indexeddb_not_supported";
+    ERROR_TYPE["NullValueInWhere"] = "null_value_in_where";
+    ERROR_TYPE["InvalidJoinQuery"] = "invalid_join_query";
+    ERROR_TYPE["InvalidOrderQuery"] = "invalid_order_query";
+    ERROR_TYPE["InvalidQuery"] = "invalid_query";
+    ERROR_TYPE["InvalidGroupQuery"] = "invalid_group_query";
 })(ERROR_TYPE || (ERROR_TYPE = {}));
 var WORKER_STATUS;
 (function (WORKER_STATUS) {
@@ -178,6 +186,106 @@ var EVENT;
     EVENT["RequestQueueEmpty"] = "requestQueueEmpty";
     EVENT["RequestQueueFilled"] = "requestQueueFilled";
 })(EVENT || (EVENT = {}));
+var QUERY_OPTION;
+(function (QUERY_OPTION) {
+    QUERY_OPTION["Where"] = "where";
+    QUERY_OPTION["Like"] = "like";
+    QUERY_OPTION["Regex"] = "regex";
+    QUERY_OPTION["In"] = "in";
+    QUERY_OPTION["Equal"] = "=";
+    QUERY_OPTION["Between"] = "-";
+    QUERY_OPTION["GreaterThan"] = ">";
+    QUERY_OPTION["LessThan"] = "<";
+    QUERY_OPTION["GreaterThanEqualTo"] = ">=";
+    QUERY_OPTION["LessThanEqualTo"] = "<=";
+    QUERY_OPTION["NotEqualTo"] = "!=";
+    QUERY_OPTION["Aggregate"] = "aggregate";
+    QUERY_OPTION["Max"] = "max";
+    QUERY_OPTION["Min"] = "min";
+    QUERY_OPTION["Avg"] = "avg";
+    QUERY_OPTION["Count"] = "count";
+    QUERY_OPTION["Sum"] = "sum";
+    QUERY_OPTION["Or"] = "or";
+    QUERY_OPTION["Skip"] = "skip";
+    QUERY_OPTION["Limit"] = "limit";
+    QUERY_OPTION["And"] = "and";
+    QUERY_OPTION["IgnoreCase"] = "ignoreCase";
+    QUERY_OPTION["Then"] = "then";
+})(QUERY_OPTION || (QUERY_OPTION = {}));
+var IDB_MODE;
+(function (IDB_MODE) {
+    IDB_MODE["ReadOnly"] = "readonly";
+    IDB_MODE["ReadWrite"] = "readwrite";
+})(IDB_MODE || (IDB_MODE = {}));
+var OCCURENCE;
+(function (OCCURENCE) {
+    OCCURENCE["First"] = "f";
+    OCCURENCE["Last"] = "l";
+    OCCURENCE["Any"] = "a";
+})(OCCURENCE || (OCCURENCE = {}));
+var CONNECTION_STATUS;
+(function (CONNECTION_STATUS) {
+    CONNECTION_STATUS["Connected"] = "connected";
+    CONNECTION_STATUS["Closed"] = "closed";
+    CONNECTION_STATUS["NotStarted"] = "not_started";
+    CONNECTION_STATUS["UnableToStart"] = "unable_to_start";
+    CONNECTION_STATUS["ClosedByJsStore"] = "closed_by_jsstore";
+})(CONNECTION_STATUS || (CONNECTION_STATUS = {}));
+
+
+/***/ }),
+
+/***/ "./src/common/index.ts":
+/*!*****************************!*\
+  !*** ./src/common/index.ts ***!
+  \*****************************/
+/*! exports provided: ERROR_TYPE, WORKER_STATUS, DATA_TYPE, API, EVENT, QUERY_OPTION, IDB_MODE, OCCURENCE, CONNECTION_STATUS */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./enums */ "./src/common/enums.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ERROR_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WORKER_STATUS", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["WORKER_STATUS"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["DATA_TYPE"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "API", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["API"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EVENT", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["EVENT"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "QUERY_OPTION", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["QUERY_OPTION"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "IDB_MODE", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["IDB_MODE"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OCCURENCE", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["OCCURENCE"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CONNECTION_STATUS", function() { return _enums__WEBPACK_IMPORTED_MODULE_0__["CONNECTION_STATUS"]; });
+
+
+
+
+/***/ }),
+
+/***/ "./src/main/config.ts":
+/*!****************************!*\
+  !*** ./src/main/config.ts ***!
+  \****************************/
+/*! exports provided: Config */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Config", function() { return Config; });
+var Config = /** @class */ (function () {
+    function Config() {
+    }
+    Config.isLogEnabled = false;
+    Config.isRuningInWorker = true;
+    return Config;
+}());
+
 
 
 /***/ }),
@@ -233,7 +341,7 @@ var enableLog = function () {
 /*!***************************!*\
   !*** ./src/main/index.ts ***!
   \***************************/
-/*! exports provided: Instance, ERROR_TYPE, WORKER_STATUS, DATA_TYPE, API, EVENT, Config, enableLog, useSqlWeb */
+/*! exports provided: DATA_TYPE, Instance, Config, enableLog, useSqlWeb */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -241,31 +349,22 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _instance__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./instance */ "./src/main/instance.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return _instance__WEBPACK_IMPORTED_MODULE_0__["Instance"]; });
 
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./enums */ "./src/main/enums.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ERROR_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["ERROR_TYPE"]; });
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./src/main/config.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Config", function() { return _config__WEBPACK_IMPORTED_MODULE_1__["Config"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WORKER_STATUS", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["WORKER_STATUS"]; });
+/* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./helper */ "./src/main/helper.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "enableLog", function() { return _helper__WEBPACK_IMPORTED_MODULE_2__["enableLog"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["DATA_TYPE"]; });
+/* harmony import */ var _global__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./global */ "./src/main/global.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "useSqlWeb", function() { return _global__WEBPACK_IMPORTED_MODULE_3__["useSqlWeb"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "API", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["API"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EVENT", function() { return _enums__WEBPACK_IMPORTED_MODULE_1__["EVENT"]; });
-
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./config */ "./src/main/config.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Config", function() { return _config__WEBPACK_IMPORTED_MODULE_2__["Config"]; });
-
-/* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./helper */ "./src/main/helper.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "enableLog", function() { return _helper__WEBPACK_IMPORTED_MODULE_3__["enableLog"]; });
-
-/* harmony import */ var _global__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./global */ "./src/main/global.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "useSqlWeb", function() { return _global__WEBPACK_IMPORTED_MODULE_4__["useSqlWeb"]; });
+/* harmony import */ var _common_index__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../common/index */ "./src/common/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return _common_index__WEBPACK_IMPORTED_MODULE_4__["DATA_TYPE"]; });
 
 
 
 
 
-// export * from './model/index';
 
 
 
@@ -281,8 +380,8 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Instance", function() { return Instance; });
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./enums */ "./src/main/enums.ts");
-/* harmony import */ var _instance_helper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./instance_helper */ "./src/main/instance_helper.ts");
+/* harmony import */ var _instance_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./instance_helper */ "./src/main/instance_helper.ts");
+/* harmony import */ var _common_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common/index */ "./src/common/index.ts");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./config */ "./src/main/config.ts");
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./util */ "./src/main/util.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -317,7 +416,7 @@ var Instance = /** @class */ (function (_super) {
     Instance.prototype.openDb = function (dbName) {
         this.activeDbName = dbName;
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].OpenDb,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].OpenDb,
             query: dbName
         });
     };
@@ -331,7 +430,7 @@ var Instance = /** @class */ (function (_super) {
     Instance.prototype.initDb = function (dataBase) {
         this.activeDbName = dataBase.name;
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].InitDb,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].InitDb,
             query: dataBase
         });
     };
@@ -343,7 +442,7 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.dropDb = function () {
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].DropDb,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].DropDb,
             query: null
         });
     };
@@ -357,7 +456,7 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.select = function (query) {
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Select,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].Select,
             query: query
         });
     };
@@ -370,7 +469,7 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.count = function (query) {
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Count,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].Count,
             query: query
         });
     };
@@ -383,7 +482,7 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.insert = function (query) {
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Insert,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].Insert,
             query: query
         });
     };
@@ -396,7 +495,7 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.update = function (query) {
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Update,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].Update,
             query: query
         });
     };
@@ -409,7 +508,7 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.remove = function (query) {
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Remove,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].Remove,
             query: query
         });
     };
@@ -422,7 +521,7 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.clear = function (tableName) {
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Clear,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].Clear,
             query: tableName
         });
     };
@@ -435,7 +534,7 @@ var Instance = /** @class */ (function (_super) {
     Instance.prototype.setLogStatus = function (status) {
         _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isLogEnabled = status ? status : _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isLogEnabled;
         this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].ChangeLogStatus,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].ChangeLogStatus,
             query: _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isLogEnabled
         });
     };
@@ -448,7 +547,7 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.getDbVersion = function (dbName) {
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].GetDbVersion,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].GetDbVersion,
             query: dbName
         });
     };
@@ -461,7 +560,7 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.isDbExist = function (dbInfo) {
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].IsDbExist,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].IsDbExist,
             query: dbInfo
         });
     };
@@ -473,7 +572,7 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.getDbList = function () {
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].GetDbList,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].GetDbList,
             query: null
         });
     };
@@ -486,7 +585,7 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.getDbSchema = function (dbName) {
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].GetDbSchema,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].GetDbSchema,
             query: dbName
         });
     };
@@ -499,7 +598,7 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.get = function (key) {
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Get,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].Get,
             query: key
         });
     };
@@ -513,7 +612,7 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.set = function (key, value) {
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Set,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].Set,
             query: {
                 key: key, value: value
             }
@@ -527,7 +626,7 @@ var Instance = /** @class */ (function (_super) {
      */
     Instance.prototype.terminate = function () {
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Terminate,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].Terminate,
             query: null
         });
     };
@@ -543,7 +642,7 @@ var Instance = /** @class */ (function (_super) {
             query.logic = query.logic.toString();
         }
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Transaction,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].Transaction,
             query: query
         });
     };
@@ -577,12 +676,12 @@ var Instance = /** @class */ (function (_super) {
     };
     Instance.prototype.union = function (query) {
         return this.pushApi({
-            name: _enums__WEBPACK_IMPORTED_MODULE_0__["API"].Union,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_1__["API"].Union,
             query: query
         });
     };
     return Instance;
-}(_instance_helper__WEBPACK_IMPORTED_MODULE_1__["InstanceHelper"]));
+}(_instance_helper__WEBPACK_IMPORTED_MODULE_0__["InstanceHelper"]));
 
 
 
@@ -599,8 +698,8 @@ var Instance = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InstanceHelper", function() { return InstanceHelper; });
 /* harmony import */ var _log_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./log_helper */ "./src/main/log_helper.ts");
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./enums */ "./src/main/enums.ts");
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./config */ "./src/main/config.ts");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./src/main/config.ts");
+/* harmony import */ var _common_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../common/index */ "./src/common/index.ts");
 
 
 
@@ -614,30 +713,30 @@ var InstanceHelper = /** @class */ (function () {
         this.eventQueue = [];
         // these apis have special permissions. These apis dont wait for database open.
         this.whiteListApi_ = [
-            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].InitDb,
-            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].IsDbExist,
-            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].GetDbVersion,
-            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].GetDbList,
-            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].OpenDb,
-            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].GetDbSchema,
-            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Get,
-            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Set,
-            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].ChangeLogStatus,
-            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Terminate,
-            _enums__WEBPACK_IMPORTED_MODULE_1__["API"].InitKeyStore
+            _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].InitDb,
+            _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].IsDbExist,
+            _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbVersion,
+            _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbList,
+            _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].OpenDb,
+            _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].GetDbSchema,
+            _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].Get,
+            _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].Set,
+            _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].ChangeLogStatus,
+            _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].Terminate,
+            _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].InitKeyStore
         ];
         if (worker) {
             this.worker_ = worker;
             this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
         }
         else {
-            _config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker = false;
+            _config__WEBPACK_IMPORTED_MODULE_1__["Config"].isRuningInWorker = false;
         }
     }
     InstanceHelper.prototype.initKeyStore_ = function () {
-        if (_config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker) {
+        if (_config__WEBPACK_IMPORTED_MODULE_1__["Config"].isRuningInWorker) {
             this.prcoessExecutionOfQry_({
-                name: _enums__WEBPACK_IMPORTED_MODULE_1__["API"].InitKeyStore,
+                name: _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].InitKeyStore,
                 onSuccess: function () {
                 },
                 onError: function (err) {
@@ -661,23 +760,23 @@ var InstanceHelper = /** @class */ (function () {
             }
             else {
                 switch (finishedRequest.name) {
-                    case _enums__WEBPACK_IMPORTED_MODULE_1__["API"].OpenDb:
-                    case _enums__WEBPACK_IMPORTED_MODULE_1__["API"].InitDb:
+                    case _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].OpenDb:
+                    case _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].InitDb:
                         this.isDbOpened_ = true;
                         break;
-                    case _enums__WEBPACK_IMPORTED_MODULE_1__["API"].Terminate:
+                    case _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].Terminate:
                         this.isDbOpened_ = false;
-                        if (_config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker === true) {
+                        if (_config__WEBPACK_IMPORTED_MODULE_1__["Config"].isRuningInWorker === true) {
                             this.worker_.terminate();
                         }
                         break;
-                    case _enums__WEBPACK_IMPORTED_MODULE_1__["API"].CloseDb:
+                    case _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].CloseDb:
                         if (this.requestQueue_.length > 0) {
                             this.openDb_();
                         }
                         else {
                             this.isDbIdle_ = true;
-                            this.callEvent(_enums__WEBPACK_IMPORTED_MODULE_1__["EVENT"].RequestQueueEmpty, []);
+                            this.callEvent(_common_index__WEBPACK_IMPORTED_MODULE_2__["EVENT"].RequestQueueEmpty, []);
                         }
                         break;
                 }
@@ -690,7 +789,7 @@ var InstanceHelper = /** @class */ (function () {
     InstanceHelper.prototype.openDb_ = function () {
         this.initKeyStore_();
         this.prcoessExecutionOfQry_({
-            name: _enums__WEBPACK_IMPORTED_MODULE_1__["API"].OpenDb,
+            name: _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].OpenDb,
             query: this.activeDbName,
             onSuccess: function () {
             },
@@ -709,7 +808,7 @@ var InstanceHelper = /** @class */ (function () {
                 reject(error);
             };
             if (_this.requestQueue_.length === 0) {
-                _this.callEvent(_enums__WEBPACK_IMPORTED_MODULE_1__["EVENT"].RequestQueueFilled, []);
+                _this.callEvent(_common_index__WEBPACK_IMPORTED_MODULE_2__["EVENT"].RequestQueueFilled, []);
                 if (_this.isDbIdle_ === true && _this.isDbOpened_ === true) {
                     _this.openDb_();
                 }
@@ -750,7 +849,7 @@ var InstanceHelper = /** @class */ (function () {
         else if (requestQueueLength === 0 && this.isDbIdle_ === false && this.isDbOpened_) {
             this.inactivityTimer_ = setTimeout(function () {
                 _this.prcoessExecutionOfQry_({
-                    name: _enums__WEBPACK_IMPORTED_MODULE_1__["API"].CloseDb,
+                    name: _common_index__WEBPACK_IMPORTED_MODULE_2__["API"].CloseDb,
                     onSuccess: function () {
                     },
                     onError: function (err) {
@@ -766,7 +865,7 @@ var InstanceHelper = /** @class */ (function () {
             name: request.name,
             query: request.query
         };
-        if (_config__WEBPACK_IMPORTED_MODULE_2__["Config"].isRuningInWorker === true) {
+        if (_config__WEBPACK_IMPORTED_MODULE_1__["Config"].isRuningInWorker === true) {
             this.worker_.postMessage(requestForWorker);
         }
         else {
@@ -800,7 +899,7 @@ var InstanceHelper = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LogHelper", function() { return LogHelper; });
-/* harmony import */ var _enums__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./enums */ "./src/main/enums.ts");
+/* harmony import */ var _common_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../common/index */ "./src/common/index.ts");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./src/main/config.ts");
 
 
@@ -834,10 +933,10 @@ var LogHelper = /** @class */ (function () {
     LogHelper.prototype.getMsg = function () {
         var errMsg;
         switch (this.type) {
-            case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].WorkerNotSupplied:
+            case _common_index__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].WorkerNotSupplied:
                 errMsg = "Worker object is not passed in instance constructor";
                 break;
-            case _enums__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].IndexedDbUndefined:
+            case _common_index__WEBPACK_IMPORTED_MODULE_0__["ERROR_TYPE"].IndexedDbUndefined:
                 errMsg = "Browser does not support indexeddb";
                 break;
             default:

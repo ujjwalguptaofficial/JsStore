@@ -1,4 +1,4 @@
-import { WebWorkerRequest, EventQueue } from "./types";
+import { WebWorkerRequest, EventQueue } from "../common/index";
 export declare class InstanceHelper {
     protected activeDbName: string;
     private worker_;

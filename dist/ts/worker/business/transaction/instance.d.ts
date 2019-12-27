@@ -1,6 +1,5 @@
-import { TranscationQuery, WebWorkerRequest } from "../../types";
+import { TranscationQuery, WebWorkerRequest, IError } from "../../../common/index";
 import { Base } from "../base";
-import { IError } from "../../interfaces";
 export declare class Instance extends Base {
     query: TranscationQuery;
     results: any;

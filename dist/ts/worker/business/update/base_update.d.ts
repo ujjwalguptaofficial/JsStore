@@ -1,5 +1,5 @@
 import { Base } from "../base";
-import { UpdateQuery } from "../../types";
+import { UpdateQuery } from "../../../common/index";
 export declare const updateValue: (suppliedValue: any, storedValue: any) => any;
 export declare class BaseUpdate extends Base {
     query: UpdateQuery;

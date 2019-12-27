@@ -19,6 +19,8 @@ A complete IndexedDB wrapper with SQL like syntax.
 # Features 
 
 * Executes In Web Worker
+* Simple readable apis
+* Easy to learn
 * TypeScript Support 
 * Join Support
 * DataType Support
@@ -29,7 +31,7 @@ A complete IndexedDB wrapper with SQL like syntax.
 
 # Examples
 
-Check out examples in examples folder.
+Check out repo - https://github.com/ujjwalguptaofficial/jsstore-examples
 
 # Website
 

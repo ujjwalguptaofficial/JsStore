@@ -1,5 +1,4 @@
-import { API } from "../enums";
-import { IError } from "../interfaces";
+import { API, IError } from "../../common/index";
 export declare class QueryHelper {
     api: API;
     query: any;

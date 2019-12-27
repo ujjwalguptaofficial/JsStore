@@ -1,5 +1,4 @@
-import { SelectQuery } from "../../types";
-import { IError } from "../../interfaces";
+import { SelectQuery, IError } from "../../../common/index";
 import { Join } from "./join";
 export declare class Instance extends Join {
     constructor(query: SelectQuery, onSuccess: (results: object[]) => void, onError: (err: IError) => void);

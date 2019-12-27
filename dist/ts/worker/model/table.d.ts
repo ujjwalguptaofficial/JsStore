@@ -1,5 +1,5 @@
 import { Column } from "./column";
-import { ITable } from "../interfaces";
+import { ITable } from "../../common/index";
 export declare class Table {
     name: string;
     columns: Column[];

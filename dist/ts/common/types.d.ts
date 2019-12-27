@@ -37,7 +37,10 @@ export declare type JoinQuery = {
     };
     order?: OrderQuery;
     as?: {
-        [originalColumnName: string]: [string];
+        [originalColumnName: string]: string;
+    };
+    case?: {
+        [columnName: string]: [SelectCase];
     };
 };
 export declare type SelectQuery = {
@@ -87,7 +90,8 @@ export declare type DbInfo = {
     };
 };
 export declare type CountQuery = {
-    from: any;
+    from: string;
+    join?: JoinQuery;
     ignoreCase?: boolean;
     where?: {
         [columnName: string]: any;
@@ -103,7 +107,9 @@ export declare type RemoveQuery = {
 export declare type UpdateQuery = {
     in: string;
     ignoreCase?: boolean;
-    set: any;
+    set: {
+        [columnName: string]: any;
+    };
     where?: {
         [columnName: string]: any;
     };
@@ -133,4 +139,8 @@ export declare type SqlWebResult = {
 export declare type EventQueue = {
     event: EVENT;
     callback: Function;
+};
+export declare type SetQuery = {
+    key: string;
+    value: any;
 };
