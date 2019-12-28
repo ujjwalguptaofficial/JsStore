@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.6.2 - 27/12/2019
+ * @license :jsstore - V3.6.3 - 28/12/2019
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
  */
@@ -2091,7 +2091,7 @@ var init_db_InitDb = /** @class */ (function (_super) {
 }(base_db["a" /* BaseDb */]));
 
 
-// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 9 modules
+// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 10 modules
 var select_instance = __webpack_require__(26);
 
 // EXTERNAL MODULE: ./src/worker/business/count/instance.ts + 5 modules
@@ -3100,6 +3100,80 @@ var enums = __webpack_require__(0);
 // EXTERNAL MODULE: ./src/worker/business/where_base.ts
 var where_base = __webpack_require__(12);
 
+// CONCATENATED MODULE: ./src/worker/business/select/then_evaluator.ts
+
+var then_evaluator_ThenEvaluator = /** @class */ (function () {
+    function ThenEvaluator() {
+    }
+    ThenEvaluator.prototype.setCaseAndValue = function (caseQuery, value) {
+        this.caseQuery_ = caseQuery;
+        this.setValue(value);
+    };
+    ThenEvaluator.prototype.setCaseAndColumn = function (caseQuery, columnName) {
+        this.caseQuery_ = caseQuery;
+        this.setColumn(columnName);
+        return this;
+    };
+    ThenEvaluator.prototype.setColumn = function (columnName) {
+        this.columnName_ = columnName;
+        this.caseColumnQuery_ = this.caseQuery_[this.columnName_];
+        this.length_ = this.caseColumnQuery_.length;
+        return this;
+    };
+    ThenEvaluator.prototype.setValue = function (value) {
+        this.value = value;
+        return this;
+    };
+    ThenEvaluator.prototype.evaluate = function () {
+        var lastThen = this.caseColumnQuery_[this.length_ - 1].then;
+        for (var i = 0; i < this.length_; i++) {
+            if (this.checkCase_(this.caseColumnQuery_[i]) === true) {
+                return this.caseColumnQuery_[i].then;
+            }
+        }
+        return lastThen == null ? this.value[this.columnName_] : lastThen;
+    };
+    ThenEvaluator.prototype.checkCase_ = function (cond) {
+        var queryOption;
+        for (queryOption in cond) {
+            switch (queryOption) {
+                case enums["g" /* QUERY_OPTION */].GreaterThan:
+                    if (this.value[this.columnName_] > cond[queryOption]) {
+                        return true;
+                    }
+                    break;
+                case enums["g" /* QUERY_OPTION */].Equal:
+                    if (this.value[this.columnName_] === cond[queryOption]) {
+                        return true;
+                    }
+                    break;
+                case enums["g" /* QUERY_OPTION */].LessThan:
+                    if (this.value[this.columnName_] < cond[queryOption]) {
+                        return true;
+                    }
+                    break;
+                case enums["g" /* QUERY_OPTION */].GreaterThanEqualTo:
+                    if (this.value[this.columnName_] >= cond[queryOption]) {
+                        return true;
+                    }
+                    break;
+                case enums["g" /* QUERY_OPTION */].LessThanEqualTo:
+                    if (this.value[this.columnName_] <= cond[queryOption]) {
+                        return true;
+                    }
+                    break;
+                case enums["g" /* QUERY_OPTION */].NotEqualTo:
+                    if (this.value[this.columnName_] !== cond[queryOption]) {
+                        return true;
+                    }
+            }
+            return false;
+        }
+    };
+    return ThenEvaluator;
+}());
+
+
 // CONCATENATED MODULE: ./src/worker/business/select/base_select.ts
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3124,97 +3198,26 @@ var base_select_BaseSelect = /** @class */ (function (_super) {
         _this.isSubQuery = false;
         _this.isOrderWithLimit = false;
         _this.isOrderWithSkip = false;
+        _this.thenEvaluator = new then_evaluator_ThenEvaluator();
         return _this;
     }
-    BaseSelect.prototype.pushResult = function (value) {
-        for (var columnName in this.query.case) {
-            value[columnName] = this.getThenValue(columnName, value, this.query.case);
-        }
-        this.results.push(value);
-    };
-    BaseSelect.prototype.getThenValue = function (columnName, value, caseQuery) {
-        var caseColumnQuery = caseQuery[columnName];
-        var length = caseColumnQuery.length;
-        var lastThen = caseColumnQuery[length - 1].then;
-        var getLastThen = lastThen == null ? function () { return value[columnName]; } : function () { return lastThen; };
-        var checkCase = function (cond) {
-            for (var queryOption in cond) {
-                switch (queryOption) {
-                    case enums["g" /* QUERY_OPTION */].GreaterThan:
-                        if (value[columnName] > cond[queryOption]) {
-                            return true;
-                        }
-                        break;
-                    case enums["g" /* QUERY_OPTION */].Equal:
-                        if (value[columnName] === cond[queryOption]) {
-                            return true;
-                        }
-                        break;
-                    case enums["g" /* QUERY_OPTION */].LessThan:
-                        if (value[columnName] < cond[queryOption]) {
-                            return true;
-                        }
-                        break;
-                    case enums["g" /* QUERY_OPTION */].GreaterThanEqualTo:
-                        if (value[columnName] >= cond[queryOption]) {
-                            return true;
-                        }
-                        break;
-                    case enums["g" /* QUERY_OPTION */].LessThanEqualTo:
-                        if (value[columnName] <= cond[queryOption]) {
-                            return true;
-                        }
-                        break;
-                    case enums["g" /* QUERY_OPTION */].NotEqualTo:
-                        if (value[columnName] !== cond[queryOption]) {
-                            return true;
-                        }
+    BaseSelect.prototype.setPushResult = function () {
+        var _this = this;
+        if (this.query.case) {
+            this.pushResult = function (value) {
+                var columnName;
+                _this.thenEvaluator.setCaseAndValue(_this.query.case, value);
+                for (columnName in _this.query.case) {
+                    value[columnName] = _this.thenEvaluator.setColumn(columnName).evaluate();
                 }
-                return false;
-            }
-        };
-        for (var i = 0; i < length; i++) {
-            if (checkCase(caseColumnQuery[i]) === true) {
-                return caseColumnQuery[i].then;
-            }
+                _this.results.push(value);
+            };
         }
-        return getLastThen();
-    };
-    BaseSelect.prototype.checkCase = function (columnName, cond, value) {
-        for (var queryOption in cond) {
-            switch (queryOption) {
-                case enums["g" /* QUERY_OPTION */].GreaterThan:
-                    if (value[columnName] > cond[queryOption]) {
-                        return true;
-                    }
-                    break;
-                case enums["g" /* QUERY_OPTION */].Equal:
-                    if (value[columnName] === cond[queryOption]) {
-                        return true;
-                    }
-                    break;
-                case enums["g" /* QUERY_OPTION */].LessThan:
-                    if (value[columnName] < cond[queryOption]) {
-                        return true;
-                    }
-                    break;
-                case enums["g" /* QUERY_OPTION */].GreaterThanEqualTo:
-                    if (value[columnName] >= cond[queryOption]) {
-                        return true;
-                    }
-                    break;
-                case enums["g" /* QUERY_OPTION */].LessThanEqualTo:
-                    if (value[columnName] <= cond[queryOption]) {
-                        return true;
-                    }
-                    break;
-                case enums["g" /* QUERY_OPTION */].NotEqualTo:
-                    if (value[columnName] !== cond[queryOption]) {
-                        return true;
-                    }
-            }
+        else {
+            this.pushResult = function (value) {
+                _this.results.push(value);
+            };
         }
-        return false;
     };
     BaseSelect.prototype.removeDuplicates = function () {
         var datas = this.results;
@@ -4142,8 +4145,9 @@ var orderby_helper_Helper = /** @class */ (function (_super) {
                 });
             }
             else {
+                this.thenEvaluator.setCaseAndColumn(order.case, orderColumn);
                 this.results.sort(function (a, b) {
-                    return orderMethod_1(_this.getThenValue(orderColumn, a, order.case), _this.getThenValue(orderColumn, b, order.case));
+                    return orderMethod_1(_this.thenEvaluator.setValue(a).evaluate(), _this.thenEvaluator.setValue(b).evaluate());
                 });
             }
         }
@@ -4630,13 +4634,11 @@ var instance_Instance = /** @class */ (function (_super) {
         };
         _this.onError = onError;
         _this.onSuccess = onSuccess;
-        if (query.case == null) {
-            query.case = {};
-        }
         _this.query = query;
         _this.skipRecord = query.skip;
         _this.limitRecord = query.limit;
         _this.tableName = query.from;
+        _this.setPushResult();
         if (query.order) {
             if (Object(is_array["a" /* isArray */])(query.order) || query.order.case != null) {
                 _this.query.order.idbSorting = false;
@@ -5095,7 +5097,7 @@ var Where = /** @class */ (function (_super) {
 // EXTERNAL MODULE: ./src/common/enums.ts
 var enums = __webpack_require__(0);
 
-// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 9 modules
+// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 10 modules
 var instance = __webpack_require__(26);
 
 // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
@@ -5412,7 +5414,7 @@ var Where = /** @class */ (function (_super) {
 // EXTERNAL MODULE: ./src/common/enums.ts
 var enums = __webpack_require__(0);
 
-// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 9 modules
+// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 10 modules
 var instance = __webpack_require__(26);
 
 // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
@@ -5865,7 +5867,7 @@ var where_Where = /** @class */ (function (_super) {
 }(regex_Regex));
 
 
-// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 9 modules
+// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 10 modules
 var instance = __webpack_require__(26);
 
 // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
