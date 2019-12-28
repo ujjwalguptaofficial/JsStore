@@ -10,14 +10,12 @@ export class ThenEvaluator {
 
     setCaseAndValue(caseQuery: any, value) {
         this.caseQuery = caseQuery;
-        this.value = value;
+        this.setValue(value);
     }
 
     setCaseAndColumn(caseQuery: any, columnName: string) {
         this.caseQuery = caseQuery;
-        this.columnName = columnName;
-        this.caseColumnQuery = this.caseQuery[this.columnName];
-        this.length = this.caseColumnQuery.length;
+        this.setColumn(columnName);
         return this;
     }
 
@@ -34,6 +32,7 @@ export class ThenEvaluator {
     }
 
     evaluate() {
+
         let lastThen = this.caseColumnQuery[this.length - 1].then;
         lastThen = lastThen == null ? this.value[this.columnName] : lastThen;
 
@@ -77,8 +76,4 @@ export class ThenEvaluator {
             return false;
         }
     }
-
-    // getLastThen() {
-    //     return this.lastThen == null ? this.value[this.columnName] : this.lastThen
-    // }
 }

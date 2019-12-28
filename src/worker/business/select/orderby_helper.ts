@@ -112,8 +112,6 @@ export class Helper extends GroupByHelper {
                     return orderMethod(
                         this.thenEvaluator.setValue(a).evaluate(),
                         this.thenEvaluator.setValue(b).evaluate()
-                        // this.getThenValue(orderColumn, a, order.case),
-                        // this.getThenValue(orderColumn, b, order.case)
                     );
                 });
             }
