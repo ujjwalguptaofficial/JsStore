@@ -107,10 +107,14 @@ export class Helper extends GroupByHelper {
                 });
             }
             else {
+                this.thenEvaluator.setCaseAndColumn(order.case, orderColumn);
                 this.results.sort((a, b) => {
                     return orderMethod(
-                        this.getThenValue(orderColumn, a, order.case),
-                        this.getThenValue(orderColumn, b, order.case));
+                        this.thenEvaluator.setValue(a).evaluate(),
+                        this.thenEvaluator.setValue(b).evaluate()
+                        // this.getThenValue(orderColumn, a, order.case),
+                        // this.getThenValue(orderColumn, b, order.case)
+                    );
                 });
             }
         }

@@ -1,5 +1,6 @@
 import { WhereBase } from "../where_base";
 import { SelectQuery, SelectCase, QUERY_OPTION } from "../../../common/index";
+import { ThenEvaluator } from "./then_evaluator";
 
 
 export class BaseSelect extends WhereBase {
@@ -18,11 +19,26 @@ export class BaseSelect extends WhereBase {
     isOrderWithLimit = false;
     isOrderWithSkip = false;
 
-    protected pushResult(value) {
-        for (const columnName in this.query.case) {
-            value[columnName] = this.getThenValue(columnName, value, this.query.case);
+    protected pushResult: (value) => void;
+
+    protected thenEvaluator = new ThenEvaluator();
+
+    protected setPushResult() {
+        if (this.query.case) {
+            this.pushResult = (value) => {
+                let columnName: string;
+                this.thenEvaluator.setCaseAndValue(this.query.case, value);
+                for (columnName in this.query.case) {
+                    value[columnName] = this.thenEvaluator.setColumn(columnName).evaluate();
+                }
+                this.results.push(value);
+            };
         }
-        this.results.push(value);
+        else {
+            this.pushResult = (value) => {
+                this.results.push(value);
+            };
+        }
     }
 
     protected getThenValue(columnName: string, value, caseQuery: any) {
@@ -31,7 +47,8 @@ export class BaseSelect extends WhereBase {
         const lastThen = caseColumnQuery[length - 1].then;
         const getLastThen = lastThen == null ? () => value[columnName] : () => lastThen;
         const checkCase = (cond: SelectCase) => {
-            for (const queryOption in cond) {
+            let queryOption;
+            for (queryOption in cond) {
                 switch (queryOption) {
                     case QUERY_OPTION.GreaterThan:
                         if (value[columnName] > cond[queryOption]) {
