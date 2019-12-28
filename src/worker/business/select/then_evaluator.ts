@@ -2,27 +2,27 @@ import { SelectCase } from "../../../common/types";
 import { QUERY_OPTION } from "../../../common/index";
 
 export class ThenEvaluator {
-    private columnName: string;
+    private columnName_: string;
     private value;
-    private caseQuery;
-    private caseColumnQuery: SelectCase[];
-    private length: number;
+    private caseQuery_;
+    private caseColumnQuery_: SelectCase[];
+    private length_: number;
 
     setCaseAndValue(caseQuery: any, value) {
-        this.caseQuery = caseQuery;
+        this.caseQuery_ = caseQuery;
         this.setValue(value);
     }
 
     setCaseAndColumn(caseQuery: any, columnName: string) {
-        this.caseQuery = caseQuery;
+        this.caseQuery_ = caseQuery;
         this.setColumn(columnName);
         return this;
     }
 
     setColumn(columnName: string) {
-        this.columnName = columnName;
-        this.caseColumnQuery = this.caseQuery[this.columnName];
-        this.length = this.caseColumnQuery.length;
+        this.columnName_ = columnName;
+        this.caseColumnQuery_ = this.caseQuery_[this.columnName_];
+        this.length_ = this.caseColumnQuery_.length;
         return this;
     }
 
@@ -32,44 +32,41 @@ export class ThenEvaluator {
     }
 
     evaluate() {
-
-        let lastThen = this.caseColumnQuery[this.length - 1].then;
-        lastThen = lastThen == null ? this.value[this.columnName] : lastThen;
-
-        for (let i = 0; i < this.length; i++) {
-            if (this.checkCase(this.caseColumnQuery[i]) === true) {
-                return this.caseColumnQuery[i].then;
+        const lastThen = this.caseColumnQuery_[this.length_ - 1].then;
+        for (let i = 0; i < this.length_; i++) {
+            if (this.checkCase_(this.caseColumnQuery_[i]) === true) {
+                return this.caseColumnQuery_[i].then;
             }
         }
-        return lastThen;
+        return lastThen == null ? this.value[this.columnName_] : lastThen;
     }
 
-    private checkCase(cond: SelectCase) {
+    private checkCase_(cond: SelectCase) {
         let queryOption;
         for (queryOption in cond) {
             switch (queryOption) {
                 case QUERY_OPTION.GreaterThan:
-                    if (this.value[this.columnName] > cond[queryOption]) {
+                    if (this.value[this.columnName_] > cond[queryOption]) {
                         return true;
                     } break;
                 case QUERY_OPTION.Equal:
-                    if (this.value[this.columnName] === cond[queryOption]) {
+                    if (this.value[this.columnName_] === cond[queryOption]) {
                         return true;
                     } break;
                 case QUERY_OPTION.LessThan:
-                    if (this.value[this.columnName] < cond[queryOption]) {
+                    if (this.value[this.columnName_] < cond[queryOption]) {
                         return true;
                     } break;
                 case QUERY_OPTION.GreaterThanEqualTo:
-                    if (this.value[this.columnName] >= cond[queryOption]) {
+                    if (this.value[this.columnName_] >= cond[queryOption]) {
                         return true;
                     } break;
                 case QUERY_OPTION.LessThanEqualTo:
-                    if (this.value[this.columnName] <= cond[queryOption]) {
+                    if (this.value[this.columnName_] <= cond[queryOption]) {
                         return true;
                     } break;
                 case QUERY_OPTION.NotEqualTo:
-                    if (this.value[this.columnName] !== cond[queryOption]) {
+                    if (this.value[this.columnName_] !== cond[queryOption]) {
                         return true;
                     }
             }
