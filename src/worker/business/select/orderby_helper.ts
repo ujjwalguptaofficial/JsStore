@@ -107,7 +107,6 @@ export class Helper extends GroupByHelper {
                 });
             }
             else {
-                debugger;
                 this.thenEvaluator.setCaseAndColumn({ [orderColumn]: order.case }, orderColumn).init(true);
                 this.results.sort((a, b) => {
                     return orderMethod(

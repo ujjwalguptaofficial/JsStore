@@ -181,4 +181,35 @@ describe('Select with order & case', function () {
         }).catch(done)
     });
 
+    it('SELECT ProductID FROM Products ORDER BY ProductID (CASE WHEN ProductID > 20 THEN ProductID ELSE Price END);', function (done) {
+        debugger;
+        con.select({
+            from: 'Products',
+            limit: 10,
+            order: {
+                by: 'productId',
+                case: [{
+                    '>': 5,
+                    then: {
+                        column: 'productId'
+                    }
+                }, {
+                    then: {
+                        column: 'price'
+                    }
+                }]
+            }
+        }).then(function (results) {
+            console.log('results here', results);
+            expect(results).to.be.an('array').length(10);
+            var prices = [25, 30, 40, 97, 10, 31, 21, 38, 6, 23.25];
+            results.forEach(function (result, i) {
+                expect(result.price).to.be.equal(prices[i]);
+            });
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
 });

@@ -1,5 +1,4 @@
-import { CaseOption } from "../../../common/types";
-import { QUERY_OPTION } from "../../../common/index";
+import { QUERY_OPTION, CaseOption } from "../../../common/index";
 
 export class ThenEvaluator {
     private columnName_: string;
