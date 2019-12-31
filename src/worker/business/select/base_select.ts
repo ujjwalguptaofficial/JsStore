@@ -1,5 +1,5 @@
 import { WhereBase } from "../where_base";
-import { SelectQuery, SelectCase, QUERY_OPTION } from "../../../common/index";
+import { SelectQuery, CaseOption, QUERY_OPTION } from "../../../common/index";
 import { ThenEvaluator } from "./then_evaluator";
 
 

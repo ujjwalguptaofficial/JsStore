@@ -6,14 +6,12 @@ describe('Select with order & case', function () {
             limit: 10,
             order: {
                 by: 'country',
-                case: {
-                    country: [{
-                        '=': 'Austria',
-                        then: "a"
-                    }, {
-                        then: "b"
-                    }]
-                }
+                case: [{
+                    '=': 'Austria',
+                    then: "a"
+                }, {
+                    then: "b"
+                }]
             }
         }).then(function (results) {
             var countries = ["Austria", "Austria", "Germany", "Mexico", "Mexico",
@@ -34,14 +32,12 @@ describe('Select with order & case', function () {
             limit: 10,
             order: {
                 by: 'country',
-                case: {
-                    country: [{
-                        '=': 'Austria',
-                        then: "a"
-                    }, {
-                        then: null
-                    }]
-                }
+                case: [{
+                    '=': 'Austria',
+                    then: "a"
+                }, {
+                    then: null
+                }]
             }
         }).then(function (results) {
             var countries = ["Austria", "Austria", "Argentina", "Argentina", "Argentina",
@@ -63,16 +59,14 @@ describe('Select with order & case', function () {
             limit: 12,
             order: {
                 by: 'city',
-                case: {
-                    city: [{
-                        '=': null,
-                        then: {
-                            column: 'Country'
-                        }
-                    }, {
-                        then: null
-                    }]
-                }
+                case: [{
+                    '=': null,
+                    then: {
+                        column: 'Country'
+                    }
+                }, {
+                    then: null
+                }]
             }
         }).then(function (results) {
             // console.log('city results', results)
@@ -100,17 +94,15 @@ describe('Select with order & case', function () {
             order: {
                 by: 'price',
                 type: 'desc',
-                case: {
-                    price: [{
-                        '<=': 20,
-                        then: 1
-                    }, {
-                        '>=': 30,
-                        then: 2
-                    }, {
-                        then: 3
-                    }],
-                }
+                case: [{
+                    '<=': 20,
+                    then: 1
+                }, {
+                    '>=': 30,
+                    then: 2
+                }, {
+                    then: 3
+                }]
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(10);
@@ -133,21 +125,21 @@ describe('Select with order & case', function () {
                     '>': 18
                 }
             },
-            order: {
+            order: [{
                 by: 'price',
-                type: 'desc',
-                case: {
-                    categoryId: [{
-                        '=': 1,
-                        then: 1
-                    }, {
-                        '=': 2,
-                        then: 2
-                    }, {
-                        then: 3
-                    }],
-                }
-            }
+                type: 'desc'
+            }, {
+                by: 'categoryId',
+                case: [{
+                    '=': 1,
+                    then: 1
+                }, {
+                    '=': 2,
+                    then: 2
+                }, {
+                    then: 3
+                }]
+            }]
         }).then(function (results) {
 
             expect(results).to.be.an('array').length(10);
@@ -169,14 +161,12 @@ describe('Select with order & case', function () {
                 by: 'value',
                 type: 'asc',
                 idbSorting: false,
-                case: {
-                    value: [{
-                        '=': 'Eggs',
-                        then: 'a'
-                    }, {
-                        then: 'b'
-                    }]
-                }
+                case: [{
+                    '=': 'Eggs',
+                    then: 'a'
+                }, {
+                    then: 'b'
+                }]
             }
         }).then(function (results) {
             results = results.map(function (val) {

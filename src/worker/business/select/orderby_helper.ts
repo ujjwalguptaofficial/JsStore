@@ -101,13 +101,14 @@ export class Helper extends GroupByHelper {
         if (columnInfo != null) {
             const orderMethod = this.getValueComparer_(columnInfo, order);
             orderColumn = columnInfo.name;
-            if (order.case == null || order.case[orderColumn] == null) {
+            if (order.case == null) {
                 this.results.sort((a, b) => {
                     return orderMethod(a[orderColumn], b[orderColumn]);
                 });
             }
             else {
-                this.thenEvaluator.setCaseAndColumn(order.case, orderColumn).init(true);
+                debugger;
+                this.thenEvaluator.setCaseAndColumn({ [orderColumn]: order.case }, orderColumn).init(true);
                 this.results.sort((a, b) => {
                     return orderMethod(
                         this.thenEvaluator.setValue(a).evaluate(),

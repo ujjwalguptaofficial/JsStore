@@ -26,9 +26,9 @@ export type OrderQuery = {
     /**
      * use this option to modify ordering
      *
-     * @type {{ [columnName: string]: [SelectCase] }}
+     * @type {[CaseOption]}
      */
-    case?: { [columnName: string]: [SelectCase] }
+    case?: [CaseOption]
 };
 
 export type JoinQuery = {
@@ -38,7 +38,7 @@ export type JoinQuery = {
     where?: { [columnName: string]: any };
     order?: OrderQuery;
     as?: { [originalColumnName: string]: string },
-    case?: { [columnName: string]: [SelectCase] }
+    case?: { [columnName: string]: [CaseOption] }
 };
 
 export type SelectQuery = {
@@ -52,10 +52,10 @@ export type SelectQuery = {
     aggregate?: AggregateOption;
     ignoreCase?: boolean;
     distinct?: boolean;
-    case?: { [columnName: string]: [SelectCase] }
+    case?: { [columnName: string]: [CaseOption] }
 };
 
-export type SelectCase = {
+export type CaseOption = {
     '>'?: any;
     '<'?: any;
     '>='?: any;
