@@ -107,7 +107,7 @@ export class Helper extends GroupByHelper {
                 });
             }
             else {
-                this.thenEvaluator.setCaseAndColumn(order.case, orderColumn);
+                this.thenEvaluator.setCaseAndColumn(order.case, orderColumn).init(true);
                 this.results.sort((a, b) => {
                     return orderMethod(
                         this.thenEvaluator.setValue(a).evaluate(),

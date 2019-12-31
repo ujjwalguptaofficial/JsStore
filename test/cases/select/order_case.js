@@ -56,6 +56,38 @@ describe('Select with order & case', function () {
         })
     })
 
+
+    it('SELECT * FROM Customers ORDER BY (CASE WHEN City IS NULL THEN Country ELSE City END)', function (done) {
+        con.select({
+            from: 'Customers',
+            limit: 12,
+            order: {
+                by: 'city',
+                case: {
+                    city: [{
+                        '=': null,
+                        then: {
+                            column: 'Country'
+                        }
+                    }, {
+                        then: null
+                    }]
+                }
+            }
+        }).then(function (results) {
+            // console.log('city results', results)
+            var cities = ["Aachen", "Albuquerque", "Anchorage", "Århus", "Barcelona",
+                "Barquisimeto", "Bergamo", "Berlin", "Bern", "bhubaneswar", "bhubaneswar", "Boise"];
+            expect(results).to.be.an('array').length(12);
+            results.forEach(function (result, i) {
+                expect(result.city).to.be.equal(cities[i]);
+            });
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    })
+
     it('order having type desc with limit', function (done) {
         con.select({
             from: 'Products',

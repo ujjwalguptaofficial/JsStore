@@ -10,7 +10,7 @@ describe("Union", function () {
         };
         con.count(query).then(function (count) {
             con.union([query, query]).then(function (results) {
-                console.log(results);
+                // console.log(results);
                 expect(results).to.be.an('array').length(count);
                 done();
             });

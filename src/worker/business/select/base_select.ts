@@ -28,6 +28,7 @@ export class BaseSelect extends WhereBase {
             this.pushResult = (value) => {
                 let columnName: string;
                 this.thenEvaluator.setCaseAndValue(this.query.case, value);
+                this.thenEvaluator.init(false);
                 for (columnName in this.query.case) {
                     value[columnName] = this.thenEvaluator.setColumn(columnName).evaluate();
                 }

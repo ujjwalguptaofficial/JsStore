@@ -100,7 +100,7 @@ describe('select join order test', function () {
             limit: 3
         }).then(function (results) {
             expect(results).to.be.an('array').length(3);
-            console.log(JSON.stringify(results));
+            // console.log(JSON.stringify(results));
             for (var i = 0; i < results.length; i++) {
                 expect(results[i]['Order']).to.be.equal((i + 1).toString());
             }

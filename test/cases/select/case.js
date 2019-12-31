@@ -202,21 +202,6 @@ describe('Test Select Api with case', function () {
         })
     });
 
-    // it('select with order by', function (done) {
-    //     con.select({
-    //         from: 'Customers',
-    //         order: {
-    //             by: 'country',
-    //             type: "desc"
-    //         }
-    //     }).then(function (results) {
-    //         expect(results).to.be.an('array').length(93);
-    //         done();
-    //     }).catch(function (err) {
-    //         done(err);
-    //     })
-    // });
-
     it('select with order by,limit 5', function (done) {
         con.select({
             from: 'Customers',
@@ -247,6 +232,38 @@ describe('Test Select Api with case', function () {
             })
             expect(venezuelaCount).to.be.equal(4);
             expect(usaCount).to.be.equal(1);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('select with order by,limit 10', function (done) {
+        con.select({
+            from: 'Customers',
+            order: {
+                by: 'country',
+                type: "asc"
+            },
+            limit: 10,
+            case: {
+                country: [{
+                    '=': 'Brazil',
+                    then: 'U.S.A.'
+                }, {
+                    then: null
+                }]
+            }
+
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(10);
+            var countries = [
+                "Argentina", "Argentina", "Argentina", "Austria", "Austria",
+                "Belgium", "Belgium", 'U.S.A.', 'U.S.A.', 'U.S.A.'
+            ]
+            results.forEach(function (result, i) {
+                expect(result.country).to.be.equal(countries[i]);
+            });
             done();
         }).catch(function (err) {
             done(err);
