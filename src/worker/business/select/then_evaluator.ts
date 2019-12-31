@@ -4,7 +4,7 @@ import { QUERY_OPTION } from "../../../common/index";
 export class ThenEvaluator {
     private columnName_: string;
     private value;
-    private caseQuery_;
+    private caseQuery_: { [columnName: string]: [CaseOption] };
     private caseColumnQuery_: CaseOption[];
     private length_: number;
 
@@ -34,7 +34,7 @@ export class ThenEvaluator {
     evaluate: () => any;
 
     evalauateThenVal(then) {
-        return then.column ? this.value[then.column] : then;
+        return then.column == null ? then : this.value[then.column];
     }
 
     init(shouldAllowColumn) {
