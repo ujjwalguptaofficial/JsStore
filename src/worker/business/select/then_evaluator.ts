@@ -30,36 +30,18 @@ export class ThenEvaluator {
         return this;
     }
 
-    evaluate: () => any;
+    evaluate() {
+        for (let i = 0; i < this.length_; i++) {
+            if (this.checkCase_(this.caseColumnQuery_[i]) === true) {
+                return this.caseColumnQuery_[i].then;
+            }
+        }
+        const lastThen = this.caseColumnQuery_[this.length_ - 1].then;
+        return lastThen == null ? this.value[this.columnName_] : lastThen;
+    }
 
     evalauateThenVal(then) {
         return then.column == null ? then : this.value[then.column];
-    }
-
-    init(shouldAllowColumn) {
-        if (shouldAllowColumn === false) {
-            this.evaluate = () => {
-                for (let i = 0; i < this.length_; i++) {
-                    if (this.checkCase_(this.caseColumnQuery_[i]) === true) {
-                        return this.caseColumnQuery_[i].then;
-                    }
-                }
-                const lastThen = this.caseColumnQuery_[this.length_ - 1].then;
-                return lastThen == null ? this.value[this.columnName_] : lastThen;
-            };
-        }
-        else {
-            this.evaluate = () => {
-                for (let i = 0; i < this.length_; i++) {
-                    if (this.checkCase_(this.caseColumnQuery_[i]) === true) {
-                        return this.evalauateThenVal(this.caseColumnQuery_[i].then);
-                    }
-                }
-                const lastThen = this.caseColumnQuery_[this.length_ - 1].then;
-                return lastThen == null ? this.value[this.columnName_] : this.evalauateThenVal(lastThen);
-            };
-        }
-        return this;
     }
 
     private checkCase_(cond: CaseOption) {

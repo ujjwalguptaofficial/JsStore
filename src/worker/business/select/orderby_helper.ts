@@ -80,7 +80,6 @@ export class Helper extends GroupByHelper {
     }
 
     private compareValInDesc_(value1, value2, caseQuery: { [columnName: string]: [CaseOption] }) {
-        this.thenEvaluator.init(false);
         for (const columnName in caseQuery) {
             this.thenEvaluator.setCaseAndValue(caseQuery, value1);
             const column1 = this.thenEvaluator.setColumn(columnName).evaluate();
@@ -93,7 +92,6 @@ export class Helper extends GroupByHelper {
                     return this.compareNumberInDesc_(value1[column1], value2[column2]);
             }
         }
-
     }
 
     private getValueComparer_(column: Column, order: OrderQuery): (a, b) => number {
@@ -123,7 +121,6 @@ export class Helper extends GroupByHelper {
         else {
             const columnInfo = this.getOrderColumnInfo_(orderColumn);
             if (columnInfo != null) {
-
                 const orderMethod = this.getValueComparer_(columnInfo, order);
                 orderColumn = columnInfo.name;
                 if (order.case == null) {
@@ -132,7 +129,7 @@ export class Helper extends GroupByHelper {
                     });
                 }
                 else {
-                    this.thenEvaluator.setCaseAndColumn({ [orderColumn]: order.case }, orderColumn).init(true);
+                    this.thenEvaluator.setCaseAndColumn({ [orderColumn]: order.case }, orderColumn);
                     this.results.sort((a, b) => {
                         return orderMethod(
                             this.thenEvaluator.setValue(a).evaluate(),
