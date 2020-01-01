@@ -630,6 +630,32 @@ describe('Test Select Api with case', function () {
         }).catch(done);
     });
 
+    // it(`Select EmployeeName,Gender,Salary from Employee
+    // ORDER BY CASE Gender WHEN 'F' THEN Salary else 'salary' End DESC,
+    // Case WHEN Gender = 'M' THEN Salary  END`, function (done) {
+    //     con.select({
+    //         from: 'employee',
+    //         order: {
+    //             by: {
+    //                 'gender': [{
+    //                     '=': 'F',
+    //                     then: 'salary',
+    //                 }, {
+    //                     then: 'gender'
+    //                 }]
+    //             },
+    //             type: 'desc'
+    //         }
+
+    //     }).then(function (results) {
+    //         const salaries = [95000, 93000, 88000, 83000, 76000, 75000, 75000, 71000, 64000, 42000];
+    //         results.forEach(function (result, i) {
+    //             expect(result.salary).to.be.equal(salaries[i]);
+    //         })
+    //         done();
+    //     }).catch(done);
+    // });
+
     it('M -> Male & F -> Female', function (done) {
         con.select({
             from: 'employee',

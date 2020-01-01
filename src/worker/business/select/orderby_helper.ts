@@ -33,15 +33,13 @@ export class Helper extends GroupByHelper {
 
     private getOrderColumnInfo_(orderColumn: string): Column {
         let column: Column;
-        if (orderColumn != null) {
-            if (this.query.join == null) {
-                column = this.getColumnInfo(orderColumn, this.query.from);
-            }
-            else {
-                const splittedByDot = removeSpace(orderColumn).split(".");
-                orderColumn = splittedByDot[1];
-                column = this.getColumnInfo(orderColumn, splittedByDot[0]);
-            }
+        if (this.query.join == null) {
+            column = this.getColumnInfo(orderColumn, this.query.from);
+        }
+        else {
+            const splittedByDot = removeSpace(orderColumn).split(".");
+            orderColumn = splittedByDot[1];
+            column = this.getColumnInfo(orderColumn, splittedByDot[0]);
         }
         if (column == null) {
             this.onErrorOccured(new LogHelper(ERROR_TYPE.ColumnNotExist, { column: orderColumn, isOrder: true }), true);
