@@ -40,10 +40,6 @@ export class ThenEvaluator {
         return lastThen == null ? this.value[this.columnName_] : lastThen;
     }
 
-    evalauateThenVal(then) {
-        return then.column == null ? then : this.value[then.column];
-    }
-
     private checkCase_(cond: CaseOption) {
         let queryOption;
         for (queryOption in cond) {
