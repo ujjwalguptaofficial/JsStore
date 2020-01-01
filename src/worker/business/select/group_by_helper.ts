@@ -1,27 +1,50 @@
 import { Where } from "./where";
 import { DATA_TYPE, QUERY_OPTION } from "../../../common/index";
-import { getDataType } from "../../utils/index";
+import { getDataType, getObjectFirstKey } from "../../utils/index";
 
 export class GroupByHelper extends Where {
     protected processGroupBy() {
-        const grpQry = this.query.groupBy as any;
+        const groupBy = this.query.groupBy as any;
         let datas = this.results;
         const lookUpObj = {};
         // free results memory
         this.results = this.query.groupBy = null;
-        if (getDataType(grpQry) === DATA_TYPE.String) {
-            for (const i in datas) {
-                lookUpObj[datas[i][grpQry as string]] = datas[i];
+        if (getDataType(groupBy) !== DATA_TYPE.Object) {
+            if (getDataType(groupBy) === DATA_TYPE.String) {
+                for (const i in datas) {
+                    lookUpObj[datas[i][groupBy as string]] = datas[i];
+                }
+            }
+            else {
+                let objKey;
+                for (const i in datas) {
+                    objKey = "";
+                    for (const column in groupBy) {
+                        objKey += datas[i][groupBy[column]];
+                    }
+                    lookUpObj[objKey] = datas[i];
+                }
             }
         }
         else {
-            let objKey;
-            for (const i in datas) {
-                objKey = "";
-                for (const column in grpQry) {
-                    objKey += datas[i][grpQry[column]];
+            const caseQueryLength = Object.keys(groupBy).length;
+            if (caseQueryLength === 1) {
+                const groupByColumn = getObjectFirstKey(groupBy);
+                this.thenEvaluator.setCaseAndColumn(groupBy, groupByColumn);
+                for (const i in datas) {
+                    lookUpObj[this.thenEvaluator.setValue(datas[i]).evaluate()] = datas[i];
                 }
-                lookUpObj[objKey] = datas[i];
+            }
+            else {
+                let objKey;
+                for (const i in datas) {
+                    objKey = "";
+                    this.thenEvaluator.setCaseAndValue(groupBy, datas[i]);
+                    for (const column in groupBy) {
+                        objKey += this.thenEvaluator.setColumn(column).evaluate();
+                    }
+                    lookUpObj[objKey] = datas[i];
+                }
             }
         }
         // free datas memory

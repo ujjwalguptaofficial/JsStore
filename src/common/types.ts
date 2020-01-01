@@ -49,7 +49,7 @@ export type SelectQuery = {
     skip?: number;
     limit?: number;
     order?: OrderQuery;
-    groupBy?: string | string[];
+    groupBy?: string | string[] | { [columnName: string]: [CaseOption] };
     aggregate?: AggregateOption;
     ignoreCase?: boolean;
     distinct?: boolean;

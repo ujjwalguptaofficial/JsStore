@@ -71,7 +71,11 @@ export class ThenEvaluator {
                 case QUERY_OPTION.NotEqualTo:
                     if (this.value[this.columnName_] !== cond[queryOption]) {
                         return true;
-                    }
+                    } break;
+                case QUERY_OPTION.Between:
+                    if (this.value[this.columnName_] > cond[queryOption].low && this.value[this.columnName_] < cond[queryOption].high) {
+                        return true;
+                    } break;
             }
             return false;
         }

@@ -1,9 +1,17 @@
 var conWithoutWorker;
 describe('Db Test', function () {
 
+    // it('drop db employee_db', function (done) {
+    //     con.initDb(getEmployeeDbSchema()).then(function () {
+    //         con.dropDb().then(function (result) {
+    //             done();
+    //         }).catch(done);
+    //     }).catch(done);
+    // });
+
     it('getDbList api test', function (done) {
         con.getDbList().then(function (result) {
-            expect(result).to.be.an('array').to.length(3);
+            expect(result).to.be.an('array').to.length(4);
             done();
         }).catch(function (err) {
             done(err);
@@ -14,7 +22,7 @@ describe('Db Test', function () {
         con.dropDb().then(function () {
             con.getDbList().then(function (result) {
                 console.log(result);
-                expect(result).to.be.an('array').to.deep.equal(['Demo', 'shop']);
+                expect(result).to.be.an('array').to.deep.equal(['Demo', 'employee_db', 'shop']);
                 done();
             }).catch(function (err) {
                 done(err);
@@ -44,7 +52,7 @@ describe('Db Test', function () {
 
     it('getDbList api test after dropping demo', function (done) {
         con.getDbList().then(function (result) {
-            expect(result).to.be.an('array').to.deep.equal(['shop']);
+            expect(result).to.be.an('array').to.deep.equal(['employee_db', 'shop']);
             done();
         }).catch(function (err) {
             done(err);
@@ -62,7 +70,7 @@ describe('Db Test', function () {
 
     it('getDbList api test after dropping pinCodeDetails', function (done) {
         con.getDbList().then(function (result) {
-            expect(result).to.be.an('array').to.deep.equal([]);
+            expect(result).to.be.an('array').to.deep.equal(['employee_db']);
             done();
         }).catch(function (err) {
             done(err);
