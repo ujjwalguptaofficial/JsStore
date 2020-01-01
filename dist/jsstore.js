@@ -1,7 +1,7 @@
 /*!
- * @license :jsstore - V3.6.3 - 28/12/2019
+ * @license :jsstore - V3.7.0 - 01/01/2020
  * https://github.com/ujjwalguptaofficial/JsStore
- * Copyright (c) 2019 @Ujjwal Gupta; Licensed MIT
+ * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
 var JsStore =
 /******/ (function(modules) { // webpackBootstrap

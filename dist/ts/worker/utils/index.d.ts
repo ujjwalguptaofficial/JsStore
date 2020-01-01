@@ -6,3 +6,4 @@ export * from './is_null';
 export * from './is_null_or_empty';
 export * from './is_string';
 export * from './remove_space';
+export * from './is_object';

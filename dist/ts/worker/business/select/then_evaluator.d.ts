@@ -1,3 +1,4 @@
+import { CaseOption } from "../../../common/index";
 export declare class ThenEvaluator {
     private columnName_;
     private value;
@@ -5,7 +6,9 @@ export declare class ThenEvaluator {
     private caseColumnQuery_;
     private length_;
     setCaseAndValue(caseQuery: any, value: any): void;
-    setCaseAndColumn(caseQuery: any, columnName: string): this;
+    setCaseAndColumn(caseQuery: {
+        [columnName: string]: [CaseOption];
+    }, columnName: string): this;
     setColumn(columnName: string): this;
     setValue(value: any): this;
     evaluate(): any;

@@ -4,9 +4,11 @@ export declare type OrderQuery = {
     /**
      * sorting column name
      *
-     * @type {string}
+     * @type {(string | { [columnName: string]: [CaseOption] })}
      */
-    by: string;
+    by: string | {
+        [columnName: string]: [CaseOption];
+    };
     /**
      * sorting type - asc/desc
      *
@@ -22,11 +24,9 @@ export declare type OrderQuery = {
     /**
      * use this option to modify ordering
      *
-     * @type {{ [columnName: string]: [SelectCase] }}
+     * @type {[CaseOption]}
      */
-    case?: {
-        [columnName: string]: [SelectCase];
-    };
+    case?: [CaseOption];
 };
 export declare type JoinQuery = {
     type?: string;
@@ -40,7 +40,7 @@ export declare type JoinQuery = {
         [originalColumnName: string]: string;
     };
     case?: {
-        [columnName: string]: [SelectCase];
+        [columnName: string]: [CaseOption];
     };
 };
 export declare type SelectQuery = {
@@ -52,15 +52,17 @@ export declare type SelectQuery = {
     skip?: number;
     limit?: number;
     order?: OrderQuery;
-    groupBy?: string | string[];
+    groupBy?: string | string[] | {
+        [columnName: string]: [CaseOption];
+    };
     aggregate?: AggregateOption;
     ignoreCase?: boolean;
     distinct?: boolean;
     case?: {
-        [columnName: string]: [SelectCase];
+        [columnName: string]: [CaseOption];
     };
 };
-export declare type SelectCase = {
+export declare type CaseOption = {
     '>'?: any;
     '<'?: any;
     '>='?: any;

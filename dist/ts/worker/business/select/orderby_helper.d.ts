@@ -10,6 +10,8 @@ export declare class Helper extends GroupByHelper {
     private compareNumberinAsc_;
     private compareDateInDesc_;
     private compareDateInAsc_;
+    private getValInDesc_;
+    private getValInAsc_;
     private getValueComparer_;
     private orderBy_;
     private getOrderType_;
