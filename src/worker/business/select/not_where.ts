@@ -4,7 +4,7 @@ import { ERROR_TYPE } from "../../../common/index";
 let cursorRequest: IDBRequest;
 export class NotWhere extends BaseSelect {
     protected executeWhereUndefinedLogic() {
-        if (this.query.order && this.query.order.by && this.query.order.idbSorting !== false) {
+        if (this.query.order && this.query.order.idbSorting !== false && this.query.order.by) {
             if (this.objectStore.indexNames.contains(this.query.order.by as string)) {
                 const orderType: IDBCursorDirection = this.query.order.type &&
                     this.query.order.type.toLowerCase() === 'desc' ? 'prev' : 'next';
