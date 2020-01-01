@@ -1,7 +1,7 @@
 import { SelectQuery, IError, IDB_MODE, QUERY_OPTION, API } from "../../../common/index";
 import { Join } from "./join";
 import { QueryHelper } from "../query_helper";
-import { isArray, getObjectFirstKey } from "../../utils/index";
+import { isArray, getObjectFirstKey, isObject } from "../../utils/index";
 
 export class Instance extends Join {
 
@@ -15,7 +15,7 @@ export class Instance extends Join {
         this.tableName = query.from;
         this.setPushResult();
         if (query.order) {
-            if (isArray(query.order) || query.order.case != null) {
+            if (isArray(query.order) || query.order.case != null || isObject(query.order.by)) {
                 this.query.order.idbSorting = false;
             }
 

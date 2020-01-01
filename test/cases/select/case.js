@@ -516,5 +516,154 @@ describe('Test Select Api with case', function () {
         }).catch(function (err) {
             done(err);
         })
+    });
+
+    it('create employee db table', function (done) {
+        const dbSchema = {
+            name: "employee_db",
+            tables: [{
+                name: 'employee',
+                columns: {
+                    employeeId: {
+                        primaryKey: true,
+                        autoIncrement: true
+                    },
+                    employeeName: {
+                        dataType: 'string', notNull: true
+                    },
+                    gender: {
+                        dataType: 'string', notNull: true
+                    },
+                    stateCode: {
+                        dataType: 'string',
+                        notNull: true
+                    },
+                    salary: {
+                        dataType: 'number',
+                        notNull: true
+                    }
+                }
+            }]
+        }
+        con.initDb(dbSchema);
+        con.insert({
+            into: 'employee',
+            values: [{
+                employeeName: 'Jerome',
+                gender: 'M',
+                stateCode: 'FL',
+                salary: 83000.0000
+            }, {
+                employeeName: 'Ray',
+                gender: 'M',
+                stateCode: 'AL',
+                salary: 88000.0000
+            }, {
+                employeeName: 'Stella',
+                gender: 'F',
+                stateCode: 'AL',
+                salary: 76000.0000
+            }, {
+                employeeName: 'Gilbert',
+                gender: 'M',
+                stateCode: 'Ar',
+                salary: 42000.0000
+            }, {
+                employeeName: 'Edward',
+                gender: 'M',
+                stateCode: 'FL',
+                salary: 93000.0000
+            }, {
+                employeeName: 'Ernest',
+                gender: 'F',
+                stateCode: 'Al',
+                salary: 64000.0000
+            }, {
+                employeeName: 'Jorge',
+                gender: 'F',
+                stateCode: 'IN',
+                salary: 75000.0000
+            }, {
+                employeeName: 'Nicholas',
+                gender: 'F',
+                stateCode: 'Ge',
+                salary: 71000.0000
+            }, {
+                employeeName: 'Lawrence',
+                gender: 'M',
+                stateCode: 'IN',
+                salary: 95000.0000
+            }, {
+                employeeName: 'Salvador',
+                gender: 'M',
+                stateCode: 'Co',
+                salary: 75000.0000
+            }]
+        }).then(function (result) {
+            done();
+        }).catch(done);
     })
+
+    it(`Select EmployeeName,Gender,Salary from Employee
+    ORDER BY CASE Gender WHEN 'F' THEN Salary else 'salary' End DESC,
+    Case WHEN Gender = 'M' THEN Salary  END`, function (done) {
+        con.select({
+            from: 'employee',
+            order: {
+                by: {
+                    'gender': [{
+                        '=': 'F',
+                        then: 'salary',
+                    }, {
+                        then: 'salary'
+                    }]
+                },
+                type: 'desc'
+            }
+
+        }).then(function (results) {
+            const salaries = [95000, 93000, 88000, 83000, 76000, 75000, 75000, 71000, 64000, 42000];
+            results.forEach(function (result, i) {
+                expect(result.salary).to.be.equal(salaries[i]);
+            })
+            done();
+        }).catch(done);
+    });
+
+    it('M -> Male & F -> Female', function (done) {
+        con.select({
+            from: 'employee',
+            case: {
+                gender: [{
+                    '=': 'M',
+                    then: 'Male'
+                }, {
+                    then: 'Female'
+                }]
+            }
+        }).then(function (results) {
+            const genders = ["M", "M", "F", "M", "M", "F", "F", "F", "M", "M"]
+            results.forEach(function (result, i) {
+                if (genders[i] === "M") {
+                    expect(result.gender).to.be.equal("Male");
+                }
+                else {
+                    expect(result.gender).to.be.equal("Female");
+                }
+            })
+            done();
+        }).catch(done);
+    });
+
+    it('drop db', function (done) {
+        con.dropDb().then(function (result) {
+            done();
+        });
+    });
+
+    it('init demo db again', function (done) {
+        con.initDb(getDemoDbSchema()).then(function () {
+            done();
+        })
+    });
 });

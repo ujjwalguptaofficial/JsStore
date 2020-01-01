@@ -1,6 +1,5 @@
-describe('Test Select with order', function () {
-
-    it('order by country ', function (done) {
+describe('Select with order', function () {
+    it('order by without any column', function (done) {
         con.select({
             from: 'Customers',
             limit: 10,

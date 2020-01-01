@@ -1,7 +1,7 @@
 import { GroupByHelper } from "./group_by_helper";
-import { DATA_TYPE, ERROR_TYPE, QUERY_OPTION, OrderQuery } from "../../../common/index";
+import { DATA_TYPE, ERROR_TYPE, QUERY_OPTION, OrderQuery, CaseOption } from "../../../common/index";
 import { LogHelper } from "../../log_helper";
-import { getDataType, removeSpace } from "../../utils/index";
+import { getDataType, removeSpace, isArray } from "../../utils/index";
 import { Column } from "../../model/index";
 
 export class Helper extends GroupByHelper {
@@ -33,13 +33,15 @@ export class Helper extends GroupByHelper {
 
     private getOrderColumnInfo_(orderColumn: string): Column {
         let column: Column;
-        if (this.query.join == null) {
-            column = this.getColumnInfo(orderColumn, this.query.from);
-        }
-        else {
-            const splittedByDot = removeSpace(orderColumn).split(".");
-            orderColumn = splittedByDot[1];
-            column = this.getColumnInfo(orderColumn, splittedByDot[0]);
+        if (orderColumn != null) {
+            if (this.query.join == null) {
+                column = this.getColumnInfo(orderColumn, this.query.from);
+            }
+            else {
+                const splittedByDot = removeSpace(orderColumn).split(".");
+                orderColumn = splittedByDot[1];
+                column = this.getColumnInfo(orderColumn, splittedByDot[0]);
+            }
         }
         if (column == null) {
             this.onErrorOccured(new LogHelper(ERROR_TYPE.ColumnNotExist, { column: orderColumn, isOrder: true }), true);
@@ -79,6 +81,23 @@ export class Helper extends GroupByHelper {
         return a.getTime() - b.getTime();
     }
 
+    private compareValInDesc_(value1, value2, caseQuery: { [columnName: string]: [CaseOption] }) {
+        this.thenEvaluator.init(false);
+        for (const columnName in caseQuery) {
+            this.thenEvaluator.setCaseAndValue(caseQuery, value1);
+            const column1 = this.thenEvaluator.setColumn(columnName).evaluate();
+            this.thenEvaluator.setCaseAndValue(caseQuery, value2);
+            const column2 = this.thenEvaluator.setColumn(columnName).evaluate();
+            switch (typeof value1[column1]) {
+                case DATA_TYPE.String:
+                    return this.compareStringInDesc_(value1[column1], value2[column2]);
+                default:
+                    return this.compareNumberInDesc_(value1[column1], value2[column2]);
+            }
+        }
+
+    }
+
     private getValueComparer_(column: Column, order: OrderQuery): (a, b) => number {
 
         switch (column.dataType) {
@@ -97,25 +116,35 @@ export class Helper extends GroupByHelper {
     private orderBy_(order: OrderQuery) {
         order.type = this.getOrderType_(order.type);
         let orderColumn = order.by;
-        const columnInfo = this.getOrderColumnInfo_(orderColumn);
-        if (columnInfo != null) {
-            const orderMethod = this.getValueComparer_(columnInfo, order);
-            orderColumn = columnInfo.name;
-            if (order.case == null) {
-                this.results.sort((a, b) => {
-                    return orderMethod(a[orderColumn], b[orderColumn]);
-                });
-            }
-            else {
-                this.thenEvaluator.setCaseAndColumn({ [orderColumn]: order.case }, orderColumn).init(true);
-                this.results.sort((a, b) => {
-                    return orderMethod(
-                        this.thenEvaluator.setValue(a).evaluate(),
-                        this.thenEvaluator.setValue(b).evaluate()
-                    );
-                });
+        if (orderColumn != null && typeof orderColumn === DATA_TYPE.Object) {
+            this.results.sort((a, b) => {
+                return this.compareValInDesc_(a, b, orderColumn as any);
+                // orderMethod(a[orderColumn], b[orderColumn]);
+            });
+        }
+        else {
+            const columnInfo = this.getOrderColumnInfo_(orderColumn);
+            if (columnInfo != null) {
+
+                const orderMethod = this.getValueComparer_(columnInfo, order);
+                orderColumn = columnInfo.name;
+                if (order.case == null) {
+                    this.results.sort((a, b) => {
+                        return orderMethod(a[orderColumn], b[orderColumn]);
+                    });
+                }
+                else {
+                    this.thenEvaluator.setCaseAndColumn({ [orderColumn]: order.case }, orderColumn).init(true);
+                    this.results.sort((a, b) => {
+                        return orderMethod(
+                            this.thenEvaluator.setValue(a).evaluate(),
+                            this.thenEvaluator.setValue(b).evaluate()
+                        );
+                    });
+                }
             }
         }
+
     }
 
     private getOrderType_(type: string) {
