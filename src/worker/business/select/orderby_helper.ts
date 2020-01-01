@@ -79,7 +79,7 @@ export class Helper extends GroupByHelper {
         return a.getTime() - b.getTime();
     }
 
-    private compareValInDesc_(value1, value2, caseQuery: { [columnName: string]: [CaseOption] }) {
+    private getValInDesc_(value1, value2, caseQuery: { [columnName: string]: [CaseOption] }) {
         for (const columnName in caseQuery) {
             this.thenEvaluator.setCaseAndValue(caseQuery, value1);
             const column1 = this.thenEvaluator.setColumn(columnName).evaluate();
@@ -90,6 +90,21 @@ export class Helper extends GroupByHelper {
                     return this.compareStringInDesc_(value1[column1], value2[column2]);
                 default:
                     return this.compareNumberInDesc_(value1[column1], value2[column2]);
+            }
+        }
+    }
+
+    private getValInAsc_(value1, value2, caseQuery: { [columnName: string]: [CaseOption] }) {
+        for (const columnName in caseQuery) {
+            this.thenEvaluator.setCaseAndValue(caseQuery, value1);
+            const column1 = this.thenEvaluator.setColumn(columnName).evaluate();
+            this.thenEvaluator.setCaseAndValue(caseQuery, value2);
+            const column2 = this.thenEvaluator.setColumn(columnName).evaluate();
+            switch (typeof value1[column1]) {
+                case DATA_TYPE.String:
+                    return this.compareStringinAsc_(value1[column1], value2[column2]);
+                default:
+                    return this.compareNumberinAsc_(value1[column1], value2[column2]);
             }
         }
     }
@@ -113,19 +128,25 @@ export class Helper extends GroupByHelper {
         order.type = this.getOrderType_(order.type);
         let orderColumn = order.by;
         if (orderColumn != null && typeof orderColumn === DATA_TYPE.Object) {
-            this.results.sort((a, b) => {
-                return this.compareValInDesc_(a, b, orderColumn as any);
-                // orderMethod(a[orderColumn], b[orderColumn]);
-            });
+            if (order.type === "asc") {
+                this.results.sort((a, b) => {
+                    return this.getValInAsc_(a, b, orderColumn as any);
+                });
+            }
+            else {
+                this.results.sort((a, b) => {
+                    return this.getValInDesc_(a, b, orderColumn as any);
+                });
+            }
         }
         else {
-            const columnInfo = this.getOrderColumnInfo_(orderColumn);
+            const columnInfo = this.getOrderColumnInfo_(orderColumn as string);
             if (columnInfo != null) {
                 const orderMethod = this.getValueComparer_(columnInfo, order);
                 orderColumn = columnInfo.name;
                 if (order.case == null) {
                     this.results.sort((a, b) => {
-                        return orderMethod(a[orderColumn], b[orderColumn]);
+                        return orderMethod(a[orderColumn as string], b[orderColumn as string]);
                     });
                 }
                 else {
@@ -160,14 +181,16 @@ export class Helper extends GroupByHelper {
                         const prevOrderQueryBy = order[i - 1].by;
                         const currentOrderQuery: OrderQuery = order[i];
                         let currentorderQueryBy = currentOrderQuery.by;
-                        const orderColumnDetail = this.getOrderColumnInfo_(currentorderQueryBy);
+                        const orderColumnDetail = this.getOrderColumnInfo_(currentorderQueryBy as string);
                         if (orderColumnDetail != null) {
                             currentorderQueryBy = orderColumnDetail.name;
                             currentOrderQuery.type = this.getOrderType_(currentOrderQuery.type);
                             const orderMethod = this.getValueComparer_(orderColumnDetail, currentOrderQuery);
                             this.results.sort((a, b) => {
                                 if (a[prevOrderQueryBy] === b[prevOrderQueryBy]) {
-                                    return orderMethod(a[currentorderQueryBy], b[currentorderQueryBy]);
+                                    return orderMethod(
+                                        a[currentorderQueryBy as string],
+                                        b[currentorderQueryBy as string]);
                                 }
                                 return 0;
                             });

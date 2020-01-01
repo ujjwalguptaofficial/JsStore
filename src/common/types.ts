@@ -2,12 +2,13 @@ import { IError } from "./interfaces";
 import { API, EVENT } from "./enums";
 
 export type OrderQuery = {
+
     /**
      * sorting column name
      *
-     * @type {string}
+     * @type {(string | { [columnName: string]: [CaseOption] })}
      */
-    by: string;
+    by: string | { [columnName: string]: [CaseOption] };
 
     /**
      * sorting type - asc/desc

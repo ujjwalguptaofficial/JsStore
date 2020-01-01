@@ -5,11 +5,11 @@ let cursorRequest: IDBRequest;
 export class NotWhere extends BaseSelect {
     protected executeWhereUndefinedLogic() {
         if (this.query.order && this.query.order.by && this.query.order.idbSorting !== false) {
-            if (this.objectStore.indexNames.contains(this.query.order.by)) {
+            if (this.objectStore.indexNames.contains(this.query.order.by as string)) {
                 const orderType: IDBCursorDirection = this.query.order.type &&
                     this.query.order.type.toLowerCase() === 'desc' ? 'prev' : 'next';
                 this.sorted = true;
-                cursorRequest = this.objectStore.index(this.query.order.by).
+                cursorRequest = this.objectStore.index(this.query.order.by as string).
                     openCursor(null, orderType);
             }
             else {
