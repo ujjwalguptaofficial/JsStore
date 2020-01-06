@@ -13,8 +13,6 @@ function createConfigsForAllLibraryTarget() {
     }];
     const getConfigForTaget = function (target) {
         return {
-            devtool: 'source-map',
-            mode: "development",
             output: {
                 path: path.join(__dirname, "./../build"),
                 filename: target.name,
@@ -25,7 +23,12 @@ function createConfigsForAllLibraryTarget() {
                 new webpack.DefinePlugin({
                     'process.env.NODE_ENV': JSON.stringify("dev")
                 }),
-            ]
+            ],
+            mode: "production",
+            devtool: 'source-map',
+            optimization: {
+                minimize: false
+            }
         }
     }
     var configs = [];
@@ -48,8 +51,7 @@ function createConfigsForAllLibraryTargetForWebWorker() {
 
     const getConfigForTaget = function (target) {
         return {
-            mode: "production",
-            devtool: 'source-map',
+
             output: {
                 path: path.join(__dirname, "./../build"),
                 filename: target.name,
@@ -61,6 +63,8 @@ function createConfigsForAllLibraryTargetForWebWorker() {
                     'process.env.NODE_ENV': JSON.stringify("dev")
                 }),
             ],
+            mode: "production",
+            devtool: 'source-map',
             optimization: {
                 minimize: false
             }
