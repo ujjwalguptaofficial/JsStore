@@ -1,6 +1,6 @@
 {
   "name": "jsstore",
-  "version": "3.7.0",
+  "version": "3.7.1",
   "description": "A complete IndexedDB wrapper with SQL like syntax.",
   "main": "dist/jsstore.commonjs2.js",
   "types": "dist/ts/main/index.d.ts",
@@ -10,7 +10,7 @@
     "test:dev": "karma start test/karma/karma.config.dev.js",
     "test:prod": "karma start test/karma/karma.config.prod.js",
     "build:ie": "node src/ie_build_helper.js",
-    "build:dev": "npm run lint && npm run webpack:dev && npm run test:dev",
+    "build:dev": "npm run lint && npm run webpack:dev && node minifier.js && npm run test:dev",
     "build:prod": "npm run webpack:prod && npm run build:ie && npm run test:prod",
     "build:all": "npm run build:dev && npm run build:prod",
     "test:sauce": "npm run test:sauce:b2 ; npm run test:sauce:b1 ",
@@ -21,7 +21,7 @@
     "webpack:dev": "webpack --config webpack/webpack.dev.config.js",
     "webpack:prod": "webpack --config webpack/webpack.prod.config.js",
     "move:deploy_file": "node deployer.js",
-    "deploy": "npm run build:all && node minifier.js && npm run move:deploy_file"
+    "deploy": "npm run build:all && npm run move:deploy_file"
   },
   "repository": {
     "type": "git",
