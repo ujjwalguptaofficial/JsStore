@@ -21,7 +21,7 @@
     "webpack:dev": "webpack --config webpack/webpack.dev.config.js",
     "webpack:prod": "webpack --config webpack/webpack.prod.config.js",
     "move:deploy_file": "node deployer.js",
-    "deploy": "npm run build:all && npm run move:deploy_file"
+    "deploy": "npm run build:all && node minifier.js && npm run move:deploy_file"
   },
   "repository": {
     "type": "git",
@@ -41,8 +41,10 @@
   },
   "homepage": "https://github.com/ujjwalguptaofficial/JsStore#readme",
   "devDependencies": {
+    "@babel/core": "^7.7.7",
     "@types/node": "^10.12.18",
     "babel-loader": "^8.0.5",
+    "babel-plugin-minify-dead-code-elimination": "^0.5.1",
     "chai": "^4.2.0",
     "copy-webpack-plugin": "^4.5.2",
     "fs-extra": "^7.0.0",
