@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.7.1 - 07/01/2020
+ * @license :jsstore - V3.7.2 - 13/01/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -324,7 +324,6 @@ function (module, __webpack_exports__, __webpack_require__) {
     ERROR_TYPE["InvalidOp"] = "invalid_operator";
     ERROR_TYPE["NullValue"] = "null_value";
     ERROR_TYPE["WrongDataType"] = "wrong_data_type";
-    ERROR_TYPE["NextJoinNotExist"] = "next_join_not_exist";
     ERROR_TYPE["TableNotExist"] = "table_not_exist";
     ERROR_TYPE["DbNotExist"] = "db_not_exist";
     ERROR_TYPE["ConnectionAborted"] = "connection_aborted";
@@ -576,13 +575,7 @@ function (module, __webpack_exports__, __webpack_require__) {
         case _common_index__WEBPACK_IMPORTED_MODULE_0__[
         /* ERROR_TYPE */
         "d"].WrongDataType:
-          errMsg = "Supplied value for column '" + this.info_['ColumnName'] + "' have wrong data type";
-          break;
-
-        case _common_index__WEBPACK_IMPORTED_MODULE_0__[
-        /* ERROR_TYPE */
-        "d"].NextJoinNotExist:
-          errMsg = "Next join details not supplied";
+          errMsg = "Supplied value for column '" + this.info_['column'] + "' have wrong data type";
           break;
 
         case _common_index__WEBPACK_IMPORTED_MODULE_0__[
@@ -889,25 +882,23 @@ function (module, __webpack_exports__, __webpack_require__) {
           ](enums["d"
           /* ERROR_TYPE */
           ].WrongDataType, {
-            ColumnName: column.name
+            column: column.name
           });
         }
       } // check allowed operators
 
 
       if (checkFurther && type === 'object') {
-        var allowedOp = ['+', '-', '*', '/'];
+        var allowedOp = ['+', '-', '*', '/', '{push}'];
 
-        for (var _i = 0, _a = Object.keys(value); _i < _a.length; _i++) {
-          var prop = _a[_i];
-
+        for (var prop in value) {
           if (allowedOp.indexOf(prop) < 0 && column.dataType && type !== column.dataType) {
             log = new log_helper["a"
             /* LogHelper */
             ](enums["d"
             /* ERROR_TYPE */
             ].WrongDataType, {
-              ColumnName: column.name
+              column: column.name
             });
           }
 
@@ -959,7 +950,7 @@ function (module, __webpack_exports__, __webpack_require__) {
           this.onValidationError_(enums["d"
           /* ERROR_TYPE */
           ].WrongDataType, {
-            ColumnName: column.name
+            column: column.name
           });
         }
     };
@@ -8001,6 +7992,10 @@ function (module, __webpack_exports__, __webpack_require__) {
 
             case '/':
               storedValue[key] /= suppliedValue[key][op];
+              break;
+
+            case '{push}':
+              storedValue[key].push(suppliedValue[key][op]);
               break;
 
             default:

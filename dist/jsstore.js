@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.7.1 - 07/01/2020
+ * @license :jsstore - V3.7.2 - 13/01/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -284,7 +284,6 @@ function (module, __webpack_exports__, __webpack_require__) {
     ERROR_TYPE["InvalidOp"] = "invalid_operator";
     ERROR_TYPE["NullValue"] = "null_value";
     ERROR_TYPE["WrongDataType"] = "wrong_data_type";
-    ERROR_TYPE["NextJoinNotExist"] = "next_join_not_exist";
     ERROR_TYPE["TableNotExist"] = "table_not_exist";
     ERROR_TYPE["DbNotExist"] = "db_not_exist";
     ERROR_TYPE["ConnectionAborted"] = "connection_aborted";
