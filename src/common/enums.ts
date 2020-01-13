@@ -13,7 +13,6 @@ export enum ERROR_TYPE {
     InvalidOp = "invalid_operator",
     NullValue = "null_value",
     WrongDataType = "wrong_data_type",
-    NextJoinNotExist = "next_join_not_exist",
     TableNotExist = "table_not_exist",
     DbNotExist = "db_not_exist",
     ConnectionAborted = "connection_aborted",
