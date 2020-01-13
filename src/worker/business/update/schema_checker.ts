@@ -60,8 +60,8 @@ export class SchemaChecker {
 
         // check allowed operators
         if (checkFurther && type === 'object') {
-            const allowedOp = ['+', '-', '*', '/'];
-            for (const prop of Object.keys(value)) {
+            const allowedOp = ['+', '-', '*', '/', '{push}'];
+            for (const prop in value) {
                 if (allowedOp.indexOf(prop) < 0 && column.dataType && type !== column.dataType) {
                     log = new LogHelper(ERROR_TYPE.WrongDataType, { ColumnName: column.name });
                 }

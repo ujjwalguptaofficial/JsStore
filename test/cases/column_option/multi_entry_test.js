@@ -30,6 +30,41 @@ describe('Multi Entry Test', function () {
             })
     });
 
+    it('push an item into array', function (done) {
+        con.update({
+            in: 'people',
+            where: {
+                name: "Marc",
+            },
+            set: {
+                tags: {
+                    '{push}': 'JsStore'
+                }
+            },
+        }).then(function (results) {
+            expect(results).to.be.an('number').equal(1);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('select items after pushing', function (done) {
+        con.select({
+            from: 'people',
+            where: {
+                name: "Marc",
+            }
+        }).then(function (results) {
+            const tags = results[0].tags;
+            expect(tags).to.be.an('array').length(3).eql(["mongo", "jenkins", 'JsStore'])
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+
     it('multientry test without multientry column - select data from array', function (done) {
         con.select({
             from: 'people',

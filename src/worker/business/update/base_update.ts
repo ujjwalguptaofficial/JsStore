@@ -14,6 +14,7 @@ export const updateValue = (suppliedValue, storedValue) => {
                     case '-': storedValue[key] -= suppliedValue[key][op]; break;
                     case '*': storedValue[key] *= suppliedValue[key][op]; break;
                     case '/': storedValue[key] /= suppliedValue[key][op]; break;
+                    case '{push}': storedValue[key].push(suppliedValue[key][op]); break;
                     default: storedValue[key] = suppliedValue[key];
                 }
                 break;
