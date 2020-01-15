@@ -252,8 +252,10 @@ export class QueryExecutor {
                 this.activeDb_ = db;
                 const createDbInstance = new InitDb((isDbCreated) => {
                     this.activeDb_ = db;
-                    // save dbSchema in keystore
-                    KeyStore.set("JsStore_" + db.name + "_Schema", db);
+                    if (isDbCreated) {
+                        // save dbSchema in keystore
+                        KeyStore.set("JsStore_" + db.name + "_Schema", db);
+                    }
                     res(isDbCreated);
                 }, rej);
                 createDbInstance.execute(tablesMetaData);
