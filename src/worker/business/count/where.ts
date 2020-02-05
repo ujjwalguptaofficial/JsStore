@@ -6,7 +6,7 @@ export class Where extends Regex {
         let cursorRequest;
         let cursor: IDBCursorWithValue;
         let initCursorAndFilter;
-        if (this.objectStore.count) {
+        if (Object.keys(this.query.where).length === 1 && this.objectStore.count) {
             initCursorAndFilter = () => {
                 cursorRequest = this.objectStore.index(column).count(this.getKeyRange(value, op));
                 cursorRequest.onsuccess = () => {

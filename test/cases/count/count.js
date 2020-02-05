@@ -24,6 +24,22 @@ describe('Test count Api', function () {
         })
     });
 
+    it('count with where - multiple column and ', function (done) {
+        con.count({
+            from: 'Customers',
+            where: {
+                country: "Germany",
+                city: "Berlin"
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('number').to.equal(1);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+
     it('count without ignore case', function (done) {
         con.count({
             from: 'Customers',
