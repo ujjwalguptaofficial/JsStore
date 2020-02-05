@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.7.2 - 13/01/2020
+ * @license :jsstore - V3.7.3 - 05/02/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -2545,8 +2545,10 @@ var query_executor_QueryExecutor = /** @class */ (function () {
                 _this.activeDb_ = db;
                 var createDbInstance = new init_db_InitDb(function (isDbCreated) {
                     _this.activeDb_ = db;
-                    // save dbSchema in keystore
-                    instance["a" /* KeyStore */].set("JsStore_" + db.name + "_Schema", db);
+                    if (isDbCreated) {
+                        // save dbSchema in keystore
+                        instance["a" /* KeyStore */].set("JsStore_" + db.name + "_Schema", db);
+                    }
                     res(isDbCreated);
                 }, rej);
                 createDbInstance.execute(tablesMetaData);
@@ -5133,7 +5135,7 @@ var Where = /** @class */ (function (_super) {
         var cursorRequest;
         var cursor;
         var initCursorAndFilter;
-        if (this.objectStore.count) {
+        if (Object.keys(this.query.where).length === 1 && this.objectStore.count) {
             initCursorAndFilter = function () {
                 cursorRequest = _this.objectStore.index(column).count(_this.getKeyRange(value, op));
                 cursorRequest.onsuccess = function () {
