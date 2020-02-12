@@ -10,7 +10,7 @@
   "author": "ujjwal gupta",
   "license": "ISC",
   "dependencies": {
-    "jquery": "^3.3.1",
+    "jquery": "^3.4.0",
     "jsstore": "^3.0.0"
   },
   "devDependencies": {
