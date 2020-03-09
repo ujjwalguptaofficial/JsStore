@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.7.3 - 05/02/2020
+ * @license :jsstore - V3.7.4 - 09/03/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -2713,12 +2713,12 @@ function (module, __webpack_exports__, __webpack_require__) {
       }
     };
 
-    Base.prototype.makeQryInCaseSensitive = function (qry) {
+    Base.prototype.makeQryInCaseSensitive = function (whereQry) {
       var results = [];
       var columnValue, keyValue;
 
-      for (var column in qry) {
-        columnValue = qry[column];
+      for (var column in whereQry) {
+        columnValue = whereQry[column];
 
         switch (Object(get_data_type["a"
         /* getDataType */
@@ -2727,8 +2727,8 @@ function (module, __webpack_exports__, __webpack_require__) {
           /* DATA_TYPE */
           ].String:
             results = results.concat(this.getAllCombinationOfWord(columnValue));
-            qry[column] = {};
-            qry[column][enums["g"
+            whereQry[column] = {};
+            whereQry[column][enums["g"
             /* QUERY_OPTION */
             ].In] = results;
             break;
@@ -2768,21 +2768,28 @@ function (module, __webpack_exports__, __webpack_require__) {
                     case enums["g"
                     /* QUERY_OPTION */
                     ].In:
-                      results = results.concat(this.getAllCombinationOfWord(keyValue, true));
+                      if (Object(get_data_type["a"
+                      /* getDataType */
+                      ])(keyValue[0]) === enums["c"
+                      /* DATA_TYPE */
+                      ].String) {
+                        results = results.concat(this.getAllCombinationOfWord(keyValue, true));
+                      }
+
                       break;
                   }
 
               }
             }
 
-            qry[column][enums["g"
+            whereQry[column][enums["g"
             /* QUERY_OPTION */
             ].In] = results;
             break;
         }
       }
 
-      return qry;
+      return whereQry;
     };
 
     return Base;
