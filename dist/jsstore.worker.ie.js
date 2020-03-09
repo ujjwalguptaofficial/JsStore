@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.7.4 - 09/03/2020
+ * @license :jsstore - V3.7.5 - 09/03/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -2768,14 +2768,11 @@ function (module, __webpack_exports__, __webpack_require__) {
                     case enums["g"
                     /* QUERY_OPTION */
                     ].In:
-                      if (Object(get_data_type["a"
+                      results = Object(get_data_type["a"
                       /* getDataType */
                       ])(keyValue[0]) === enums["c"
                       /* DATA_TYPE */
-                      ].String) {
-                        results = results.concat(this.getAllCombinationOfWord(keyValue, true));
-                      }
-
+                      ].String ? results.concat(this.getAllCombinationOfWord(keyValue, true)) : keyValue;
                       break;
                   }
 
