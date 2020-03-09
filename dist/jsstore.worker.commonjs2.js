@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.7.5 - 09/03/2020
+ * @license :jsstore - V3.7.6 - 09/03/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -1831,10 +1831,10 @@ var base_Base = /** @class */ (function (_super) {
         }
     };
     Base.prototype.makeQryInCaseSensitive = function (whereQry) {
-        var results = [];
         var columnValue, keyValue;
         for (var column in whereQry) {
             columnValue = whereQry[column];
+            var results = [];
             switch (Object(get_data_type["a" /* getDataType */])(columnValue)) {
                 case enums["c" /* DATA_TYPE */].String:
                     results = results.concat(this.getAllCombinationOfWord(columnValue));
@@ -1859,7 +1859,8 @@ var base_Base = /** @class */ (function (_super) {
                                 switch (key) {
                                     case enums["g" /* QUERY_OPTION */].In:
                                         results = Object(get_data_type["a" /* getDataType */])(keyValue[0]) === enums["c" /* DATA_TYPE */].String ?
-                                            results.concat(this.getAllCombinationOfWord(keyValue, true)) : keyValue;
+                                            results.concat(this.getAllCombinationOfWord(keyValue, true)) :
+                                            results.concat(keyValue);
                                         break;
                                 }
                         }
