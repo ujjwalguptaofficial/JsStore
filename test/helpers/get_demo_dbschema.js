@@ -16,13 +16,22 @@ var getDemoDbSchema = function () {
         }
     };
 
-    var categories = {
-        name: 'Categories',
+    var categoriesGarbage = {
+        name: 'Categories_Garbage',
         columns: {
             categoryId: { primaryKey: true, autoIncrement: true },
             categoryName: { notNull: true, dataType: 'string' },
             description: { notNull: true, dataType: 'string' },
             invalidColumn: { notNull: true, dataType: 'string', enableSearch: false }
+        }
+    }
+
+    var categories = {
+        name: 'Categories',
+        columns: {
+            categoryId: { primaryKey: true, autoIncrement: true },
+            categoryName: { notNull: true, dataType: 'string' },
+            description: { notNull: true, dataType: 'string' }
         }
     }
 
@@ -106,7 +115,7 @@ var getDemoDbSchema = function () {
 
     var dataBase = {
         name: "Demo",
-        tables: [customers, categories, employees, orderDetails, orders, products, shippers, suppliers, things]
+        tables: [categories, customers, categoriesGarbage, employees, orderDetails, orders, products, shippers, suppliers, things]
     };
     return dataBase;
 }

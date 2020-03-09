@@ -333,4 +333,21 @@ describe('Test select complex case', function () {
         })
     });
 
+    it("select with ignore case true where column is in query of type number", function (done) {
+        con.select({
+            from: "Categories",
+            ignoreCase: true,
+            where: {
+                categoryId: {
+                    in: [5, 6, 7]
+                }
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(3);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
 });

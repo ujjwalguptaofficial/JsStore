@@ -436,4 +436,23 @@ describe('Test insert', function () {
             done();
         }).catch(done)
     })
+
+    it('insert Categories', function (done) {
+        $.getJSON("test/static/Categories.json", function (results) {
+            // var startDate = new Date(1994, 0, 1);
+            // var endDate = new Date();
+            // results.forEach(function (value) {
+            //     value.birthDate = new randomDate(startDate, endDate);
+            // });
+            con.insert({
+                into: 'Categories',
+                values: results
+            }).then(function (results) {
+                expect(results).to.be.an('number').to.equal(8);
+                done();
+            }).catch(function (err) {
+                done(err);
+            });
+        });
+    });
 });

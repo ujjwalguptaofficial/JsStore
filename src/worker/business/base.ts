@@ -154,12 +154,10 @@ export abstract class Base extends BaseHelper {
                                 }
                                 break;
                             case DATA_TYPE.Array:
-
                                 switch (key) {
                                     case QUERY_OPTION.In:
-                                        if (getDataType(keyValue[0]) === DATA_TYPE.String) {
-                                            results = results.concat(this.getAllCombinationOfWord(keyValue, true));
-                                        }
+                                        results = getDataType(keyValue[0]) === DATA_TYPE.String ?
+                                            results.concat(this.getAllCombinationOfWord(keyValue, true)) : keyValue;
                                         break;
 
                                 }

@@ -59,7 +59,7 @@ describe('Test Select Api', function () {
 
     it('enable search column test', function (done) {
         con.select({
-            from: 'Categories',
+            from: 'Categories_Garbage',
             where: {
                 invalidColumn: 'invalidColumn'
             }
