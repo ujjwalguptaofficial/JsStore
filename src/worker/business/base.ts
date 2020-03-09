@@ -127,17 +127,17 @@ export abstract class Base extends BaseHelper {
         }
     }
 
-    protected makeQryInCaseSensitive(qry) {
+    protected makeQryInCaseSensitive(whereQry) {
         let results = [];
         let columnValue,
             keyValue;
-        for (const column in qry) {
-            columnValue = qry[column];
+        for (const column in whereQry) {
+            columnValue = whereQry[column];
             switch (getDataType(columnValue)) {
                 case DATA_TYPE.String:
                     results = results.concat(this.getAllCombinationOfWord(columnValue));
-                    qry[column] = {};
-                    qry[column][QUERY_OPTION.In] = results;
+                    whereQry[column] = {};
+                    whereQry[column][QUERY_OPTION.In] = results;
                     break;
                 case DATA_TYPE.Object:
                     for (const key in columnValue) {
@@ -154,19 +154,22 @@ export abstract class Base extends BaseHelper {
                                 }
                                 break;
                             case DATA_TYPE.Array:
+
                                 switch (key) {
                                     case QUERY_OPTION.In:
-                                        results = results.concat(this.getAllCombinationOfWord(keyValue, true));
+                                        if (getDataType(keyValue[0]) === DATA_TYPE.String) {
+                                            results = results.concat(this.getAllCombinationOfWord(keyValue, true));
+                                        }
                                         break;
 
                                 }
                         }
                     }
-                    qry[column][QUERY_OPTION.In] = results;
+                    whereQry[column][QUERY_OPTION.In] = results;
                     break;
             }
         }
-        return qry;
+        return whereQry;
     }
 
 

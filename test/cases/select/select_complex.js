@@ -128,22 +128,22 @@ describe('Test select complex case', function () {
         con.select({
             from: 'Customers',
             where: [{
-                    country: 'Mexico'
-                },
-                {
-                    city: 'London',
-                    or: {
-                        address: {
-                            like: '%a%'
-                        }
+                country: 'Mexico'
+            },
+            {
+                city: 'London',
+                or: {
+                    address: {
+                        like: '%a%'
                     }
                 }
+            }
             ]
         }).then(function (results) {
             if (results.length > 0) {
                 var expected_id_list = [2, 3, 13, 58, 80];
                 var id_list = [];
-                results.forEach(function(element){
+                results.forEach(function (element) {
                     id_list.push(element.customerId);
                 });
                 expect(id_list).to.be.an('array').length(5).deep.equal(expected_id_list);
@@ -160,16 +160,16 @@ describe('Test select complex case', function () {
         con.select({
             from: 'Customers',
             where: [{
-                    country: 'Mexizfdfco'
-                },
-                {
-                    city: 'London',
-                    or: {
-                        address: {
-                            like: '%a%'
-                        }
+                country: 'Mexizfdfco'
+            },
+            {
+                city: 'London',
+                or: {
+                    address: {
+                        like: '%a%'
                     }
                 }
+            }
             ]
         }).then(function (results) {
             expect(results).to.be.an('array').length(0);
@@ -183,21 +183,21 @@ describe('Test select complex case', function () {
         con.select({
             from: 'Customers',
             where: [{
-                    country: 'Mexico'
-                },
-                {
-                    or: {
-                        city: 'London',
-                        address: {
-                            like: '%a%'
-                        }
+                country: 'Mexico'
+            },
+            {
+                or: {
+                    city: 'London',
+                    address: {
+                        like: '%a%'
                     }
                 }
+            }
             ]
         }).then(function (results) {
             var expected_id_list = [2, 3, 4, 11, 13, 16, 58, 72, 80];
             var id_list = [];
-            results.forEach(function(element) {
+            results.forEach(function (element) {
                 id_list.push(element.customerId);
             });
             expect(id_list).to.be.an('array').length(9).deep.equal(expected_id_list);
@@ -211,21 +211,21 @@ describe('Test select complex case', function () {
         con.select({
             from: 'Customers',
             where: [{
-                    country: 'Mexico'
-                },
-                {
-                    or: {
-                        city: 'London',
-                        address: {
-                            like: '%adsfvbbbb%'
-                        }
+                country: 'Mexico'
+            },
+            {
+                or: {
+                    city: 'London',
+                    address: {
+                        like: '%adsfvbbbb%'
                     }
                 }
+            }
             ]
         }).then(function (results) {
             var expected_id_list = [2, 3, 13, 58, 80];
             var id_list = [];
-            results.forEach(function(element) {
+            results.forEach(function (element) {
                 id_list.push(element.customerId);
             });
             expect(id_list).to.be.an('array').length(5).deep.equal(expected_id_list);
@@ -240,21 +240,21 @@ describe('Test select complex case', function () {
         con.select({
             from: 'Customers',
             where: [{
-                    country: 'Mexico'
-                },
-                {
-                    city: 'London',
-                    or: {
-                        address: {
-                            like: '%a%'
-                        }
-                    }
-                },
-                {
-                    contactName: {
+                country: 'Mexico'
+            },
+            {
+                city: 'London',
+                or: {
+                    address: {
                         like: '%a%'
                     }
                 }
+            },
+            {
+                contactName: {
+                    like: '%a%'
+                }
+            }
             ]
         }).then(function (results) {
             expect(results).to.be.an('array').length(4);
@@ -268,23 +268,23 @@ describe('Test select complex case', function () {
         con.select({
             from: 'Customers',
             where: [{
-                    country: 'Mexico'
-                },
-                {
-                    city: 'London',
-                    or: {
-                        address: {
-                            like: '%a%'
-                        }
-                    }
-                },
-                {
-                    or: {
-                        contactName: {
-                            like: 'a%'
-                        }
+                country: 'Mexico'
+            },
+            {
+                city: 'London',
+                or: {
+                    address: {
+                        like: '%a%'
                     }
                 }
+            },
+            {
+                or: {
+                    contactName: {
+                        like: 'a%'
+                    }
+                }
+            }
             ]
         }).then(function (results) {
             expect(results).to.be.an('array').length(13);
@@ -299,16 +299,38 @@ describe('Test select complex case', function () {
             from: 'Employees',
             where: {
                 jobSuspendedFlag: 0,
-                state: { in: ['Working', 'Diagnostics', 'FinalTest']
+                state: {
+                    in: ['Working', 'Diagnostics', 'FinalTest']
                 }
             }
         }).
-        then(function (results) {
-            expect(results).to.be.an('array').length(15);
+            then(function (results) {
+                expect(results).to.be.an('array').length(15);
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            })
+    });
+
+    it("select with ignore case true where one column is in query of type number & other column is like", function (done) {
+        con.select({
+            from: "Categories",
+            ignoreCase: true,
+            where: {
+                categoryId: {
+                    in: [5, 6, 7]
+                },
+                categoryName: {
+                    like: '%roduce%'
+                }
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(0);
             done();
-        }).
-        catch(function (err) {
+        }).catch(function (err) {
             done(err);
         })
     });
+
 });
