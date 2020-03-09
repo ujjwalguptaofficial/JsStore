@@ -128,11 +128,12 @@ export abstract class Base extends BaseHelper {
     }
 
     protected makeQryInCaseSensitive(whereQry) {
-        let results = [];
+
         let columnValue,
             keyValue;
         for (const column in whereQry) {
             columnValue = whereQry[column];
+            let results = [];
             switch (getDataType(columnValue)) {
                 case DATA_TYPE.String:
                     results = results.concat(this.getAllCombinationOfWord(columnValue));
@@ -157,10 +158,12 @@ export abstract class Base extends BaseHelper {
                                 switch (key) {
                                     case QUERY_OPTION.In:
                                         results = getDataType(keyValue[0]) === DATA_TYPE.String ?
-                                            results.concat(this.getAllCombinationOfWord(keyValue, true)) : keyValue;
+                                            results.concat(this.getAllCombinationOfWord(keyValue, true)) :
+                                            results.concat(keyValue);
                                         break;
 
                                 }
+
                         }
                     }
                     whereQry[column][QUERY_OPTION.In] = results;

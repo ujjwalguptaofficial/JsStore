@@ -322,11 +322,11 @@ describe('Test select complex case', function () {
                     in: [5, 6, 7]
                 },
                 categoryName: {
-                    like: '%roduce%'
+                    like: '%c%'
                 }
             }
         }).then(function (results) {
-            expect(results).to.be.an('array').length(0);
+            expect(results).to.be.an('array').length(2);
             done();
         }).catch(function (err) {
             done(err);
