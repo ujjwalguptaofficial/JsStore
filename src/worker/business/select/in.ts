@@ -19,7 +19,7 @@ export class In extends NotWhere {
         shouldAddValue = () => {
             return this.whereCheckerInstance.check(cursor.value);
         };
-        if (this.shouldEvaluateLimitAtEnd === false && this.isOrderWithSkip === false) {
+        if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {
             if (this.skipRecord && this.limitRecord) {
                 this.executeSkipAndLimitForIn_(column, values);
             }

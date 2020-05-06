@@ -15,6 +15,7 @@ export class Instance extends Join {
         if (isArray(this.query.where)) {
             this.isArrayQry = true;
             this.shouldEvaluateLimitAtEnd = true;
+            this.shouldEvaluateSkipAtEnd = true;
         }
         else {
             this.skipRecord = query.skip;
@@ -29,7 +30,7 @@ export class Instance extends Join {
                 this.shouldEvaluateLimitAtEnd = true;
             }
             if (query.skip != null) {
-                this.isOrderWithSkip = true;
+                this.shouldEvaluateSkipAtEnd = true;
             }
         }
 
@@ -176,7 +177,7 @@ export class Instance extends Join {
         if (this.error == null) {
             this.processOrderBy();
             if (!this.error) {
-                if (this.query.order && this.query.skip) {
+                if (this.shouldEvaluateSkipAtEnd) {
                     this.results.splice(0, this.query.skip);
                 }
                 if (this.shouldEvaluateLimitAtEnd === true) {

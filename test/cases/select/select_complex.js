@@ -374,54 +374,54 @@ describe('Test select complex case', function () {
         })
     });
 
-    // it('select with where as array, skip', function (done) {
-    //     con.select({
-    //         from: "Customers",
-    //         where: [{
-    //             country: 'Mexico'
-    //         },
-    //         {
-    //             or: {
-    //                 country: 'UK'
-    //             }
-    //         }],
-    //         skip: 2
-    //     }).then(function (results) {
-    //         const expectedId = [4, 11, 13, 16, 19, 38, 53, 58, 72, 80];
-    //         expect(results).to.be.an('array').length(expectedId.length);
-    //         results.forEach(function (val, index) {
-    //             expect(val.customerId).to.equal(expectedId[index]);
-    //         })
-    //         done();
-    //     }).catch(function (err) {
-    //         done(err);
-    //     })
-    // });
+    it('select with where as array, skip', function (done) {
+        con.select({
+            from: "Customers",
+            where: [{
+                country: 'Mexico'
+            },
+            {
+                or: {
+                    country: 'UK'
+                }
+            }],
+            skip: 2
+        }).then(function (results) {
+            const expectedId = [4, 11, 13, 16, 19, 38, 53, 58, 72, 80];
+            expect(results).to.be.an('array').length(expectedId.length);
+            results.forEach(function (val, index) {
+                expect(val.customerId).to.equal(expectedId[index]);
+            })
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
 
 
-    // it('select with where as array, skip & limit', function (done) {
-    //     con.select({
-    //         from: "Customers",
-    //         where: [{
-    //             country: 'Mexico'
-    //         },
-    //         {
-    //             or: {
-    //                 country: 'UK'
-    //             }
-    //         }],
-    //         skip: 2,
-    //         limit: 2
-    //     }).then(function (results) {
-    //         const expectedId = [4, 11];
-    //         expect(results).to.be.an('array').length(expectedId.length);
-    //         results.forEach(function (val, index) {
-    //             expect(val.customerId).to.equal(expectedId[index]);
-    //         })
-    //         done();
-    //     }).catch(function (err) {
-    //         done(err);
-    //     })
-    // });
+    it('select with where as array, skip & limit', function (done) {
+        con.select({
+            from: "Customers",
+            where: [{
+                country: 'Mexico'
+            },
+            {
+                or: {
+                    country: 'UK'
+                }
+            }],
+            skip: 2,
+            limit: 2
+        }).then(function (results) {
+            const expectedId = [4, 11];
+            expect(results).to.be.an('array').length(expectedId.length);
+            results.forEach(function (val, index) {
+                expect(val.customerId).to.equal(expectedId[index]);
+            })
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
 
 });
