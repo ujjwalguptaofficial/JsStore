@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.7.6 - 09/03/2020
+ * @license :jsstore - V3.7.7 - 06/05/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -4757,8 +4757,8 @@ function (module, __webpack_exports__, __webpack_require__) {
 
       _this.sorted = false;
       _this.isSubQuery = false;
-      _this.isOrderWithLimit = false;
-      _this.isOrderWithSkip = false;
+      _this.shouldEvaluateLimitAtEnd = false;
+      _this.shouldEvaluateSkipAtEnd = false;
       _this.thenEvaluator = new then_evaluator_ThenEvaluator();
       return _this;
     }
@@ -4872,7 +4872,7 @@ function (module, __webpack_exports__, __webpack_require__) {
 
       not_where_cursorRequest.onerror = this.onErrorOccured;
 
-      if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
+      if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {
         if (this.skipRecord && this.limitRecord) {
           this.executeSkipAndLimitForNoWhere_();
         } else if (this.skipRecord) {
@@ -5036,7 +5036,7 @@ function (module, __webpack_exports__, __webpack_require__) {
         return _this.whereCheckerInstance.check(cursor.value);
       };
 
-      if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
+      if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {
         if (this.skipRecord && this.limitRecord) {
           this.executeSkipAndLimitForIn_(column, values);
         } else if (this.skipRecord) {
@@ -5279,7 +5279,7 @@ function (module, __webpack_exports__, __webpack_require__) {
       regex_cursorRequest = this.objectStore.index(column).openCursor();
       regex_cursorRequest.onerror = this.onErrorOccured;
 
-      if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
+      if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {
         if (this.skipRecord && this.limitRecord) {
           this.executeSkipAndLimitForRegex_();
         } else if (this.skipRecord) {
@@ -5418,7 +5418,7 @@ function (module, __webpack_exports__, __webpack_require__) {
       where_cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op), dir);
       where_cursorRequest.onerror = this.onErrorOccured;
 
-      if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
+      if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {
         if (this.skipRecord && this.limitRecord) {
           this.executeSkipAndLimitForWhere_();
         } else if (this.skipRecord) {
@@ -6694,11 +6694,11 @@ function (module, __webpack_exports__, __webpack_require__) {
           _this.processOrderBy();
 
           if (!_this.error) {
-            if (_this.query.order && _this.query.skip) {
+            if (_this.shouldEvaluateSkipAtEnd) {
               _this.results.splice(0, _this.query.skip);
             }
 
-            if (_this.isOrderWithLimit === true) {
+            if (_this.shouldEvaluateLimitAtEnd === true) {
               _this.results = _this.results.slice(0, _this.query.limit);
             }
 
@@ -6716,11 +6716,20 @@ function (module, __webpack_exports__, __webpack_require__) {
       _this.onError = onError;
       _this.onSuccess = onSuccess;
       _this.query = query;
-      _this.skipRecord = query.skip;
-      _this.limitRecord = query.limit;
       _this.tableName = query.from;
 
       _this.setPushResult();
+
+      if (Object(is_array["a"
+      /* isArray */
+      ])(_this.query.where)) {
+        _this.isArrayQry = true;
+        _this.shouldEvaluateLimitAtEnd = true;
+        _this.shouldEvaluateSkipAtEnd = true;
+      } else {
+        _this.skipRecord = query.skip;
+        _this.limitRecord = query.limit;
+      }
 
       if (query.order) {
         if (Object(is_array["a"
@@ -6730,11 +6739,11 @@ function (module, __webpack_exports__, __webpack_require__) {
         }
 
         if (query.limit != null) {
-          _this.isOrderWithLimit = true;
+          _this.shouldEvaluateLimitAtEnd = true;
         }
 
         if (query.skip != null) {
-          _this.isOrderWithSkip = true;
+          _this.shouldEvaluateSkipAtEnd = true;
         }
       }
 

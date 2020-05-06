@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.7.6 - 09/03/2020
+ * @license :jsstore - V3.7.7 - 06/05/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -3201,8 +3201,8 @@ var base_select_BaseSelect = /** @class */ (function (_super) {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.sorted = false;
         _this.isSubQuery = false;
-        _this.isOrderWithLimit = false;
-        _this.isOrderWithSkip = false;
+        _this.shouldEvaluateLimitAtEnd = false;
+        _this.shouldEvaluateSkipAtEnd = false;
         _this.thenEvaluator = new then_evaluator_ThenEvaluator();
         return _this;
     }
@@ -3289,7 +3289,7 @@ var not_where_NotWhere = /** @class */ (function (_super) {
             not_where_cursorRequest = this.objectStore.openCursor();
         }
         not_where_cursorRequest.onerror = this.onErrorOccured;
-        if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
+        if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {
             if (this.skipRecord && this.limitRecord) {
                 this.executeSkipAndLimitForNoWhere_();
             }
@@ -3424,7 +3424,7 @@ var in_In = /** @class */ (function (_super) {
         shouldAddValue = function () {
             return _this.whereCheckerInstance.check(cursor.value);
         };
-        if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
+        if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {
             if (this.skipRecord && this.limitRecord) {
                 this.executeSkipAndLimitForIn_(column, values);
             }
@@ -3609,7 +3609,7 @@ var Regex = /** @class */ (function (_super) {
         };
         regex_cursorRequest = this.objectStore.index(column).openCursor();
         regex_cursorRequest.onerror = this.onErrorOccured;
-        if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
+        if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {
             if (this.skipRecord && this.limitRecord) {
                 this.executeSkipAndLimitForRegex_();
             }
@@ -3722,7 +3722,7 @@ var Where = /** @class */ (function (_super) {
         value = op ? value[op] : value;
         where_cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op), dir);
         where_cursorRequest.onerror = this.onErrorOccured;
-        if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
+        if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {
             if (this.skipRecord && this.limitRecord) {
                 this.executeSkipAndLimitForWhere_();
             }
@@ -4691,10 +4691,10 @@ var instance_Instance = /** @class */ (function (_super) {
             if (_this.error == null) {
                 _this.processOrderBy();
                 if (!_this.error) {
-                    if (_this.query.order && _this.query.skip) {
+                    if (_this.shouldEvaluateSkipAtEnd) {
                         _this.results.splice(0, _this.query.skip);
                     }
-                    if (_this.isOrderWithLimit === true) {
+                    if (_this.shouldEvaluateLimitAtEnd === true) {
                         _this.results = _this.results.slice(0, _this.query.limit);
                     }
                     _this.processGroupDistinctAggr();
@@ -4711,19 +4711,26 @@ var instance_Instance = /** @class */ (function (_super) {
         _this.onError = onError;
         _this.onSuccess = onSuccess;
         _this.query = query;
-        _this.skipRecord = query.skip;
-        _this.limitRecord = query.limit;
         _this.tableName = query.from;
         _this.setPushResult();
+        if (Object(is_array["a" /* isArray */])(_this.query.where)) {
+            _this.isArrayQry = true;
+            _this.shouldEvaluateLimitAtEnd = true;
+            _this.shouldEvaluateSkipAtEnd = true;
+        }
+        else {
+            _this.skipRecord = query.skip;
+            _this.limitRecord = query.limit;
+        }
         if (query.order) {
             if (Object(is_array["a" /* isArray */])(query.order) || query.order.case != null || isObject(query.order.by)) {
                 _this.query.order.idbSorting = false;
             }
             if (query.limit != null) {
-                _this.isOrderWithLimit = true;
+                _this.shouldEvaluateLimitAtEnd = true;
             }
             if (query.skip != null) {
-                _this.isOrderWithSkip = true;
+                _this.shouldEvaluateSkipAtEnd = true;
             }
         }
         return _this;

@@ -12,8 +12,8 @@ export declare class BaseSelect extends WhereBase {
         orQuery: object;
     };
     isSubQuery: boolean;
-    isOrderWithLimit: boolean;
-    isOrderWithSkip: boolean;
+    shouldEvaluateLimitAtEnd: boolean;
+    shouldEvaluateSkipAtEnd: boolean;
     protected pushResult: (value: any) => void;
     protected thenEvaluator: ThenEvaluator;
     protected setPushResult(): void;
