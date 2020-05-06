@@ -10,10 +10,15 @@ export class Instance extends Join {
         this.onError = onError;
         this.onSuccess = onSuccess;
         this.query = query;
-        this.skipRecord = query.skip;
-        this.limitRecord = query.limit;
         this.tableName = query.from;
         this.setPushResult();
+        if (isArray(this.query.where)) {
+            this.isArrayQry = true;
+        }
+        else {
+            this.skipRecord = query.skip;
+            this.limitRecord = query.limit;
+        }
         if (query.order) {
             if (isArray(query.order) || query.order.case != null || isObject(query.order.by)) {
                 this.query.order.idbSorting = false;
