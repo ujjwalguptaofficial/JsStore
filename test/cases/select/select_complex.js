@@ -350,29 +350,29 @@ describe('Test select complex case', function () {
         })
     });
 
-    // it('select with where as array, limit', function (done) {
-    //     con.select({
-    //         from: "Customers",
-    //         where: [{
-    //             country: 'Mexico'
-    //         },
-    //         {
-    //             or: {
-    //                 country: 'UK'
-    //             }
-    //         }],
-    //         limit: 2
-    //     }).then(function (results) {
-    //         const expectedId = [2, 3];
-    //         expect(results).to.be.an('array').length(expectedId.length);
-    //         results.forEach(function (val, index) {
-    //             expect(val.customerId).to.equal(expectedId[index]);
-    //         })
-    //         done();
-    //     }).catch(function (err) {
-    //         done(err);
-    //     })
-    // });
+    it('select with where as array, limit', function (done) {
+        con.select({
+            from: "Customers",
+            where: [{
+                country: 'Mexico'
+            },
+            {
+                or: {
+                    country: 'UK'
+                }
+            }],
+            limit: 2
+        }).then(function (results) {
+            const expectedId = [2, 3];
+            expect(results).to.be.an('array').length(expectedId.length);
+            results.forEach(function (val, index) {
+                expect(val.customerId).to.equal(expectedId[index]);
+            })
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
 
     // it('select with where as array, skip', function (done) {
     //     con.select({

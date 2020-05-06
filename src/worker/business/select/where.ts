@@ -17,7 +17,7 @@ export class Where extends Regex {
 
         cursorRequest.onerror = this.onErrorOccured;
 
-        if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
+        if (this.shouldEvaluateLimitAtEnd === false && this.isOrderWithSkip === false) {
             if (this.skipRecord && this.limitRecord) {
                 this.executeSkipAndLimitForWhere_();
             }

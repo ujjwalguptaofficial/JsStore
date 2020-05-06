@@ -16,7 +16,7 @@ export class BaseSelect extends WhereBase {
 
     isSubQuery = false;
 
-    isOrderWithLimit = false;
+    shouldEvaluateLimitAtEnd = false;
     isOrderWithSkip = false;
 
     protected pushResult: (value) => void;

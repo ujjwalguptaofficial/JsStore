@@ -14,6 +14,7 @@ export class Instance extends Join {
         this.setPushResult();
         if (isArray(this.query.where)) {
             this.isArrayQry = true;
+            this.shouldEvaluateLimitAtEnd = true;
         }
         else {
             this.skipRecord = query.skip;
@@ -25,7 +26,7 @@ export class Instance extends Join {
             }
 
             if (query.limit != null) {
-                this.isOrderWithLimit = true;
+                this.shouldEvaluateLimitAtEnd = true;
             }
             if (query.skip != null) {
                 this.isOrderWithSkip = true;
@@ -178,7 +179,7 @@ export class Instance extends Join {
                 if (this.query.order && this.query.skip) {
                     this.results.splice(0, this.query.skip);
                 }
-                if (this.isOrderWithLimit === true) {
+                if (this.shouldEvaluateLimitAtEnd === true) {
                     this.results = this.results.slice(0, this.query.limit);
                 }
                 this.processGroupDistinctAggr();

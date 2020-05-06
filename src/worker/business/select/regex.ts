@@ -25,7 +25,7 @@ export class Regex extends In {
 
         cursorRequest = this.objectStore.index(column).openCursor();
         cursorRequest.onerror = this.onErrorOccured;
-        if (this.isOrderWithLimit === false && this.isOrderWithSkip === false) {
+        if (this.shouldEvaluateLimitAtEnd === false && this.isOrderWithSkip === false) {
             if (this.skipRecord && this.limitRecord) {
                 this.executeSkipAndLimitForRegex_();
             }
