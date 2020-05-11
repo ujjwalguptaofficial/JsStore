@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.7.7 - 06/05/2020
+ * @license :jsstore - V3.8.0 - 11/05/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -4405,7 +4405,8 @@ var join_Join = /** @class */ (function (_super) {
         new instance_Instance({
             from: tableName,
             where: query.where,
-            case: query.case
+            case: query.case,
+            ignoreCase: query.ignoreCase
         }, function (results) {
             _this.results = results.map(function (item) {
                 var _a;
@@ -4521,7 +4522,8 @@ var join_Join = /** @class */ (function (_super) {
                 new instance_Instance({
                     from: query.with,
                     where: query.where,
-                    case: query.case
+                    case: query.case,
+                    ignoreCase: query.ignoreCase
                 }, function (results) {
                     _this.jointables(query.type, jointblInfo_1, results);
                     _this.tablesFetched.push(jointblInfo_1.table2.table);

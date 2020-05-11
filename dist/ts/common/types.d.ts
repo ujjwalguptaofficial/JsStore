@@ -42,6 +42,7 @@ export declare type JoinQuery = {
     case?: {
         [columnName: string]: [CaseOption];
     };
+    ignoreCase?: boolean;
 };
 export declare type SelectQuery = {
     from: string;
