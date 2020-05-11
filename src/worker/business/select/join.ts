@@ -23,12 +23,13 @@ export class Join extends Helper {
         new Select.Instance({
             from: tableName,
             where: query.where,
-            case: query.case
+            case: query.case,
+            ignoreCase: query.ignoreCase
         }, results => {
             this.results = results.map((item) => {
                 return {
                     [this.currentQueryStackIndex_]: item
-                }
+                };
             });
             this.tablesFetched.push(tableName);
             this.startExecutingJoinLogic_();
@@ -148,7 +149,8 @@ export class Join extends Helper {
                 new Select.Instance({
                     from: query.with,
                     where: query.where,
-                    case: query.case
+                    case: query.case,
+                    ignoreCase: query.ignoreCase
                 }, results => {
                     this.jointables(query.type, jointblInfo, results);
                     this.tablesFetched.push(jointblInfo.table2.table);

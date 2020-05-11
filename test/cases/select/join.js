@@ -460,5 +460,37 @@ describe('Test join', function () {
 
     });
 
+    it('join with ignoreCase', function (done) {
+        con.select({
+            from: "Customers",
+            where: {
+                country: "Mexico"
+            },
+            join: {
+                with: 'Orders',
+                on: 'Customers.customerId=Orders.customerId',
+                type: 'left'
+            }
+        }).then(function (results) {
+            return results.length;
+        }).then(function (length) {
+            con.select({
+                from: "Customers",
+                ignoreCase: true,
+                where: {
+                    country: "mexico"
+                },
+                join: {
+                    with: 'Orders',
+                    on: 'Customers.customerId=Orders.customerId',
+                    type: 'left'
+                }
+            }).then(function (results) {
+                expect(length).equal(results.length);
+                done();
+            }).catch(done);
+        }).catch(done);
+
+    })
 
 });

@@ -39,7 +39,8 @@ export type JoinQuery = {
     where?: { [columnName: string]: any };
     order?: OrderQuery;
     as?: { [originalColumnName: string]: string },
-    case?: { [columnName: string]: [CaseOption] }
+    case?: { [columnName: string]: [CaseOption] },
+    ignoreCase?: boolean;
 };
 
 export type SelectQuery = {
