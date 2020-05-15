@@ -424,4 +424,34 @@ describe('Test select complex case', function () {
         })
     });
 
+    it('SELECT * FROM Orders WHERE (shipperId = 3 AND employeeId = 4) OR (shipperId = 2 AND employeeId = 3) AND (orderId < 10300 AND customerId = 88) OR orderID > 10400;', function (done) {
+        con.select({
+            from: 'Orders',
+            where: [{
+                shipperId: 3,
+                employeeId: 4
+            }, {
+                or: {
+                    shipperId: 2,
+                    employeeId: 3
+                }
+            },
+            {
+                orderId: {
+                    '<': 10300
+                },
+                customerId: 88
+            }, {
+                or: {
+                    orderId: { '>': 10400 }
+                }
+            }
+            ]
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(44);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
 });

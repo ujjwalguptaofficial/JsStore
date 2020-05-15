@@ -94,13 +94,11 @@ export class Instance extends Join {
                     output = andResults;
                     andResults = null;
                 };
-                if (output.length > 0) {
-                    doAnd();
-                }
-                else if (isFirstWhere === true) {
+
+                if (isFirstWhere === true) {
                     output = this.results;
                 }
-                else {
+                else if (output.length > 0) {
                     doAnd();
                 }
             }
