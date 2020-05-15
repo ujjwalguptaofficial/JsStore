@@ -65,7 +65,8 @@ export enum API {
     Transaction = "transaction",
     InitKeyStore = "init_keystore",
     CloseDb = "close_db",
-    Union = "union"
+    Union = "union",
+    Intersect = "intersect"
 }
 
 export enum EVENT {

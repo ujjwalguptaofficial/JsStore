@@ -306,4 +306,11 @@ export class Connection extends ConnectionHelper {
             query
         });
     }
+
+    intersect<T>(query: SelectQuery[]) {
+        return this.pushApi<T>({
+            name: API.Intersect,
+            query
+        });
+    }
 }

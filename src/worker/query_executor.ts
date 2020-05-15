@@ -17,7 +17,7 @@ import { TableHelper, DbHelper, DataBase } from "./model/index";
 import { promise } from "./helpers/index";
 import { getDataType } from "./utils/index";
 import { Union } from './business/union/index';
-
+import { Intersect } from "./business/intersect/index";
 export class QueryExecutor {
     static isTransactionQuery = false;
     onQueryFinished: (result: any) => void;
@@ -166,6 +166,9 @@ export class QueryExecutor {
                 break;
             case API.InitKeyStore:
                 this.initKeyStore_(onSuccess);
+                break;
+            case API.Intersect:
+                new Intersect().execute(request.query, onSuccess, onError);
                 break;
             default:
                 if (process.env.NODE_ENV === 'dev') {
