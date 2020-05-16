@@ -19,7 +19,6 @@ export class Intersect extends Base {
         });
         let getHashKey;
         if (isQueryForSameTable) {
-            debugger;
             const pKey = this.getPrimaryKey(query[0].from);
             getHashKey = (val) => {
                 return val[pKey];
