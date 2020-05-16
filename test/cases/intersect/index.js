@@ -40,8 +40,11 @@ describe("Intersect", function () {
         con.intersect({
             queries: [query1, query2]
         }).then(function (results) {
-            // console.log(results);
-            expect(results).to.be.an('array').length(11);
+            const expectedIds = [10256, 10403, 10413, 10417, 10429, 10432, 10434, 10436, 10438, 10441, 10442]
+            expect(results).to.be.an('array').length(expectedIds.length);
+            expectedIds.forEach(function (id, index) {
+                expect(id).to.equal(results[index].orderId);
+            })
             done();
         }).catch(done);
     });
@@ -88,8 +91,11 @@ describe("Intersect", function () {
             queries: [query1, query2],
             skip: 5
         }).then(function (results) {
-            // console.log(results);
-            expect(results).to.be.an('array').length(6);
+            const expectedIds = [10432, 10434, 10436, 10438, 10441, 10442]
+            expect(results).to.be.an('array').length(expectedIds.length);
+            expectedIds.forEach(function (id, index) {
+                expect(id).to.equal(results[index].orderId);
+            })
             done();
         }).catch(done);
     });
@@ -136,8 +142,11 @@ describe("Intersect", function () {
             queries: [query1, query2],
             limit: 5
         }).then(function (results) {
-            // console.log(results);
-            expect(results).to.be.an('array').length(5);
+            const expectedIds = [10256, 10403, 10413, 10417, 10429]
+            expect(results).to.be.an('array').length(expectedIds.length);
+            expectedIds.forEach(function (id, index) {
+                expect(id).to.equal(results[index].orderId);
+            })
             done();
         }).catch(done);
     });
@@ -182,11 +191,14 @@ describe("Intersect", function () {
 
         con.intersect({
             queries: [query1, query2],
-            limit: 6,
+            limit: 5,
             skip: 5
         }).then(function (results) {
-            // console.log(results);
-            expect(results).to.be.an('array').length(6);
+            const expectedIds = [10432, 10434, 10436, 10438, 10441]
+            expect(results).to.be.an('array').length(expectedIds.length);
+            expectedIds.forEach(function (id, index) {
+                expect(id).to.equal(results[index].orderId);
+            })
             done();
         }).catch(done);
     });

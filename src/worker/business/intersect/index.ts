@@ -77,9 +77,6 @@ export class Intersect extends Base {
                 const skipChecker = (callBack: () => void) => {
                     if (skip === 0) {
                         callBack();
-                        resultPusher = () => {
-                            results.push(hashMap[key]);
-                        };
                     }
                     else {
                         --skip;
