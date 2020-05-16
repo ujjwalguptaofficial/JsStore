@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.8.0 - 11/05/2020
+ * @license :jsstore - V3.9.0 - 16/05/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -343,6 +343,7 @@ function (module, __webpack_exports__, __webpack_require__) {
     API["InitKeyStore"] = "init_keystore";
     API["CloseDb"] = "close_db";
     API["Union"] = "union";
+    API["Intersect"] = "intersect";
   })(API || (API = {}));
 
   var EVENT;
@@ -1041,6 +1042,13 @@ function (module, __webpack_exports__, __webpack_require__) {
     Connection.prototype.union = function (query) {
       return this.pushApi({
         name: API.Union,
+        query: query
+      });
+    };
+
+    Connection.prototype.intersect = function (query) {
+      return this.pushApi({
+        name: API.Intersect,
         query: query
       });
     };

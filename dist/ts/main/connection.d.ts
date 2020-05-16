@@ -155,4 +155,5 @@ export declare class Connection extends ConnectionHelper {
     on(event: EVENT, eventCallBack: Function): void;
     off(event: EVENT, eventCallBack: Function): void;
     union<T>(query: SelectQuery[]): Promise<T>;
+    intersect<T>(query: SelectQuery[]): Promise<T>;
 }
