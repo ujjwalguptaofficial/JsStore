@@ -147,3 +147,8 @@ export declare type SetQuery = {
     key: string;
     value: any;
 };
+export declare type IntersectQuery = {
+    queries: SelectQuery[];
+    skip: number;
+    limit: number;
+};

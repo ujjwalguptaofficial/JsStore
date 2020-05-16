@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.9.0 - 16/05/2020
+ * @license :jsstore - V3.9.1 - 16/05/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -3417,11 +3417,12 @@ function (module, __webpack_exports__, __webpack_require__) {
       return _super !== null && _super.apply(this, arguments) || this;
     }
 
-    Intersect.prototype.execute = function (query, onSuccess, onError) {
+    Intersect.prototype.execute = function (intersectQry, onSuccess, onError) {
       var index = 0;
       var hashMap = {};
       var hashMapTemp = {};
       var isQueryForSameTable = true;
+      var query = intersectQry.queries;
       var queryLength = query.length;
       query.every(function (qry, i) {
         if (i + 1 < queryLength && qry.from !== query[i + 1].from) {
@@ -3475,13 +3476,72 @@ function (module, __webpack_exports__, __webpack_require__) {
             fetchData();
           }, onError).execute();
         } else {
-          var results = [];
+          var results_1 = [];
+          var resultPusher = void 0;
+          var skip_1 = intersectQry.skip;
+          var limit_1 = intersectQry.limit;
 
-          for (var key in hashMap) {
-            results.push(hashMap[key]);
+          var onFinished = function () {
+            onSuccess(results_1);
+          };
+
+          var shouldStopLoop_1 = false;
+
+          var pushResult_1 = function () {
+            results_1.push(hashMap[key_1]);
+          };
+
+          var checkLimitAndPush_1 = function () {
+            if (results_1.length < limit_1) {
+              pushResult_1();
+            } else {
+              shouldStopLoop_1 = true;
+            }
+          };
+
+          var skipChecker_1 = function (callBack) {
+            if (skip_1 === 0) {
+              callBack();
+            } else {
+              --skip_1;
+            }
+          };
+
+          if (intersectQry.skip && intersectQry.limit) {
+            resultPusher = function () {
+              skipChecker_1(function () {
+                checkLimitAndPush_1();
+              });
+            };
+          } else if (intersectQry.limit) {
+            resultPusher = checkLimitAndPush_1;
+          } else if (intersectQry.skip) {
+            resultPusher = function () {
+              skipChecker_1(function () {
+                pushResult_1();
+              });
+            };
+          } else {
+            resultPusher = function () {
+              pushResult_1();
+            };
           }
 
-          onSuccess(results);
+          if (limit_1) {
+            for (var key_1 in hashMap) {
+              resultPusher(key_1);
+
+              if (shouldStopLoop_1) {
+                break;
+              }
+            }
+          } else {
+            for (key_1 in hashMap) {
+              resultPusher(key_1);
+            }
+          }
+
+          onFinished();
         }
       };
 
