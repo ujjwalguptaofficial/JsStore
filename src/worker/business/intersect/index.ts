@@ -1,14 +1,15 @@
 import * as Select from '../select/index';
-import { SelectQuery, IError } from '../../../common/index';
+import { SelectQuery, IError, IntersectQuery } from '../../../common/index';
 import { Base } from '../base';
 
 
 export class Intersect extends Base {
-    execute(query: SelectQuery[], onSuccess: (results: object[]) => void, onError: (err: IError) => void) {
+    execute(intersectQry: IntersectQuery, onSuccess: (results: object[]) => void, onError: (err: IError) => void) {
         let index = 0;
         let hashMap = {};
         let hashMapTemp = {};
         let isQueryForSameTable = true;
+        const query = intersectQry.queries;
         const queryLength = query.length;
         query.every((qry, i) => {
             if (i + 1 < queryLength && qry.from !== query[i + 1].from) {
@@ -57,10 +58,70 @@ export class Intersect extends Base {
             }
             else {
                 const results = [];
-                for (const key in hashMap) {
-                    results.push(hashMap[key]);
+                let resultPusher: (key: string) => void;
+                let skip = intersectQry.skip;
+                const limit = intersectQry.limit;
+                const onFinished = () => {
+                    onSuccess(results);
+                };
+                let shouldStopLoop = false;
+                let key: string;
+                const checkLimitAndPush = () => {
+                    if (results.length < limit) {
+                        results.push(hashMap[key]);
+                    }
+                    else {
+                        shouldStopLoop = true;
+                    }
+                };
+                const skipChecker = (callBack: () => void) => {
+                    if (skip === 0) {
+                        callBack();
+                        resultPusher = () => {
+                            results.push(hashMap[key]);
+                        };
+                    }
+                    else {
+                        --skip;
+                    }
+                };
+                if (intersectQry.skip && intersectQry.limit) {
+                    resultPusher = () => {
+                        skipChecker(() => {
+                            checkLimitAndPush();
+                        });
+                    };
+
                 }
-                onSuccess(results);
+                else if (intersectQry.limit) {
+                    resultPusher = checkLimitAndPush;
+                }
+                else if (intersectQry.skip) {
+                    resultPusher = () => {
+                        skipChecker(() => {
+                            results.push(hashMap[key]);
+                        });
+                    };
+                }
+                else {
+                    resultPusher = () => {
+                        results.push(hashMap[key]);
+                    };
+                }
+                if (limit) {
+                    for (key in hashMap) {
+                        resultPusher(key);
+                        if (shouldStopLoop) {
+                            break;
+                        }
+                    }
+                }
+                else {
+                    for (key in hashMap) {
+                        resultPusher(key);
+                    }
+                }
+                onFinished();
             }
         };
         fetchData();

@@ -145,3 +145,9 @@ export type SetQuery = {
     key: string;
     value: any;
 };
+
+export type IntersectQuery = {
+    queries: SelectQuery[];
+    skip: number;
+    limit: number;
+};
