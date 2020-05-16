@@ -66,9 +66,12 @@ export class Intersect extends Base {
                 };
                 let shouldStopLoop = false;
                 let key: string;
+                const pushResult = () => {
+                    results.push(hashMap[key]);
+                };
                 const checkLimitAndPush = () => {
                     if (results.length < limit) {
-                        results.push(hashMap[key]);
+                        pushResult();
                     }
                     else {
                         shouldStopLoop = true;
@@ -96,13 +99,13 @@ export class Intersect extends Base {
                 else if (intersectQry.skip) {
                     resultPusher = () => {
                         skipChecker(() => {
-                            results.push(hashMap[key]);
+                            pushResult();
                         });
                     };
                 }
                 else {
                     resultPusher = () => {
-                        results.push(hashMap[key]);
+                        pushResult();
                     };
                 }
                 if (limit) {
