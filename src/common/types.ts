@@ -150,4 +150,5 @@ export type IntersectQuery = {
     queries: SelectQuery[];
     skip: number;
     limit: number;
+    order?: OrderQuery;
 };

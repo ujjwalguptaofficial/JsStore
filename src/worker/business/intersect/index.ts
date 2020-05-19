@@ -1,10 +1,12 @@
 import * as Select from '../select/index';
 import { SelectQuery, IError, IntersectQuery } from '../../../common/index';
 import { Base } from '../base';
+import { Helper } from '../select/orderby_helper';
 
 
-export class Intersect extends Base {
+export class Intersect extends Helper {
     execute(intersectQry: IntersectQuery, onSuccess: (results: object[]) => void, onError: (err: IError) => void) {
+        this.query = intersectQry as any;
         let index = 0;
         let hashMap = {};
         let hashMapTemp = {};
@@ -62,7 +64,11 @@ export class Intersect extends Base {
                 let skip = intersectQry.skip;
                 const limit = intersectQry.limit;
                 const onFinished = () => {
-                    onSuccess(results);
+                    this.results = results;
+                    this.query.join = {} as any;
+                    this.processOrderBy();
+                    this.processGroupDistinctAggr();
+                    onSuccess(this.results);
                 };
                 let shouldStopLoop = false;
                 let key: string;
