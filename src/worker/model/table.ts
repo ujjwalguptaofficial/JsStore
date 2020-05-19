@@ -1,6 +1,6 @@
 import { Column } from "./column";
 import { ITable } from "../../common/index";
- 
+
 export class Table {
     name: string;
     columns: Column[] = [];
@@ -27,7 +27,7 @@ export class Table {
                     case 'multiEntry':
                     case 'default':
                     case 'notNull':
-                        column[feature] = value; break;
+                        column[feature] = value as never; break;
                 }
             }
             this.columns.push(new Column(column));

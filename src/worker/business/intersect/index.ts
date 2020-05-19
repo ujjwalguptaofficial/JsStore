@@ -1,6 +1,5 @@
 import * as Select from '../select/index';
-import { SelectQuery, IError, IntersectQuery } from '../../../common/index';
-import { Base } from '../base';
+import { IError, IntersectQuery } from '../../../common/index';
 import { Helper } from '../select/orderby_helper';
 
 
