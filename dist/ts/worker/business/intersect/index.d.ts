@@ -1,5 +1,5 @@
 import { IError, IntersectQuery } from '../../../common/index';
-import { Base } from '../base';
-export declare class Intersect extends Base {
+import { Helper } from '../select/orderby_helper';
+export declare class Intersect extends Helper {
     execute(intersectQry: IntersectQuery, onSuccess: (results: object[]) => void, onError: (err: IError) => void): void;
 }

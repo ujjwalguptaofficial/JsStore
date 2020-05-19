@@ -1,9 +1,9 @@
 import { DataBase } from "../model/index";
 export declare class BaseHelper {
     regexExpression: RegExp;
-    protected readonly activeDb: DataBase;
-    protected readonly dbConnection: IDBDatabase;
-    protected readonly transaction: IDBTransaction;
+    protected get activeDb(): DataBase;
+    protected get dbConnection(): IDBDatabase;
+    protected get transaction(): IDBTransaction;
     protected createTransaction(tableNames: string[], callBack: () => void, mode?: any): void;
     protected regexTest(value: any): boolean;
     protected isTableExist(tableName: string): boolean;

@@ -3,8 +3,8 @@ export declare class KeyStore {
      * Initialize KeyStore
      *
      */
-    static init: () => Promise<{}>;
-    static close: () => Promise<{}>;
+    static init: () => Promise<unknown>;
+    static close: () => Promise<unknown>;
     /**
      * return the value by key
      *
@@ -23,7 +23,7 @@ export declare class KeyStore {
      * @param {(err: IError) => void} [onError]
      * @returns
      */
-    static set: (key: any, value: any) => Promise<{}>;
+    static set: (key: any, value: any) => Promise<unknown>;
     /**
      * delete value
      *
@@ -32,5 +32,5 @@ export declare class KeyStore {
      * @param {(err: IError) => void} [onError=null]
      * @returns
      */
-    static remove: (key: string) => Promise<{}>;
+    static remove: (key: string) => Promise<unknown>;
 }

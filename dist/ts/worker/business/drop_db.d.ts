@@ -4,6 +4,6 @@ export declare class DropDb extends BaseDb {
     private onSuccess_;
     private onError_;
     constructor(onSuccess: () => void, onError: (err: IError) => void);
-    deleteMetaData(): Promise<{}>;
+    deleteMetaData(): Promise<unknown>;
     deleteDb(): void;
 }

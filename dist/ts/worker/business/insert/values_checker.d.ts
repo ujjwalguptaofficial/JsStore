@@ -5,6 +5,6 @@ export declare class ValuesChecker {
     values: object[];
     valueCheckerObj: ValueChecker;
     constructor(table: Table, values: object[]);
-    checkAndModifyValues(): Promise<{}>;
+    checkAndModifyValues(): Promise<unknown>;
     private startChecking;
 }

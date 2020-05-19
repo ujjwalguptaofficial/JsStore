@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.9.1 - 16/05/2020
+ * @license :jsstore - V3.9.2 - 19/05/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -262,9 +262,52 @@ function (modules) {
 
 /***/
 function (module, __webpack_exports__, __webpack_require__) {
-  "use strict";
+  "use strict"; // ESM COMPAT FLAG
 
-  __webpack_require__.r(__webpack_exports__); // CONCATENATED MODULE: ./src/common/enums.ts
+  __webpack_require__.r(__webpack_exports__); // EXPORTS
+
+
+  __webpack_require__.d(__webpack_exports__, "Instance", function () {
+    return (
+      /* reexport */
+      instance_Instance
+    );
+  });
+
+  __webpack_require__.d(__webpack_exports__, "Connection", function () {
+    return (
+      /* reexport */
+      connection_Connection
+    );
+  });
+
+  __webpack_require__.d(__webpack_exports__, "Config", function () {
+    return (
+      /* reexport */
+      Config
+    );
+  });
+
+  __webpack_require__.d(__webpack_exports__, "enableLog", function () {
+    return (
+      /* reexport */
+      enableLog
+    );
+  });
+
+  __webpack_require__.d(__webpack_exports__, "useSqlWeb", function () {
+    return (
+      /* reexport */
+      useSqlWeb
+    );
+  });
+
+  __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function () {
+    return (
+      /* reexport */
+      DATA_TYPE
+    );
+  }); // CONCATENATED MODULE: ./src/common/enums.ts
 
 
   var ERROR_TYPE;
@@ -688,7 +731,7 @@ function (module, __webpack_exports__, __webpack_require__) {
       set: function (value) {
         Util.sqlWeb_ = value;
       },
-      enumerable: true,
+      enumerable: false,
       configurable: true
     });
     return Util;
@@ -1087,42 +1130,6 @@ function (module, __webpack_exports__, __webpack_require__) {
     Util.sqlWeb = value;
   }; // CONCATENATED MODULE: ./src/main/index.ts
 
-  /* concated harmony reexport Instance */
-
-
-  __webpack_require__.d(__webpack_exports__, "Instance", function () {
-    return instance_Instance;
-  });
-  /* concated harmony reexport Connection */
-
-
-  __webpack_require__.d(__webpack_exports__, "Connection", function () {
-    return connection_Connection;
-  });
-  /* concated harmony reexport Config */
-
-
-  __webpack_require__.d(__webpack_exports__, "Config", function () {
-    return Config;
-  });
-  /* concated harmony reexport enableLog */
-
-
-  __webpack_require__.d(__webpack_exports__, "enableLog", function () {
-    return enableLog;
-  });
-  /* concated harmony reexport useSqlWeb */
-
-
-  __webpack_require__.d(__webpack_exports__, "useSqlWeb", function () {
-    return useSqlWeb;
-  });
-  /* concated harmony reexport DATA_TYPE */
-
-
-  __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function () {
-    return DATA_TYPE;
-  });
   /***/
 
 }

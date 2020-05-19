@@ -4,5 +4,5 @@ export declare class DbHelper {
     dbName: string;
     tables: Table[];
     constructor(dataBase: DataBase);
-    createMetaData(): Promise<{}[]>;
+    createMetaData(): Promise<unknown[]>;
 }

@@ -10,14 +10,14 @@ export declare class QueryHelper {
         };
     };
     constructor(api: API, query: any);
-    checkAndModify(): Promise<{}>;
+    checkAndModify(): Promise<unknown>;
     private isInsertQryValid_;
     private checkInsertQuery_;
     private checkUpdateQuery_;
     private checkForNullInWhere_;
     private checkFetchQuery_;
     private isTableExist_;
-    private readonly activeDb_;
+    private get activeDb_();
     private getTable_;
     private addGreatAndLessToNotOp_;
 }
