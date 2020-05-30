@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.9.2 - 19/05/2020
+ * @license :jsstore - V3.9.3 - 30/05/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -1386,6 +1386,12 @@ function (module, __webpack_exports__, __webpack_require__) {
     };
 
     Base.prototype.makeQryInCaseSensitive = function (whereQry) {
+      var printWarnForPerformance = function (len) {
+        if (len > 10000) {
+          console.warn("Ignorecase is very slow for this query, will require looping of " + len + " times. Try using regex instead.");
+        }
+      };
+
       var columnValue, keyValue;
 
       for (var column in whereQry) {
@@ -1403,6 +1409,7 @@ function (module, __webpack_exports__, __webpack_require__) {
             whereQry[column][enums["g"
             /* QUERY_OPTION */
             ].In] = results;
+            printWarnForPerformance(results.length);
             break;
 
           case enums["c"
@@ -1454,6 +1461,7 @@ function (module, __webpack_exports__, __webpack_require__) {
             whereQry[column][enums["g"
             /* QUERY_OPTION */
             ].In] = results;
+            printWarnForPerformance(results.length);
             break;
         }
       }
