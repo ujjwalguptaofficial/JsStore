@@ -128,7 +128,11 @@ export abstract class Base extends BaseHelper {
     }
 
     protected makeQryInCaseSensitive(whereQry) {
-
+        const printWarnForPerformance = (len: number) => {
+            if (len > 10000) {
+                console.warn(`Ignorecase is very slow for this query, will require looping of ${len} times. Try using regex instead.`);
+            }
+        }
         let columnValue,
             keyValue;
         for (const column in whereQry) {
@@ -139,6 +143,7 @@ export abstract class Base extends BaseHelper {
                     results = results.concat(this.getAllCombinationOfWord(columnValue));
                     whereQry[column] = {};
                     whereQry[column][QUERY_OPTION.In] = results;
+                    printWarnForPerformance(results.length);
                     break;
                 case DATA_TYPE.Object:
                     for (const key in columnValue) {
@@ -167,6 +172,7 @@ export abstract class Base extends BaseHelper {
                         }
                     }
                     whereQry[column][QUERY_OPTION.In] = results;
+                    printWarnForPerformance(results.length);
                     break;
             }
         }
