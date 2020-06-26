@@ -56,22 +56,22 @@ describe('Test count Api', function () {
             })
     });
 
-    it('count with ignore case', function (done) {
-        con.count({
-            from: 'Customers',
-            ignoreCase: true,
-            where: {
-                country: 'meXico'
-            }
-        }).
-            then(function (results) {
-                expect(results).to.be.an('number').to.equal(5);
-                done();
-            }).
-            catch(function (err) {
-                done(err);
-            })
-    });
+    // it('count with ignore case', function (done) {
+    //     con.count({
+    //         from: 'Customers',
+    //         ignoreCase: true,
+    //         where: {
+    //             country: 'meXico'
+    //         }
+    //     }).
+    //         then(function (results) {
+    //             expect(results).to.be.an('number').to.equal(5);
+    //             done();
+    //         }).
+    //         catch(function (err) {
+    //             done(err);
+    //         })
+    // });
 
     it('count with or', function (done) {
         con.count({

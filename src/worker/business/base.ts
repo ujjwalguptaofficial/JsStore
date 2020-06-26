@@ -77,9 +77,6 @@ export abstract class Base extends BaseHelper {
 
     protected goToWhereLogic() {
         const columnName = getObjectFirstKey(this.query.where);
-        if (this.query.ignoreCase === true) {
-            this.query.where = this.makeQryInCaseSensitive(this.query.where);
-        }
         if (this.objectStore.indexNames.contains(columnName)) {
             const value = this.query.where[columnName];
             if (typeof value === 'object') {
@@ -126,58 +123,4 @@ export abstract class Base extends BaseHelper {
             this.onErrorOccured(error, true);
         }
     }
-
-    protected makeQryInCaseSensitive(whereQry) {
-        const printWarnForPerformance = (len: number) => {
-            if (len > 10000) {
-                console.warn(`Ignorecase is very slow for this query, will require looping of ${len} times. Try using regex instead.`);
-            }
-        }
-        let columnValue,
-            keyValue;
-        for (const column in whereQry) {
-            columnValue = whereQry[column];
-            let results = [];
-            switch (getDataType(columnValue)) {
-                case DATA_TYPE.String:
-                    results = results.concat(this.getAllCombinationOfWord(columnValue));
-                    whereQry[column] = {};
-                    whereQry[column][QUERY_OPTION.In] = results;
-                    printWarnForPerformance(results.length);
-                    break;
-                case DATA_TYPE.Object:
-                    for (const key in columnValue) {
-                        keyValue = columnValue[key];
-                        const keyValueType = getDataType(keyValue);
-                        switch (keyValueType) {
-                            case DATA_TYPE.String:
-                                switch (key) {
-                                    case QUERY_OPTION.Like:
-                                    case QUERY_OPTION.Regex:
-                                        break;
-                                    default:
-                                        results = results.concat(this.getAllCombinationOfWord(keyValue));
-                                }
-                                break;
-                            case DATA_TYPE.Array:
-                                switch (key) {
-                                    case QUERY_OPTION.In:
-                                        results = getDataType(keyValue[0]) === DATA_TYPE.String ?
-                                            results.concat(this.getAllCombinationOfWord(keyValue, true)) :
-                                            results.concat(keyValue);
-                                        break;
-
-                                }
-
-                        }
-                    }
-                    whereQry[column][QUERY_OPTION.In] = results;
-                    printWarnForPerformance(results.length);
-                    break;
-            }
-        }
-        return whereQry;
-    }
-
-
 }

@@ -105,60 +105,60 @@ describe('Test Select Api', function () {
             })
     });
 
-    it('select with ignore case', function (done) {
-        con.select({
-            from: 'Customers',
-            ignoreCase: true,
-            where: {
-                country: 'meXico'
-            }
-        }).
-            then(function (results) {
-                expect(results).to.be.an('array').length(5);
-                done();
-            }).
-            catch(function (err) {
-                done(err);
-            })
-    });
+    // it('select with ignore case', function (done) {
+    //     con.select({
+    //         from: 'Customers',
+    //         ignoreCase: true,
+    //         where: {
+    //             country: 'meXico'
+    //         }
+    //     }).
+    //         then(function (results) {
+    //             expect(results).to.be.an('array').length(5);
+    //             done();
+    //         }).
+    //         catch(function (err) {
+    //             done(err);
+    //         })
+    // });
 
-    it('select with ignore case with a number type', function (done) {
-        con.select({
-            from: 'Customers',
-            ignoreCase: true,
-            where: {
-                country: 'meXico',
-                customerId: 3
-            }
-        }).
-            then(function (results) {
-                expect(results).to.be.an('array').length(1);
-                done();
-            }).
-            catch(function (err) {
-                done(err);
-            })
-    });
+    // it('select with ignore case with a number type', function (done) {
+    //     con.select({
+    //         from: 'Customers',
+    //         ignoreCase: true,
+    //         where: {
+    //             country: 'meXico',
+    //             customerId: 3
+    //         }
+    //     }).
+    //         then(function (results) {
+    //             expect(results).to.be.an('array').length(1);
+    //             done();
+    //         }).
+    //         catch(function (err) {
+    //             done(err);
+    //         })
+    // });
 
-    it('select with ignore case with a number type and object value', function (done) {
-        con.select({
-            from: 'Customers',
-            ignoreCase: true,
-            where: {
-                country: 'meXico',
-                customerId: {
-                    '!=': 3
-                }
-            }
-        }).
-            then(function (results) {
-                expect(results).to.be.an('array').length(4);
-                done();
-            }).
-            catch(function (err) {
-                done(err);
-            })
-    });
+    // it('select with ignore case with a number type and object value', function (done) {
+    //     con.select({
+    //         from: 'Customers',
+    //         ignoreCase: true,
+    //         where: {
+    //             country: 'meXico',
+    //             customerId: {
+    //                 '!=': 3
+    //             }
+    //         }
+    //     }).
+    //         then(function (results) {
+    //             expect(results).to.be.an('array').length(4);
+    //             done();
+    //         }).
+    //         catch(function (err) {
+    //             done(err);
+    //         })
+    // });
 
     it('select with distinct', function (done) {
         con.select({

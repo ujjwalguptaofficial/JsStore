@@ -60,34 +60,4 @@ export class BaseHelper {
             objectStore = transaction.objectStore(tableName);
         return objectStore.keyPath as string;
     }
-
-    protected getAllCombinationOfWord(word: string, isArray?: boolean) {
-        if (isArray) {
-            let results = [];
-            for (let i = 0, length = word.length; i < length; i++) {
-                results = results.concat(this.getCombination_(word[i]));
-            }
-            return results;
-        }
-        else {
-            return this.getCombination_(word);
-        }
-    }
-
-    private getCombination_(word: string) {
-        const results = [];
-        const doAndPushCombination = (subWord: string, chars, index: number) => {
-            if (index === subWord.length) {
-                results.push(chars.join(""));
-            } else {
-                const ch = subWord.charAt(index);
-                chars[index] = ch.toLowerCase();
-                doAndPushCombination(subWord, chars, index + 1);
-                chars[index] = ch.toUpperCase();
-                doAndPushCombination(subWord, chars, index + 1);
-            }
-        };
-        doAndPushCombination(word, [], 0);
-        return results;
-    }
 }

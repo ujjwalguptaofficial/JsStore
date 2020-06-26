@@ -40,7 +40,6 @@ export type JoinQuery = {
     order?: OrderQuery;
     as?: { [originalColumnName: string]: string },
     case?: { [columnName: string]: [CaseOption] },
-    ignoreCase?: boolean;
 };
 
 export type SelectQuery = {
@@ -52,7 +51,6 @@ export type SelectQuery = {
     order?: OrderQuery;
     groupBy?: string | string[] | { [columnName: string]: [CaseOption] };
     aggregate?: AggregateOption;
-    ignoreCase?: boolean;
     distinct?: boolean;
     case?: { [columnName: string]: [CaseOption] }
 };
@@ -93,13 +91,11 @@ export type DbInfo = {
 export type CountQuery = {
     from: string;
     join?: JoinQuery;
-    ignoreCase?: boolean;
     where?: { [columnName: string]: any };
 };
 
 export type RemoveQuery = {
     from: string;
-    ignoreCase?: boolean;
     where?: { [columnName: string]: any };
 };
 

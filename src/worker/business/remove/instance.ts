@@ -56,7 +56,6 @@ export class Instance extends Where {
             });
             results = null;
             const whereQry = { [pkey]: { [QUERY_OPTION.In]: keyList } };
-            this.query.ignoreCase = null;
             this.query[QUERY_OPTION.Where] = whereQry;
             this.processWhere_();
         }, this.onError);
