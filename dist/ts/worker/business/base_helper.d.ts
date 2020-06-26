@@ -11,6 +11,4 @@ export declare class BaseHelper {
     protected getKeyRange(value: any, op?: any): IDBKeyRange;
     protected getPrimaryKey(tableName: any): string;
     protected getKeyPath(tableName: any): string;
-    protected getAllCombinationOfWord(word: string, isArray?: boolean): any[];
-    private getCombination_;
 }

@@ -19,5 +19,4 @@ export declare abstract class Base extends BaseHelper {
     protected getColumnInfo(columnName: string, tableName: string): Column;
     private getRegexFromLikeExpression_;
     protected goToWhereLogic(): void;
-    protected makeQryInCaseSensitive(whereQry: any): any;
 }

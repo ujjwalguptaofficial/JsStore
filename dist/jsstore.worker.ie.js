@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.9.3 - 30/05/2020
+ * @license :jsstore - V3.10.0 - 26/06/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -900,39 +900,6 @@ function (module, __webpack_exports__, __webpack_require__) {
       return objectStore.keyPath;
     };
 
-    BaseHelper.prototype.getAllCombinationOfWord = function (word, isArray) {
-      if (isArray) {
-        var results = [];
-
-        for (var i = 0, length_1 = word.length; i < length_1; i++) {
-          results = results.concat(this.getCombination_(word[i]));
-        }
-
-        return results;
-      } else {
-        return this.getCombination_(word);
-      }
-    };
-
-    BaseHelper.prototype.getCombination_ = function (word) {
-      var results = [];
-
-      var doAndPushCombination = function (subWord, chars, index) {
-        if (index === subWord.length) {
-          results.push(chars.join(""));
-        } else {
-          var ch = subWord.charAt(index);
-          chars[index] = ch.toLowerCase();
-          doAndPushCombination(subWord, chars, index + 1);
-          chars[index] = ch.toUpperCase();
-          doAndPushCombination(subWord, chars, index + 1);
-        }
-      };
-
-      doAndPushCombination(word, [], 0);
-      return results;
-    };
-
     return BaseHelper;
   }(); // CONCATENATED MODULE: ./src/worker/business/where_checker.ts
 
@@ -1167,10 +1134,7 @@ function (module, __webpack_exports__, __webpack_require__) {
   var log_helper = __webpack_require__(1); // EXTERNAL MODULE: ./src/worker/utils/get_object_first_key.ts
 
 
-  var get_object_first_key = __webpack_require__(35); // EXTERNAL MODULE: ./src/worker/utils/get_data_type.ts
-
-
-  var get_data_type = __webpack_require__(33); // CONCATENATED MODULE: ./src/worker/business/base.ts
+  var get_object_first_key = __webpack_require__(35); // CONCATENATED MODULE: ./src/worker/business/base.ts
 
 
   var __extends = undefined && undefined.__extends || function () {
@@ -1293,10 +1257,6 @@ function (module, __webpack_exports__, __webpack_require__) {
       /* getObjectFirstKey */
       ])(this.query.where);
 
-      if (this.query.ignoreCase === true) {
-        this.query.where = this.makeQryInCaseSensitive(this.query.where);
-      }
-
       if (this.objectStore.indexNames.contains(columnName)) {
         var value = this.query.where[columnName];
 
@@ -1383,90 +1343,6 @@ function (module, __webpack_exports__, __webpack_require__) {
         });
         this.onErrorOccured(error, true);
       }
-    };
-
-    Base.prototype.makeQryInCaseSensitive = function (whereQry) {
-      var printWarnForPerformance = function (len) {
-        if (len > 10000) {
-          console.warn("Ignorecase is very slow for this query, will require looping of " + len + " times. Try using regex instead.");
-        }
-      };
-
-      var columnValue, keyValue;
-
-      for (var column in whereQry) {
-        columnValue = whereQry[column];
-        var results = [];
-
-        switch (Object(get_data_type["a"
-        /* getDataType */
-        ])(columnValue)) {
-          case enums["c"
-          /* DATA_TYPE */
-          ].String:
-            results = results.concat(this.getAllCombinationOfWord(columnValue));
-            whereQry[column] = {};
-            whereQry[column][enums["g"
-            /* QUERY_OPTION */
-            ].In] = results;
-            printWarnForPerformance(results.length);
-            break;
-
-          case enums["c"
-          /* DATA_TYPE */
-          ].Object:
-            for (var key in columnValue) {
-              keyValue = columnValue[key];
-              var keyValueType = Object(get_data_type["a"
-              /* getDataType */
-              ])(keyValue);
-
-              switch (keyValueType) {
-                case enums["c"
-                /* DATA_TYPE */
-                ].String:
-                  switch (key) {
-                    case enums["g"
-                    /* QUERY_OPTION */
-                    ].Like:
-                    case enums["g"
-                    /* QUERY_OPTION */
-                    ].Regex:
-                      break;
-
-                    default:
-                      results = results.concat(this.getAllCombinationOfWord(keyValue));
-                  }
-
-                  break;
-
-                case enums["c"
-                /* DATA_TYPE */
-                ].Array:
-                  switch (key) {
-                    case enums["g"
-                    /* QUERY_OPTION */
-                    ].In:
-                      results = Object(get_data_type["a"
-                      /* getDataType */
-                      ])(keyValue[0]) === enums["c"
-                      /* DATA_TYPE */
-                      ].String ? results.concat(this.getAllCombinationOfWord(keyValue, true)) : results.concat(keyValue);
-                      break;
-                  }
-
-              }
-            }
-
-            whereQry[column][enums["g"
-            /* QUERY_OPTION */
-            ].In] = results;
-            printWarnForPerformance(results.length);
-            break;
-        }
-      }
-
-      return whereQry;
     };
 
     return Base;
@@ -7462,7 +7338,6 @@ function (module, __webpack_exports__, __webpack_require__) {
         var whereQry = (_a = {}, _a[pkey] = (_b = {}, _b[enums["g"
         /* QUERY_OPTION */
         ].In] = keyList, _b), _a);
-        _this.query.ignoreCase = null;
         _this.query[enums["g"
         /* QUERY_OPTION */
         ].Where] = whereQry;
@@ -8173,8 +8048,7 @@ function (module, __webpack_exports__, __webpack_require__) {
       new instance_Instance({
         from: tableName,
         where: query.where,
-        case: query.case,
-        ignoreCase: query.ignoreCase
+        case: query.case
       }, function (results) {
         _this.results = results.map(function (item) {
           var _a;
@@ -8320,8 +8194,7 @@ function (module, __webpack_exports__, __webpack_require__) {
           new instance_Instance({
             from: query.with,
             where: query.where,
-            case: query.case,
-            ignoreCase: query.ignoreCase
+            case: query.case
           }, function (results) {
             _this.jointables(query.type, jointblInfo_1, results);
 

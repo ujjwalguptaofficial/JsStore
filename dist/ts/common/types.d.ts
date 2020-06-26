@@ -42,7 +42,6 @@ export declare type JoinQuery = {
     case?: {
         [columnName: string]: [CaseOption];
     };
-    ignoreCase?: boolean;
 };
 export declare type SelectQuery = {
     from: string;
@@ -57,7 +56,6 @@ export declare type SelectQuery = {
         [columnName: string]: [CaseOption];
     };
     aggregate?: AggregateOption;
-    ignoreCase?: boolean;
     distinct?: boolean;
     case?: {
         [columnName: string]: [CaseOption];
@@ -95,14 +93,12 @@ export declare type DbInfo = {
 export declare type CountQuery = {
     from: string;
     join?: JoinQuery;
-    ignoreCase?: boolean;
     where?: {
         [columnName: string]: any;
     };
 };
 export declare type RemoveQuery = {
     from: string;
-    ignoreCase?: boolean;
     where?: {
         [columnName: string]: any;
     };
