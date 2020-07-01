@@ -245,4 +245,13 @@ describe("dashboard test", function () {
             done(err);
         });
     });
+
+
+    it('terminate connection', function (done) {
+        connection.terminate().then(function () {
+            done();
+        }).catch(function (error) {
+            done(error);
+        });
+    });
 });

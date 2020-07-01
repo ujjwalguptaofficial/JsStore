@@ -21,6 +21,7 @@ exports.list_of_files = [
     'test/cases/column_option/*.js',
     'test/cases/db_test.js',
     'test/cases/dashboard.js',
+    'test/cases/db_update_datatype.js',
     {
         pattern: 'test/static/*.json',
         included: false,
