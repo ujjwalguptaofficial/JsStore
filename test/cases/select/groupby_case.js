@@ -87,4 +87,40 @@ describe('group by & case', function () {
         })
     });
 
+    it('groupby limit', function (done) {
+        con.select({
+            from: "Customers",
+            groupBy: "country",
+
+            limit: 10
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(10);
+            done();
+        }).catch(done)
+    });
+
+    it('groupby skip', function (done) {
+        con.select({
+            from: "Customers",
+            groupBy: "country",
+            skip: 10
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(12);
+            done();
+        }).catch(done)
+    });
+
+    it('groupby skip & limit', function (done) {
+        con.select({
+            from: "Customers",
+            groupBy: "country",
+            skip: 10,
+            limit: 8
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(8);
+            expect(results[0].customerId).to.equal(59);
+            done();
+        }).catch(done)
+    });
+
 });

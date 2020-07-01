@@ -22,14 +22,23 @@ export class Instance extends Join {
             this.limitRecord = query.limit;
         }
         if (query.order) {
-            if (isArray(query.order) || query.order.case != null || isObject(query.order.by)) {
+            if (isArray(query.order) || query.order.case || isObject(query.order.by)) {
                 this.query.order.idbSorting = false;
             }
 
-            if (query.limit != null) {
+            if (query.limit) {
                 this.shouldEvaluateLimitAtEnd = true;
             }
-            if (query.skip != null) {
+            if (query.skip) {
+                this.shouldEvaluateSkipAtEnd = true;
+            }
+        }
+
+        if (query.groupBy) {
+            if (query.limit) {
+                this.shouldEvaluateLimitAtEnd = true;
+            }
+            if (query.skip) {
                 this.shouldEvaluateSkipAtEnd = true;
             }
         }
@@ -175,13 +184,13 @@ export class Instance extends Join {
         if (this.error == null) {
             this.processOrderBy();
             if (!this.error) {
+                this.processGroupDistinctAggr();
                 if (this.shouldEvaluateSkipAtEnd) {
                     this.results.splice(0, this.query.skip);
                 }
-                if (this.shouldEvaluateLimitAtEnd === true) {
+                if (this.shouldEvaluateLimitAtEnd) {
                     this.results = this.results.slice(0, this.query.limit);
                 }
-                this.processGroupDistinctAggr();
                 this.onSuccess(this.results);
             }
             else {
