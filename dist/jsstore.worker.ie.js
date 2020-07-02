@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.10.0 - 26/06/2020
+ * @license :jsstore - V3.10.1 - 01/07/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -8434,15 +8434,15 @@ function (module, __webpack_exports__, __webpack_require__) {
           _this.processOrderBy();
 
           if (!_this.error) {
+            _this.processGroupDistinctAggr();
+
             if (_this.shouldEvaluateSkipAtEnd) {
               _this.results.splice(0, _this.query.skip);
             }
 
-            if (_this.shouldEvaluateLimitAtEnd === true) {
+            if (_this.shouldEvaluateLimitAtEnd) {
               _this.results = _this.results.slice(0, _this.query.limit);
             }
-
-            _this.processGroupDistinctAggr();
 
             _this.onSuccess(_this.results);
           } else {
@@ -8474,15 +8474,25 @@ function (module, __webpack_exports__, __webpack_require__) {
       if (query.order) {
         if (Object(is_array["a"
         /* isArray */
-        ])(query.order) || query.order.case != null || isObject(query.order.by)) {
+        ])(query.order) || query.order.case || isObject(query.order.by)) {
           _this.query.order.idbSorting = false;
         }
 
-        if (query.limit != null) {
+        if (query.limit) {
           _this.shouldEvaluateLimitAtEnd = true;
         }
 
-        if (query.skip != null) {
+        if (query.skip) {
+          _this.shouldEvaluateSkipAtEnd = true;
+        }
+      }
+
+      if (query.groupBy) {
+        if (query.limit) {
+          _this.shouldEvaluateLimitAtEnd = true;
+        }
+
+        if (query.skip) {
           _this.shouldEvaluateSkipAtEnd = true;
         }
       }
