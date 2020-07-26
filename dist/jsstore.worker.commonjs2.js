@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.10.1 - 01/07/2020
+ * @license :jsstore - V3.10.2 - 26/07/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -3960,10 +3960,10 @@ var orderby_helper_Helper = /** @class */ (function (_super) {
         return a.localeCompare(b);
     };
     Helper.prototype.compareDefaultInDesc_ = function (a, b) {
-        return b.toString().localeCompare(a);
+        return new String(b).localeCompare(a);
     };
     Helper.prototype.compareDefaultinAsc_ = function (a, b) {
-        return a.toString().localeCompare(b);
+        return new String(a).localeCompare(b);
     };
     Helper.prototype.compareNumberInDesc_ = function (a, b) {
         return b - a;
