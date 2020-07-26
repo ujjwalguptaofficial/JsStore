@@ -382,4 +382,20 @@ describe('Select with order', function () {
         }).catch(done);
     });
 
+    it('order by with a column which doesnt have any type', function (done) {
+        con.select({
+            from: 'Suppliers',
+            order: {
+                by: "supplierName"
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(32);
+            done();
+        }).catch(function (err) {
+            // var error = { "message": "Column 'undefined' in order query does not exist", "type": "column_not_exist" };
+            // expect(err).to.be.an('object').eql(error);
+            done(err);
+        })
+    })
+
 });

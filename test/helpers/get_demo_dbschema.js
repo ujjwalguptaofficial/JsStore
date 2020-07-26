@@ -96,7 +96,7 @@ var getDemoDbSchema = function () {
         name: 'Suppliers',
         columns: {
             supplierId: { primaryKey: true, autoIncrement: true },
-            supplierName: { notNull: true, dataType: 'string' },
+            supplierName: { notNull: true },
             contactName: { notNull: true, dataType: 'string' },
             address: { notNull: true, dataType: 'string' },
             city: { notNull: true, dataType: 'string' },

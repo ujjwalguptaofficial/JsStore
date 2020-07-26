@@ -55,12 +55,12 @@ export class Helper extends GroupByHelper {
         return a.localeCompare(b);
     }
 
-    private compareDefaultInDesc_(a: string, b: string) {
-        return b.toString().localeCompare(a);
+    private compareDefaultInDesc_(a: string, b) {
+        return new String(b).localeCompare(a);
     }
 
-    private compareDefaultinAsc_(a: string, b: string) {
-        return a.toString().localeCompare(b);
+    private compareDefaultinAsc_(a, b: string) {
+        return new String(a).localeCompare(b);
     }
 
     private compareNumberInDesc_(a: number, b: number) {
