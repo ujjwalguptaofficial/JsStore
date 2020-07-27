@@ -41,12 +41,12 @@ export class Instance extends Base {
     }
 
     private insertData_(values: any[]) {
-        // let valueIndex = 0;
 
         let objectStore: IDBObjectStore;
-        const processName = this.query.upsert === true ? "put" : "add";
         let onInsertData;
-        if (this.query.return === true) {
+        let addMethod;
+
+        if (this.query.return) {
             onInsertData = (value) => {
                 this.valuesAffected_.push(value);
             };
@@ -60,10 +60,20 @@ export class Instance extends Base {
 
         this.createTransaction([this.tableName], this.onTransactionCompleted_);
         objectStore = this.transaction.objectStore(this.tableName);
+        if (this.query.upsert) {
+            addMethod = (value) => {
+                return objectStore.put(value);
+            };
+        }
+        else {
+            addMethod = (value) => {
+                return objectStore.add(value);
+            };
+        }
         promiseAll(
             values.map(function (value) {
                 return promise(function (res, rej) {
-                    const addResult = objectStore[processName](value);
+                    const addResult = addMethod(value);
                     addResult.onerror = rej;
                     addResult.onsuccess = function () {
                         onInsertData(value);
