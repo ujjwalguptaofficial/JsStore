@@ -44,12 +44,15 @@ describe('Test insert', function () {
     });
 
     it('insert customer using upsert - already inserted data', function (done) {
-        con.select({
-            from: 'Customers',
-            where: {
-                customerId: 91
-            }
-        }).then(function (customers) {
+        const selectCustomerWithId91 = () => {
+            return con.select({
+                from: 'Customers',
+                where: {
+                    customerId: 91
+                }
+            })
+        }
+        selectCustomerWithId91().then(function (customers) {
             expect(customers[0]).to.haveOwnProperty('customerName').equal('Wolski');
             // console.log("before upsert results", customers);
             con.insert({
@@ -67,7 +70,11 @@ describe('Test insert', function () {
                 // console.log("upsert results", results);
                 expect(results).to.be.an('array').length(1);
                 expect(results[0]).to.haveOwnProperty('customerName').equal('Jon Snow');
-                done();
+                selectCustomerWithId91().then(function (newCustomers) {
+                    expect(newCustomers).to.be.an('array').length(1);
+                    expect(newCustomers[0]).to.haveOwnProperty('customerName').equal('Jon Snow');
+                    done();
+                }).catch(done);
             }).catch(function (err) {
                 done(err);
             })
