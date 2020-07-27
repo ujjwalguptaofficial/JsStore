@@ -1,4 +1,27 @@
 describe('Test select complex case', function () {
+
+    it('select with where array without limit and skip', function (done) {
+        con.select({
+            from: "Customers",
+            where: [{
+                country: "Mexico"
+            }],
+            skip: null,
+            limit: null,
+            ignoreCase: false,
+            distinct: false,
+            order: null,
+            groupBy: null,
+            aggregate: null,
+            join: null
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(5);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
     it('select with multiple or', function (done) {
         con.select({
             from: 'Customers',

@@ -14,8 +14,7 @@ export class Instance extends Join {
         this.setPushResult();
         if (isArray(this.query.where)) {
             this.isArrayQry = true;
-            this.shouldEvaluateLimitAtEnd = true;
-            this.shouldEvaluateSkipAtEnd = true;
+            this.setLimitAndSkipEvaluationAtEnd_();
         }
         else {
             this.skipRecord = query.skip;
@@ -25,24 +24,21 @@ export class Instance extends Join {
             if (isArray(query.order) || query.order.case || isObject(query.order.by)) {
                 this.query.order.idbSorting = false;
             }
-
-            if (query.limit) {
-                this.shouldEvaluateLimitAtEnd = true;
-            }
-            if (query.skip) {
-                this.shouldEvaluateSkipAtEnd = true;
-            }
+            this.setLimitAndSkipEvaluationAtEnd_();
+        }
+        else if (query.groupBy) {
+            this.setLimitAndSkipEvaluationAtEnd_();
         }
 
-        if (query.groupBy) {
-            if (query.limit) {
-                this.shouldEvaluateLimitAtEnd = true;
-            }
-            if (query.skip) {
-                this.shouldEvaluateSkipAtEnd = true;
-            }
-        }
+    }
 
+    private setLimitAndSkipEvaluationAtEnd_() {
+        if (this.query.limit) {
+            this.shouldEvaluateLimitAtEnd = true;
+        }
+        if (this.query.skip) {
+            this.shouldEvaluateSkipAtEnd = true;
+        }
     }
 
     execute() {
