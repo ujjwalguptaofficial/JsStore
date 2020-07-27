@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.10.2 - 26/07/2020
+ * @license :jsstore - V3.10.3 - 27/07/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -6039,8 +6039,7 @@ var instance_Instance = /** @class */ (function (_super) {
         _this.setPushResult();
         if (Object(is_array["a" /* isArray */])(_this.query.where)) {
             _this.isArrayQry = true;
-            _this.shouldEvaluateLimitAtEnd = true;
-            _this.shouldEvaluateSkipAtEnd = true;
+            _this.setLimitAndSkipEvaluationAtEnd_();
         }
         else {
             _this.skipRecord = query.skip;
@@ -6050,23 +6049,21 @@ var instance_Instance = /** @class */ (function (_super) {
             if (Object(is_array["a" /* isArray */])(query.order) || query.order.case || isObject(query.order.by)) {
                 _this.query.order.idbSorting = false;
             }
-            if (query.limit) {
-                _this.shouldEvaluateLimitAtEnd = true;
-            }
-            if (query.skip) {
-                _this.shouldEvaluateSkipAtEnd = true;
-            }
+            _this.setLimitAndSkipEvaluationAtEnd_();
         }
-        if (query.groupBy) {
-            if (query.limit) {
-                _this.shouldEvaluateLimitAtEnd = true;
-            }
-            if (query.skip) {
-                _this.shouldEvaluateSkipAtEnd = true;
-            }
+        else if (query.groupBy) {
+            _this.setLimitAndSkipEvaluationAtEnd_();
         }
         return _this;
     }
+    Instance.prototype.setLimitAndSkipEvaluationAtEnd_ = function () {
+        if (this.query.limit) {
+            this.shouldEvaluateLimitAtEnd = true;
+        }
+        if (this.query.skip) {
+            this.shouldEvaluateSkipAtEnd = true;
+        }
+    };
     Instance.prototype.execute = function () {
         var queryHelper = new query_helper["a" /* QueryHelper */](enums["a" /* API */].Select, this.query);
         queryHelper.checkAndModify();

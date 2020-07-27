@@ -2,6 +2,7 @@ import { SelectQuery, IError } from "../../../common/index";
 import { Join } from "./join";
 export declare class Instance extends Join {
     constructor(query: SelectQuery, onSuccess: (results: object[]) => void, onError: (err: IError) => void);
+    private setLimitAndSkipEvaluationAtEnd_;
     execute(): void;
     private processWhereArrayQry;
     protected onQueryFinished(): void;
