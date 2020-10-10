@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.10.3 - 27/07/2020
+ * @license :jsstore - V3.10.4 - 10/10/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -951,7 +951,7 @@ var value_checker_ValueChecker = /** @class */ (function () {
             }
         }
         // check Default Schema
-        else if (column.default && isNull(columnValue)) {
+        else if (column.default !== undefined && isNull(columnValue)) {
             this.value[column.name] = column.default;
         }
         this.checkNotNullAndDataType_(column);
@@ -4457,12 +4457,11 @@ var Instance = /** @class */ (function (_super) {
         }
     };
     Instance.prototype.insertData_ = function (values) {
-        // let valueIndex = 0;
         var _this = this;
         var objectStore;
-        var processName = this.query.upsert === true ? "put" : "add";
         var onInsertData;
-        if (this.query.return === true) {
+        var addMethod;
+        if (this.query.return) {
             onInsertData = function (value) {
                 _this.valuesAffected_.push(value);
             };
@@ -4474,9 +4473,19 @@ var Instance = /** @class */ (function (_super) {
         }
         this.createTransaction([this.tableName], this.onTransactionCompleted_);
         objectStore = this.transaction.objectStore(this.tableName);
+        if (this.query.upsert) {
+            addMethod = function (value) {
+                return objectStore.put(value);
+            };
+        }
+        else {
+            addMethod = function (value) {
+                return objectStore.add(value);
+            };
+        }
         Object(_helpers_index__WEBPACK_IMPORTED_MODULE_2__[/* promiseAll */ "a"])(values.map(function (value) {
             return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_3__[/* promise */ "a"])(function (res, rej) {
-                var addResult = objectStore[processName](value);
+                var addResult = addMethod(value);
                 addResult.onerror = rej;
                 addResult.onsuccess = function () {
                     onInsertData(value);

@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.10.3 - 27/07/2020
+ * @license :jsstore - V3.10.4 - 10/10/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -1565,7 +1565,7 @@ function (module, __webpack_exports__, __webpack_require__) {
           }
         }
       } // check Default Schema
-      else if (column.default && isNull(columnValue)) {
+      else if (column.default !== undefined && isNull(columnValue)) {
           this.value[column.name] = column.default;
         }
 
@@ -6359,14 +6359,13 @@ function (module, __webpack_exports__, __webpack_require__) {
     };
 
     Instance.prototype.insertData_ = function (values) {
-      // let valueIndex = 0;
       var _this = this;
 
       var objectStore;
-      var processName = this.query.upsert === true ? "put" : "add";
       var onInsertData;
+      var addMethod;
 
-      if (this.query.return === true) {
+      if (this.query.return) {
         onInsertData = function (value) {
           _this.valuesAffected_.push(value);
         };
@@ -6378,13 +6377,24 @@ function (module, __webpack_exports__, __webpack_require__) {
 
       this.createTransaction([this.tableName], this.onTransactionCompleted_);
       objectStore = this.transaction.objectStore(this.tableName);
+
+      if (this.query.upsert) {
+        addMethod = function (value) {
+          return objectStore.put(value);
+        };
+      } else {
+        addMethod = function (value) {
+          return objectStore.add(value);
+        };
+      }
+
       Object(_helpers_index__WEBPACK_IMPORTED_MODULE_2__[
       /* promiseAll */
       "a"])(values.map(function (value) {
         return Object(_helpers_index__WEBPACK_IMPORTED_MODULE_3__[
         /* promise */
         "a"])(function (res, rej) {
-          var addResult = objectStore[processName](value);
+          var addResult = addMethod(value);
           addResult.onerror = rej;
 
           addResult.onsuccess = function () {
