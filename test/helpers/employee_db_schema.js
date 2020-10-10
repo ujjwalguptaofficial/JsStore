@@ -21,6 +21,10 @@ var getEmployeeDbSchema = () => {
                 salary: {
                     dataType: 'number',
                     notNull: true
+                },
+                isManager: {
+                    dataType: 'boolean',
+                    default: false
                 }
             }
         }]

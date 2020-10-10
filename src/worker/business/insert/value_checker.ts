@@ -55,7 +55,7 @@ export class ValueChecker {
             }
         }
         // check Default Schema
-        else if (column.default && isNull(columnValue)) {
+        else if (column.default !== undefined && isNull(columnValue)) {
             this.value[column.name] = column.default;
         }
         this.checkNotNullAndDataType_(column);

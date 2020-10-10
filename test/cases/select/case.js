@@ -528,6 +528,15 @@ describe('Test Select Api with case', function () {
         }).catch(done);
     })
 
+    it('select from employee & check isManager', function (done) {
+        con.select({
+            from: 'employee',
+        }).then(function (results) {
+            expect(results[0].isManager).to.be.an("boolean").equal(false)
+            done();
+        }).catch(done);
+    })
+
     it(`Select EmployeeName,Gender,Salary from Employee
     ORDER BY CASE Gender WHEN 'F' THEN Salary else 'salary' End DESC,
     Case WHEN Gender = 'M' THEN Salary  END`, function (done) {
