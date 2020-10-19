@@ -110,26 +110,39 @@ export class ConnectionHelper {
     }, 1);
   }
 
-  protected pushApi<T>(request: WebWorkerRequest): Promise<T> {
-
-    return new Promise((resolve, reject) => {
-      request.onSuccess = result => {
-        resolve(result as T);
-      };
-      request.onError = error => {
-        reject(error);
-      };
-      if (this.requestQueue_.length === 0) {
-        this.callEvent(EVENT.RequestQueueFilled, []);
-        if (this.isDbIdle_ === true && this.isDbOpened_ === true) {
-          this.openDb_();
+  private executeMiddleware_(input: WebWorkerRequest) {
+    return new Promise((res) => {
+      let index = 0;
+      const length = Config.middlewares.length;
+      const callNextMiddleware = () => {
+        if (index <= length - 1) {
+          Config.middlewares[index++](input, callNextMiddleware);
         }
         else {
-          clearTimeout(this.inactivityTimer_);
-          this.initKeyStore_();
+          res();
         }
-      }
-      this.prcoessExecutionOfQry_(request);
+      };
+      callNextMiddleware();
+    });
+  }
+
+  protected pushApi<T>(request: WebWorkerRequest): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.executeMiddleware_(request).then(() => {
+        request.onSuccess = resolve;
+        request.onError = reject;
+        if (this.requestQueue_.length === 0) {
+          this.callEvent(EVENT.RequestQueueFilled, []);
+          if (this.isDbIdle_ === true && this.isDbOpened_ === true) {
+            this.openDb_();
+          }
+          else {
+            clearTimeout(this.inactivityTimer_);
+            this.initKeyStore_();
+          }
+        }
+        this.prcoessExecutionOfQry_(request);
+      }).catch(reject);
     });
   }
 
