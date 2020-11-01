@@ -1,10 +1,10 @@
 import { ConnectionHelper } from "./connection_helper";
 import {
     SelectQuery, CountQuery, InsertQuery, SetQuery,
-    UpdateQuery, RemoveQuery, DbInfo, TranscationQuery, API, IDataBase, EVENT, IPlugin
+    UpdateQuery, RemoveQuery, DbInfo, TranscationQuery,
+    API, IDataBase, EVENT, IPlugin
 } from "../common/index";
 import { Config } from "./config";
-import { Util } from "./util";
 
 export class Connection extends ConnectionHelper {
 
@@ -302,7 +302,11 @@ export class Connection extends ConnectionHelper {
         });
     }
 
-    use(plugin: IPlugin, params) {
+    addPlugin(plugin: IPlugin, params) {
         plugin.setup(this, params);
+    }
+
+    addMiddleware(middleware) {
+        this.middlewares.push(middleware);
     }
 }
