@@ -15,6 +15,8 @@ export class ConnectionHelper {
 
   protected eventQueue: EventQueue[] = [];
 
+  protected middlewares = [];
+
   // these apis have special permissions. These apis dont wait for database open.
   private whiteListApi_ = [
     API.InitDb,
@@ -113,10 +115,10 @@ export class ConnectionHelper {
   private executeMiddleware_(input: WebWorkerRequest) {
     return new Promise((res) => {
       let index = 0;
-      const length = Config.middlewares.length;
+      const lastIndex = this.middlewares.length - 1;
       const callNextMiddleware = () => {
-        if (index <= length - 1) {
-          Config.middlewares[index++](input, callNextMiddleware);
+        if (index <= lastIndex) {
+          this.middlewares[index++](input, callNextMiddleware);
         }
         else {
           res();

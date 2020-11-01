@@ -1,7 +1,7 @@
 import { ConnectionHelper } from "./connection_helper";
 import {
     SelectQuery, CountQuery, InsertQuery, SetQuery,
-    UpdateQuery, RemoveQuery, DbInfo, TranscationQuery, API, IDataBase, EVENT
+    UpdateQuery, RemoveQuery, DbInfo, TranscationQuery, API, IDataBase, EVENT, IPlugin
 } from "../common/index";
 import { Config } from "./config";
 import { Util } from "./util";
@@ -270,18 +270,6 @@ export class Connection extends ConnectionHelper {
         });
     }
 
-    /**
-     * run sql code
-     *
-     * @param {(string | object)} query
-     * @returns {Promise<any>}
-     * @memberof Instance
-     */
-    runSql(query: string | object): Promise<any> {
-        const result = Util.sqlWeb.parseSql(query);
-        return this[result.api](result.data);
-    }
-
     on(event: EVENT, eventCallBack: Function) {
         this.eventQueue.push({
             event: event,
@@ -312,5 +300,9 @@ export class Connection extends ConnectionHelper {
             name: API.Intersect,
             query
         });
+    }
+
+    use(plugin: IPlugin, params) {
+        plugin.setup(this, params);
     }
 }
