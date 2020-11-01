@@ -33,3 +33,6 @@ export interface IDbStatus {
     conStatus: CONNECTION_STATUS;
     lastError?: ERROR_TYPE;
 }
+export interface IPlugin {
+    setup: (connection: any, params: any) => any | void;
+}

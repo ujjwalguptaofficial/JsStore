@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.10.4 - 10/10/2020
+ * @license :jsstore - V3.11.0 - 01/11/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -104,7 +104,6 @@ __webpack_require__.d(__webpack_exports__, "Instance", function() { return /* re
 __webpack_require__.d(__webpack_exports__, "Connection", function() { return /* reexport */ connection_Connection; });
 __webpack_require__.d(__webpack_exports__, "Config", function() { return /* reexport */ Config; });
 __webpack_require__.d(__webpack_exports__, "enableLog", function() { return /* reexport */ enableLog; });
-__webpack_require__.d(__webpack_exports__, "useSqlWeb", function() { return /* reexport */ useSqlWeb; });
 __webpack_require__.d(__webpack_exports__, "DATA_TYPE", function() { return /* reexport */ DATA_TYPE; });
 
 // CONCATENATED MODULE: ./src/common/enums.ts
@@ -301,6 +300,7 @@ var connection_helper_ConnectionHelper = /** @class */ (function () {
         this.isCodeExecuting_ = false;
         this.inactivityTimer_ = -1000;
         this.eventQueue = [];
+        this.middlewares = [];
         // these apis have special permissions. These apis dont wait for database open.
         this.whiteListApi_ = [
             API.InitDb,
@@ -388,26 +388,40 @@ var connection_helper_ConnectionHelper = /** @class */ (function () {
             }
         }, 1);
     };
+    ConnectionHelper.prototype.executeMiddleware_ = function (input) {
+        var _this = this;
+        return new Promise(function (res) {
+            var index = 0;
+            var lastIndex = _this.middlewares.length - 1;
+            var callNextMiddleware = function () {
+                if (index <= lastIndex) {
+                    _this.middlewares[index++](input, callNextMiddleware);
+                }
+                else {
+                    res();
+                }
+            };
+            callNextMiddleware();
+        });
+    };
     ConnectionHelper.prototype.pushApi = function (request) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            request.onSuccess = function (result) {
-                resolve(result);
-            };
-            request.onError = function (error) {
-                reject(error);
-            };
-            if (_this.requestQueue_.length === 0) {
-                _this.callEvent(EVENT.RequestQueueFilled, []);
-                if (_this.isDbIdle_ === true && _this.isDbOpened_ === true) {
-                    _this.openDb_();
+            _this.executeMiddleware_(request).then(function () {
+                request.onSuccess = resolve;
+                request.onError = reject;
+                if (_this.requestQueue_.length === 0) {
+                    _this.callEvent(EVENT.RequestQueueFilled, []);
+                    if (_this.isDbIdle_ === true && _this.isDbOpened_ === true) {
+                        _this.openDb_();
+                    }
+                    else {
+                        clearTimeout(_this.inactivityTimer_);
+                        _this.initKeyStore_();
+                    }
                 }
-                else {
-                    clearTimeout(_this.inactivityTimer_);
-                    _this.initKeyStore_();
-                }
-            }
-            _this.prcoessExecutionOfQry_(request);
+                _this.prcoessExecutionOfQry_(request);
+            }).catch(reject);
         });
     };
     ConnectionHelper.prototype.prcoessExecutionOfQry_ = function (request, index) {
@@ -476,24 +490,6 @@ var connection_helper_ConnectionHelper = /** @class */ (function () {
 }());
 
 
-// CONCATENATED MODULE: ./src/main/util.ts
-var Util = /** @class */ (function () {
-    function Util() {
-    }
-    Object.defineProperty(Util, "sqlWeb", {
-        get: function () {
-            return Util.sqlWeb_ == null ? self['SqlWeb'] : Util.sqlWeb_;
-        },
-        set: function (value) {
-            Util.sqlWeb_ = value;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    return Util;
-}());
-
-
 // CONCATENATED MODULE: ./src/main/connection.ts
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -508,7 +504,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-
 
 
 
@@ -757,17 +752,6 @@ var connection_Connection = /** @class */ (function (_super) {
             query: query
         });
     };
-    /**
-     * run sql code
-     *
-     * @param {(string | object)} query
-     * @returns {Promise<any>}
-     * @memberof Instance
-     */
-    Connection.prototype.runSql = function (query) {
-        var result = Util.sqlWeb.parseSql(query);
-        return this[result.api](result.data);
-    };
     Connection.prototype.on = function (event, eventCallBack) {
         this.eventQueue.push({
             event: event,
@@ -797,6 +781,12 @@ var connection_Connection = /** @class */ (function (_super) {
             query: query
         });
     };
+    Connection.prototype.addPlugin = function (plugin, params) {
+        plugin.setup(this, params);
+    };
+    Connection.prototype.addMiddleware = function (middleware) {
+        this.middlewares.push(middleware);
+    };
     return Connection;
 }(connection_helper_ConnectionHelper));
 
@@ -822,19 +812,7 @@ var enableLog = function () {
     Config.isLogEnabled = true;
 };
 
-// CONCATENATED MODULE: ./src/main/global.ts
-
-/**
- *
- * supply sqlweb
- * @param {*} value
- */
-var useSqlWeb = function (value) {
-    Util.sqlWeb = value;
-};
-
 // CONCATENATED MODULE: ./src/main/index.ts
-
 
 
 

@@ -8,12 +8,14 @@ export declare class ConnectionHelper {
     private isCodeExecuting_;
     private inactivityTimer_;
     protected eventQueue: EventQueue[];
+    protected middlewares: any[];
     private whiteListApi_;
     constructor(worker?: Worker);
     private initKeyStore_;
     private onMessageFromWorker_;
     private processFinishedQuery_;
     private openDb_;
+    private executeMiddleware_;
     protected pushApi<T>(request: WebWorkerRequest): Promise<T>;
     private prcoessExecutionOfQry_;
     private executeQry_;
