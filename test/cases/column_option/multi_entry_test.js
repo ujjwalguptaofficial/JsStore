@@ -49,11 +49,21 @@ describe('Multi Entry Test', function () {
         })
     });
 
+    it('add middleware', function (done) {
+        con.addMiddleware(function (request, next) {
+            expect(request.name).equal('select');
+            request.query.where.name = "Marc";
+            con.middlewares = [];
+            next();
+        });
+        done();
+    })
+
     it('select items after pushing', function (done) {
         con.select({
             from: 'people',
             where: {
-                name: "Marc",
+                name: "marc",
             }
         }).then(function (results) {
             const tags = results[0].tags;
