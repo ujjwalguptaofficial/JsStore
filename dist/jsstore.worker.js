@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.11.0 - 01/11/2020
+ * @license :jsstore - V3.11.1 - 02/11/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -2967,7 +2967,7 @@ function (module, __webpack_exports__, __webpack_require__) {
   var select_instance = __webpack_require__(30); // EXTERNAL MODULE: ./src/worker/business/count/instance.ts + 5 modules
 
 
-  var count_instance = __webpack_require__(27); // EXTERNAL MODULE: ./src/worker/business/insert/instance.ts
+  var count_instance = __webpack_require__(29); // EXTERNAL MODULE: ./src/worker/business/insert/instance.ts
 
 
   var insert_instance = __webpack_require__(26); // EXTERNAL MODULE: ./src/worker/business/remove/instance.ts + 5 modules
@@ -2976,7 +2976,7 @@ function (module, __webpack_exports__, __webpack_require__) {
   var remove_instance = __webpack_require__(28); // EXTERNAL MODULE: ./src/worker/business/update/instance.ts + 5 modules
 
 
-  var update_instance = __webpack_require__(29); // EXTERNAL MODULE: ./src/worker/business/transaction/instance.ts
+  var update_instance = __webpack_require__(27); // EXTERNAL MODULE: ./src/worker/business/transaction/instance.ts
 
 
   var transaction_instance = __webpack_require__(37); // EXTERNAL MODULE: ./src/worker/log_helper.ts
@@ -6429,997 +6429,6 @@ function (module, __webpack_exports__, __webpack_require__) {
       /* binding */
       instance_Instance
     );
-  }); // EXTERNAL MODULE: ./src/worker/business/where_base.ts
-
-
-  var where_base = __webpack_require__(13); // CONCATENATED MODULE: ./src/worker/business/count/base_count.ts
-
-
-  var __extends = undefined && undefined.__extends || function () {
-    var extendStatics = function (d, b) {
-      extendStatics = Object.setPrototypeOf || {
-        __proto__: []
-      } instanceof Array && function (d, b) {
-        d.__proto__ = b;
-      } || function (d, b) {
-        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-      };
-
-      return extendStatics(d, b);
-    };
-
-    return function (d, b) {
-      extendStatics(d, b);
-
-      function __() {
-        this.constructor = d;
-      }
-
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-  }();
-
-  var BaseCount =
-  /** @class */
-  function (_super) {
-    __extends(BaseCount, _super);
-
-    function BaseCount() {
-      var _this = _super !== null && _super.apply(this, arguments) || this;
-
-      _this.resultCount = 0;
-
-      _this.onTransactionCompleted_ = function () {
-        if (_this.error == null) {
-          _this.onSuccess(_this.resultCount);
-        } else {
-          _this.onError(_this.error);
-        }
-      };
-
-      return _this;
-    }
-
-    BaseCount.prototype.onQueryFinished = function () {
-      if (this.isTransaction === true) {
-        this.onTransactionCompleted_();
-      }
-    };
-
-    return BaseCount;
-  }(where_base["a"
-  /* WhereBase */
-  ]); // CONCATENATED MODULE: ./src/worker/business/count/not_where.ts
-
-
-  var not_where_extends = undefined && undefined.__extends || function () {
-    var extendStatics = function (d, b) {
-      extendStatics = Object.setPrototypeOf || {
-        __proto__: []
-      } instanceof Array && function (d, b) {
-        d.__proto__ = b;
-      } || function (d, b) {
-        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-      };
-
-      return extendStatics(d, b);
-    };
-
-    return function (d, b) {
-      extendStatics(d, b);
-
-      function __() {
-        this.constructor = d;
-      }
-
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-  }();
-
-  var NotWhere =
-  /** @class */
-  function (_super) {
-    not_where_extends(NotWhere, _super);
-
-    function NotWhere() {
-      return _super !== null && _super.apply(this, arguments) || this;
-    }
-
-    NotWhere.prototype.executeWhereUndefinedLogic = function () {
-      var _this = this;
-
-      var countRequest;
-
-      if (this.objectStore.count) {
-        countRequest = this.objectStore.count();
-
-        countRequest.onsuccess = function () {
-          _this.resultCount = countRequest.result;
-
-          _this.onQueryFinished();
-        };
-      } else {
-        var cursor_1;
-        countRequest = this.objectStore.openCursor();
-
-        countRequest.onsuccess = function (e) {
-          cursor_1 = e.target.result;
-
-          if (cursor_1) {
-            ++_this.resultCount;
-            cursor_1.continue();
-          } else {
-            _this.onQueryFinished();
-          }
-        };
-      }
-
-      countRequest.onerror = this.onErrorOccured.bind(this);
-    };
-
-    return NotWhere;
-  }(BaseCount); // EXTERNAL MODULE: ./src/worker/helpers/promise.ts
-
-
-  var promise = __webpack_require__(14); // EXTERNAL MODULE: ./src/worker/helpers/promise_all.ts
-
-
-  var promise_all = __webpack_require__(15); // CONCATENATED MODULE: ./src/worker/business/count/in.ts
-
-
-  var in_extends = undefined && undefined.__extends || function () {
-    var extendStatics = function (d, b) {
-      extendStatics = Object.setPrototypeOf || {
-        __proto__: []
-      } instanceof Array && function (d, b) {
-        d.__proto__ = b;
-      } || function (d, b) {
-        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-      };
-
-      return extendStatics(d, b);
-    };
-
-    return function (d, b) {
-      extendStatics(d, b);
-
-      function __() {
-        this.constructor = d;
-      }
-
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-  }();
-
-  var in_In =
-  /** @class */
-  function (_super) {
-    in_extends(In, _super);
-
-    function In() {
-      return _super !== null && _super.apply(this, arguments) || this;
-    }
-
-    In.prototype.executeInLogic = function (column, values) {
-      var _this = this;
-
-      var cursor, cursorRequest;
-      var columnStore = this.objectStore.index(column);
-
-      var runInLogic = function (value) {
-        return Object(promise["a"
-        /* promise */
-        ])(function (res, rej) {
-          cursorRequest = columnStore.openCursor(_this.getKeyRange(value));
-
-          cursorRequest.onsuccess = function (e) {
-            cursor = e.target.result;
-
-            if (cursor) {
-              if (_this.whereCheckerInstance.check(cursor.value)) {
-                ++_this.resultCount;
-              }
-
-              cursor.continue();
-            } else {
-              res();
-            }
-          };
-
-          cursorRequest.onerror = rej;
-        });
-      };
-
-      if (this.objectStore.count) {
-        runInLogic = function (value) {
-          return Object(promise["a"
-          /* promise */
-          ])(function (res, rej) {
-            cursorRequest = columnStore.count(_this.getKeyRange(value));
-
-            cursorRequest.onsuccess = function (e) {
-              _this.resultCount += e.target.result;
-              res();
-            };
-
-            cursorRequest.onerror = rej;
-          });
-        };
-      }
-
-      Object(promise_all["a"
-      /* promiseAll */
-      ])(values.map(function (val) {
-        return runInLogic(val);
-      })).then(function () {
-        _this.onQueryFinished();
-      }).catch(function (err) {
-        _this.onErrorOccured(err);
-      });
-    };
-
-    return In;
-  }(NotWhere); // CONCATENATED MODULE: ./src/worker/business/count/regex.ts
-
-
-  var regex_extends = undefined && undefined.__extends || function () {
-    var extendStatics = function (d, b) {
-      extendStatics = Object.setPrototypeOf || {
-        __proto__: []
-      } instanceof Array && function (d, b) {
-        d.__proto__ = b;
-      } || function (d, b) {
-        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-      };
-
-      return extendStatics(d, b);
-    };
-
-    return function (d, b) {
-      extendStatics(d, b);
-
-      function __() {
-        this.constructor = d;
-      }
-
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-  }();
-
-  var Regex =
-  /** @class */
-  function (_super) {
-    regex_extends(Regex, _super);
-
-    function Regex() {
-      return _super !== null && _super.apply(this, arguments) || this;
-    }
-
-    Regex.prototype.executeRegexLogic = function (column, exp) {
-      var _this = this;
-
-      var cursor;
-      this.regexExpression = exp;
-      var cursorRequest = this.objectStore.index(column).openCursor();
-
-      cursorRequest.onsuccess = function (e) {
-        cursor = e.target.result;
-
-        if (cursor) {
-          if (_this.regexTest(cursor.key) && _this.whereCheckerInstance.check(cursor.value)) {
-            ++_this.resultCount;
-          }
-
-          cursor.continue();
-        } else {
-          _this.onQueryFinished();
-        }
-      };
-
-      cursorRequest.onerror = this.onErrorOccured.bind(this);
-    };
-
-    return Regex;
-  }(in_In); // CONCATENATED MODULE: ./src/worker/business/count/where.ts
-
-
-  var where_extends = undefined && undefined.__extends || function () {
-    var extendStatics = function (d, b) {
-      extendStatics = Object.setPrototypeOf || {
-        __proto__: []
-      } instanceof Array && function (d, b) {
-        d.__proto__ = b;
-      } || function (d, b) {
-        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-      };
-
-      return extendStatics(d, b);
-    };
-
-    return function (d, b) {
-      extendStatics(d, b);
-
-      function __() {
-        this.constructor = d;
-      }
-
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-  }();
-
-  var Where =
-  /** @class */
-  function (_super) {
-    where_extends(Where, _super);
-
-    function Where() {
-      return _super !== null && _super.apply(this, arguments) || this;
-    }
-
-    Where.prototype.executeWhereLogic = function (column, value, op) {
-      var _this = this;
-
-      value = op ? value[op] : value;
-      var cursorRequest;
-      var cursor;
-      var initCursorAndFilter;
-
-      if (Object.keys(this.query.where).length === 1 && this.objectStore.count) {
-        initCursorAndFilter = function () {
-          cursorRequest = _this.objectStore.index(column).count(_this.getKeyRange(value, op));
-
-          cursorRequest.onsuccess = function () {
-            _this.resultCount = cursorRequest.result;
-
-            _this.onQueryFinished();
-          };
-        };
-      } else {
-        initCursorAndFilter = function () {
-          cursorRequest = _this.objectStore.index(column).openCursor(_this.getKeyRange(value, op));
-
-          cursorRequest.onsuccess = function (e) {
-            cursor = e.target.result;
-
-            if (cursor) {
-              if (_this.whereCheckerInstance.check(cursor.value)) {
-                ++_this.resultCount;
-              }
-
-              cursor.continue();
-            } else {
-              _this.onQueryFinished();
-            }
-          };
-        };
-      }
-
-      initCursorAndFilter();
-      cursorRequest.onerror = this.onErrorOccured.bind(this);
-    };
-
-    return Where;
-  }(Regex); // EXTERNAL MODULE: ./src/common/enums.ts
-
-
-  var enums = __webpack_require__(0); // EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 2 modules
-
-
-  var instance = __webpack_require__(30); // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
-
-
-  var query_helper = __webpack_require__(7); // EXTERNAL MODULE: ./src/worker/utils/is_array.ts
-
-
-  var is_array = __webpack_require__(34); // CONCATENATED MODULE: ./src/worker/business/count/instance.ts
-
-
-  var instance_extends = undefined && undefined.__extends || function () {
-    var extendStatics = function (d, b) {
-      extendStatics = Object.setPrototypeOf || {
-        __proto__: []
-      } instanceof Array && function (d, b) {
-        d.__proto__ = b;
-      } || function (d, b) {
-        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-      };
-
-      return extendStatics(d, b);
-    };
-
-    return function (d, b) {
-      extendStatics(d, b);
-
-      function __() {
-        this.constructor = d;
-      }
-
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-  }();
-
-  var instance_Instance =
-  /** @class */
-  function (_super) {
-    instance_extends(Instance, _super);
-
-    function Instance(query, onSuccess, onError) {
-      var _this = _super.call(this) || this;
-
-      _this.onError = onError;
-      _this.onSuccess = onSuccess;
-      _this.query = query;
-      return _this;
-    }
-
-    Instance.prototype.execute = function () {
-      var _this = this;
-
-      var queryHelper = new query_helper["a"
-      /* QueryHelper */
-      ](enums["a"
-      /* API */
-      ].Count, this.query);
-      queryHelper.checkAndModify();
-
-      if (queryHelper.error == null) {
-        try {
-          var getDataFromSelect = function () {
-            var selectInstance = new instance["a"
-            /* Instance */
-            ](_this.query, function (results) {
-              _this.resultCount = results.length;
-
-              _this.onTransactionCompleted_();
-            }, _this.onError);
-            selectInstance.execute();
-          };
-
-          if (this.query.join == null) {
-            if (this.query.where != null) {
-              if (this.query.where.or || Object(is_array["a"
-              /* isArray */
-              ])(this.query.where)) {
-                getDataFromSelect();
-              } else {
-                this.initTransaction_();
-                this.goToWhereLogic();
-              }
-            } else {
-              this.initTransaction_();
-              this.executeWhereUndefinedLogic();
-            }
-          } else {
-            getDataFromSelect();
-          }
-        } catch (ex) {
-          this.onExceptionOccured(ex);
-        }
-      } else {
-        this.onError(queryHelper.error);
-      }
-    };
-
-    Instance.prototype.initTransaction_ = function () {
-      this.createTransaction([this.query.from], this.onTransactionCompleted_, enums["e"
-      /* IDB_MODE */
-      ].ReadOnly);
-      this.objectStore = this.transaction.objectStore(this.query.from);
-    };
-
-    return Instance;
-  }(Where);
-  /***/
-
-},
-/* 28 */
-
-/***/
-function (module, __webpack_exports__, __webpack_require__) {
-  "use strict"; // EXPORTS
-
-  __webpack_require__.d(__webpack_exports__, "a", function () {
-    return (
-      /* binding */
-      instance_Instance
-    );
-  }); // EXTERNAL MODULE: ./src/worker/business/where_base.ts
-
-
-  var where_base = __webpack_require__(13); // CONCATENATED MODULE: ./src/worker/business/remove/base_remove.ts
-
-
-  var __extends = undefined && undefined.__extends || function () {
-    var extendStatics = function (d, b) {
-      extendStatics = Object.setPrototypeOf || {
-        __proto__: []
-      } instanceof Array && function (d, b) {
-        d.__proto__ = b;
-      } || function (d, b) {
-        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-      };
-
-      return extendStatics(d, b);
-    };
-
-    return function (d, b) {
-      extendStatics(d, b);
-
-      function __() {
-        this.constructor = d;
-      }
-
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-  }();
-
-  var BaseRemove =
-  /** @class */
-  function (_super) {
-    __extends(BaseRemove, _super);
-
-    function BaseRemove() {
-      return _super !== null && _super.apply(this, arguments) || this;
-    }
-
-    BaseRemove.prototype.onQueryFinished = function () {// ff
-    };
-
-    return BaseRemove;
-  }(where_base["a"
-  /* WhereBase */
-  ]); // CONCATENATED MODULE: ./src/worker/business/remove/not_where.ts
-
-
-  var not_where_extends = undefined && undefined.__extends || function () {
-    var extendStatics = function (d, b) {
-      extendStatics = Object.setPrototypeOf || {
-        __proto__: []
-      } instanceof Array && function (d, b) {
-        d.__proto__ = b;
-      } || function (d, b) {
-        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-      };
-
-      return extendStatics(d, b);
-    };
-
-    return function (d, b) {
-      extendStatics(d, b);
-
-      function __() {
-        this.constructor = d;
-      }
-
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-  }();
-
-  var NotWhere =
-  /** @class */
-  function (_super) {
-    not_where_extends(NotWhere, _super);
-
-    function NotWhere() {
-      return _super !== null && _super.apply(this, arguments) || this;
-    }
-
-    NotWhere.prototype.executeWhereUndefinedLogic = function () {
-      var _this = this;
-
-      var cursor;
-      var cursorRequest = this.objectStore.openCursor();
-
-      cursorRequest.onsuccess = function (e) {
-        cursor = e.target.result;
-
-        if (cursor) {
-          cursor.delete();
-          ++_this.rowAffected;
-          cursor.continue();
-        } else {
-          _this.onQueryFinished();
-        }
-      };
-
-      cursorRequest.onerror = this.onErrorOccured.bind(this);
-    };
-
-    return NotWhere;
-  }(BaseRemove); // EXTERNAL MODULE: ./src/worker/helpers/promise.ts
-
-
-  var promise = __webpack_require__(14); // EXTERNAL MODULE: ./src/worker/helpers/promise_all.ts
-
-
-  var promise_all = __webpack_require__(15); // CONCATENATED MODULE: ./src/worker/business/remove/in.ts
-
-
-  var in_extends = undefined && undefined.__extends || function () {
-    var extendStatics = function (d, b) {
-      extendStatics = Object.setPrototypeOf || {
-        __proto__: []
-      } instanceof Array && function (d, b) {
-        d.__proto__ = b;
-      } || function (d, b) {
-        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-      };
-
-      return extendStatics(d, b);
-    };
-
-    return function (d, b) {
-      extendStatics(d, b);
-
-      function __() {
-        this.constructor = d;
-      }
-
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-  }();
-
-  var in_In =
-  /** @class */
-  function (_super) {
-    in_extends(In, _super);
-
-    function In() {
-      return _super !== null && _super.apply(this, arguments) || this;
-    }
-
-    In.prototype.executeInLogic = function (column, values) {
-      var _this = this;
-
-      var cursor, cursorRequest;
-
-      var runInLogic = function (value) {
-        return Object(promise["a"
-        /* promise */
-        ])(function (res, rej) {
-          cursorRequest = _this.objectStore.index(column).openCursor(_this.getKeyRange(value));
-
-          cursorRequest.onsuccess = function (e) {
-            cursor = e.target.result;
-
-            if (cursor) {
-              if (_this.whereCheckerInstance.check(cursor.value)) {
-                cursor.delete();
-                ++_this.rowAffected;
-              }
-
-              cursor.continue();
-            } else {
-              res();
-            }
-          };
-
-          cursorRequest.onerror = rej;
-        });
-      };
-
-      Object(promise_all["a"
-      /* promiseAll */
-      ])(values.map(function (val) {
-        return runInLogic(val);
-      })).then(function () {
-        _this.onQueryFinished();
-      }).catch(function (err) {
-        _this.onErrorOccured(err);
-      });
-    };
-
-    return In;
-  }(NotWhere); // CONCATENATED MODULE: ./src/worker/business/remove/regex.ts
-
-
-  var regex_extends = undefined && undefined.__extends || function () {
-    var extendStatics = function (d, b) {
-      extendStatics = Object.setPrototypeOf || {
-        __proto__: []
-      } instanceof Array && function (d, b) {
-        d.__proto__ = b;
-      } || function (d, b) {
-        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-      };
-
-      return extendStatics(d, b);
-    };
-
-    return function (d, b) {
-      extendStatics(d, b);
-
-      function __() {
-        this.constructor = d;
-      }
-
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-  }();
-
-  var Regex =
-  /** @class */
-  function (_super) {
-    regex_extends(Regex, _super);
-
-    function Regex() {
-      return _super !== null && _super.apply(this, arguments) || this;
-    }
-
-    Regex.prototype.executeRegexLogic = function (column, exp) {
-      var _this = this;
-
-      var cursor;
-      this.regexExpression = exp;
-      var cursorRequest = this.objectStore.index(column).openCursor();
-
-      cursorRequest.onsuccess = function (e) {
-        cursor = e.target.result;
-
-        if (cursor) {
-          if (_this.regexTest(cursor.key) && _this.whereCheckerInstance.check(cursor.value)) {
-            cursor.delete();
-            ++_this.rowAffected;
-          }
-
-          cursor.continue();
-        } else {
-          _this.onQueryFinished();
-        }
-      };
-
-      cursorRequest.onerror = this.onErrorOccured.bind(this);
-    };
-
-    return Regex;
-  }(in_In); // CONCATENATED MODULE: ./src/worker/business/remove/where.ts
-
-
-  var where_extends = undefined && undefined.__extends || function () {
-    var extendStatics = function (d, b) {
-      extendStatics = Object.setPrototypeOf || {
-        __proto__: []
-      } instanceof Array && function (d, b) {
-        d.__proto__ = b;
-      } || function (d, b) {
-        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-      };
-
-      return extendStatics(d, b);
-    };
-
-    return function (d, b) {
-      extendStatics(d, b);
-
-      function __() {
-        this.constructor = d;
-      }
-
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-  }();
-
-  var Where =
-  /** @class */
-  function (_super) {
-    where_extends(Where, _super);
-
-    function Where() {
-      return _super !== null && _super.apply(this, arguments) || this;
-    }
-
-    Where.prototype.executeWhereLogic = function (column, value, op) {
-      var _this = this;
-
-      var cursor, cursorRequest;
-      value = op ? value[op] : value;
-      cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
-
-      cursorRequest.onsuccess = function (e) {
-        cursor = e.target.result;
-
-        if (cursor) {
-          if (_this.whereCheckerInstance.check(cursor.value)) {
-            cursor.delete();
-            ++_this.rowAffected;
-          }
-
-          cursor.continue();
-        } else {
-          _this.onQueryFinished();
-        }
-      };
-
-      cursorRequest.onerror = this.onErrorOccured.bind(this);
-    };
-
-    return Where;
-  }(Regex); // EXTERNAL MODULE: ./src/common/enums.ts
-
-
-  var enums = __webpack_require__(0); // EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 2 modules
-
-
-  var instance = __webpack_require__(30); // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
-
-
-  var query_helper = __webpack_require__(7); // EXTERNAL MODULE: ./src/worker/utils/is_array.ts
-
-
-  var is_array = __webpack_require__(34); // EXTERNAL MODULE: ./src/worker/utils/get_object_first_key.ts
-
-
-  var get_object_first_key = __webpack_require__(35); // CONCATENATED MODULE: ./src/worker/business/remove/instance.ts
-
-
-  var instance_extends = undefined && undefined.__extends || function () {
-    var extendStatics = function (d, b) {
-      extendStatics = Object.setPrototypeOf || {
-        __proto__: []
-      } instanceof Array && function (d, b) {
-        d.__proto__ = b;
-      } || function (d, b) {
-        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-      };
-
-      return extendStatics(d, b);
-    };
-
-    return function (d, b) {
-      extendStatics(d, b);
-
-      function __() {
-        this.constructor = d;
-      }
-
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-  }();
-
-  var instance_Instance =
-  /** @class */
-  function (_super) {
-    instance_extends(Instance, _super);
-
-    function Instance(query, onSuccess, onError) {
-      var _this = _super.call(this) || this;
-
-      _this.onTransactionCompleted_ = function () {
-        if (_this.error == null) {
-          _this.onSuccess(_this.rowAffected);
-        } else {
-          _this.onError(_this.error);
-        }
-      };
-
-      _this.query = query;
-      _this.onSuccess = onSuccess;
-      _this.onError = onError;
-      return _this;
-    }
-
-    Instance.prototype.execute = function () {
-      var queryHelper = new query_helper["a"
-      /* QueryHelper */
-      ](enums["a"
-      /* API */
-      ].Remove, this.query);
-      queryHelper.checkAndModify();
-
-      if (queryHelper.error == null) {
-        try {
-          this.initTransaction_();
-
-          if (this.query.where != null) {
-            if (Object(is_array["a"
-            /* isArray */
-            ])(this.query.where)) {
-              this.processWhereArrayQry();
-            } else {
-              this.processWhere_();
-            }
-          } else {
-            this.executeWhereUndefinedLogic();
-          }
-        } catch (ex) {
-          this.onExceptionOccured(ex);
-        }
-      } else {
-        this.onError(queryHelper.error);
-      }
-    };
-
-    Instance.prototype.processWhereArrayQry = function () {
-      var _this = this;
-
-      var selectObject = new instance["a"
-      /* Instance */
-      ](this.query, function (results) {
-        var _a, _b;
-
-        var keyList = [];
-
-        var pkey = _this.getPrimaryKey(_this.query.from);
-
-        results.forEach(function (item) {
-          keyList.push(item[pkey]);
-        });
-        results = null;
-        var whereQry = (_a = {}, _a[pkey] = (_b = {}, _b[enums["g"
-        /* QUERY_OPTION */
-        ].In] = keyList, _b), _a);
-        _this.query[enums["g"
-        /* QUERY_OPTION */
-        ].Where] = whereQry;
-
-        _this.processWhere_();
-      }, this.onError);
-      selectObject.isSubQuery = true;
-      selectObject.execute();
-    };
-
-    Instance.prototype.processWhere_ = function () {
-      if (this.query.where.or) {
-        this.processOrLogic();
-      }
-
-      this.goToWhereLogic();
-    };
-
-    Instance.prototype.initTransaction_ = function () {
-      this.createTransaction([this.query.from], this.onTransactionCompleted_);
-      this.objectStore = this.transaction.objectStore(this.query.from);
-    };
-
-    Instance.prototype.onQueryFinished = function () {
-      if (this.isOr === true) {
-        this.orQuerySuccess_();
-      } else if (this.isTransaction === true) {
-        this.onTransactionCompleted_();
-      }
-    };
-
-    Instance.prototype.orQuerySuccess_ = function () {
-      var key = Object(get_object_first_key["a"
-      /* getObjectFirstKey */
-      ])(this._orInfo.OrQuery);
-
-      if (key != null) {
-        var where = {};
-        where[key] = this._orInfo.OrQuery[key];
-        delete this._orInfo.OrQuery[key];
-        this.query.where = where;
-        this.goToWhereLogic();
-      } else {
-        this.isOr = true;
-      }
-    };
-
-    Instance.prototype.processOrLogic = function () {
-      this.isOr = true;
-      this._orInfo = {
-        OrQuery: this.query.where.or
-      }; // free or memory
-
-      delete this.query.where.or;
-    };
-
-    return Instance;
-  }(Where);
-  /***/
-
-},
-/* 29 */
-
-/***/
-function (module, __webpack_exports__, __webpack_require__) {
-  "use strict"; // EXPORTS
-
-  __webpack_require__.d(__webpack_exports__, "a", function () {
-    return (
-      /* binding */
-      instance_Instance
-    );
   }); // EXTERNAL MODULE: ./src/worker/business/base.ts + 2 modules
 
 
@@ -7954,6 +6963,997 @@ function (module, __webpack_exports__, __webpack_require__) {
 
     return Instance;
   }(where_Where);
+  /***/
+
+},
+/* 28 */
+
+/***/
+function (module, __webpack_exports__, __webpack_require__) {
+  "use strict"; // EXPORTS
+
+  __webpack_require__.d(__webpack_exports__, "a", function () {
+    return (
+      /* binding */
+      instance_Instance
+    );
+  }); // EXTERNAL MODULE: ./src/worker/business/where_base.ts
+
+
+  var where_base = __webpack_require__(13); // CONCATENATED MODULE: ./src/worker/business/remove/base_remove.ts
+
+
+  var __extends = undefined && undefined.__extends || function () {
+    var extendStatics = function (d, b) {
+      extendStatics = Object.setPrototypeOf || {
+        __proto__: []
+      } instanceof Array && function (d, b) {
+        d.__proto__ = b;
+      } || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+      };
+
+      return extendStatics(d, b);
+    };
+
+    return function (d, b) {
+      extendStatics(d, b);
+
+      function __() {
+        this.constructor = d;
+      }
+
+      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+  }();
+
+  var BaseRemove =
+  /** @class */
+  function (_super) {
+    __extends(BaseRemove, _super);
+
+    function BaseRemove() {
+      return _super !== null && _super.apply(this, arguments) || this;
+    }
+
+    BaseRemove.prototype.onQueryFinished = function () {// ff
+    };
+
+    return BaseRemove;
+  }(where_base["a"
+  /* WhereBase */
+  ]); // CONCATENATED MODULE: ./src/worker/business/remove/not_where.ts
+
+
+  var not_where_extends = undefined && undefined.__extends || function () {
+    var extendStatics = function (d, b) {
+      extendStatics = Object.setPrototypeOf || {
+        __proto__: []
+      } instanceof Array && function (d, b) {
+        d.__proto__ = b;
+      } || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+      };
+
+      return extendStatics(d, b);
+    };
+
+    return function (d, b) {
+      extendStatics(d, b);
+
+      function __() {
+        this.constructor = d;
+      }
+
+      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+  }();
+
+  var NotWhere =
+  /** @class */
+  function (_super) {
+    not_where_extends(NotWhere, _super);
+
+    function NotWhere() {
+      return _super !== null && _super.apply(this, arguments) || this;
+    }
+
+    NotWhere.prototype.executeWhereUndefinedLogic = function () {
+      var _this = this;
+
+      var cursor;
+      var cursorRequest = this.objectStore.openCursor();
+
+      cursorRequest.onsuccess = function (e) {
+        cursor = e.target.result;
+
+        if (cursor) {
+          cursor.delete();
+          ++_this.rowAffected;
+          cursor.continue();
+        } else {
+          _this.onQueryFinished();
+        }
+      };
+
+      cursorRequest.onerror = this.onErrorOccured.bind(this);
+    };
+
+    return NotWhere;
+  }(BaseRemove); // EXTERNAL MODULE: ./src/worker/helpers/promise.ts
+
+
+  var promise = __webpack_require__(14); // EXTERNAL MODULE: ./src/worker/helpers/promise_all.ts
+
+
+  var promise_all = __webpack_require__(15); // CONCATENATED MODULE: ./src/worker/business/remove/in.ts
+
+
+  var in_extends = undefined && undefined.__extends || function () {
+    var extendStatics = function (d, b) {
+      extendStatics = Object.setPrototypeOf || {
+        __proto__: []
+      } instanceof Array && function (d, b) {
+        d.__proto__ = b;
+      } || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+      };
+
+      return extendStatics(d, b);
+    };
+
+    return function (d, b) {
+      extendStatics(d, b);
+
+      function __() {
+        this.constructor = d;
+      }
+
+      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+  }();
+
+  var in_In =
+  /** @class */
+  function (_super) {
+    in_extends(In, _super);
+
+    function In() {
+      return _super !== null && _super.apply(this, arguments) || this;
+    }
+
+    In.prototype.executeInLogic = function (column, values) {
+      var _this = this;
+
+      var cursor, cursorRequest;
+
+      var runInLogic = function (value) {
+        return Object(promise["a"
+        /* promise */
+        ])(function (res, rej) {
+          cursorRequest = _this.objectStore.index(column).openCursor(_this.getKeyRange(value));
+
+          cursorRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+
+            if (cursor) {
+              if (_this.whereCheckerInstance.check(cursor.value)) {
+                cursor.delete();
+                ++_this.rowAffected;
+              }
+
+              cursor.continue();
+            } else {
+              res();
+            }
+          };
+
+          cursorRequest.onerror = rej;
+        });
+      };
+
+      Object(promise_all["a"
+      /* promiseAll */
+      ])(values.map(function (val) {
+        return runInLogic(val);
+      })).then(function () {
+        _this.onQueryFinished();
+      }).catch(function (err) {
+        _this.onErrorOccured(err);
+      });
+    };
+
+    return In;
+  }(NotWhere); // CONCATENATED MODULE: ./src/worker/business/remove/regex.ts
+
+
+  var regex_extends = undefined && undefined.__extends || function () {
+    var extendStatics = function (d, b) {
+      extendStatics = Object.setPrototypeOf || {
+        __proto__: []
+      } instanceof Array && function (d, b) {
+        d.__proto__ = b;
+      } || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+      };
+
+      return extendStatics(d, b);
+    };
+
+    return function (d, b) {
+      extendStatics(d, b);
+
+      function __() {
+        this.constructor = d;
+      }
+
+      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+  }();
+
+  var Regex =
+  /** @class */
+  function (_super) {
+    regex_extends(Regex, _super);
+
+    function Regex() {
+      return _super !== null && _super.apply(this, arguments) || this;
+    }
+
+    Regex.prototype.executeRegexLogic = function (column, exp) {
+      var _this = this;
+
+      var cursor;
+      this.regexExpression = exp;
+      var cursorRequest = this.objectStore.index(column).openCursor();
+
+      cursorRequest.onsuccess = function (e) {
+        cursor = e.target.result;
+
+        if (cursor) {
+          if (_this.regexTest(cursor.key) && _this.whereCheckerInstance.check(cursor.value)) {
+            cursor.delete();
+            ++_this.rowAffected;
+          }
+
+          cursor.continue();
+        } else {
+          _this.onQueryFinished();
+        }
+      };
+
+      cursorRequest.onerror = this.onErrorOccured.bind(this);
+    };
+
+    return Regex;
+  }(in_In); // CONCATENATED MODULE: ./src/worker/business/remove/where.ts
+
+
+  var where_extends = undefined && undefined.__extends || function () {
+    var extendStatics = function (d, b) {
+      extendStatics = Object.setPrototypeOf || {
+        __proto__: []
+      } instanceof Array && function (d, b) {
+        d.__proto__ = b;
+      } || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+      };
+
+      return extendStatics(d, b);
+    };
+
+    return function (d, b) {
+      extendStatics(d, b);
+
+      function __() {
+        this.constructor = d;
+      }
+
+      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+  }();
+
+  var Where =
+  /** @class */
+  function (_super) {
+    where_extends(Where, _super);
+
+    function Where() {
+      return _super !== null && _super.apply(this, arguments) || this;
+    }
+
+    Where.prototype.executeWhereLogic = function (column, value, op) {
+      var _this = this;
+
+      var cursor, cursorRequest;
+      value = op ? value[op] : value;
+      cursorRequest = this.objectStore.index(column).openCursor(this.getKeyRange(value, op));
+
+      cursorRequest.onsuccess = function (e) {
+        cursor = e.target.result;
+
+        if (cursor) {
+          if (_this.whereCheckerInstance.check(cursor.value)) {
+            cursor.delete();
+            ++_this.rowAffected;
+          }
+
+          cursor.continue();
+        } else {
+          _this.onQueryFinished();
+        }
+      };
+
+      cursorRequest.onerror = this.onErrorOccured.bind(this);
+    };
+
+    return Where;
+  }(Regex); // EXTERNAL MODULE: ./src/common/enums.ts
+
+
+  var enums = __webpack_require__(0); // EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 2 modules
+
+
+  var instance = __webpack_require__(30); // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
+
+
+  var query_helper = __webpack_require__(7); // EXTERNAL MODULE: ./src/worker/utils/is_array.ts
+
+
+  var is_array = __webpack_require__(34); // EXTERNAL MODULE: ./src/worker/utils/get_object_first_key.ts
+
+
+  var get_object_first_key = __webpack_require__(35); // CONCATENATED MODULE: ./src/worker/business/remove/instance.ts
+
+
+  var instance_extends = undefined && undefined.__extends || function () {
+    var extendStatics = function (d, b) {
+      extendStatics = Object.setPrototypeOf || {
+        __proto__: []
+      } instanceof Array && function (d, b) {
+        d.__proto__ = b;
+      } || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+      };
+
+      return extendStatics(d, b);
+    };
+
+    return function (d, b) {
+      extendStatics(d, b);
+
+      function __() {
+        this.constructor = d;
+      }
+
+      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+  }();
+
+  var instance_Instance =
+  /** @class */
+  function (_super) {
+    instance_extends(Instance, _super);
+
+    function Instance(query, onSuccess, onError) {
+      var _this = _super.call(this) || this;
+
+      _this.onTransactionCompleted_ = function () {
+        if (_this.error == null) {
+          _this.onSuccess(_this.rowAffected);
+        } else {
+          _this.onError(_this.error);
+        }
+      };
+
+      _this.query = query;
+      _this.onSuccess = onSuccess;
+      _this.onError = onError;
+      return _this;
+    }
+
+    Instance.prototype.execute = function () {
+      var queryHelper = new query_helper["a"
+      /* QueryHelper */
+      ](enums["a"
+      /* API */
+      ].Remove, this.query);
+      queryHelper.checkAndModify();
+
+      if (queryHelper.error == null) {
+        try {
+          this.initTransaction_();
+
+          if (this.query.where != null) {
+            if (Object(is_array["a"
+            /* isArray */
+            ])(this.query.where)) {
+              this.processWhereArrayQry();
+            } else {
+              this.processWhere_();
+            }
+          } else {
+            this.executeWhereUndefinedLogic();
+          }
+        } catch (ex) {
+          this.onExceptionOccured(ex);
+        }
+      } else {
+        this.onError(queryHelper.error);
+      }
+    };
+
+    Instance.prototype.processWhereArrayQry = function () {
+      var _this = this;
+
+      var selectObject = new instance["a"
+      /* Instance */
+      ](this.query, function (results) {
+        var _a, _b;
+
+        var keyList = [];
+
+        var pkey = _this.getPrimaryKey(_this.query.from);
+
+        results.forEach(function (item) {
+          keyList.push(item[pkey]);
+        });
+        results = null;
+        var whereQry = (_a = {}, _a[pkey] = (_b = {}, _b[enums["g"
+        /* QUERY_OPTION */
+        ].In] = keyList, _b), _a);
+        _this.query[enums["g"
+        /* QUERY_OPTION */
+        ].Where] = whereQry;
+
+        _this.processWhere_();
+      }, this.onError);
+      selectObject.isSubQuery = true;
+      selectObject.execute();
+    };
+
+    Instance.prototype.processWhere_ = function () {
+      if (this.query.where.or) {
+        this.processOrLogic();
+      }
+
+      this.goToWhereLogic();
+    };
+
+    Instance.prototype.initTransaction_ = function () {
+      this.createTransaction([this.query.from], this.onTransactionCompleted_);
+      this.objectStore = this.transaction.objectStore(this.query.from);
+    };
+
+    Instance.prototype.onQueryFinished = function () {
+      if (this.isOr === true) {
+        this.orQuerySuccess_();
+      } else if (this.isTransaction === true) {
+        this.onTransactionCompleted_();
+      }
+    };
+
+    Instance.prototype.orQuerySuccess_ = function () {
+      var key = Object(get_object_first_key["a"
+      /* getObjectFirstKey */
+      ])(this._orInfo.OrQuery);
+
+      if (key != null) {
+        var where = {};
+        where[key] = this._orInfo.OrQuery[key];
+        delete this._orInfo.OrQuery[key];
+        this.query.where = where;
+        this.goToWhereLogic();
+      } else {
+        this.isOr = true;
+      }
+    };
+
+    Instance.prototype.processOrLogic = function () {
+      this.isOr = true;
+      this._orInfo = {
+        OrQuery: this.query.where.or
+      }; // free or memory
+
+      delete this.query.where.or;
+    };
+
+    return Instance;
+  }(Where);
+  /***/
+
+},
+/* 29 */
+
+/***/
+function (module, __webpack_exports__, __webpack_require__) {
+  "use strict"; // EXPORTS
+
+  __webpack_require__.d(__webpack_exports__, "a", function () {
+    return (
+      /* binding */
+      instance_Instance
+    );
+  }); // EXTERNAL MODULE: ./src/worker/business/where_base.ts
+
+
+  var where_base = __webpack_require__(13); // CONCATENATED MODULE: ./src/worker/business/count/base_count.ts
+
+
+  var __extends = undefined && undefined.__extends || function () {
+    var extendStatics = function (d, b) {
+      extendStatics = Object.setPrototypeOf || {
+        __proto__: []
+      } instanceof Array && function (d, b) {
+        d.__proto__ = b;
+      } || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+      };
+
+      return extendStatics(d, b);
+    };
+
+    return function (d, b) {
+      extendStatics(d, b);
+
+      function __() {
+        this.constructor = d;
+      }
+
+      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+  }();
+
+  var BaseCount =
+  /** @class */
+  function (_super) {
+    __extends(BaseCount, _super);
+
+    function BaseCount() {
+      var _this = _super !== null && _super.apply(this, arguments) || this;
+
+      _this.resultCount = 0;
+
+      _this.onTransactionCompleted_ = function () {
+        if (_this.error == null) {
+          _this.onSuccess(_this.resultCount);
+        } else {
+          _this.onError(_this.error);
+        }
+      };
+
+      return _this;
+    }
+
+    BaseCount.prototype.onQueryFinished = function () {
+      if (this.isTransaction === true) {
+        this.onTransactionCompleted_();
+      }
+    };
+
+    return BaseCount;
+  }(where_base["a"
+  /* WhereBase */
+  ]); // CONCATENATED MODULE: ./src/worker/business/count/not_where.ts
+
+
+  var not_where_extends = undefined && undefined.__extends || function () {
+    var extendStatics = function (d, b) {
+      extendStatics = Object.setPrototypeOf || {
+        __proto__: []
+      } instanceof Array && function (d, b) {
+        d.__proto__ = b;
+      } || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+      };
+
+      return extendStatics(d, b);
+    };
+
+    return function (d, b) {
+      extendStatics(d, b);
+
+      function __() {
+        this.constructor = d;
+      }
+
+      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+  }();
+
+  var NotWhere =
+  /** @class */
+  function (_super) {
+    not_where_extends(NotWhere, _super);
+
+    function NotWhere() {
+      return _super !== null && _super.apply(this, arguments) || this;
+    }
+
+    NotWhere.prototype.executeWhereUndefinedLogic = function () {
+      var _this = this;
+
+      var countRequest;
+
+      if (this.objectStore.count) {
+        countRequest = this.objectStore.count();
+
+        countRequest.onsuccess = function () {
+          _this.resultCount = countRequest.result;
+
+          _this.onQueryFinished();
+        };
+      } else {
+        var cursor_1;
+        countRequest = this.objectStore.openCursor();
+
+        countRequest.onsuccess = function (e) {
+          cursor_1 = e.target.result;
+
+          if (cursor_1) {
+            ++_this.resultCount;
+            cursor_1.continue();
+          } else {
+            _this.onQueryFinished();
+          }
+        };
+      }
+
+      countRequest.onerror = this.onErrorOccured.bind(this);
+    };
+
+    return NotWhere;
+  }(BaseCount); // EXTERNAL MODULE: ./src/worker/helpers/promise.ts
+
+
+  var promise = __webpack_require__(14); // EXTERNAL MODULE: ./src/worker/helpers/promise_all.ts
+
+
+  var promise_all = __webpack_require__(15); // CONCATENATED MODULE: ./src/worker/business/count/in.ts
+
+
+  var in_extends = undefined && undefined.__extends || function () {
+    var extendStatics = function (d, b) {
+      extendStatics = Object.setPrototypeOf || {
+        __proto__: []
+      } instanceof Array && function (d, b) {
+        d.__proto__ = b;
+      } || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+      };
+
+      return extendStatics(d, b);
+    };
+
+    return function (d, b) {
+      extendStatics(d, b);
+
+      function __() {
+        this.constructor = d;
+      }
+
+      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+  }();
+
+  var in_In =
+  /** @class */
+  function (_super) {
+    in_extends(In, _super);
+
+    function In() {
+      return _super !== null && _super.apply(this, arguments) || this;
+    }
+
+    In.prototype.executeInLogic = function (column, values) {
+      var _this = this;
+
+      var cursor, cursorRequest;
+      var columnStore = this.objectStore.index(column);
+
+      var runInLogic = function (value) {
+        return Object(promise["a"
+        /* promise */
+        ])(function (res, rej) {
+          cursorRequest = columnStore.openCursor(_this.getKeyRange(value));
+
+          cursorRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+
+            if (cursor) {
+              if (_this.whereCheckerInstance.check(cursor.value)) {
+                ++_this.resultCount;
+              }
+
+              cursor.continue();
+            } else {
+              res();
+            }
+          };
+
+          cursorRequest.onerror = rej;
+        });
+      };
+
+      if (this.objectStore.count) {
+        runInLogic = function (value) {
+          return Object(promise["a"
+          /* promise */
+          ])(function (res, rej) {
+            cursorRequest = columnStore.count(_this.getKeyRange(value));
+
+            cursorRequest.onsuccess = function (e) {
+              _this.resultCount += e.target.result;
+              res();
+            };
+
+            cursorRequest.onerror = rej;
+          });
+        };
+      }
+
+      Object(promise_all["a"
+      /* promiseAll */
+      ])(values.map(function (val) {
+        return runInLogic(val);
+      })).then(function () {
+        _this.onQueryFinished();
+      }).catch(function (err) {
+        _this.onErrorOccured(err);
+      });
+    };
+
+    return In;
+  }(NotWhere); // CONCATENATED MODULE: ./src/worker/business/count/regex.ts
+
+
+  var regex_extends = undefined && undefined.__extends || function () {
+    var extendStatics = function (d, b) {
+      extendStatics = Object.setPrototypeOf || {
+        __proto__: []
+      } instanceof Array && function (d, b) {
+        d.__proto__ = b;
+      } || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+      };
+
+      return extendStatics(d, b);
+    };
+
+    return function (d, b) {
+      extendStatics(d, b);
+
+      function __() {
+        this.constructor = d;
+      }
+
+      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+  }();
+
+  var Regex =
+  /** @class */
+  function (_super) {
+    regex_extends(Regex, _super);
+
+    function Regex() {
+      return _super !== null && _super.apply(this, arguments) || this;
+    }
+
+    Regex.prototype.executeRegexLogic = function (column, exp) {
+      var _this = this;
+
+      var cursor;
+      this.regexExpression = exp;
+      var cursorRequest = this.objectStore.index(column).openCursor();
+
+      cursorRequest.onsuccess = function (e) {
+        cursor = e.target.result;
+
+        if (cursor) {
+          if (_this.regexTest(cursor.key) && _this.whereCheckerInstance.check(cursor.value)) {
+            ++_this.resultCount;
+          }
+
+          cursor.continue();
+        } else {
+          _this.onQueryFinished();
+        }
+      };
+
+      cursorRequest.onerror = this.onErrorOccured.bind(this);
+    };
+
+    return Regex;
+  }(in_In); // CONCATENATED MODULE: ./src/worker/business/count/where.ts
+
+
+  var where_extends = undefined && undefined.__extends || function () {
+    var extendStatics = function (d, b) {
+      extendStatics = Object.setPrototypeOf || {
+        __proto__: []
+      } instanceof Array && function (d, b) {
+        d.__proto__ = b;
+      } || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+      };
+
+      return extendStatics(d, b);
+    };
+
+    return function (d, b) {
+      extendStatics(d, b);
+
+      function __() {
+        this.constructor = d;
+      }
+
+      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+  }();
+
+  var Where =
+  /** @class */
+  function (_super) {
+    where_extends(Where, _super);
+
+    function Where() {
+      return _super !== null && _super.apply(this, arguments) || this;
+    }
+
+    Where.prototype.executeWhereLogic = function (column, value, op) {
+      var _this = this;
+
+      value = op ? value[op] : value;
+      var cursorRequest;
+      var cursor;
+      var initCursorAndFilter;
+
+      if (Object.keys(this.query.where).length === 1 && this.objectStore.count) {
+        initCursorAndFilter = function () {
+          cursorRequest = _this.objectStore.index(column).count(_this.getKeyRange(value, op));
+
+          cursorRequest.onsuccess = function () {
+            _this.resultCount = cursorRequest.result;
+
+            _this.onQueryFinished();
+          };
+        };
+      } else {
+        initCursorAndFilter = function () {
+          cursorRequest = _this.objectStore.index(column).openCursor(_this.getKeyRange(value, op));
+
+          cursorRequest.onsuccess = function (e) {
+            cursor = e.target.result;
+
+            if (cursor) {
+              if (_this.whereCheckerInstance.check(cursor.value)) {
+                ++_this.resultCount;
+              }
+
+              cursor.continue();
+            } else {
+              _this.onQueryFinished();
+            }
+          };
+        };
+      }
+
+      initCursorAndFilter();
+      cursorRequest.onerror = this.onErrorOccured.bind(this);
+    };
+
+    return Where;
+  }(Regex); // EXTERNAL MODULE: ./src/common/enums.ts
+
+
+  var enums = __webpack_require__(0); // EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 2 modules
+
+
+  var instance = __webpack_require__(30); // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
+
+
+  var query_helper = __webpack_require__(7); // EXTERNAL MODULE: ./src/worker/utils/is_array.ts
+
+
+  var is_array = __webpack_require__(34); // CONCATENATED MODULE: ./src/worker/business/count/instance.ts
+
+
+  var instance_extends = undefined && undefined.__extends || function () {
+    var extendStatics = function (d, b) {
+      extendStatics = Object.setPrototypeOf || {
+        __proto__: []
+      } instanceof Array && function (d, b) {
+        d.__proto__ = b;
+      } || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+      };
+
+      return extendStatics(d, b);
+    };
+
+    return function (d, b) {
+      extendStatics(d, b);
+
+      function __() {
+        this.constructor = d;
+      }
+
+      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+  }();
+
+  var instance_Instance =
+  /** @class */
+  function (_super) {
+    instance_extends(Instance, _super);
+
+    function Instance(query, onSuccess, onError) {
+      var _this = _super.call(this) || this;
+
+      _this.onError = onError;
+      _this.onSuccess = onSuccess;
+      _this.query = query;
+      return _this;
+    }
+
+    Instance.prototype.execute = function () {
+      var _this = this;
+
+      var queryHelper = new query_helper["a"
+      /* QueryHelper */
+      ](enums["a"
+      /* API */
+      ].Count, this.query);
+      queryHelper.checkAndModify();
+
+      if (queryHelper.error == null) {
+        try {
+          var getDataFromSelect = function () {
+            var selectInstance = new instance["a"
+            /* Instance */
+            ](_this.query, function (results) {
+              _this.resultCount = results.length;
+
+              _this.onTransactionCompleted_();
+            }, _this.onError);
+            selectInstance.execute();
+          };
+
+          if (this.query.join == null) {
+            if (this.query.where != null) {
+              if (this.query.where.or || Object(is_array["a"
+              /* isArray */
+              ])(this.query.where)) {
+                getDataFromSelect();
+              } else {
+                this.initTransaction_();
+                this.goToWhereLogic();
+              }
+            } else {
+              this.initTransaction_();
+              this.executeWhereUndefinedLogic();
+            }
+          } else {
+            getDataFromSelect();
+          }
+        } catch (ex) {
+          this.onExceptionOccured(ex);
+        }
+      } else {
+        this.onError(queryHelper.error);
+      }
+    };
+
+    Instance.prototype.initTransaction_ = function () {
+      this.createTransaction([this.query.from], this.onTransactionCompleted_, enums["e"
+      /* IDB_MODE */
+      ].ReadOnly);
+      this.objectStore = this.transaction.objectStore(this.query.from);
+    };
+
+    return Instance;
+  }(Where);
   /***/
 
 },
@@ -8838,7 +8838,7 @@ function (module, __webpack_exports__, __webpack_require__) {
   /* harmony import */
 
 
-  var _count_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(27);
+  var _count_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(29);
   /* harmony import */
 
 
@@ -8850,7 +8850,7 @@ function (module, __webpack_exports__, __webpack_require__) {
   /* harmony import */
 
 
-  var _update_index__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(29);
+  var _update_index__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(27);
   /* harmony import */
 
 

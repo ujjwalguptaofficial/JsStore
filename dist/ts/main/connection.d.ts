@@ -148,6 +148,6 @@ export declare class Connection extends ConnectionHelper {
     off(event: EVENT, eventCallBack: Function): void;
     union<T>(query: SelectQuery[]): Promise<T>;
     intersect<T>(query: SelectQuery[]): Promise<T>;
-    addPlugin(plugin: IPlugin, params: any): void;
+    addPlugin(plugin: IPlugin, params?: any): void;
     addMiddleware(middleware: any): void;
 }
