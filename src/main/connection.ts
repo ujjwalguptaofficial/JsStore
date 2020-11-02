@@ -302,7 +302,7 @@ export class Connection extends ConnectionHelper {
         });
     }
 
-    addPlugin(plugin: IPlugin, params) {
+    addPlugin(plugin: IPlugin, params?) {
         plugin.setup(this, params);
     }
 
