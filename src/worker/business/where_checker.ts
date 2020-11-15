@@ -33,7 +33,7 @@ export class WhereChecker {
               case QUERY_OPTION.In:
                 this.checkIn(columnName, rowValue[columnName]); break;
               case QUERY_OPTION.Like:
-                this.checkLike(columnName, rowValue[columnName]); break;
+                this.status = this.checkLike_(columnName, rowValue[columnName]); break;
               case QUERY_OPTION.Regex:
                 this.checkRegex(columnName, rowValue[columnName]); break;
               case QUERY_OPTION.Between:
@@ -67,11 +67,10 @@ export class WhereChecker {
     }
   }
 
-  private checkLike(column, value) {
+  private checkLike_(column, value) {
     const values = this.where[column][QUERY_OPTION.Like].split('%');
-    let compSymbol: OCCURENCE,
-      compValue,
-      symbolIndex;
+    let compSymbol: OCCURENCE, compValue;
+
     if (values[1]) {
       compValue = values[1];
       compSymbol = values.length > 2 ? OCCURENCE.Any : OCCURENCE.Last;
@@ -84,20 +83,14 @@ export class WhereChecker {
 
     switch (compSymbol) {
       case OCCURENCE.Any:
-        symbolIndex = value.indexOf(compValue.toLowerCase());
-        if (symbolIndex < 0) {
-          this.status = false;
-        } break;
+        return value.indexOf(compValue.toLowerCase()) >= 0;
       case OCCURENCE.First:
-        symbolIndex = value.indexOf(compValue.toLowerCase());
-        if (symbolIndex > 0 || symbolIndex < 0) {
-          this.status = false;
-        } break;
+        return value.indexOf(compValue.toLowerCase()) === 0;
       default:
-        symbolIndex = value.lastIndexOf(compValue.toLowerCase());
-        if (symbolIndex < value.length - compValue.length) {
-          this.status = false;
-        }
+        return value.lastIndexOf(compValue.toLowerCase()) === (value.length - compValue.length);
+      // if (symbolIndex < value.length - compValue.length) {
+      //   this.status = false;
+      // }
     }
   }
 
