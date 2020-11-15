@@ -11,7 +11,7 @@ export declare class WhereChecker {
     constructor(where: object, checkFlag: boolean);
     check(rowValue: any): boolean;
     private checkIn;
-    private checkLike;
+    private checkLike_;
     private checkRegex;
-    private checkComparisionOp;
+    private checkComparisionOp_;
 }

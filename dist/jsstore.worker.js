@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.11.1 - 02/11/2020
+ * @license :jsstore - V3.11.2 - 15/11/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -901,7 +901,43 @@ function (module, __webpack_exports__, __webpack_require__) {
     };
 
     return BaseHelper;
-  }(); // CONCATENATED MODULE: ./src/worker/business/where_checker.ts
+  }(); // CONCATENATED MODULE: ./src/worker/utils/get_regex_from_like_expression.ts
+
+
+  var getRegexFromLikeExpression = function (likeExpression) {
+    var filterValues = likeExpression.split('%');
+    var filterValue;
+    var occurence;
+
+    if (filterValues[1]) {
+      filterValue = filterValues[1];
+      occurence = filterValues.length > 2 ? enums["f"
+      /* OCCURENCE */
+      ].Any : enums["f"
+      /* OCCURENCE */
+      ].Last;
+    } else {
+      filterValue = filterValues[0];
+      occurence = enums["f"
+      /* OCCURENCE */
+      ].First;
+    }
+
+    switch (occurence) {
+      case enums["f"
+      /* OCCURENCE */
+      ].First:
+        return new RegExp("^" + filterValue, 'i');
+
+      case enums["f"
+      /* OCCURENCE */
+      ].Last:
+        return new RegExp(filterValue + "$", 'i');
+
+      default:
+        return new RegExp("" + filterValue, 'i');
+    }
+  }; // CONCATENATED MODULE: ./src/worker/business/where_checker.ts
 
   /**
    * For matching the different column value existance for where option
@@ -940,13 +976,13 @@ function (module, __webpack_exports__, __webpack_require__) {
                 case enums["g"
                 /* QUERY_OPTION */
                 ].In:
-                  this.checkIn(columnName, rowValue[columnName]);
+                  this.status = this.checkIn(columnName, rowValue[columnName]);
                   break;
 
                 case enums["g"
                 /* QUERY_OPTION */
                 ].Like:
-                  this.checkLike(columnName, rowValue[columnName]);
+                  this.status = this.checkLike_(columnName, rowValue[columnName]);
                   break;
 
                 case enums["g"
@@ -973,7 +1009,7 @@ function (module, __webpack_exports__, __webpack_require__) {
                 case enums["g"
                 /* QUERY_OPTION */
                 ].NotEqualTo:
-                  this.checkComparisionOp(columnName, rowValue[columnName], key);
+                  this.status = this.checkComparisionOp_(columnName, rowValue[columnName], key);
                   break;
               }
             }
@@ -987,71 +1023,17 @@ function (module, __webpack_exports__, __webpack_require__) {
     };
 
     WhereChecker.prototype.checkIn = function (column, value) {
-      for (var i = 0, values = this.where[column][enums["g"
+      return this.where[column][enums["g"
       /* QUERY_OPTION */
-      ].In], length_1 = values.length; i < length_1; i++) {
-        if (values[i] === value) {
-          this.status = true;
-          break;
-        } else {
-          this.status = false;
-        }
-      }
+      ].In].find(function (val) {
+        return val === value;
+      }) != null;
     };
 
-    WhereChecker.prototype.checkLike = function (column, value) {
-      var values = this.where[column][enums["g"
+    WhereChecker.prototype.checkLike_ = function (column, value) {
+      return getRegexFromLikeExpression(this.where[column][enums["g"
       /* QUERY_OPTION */
-      ].Like].split('%');
-      var compSymbol, compValue, symbolIndex;
-
-      if (values[1]) {
-        compValue = values[1];
-        compSymbol = values.length > 2 ? enums["f"
-        /* OCCURENCE */
-        ].Any : enums["f"
-        /* OCCURENCE */
-        ].Last;
-      } else {
-        compValue = values[0];
-        compSymbol = enums["f"
-        /* OCCURENCE */
-        ].First;
-      }
-
-      value = value.toLowerCase();
-
-      switch (compSymbol) {
-        case enums["f"
-        /* OCCURENCE */
-        ].Any:
-          symbolIndex = value.indexOf(compValue.toLowerCase());
-
-          if (symbolIndex < 0) {
-            this.status = false;
-          }
-
-          break;
-
-        case enums["f"
-        /* OCCURENCE */
-        ].First:
-          symbolIndex = value.indexOf(compValue.toLowerCase());
-
-          if (symbolIndex > 0 || symbolIndex < 0) {
-            this.status = false;
-          }
-
-          break;
-
-        default:
-          symbolIndex = value.lastIndexOf(compValue.toLowerCase());
-
-          if (symbolIndex < value.length - compValue.length) {
-            this.status = false;
-          }
-
-      }
+      ].Like]).test(value);
     };
 
     WhereChecker.prototype.checkRegex = function (column, value) {
@@ -1061,7 +1043,7 @@ function (module, __webpack_exports__, __webpack_require__) {
       this.status = expr.test(value);
     };
 
-    WhereChecker.prototype.checkComparisionOp = function (column, value, symbol) {
+    WhereChecker.prototype.checkComparisionOp_ = function (column, value, symbol) {
       var compareValue = this.where[column][symbol];
 
       switch (symbol) {
@@ -1069,61 +1051,37 @@ function (module, __webpack_exports__, __webpack_require__) {
         case enums["g"
         /* QUERY_OPTION */
         ].GreaterThan:
-          if (value <= compareValue) {
-            this.status = false;
-          }
-
-          break;
+          return value > compareValue;
         // less than
 
         case enums["g"
         /* QUERY_OPTION */
         ].LessThan:
-          if (value >= compareValue) {
-            this.status = false;
-          }
-
-          break;
+          return value < compareValue;
         // less than equal
 
         case enums["g"
         /* QUERY_OPTION */
         ].LessThanEqualTo:
-          if (value > compareValue) {
-            this.status = false;
-          }
-
-          break;
+          return value <= compareValue;
         // greather than equal
 
         case enums["g"
         /* QUERY_OPTION */
         ].GreaterThanEqualTo:
-          if (value < compareValue) {
-            this.status = false;
-          }
-
-          break;
+          return value >= compareValue;
         // between
 
         case enums["g"
         /* QUERY_OPTION */
         ].Between:
-          if (value < compareValue.Low || value > compareValue.High) {
-            this.status = false;
-          }
-
-          break;
+          return value > compareValue.low && value < compareValue.high;
         // Not equal to
 
         case enums["g"
         /* QUERY_OPTION */
         ].NotEqualTo:
-          if (value === compareValue) {
-            this.status = false;
-          }
-
-          break;
+          return value !== compareValue;
       }
     };
 
@@ -1217,41 +1175,6 @@ function (module, __webpack_exports__, __webpack_require__) {
       });
     };
 
-    Base.prototype.getRegexFromLikeExpression_ = function (likeExpression) {
-      var filterValues = likeExpression.split('%');
-      var filterValue;
-      var occurence;
-
-      if (filterValues[1]) {
-        filterValue = filterValues[1];
-        occurence = filterValues.length > 2 ? enums["f"
-        /* OCCURENCE */
-        ].Any : enums["f"
-        /* OCCURENCE */
-        ].Last;
-      } else {
-        filterValue = filterValues[0];
-        occurence = enums["f"
-        /* OCCURENCE */
-        ].First;
-      }
-
-      switch (occurence) {
-        case enums["f"
-        /* OCCURENCE */
-        ].First:
-          return new RegExp("^" + filterValue, 'i');
-
-        case enums["f"
-        /* OCCURENCE */
-        ].Last:
-          return new RegExp(filterValue + "$", 'i');
-
-        default:
-          return new RegExp("" + filterValue, 'i');
-      }
-    };
-
     Base.prototype.goToWhereLogic = function () {
       var columnName = Object(get_object_first_key["a"
       /* getObjectFirstKey */
@@ -1272,7 +1195,7 @@ function (module, __webpack_exports__, __webpack_require__) {
             /* QUERY_OPTION */
             ].Like:
               {
-                var regexVal = this.getRegexFromLikeExpression_(value[enums["g"
+                var regexVal = getRegexFromLikeExpression(value[enums["g"
                 /* QUERY_OPTION */
                 ].Like]);
                 this.executeRegexLogic(columnName, regexVal);
@@ -2699,7 +2622,7 @@ function (module, __webpack_exports__, __webpack_require__) {
   }); // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
 
 
-  var query_helper = __webpack_require__(7); // EXTERNAL MODULE: ./src/worker/business/base.ts + 2 modules
+  var query_helper = __webpack_require__(7); // EXTERNAL MODULE: ./src/worker/business/base.ts + 3 modules
 
 
   var base = __webpack_require__(6); // EXTERNAL MODULE: ./src/worker/keystore/instance.ts + 10 modules
@@ -6429,7 +6352,7 @@ function (module, __webpack_exports__, __webpack_require__) {
       /* binding */
       instance_Instance
     );
-  }); // EXTERNAL MODULE: ./src/worker/business/base.ts + 2 modules
+  }); // EXTERNAL MODULE: ./src/worker/business/base.ts + 3 modules
 
 
   var base = __webpack_require__(6); // EXTERNAL MODULE: ./src/worker/utils/get_data_type.ts
