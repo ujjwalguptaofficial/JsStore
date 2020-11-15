@@ -3,7 +3,7 @@ import { IError, ERROR_TYPE, OCCURENCE, DATA_TYPE, QUERY_OPTION } from "../../co
 import { WhereChecker } from "./where_checker";
 import { LogHelper } from "../log_helper";
 import { Column } from "../model/index";
-import { getDataType, getObjectFirstKey } from "../utils/index";
+import { getDataType, getObjectFirstKey, getRegexFromLikeExpression } from "../utils/index";
 
 export abstract class Base extends BaseHelper {
     error: IError;
@@ -53,28 +53,6 @@ export abstract class Base extends BaseHelper {
         return this.getTable(tableName).columns.find(column => column.name === columnName);
     }
 
-    private getRegexFromLikeExpression_(likeExpression: string) {
-        const filterValues = likeExpression.split('%');
-        let filterValue: string;
-        let occurence: OCCURENCE;
-        if (filterValues[1]) {
-            filterValue = filterValues[1];
-            occurence = filterValues.length > 2 ? OCCURENCE.Any : OCCURENCE.Last;
-        }
-        else {
-            filterValue = filterValues[0];
-            occurence = OCCURENCE.First;
-        }
-        switch (occurence) {
-            case OCCURENCE.First:
-                return new RegExp(`^${filterValue}`, 'i');
-            case OCCURENCE.Last:
-                return new RegExp(`${filterValue}$`, 'i');
-            default:
-                return new RegExp(`${filterValue}`, 'i');
-        }
-    }
-
     protected goToWhereLogic() {
         const columnName = getObjectFirstKey(this.query.where);
         if (this.objectStore.indexNames.contains(columnName)) {
@@ -88,7 +66,7 @@ export abstract class Base extends BaseHelper {
                 const key = getObjectFirstKey(value);
                 switch (key) {
                     case QUERY_OPTION.Like: {
-                        const regexVal = this.getRegexFromLikeExpression_(value[QUERY_OPTION.Like]);
+                        const regexVal = getRegexFromLikeExpression(value[QUERY_OPTION.Like]);
                         (this as any).executeRegexLogic(columnName, regexVal);
                     } break;
                     case QUERY_OPTION.Regex:

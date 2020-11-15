@@ -1,4 +1,5 @@
 import { OCCURENCE, QUERY_OPTION } from "../../common/index";
+import { getRegexFromLikeExpression } from "../utils/index";
 
 /**
  * For matching the different column value existance for where option
@@ -31,7 +32,7 @@ export class WhereChecker {
             }
             switch (key) {
               case QUERY_OPTION.In:
-                this.checkIn(columnName, rowValue[columnName]); break;
+                this.status = this.checkIn(columnName, rowValue[columnName]); break;
               case QUERY_OPTION.Like:
                 this.status = this.checkLike_(columnName, rowValue[columnName]); break;
               case QUERY_OPTION.Regex:
@@ -56,42 +57,11 @@ export class WhereChecker {
   }
 
   private checkIn(column, value) {
-    for (let i = 0, values = this.where[column][QUERY_OPTION.In], length = values.length; i < length; i++) {
-      if (values[i] === value) {
-        this.status = true;
-        break;
-      }
-      else {
-        this.status = false;
-      }
-    }
+    return (this.where[column][QUERY_OPTION.In] as any[]).find(val => val === value) != null;
   }
 
   private checkLike_(column, value) {
-    const values = this.where[column][QUERY_OPTION.Like].split('%');
-    let compSymbol: OCCURENCE, compValue;
-
-    if (values[1]) {
-      compValue = values[1];
-      compSymbol = values.length > 2 ? OCCURENCE.Any : OCCURENCE.Last;
-    }
-    else {
-      compValue = values[0];
-      compSymbol = OCCURENCE.First;
-    }
-    value = value.toLowerCase();
-
-    switch (compSymbol) {
-      case OCCURENCE.Any:
-        return value.indexOf(compValue.toLowerCase()) >= 0;
-      case OCCURENCE.First:
-        return value.indexOf(compValue.toLowerCase()) === 0;
-      default:
-        return value.lastIndexOf(compValue.toLowerCase()) === (value.length - compValue.length);
-      // if (symbolIndex < value.length - compValue.length) {
-      //   this.status = false;
-      // }
-    }
+    return getRegexFromLikeExpression(this.where[column][QUERY_OPTION.Like]).test(value);
   }
 
   private checkRegex(column, value) {
