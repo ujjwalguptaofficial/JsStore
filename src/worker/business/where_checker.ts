@@ -42,7 +42,7 @@ export class WhereChecker {
               case QUERY_OPTION.GreaterThanEqualTo:
               case QUERY_OPTION.LessThanEqualTo:
               case QUERY_OPTION.NotEqualTo:
-                this.checkComparisionOp(columnName, rowValue[columnName], key);
+                this.status = this.checkComparisionOp_(columnName, rowValue[columnName], key);
                 break;
             }
           }
@@ -103,37 +103,30 @@ export class WhereChecker {
 
   private checkRegex(column, value) {
     const expr = this.where[column][QUERY_OPTION.Regex];
-
     this.status = expr.test(value);
   }
 
-  private checkComparisionOp(column, value, symbol) {
+  private checkComparisionOp_(column, value, symbol) {
     const compareValue = this.where[column][symbol];
     switch (symbol) {
       // greater than
-      case QUERY_OPTION.GreaterThan: if (value <= compareValue) {
-        this.status = false;
-      } break;
+      case QUERY_OPTION.GreaterThan:
+        return value > compareValue;
       // less than
-      case QUERY_OPTION.LessThan: if (value >= compareValue) {
-        this.status = false;
-      } break;
+      case QUERY_OPTION.LessThan:
+        return value < compareValue;
       // less than equal
-      case QUERY_OPTION.LessThanEqualTo: if (value > compareValue) {
-        this.status = false;
-      } break;
+      case QUERY_OPTION.LessThanEqualTo:
+        return value <= compareValue;
       // greather than equal
-      case QUERY_OPTION.GreaterThanEqualTo: if (value < compareValue) {
-        this.status = false;
-      } break;
+      case QUERY_OPTION.GreaterThanEqualTo:
+        return value >= compareValue;
       // between
-      case QUERY_OPTION.Between: if (value < compareValue.low || value > compareValue.high) {
-        this.status = false;
-      } break;
+      case QUERY_OPTION.Between:
+        return value > compareValue.low && value < compareValue.high;
       // Not equal to
-      case QUERY_OPTION.NotEqualTo: if (value === compareValue) {
-        this.status = false;
-      } break;
+      case QUERY_OPTION.NotEqualTo:
+        return value !== compareValue;
     }
   }
 }
