@@ -127,7 +127,7 @@ export class WhereChecker {
         this.status = false;
       } break;
       // between
-      case QUERY_OPTION.Between: if (value < compareValue.Low || value > compareValue.High) {
+      case QUERY_OPTION.Between: if (value < compareValue.low || value > compareValue.high) {
         this.status = false;
       } break;
       // Not equal to

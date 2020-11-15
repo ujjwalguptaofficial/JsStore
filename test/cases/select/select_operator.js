@@ -130,4 +130,45 @@ describe('Test operator', function () {
             done(err);
         })
     });
+
+    it("select with where simple & between", function (done) {
+        con.select({
+            from: "Products",
+            where: {
+
+                productName: "Aniseed Syrup",
+                price: {
+                    "-": {
+                        low: 20,
+                        high: 20
+                    }
+                },
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(0);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    })
+
+    it("select with between & where simple", function (done) {
+        con.select({
+            from: "Products",
+            where: {
+                price: {
+                    "-": {
+                        low: 20,
+                        high: 20
+                    }
+                },
+                productName: "Aniseed Syrup",
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(0);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    })
 });
