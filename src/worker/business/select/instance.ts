@@ -1,7 +1,7 @@
 import { SelectQuery, IError, IDB_MODE, QUERY_OPTION, API } from "../../../common/index";
 import { Join } from "./join";
 import { QueryHelper } from "../query_helper";
-import { isArray, getObjectFirstKey, isObject } from "../../utils/index";
+import { isArray, getObjectFirstKey, isObject, getKeys } from "../../utils/index";
 
 export class Instance extends Join {
 
@@ -178,6 +178,27 @@ export class Instance extends Join {
 
     private onTransactionCompleted_ = () => {
         if (this.error == null) {
+            if (this.query.flatten) {
+                debugger;
+                const flattendData = [];
+                const indexToDelete = {};
+                this.query.flatten.forEach(column => {
+                    this.results.forEach((data, i) => {
+                        data[column].forEach(item => {
+                            flattendData.push(
+                                { ...data, ...{ [column]: item } }
+                            );
+                        });
+                        indexToDelete[i] = true;
+                    });
+                });
+                let itemsDeleted = 0;
+                getKeys(indexToDelete).forEach(key => {
+                    this.results.splice(Number(key) - itemsDeleted, 1);
+                    ++itemsDeleted;
+                });
+                this.results = this.results.concat(flattendData);
+            }
             this.processOrderBy();
             if (!this.error) {
                 this.processGroupDistinctAggr();
@@ -202,7 +223,7 @@ export class Instance extends Join {
         this.isOr = false;
         this.results = this.orInfo.results;
         // free or info memory
-        this.orInfo = undefined;
+        this.orInfo = null;
         this.removeDuplicates();
         this.onQueryFinished();
     }

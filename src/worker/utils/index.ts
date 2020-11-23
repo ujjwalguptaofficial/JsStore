@@ -8,3 +8,4 @@ export * from './is_string';
 export * from './remove_space';
 export * from './is_object';
 export * from './get_regex_from_like_expression';
+export * from './get_keys';

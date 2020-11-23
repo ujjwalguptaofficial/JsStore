@@ -52,7 +52,8 @@ export type SelectQuery = {
     groupBy?: string | string[] | { [columnName: string]: [CaseOption] };
     aggregate?: AggregateOption;
     distinct?: boolean;
-    case?: { [columnName: string]: [CaseOption] }
+    case?: { [columnName: string]: [CaseOption] },
+    flatten?: string[];
 };
 
 export type CaseOption = {
