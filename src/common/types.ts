@@ -40,6 +40,7 @@ export type JoinQuery = {
     order?: OrderQuery;
     as?: { [originalColumnName: string]: string },
     case?: { [columnName: string]: [CaseOption] },
+    flatten?: string[];
 };
 
 export type SelectQuery = {

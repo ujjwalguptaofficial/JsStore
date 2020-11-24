@@ -56,6 +56,7 @@ describe("Flat", function () {
             into: "Boutique",
             values: boutiques
         }).then(results => {
+
             expect(results).to.equal(3);
             done();
         }).catch(done);
@@ -81,6 +82,56 @@ describe("Flat", function () {
             from: 'Boutique',
             flatten: ["types"]
         }).then(function (results) {
+            const expectedResults = [
+                { id: "uniqueid04", title: "Sport 3000", types: "uniqueid01" },
+                {
+                    id: "uniqueid05",
+                    title: "LuxuryWear",
+                    types: "uniqueid02"
+                },
+                {
+                    id: "uniqueid05",
+                    title: "LuxuryWear",
+                    types: "uniqueid03"
+                },
+                { id: "uniqueid06", title: "WearShop", types: "uniqueid03" }
+            ];
+            results.forEach(function (item, index) {
+                expect(item).to.deep.equal(expectedResults[index]);
+            })
+            expect(results).to.be.an('array').length(4);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it("join with array column", function (done) {
+        con.select({
+            from: 'Boutique',
+            flatten: ["types"],
+            join: {
+                with: "BoutiqueType",
+                on: "Boutique.types=BoutiqueType.id",
+                as: {
+                    id: "boutiqueTypeId",
+                    title: "boutiqueTypeTitle"
+                }
+            }
+        }).then(function (results) {
+            const expectedResults = [
+                { types: "uniqueid01" },
+                {
+                    types: "uniqueid02"
+                },
+                {
+                    types: "uniqueid03"
+                },
+                { types: "uniqueid03" }
+            ];
+            results.forEach(function (item, index) {
+                expect(item.types).to.equal(expectedResults[index].types);
+            })
             expect(results).to.be.an('array').length(4);
             done();
         }).catch(function (err) {

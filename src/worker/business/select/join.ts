@@ -23,7 +23,8 @@ export class Join extends Helper {
         new Select.Instance({
             from: tableName,
             where: query.where,
-            case: query.case
+            case: query.case,
+            flatten: query.flatten
         }, results => {
             this.results = results.map((item) => {
                 return {
@@ -149,7 +150,7 @@ export class Join extends Helper {
                     from: query.with,
                     where: query.where,
                     case: query.case,
-
+                    flatten: query.flatten
                 }, results => {
                     this.jointables(query.type, jointblInfo, results);
                     this.tablesFetched.push(jointblInfo.table2.table);
