@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.11.2 - 15/11/2020
+ * @license :jsstore - V3.11.3 - 24/11/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -1971,7 +1971,7 @@ var init_db_InitDb = /** @class */ (function (_super) {
 }(base_db["a" /* BaseDb */]));
 
 
-// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 2 modules
+// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 3 modules
 var select_instance = __webpack_require__(30);
 
 // EXTERNAL MODULE: ./src/worker/business/count/instance.ts + 5 modules
@@ -4775,7 +4775,7 @@ var where_Where = /** @class */ (function (_super) {
 }(regex_Regex));
 
 
-// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 2 modules
+// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 3 modules
 var instance = __webpack_require__(30);
 
 // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
@@ -5100,7 +5100,7 @@ var Where = /** @class */ (function (_super) {
 // EXTERNAL MODULE: ./src/common/enums.ts
 var enums = __webpack_require__(0);
 
-// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 2 modules
+// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 3 modules
 var instance = __webpack_require__(30);
 
 // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
@@ -5515,7 +5515,7 @@ var Where = /** @class */ (function (_super) {
 // EXTERNAL MODULE: ./src/common/enums.ts
 var enums = __webpack_require__(0);
 
-// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 2 modules
+// EXTERNAL MODULE: ./src/worker/business/select/instance.ts + 3 modules
 var instance = __webpack_require__(30);
 
 // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
@@ -5678,7 +5678,8 @@ var join_Join = /** @class */ (function (_super) {
         new instance_Instance({
             from: tableName,
             where: query.where,
-            case: query.case
+            case: query.case,
+            flatten: query.flatten
         }, function (results) {
             _this.results = results.map(function (item) {
                 var _a;
@@ -5787,14 +5788,14 @@ var join_Join = /** @class */ (function (_super) {
                 if (true) {
                     this.checkJoinQuery_(jointblInfo_1, query);
                     if (this.error != null) {
-                        this.onJoinQueryFinished_();
-                        return;
+                        return this.onJoinQueryFinished_();
                     }
                 }
                 new instance_Instance({
                     from: query.with,
                     where: query.where,
                     case: query.case,
+                    flatten: query.flatten
                 }, function (results) {
                     _this.jointables(query.type, jointblInfo_1, results);
                     _this.tablesFetched.push(jointblInfo_1.table2.table);
@@ -5929,6 +5930,11 @@ var join_Join = /** @class */ (function (_super) {
 // EXTERNAL MODULE: ./src/worker/business/query_helper.ts + 4 modules
 var query_helper = __webpack_require__(7);
 
+// CONCATENATED MODULE: ./src/worker/utils/get_keys.ts
+var getKeys = function (value) {
+    return Object.keys(value);
+};
+
 // EXTERNAL MODULE: ./src/worker/utils/is_array.ts
 var is_array = __webpack_require__(34);
 
@@ -5954,6 +5960,17 @@ var instance_extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var instance_assign = (undefined && undefined.__assign) || function () {
+    instance_assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return instance_assign.apply(this, arguments);
+};
 var __spreadArrays = (undefined && undefined.__spreadArrays) || function () {
     for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
     for (var r = Array(s), k = 0, i = 0; i < il; i++)
@@ -5971,6 +5988,26 @@ var instance_Instance = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.onTransactionCompleted_ = function () {
             if (_this.error == null) {
+                if (_this.query.flatten) {
+                    debugger;
+                    var flattendData_1 = [];
+                    var indexToDelete_1 = {};
+                    _this.query.flatten.forEach(function (column) {
+                        _this.results.forEach(function (data, i) {
+                            data[column].forEach(function (item) {
+                                var _a;
+                                flattendData_1.push(instance_assign(instance_assign({}, data), (_a = {}, _a[column] = item, _a)));
+                            });
+                            indexToDelete_1[i] = true;
+                        });
+                    });
+                    var itemsDeleted_1 = 0;
+                    getKeys(indexToDelete_1).forEach(function (key) {
+                        _this.results.splice(Number(key) - itemsDeleted_1, 1);
+                        ++itemsDeleted_1;
+                    });
+                    _this.results = _this.results.concat(flattendData_1);
+                }
                 _this.processOrderBy();
                 if (!_this.error) {
                     _this.processGroupDistinctAggr();
@@ -6149,7 +6186,7 @@ var instance_Instance = /** @class */ (function (_super) {
         this.isOr = false;
         this.results = this.orInfo.results;
         // free or info memory
-        this.orInfo = undefined;
+        this.orInfo = null;
         this.removeDuplicates();
         this.onQueryFinished();
     };

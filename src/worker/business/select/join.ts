@@ -141,8 +141,7 @@ export class Join extends Helper {
                 if (process.env.NODE_ENV === 'dev') {
                     this.checkJoinQuery_(jointblInfo, query);
                     if (this.error != null) {
-                        this.onJoinQueryFinished_();
-                        return;
+                        return this.onJoinQueryFinished_();
                     }
                 }
 
