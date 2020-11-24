@@ -106,7 +106,7 @@ describe("Flat", function () {
         })
     });
 
-    it("join with array column", function (done) {
+    it("select from Boutique & join with array column", function (done) {
         con.select({
             from: 'Boutique',
             flatten: ["types"],
@@ -116,6 +116,39 @@ describe("Flat", function () {
                 as: {
                     id: "boutiqueTypeId",
                     title: "boutiqueTypeTitle"
+                }
+            }
+        }).then(function (results) {
+            const expectedResults = [
+                { types: "uniqueid01" },
+                {
+                    types: "uniqueid02"
+                },
+                {
+                    types: "uniqueid03"
+                },
+                { types: "uniqueid03" }
+            ];
+            results.forEach(function (item, index) {
+                expect(item.types).to.equal(expectedResults[index].types);
+            })
+            expect(results).to.be.an('array').length(4);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it("select from Boutique types & join with array column", function (done) {
+        con.select({
+            from: 'BoutiqueType',
+            join: {
+                with: "Boutique",
+                flatten: ["types"],
+                on: "Boutique.types=BoutiqueType.id",
+                as: {
+                    id: "boutiqueId",
+                    title: "boutiqueTitle"
                 }
             }
         }).then(function (results) {
