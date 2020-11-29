@@ -602,7 +602,6 @@ describe('Test update Api', function () {
                 customerId: 5
             }
         }).then(function (res) {
-            debugger;
             done(res);
         }).catch(function (err) {
             expect(err.type).to.equal('DataError');

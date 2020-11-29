@@ -179,7 +179,6 @@ export class Instance extends Join {
     private onTransactionCompleted_ = () => {
         if (this.error == null) {
             if (this.query.flatten) {
-                debugger;
                 const flattendData = [];
                 const indexToDelete = {};
                 this.query.flatten.forEach(column => {
