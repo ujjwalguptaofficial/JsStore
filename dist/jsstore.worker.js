@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.11.3 - 24/11/2020
+ * @license :jsstore - V3.11.4 - 29/11/2020
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
  */
@@ -8385,7 +8385,6 @@ function (module, __webpack_exports__, __webpack_require__) {
       _this.onTransactionCompleted_ = function () {
         if (_this.error == null) {
           if (_this.query.flatten) {
-            debugger;
             var flattendData_1 = [];
             var indexToDelete_1 = {};
 
