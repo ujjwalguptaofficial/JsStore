@@ -25,6 +25,11 @@ var getEmployeeDbSchema = () => {
                 isManager: {
                     dataType: 'boolean',
                     default: false
+                },
+                temp: {
+                    dataType: "string",
+                    notNull: false,
+                    default: null
                 }
             }
         }]

@@ -528,6 +528,20 @@ describe('Test Select Api with case', function () {
         }).catch(done);
     })
 
+    it('update employee db - test for null update', function (done) {
+        con.update({
+            in: 'employee',
+            set: {
+                "temp": null
+            },
+            where: {
+                employeeId: 1
+            }
+        }).then(function (result) {
+            done(result);
+        }).catch(done);
+    })
+
     it('select from employee & check isManager', function (done) {
         con.select({
             from: 'employee',
