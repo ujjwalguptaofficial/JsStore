@@ -538,7 +538,8 @@ describe('Test Select Api with case', function () {
                 employeeId: 1
             }
         }).then(function (result) {
-            done(result);
+            expect(result).to.be.an('number').equal(1);
+            done();
         }).catch(done);
     })
 
