@@ -3,7 +3,7 @@ import { IError, ERROR_TYPE, OCCURENCE, DATA_TYPE, QUERY_OPTION } from "../../co
 import { WhereChecker } from "./where_checker";
 import { LogHelper } from "../log_helper";
 import { Column } from "../model/index";
-import { getDataType, getObjectFirstKey, getRegexFromLikeExpression } from "../utils/index";
+import { getObjectFirstKey, getRegexFromLikeExpression, isObject } from "../utils/index";
 
 export abstract class Base extends BaseHelper {
     error: IError;
@@ -57,7 +57,7 @@ export abstract class Base extends BaseHelper {
         const columnName = getObjectFirstKey(this.query.where);
         if (this.objectStore.indexNames.contains(columnName)) {
             const value = this.query.where[columnName];
-            if (typeof value === 'object') {
+            if (isObject(value)) {
                 const checkFlag = Boolean(
                     Object.keys(value).length > 1 ||
                     Object.keys(this.query.where).length > 1
