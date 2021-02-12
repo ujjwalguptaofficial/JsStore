@@ -198,9 +198,9 @@ export class Instance extends Join {
                 });
                 this.results = this.results.concat(flattendData);
             }
+            this.processGroupDistinctAggr();
             this.processOrderBy();
             if (!this.error) {
-                this.processGroupDistinctAggr();
                 if (this.shouldEvaluateSkipAtEnd) {
                     this.results.splice(0, this.query.skip);
                 }

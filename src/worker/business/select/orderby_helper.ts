@@ -42,6 +42,13 @@ export class Helper extends GroupByHelper {
             column = this.getColumnInfo(orderColumn, splittedByDot[0]);
         }
         if (column == null) {
+            const valueFromFirstColumn = this.results[0][orderColumn];
+            if (valueFromFirstColumn) {
+                return {
+                    dataType: getDataType(valueFromFirstColumn),
+                    name: orderColumn
+                } as Column;
+            }
             this.onErrorOccured(new LogHelper(ERROR_TYPE.ColumnNotExist, { column: orderColumn, isOrder: true }), true);
         }
         return column;

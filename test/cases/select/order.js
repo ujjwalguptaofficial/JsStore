@@ -398,4 +398,48 @@ describe('Select with order', function () {
         })
     })
 
+    it('order by on aggregate column', function (done) {
+        con.select({
+            from: "Products",
+            aggregate: {
+                count: "price"
+            },
+            groupBy: 'price',
+            limit: 10,
+            order: {
+                by: 'count(price)',
+                idbSorting: false
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(10);
+            const expectedCountPrice = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+            results.forEach((item, index) => {
+                expect(item['count(price)']).to.eql(expectedCountPrice[index]);
+            })
+            done();
+        }).catch(done);
+    })
+
+    it('order by on aggregate column with sort type desc', function (done) {
+        con.select({
+            from: "Products",
+            aggregate: {
+                count: "price"
+            },
+            groupBy: 'price',
+            limit: 10,
+            order: {
+                by: 'count(price)',
+                idbSorting: false,
+                type: 'desc'
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(10);
+            const expectedCountPrice = [4, 4, 3, 2, 2, 2, 2, 2, 2, 2];
+            results.forEach((item, index) => {
+                expect(item['count(price)']).to.eql(expectedCountPrice[index]);
+            })
+            done();
+        }).catch(done);
+    })
 });
