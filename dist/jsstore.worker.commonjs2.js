@@ -1,7 +1,7 @@
 /*!
- * @license :jsstore - V3.11.4 - 29/11/2020
+ * @license :jsstore - V3.12.0 - 12/02/2021
  * https://github.com/ujjwalguptaofficial/JsStore
- * Copyright (c) 2020 @Ujjwal Gupta; Licensed MIT
+ * Copyright (c) 2021 @Ujjwal Gupta; Licensed MIT
  */
 module.exports =
 /******/ (function(modules) { // webpackBootstrap
@@ -3898,6 +3898,13 @@ var orderby_helper_Helper = /** @class */ (function (_super) {
             column = this.getColumnInfo(orderColumn, splittedByDot[0]);
         }
         if (column == null) {
+            var valueFromFirstColumn = this.results[0][orderColumn];
+            if (valueFromFirstColumn) {
+                return {
+                    dataType: Object(get_data_type["a" /* getDataType */])(valueFromFirstColumn),
+                    name: orderColumn
+                };
+            }
             this.onErrorOccured(new log_helper["a" /* LogHelper */](enums["d" /* ERROR_TYPE */].ColumnNotExist, { column: orderColumn, isOrder: true }), true);
         }
         return column;
@@ -6007,9 +6014,9 @@ var instance_Instance = /** @class */ (function (_super) {
                     });
                     _this.results = _this.results.concat(flattendData_1);
                 }
+                _this.processGroupDistinctAggr();
                 _this.processOrderBy();
                 if (!_this.error) {
-                    _this.processGroupDistinctAggr();
                     if (_this.shouldEvaluateSkipAtEnd) {
                         _this.results.splice(0, _this.query.skip);
                     }
