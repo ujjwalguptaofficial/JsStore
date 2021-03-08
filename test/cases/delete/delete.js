@@ -25,6 +25,23 @@ describe('Test remove Api', function () {
         })
     });
 
+    it('remove with where - invalid column in where', function (done) {
+
+        con.remove({
+            from: 'Customers',
+            where: {
+                Country: 'Mexico'
+            }
+        }).catch(function (err) {
+            var error = {
+                message: "Column 'Country' does not exist",
+                type: "column_not_exist"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    });
+
     it('remove without ignore case', function (done) {
         var Count;
         con.select({
@@ -118,7 +135,8 @@ describe('Test remove Api', function () {
         con.select({
             from: 'Customers',
             where: {
-                country: { in: ['Germany', 'France', 'UK']
+                country: {
+                    in: ['Germany', 'France', 'UK']
                 }
             }
         }).then(function (results) {
@@ -130,7 +148,8 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Customers',
             where: {
-                country: { in: ['Germany', 'France', 'UK']
+                country: {
+                    in: ['Germany', 'France', 'UK']
                 }
             }
         }).then(function (results) {
@@ -462,13 +481,13 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Customers'
         }).
-        then(function (results) {
-            expect(results).to.be.an('number').to.equal(Count);
-            done();
-        }).
-        catch(function (err) {
-            done(err);
-        });
+            then(function (results) {
+                expect(results).to.be.an('number').to.equal(Count);
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            });
 
     });
 
@@ -476,13 +495,13 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Cusdtomers'
         }).
-        catch(function (err) {
-            var error = {
-                "message": "Table 'Cusdtomers' does not exist",
-                "type": "table_not_exist"
-            };
-            expect(err).to.be.an('object').eql(error);
-            done();
-        });
+            catch(function (err) {
+                var error = {
+                    "message": "Table 'Cusdtomers' does not exist",
+                    "type": "table_not_exist"
+                };
+                expect(err).to.be.an('object').eql(error);
+                done();
+            });
     });
 });

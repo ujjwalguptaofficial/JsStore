@@ -20,6 +20,26 @@ describe('Test update Api', function () {
             })
     });
 
+    it('update with where - invalid column in where', function (done) {
+        con.update({
+            in: "Customers",
+            set: {
+                contactName: 'Ujjwal',
+                city: 'Bhubaneswar'
+            },
+            where: {
+                CustomerId: 1
+            }
+        }).catch(function (err) {
+            var error = {
+                message: "Column 'CustomerId' does not exist",
+                type: "column_not_exist"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    });
+
     it('wrong table test', function (done) {
         con.update({
             in: "Customerss",

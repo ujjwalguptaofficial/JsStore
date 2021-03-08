@@ -1,5 +1,5 @@
 import { Where } from "./where";
-import {  IError, API, CountQuery, IDB_MODE } from "../../../common/index";
+import { IError, API, CountQuery, IDB_MODE } from "../../../common/index";
 import * as Select from '../select/index';
 import { QueryHelper } from "../query_helper";
 import { isArray } from "../../utils/index";
@@ -11,6 +11,7 @@ export class Instance extends Where {
         this.onError = onError;
         this.onSuccess = onSuccess;
         this.query = query;
+        this.tableName = query.from;
     }
 
     execute() {

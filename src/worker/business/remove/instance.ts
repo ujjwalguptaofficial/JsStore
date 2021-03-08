@@ -15,6 +15,7 @@ export class Instance extends Where {
         this.query = query;
         this.onSuccess = onSuccess;
         this.onError = onError;
+        this.tableName = this.query.from;
     }
 
     execute() {

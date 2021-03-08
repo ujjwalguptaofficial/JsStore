@@ -24,6 +24,22 @@ describe('Test count Api', function () {
         })
     });
 
+    it('count with where - invalid column', function (done) {
+        con.count({
+            from: 'Customers',
+            where: {
+                Country: 'Mexico'
+            }
+        }).catch(function (err) {
+            var error = {
+                message: "Column 'Country' does not exist",
+                type: "column_not_exist"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
+    });
+
     it('count with where - multiple column and ', function (done) {
         con.count({
             from: 'Customers',
