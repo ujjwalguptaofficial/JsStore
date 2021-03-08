@@ -3,7 +3,7 @@ import { Join } from "./join";
 import { QueryHelper } from "../query_helper";
 import { isArray, getObjectFirstKey, isObject, getKeys } from "../../utils/index";
 
-export class Instance extends Join {
+export default class extends Join {
 
     constructor(query: SelectQuery, onSuccess: (results: object[]) => void, onError: (err: IError) => void) {
         super();

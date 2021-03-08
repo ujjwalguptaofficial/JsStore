@@ -1,4 +1,4 @@
-import * as Select from '../select/index';
+import SelectInstance from '../select/instance';
 import { IError, IntersectQuery } from '../../../common/index';
 import { Helper } from '../select/orderby_helper';
 
@@ -39,7 +39,7 @@ export class Intersect extends Helper {
 
         const fetchData = () => {
             if (index < queryLength) {
-                new Select.Instance(query[index], (selectResult) => {
+                new SelectInstance(query[index], (selectResult) => {
                     hashMap = {};
                     selectResult.forEach(val => {
                         const columnValKey = getHashKey(val);

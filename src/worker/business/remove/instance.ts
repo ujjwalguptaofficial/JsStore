@@ -1,6 +1,6 @@
 import { Where } from "./where";
 import { RemoveQuery, QUERY_OPTION, API, IError } from "../../../common/index";
-import * as Select from '../select/index';
+import SelectInstance from '../select/instance';
 import { QueryHelper } from "../index";
 import { getObjectFirstKey, isArray } from "../../utils/index";
 
@@ -49,7 +49,7 @@ export class Instance extends Where {
     }
 
     private processWhereArrayQry() {
-        const selectObject = new Select.Instance(this.query, (results) => {
+        const selectObject = new SelectInstance(this.query, (results) => {
             const keyList = [];
             const pkey = this.getPrimaryKey(this.query.from);
             results.forEach((item) => {

@@ -1,4 +1,4 @@
-import * as Select from './instance';
+import SelectInstance from './instance';
 import { QUERY_OPTION, DATA_TYPE, ERROR_TYPE, JoinQuery } from "../../../common/index";
 import { Helper } from "./orderby_helper";
 import { LogHelper } from "../../log_helper";
@@ -20,7 +20,7 @@ export class Join extends Helper {
         }
         // get the data for first table
         const tableName = query.from;
-        new Select.Instance({
+        new SelectInstance({
             from: tableName,
             where: query.where,
             case: query.case,
@@ -145,7 +145,7 @@ export class Join extends Helper {
                     }
                 }
 
-                new Select.Instance({
+                new SelectInstance({
                     from: query.with,
                     where: query.where,
                     case: query.case,

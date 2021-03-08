@@ -1,5 +1,5 @@
 import { IdbHelper, DropDb, InitDb, Clear, QueryHelper } from "./business/index";
-import * as Select from './business/select/index';
+import SelectInstance from './business/select/instance';
 import * as Count from './business/count/index';
 import * as Insert from './business/insert/index';
 import * as Remove from './business/remove/index';
@@ -120,7 +120,7 @@ export class QueryExecutor {
             case API.OpenDb:
                 this.openDb_(request.query, onSuccess, onError); break;
             case API.Select:
-                new Select.Instance(request.query as SelectQuery, onSuccess, onError).execute();
+                new SelectInstance(request.query as SelectQuery, onSuccess, onError).execute();
                 break;
             case API.Insert: new Insert.Instance(request.query as InsertQuery, onSuccess, onError).execute();
                 break;

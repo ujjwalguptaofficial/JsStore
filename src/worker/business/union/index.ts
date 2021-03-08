@@ -1,4 +1,4 @@
-import * as Select from '../select/index';
+import SelectInstance from '../select/instance';
 import { SelectQuery, IError } from '../../../common/index';
 import { Base } from '../base';
 
@@ -35,7 +35,7 @@ export class Union extends Base {
 
         const fetchData = () => {
             if (index < query.length) {
-                new Select.Instance(query[index++], (selectResult) => {
+                new SelectInstance(query[index++], (selectResult) => {
                     selectResult.forEach(val => {
                         hashMap[getHashKey(val)] = val;
                     });

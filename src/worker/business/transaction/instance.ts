@@ -3,7 +3,7 @@ import {
     CountQuery, UpdateQuery, InsertQuery, ERROR_TYPE, API, IError
 } from "../../../common/index";
 import { Base } from "../base";
-import * as Select from '../select/index';
+import SelectInstance from '../select/instance';
 import * as Count from '../count/index';
 import * as Insert from '../insert/index';
 import * as Remove from '../remove/index';
@@ -177,7 +177,7 @@ export class Instance extends Base {
         }
         switch (request.name) {
             case API.Select:
-                requestObj = new Select.Instance(
+                requestObj = new SelectInstance(
                     request.query, this.onRequestFinished_.bind(this), this.onError.bind(this)
                 );
                 break;

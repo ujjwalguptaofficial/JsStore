@@ -1,5 +1,5 @@
 import { Where } from "./where";
-import * as Select from "../select/index";
+import SelectInstance from "../select/instance";
 import { QueryHelper } from "../query_helper";
 import { isArray } from "../../utils/index";
 import { UpdateQuery, IError, API, SelectQuery, QUERY_OPTION } from "../../../common/index";
@@ -44,7 +44,7 @@ export class Instance extends Where {
     }
 
     private executeComplexLogic_() {
-        const selectObject = new Select.Instance({
+        const selectObject = new SelectInstance({
             from: this.query.in,
             where: this.query.where,
             ignoreCase: this.query.ignoreCase
