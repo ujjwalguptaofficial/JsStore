@@ -4,7 +4,7 @@ import SelectInstance from '../select/instance';
 import { QueryHelper } from "../query_helper";
 import { isArray } from "../../utils/index";
 
-export class Instance extends Where {
+export default class extends Where {
 
     constructor(query: CountQuery, onSuccess: (noOfRecord: number) => void, onError: (error: IError) => void) {
         super();

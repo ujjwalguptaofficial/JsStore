@@ -4,7 +4,7 @@ import {
 } from "../../../common/index";
 import { Base } from "../base";
 import SelectInstance from '../select/instance';
-import * as Count from '../count/index';
+import CountInstance from '../count/instance';
 import * as Insert from '../insert/index';
 import * as Remove from '../remove/index';
 import * as Update from '../update/index';
@@ -197,7 +197,7 @@ export class Instance extends Base {
                 );
                 break;
             case API.Count:
-                requestObj = new Count.Instance(
+                requestObj = new CountInstance(
                     request.query, this.onRequestFinished_.bind(this), this.onError.bind(this)
                 );
                 break;

@@ -1,6 +1,6 @@
 import { IdbHelper, DropDb, InitDb, Clear, QueryHelper } from "./business/index";
 import SelectInstance from './business/select/instance';
-import * as Count from './business/count/index';
+import CountInstance from './business/count/instance';
 import * as Insert from './business/insert/index';
 import * as Remove from './business/remove/index';
 import * as Update from './business/update/index';
@@ -16,7 +16,7 @@ import { KeyStore } from "./keystore/index";
 import { TableHelper, DbHelper, DataBase } from "./model/index";
 import { promise } from "./helpers/index";
 import { getDataType } from "./utils/index";
-import { Union } from './business/union/index';
+import Union from './business/union/index';
 import { Intersect } from "./business/intersect/index";
 export class QueryExecutor {
     static isTransactionQuery = false;
@@ -146,7 +146,7 @@ export class QueryExecutor {
             case API.DropDb: this.dropDb_(onSuccess, onError);
                 break;
             case API.Count:
-                new Count.Instance(request.query as CountQuery, onSuccess, onError).execute();
+                new CountInstance(request.query as CountQuery, onSuccess, onError).execute();
                 break;
             case API.Get: this.get_(request.query as string).then(onSuccess).catch(onError);
                 break;
