@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.12.0 - 12/02/2021
+ * @license :jsstore - V3.12.1 - 08/03/2021
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2021 @Ujjwal Gupta; Licensed MIT
  */
@@ -5153,6 +5153,7 @@ var instance_Instance = /** @class */ (function (_super) {
         _this.query = query;
         _this.onSuccess = onSuccess;
         _this.onError = onError;
+        _this.tableName = _this.query.from;
         return _this;
     }
     Instance.prototype.execute = function () {
@@ -5557,6 +5558,7 @@ var instance_Instance = /** @class */ (function (_super) {
         _this.onError = onError;
         _this.onSuccess = onSuccess;
         _this.query = query;
+        _this.tableName = query.from;
         return _this;
     }
     Instance.prototype.execute = function () {
