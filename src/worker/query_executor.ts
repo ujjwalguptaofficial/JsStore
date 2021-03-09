@@ -170,6 +170,17 @@ export class QueryExecutor {
             case API.Intersect:
                 new Intersect().execute(request.query, onSuccess, onError);
                 break;
+            case API.ImportScripts:
+                try {
+                    importScripts(...request.query);
+                    request.onSuccess();
+                } catch (e) {
+                    request.onError({
+                        type: "" as any,
+                        message: e.message
+                    })
+                }
+                break;
             default:
                 if (process.env.NODE_ENV === 'dev') {
                     console.error('The Api:-' + request.name + ' does not support.');

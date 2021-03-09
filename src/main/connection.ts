@@ -309,4 +309,11 @@ export class Connection extends ConnectionHelper {
     addMiddleware(middleware) {
         this.middlewares.push(middleware);
     }
+
+    importscripts(...urls: string[]) {
+        return this.pushApi({
+            name: API.ImportScripts,
+            query: urls
+        });
+    }
 }

@@ -26,6 +26,7 @@ export enum ERROR_TYPE {
     InvalidOrderQuery = 'invalid_order_query',
     InvalidQuery = 'invalid_query',
     InvalidGroupQuery = 'invalid_group_query',
+    ImportScriptsFailed = 'import_scripts_failed',
 }
 
 export enum WORKER_STATUS {
@@ -66,7 +67,8 @@ export enum API {
     InitKeyStore = "init_keystore",
     CloseDb = "close_db",
     Union = "union",
-    Intersect = "intersect"
+    Intersect = "intersect",
+    ImportScripts = "import_scripts",
 }
 
 export enum EVENT {
