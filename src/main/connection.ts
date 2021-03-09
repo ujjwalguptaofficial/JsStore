@@ -254,17 +254,15 @@ export class Connection extends ConnectionHelper {
     }
 
     /**
-     * execute the transaction
+     * execute transaction
      *
+     * @template T
      * @param {TranscationQuery} query
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
-    transaction(query: TranscationQuery) {
-        // if (Config.isRuningInWorker === true) {
-        //     (query.method as any) = query.method.toString();
-        // }
-        return this.pushApi<any>({
+    transaction<T>(query: TranscationQuery) {
+        return this.pushApi<T>({
             name: API.Transaction,
             query: query
         });

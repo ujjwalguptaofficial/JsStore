@@ -126,7 +126,7 @@ export type WebWorkerResult = {
 export type TranscationQuery = {
     tables: string[];
     method: string;
-    data: any;
+    data?: any;
 };
 
 export type SqlWebResult = {
