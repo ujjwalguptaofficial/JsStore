@@ -1,24 +1,12 @@
 describe('Test transaction', function () {
+    it("load script", function (done) {
+        con.importScripts("../cases/transaction/transaction_main.js").then(done).catch(done);
+    });
+
     it('select and count', function (done) {
-        var count;
         var transaction_query = {
             tables: ['Customers'],
-            logic: function (data) {
-
-                select({
-                    from: 'Customers'
-                }).then(function (results) {
-                    setResult('customers', results);
-                });
-
-                count({
-                    from: 'Customers'
-                }).then(function (length) {
-                    setResult('count', length);
-                });
-                start()
-
-            }
+            method: "selectAndCount"
         }
         con.transaction(transaction_query).then(function (results) {
             expect(results.customers).to.be.an('array').length(results.count);
@@ -29,38 +17,9 @@ describe('Test transaction', function () {
     });
 
     it('select and count multiple tables', function (done) {
-        var count;
         var transaction_query = {
             tables: ['Customers', 'OrderDetails', 'Categories'],
-            logic: function (data) {
-
-                select({
-                    from: 'Customers'
-                }).then(function (results) {
-                    setResult('customers', results);
-                });
-
-                count({
-                    from: 'Customers'
-                }).then(function (length) {
-                    setResult('countCustomer', length);
-                });
-
-                select({
-                    from: 'OrderDetails'
-                }).then(function (results) {
-                    setResult('orderDetails', results);
-                });
-
-                count({
-                    from: 'OrderDetails'
-                }).then(function (length) {
-                    setResult('countOrderDetails', length);
-                });
-                start()
-
-
-            }
+            method: "selectAndCountMultipleTables"
         }
         con.transaction(transaction_query).then(function (results) {
             expect(results.customers).to.be.an('array').length(results.countCustomer);
@@ -84,27 +43,7 @@ describe('Test transaction', function () {
                     country: 'BangKok'
                 }]
             },
-            logic: function (ctx) {
-                select({
-                    from: 'Customers'
-                }).then(function (result) {
-                    setResult('customers', result);
-                })
-                insert({
-                    into: 'Customers',
-                    return: true,
-                    values: ctx.data.insertValues
-                }).then(function (insertedcustomer) {
-                    setResult('insertedcustomer', insertedcustomer);
-                })
-                count({
-                    from: 'Customers'
-                }).then(function (result) {
-                    setResult('countNewCustomer', result)
-                })
-                start()
-
-            }
+            method: "simpleInsert"
         }
         con.transaction(transaction_query).then(function (results) {
             var insertedcustomer = results.insertedcustomer[0];
@@ -130,21 +69,7 @@ describe('Test transaction', function () {
                     country: 'BangKok'
                 }
             },
-            logic: function (ctx) {
-
-                update({
-                    in: 'Customers',
-                    set: ctx.data.updateValue,
-                    where: {
-                        customerId: 5
-                    }
-                }).then(function (result) {
-                    setResult('updated', result)
-                })
-                start()
-
-
-            }
+            method: "simpleUpdate"
         }
         con.transaction(transaction_query).then(function (results) {
             expect(results.updated).to.be.an('number').equal(1);

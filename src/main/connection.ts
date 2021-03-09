@@ -261,9 +261,9 @@ export class Connection extends ConnectionHelper {
      * @memberof Instance
      */
     transaction(query: TranscationQuery) {
-        if (Config.isRuningInWorker === true) {
-            (query.logic as any) = query.logic.toString();
-        }
+        // if (Config.isRuningInWorker === true) {
+        //     (query.method as any) = query.method.toString();
+        // }
         return this.pushApi<any>({
             name: API.Transaction,
             query: query
@@ -310,7 +310,7 @@ export class Connection extends ConnectionHelper {
         this.middlewares.push(middleware);
     }
 
-    importscripts(...urls: string[]) {
+    importScripts(...urls: string[]) {
         return this.pushApi({
             name: API.ImportScripts,
             query: urls

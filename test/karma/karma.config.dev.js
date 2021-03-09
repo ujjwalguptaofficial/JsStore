@@ -1,46 +1,12 @@
 process.env.CHROME_BIN = require('puppeteer').executablePath();
 var files = require('../files');
+var base = require('./karma.config.base');
 module.exports = function (config) {
     config.set({
-        basePath: '../../',
-        frameworks: ['mocha', 'chai'],
-        client: {
-            mocha: {
-                timeout: 60000
-            }
-        },
-        files: ['build/jsstore.js', 'build/jsstore.worker.js',
-            ...files.list_of_files
-        ],
-        proxies: {
-            '/test/': '/base/test/',
-            // '/scripts/': 'base/test/scripts/',
-            // '/static/': 'base/test/static/',
-            // '/cases/': 'base/cases/',
-            '/output/': '/base/build/'
-        },
-        reporters: ['mocha'],
-        port: 9876, // karma web server port
-        colors: true,
-        logLevel: config.LOG_INFO,
-        browsers: ['HeadlessChrome'],
-        customLaunchers: {
-            HeadlessChrome: {
-                base: 'ChromeHeadless',
-                flags: [
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--headless',
-                    '--disable-gpu',
-                    '--disable-translate',
-                    '--disable-extensions'
-                ]
-            }
-        },
-        autoWatch: false,
-        concurrency: Infinity,
-        // singleRun: false,
-        singleRun: true,
-        browserNoActivityTimeout: 120000,
+        ...base(config), ...{
+            files: ['build/jsstore.js', 'build/jsstore.worker.js',
+                ...files.list_of_files
+            ],
+        }
     })
 }

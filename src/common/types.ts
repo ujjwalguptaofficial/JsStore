@@ -125,7 +125,7 @@ export type WebWorkerResult = {
 
 export type TranscationQuery = {
     tables: string[];
-    logic: (data: any) => Promise<void>;
+    method: string;
     data: any;
 };
 

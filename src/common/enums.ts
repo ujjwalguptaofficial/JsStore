@@ -27,6 +27,7 @@ export enum ERROR_TYPE {
     InvalidQuery = 'invalid_query',
     InvalidGroupQuery = 'invalid_group_query',
     ImportScriptsFailed = 'import_scripts_failed',
+    MethodNotExist = 'method_not_exist',
 }
 
 export enum WORKER_STATUS {

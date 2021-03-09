@@ -87,26 +87,29 @@ export class Instance extends Base {
         };
 
         const start = () => {
-            this.checkQueries_(this.requestQueue).then((results) => {
+            this.checkQueries_(this.requestQueue).then(_ => {
                 this.startTransaction_();
             }).catch((err) => {
                 this.onError(err);
             });
         };
-        let txLogic = null;
-        if (Config.isRuningInWorker === true) {
-            eval("txLogic =" + this.query.logic);
-
-        }
-        else {
-            txLogic = this.query.logic;
+        const methodName = this.query.method
+        let txLogic = self[methodName];
+        if (!txLogic) {
+            return this.onError({
+                type: ERROR_TYPE.MethodNotExist,
+                message: `method ${methodName} does not exist.`
+            })
         }
         txLogic.call(
             this,
             {
                 data: this.query.data,
-                insert, select, update, remove,
-                count, setResult, getResult, abort, start
+                insert: insert, select: select,
+                update: update, remove: remove,
+                count: count, setResult: setResult,
+                getResult: getResult, abort: abort,
+                start: start
             }
         );
 

@@ -1,17 +1,12 @@
 describe('Transaction - error test', function () {
+    it("load script", function (done) {
+        con.importScripts("../cases/transaction/transaction_error.js").then(done).catch(done);
+    });
+
     it('supplying wrong table name in tables', function (done) {
         var transaction_query = {
             tables: ['Customsers', 'Customers', 'Suppliers'],
-            logic: function (data) {
-
-                select({
-                    from: 'Customers'
-                }).then(function (results) {
-                    setResult('customers', results);
-                });
-                start()
-
-            }
+            method: "wrongTableName"
         }
         con.transaction(transaction_query).catch(function (err) {
             var error = {
@@ -26,15 +21,8 @@ describe('Transaction - error test', function () {
     it('supplying wrong table name in select query', function (done) {
         var transaction_query = {
             tables: ['Customers'],
-            logic: function (data) {
-                select({
-                    from: 'Customssers'
-                }).then(function (results) {
-                    setResult('customers', results);
-                });
-                start()
-            }
-        }
+            method: "wrongTableNameInSelectQry"
+        };
         con.transaction(transaction_query).catch(function (err) {
             var error = {
                 message: "Table 'Customssers' does not exist",
@@ -49,35 +37,7 @@ describe('Transaction - error test', function () {
         var count;
         var transaction_query = {
             tables: ['Customers', 'OrderDetails', 'Categories'],
-            logic: function (data) {
-
-                select({
-                    from: 'Customers'
-                }).then(function (results) {
-                    setResult('customers', results);
-                });
-
-                count({
-                    from: 'Customerdds'
-                }).then(function (length) {
-                    setResult('countCustomer', length);
-                });
-
-                select({
-                    from: 'OrderDetails'
-                }).then(function (results) {
-                    setResult('orderDetails', results);
-                });
-
-                count({
-                    from: 'OrderDetails'
-                }).then(function (length) {
-                    setResult('countOrderDetails', length);
-                });
-                start()
-
-
-            }
+            method: "selectAndCountOneTableNameWrong"
         }
         con.transaction(transaction_query).then(function (results) {
             expect(results.customers).to.be.an('array').length(results.countCustomer);
@@ -93,7 +53,7 @@ describe('Transaction - error test', function () {
         })
     });
 
-    it('simple insert -null value supplying', function (done) {
+    it('simple insert - null value supplying', function (done) {
         var transaction_query = {
             tables: ['Customers'],
             data: {
@@ -106,25 +66,7 @@ describe('Transaction - error test', function () {
                     country: 'BangKok'
                 }]
             },
-            logic: function (data) {
-
-                count({
-                    from: 'Customers'
-                }).then(function (result) {
-                    setResult('countOldCustomer', result)
-                })
-                insert({
-                    into: 'Customers',
-                    values: null
-                });
-                count({
-                    from: 'Customers'
-                }).then(function (result) {
-                    setResult('countNewCustomer', result)
-                })
-                start();
-
-            }
+            method: "insertWithNullValue"
         }
         con.transaction(transaction_query).then(function (results) {
 
@@ -153,20 +95,7 @@ describe('Transaction - error test', function () {
                     country: 'BangKok'
                 }
             },
-            logic: function (ctx) {
-
-                update({
-                    in: 'Customers',
-                    set: ctx.data.updateValue,
-                    where: {
-                        customerId: 5
-                    }
-                }).then(function (result) {
-                    abort();
-                })
-                start()
-
-            }
+            method: "updateThenAbort"
         }
         var customer;
         con.select({

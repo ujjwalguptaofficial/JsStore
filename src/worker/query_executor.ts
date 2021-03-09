@@ -173,12 +173,12 @@ export class QueryExecutor {
             case API.ImportScripts:
                 try {
                     importScripts(...request.query);
-                    request.onSuccess();
+                    onSuccess();
                 } catch (e) {
-                    request.onError({
+                    onError({
                         type: "" as any,
                         message: e.message
-                    })
+                    });
                 }
                 break;
             default:
