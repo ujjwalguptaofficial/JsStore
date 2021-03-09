@@ -1,6 +1,33 @@
 describe('Transaction - error test', function () {
+    it("load invalid script", function (done) {
+        con.importScripts("../cases/transaction/invalid_file.js").
+            then(done).catch(function (err) {
+                // var error = {
+                //     "message": "Table 'Customsers' does not exist",
+                //     "type": "import_scripts_failed"
+                // };
+                expect(err.type).to.eql("import_scripts_failed");
+                done();
+            });
+    });
+
     it("load script", function (done) {
         con.importScripts("../cases/transaction/transaction_error.js").then(done).catch(done);
+    });
+
+    it('calling invalid method in transation', function (done) {
+        var transaction_query = {
+            tables: ['Customers'],
+            method: "invalidMethod"
+        }
+        con.transaction(transaction_query).then(done).catch(function (err) {
+            var error = {
+                "message": "method invalidMethod does not exist.",
+                "type": "method_not_exist"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        })
     });
 
     it('supplying wrong table name in tables', function (done) {

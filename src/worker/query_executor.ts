@@ -176,7 +176,7 @@ export class QueryExecutor {
                     onSuccess();
                 } catch (e) {
                     onError({
-                        type: "" as any,
+                        type: ERROR_TYPE.ImportScriptsFailed,
                         message: e.message
                     });
                 }
