@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.13.0 - 09/03/2021
+ * @license :jsstore - V3.13.1 - 09/03/2021
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2021 @Ujjwal Gupta; Licensed MIT
  */
@@ -765,11 +765,11 @@ function (module, __webpack_exports__, __webpack_require__) {
       return _super.call(this, worker) || this;
     }
     /**
-     *  open database
+     * open database
      *
      * @param {string} dbName
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
@@ -785,7 +785,7 @@ function (module, __webpack_exports__, __webpack_require__) {
      *
      * @param {IDataBase} dataBase
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
@@ -800,14 +800,13 @@ function (module, __webpack_exports__, __webpack_require__) {
      * drop dataBase
      *
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
     Connection.prototype.dropDb = function () {
       return this.pushApi({
-        name: API.DropDb,
-        query: null
+        name: API.DropDb
       });
     };
     /**
@@ -816,7 +815,7 @@ function (module, __webpack_exports__, __webpack_require__) {
      * @template T
      * @param {SelectQuery} query
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
@@ -831,7 +830,7 @@ function (module, __webpack_exports__, __webpack_require__) {
      *
      * @param {CountQuery} query
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
@@ -844,9 +843,10 @@ function (module, __webpack_exports__, __webpack_require__) {
     /**
      * insert data into table
      *
+     * @template T
      * @param {InsertQuery} query
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
@@ -861,7 +861,7 @@ function (module, __webpack_exports__, __webpack_require__) {
      *
      * @param {UpdateQuery} query
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
@@ -876,7 +876,7 @@ function (module, __webpack_exports__, __webpack_require__) {
      *
      * @param {RemoveQuery} query
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
@@ -891,7 +891,7 @@ function (module, __webpack_exports__, __webpack_require__) {
      *
      * @param {string} tableName
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
@@ -905,7 +905,7 @@ function (module, __webpack_exports__, __webpack_require__) {
      * set log status
      *
      * @param {boolean} status
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
@@ -921,7 +921,7 @@ function (module, __webpack_exports__, __webpack_require__) {
      *
      * @param {(string | DbInfo)} dbName
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
@@ -936,7 +936,7 @@ function (module, __webpack_exports__, __webpack_require__) {
      *
      * @param {(DbInfo | string)} dbInfo
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
@@ -950,7 +950,7 @@ function (module, __webpack_exports__, __webpack_require__) {
      * returns list of database created
      *
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
@@ -965,7 +965,7 @@ function (module, __webpack_exports__, __webpack_require__) {
      *
      * @param {string} dbName
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
@@ -978,9 +978,10 @@ function (module, __webpack_exports__, __webpack_require__) {
     /**
      * get the value from keystore table
      *
+     * @template T
      * @param {string} key
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
@@ -996,7 +997,7 @@ function (module, __webpack_exports__, __webpack_require__) {
      * @param {string} key
      * @param {*} value
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
@@ -1013,29 +1014,26 @@ function (module, __webpack_exports__, __webpack_require__) {
      * terminate the connection
      *
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
     Connection.prototype.terminate = function () {
       return this.pushApi({
-        name: API.Terminate,
-        query: null
+        name: API.Terminate
       });
     };
     /**
-     * execute the transaction
+     * execute transaction
      *
+     * @template T
      * @param {TranscationQuery} query
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
 
 
     Connection.prototype.transaction = function (query) {
-      // if (Config.isRuningInWorker === true) {
-      //     (query.method as any) = query.method.toString();
-      // }
       return this.pushApi({
         name: API.Transaction,
         query: query
@@ -1083,6 +1081,15 @@ function (module, __webpack_exports__, __webpack_require__) {
     Connection.prototype.addMiddleware = function (middleware) {
       this.middlewares.push(middleware);
     };
+    /**
+     * import scripts in jsstore web worker.
+     * Scripts method can be called using transaction api.
+     *
+     * @param {...string[]} urls
+     * @returns
+     * @memberof Connection
+     */
+
 
     Connection.prototype.importScripts = function () {
       var urls = [];

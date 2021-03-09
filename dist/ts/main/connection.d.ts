@@ -3,11 +3,11 @@ import { SelectQuery, CountQuery, InsertQuery, UpdateQuery, RemoveQuery, DbInfo,
 export declare class Connection extends ConnectionHelper {
     constructor(worker?: Worker);
     /**
-     *  open database
+     * open database
      *
      * @param {string} dbName
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
     openDb(dbName: string): Promise<null>;
     /**
@@ -15,23 +15,23 @@ export declare class Connection extends ConnectionHelper {
      *
      * @param {IDataBase} dataBase
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
     initDb(dataBase: IDataBase): Promise<boolean>;
     /**
      * drop dataBase
      *
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
-    dropDb(): Promise<null>;
+    dropDb(): Promise<void>;
     /**
      * select data from table
      *
      * @template T
      * @param {SelectQuery} query
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
     select<T>(query: SelectQuery): Promise<T[]>;
     /**
@@ -39,15 +39,16 @@ export declare class Connection extends ConnectionHelper {
      *
      * @param {CountQuery} query
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
     count(query: CountQuery): Promise<number>;
     /**
      * insert data into table
      *
+     * @template T
      * @param {InsertQuery} query
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
     insert<T>(query: InsertQuery): Promise<number | T[]>;
     /**
@@ -55,7 +56,7 @@ export declare class Connection extends ConnectionHelper {
      *
      * @param {UpdateQuery} query
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
     update(query: UpdateQuery): Promise<number>;
     /**
@@ -63,7 +64,7 @@ export declare class Connection extends ConnectionHelper {
      *
      * @param {RemoveQuery} query
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
     remove(query: RemoveQuery): Promise<number>;
     /**
@@ -71,14 +72,14 @@ export declare class Connection extends ConnectionHelper {
      *
      * @param {string} tableName
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
-    clear(tableName: string): Promise<null>;
+    clear(tableName: string): Promise<void>;
     /**
      * set log status
      *
      * @param {boolean} status
-     * @memberof Instance
+     * @memberof Connection
      */
     setLogStatus(status: boolean): void;
     /**
@@ -86,7 +87,7 @@ export declare class Connection extends ConnectionHelper {
      *
      * @param {(string | DbInfo)} dbName
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
     getDbVersion(dbName: string | DbInfo): Promise<number>;
     /**
@@ -94,14 +95,14 @@ export declare class Connection extends ConnectionHelper {
      *
      * @param {(DbInfo | string)} dbInfo
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
     isDbExist(dbInfo: DbInfo | string): Promise<boolean>;
     /**
      * returns list of database created
      *
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
     getDbList(): Promise<string[]>;
     /**
@@ -109,46 +110,56 @@ export declare class Connection extends ConnectionHelper {
      *
      * @param {string} dbName
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
     getDbSchema(dbName: string): Promise<IDataBase>;
     /**
      * get the value from keystore table
      *
+     * @template T
      * @param {string} key
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
-    get(key: string): Promise<any>;
+    get<T>(key: string): Promise<T>;
     /**
      * set the value in keystore table
      *
      * @param {string} key
      * @param {*} value
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
-    set(key: string, value: any): Promise<any>;
+    set(key: string, value: any): Promise<void>;
     /**
      * terminate the connection
      *
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
     terminate(): Promise<void>;
     /**
-     * execute the transaction
+     * execute transaction
      *
+     * @template T
      * @param {TranscationQuery} query
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
-    transaction(query: TranscationQuery): Promise<any>;
+    transaction<T>(query: TranscationQuery): Promise<T>;
     on(event: EVENT, eventCallBack: Function): void;
     off(event: EVENT, eventCallBack: Function): void;
     union<T>(query: SelectQuery[]): Promise<T>;
     intersect<T>(query: SelectQuery[]): Promise<T>;
     addPlugin(plugin: IPlugin, params?: any): void;
     addMiddleware(middleware: any): void;
-    importScripts(...urls: string[]): Promise<unknown>;
+    /**
+     * import scripts in jsstore web worker.
+     * Scripts method can be called using transaction api.
+     *
+     * @param {...string[]} urls
+     * @returns
+     * @memberof Connection
+     */
+    importScripts(...urls: string[]): Promise<void>;
 }

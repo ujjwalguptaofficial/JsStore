@@ -131,7 +131,7 @@ export declare type WebWorkerResult = {
 export declare type TranscationQuery = {
     tables: string[];
     method: string;
-    data: any;
+    data?: any;
 };
 export declare type SqlWebResult = {
     api: string;

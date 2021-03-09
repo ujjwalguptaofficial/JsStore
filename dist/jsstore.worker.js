@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.13.0 - 09/03/2021
+ * @license :jsstore - V3.13.1 - 09/03/2021
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2021 @Ujjwal Gupta; Licensed MIT
  */
@@ -7301,7 +7301,7 @@ function (modules) {
               onSuccess();
             } catch (e) {
               onError({
-                type: "",
+                type: ERROR_TYPE.ImportScriptsFailed,
                 message: e.message
               });
             }
