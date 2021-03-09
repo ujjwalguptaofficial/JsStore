@@ -82,7 +82,7 @@ export declare type AggregateOption = {
 export declare type WebWorkerRequest = {
     name: API;
     query?: any;
-    onSuccess?: (results: any) => void;
+    onSuccess?: (results?: any) => void;
     onError?: (err: IError) => void;
 };
 export declare type DbInfo = {
@@ -130,7 +130,7 @@ export declare type WebWorkerResult = {
 };
 export declare type TranscationQuery = {
     tables: string[];
-    logic: (data: any) => Promise<void>;
+    method: string;
     data: any;
 };
 export declare type SqlWebResult = {

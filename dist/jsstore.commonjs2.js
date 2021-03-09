@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.12.1 - 08/03/2021
+ * @license :jsstore - V3.13.0 - 09/03/2021
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2021 @Ujjwal Gupta; Licensed MIT
  */
@@ -136,6 +136,8 @@ var ERROR_TYPE;
     ERROR_TYPE["InvalidOrderQuery"] = "invalid_order_query";
     ERROR_TYPE["InvalidQuery"] = "invalid_query";
     ERROR_TYPE["InvalidGroupQuery"] = "invalid_group_query";
+    ERROR_TYPE["ImportScriptsFailed"] = "import_scripts_failed";
+    ERROR_TYPE["MethodNotExist"] = "method_not_exist";
 })(ERROR_TYPE || (ERROR_TYPE = {}));
 var WORKER_STATUS;
 (function (WORKER_STATUS) {
@@ -177,6 +179,7 @@ var API;
     API["CloseDb"] = "close_db";
     API["Union"] = "union";
     API["Intersect"] = "intersect";
+    API["ImportScripts"] = "import_scripts";
 })(API || (API = {}));
 var EVENT;
 (function (EVENT) {
@@ -744,9 +747,9 @@ var connection_Connection = /** @class */ (function (_super) {
      * @memberof Instance
      */
     Connection.prototype.transaction = function (query) {
-        if (Config.isRuningInWorker === true) {
-            query.logic = query.logic.toString();
-        }
+        // if (Config.isRuningInWorker === true) {
+        //     (query.method as any) = query.method.toString();
+        // }
         return this.pushApi({
             name: API.Transaction,
             query: query
@@ -786,6 +789,16 @@ var connection_Connection = /** @class */ (function (_super) {
     };
     Connection.prototype.addMiddleware = function (middleware) {
         this.middlewares.push(middleware);
+    };
+    Connection.prototype.importScripts = function () {
+        var urls = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            urls[_i] = arguments[_i];
+        }
+        return this.pushApi({
+            name: API.ImportScripts,
+            query: urls
+        });
     };
     return Connection;
 }(connection_helper_ConnectionHelper));

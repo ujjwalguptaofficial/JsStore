@@ -13,3 +13,5 @@ output
 
 #definition
 !dist/src
+
+*.tgz

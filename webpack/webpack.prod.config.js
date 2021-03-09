@@ -1,20 +1,77 @@
 const path = require('path');
 const baseConfig = require('./webpack.base.config');
 const merge = require('webpack-merge');
-module.exports = [merge(baseConfig[0], {
-        output: {
-            path: path.join(__dirname, "./../build"),
-            filename: "jsstore.min.js",
-            library: 'JsStore'
-        },
-        mode: 'production'
-    }),
-    merge(baseConfig[1], {
-        output: {
-            library: 'JsStoreWorker',
-            path: path.join(__dirname, "./../build"),
-            filename: "jsstore.worker.min.js"
-        },
-        mode: 'production'
+var webpack = require('webpack');
+
+function createConfigsForAllLibraryTarget() {
+    const libraryTarget = [{
+        type: "var",
+        name: 'jsstore.min.js'
+    }, {
+        type: "commonjs2",
+        name: 'jsstore.commonjs2.min.js'
+    }];
+    const getConfigForTaget = function (target) {
+        return {
+            output: {
+                path: path.join(__dirname, "./../build"),
+                filename: target.name,
+                library: 'JsStore',
+                libraryTarget: target.type
+            },
+            plugins: [
+                // new webpack.DefinePlugin({
+                //     'process.env.NODE_ENV': JSON.stringify("dev")
+                // }),
+            ],
+            mode: "production",
+            devtool: 'source-map',
+        }
+    }
+    var configs = [];
+    libraryTarget.forEach(function (target) {
+        configs.push(merge(baseConfig[0], getConfigForTaget(target)));
     })
+    return configs;
+}
+
+
+
+function createConfigsForAllLibraryTargetForWebWorker() {
+    const libraryTargetWorker = [{
+        type: "var",
+        name: 'jsstore.worker.min.js'
+    }, {
+        type: "commonjs2",
+        name: 'jsstore.worker.commonjs2.min.js'
+    }];
+
+    const getConfigForTaget = function (target) {
+        return {
+
+            output: {
+                path: path.join(__dirname, "./../build"),
+                filename: target.name,
+                library: 'JsStoreWorker',
+                libraryTarget: target.type
+            },
+            plugins: [
+                // new webpack.DefinePlugin({
+                //     'process.env.NODE_ENV': JSON.stringify("dev")
+                // }),
+            ],
+            mode: "production",
+            devtool: 'source-map'
+        }
+    }
+    var configs = [];
+    libraryTargetWorker.forEach(function (target) {
+        configs.push(merge(baseConfig[1], getConfigForTaget(target)));
+    })
+    return configs;
+}
+
+
+module.exports = [...createConfigsForAllLibraryTarget(),
+...createConfigsForAllLibraryTargetForWebWorker()
 ]

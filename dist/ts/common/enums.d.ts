@@ -25,7 +25,9 @@ export declare enum ERROR_TYPE {
     InvalidJoinQuery = "invalid_join_query",
     InvalidOrderQuery = "invalid_order_query",
     InvalidQuery = "invalid_query",
-    InvalidGroupQuery = "invalid_group_query"
+    InvalidGroupQuery = "invalid_group_query",
+    ImportScriptsFailed = "import_scripts_failed",
+    MethodNotExist = "method_not_exist"
 }
 export declare enum WORKER_STATUS {
     Registered = "registerd",
@@ -63,7 +65,8 @@ export declare enum API {
     InitKeyStore = "init_keystore",
     CloseDb = "close_db",
     Union = "union",
-    Intersect = "intersect"
+    Intersect = "intersect",
+    ImportScripts = "import_scripts"
 }
 export declare enum EVENT {
     RequestQueueEmpty = "requestQueueEmpty",

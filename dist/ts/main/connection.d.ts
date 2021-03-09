@@ -150,4 +150,5 @@ export declare class Connection extends ConnectionHelper {
     intersect<T>(query: SelectQuery[]): Promise<T>;
     addPlugin(plugin: IPlugin, params?: any): void;
     addMiddleware(middleware: any): void;
+    importScripts(...urls: string[]): Promise<unknown>;
 }
