@@ -13,11 +13,11 @@ export class Connection extends ConnectionHelper {
     }
 
     /**
-     *  open database
-     * 
-     * @param {string} dbName 
-     * @returns 
-     * @memberof Instance
+     * open database
+     *
+     * @param {string} dbName
+     * @returns
+     * @memberof Connection
      */
     openDb(dbName: string) {
         this.activeDbName = dbName;
@@ -29,10 +29,10 @@ export class Connection extends ConnectionHelper {
 
     /**
      * creates DataBase
-     * 
-     * @param {IDataBase} dataBase 
-     * @returns 
-     * @memberof Instance
+     *
+     * @param {IDataBase} dataBase
+     * @returns
+     * @memberof Connection
      */
     initDb(dataBase: IDataBase) {
         this.activeDbName = dataBase.name;
@@ -44,24 +44,23 @@ export class Connection extends ConnectionHelper {
 
     /**
      * drop dataBase
-     * 
-     * @returns 
-     * @memberof Instance
+     *
+     * @returns
+     * @memberof Connection
      */
     dropDb() {
-        return this.pushApi<null>({
-            name: API.DropDb,
-            query: null
+        return this.pushApi<void>({
+            name: API.DropDb
         });
     }
 
     /**
      * select data from table
-     * 
-     * @template T 
-     * @param {SelectQuery} query 
-     * @returns 
-     * @memberof Instance
+     *
+     * @template T
+     * @param {SelectQuery} query
+     * @returns
+     * @memberof Connection
      */
     select<T>(query: SelectQuery) {
         return this.pushApi<T[]>({
@@ -72,10 +71,10 @@ export class Connection extends ConnectionHelper {
 
     /**
      * get no of record from table
-     * 
-     * @param {CountQuery} query 
-     * @returns 
-     * @memberof Instance
+     *
+     * @param {CountQuery} query
+     * @returns
+     * @memberof Connection
      */
     count(query: CountQuery) {
         return this.pushApi<number>({
@@ -86,10 +85,11 @@ export class Connection extends ConnectionHelper {
 
     /**
      * insert data into table
-     * 
-     * @param {InsertQuery} query 
-     * @returns 
-     * @memberof Instance
+     *
+     * @template T
+     * @param {InsertQuery} query
+     * @returns
+     * @memberof Connection
      */
     insert<T>(query: InsertQuery) {
         return this.pushApi<number | T[]>({
@@ -100,10 +100,10 @@ export class Connection extends ConnectionHelper {
 
     /**
      * update data into table
-     * 
-     * @param {UpdateQuery} query 
-     * @returns 
-     * @memberof Instance
+     *
+     * @param {UpdateQuery} query
+     * @returns
+     * @memberof Connection
      */
     update(query: UpdateQuery) {
         return this.pushApi<number>({
@@ -114,10 +114,10 @@ export class Connection extends ConnectionHelper {
 
     /**
      * remove data from table
-     * 
-     * @param {RemoveQuery} query 
-     * @returns 
-     * @memberof Instance
+     *
+     * @param {RemoveQuery} query
+     * @returns
+     * @memberof Connection
      */
     remove(query: RemoveQuery) {
         return this.pushApi<number>({
@@ -128,13 +128,13 @@ export class Connection extends ConnectionHelper {
 
     /**
      * delete all data from table
-     * 
-     * @param {string} tableName 
-     * @returns 
-     * @memberof Instance
+     *
+     * @param {string} tableName
+     * @returns
+     * @memberof Connection
      */
     clear(tableName: string) {
-        return this.pushApi<null>({
+        return this.pushApi<void>({
             name: API.Clear,
             query: tableName
         });
@@ -142,9 +142,9 @@ export class Connection extends ConnectionHelper {
 
     /**
      * set log status
-     * 
-     * @param {boolean} status 
-     * @memberof Instance
+     *
+     * @param {boolean} status
+     * @memberof Connection
      */
     setLogStatus(status: boolean) {
         Config.isLogEnabled = status ? status : Config.isLogEnabled;
@@ -156,10 +156,10 @@ export class Connection extends ConnectionHelper {
 
     /**
      * get version of database
-     * 
-     * @param {(string | DbInfo)} dbName 
-     * @returns 
-     * @memberof Instance
+     *
+     * @param {(string | DbInfo)} dbName
+     * @returns
+     * @memberof Connection
      */
     getDbVersion(dbName: string | DbInfo) {
         return this.pushApi<number>({
@@ -170,10 +170,10 @@ export class Connection extends ConnectionHelper {
 
     /**
      * is database exist
-     * 
-     * @param {(DbInfo | string)} dbInfo 
-     * @returns 
-     * @memberof Instance
+     *
+     * @param {(DbInfo | string)} dbInfo
+     * @returns
+     * @memberof Connection
      */
     isDbExist(dbInfo: DbInfo | string) {
         return this.pushApi<boolean>({
@@ -184,9 +184,9 @@ export class Connection extends ConnectionHelper {
 
     /**
      * returns list of database created
-     * 
-     * @returns 
-     * @memberof Instance
+     *
+     * @returns
+     * @memberof Connection
      */
     getDbList() {
         return this.pushApi<string[]>({
@@ -197,10 +197,10 @@ export class Connection extends ConnectionHelper {
 
     /**
      * get Database Schema
-     * 
-     * @param {string} dbName 
-     * @returns 
-     * @memberof Instance
+     *
+     * @param {string} dbName
+     * @returns
+     * @memberof Connection
      */
     getDbSchema(dbName: string) {
         return this.pushApi<IDataBase>({
@@ -211,13 +211,14 @@ export class Connection extends ConnectionHelper {
 
     /**
      * get the value from keystore table
-     * 
-     * @param {string} key 
-     * @returns 
-     * @memberof Instance
+     *
+     * @template T
+     * @param {string} key
+     * @returns
+     * @memberof Connection
      */
-    get(key: string) {
-        return this.pushApi<any>({
+    get<T>(key: string) {
+        return this.pushApi<T>({
             name: API.Get,
             query: key
         });
@@ -225,31 +226,30 @@ export class Connection extends ConnectionHelper {
 
     /**
      * set the value in keystore table 
-     * 
-     * @param {string} key 
-     * @param {*} value 
-     * @returns 
-     * @memberof Instance
+     *
+     * @param {string} key
+     * @param {*} value
+     * @returns
+     * @memberof Connection
      */
     set(key: string, value: any) {
-        return this.pushApi<any>({
+        return this.pushApi<void>({
             name: API.Set,
             query: {
                 key: key, value: value
             } as SetQuery
         });
     }
-
+    
     /**
      * terminate the connection
      *
      * @returns
-     * @memberof Instance
+     * @memberof Connection
      */
     terminate() {
         return this.pushApi<void>({
-            name: API.Terminate,
-            query: null
+            name: API.Terminate
         });
     }
 
@@ -308,8 +308,16 @@ export class Connection extends ConnectionHelper {
         this.middlewares.push(middleware);
     }
 
+    /**
+     * import scripts in jsstore web worker. 
+     * Scripts method can be called using transaction api.
+     * 
+     * @param {...string[]} urls
+     * @returns
+     * @memberof Connection
+     */
     importScripts(...urls: string[]) {
-        return this.pushApi({
+        return this.pushApi<void>({
             name: API.ImportScripts,
             query: urls
         });
