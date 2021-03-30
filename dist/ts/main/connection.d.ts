@@ -1,5 +1,5 @@
 import { ConnectionHelper } from "./connection_helper";
-import { SelectQuery, CountQuery, InsertQuery, UpdateQuery, RemoveQuery, DbInfo, TranscationQuery, IDataBase, EVENT, IPlugin } from "../common/index";
+import { SelectQuery, CountQuery, InsertQuery, UpdateQuery, RemoveQuery, DbInfo, TranscationQuery, IDataBase, EVENT, IPlugin, IntersectQuery } from "../common/index";
 export declare class Connection extends ConnectionHelper {
     constructor(worker?: Worker);
     /**
@@ -150,7 +150,7 @@ export declare class Connection extends ConnectionHelper {
     on(event: EVENT, eventCallBack: Function): void;
     off(event: EVENT, eventCallBack: Function): void;
     union<T>(query: SelectQuery[]): Promise<T>;
-    intersect<T>(query: SelectQuery[]): Promise<T>;
+    intersect<T>(query: IntersectQuery): Promise<T>;
     addPlugin(plugin: IPlugin, params?: any): void;
     addMiddleware(middleware: any): void;
     /**

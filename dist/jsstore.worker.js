@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.13.1 - 09/03/2021
+ * @license :jsstore - V3.13.2 - 30/03/2021
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2021 @Ujjwal Gupta; Licensed MIT
  */
@@ -1537,7 +1537,9 @@ function (modules) {
         case 'object':
           if (Array.isArray(value)) {
             return DATA_TYPE.Array;
-          } else if (value.getDate && value.getTime) {
+          }
+
+          if (value instanceof Date) {
             return DATA_TYPE.DateTime;
           }
 
@@ -2176,7 +2178,7 @@ function (modules) {
 
             var columnValue = this.where[columnName];
 
-            if (typeof columnValue === 'object') {
+            if (getDataType(columnValue) === 'object') {
               for (var key in columnValue) {
                 if (!this.status) {
                   break;
@@ -2203,6 +2205,9 @@ function (modules) {
                   case QUERY_OPTION.NotEqualTo:
                     this.status = this.checkComparisionOp_(columnName, rowValue[columnName], key);
                     break;
+
+                  default:
+                    this.status = false;
                 }
               }
             } else {
@@ -2352,7 +2357,7 @@ function (modules) {
         if (this.objectStore.indexNames.contains(columnName)) {
           var value = this.query.where[columnName];
 
-          if (typeof value === 'object') {
+          if (getDataType(value) === 'object') {
             var checkFlag = Boolean(Object.keys(value).length > 1 || Object.keys(this.query.where).length > 1);
             this.whereCheckerInstance = new where_checker_WhereChecker(this.query.where, checkFlag);
             var key = getObjectFirstKey(value);
