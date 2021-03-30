@@ -57,7 +57,7 @@ export abstract class Base extends BaseHelper {
         const columnName = getObjectFirstKey(this.query.where);
         if (this.objectStore.indexNames.contains(columnName)) {
             const value = this.query.where[columnName];
-            if (typeof value === 'object') {
+            if (getDataType(value) === 'object') {
                 const checkFlag = Boolean(
                     Object.keys(value).length > 1 ||
                     Object.keys(this.query.where).length > 1

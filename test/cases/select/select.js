@@ -420,4 +420,68 @@ describe('Test Select Api', function () {
             done();
         }).catch(done);
     });
+
+    it('select with where & type date', function (done) {
+        con.select({
+            from: 'Employees'
+        }).then(function (results) {
+            return results[0];
+        }).then(function (employee) {
+            return con.select({
+                from: 'Employees',
+                where: {
+                    birthDate: employee.birthDate
+                }
+            })
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(1);
+            done();
+        }).catch(done);
+    });
+
+    it('select with where - in & type date ', function (done) {
+        con.select({
+            from: 'Employees'
+        }).then(function (results) {
+            return results.slice(0, 3);
+        }).then(function (employee) {
+            expect(employee).to.be.an('array').length(3);
+            return con.select({
+                from: 'Employees',
+                where: {
+                    birthDate: {
+                        in: employee.map(q => q.birthDate)
+                    }
+                }
+            })
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(3);
+            done();
+        }).catch(done);
+    });
+
+    it('select with where - in & type date - invalid date field', function (done) {
+        con.select({
+            from: 'Employees'
+        }).then(function (results) {
+            return results.slice(0, 3);
+        }).then(function (employee) {
+            expect(employee).to.be.an('array').length(3);
+            debugger;
+            return con.select({
+                from: 'Employees',
+                where: {
+                    // do not change order, order matters
+                    employeeId: {
+                        in: employee.map(q => q.employeeId)
+                    },
+                    birthDate: new Date(0),
+                }
+            })
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(0);
+            done();
+        }).catch(done);
+    });
+
 });

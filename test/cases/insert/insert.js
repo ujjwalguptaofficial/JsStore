@@ -185,7 +185,7 @@ describe('Test insert', function () {
             var startDate = new Date(1994, 0, 1);
             var endDate = new Date();
             results.forEach(function (value) {
-                value.birthDate = new randomDate(startDate, endDate);
+                value.birthDate = randomDate(startDate, endDate);
             });
             con.insert({
                 into: 'Employees',

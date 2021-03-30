@@ -2,7 +2,7 @@ import { ConnectionHelper } from "./connection_helper";
 import {
     SelectQuery, CountQuery, InsertQuery, SetQuery,
     UpdateQuery, RemoveQuery, DbInfo, TranscationQuery,
-    API, IDataBase, EVENT, IPlugin
+    API, IDataBase, EVENT, IPlugin, IntersectQuery
 } from "../common/index";
 import { Config } from "./config";
 
@@ -293,7 +293,7 @@ export class Connection extends ConnectionHelper {
         });
     }
 
-    intersect<T>(query: SelectQuery[]) {
+    intersect<T>(query: IntersectQuery) {
         return this.pushApi<T>({
             name: API.Intersect,
             query

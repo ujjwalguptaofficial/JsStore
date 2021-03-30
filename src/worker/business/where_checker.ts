@@ -1,5 +1,5 @@
 import { OCCURENCE, QUERY_OPTION } from "../../common/index";
-import { getRegexFromLikeExpression } from "../utils/index";
+import { getRegexFromLikeExpression, getDataType } from "../utils/index";
 
 /**
  * For matching the different column value existance for where option
@@ -25,7 +25,7 @@ export class WhereChecker {
           break;
         }
         const columnValue = this.where[columnName];
-        if (typeof columnValue === 'object') {
+        if (getDataType(columnValue) === 'object') {
           for (const key in columnValue) {
             if (!this.status) {
               break;
@@ -45,6 +45,8 @@ export class WhereChecker {
               case QUERY_OPTION.NotEqualTo:
                 this.status = this.checkComparisionOp_(columnName, rowValue[columnName], key);
                 break;
+              default:
+                this.status = false;
             }
           }
         }
