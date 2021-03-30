@@ -44,13 +44,12 @@ export class BaseSelect extends WhereBase {
     protected removeDuplicates() {
         let datas = this.results;
         // free results memory
-        this.results = undefined;
+        this.results = null;
         const key = this.getPrimaryKey(this.query.from);
         const lookupObject = {};
-        for (const i in datas) {
+        for (let i = 0, len = datas.length; i < len; i++) {
             lookupObject[datas[i][key]] = datas[i];
         }
-        // free datas memory
         datas = [];
         for (const i in lookupObject) {
             datas.push(lookupObject[i]);

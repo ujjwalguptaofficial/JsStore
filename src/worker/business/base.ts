@@ -87,7 +87,7 @@ export abstract class Base extends BaseHelper {
                 }
             }
             else {
-                const checkFlag = Boolean(Object.keys(this.query.where).length > 1);
+                const checkFlag = Object.keys(this.query.where).length > 1;
                 this.whereCheckerInstance = new WhereChecker(this.query.where, checkFlag);
                 (this as any).executeWhereLogic(columnName, value, null, "next");
             }
