@@ -63,10 +63,7 @@ export abstract class Base extends BaseHelper {
 
                 this.whereCheckerInstance = new WhereChecker(this.query.where, checkFlag);
                 const key = getObjectFirstKey(value);
-                if (getLength(value) === 1) {
-                    this.whereCheckerInstance.remove(firstColumn);
-                }
-
+                this.whereCheckerInstance.remove(firstColumn, key);
                 switch (key) {
                     case QUERY_OPTION.Like: {
                         const regexVal = getRegexFromLikeExpression(value[QUERY_OPTION.Like]);
