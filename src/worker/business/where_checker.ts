@@ -9,7 +9,6 @@ import { getRegexFromLikeExpression, getDataType } from "../utils/index";
  */
 export class WhereChecker {
   where: object;
-  status: boolean;
   checkFlag: boolean;
 
   constructor(where: object, checkFlag: boolean) {
@@ -18,44 +17,46 @@ export class WhereChecker {
   }
 
   check(rowValue) {
-    this.status = true;
-    if (this.checkFlag === true) {
-      for (const columnName in this.where) {
-        if (!this.status) {
-          break;
-        }
-        const columnValue = this.where[columnName];
-        if (getDataType(columnValue) === 'object') {
-          for (const key in columnValue) {
-            if (!this.status) {
+    let status = true;
+    if (!this.checkFlag) return status;
+    for (const columnName in this.where) {
+      if (!status) {
+        return status;
+      }
+      const columnValue = this.where[columnName];
+      if (getDataType(columnValue) === 'object') {
+        for (const key in columnValue) {
+          if (!status) {
+            return status;
+          }
+          switch (key) {
+            case QUERY_OPTION.In:
+              status = this.checkIn(columnName, rowValue[columnName]);
               break;
-            }
-            switch (key) {
-              case QUERY_OPTION.In:
-                this.status = this.checkIn(columnName, rowValue[columnName]); break;
-              case QUERY_OPTION.Like:
-                this.status = this.checkLike_(columnName, rowValue[columnName]); break;
-              case QUERY_OPTION.Regex:
-                this.checkRegex(columnName, rowValue[columnName]); break;
-              case QUERY_OPTION.Between:
-              case QUERY_OPTION.GreaterThan:
-              case QUERY_OPTION.LessThan:
-              case QUERY_OPTION.GreaterThanEqualTo:
-              case QUERY_OPTION.LessThanEqualTo:
-              case QUERY_OPTION.NotEqualTo:
-                this.status = this.checkComparisionOp_(columnName, rowValue[columnName], key);
-                break;
-              default:
-                this.status = false;
-            }
+            case QUERY_OPTION.Like:
+              status = this.checkLike_(columnName, rowValue[columnName]);
+              break;
+            case QUERY_OPTION.Regex:
+              status = this.checkRegex(columnName, rowValue[columnName]);
+              break;
+            case QUERY_OPTION.Between:
+            case QUERY_OPTION.GreaterThan:
+            case QUERY_OPTION.LessThan:
+            case QUERY_OPTION.GreaterThanEqualTo:
+            case QUERY_OPTION.LessThanEqualTo:
+            case QUERY_OPTION.NotEqualTo:
+              status = this.checkComparisionOp_(columnName, rowValue[columnName], key);
+              break;
+            default:
+              status = false;
           }
         }
-        else {
-          this.status = columnValue === rowValue[columnName];
-        }
+      }
+      else {
+        status = columnValue === rowValue[columnName];
       }
     }
-    return this.status;
+    return status;
   }
 
   private checkIn(column, value) {
@@ -67,8 +68,7 @@ export class WhereChecker {
   }
 
   private checkRegex(column, value) {
-    const expr = this.where[column][QUERY_OPTION.Regex];
-    this.status = expr.test(value);
+    return this.where[column][QUERY_OPTION.Regex].test(value);
   }
 
   private checkComparisionOp_(column, value, symbol) {
