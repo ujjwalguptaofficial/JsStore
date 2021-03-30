@@ -16,8 +16,10 @@ export class WhereChecker {
     this.checkFlag = checkFlag;
   }
 
-  remove(prop1: string, prop2: string) {
-    delete this.where[prop1][prop2];
+  remove(props: string[]) {
+    const last = props.pop();
+    const value = props.reduce((prev, curr) => prev && prev[curr], this.where);
+    delete value[last];
   }
 
   check(rowValue) {
