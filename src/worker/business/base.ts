@@ -3,7 +3,7 @@ import { IError, ERROR_TYPE, OCCURENCE, DATA_TYPE, QUERY_OPTION } from "../../co
 import { WhereChecker } from "./where_checker";
 import { LogHelper } from "../log_helper";
 import { Column } from "../model/index";
-import { getDataType, getObjectFirstKey, getRegexFromLikeExpression } from "../utils/index";
+import { getDataType, getObjectFirstKey, getRegexFromLikeExpression, getLength } from "../utils/index";
 
 export abstract class Base extends BaseHelper {
     error: IError;
@@ -54,49 +54,54 @@ export abstract class Base extends BaseHelper {
     }
 
     protected goToWhereLogic() {
-        const columnName = getObjectFirstKey(this.query.where);
-        if (this.objectStore.indexNames.contains(columnName)) {
-            const value = this.query.where[columnName];
+        const firstColumn = getObjectFirstKey(this.query.where);
+        if (this.objectStore.indexNames.contains(firstColumn)) {
+            const value = this.query.where[firstColumn];
             if (getDataType(value) === 'object') {
-                const checkFlag = Boolean(
-                    Object.keys(value).length > 1 ||
-                    Object.keys(this.query.where).length > 1
-                );
+                const checkFlag = getLength(value) > 1 ||
+                    getLength(this.query.where) > 1
+
                 this.whereCheckerInstance = new WhereChecker(this.query.where, checkFlag);
                 const key = getObjectFirstKey(value);
+                if (getLength(value) === 1) {
+                    this.whereCheckerInstance.remove(firstColumn);
+                }
+
                 switch (key) {
                     case QUERY_OPTION.Like: {
                         const regexVal = getRegexFromLikeExpression(value[QUERY_OPTION.Like]);
-                        (this as any).executeRegexLogic(columnName, regexVal);
+                        (this as any).executeRegexLogic(firstColumn, regexVal);
                     } break;
                     case QUERY_OPTION.Regex:
-                        (this as any).executeRegexLogic(columnName, value[QUERY_OPTION.Regex]);
+                        (this as any).executeRegexLogic(firstColumn, value[QUERY_OPTION.Regex]);
                         break;
                     case QUERY_OPTION.In:
-                        (this as any).executeInLogic(columnName, value[QUERY_OPTION.In]);
+                        (this as any).executeInLogic(
+                            firstColumn, value[QUERY_OPTION.In]
+                        );
                         break;
                     case QUERY_OPTION.Between:
                     case QUERY_OPTION.GreaterThan:
                     case QUERY_OPTION.LessThan:
                     case QUERY_OPTION.GreaterThanEqualTo:
                     case QUERY_OPTION.LessThanEqualTo:
-                        (this as any).executeWhereLogic(columnName, value, key, "next");
+                        (this as any).executeWhereLogic(firstColumn, value, key, "next");
                         break;
                     case QUERY_OPTION.Aggregate: break;
-                    default: (this as any).executeWhereLogic(columnName, value, null, "next");
+                    default: (this as any).executeWhereLogic(firstColumn, value, null, "next");
                 }
             }
             else {
-                const checkFlag = Object.keys(this.query.where).length > 1;
+                const checkFlag = getLength(this.query.where) > 1;
                 this.whereCheckerInstance = new WhereChecker(this.query.where, checkFlag);
-                (this as any).executeWhereLogic(columnName, value, null, "next");
+                (this as any).executeWhereLogic(firstColumn, value, null, "next");
             }
         }
         else {
-            const column: Column = this.getColumnInfo(columnName, this.tableName);
+            const column: Column = this.getColumnInfo(firstColumn, this.tableName);
             const error = column == null ?
-                new LogHelper(ERROR_TYPE.ColumnNotExist, { column: columnName }) :
-                new LogHelper(ERROR_TYPE.EnableSearchOff, { column: columnName });
+                new LogHelper(ERROR_TYPE.ColumnNotExist, { column: firstColumn }) :
+                new LogHelper(ERROR_TYPE.EnableSearchOff, { column: firstColumn });
 
             this.onErrorOccured(error, true);
         }

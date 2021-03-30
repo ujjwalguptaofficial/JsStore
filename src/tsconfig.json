@@ -15,7 +15,8 @@
             "es2015",
             "dom",
             "webworker"
-        ]
+        ],
+        "moduleResolution": "Node"
     },
     "exclude": [
         "node_namespaces",

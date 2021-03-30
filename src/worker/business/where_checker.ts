@@ -1,5 +1,5 @@
-import { OCCURENCE, QUERY_OPTION } from "../../common/index";
-import { getRegexFromLikeExpression, getDataType } from "../utils/index";
+import { QUERY_OPTION } from "../../common";
+import { getRegexFromLikeExpression, getDataType } from "../utils";
 
 /**
  * For matching the different column value existance for where option
@@ -10,16 +10,22 @@ import { getRegexFromLikeExpression, getDataType } from "../utils/index";
 export class WhereChecker {
   where: object;
   checkFlag: boolean;
+  keys: string[];
 
   constructor(where: object, checkFlag: boolean) {
     this.where = where;
     this.checkFlag = checkFlag;
+    this.keys = Object.keys(where);
+  }
+
+  remove(key: string) {
+    this.keys.splice(this.keys.findIndex(q => q === key), 1);
   }
 
   check(rowValue) {
     let status = true;
     if (!this.checkFlag) return status;
-    for (const columnName in this.where) {
+    for (let columnName of this.keys) {
       if (!status) {
         return status;
       }

@@ -1,4 +1,4 @@
-import { IError, ERROR_TYPE } from "../common/index";
+import { IError, ERROR_TYPE } from "../common";
 import { Config } from "./config";
 
 export class LogHelper implements IError {

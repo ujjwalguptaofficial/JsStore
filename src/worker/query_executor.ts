@@ -1,23 +1,24 @@
-import { IdbHelper, DropDb, InitDb, Clear, QueryHelper } from "./business/index";
-import * as Select from './business/select/index';
-import * as Count from './business/count/index';
-import * as Insert from './business/insert/index';
-import * as Remove from './business/remove/index';
-import * as Update from './business/update/index';
-import * as Transaction from "./business/transaction/index";
+import { IdbHelper, DropDb, InitDb, Clear, QueryHelper } from "./business";
+import * as Select from './business/select';
+import * as Count from './business/count';
+import * as Insert from './business/insert';
+import * as Remove from './business/remove';
+import * as Update from './business/update';
+import * as Transaction from "./business/transaction";
 import { LogHelper } from "./log_helper";
 import {
     UpdateQuery, InsertQuery, RemoveQuery, SelectQuery, CountQuery, SetQuery,
     CONNECTION_STATUS, ERROR_TYPE, DATA_TYPE, API,
     WebWorkerResult, WebWorkerRequest, IDataBase, IError
-} from "../common/index";
+} from "../common";
 import { Config } from "./config";
-import { KeyStore } from "./keystore/index";
-import { TableHelper, DbHelper, DataBase } from "./model/index";
-import { promise } from "./helpers/index";
-import { getDataType } from "./utils/index";
-import { Union } from './business/union/index';
-import { Intersect } from "./business/intersect/index";
+import { KeyStore } from "./keystore";
+import { TableHelper, DbHelper, DataBase } from "./model";
+import { promise } from "./helpers";
+import { getDataType } from "./utils";
+import { Union } from './business/union';
+import { Intersect } from "./business/intersect";
+
 export class QueryExecutor {
     static isTransactionQuery = false;
     onQueryFinished: (result: any) => void;
