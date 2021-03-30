@@ -10,7 +10,7 @@ export const getDataType = (value) => {
             if (Array.isArray(value)) {
                 return DATA_TYPE.Array;
             }
-            else if (value.getDate && value.getTime) {
+            if (value instanceof Date) {
                 return DATA_TYPE.DateTime;
             }
         default:
