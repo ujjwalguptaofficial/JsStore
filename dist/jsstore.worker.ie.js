@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.13.2 - 30/03/2021
+ * @license :jsstore - V3.13.3 - 30/03/2021
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2021 @Ujjwal Gupta; Licensed MIT
  */
@@ -2393,7 +2393,7 @@ function (modules) {
                 this.executeWhereLogic(columnName, value, null, "next");
             }
           } else {
-            var checkFlag = Boolean(Object.keys(this.query.where).length > 1);
+            var checkFlag = Object.keys(this.query.where).length > 1;
             this.whereCheckerInstance = new where_checker_WhereChecker(this.query.where, checkFlag);
             this.executeWhereLogic(columnName, value, null, "next");
           }
@@ -2845,14 +2845,13 @@ function (modules) {
       BaseSelect.prototype.removeDuplicates = function () {
         var datas = this.results; // free results memory
 
-        this.results = undefined;
+        this.results = null;
         var key = this.getPrimaryKey(this.query.from);
         var lookupObject = {};
 
-        for (var i in datas) {
+        for (var i = 0, len = datas.length; i < len; i++) {
           lookupObject[datas[i][key]] = datas[i];
-        } // free datas memory
-
+        }
 
         datas = [];
 
