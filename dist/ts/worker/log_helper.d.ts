@@ -1,4 +1,4 @@
-import { IError, ERROR_TYPE } from "../common/index";
+import { IError, ERROR_TYPE } from "../common";
 export declare class LogHelper implements IError {
     type: ERROR_TYPE;
     message: string;

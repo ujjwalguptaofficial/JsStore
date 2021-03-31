@@ -13,7 +13,6 @@ export const getDataType = (value) => {
             if (value instanceof Date) {
                 return DATA_TYPE.DateTime;
             }
-        default:
-            return type;
     }
+    return type;
 }

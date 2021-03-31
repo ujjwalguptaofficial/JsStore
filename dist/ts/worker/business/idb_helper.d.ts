@@ -15,5 +15,5 @@ export declare class IdbHelper {
     static getDbList(): Promise<string[]>;
     static getDbVersion(dbName: string): Promise<number>;
     static getDbSchema(dbName: string): Promise<DataBase>;
-    static getTable(tableName: string): import("../model/table").Table;
+    static getTable(tableName: string): import("../model").Table;
 }

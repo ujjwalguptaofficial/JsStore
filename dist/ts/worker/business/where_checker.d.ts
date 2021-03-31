@@ -6,9 +6,9 @@
  */
 export declare class WhereChecker {
     where: object;
-    status: boolean;
     checkFlag: boolean;
     constructor(where: object, checkFlag: boolean);
+    remove(props: string[]): void;
     check(rowValue: any): boolean;
     private checkIn;
     private checkLike_;

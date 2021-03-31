@@ -1,4 +1,4 @@
-import { WebWorkerRequest } from "../common/index";
+import { WebWorkerRequest } from "../common";
 export declare class QueryExecutor {
     static isTransactionQuery: boolean;
     onQueryFinished: (result: any) => void;

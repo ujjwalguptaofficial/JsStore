@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.13.3 - 30/03/2021
+ * @license :jsstore - V3.13.4 - 31/03/2021
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2021 @Ujjwal Gupta; Licensed MIT
  */
@@ -1157,9 +1157,8 @@ var getDataType = function (value) {
             if (value instanceof Date) {
                 return DATA_TYPE.DateTime;
             }
-        default:
-            return type;
     }
+    return type;
 };
 
 // CONCATENATED MODULE: ./src/worker/business/update/schema_checker.ts
@@ -1656,6 +1655,22 @@ var base_helper_BaseHelper = /** @class */ (function () {
 }());
 
 
+// CONCATENATED MODULE: ./src/worker/utils/clone.ts
+
+var isObject = function (value) {
+    return getDataType(value) === 'object' && !(value instanceof RegExp);
+};
+var clone = function (obj) {
+    if (isObject(obj)) {
+        var copy = {};
+        for (var i in obj) {
+            copy[i] = obj[i] != null && isObject(obj[i]) ? clone(obj[i]) : obj[i];
+        }
+        return copy;
+    }
+    return obj;
+};
+
 // CONCATENATED MODULE: ./src/worker/utils/get_regex_from_like_expression.ts
 
 var getRegexFromLikeExpression = function (likeExpression) {
@@ -1691,51 +1706,56 @@ var getRegexFromLikeExpression = function (likeExpression) {
  */
 var where_checker_WhereChecker = /** @class */ (function () {
     function WhereChecker(where, checkFlag) {
-        this.where = where;
+        this.where = clone(where);
         this.checkFlag = checkFlag;
     }
+    WhereChecker.prototype.remove = function (props) {
+        var last = props.pop();
+        var value = props.reduce(function (prev, curr) { return prev && prev[curr]; }, this.where);
+        delete value[last];
+    };
     WhereChecker.prototype.check = function (rowValue) {
-        this.status = true;
-        if (this.checkFlag === true) {
-            for (var columnName in this.where) {
-                if (!this.status) {
-                    break;
-                }
-                var columnValue = this.where[columnName];
-                if (getDataType(columnValue) === 'object') {
-                    for (var key in columnValue) {
-                        if (!this.status) {
+        var status = true;
+        if (!this.checkFlag)
+            return status;
+        for (var columnName in this.where) {
+            if (!status) {
+                return status;
+            }
+            var columnValue = this.where[columnName];
+            if (getDataType(columnValue) === 'object') {
+                for (var key in columnValue) {
+                    if (!status) {
+                        return status;
+                    }
+                    switch (key) {
+                        case QUERY_OPTION.In:
+                            status = this.checkIn(columnName, rowValue[columnName]);
                             break;
-                        }
-                        switch (key) {
-                            case QUERY_OPTION.In:
-                                this.status = this.checkIn(columnName, rowValue[columnName]);
-                                break;
-                            case QUERY_OPTION.Like:
-                                this.status = this.checkLike_(columnName, rowValue[columnName]);
-                                break;
-                            case QUERY_OPTION.Regex:
-                                this.checkRegex(columnName, rowValue[columnName]);
-                                break;
-                            case QUERY_OPTION.Between:
-                            case QUERY_OPTION.GreaterThan:
-                            case QUERY_OPTION.LessThan:
-                            case QUERY_OPTION.GreaterThanEqualTo:
-                            case QUERY_OPTION.LessThanEqualTo:
-                            case QUERY_OPTION.NotEqualTo:
-                                this.status = this.checkComparisionOp_(columnName, rowValue[columnName], key);
-                                break;
-                            default:
-                                this.status = false;
-                        }
+                        case QUERY_OPTION.Like:
+                            status = this.checkLike_(columnName, rowValue[columnName]);
+                            break;
+                        case QUERY_OPTION.Regex:
+                            status = this.checkRegex(columnName, rowValue[columnName]);
+                            break;
+                        case QUERY_OPTION.Between:
+                        case QUERY_OPTION.GreaterThan:
+                        case QUERY_OPTION.LessThan:
+                        case QUERY_OPTION.GreaterThanEqualTo:
+                        case QUERY_OPTION.LessThanEqualTo:
+                        case QUERY_OPTION.NotEqualTo:
+                            status = this.checkComparisionOp_(columnName, rowValue[columnName], key);
+                            break;
+                        default:
+                            status = false;
                     }
                 }
-                else {
-                    this.status = columnValue === rowValue[columnName];
-                }
+            }
+            else {
+                status = columnValue === rowValue[columnName];
             }
         }
-        return this.status;
+        return status;
     };
     WhereChecker.prototype.checkIn = function (column, value) {
         return this.where[column][QUERY_OPTION.In].find(function (val) { return val === value; }) != null;
@@ -1744,8 +1764,7 @@ var where_checker_WhereChecker = /** @class */ (function () {
         return getRegexFromLikeExpression(this.where[column][QUERY_OPTION.Like]).test(value);
     };
     WhereChecker.prototype.checkRegex = function (column, value) {
-        var expr = this.where[column][QUERY_OPTION.Regex];
-        this.status = expr.test(value);
+        return this.where[column][QUERY_OPTION.Regex].test(value);
     };
     WhereChecker.prototype.checkComparisionOp_ = function (column, value, symbol) {
         var compareValue = this.where[column][symbol];
@@ -1779,7 +1798,17 @@ var getObjectFirstKey = function (value) {
     for (var key in value) {
         return key;
     }
-    return null;
+};
+
+// CONCATENATED MODULE: ./src/worker/utils/get_keys.ts
+var getKeys = function (value) {
+    return Object.keys(value);
+};
+
+// CONCATENATED MODULE: ./src/worker/utils/get_length.ts
+
+var getLength = function (value) {
+    return getKeys(value).length;
 };
 
 // CONCATENATED MODULE: ./src/worker/business/base.ts
@@ -1841,49 +1870,51 @@ var base_Base = /** @class */ (function (_super) {
         return this.getTable(tableName).columns.find(function (column) { return column.name === columnName; });
     };
     Base.prototype.goToWhereLogic = function () {
-        var columnName = getObjectFirstKey(this.query.where);
-        if (this.objectStore.indexNames.contains(columnName)) {
-            var value = this.query.where[columnName];
+        var firstColumn = getObjectFirstKey(this.query.where);
+        if (this.objectStore.indexNames.contains(firstColumn)) {
+            var value = this.query.where[firstColumn];
             if (getDataType(value) === 'object') {
-                var checkFlag = Boolean(Object.keys(value).length > 1 ||
-                    Object.keys(this.query.where).length > 1);
+                var checkFlag = getLength(value) > 1 ||
+                    getLength(this.query.where) > 1;
                 this.whereCheckerInstance = new where_checker_WhereChecker(this.query.where, checkFlag);
                 var key = getObjectFirstKey(value);
+                this.whereCheckerInstance.remove([firstColumn, key]);
                 switch (key) {
                     case QUERY_OPTION.Like:
                         {
                             var regexVal = getRegexFromLikeExpression(value[QUERY_OPTION.Like]);
-                            this.executeRegexLogic(columnName, regexVal);
+                            this.executeRegexLogic(firstColumn, regexVal);
                         }
                         break;
                     case QUERY_OPTION.Regex:
-                        this.executeRegexLogic(columnName, value[QUERY_OPTION.Regex]);
+                        this.executeRegexLogic(firstColumn, value[QUERY_OPTION.Regex]);
                         break;
                     case QUERY_OPTION.In:
-                        this.executeInLogic(columnName, value[QUERY_OPTION.In]);
+                        this.executeInLogic(firstColumn, value[QUERY_OPTION.In]);
                         break;
                     case QUERY_OPTION.Between:
                     case QUERY_OPTION.GreaterThan:
                     case QUERY_OPTION.LessThan:
                     case QUERY_OPTION.GreaterThanEqualTo:
                     case QUERY_OPTION.LessThanEqualTo:
-                        this.executeWhereLogic(columnName, value, key, "next");
+                        this.executeWhereLogic(firstColumn, value, key, "next");
                         break;
                     case QUERY_OPTION.Aggregate: break;
-                    default: this.executeWhereLogic(columnName, value, null, "next");
+                    default: this.executeWhereLogic(firstColumn, value, null, "next");
                 }
             }
             else {
-                var checkFlag = Object.keys(this.query.where).length > 1;
+                var checkFlag = getLength(this.query.where) > 1;
                 this.whereCheckerInstance = new where_checker_WhereChecker(this.query.where, checkFlag);
-                this.executeWhereLogic(columnName, value, null, "next");
+                this.whereCheckerInstance.remove([firstColumn]);
+                this.executeWhereLogic(firstColumn, value, null, "next");
             }
         }
         else {
-            var column = this.getColumnInfo(columnName, this.tableName);
+            var column = this.getColumnInfo(firstColumn, this.tableName);
             var error = column == null ?
-                new log_helper_LogHelper(ERROR_TYPE.ColumnNotExist, { column: columnName }) :
-                new log_helper_LogHelper(ERROR_TYPE.EnableSearchOff, { column: columnName });
+                new log_helper_LogHelper(ERROR_TYPE.ColumnNotExist, { column: firstColumn }) :
+                new log_helper_LogHelper(ERROR_TYPE.EnableSearchOff, { column: firstColumn });
             this.onErrorOccured(error, true);
         }
     };
@@ -3648,18 +3679,13 @@ var join_Join = /** @class */ (function (_super) {
 }(orderby_helper_Helper));
 
 
-// CONCATENATED MODULE: ./src/worker/utils/get_keys.ts
-var getKeys = function (value) {
-    return Object.keys(value);
-};
-
 // CONCATENATED MODULE: ./src/worker/utils/is_array.ts
 var isArray = function (value) {
     return Array.isArray(value);
 };
 
 // CONCATENATED MODULE: ./src/worker/utils/is_object.ts
-var isObject = function (value) {
+var is_object_isObject = function (value) {
     return typeof value === 'object';
 };
 
@@ -3757,7 +3783,7 @@ var instance_Instance = /** @class */ (function (_super) {
             _this.limitRecord = query.limit;
         }
         if (query.order) {
-            if (isArray(query.order) || query.order.case || isObject(query.order.by)) {
+            if (isArray(query.order) || query.order.case || is_object_isObject(query.order.by)) {
                 _this.query.order.idbSorting = false;
             }
             _this.setLimitAndSkipEvaluationAtEnd_();

@@ -7,7 +7,7 @@ export declare class BaseHelper {
     protected createTransaction(tableNames: string[], callBack: () => void, mode?: any): void;
     protected regexTest(value: any): boolean;
     protected isTableExist(tableName: string): boolean;
-    protected getTable(tableName: string): import("../model/table").Table;
+    protected getTable(tableName: string): import("../model").Table;
     protected getKeyRange(value: any, op?: any): IDBKeyRange;
     protected getPrimaryKey(tableName: any): string;
     protected getKeyPath(tableName: any): string;
