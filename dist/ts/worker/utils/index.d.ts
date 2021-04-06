@@ -11,3 +11,4 @@ export * from './get_regex_from_like_expression';
 export * from './get_keys';
 export * from './get_length';
 export * from './clone';
+export * from './is_equal';

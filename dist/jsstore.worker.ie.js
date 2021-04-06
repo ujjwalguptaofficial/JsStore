@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.13.4 - 31/03/2021
+ * @license :jsstore - V3.13.5 - 06/04/2021
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2021 @Ujjwal Gupta; Licensed MIT
  */
@@ -2142,6 +2142,21 @@ function (modules) {
       }
 
       return obj;
+    }; // CONCATENATED MODULE: ./src/worker/utils/is_equal.ts
+
+
+    var isEqual = function (val1, val2) {
+      var type1 = getDataType(val1);
+      var type2 = getDataType(val2);
+      if (type1 !== type2) return false;
+
+      switch (type1) {
+        case DATA_TYPE.DateTime:
+          return val1.getTime() === val2.getTime();
+
+        default:
+          return val1 === val2;
+      }
     }; // CONCATENATED MODULE: ./src/worker/utils/get_regex_from_like_expression.ts
 
 
@@ -2203,25 +2218,26 @@ function (modules) {
             return status;
           }
 
-          var columnValue = this.where[columnName];
+          var whereColumnValue = this.where[columnName];
+          var columnValue = rowValue[columnName];
 
-          if (getDataType(columnValue) === 'object') {
-            for (var key in columnValue) {
+          if (getDataType(whereColumnValue) === "object") {
+            for (var key in whereColumnValue) {
               if (!status) {
                 return status;
               }
 
               switch (key) {
                 case QUERY_OPTION.In:
-                  status = this.checkIn(columnName, rowValue[columnName]);
+                  status = this.checkIn(columnName, columnValue);
                   break;
 
                 case QUERY_OPTION.Like:
-                  status = this.checkLike_(columnName, rowValue[columnName]);
+                  status = this.checkLike_(columnName, columnValue);
                   break;
 
                 case QUERY_OPTION.Regex:
-                  status = this.checkRegex(columnName, rowValue[columnName]);
+                  status = this.checkRegex(columnName, columnValue);
                   break;
 
                 case QUERY_OPTION.Between:
@@ -2230,7 +2246,7 @@ function (modules) {
                 case QUERY_OPTION.GreaterThanEqualTo:
                 case QUERY_OPTION.LessThanEqualTo:
                 case QUERY_OPTION.NotEqualTo:
-                  status = this.checkComparisionOp_(columnName, rowValue[columnName], key);
+                  status = this.checkComparisionOp_(columnName, columnValue, key);
                   break;
 
                 default:
@@ -2238,7 +2254,7 @@ function (modules) {
               }
             }
           } else {
-            status = columnValue === rowValue[columnName];
+            status = isEqual(whereColumnValue, columnValue);
           }
         }
 
@@ -2246,8 +2262,8 @@ function (modules) {
       };
 
       WhereChecker.prototype.checkIn = function (column, value) {
-        return this.where[column][QUERY_OPTION.In].find(function (val) {
-          return val === value;
+        return this.where[column][QUERY_OPTION.In].find(function (q) {
+          return isEqual(q, value);
         }) != null;
       };
 
