@@ -467,7 +467,6 @@ describe('Test Select Api', function () {
             return results.slice(0, 3);
         }).then(function (employee) {
             expect(employee).to.be.an('array').length(3);
-            debugger;
             return con.select({
                 from: 'Employees',
                 where: {
@@ -480,6 +479,54 @@ describe('Test Select Api', function () {
             })
         }).then(function (results) {
             expect(results).to.be.an('array').length(0);
+            done();
+        }).catch(done);
+    });
+
+    it('select with where - in & type date - valid date field', function (done) {
+        con.select({
+            from: 'Employees'
+        }).then(function (results) {
+            return results.slice(0, 3);
+        }).then(function (employee) {
+            expect(employee).to.be.an('array').length(3);
+            return con.select({
+                from: 'Employees',
+                where: {
+                    // do not change order, order matters
+                    employeeId: {
+                        in: employee.map(q => q.employeeId)
+                    },
+                    birthDate: employee[0].birthDate
+                }
+            })
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(1);
+            done();
+        }).catch(done);
+    });
+
+    it('select with where - two in & type date - valid date field', function (done) {
+        con.select({
+            from: 'Employees'
+        }).then(function (results) {
+            return results.slice(0, 3);
+        }).then(function (employee) {
+            expect(employee).to.be.an('array').length(3);
+            return con.select({
+                from: 'Employees',
+                where: {
+                    // do not change order, order matters
+                    employeeId: {
+                        in: employee.map(q => q.employeeId)
+                    },
+                    birthDate: {
+                        in: employee.map(q => q.birthDate)
+                    },
+                }
+            })
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(3);
             done();
         }).catch(done);
     });

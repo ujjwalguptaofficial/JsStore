@@ -1,5 +1,5 @@
-import { QUERY_OPTION } from "../../common";
-import { getRegexFromLikeExpression, getDataType, clone } from "../utils";
+import { QUERY_OPTION, DATA_TYPE } from "../../common";
+import { getRegexFromLikeExpression, getDataType, clone, isEqual } from "../utils";
 
 /**
  * For matching the different column value existance for where option
@@ -29,21 +29,22 @@ export class WhereChecker {
       if (!status) {
         return status;
       }
-      const columnValue = this.where[columnName];
-      if (getDataType(columnValue) === 'object') {
-        for (const key in columnValue) {
+      const whereColumnValue = this.where[columnName];
+      const columnValue = rowValue[columnName];
+      if (getDataType(whereColumnValue) === "object") {
+        for (const key in whereColumnValue) {
           if (!status) {
             return status;
           }
           switch (key) {
             case QUERY_OPTION.In:
-              status = this.checkIn(columnName, rowValue[columnName]);
+              status = this.checkIn(columnName, columnValue);
               break;
             case QUERY_OPTION.Like:
-              status = this.checkLike_(columnName, rowValue[columnName]);
+              status = this.checkLike_(columnName, columnValue);
               break;
             case QUERY_OPTION.Regex:
-              status = this.checkRegex(columnName, rowValue[columnName]);
+              status = this.checkRegex(columnName, columnValue);
               break;
             case QUERY_OPTION.Between:
             case QUERY_OPTION.GreaterThan:
@@ -51,7 +52,7 @@ export class WhereChecker {
             case QUERY_OPTION.GreaterThanEqualTo:
             case QUERY_OPTION.LessThanEqualTo:
             case QUERY_OPTION.NotEqualTo:
-              status = this.checkComparisionOp_(columnName, rowValue[columnName], key);
+              status = this.checkComparisionOp_(columnName, columnValue, key);
               break;
             default:
               status = false;
@@ -59,14 +60,14 @@ export class WhereChecker {
         }
       }
       else {
-        status = columnValue === rowValue[columnName];
+        status = isEqual(whereColumnValue, columnValue);
       }
     }
     return status;
   }
 
   private checkIn(column, value) {
-    return (this.where[column][QUERY_OPTION.In] as any[]).find(val => val === value) != null;
+    return (this.where[column][QUERY_OPTION.In] as any[]).find(q => isEqual(q, value)) != null;
   }
 
   private checkLike_(column, value) {
