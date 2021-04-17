@@ -95,7 +95,8 @@ export class WhereChecker {
         return value >= compareValue;
       // between
       case QUERY_OPTION.Between:
-        return value > compareValue.low && value < compareValue.high;
+        return value >= compareValue.low &&
+          value <= compareValue.high;
       // Not equal to
       case QUERY_OPTION.NotEqualTo:
         return value !== compareValue;

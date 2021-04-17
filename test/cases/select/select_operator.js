@@ -171,4 +171,44 @@ describe('Test operator', function () {
             done(err);
         })
     })
+
+    it("select with where having multiple column - check for inclusive", function (done) {
+        con.select({
+            from: "Products",
+            where: {
+                price: {
+
+                    "-": {
+                        low: 10,
+                        high: 20
+                    }
+                },
+                productName: {
+                    like: '%a%'
+                },
+            }
+        }).then(results => {
+            expect(results).to.be.an('array').length(24);
+            return con.select({
+                from: "Products",
+                where: {
+                    productName: {
+                        like: '%a%'
+                    },
+                    price: {
+
+                        "-": {
+                            low: 10,
+                            high: 20
+                        }
+                    }
+                }
+            })
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(24);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    })
 });
