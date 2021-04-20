@@ -1,5 +1,5 @@
 /*!
- * @license :jsstore - V3.13.5 - 06/04/2021
+ * @license :jsstore - V3.13.6 - 20/04/2021
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2021 @Ujjwal Gupta; Licensed MIT
  */
@@ -2297,7 +2297,7 @@ function (modules) {
           // between
 
           case QUERY_OPTION.Between:
-            return value > compareValue.low && value < compareValue.high;
+            return value >= compareValue.low && value <= compareValue.high;
           // Not equal to
 
           case QUERY_OPTION.NotEqualTo:
