@@ -1,10 +1,12 @@
-import { QueryExecutor } from "./query_executor";
+import { QueryExecutor } from "@/worker/query_executor";
 
-export const initialize = (isWorker?: boolean) => {
+const isWorker = typeof (self as any).alert === 'undefined' && typeof ServiceWorkerGlobalScope === 'undefined';
+export const initialize = () => {
     const isIdbSupported = setCrossBrowserIndexedDb();
     if (isWorker) {
         let executor = new QueryExecutor();
         (self as any).onmessage = function (e) {
+            executor.run(e.data)
             // new QueryExecutor().checkConnectionAndExecuteLogic(e.data);
         };
     }
@@ -32,6 +34,6 @@ const setCrossBrowserIndexedDb = () => {
     return true;
 };
 
-if (typeof (self as any).alert === 'undefined' && typeof ServiceWorkerGlobalScope === 'undefined') {
-    initialize(true);
+if (isWorker) {
+    initialize();
 }
