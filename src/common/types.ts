@@ -150,3 +150,5 @@ export type IntersectQuery = {
     limit: number;
     order?: OrderQuery;
 };
+
+export type TStringAny = { [key: string]: any }

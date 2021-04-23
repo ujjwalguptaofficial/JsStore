@@ -1,16 +1,23 @@
 import { ITable } from "@/main";
 import { TColumns } from "@/common";
 import { TABLE_STATE } from "@/worker/enums";
+import { IColumn } from "@/worker/interfaces";
 
 export class TableMeta {
     name: string;
-    columns: TColumns;
+    columns: IColumn[];
     primaryKey: string;
     state: TABLE_STATE;
     version: number;
 
     constructor(table: ITable) {
-        this.columns = table.columns;
+        const columns = [];
+        for (const columnName in table.columns) {
+            const column: IColumn = table.columns[columnName] as any;
+            column.name = columnName;
+            columns.push(column);
+        }
+        this.columns = columns;
         this.name = table.name;
         this.version = table.version == null ? 1 : table.version;
         this.setPrimaryKey_();
