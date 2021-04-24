@@ -1,14 +1,18 @@
 import { IDB_MODE, QUERY_OPTION, promise } from "@/common";
+import { MetaHelper } from "./meta_helper";
 
 export class IDBUtil {
     con: IDBDatabase;
+    transaction: IDBTransaction;
 
     constructor(connection: IDBDatabase) {
         this.con = connection;
     }
 
     createTransaction(tables: string[], mode = IDB_MODE.ReadWrite) {
+        tables.push(MetaHelper.tableName);
         const tx = this.con.transaction(tables, mode);
+        this.transaction = tx;
         return promise((res, rej) => {
             tx.oncomplete = res;
             tx.onabort = res;
@@ -27,5 +31,13 @@ export class IDBUtil {
             default: keyRange = IDBKeyRange.only(value); break;
         }
         return keyRange;
+    }
+
+    objectStore(name: string) {
+        return this.transaction.objectStore(name);
+    }
+
+    abortTransaction() {
+        this.transaction.abort();
     }
 }

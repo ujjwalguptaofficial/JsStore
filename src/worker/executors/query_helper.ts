@@ -36,7 +36,7 @@ export class QueryHelper {
         };
     }
 
-    checkInsertQuery(query: InsertQuery, autoIncValues: TStringAny) {
+    checkInsertQuery(query: InsertQuery) {
         const validResult = this.isInsertQryValid_(query);
         let table = validResult.table;
         const err = validResult.log;
@@ -45,7 +45,7 @@ export class QueryHelper {
             return;
         }
         else {
-            const valueCheckerInstance = new ValuesChecker(table, autoIncValues);
+            const valueCheckerInstance = new ValuesChecker(table, table.autoIncColumnValue);
             const { values, err } = valueCheckerInstance.checkAndModifyValues(query.values);
             query.values = values;
             return err;

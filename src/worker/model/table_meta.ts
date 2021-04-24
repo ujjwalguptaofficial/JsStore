@@ -9,17 +9,21 @@ export class TableMeta {
     primaryKey: string;
     state: TABLE_STATE;
     version: number;
+    autoIncColumnValue = {};
 
     constructor(table: ITable) {
         const columns = [];
         for (const columnName in table.columns) {
             const column: IColumn = table.columns[columnName] as any;
             column.name = columnName;
+            if (column.autoIncrement) {
+                this.autoIncColumnValue[columnName] = 0;
+            }
             columns.push(column);
         }
         this.columns = columns;
         this.name = table.name;
-        this.version = table.version == null ? 1 : table.version;
+        this.version = table.version || 1;
         this.setPrimaryKey_();
         this.setState_();
     }
