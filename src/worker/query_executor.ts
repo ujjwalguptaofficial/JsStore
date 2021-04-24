@@ -19,6 +19,7 @@ export class QueryExecutor {
         return new InitDb(dbMeta).execute().then((result) => {
             this.connection = result.con;
             this.util = new IDBUtil(this.connection);
+            this.db = dbMeta;
             return result.isCreated;
         })
     }

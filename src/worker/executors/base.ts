@@ -3,7 +3,7 @@ import { InsertQuery, SelectQuery } from "@/common";
 import { LogHelper } from "@worker/utils";
 
 export class Base {
-    idb: IDBUtil;
+    util: IDBUtil;
     query: InsertQuery | SelectQuery;
     onSuccess: (result: any) => void;
     onError: (err: LogHelper) => void;

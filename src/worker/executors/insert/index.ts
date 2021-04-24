@@ -5,6 +5,7 @@ import { IDBUtil } from "@/worker/idb_util";
 import { QueryHelper } from "@worker/executors/query_helper";
 import { DbMeta } from "@/worker/model";
 import { getError } from "@/worker/utils";
+import { MetaHelper } from "@/worker/meta_helper";
 
 export class Insert extends Base {
 
@@ -15,20 +16,16 @@ export class Insert extends Base {
     constructor(query: InsertQuery, util: IDBUtil) {
         super();
         this.query = query;
-        this.idb = util;
+        this.util = util;
     }
 
     execute(db: DbMeta) {
         const err = new QueryHelper(db).checkInsertQuery(this.query as InsertQuery);
         if (err) return Promise.reject(getError(err, true));
-        return this.insertData_();
+        return this.insertData_(db);
     }
 
-    private onQueryFinished_() {
-        return this.query.return ? this.valuesAffected_ : this.rowAffected;
-    }
-
-    private insertData_() {
+    private insertData_(db: DbMeta) {
 
         let objectStore: IDBObjectStore;
         let onInsertData;
@@ -57,13 +54,13 @@ export class Insert extends Base {
         }
         return promise<TStringAny[] | number>((res, rej) => {
             const onError = (err) => {
-                this.idb.abortTransaction();
+                this.util.abortTransaction();
                 rej(getError(err));
             }
-            this.idb.createTransaction(
+            this.util.createTransaction(
                 [this.query.into],
             ).catch(onError);
-            objectStore = this.idb.objectStore(this.tableName);
+            objectStore = this.util.objectStore(this.tableName);
 
             promiseAll(
                 this.query.values.map(function (value) {
@@ -77,7 +74,9 @@ export class Insert extends Base {
                     });
                 })
             ).then(() => {
-                res(this.onQueryFinished_());
+                MetaHelper.set(MetaHelper.dbSchema, db, this.util).then(() => {
+                    res(this.query.return ? this.valuesAffected_ : this.rowAffected);
+                }).catch(onError);
             }).catch(onError)
         })
 
