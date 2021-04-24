@@ -1,6 +1,6 @@
 import { LogHelper } from "./log_helper";
 import { Config } from "./config";
-import { WebWorkerRequest, EventQueue, API, WebWorkerResult, EVENT } from "../common/index";
+import { WebWorkerRequest, EventQueue, API, WebWorkerResult, EVENT, promise } from "../common/index";
 
 declare var JsStoreWorker;
 export class ConnectionHelper {
@@ -41,24 +41,6 @@ export class ConnectionHelper {
     }
   }
 
-  private initKeyStore_() {
-    if (Config.isRuningInWorker) {
-      this.prcoessExecutionOfQry_({
-        name: API.InitKeyStore,
-        onSuccess: function () {
-
-        },
-        onError: function (err) {
-          console.error(err);
-        }
-      }, 0);
-    }
-    else {
-      JsStoreWorker.KeyStore.init();
-    }
-
-  }
-
   private onMessageFromWorker_(msg) {
     this.processFinishedQuery_(msg.data);
   }
@@ -68,8 +50,8 @@ export class ConnectionHelper {
     const finishedRequest: WebWorkerRequest = this.requestQueue_.shift();
     if (finishedRequest) {
       LogHelper.log(`request ${finishedRequest.name} finished`);
-      if (message.errorOccured) {
-        finishedRequest.onError(message.errorDetails);
+      if (message.error) {
+        finishedRequest.onError(message.error);
       } else {
         switch (finishedRequest.name) {
           case API.OpenDb:
@@ -91,7 +73,7 @@ export class ConnectionHelper {
             }
             break;
         }
-        finishedRequest.onSuccess(message.returnedValue);
+        finishedRequest.onSuccess(message.result);
       }
       this.isCodeExecuting_ = false;
       this.executeQry_();
@@ -99,7 +81,6 @@ export class ConnectionHelper {
   }
 
   private openDb_() {
-    this.initKeyStore_();
     this.prcoessExecutionOfQry_({
       name: API.OpenDb,
       query: this.activeDbName,
@@ -113,7 +94,7 @@ export class ConnectionHelper {
   }
 
   private executeMiddleware_(input: WebWorkerRequest) {
-    return new Promise((res) => {
+    return promise<void>((res) => {
       let index = 0;
       const lastIndex = this.middlewares.length - 1;
       const callNextMiddleware = () => {
@@ -140,7 +121,6 @@ export class ConnectionHelper {
           }
           else {
             clearTimeout(this.inactivityTimer_);
-            this.initKeyStore_();
           }
         }
         this.prcoessExecutionOfQry_(request);

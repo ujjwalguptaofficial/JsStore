@@ -17,7 +17,7 @@ export class IDBUtil {
             tx.oncomplete = res;
             tx.onabort = res;
             tx.onerror = rej;
-        })
+        });
     }
 
     getKeyRange(value, op?) {

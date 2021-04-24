@@ -117,10 +117,8 @@ export type InsertQuery = {
 };
 
 export type WebWorkerResult = {
-    errorOccured: boolean;
-    errorDetails: any;
-    returnedValue: any;
-    throwError: boolean;
+    error?: any;
+    result?: any;
 };
 
 export type TranscationQuery = {
@@ -151,4 +149,4 @@ export type IntersectQuery = {
     order?: OrderQuery;
 };
 
-export type TStringAny = { [key: string]: any }
+export type TStringAny = { [key: string]: any };

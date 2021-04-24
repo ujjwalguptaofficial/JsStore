@@ -1,12 +1,12 @@
 import { QueryExecutor } from "@/worker/query_executor";
+import { isWorker } from "./constants";
 
-const isWorker = typeof (self as any).alert === 'undefined' && typeof ServiceWorkerGlobalScope === 'undefined';
 export const initialize = () => {
     const isIdbSupported = setCrossBrowserIndexedDb();
     if (isWorker) {
-        let executor = new QueryExecutor();
+        const executor = new QueryExecutor();
         (self as any).onmessage = function (e) {
-            executor.run(e.data)
+            executor.run(e.data);
             // new QueryExecutor().checkConnectionAndExecuteLogic(e.data);
         };
     }

@@ -74,6 +74,7 @@ function createConfigsForAllLibraryTargetForWebWorker() {
     libraryTargetWorker.forEach(function (target) {
         configs.push(merge(baseConfig[1], getConfigForTaget(target)));
     })
+    // console.log("configs", configs);
     return configs;
 }
 

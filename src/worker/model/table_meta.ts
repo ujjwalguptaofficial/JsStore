@@ -19,23 +19,15 @@ export class TableMeta {
             if (column.autoIncrement) {
                 this.autoIncColumnValue[columnName] = 0;
             }
+            if (column.primaryKey) {
+                this.primaryKey = columnName;
+            }
             columns.push(column);
         }
         this.columns = columns;
         this.name = table.name;
         this.version = table.version || 1;
-        this.setPrimaryKey_();
         this.setState_();
-    }
-
-    private setPrimaryKey_() {
-        for (const columnName in this.columns) {
-            const column = this.columns[columnName];
-            if (column.primaryKey) {
-                this.primaryKey = columnName;
-                return;
-            }
-        }
     }
 
     private setState_() {

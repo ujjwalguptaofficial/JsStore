@@ -4,10 +4,10 @@ import { promise } from "@/common";
 export class MetaHelper {
     static tableName = "JsStore_Meta";
     static autoIncrementKey(tableName: string, columnName: string) {
-        return `JsStore_${tableName}_${columnName}_Value`
+        return `JsStore_${tableName}_${columnName}_Value`;
     }
     static dbSchema() {
-        return `JsStore_DbSchema`
+        return `JsStore_DbSchema`;
     }
 
     static set(key, value, util: IDBUtil) {
@@ -22,6 +22,6 @@ export class MetaHelper {
             });
             req.onsuccess = res;
             req.onerror = rej;
-        })
+        });
     }
 }
