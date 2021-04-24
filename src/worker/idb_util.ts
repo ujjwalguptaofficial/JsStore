@@ -20,7 +20,7 @@ export class IDBUtil {
         });
     }
 
-    getKeyRange(value, op?) {
+    keyRange(value, op?) {
         let keyRange: IDBKeyRange;
         switch (op) {
             case QUERY_OPTION.Between: keyRange = IDBKeyRange.bound(value.low, value.high, false, false); break;
@@ -39,5 +39,9 @@ export class IDBUtil {
 
     abortTransaction() {
         this.transaction.abort();
+    }
+
+    close() {
+        this.con.close();
     }
 }

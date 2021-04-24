@@ -13,21 +13,6 @@ export class Connection extends ConnectionHelper {
     }
 
     /**
-     * open database
-     *
-     * @param {string} dbName
-     * @returns
-     * @memberof Connection
-     */
-    openDb(dbName: string) {
-        this.activeDbName = dbName;
-        return this.pushApi<null>({
-            name: API.OpenDb,
-            query: dbName
-        });
-    }
-
-    /**
      * creates DataBase
      *
      * @param {IDataBase} dataBase
@@ -35,7 +20,7 @@ export class Connection extends ConnectionHelper {
      * @memberof Connection
      */
     initDb(dataBase: IDataBase) {
-        this.activeDbName = dataBase.name;
+        this.database = dataBase;
         return this.pushApi<boolean>({
             name: API.InitDb,
             query: dataBase
@@ -240,7 +225,7 @@ export class Connection extends ConnectionHelper {
             } as SetQuery
         });
     }
-    
+
     /**
      * terminate the connection
      *

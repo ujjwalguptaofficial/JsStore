@@ -24,7 +24,7 @@ export class InitDb {
         const initLogic = (res, rej) => {
             const dbOpenRequest = indexedDB.open(db.name, db.version);
             const metaValues: { key: string, value: any }[] = [{
-                key: MetaHelper.dbSchema(),
+                key: MetaHelper.dbSchema,
                 value: db
             }];
             dbOpenRequest.onsuccess = function () {

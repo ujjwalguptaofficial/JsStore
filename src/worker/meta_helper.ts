@@ -6,9 +6,7 @@ export class MetaHelper {
     static autoIncrementKey(tableName: string, columnName: string) {
         return `JsStore_${tableName}_${columnName}_Value`;
     }
-    static dbSchema() {
-        return `JsStore_DbSchema`;
-    }
+    static dbSchema = `JsStore_DbSchema`;
 
     static set(key, value, util: IDBUtil) {
         if (!util.transaction) {
@@ -21,6 +19,22 @@ export class MetaHelper {
                 key, value
             });
             req.onsuccess = res;
+            req.onerror = rej;
+        });
+    }
+    static get(key, util: IDBUtil) {
+        if (!util.transaction) {
+            util.createTransaction([MetaHelper.tableName]);
+        }
+        const store = util.objectStore(MetaHelper.tableName);
+
+        return promise((res, rej) => {
+            const req = store.get(
+                util.keyRange(key)
+            );
+            req.onsuccess = () => {
+                res(req.result.value);
+            };
             req.onerror = rej;
         });
     }

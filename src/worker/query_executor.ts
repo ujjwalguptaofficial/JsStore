@@ -1,11 +1,11 @@
-import { WebWorkerRequest, API, IDataBase, InsertQuery, WebWorkerResult } from "@/common";
+import { WebWorkerRequest, API, IDataBase, InsertQuery, WebWorkerResult, promise } from "@/common";
 import { DbMeta } from "./model";
 import { InitDb } from "./init_db";
 import { Insert } from "./executors/insert";
 import { IDBUtil } from "./idb_util";
 import { isWorker } from "./constants";
+import { MetaHelper } from "./meta_helper";
 export class QueryExecutor {
-    connection: IDBDatabase;
     util: IDBUtil;
     db: DbMeta;
 
@@ -20,8 +20,12 @@ export class QueryExecutor {
     run(request: WebWorkerRequest) {
         let queryResult: Promise<any>;
         switch (request.name) {
+            case API.OpenDb:
             case API.InitDb:
                 queryResult = this.initDb(request.query);
+                break;
+            case API.CloseDb:
+                queryResult = this.closeDb();
                 break;
             case API.Insert:
                 queryResult = this.insert(request.query);
@@ -48,14 +52,41 @@ export class QueryExecutor {
         this.onQryFinished(result);
     }
 
-    initDb(dataBase: IDataBase) {
-        const dbMeta = new DbMeta(dataBase);
-        return new InitDb(dbMeta).execute().then((result) => {
-            this.connection = result.con;
-            this.util = new IDBUtil(this.connection);
-            this.db = dbMeta;
-            return result.isCreated;
-        });
+    closeDb() {
+        this.util.close();
+        return Promise.resolve(true);
+    }
+
+    terminate() {
+        this.closeDb();
+        this.db = this.util = null;
+    }
+
+    initDb(dataBase?: IDataBase) {
+        const dbMeta = dataBase ? new DbMeta(dataBase) : this.db;
+        return promise((res) => {
+            new InitDb(dbMeta).execute().then((result) => {
+                this.util = new IDBUtil(result.con);
+                this.db = dbMeta;
+                if (result.isCreated) {
+                    MetaHelper.set(
+                        MetaHelper.dbSchema, dbMeta,
+                        this.util
+                    ).then(() => {
+                        res(true);
+                    });
+                }
+                else {
+                    MetaHelper.get(
+                        MetaHelper.dbSchema,
+                        this.util
+                    ).then((db: DbMeta) => {
+                        this.db = db;
+                        res(true);
+                    });
+                }
+            });
+        })
     }
 
     insert(query: InsertQuery) {
