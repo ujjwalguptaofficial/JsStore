@@ -28,8 +28,6 @@ export class Select extends BaseFetch {
 
     isSubQuery = false;
 
-
-
     protected pushResult: (value) => void;
 
     protected thenEvaluator = new ThenEvaluator();
@@ -80,14 +78,16 @@ export class Select extends BaseFetch {
             // if (this.query.join == null) {
             if (this.query.where != null) {
                 this.initTransaction_();
-                //     if (isArray(this.query.where)) {
-                //         return this.processWhereArrayQry();
-                //     }
-                //     else {
-                return this.processWhere_().then(
-                    this.returnResult_.bind(this)
-                );
-                //     }
+                if (isArray(this.query.where)) {
+                    return this.processWhereArrayQry().then(
+                        this.returnResult_.bind(this)
+                    );
+                }
+                else {
+                    return this.processWhere_().then(
+                        this.returnResult_.bind(this)
+                    );
+                }
             }
             else {
                 this.initTransaction_();
@@ -106,90 +106,78 @@ export class Select extends BaseFetch {
         }
     }
 
-    // private processWhereArrayQry() {
-    //     this.isArrayQry = true;
-    //     const whereQuery = this.query.where,
-    //         pKey = this.primaryKey;
-    //     let isFirstWhere = true, output = [], operation;
+    private processWhereArrayQry() {
+        this.isArrayQry = true;
+        const whereQuery = this.query.where,
+            pKey = this.primaryKey;
+        let isFirstWhere = true, output = [], operation;
 
-    //     const isItemExist = (keyValue) => {
-    //         return output.findIndex(item => item[pKey] === keyValue) >= 0;
-    //     };
-    //     const onSuccess = () => {
-    //         if (operation === QUERY_OPTION.And) {
-    //             const doAnd = () => {
-    //                 let andResults = [];
-    //                 this.results.forEach((item) => {
-    //                     if (isItemExist(item[pKey])) {
-    //                         andResults.push(item);
-    //                     }
-    //                 });
-    //                 output = andResults;
-    //                 andResults = null;
-    //             };
+        const isItemExist = (keyValue) => {
+            return output.findIndex(item => item[pKey] === keyValue) >= 0;
+        };
+        const onSuccess = () => {
+            if (operation === QUERY_OPTION.And) {
+                const doAnd = () => {
+                    let andResults = [];
+                    this.results.forEach((item) => {
+                        if (isItemExist(item[pKey])) {
+                            andResults.push(item);
+                        }
+                    });
+                    output = andResults;
+                    andResults = null;
+                };
 
-    //             if (isFirstWhere === true) {
-    //                 output = this.results;
-    //             }
-    //             else if (output.length > 0) {
-    //                 doAnd();
-    //             }
-    //         }
-    //         else {
-    //             if (output.length > 0) {
-    //                 this.results = [...output, ...this.results];
-    //                 this.removeDuplicates();
-    //                 output = this.results;
-    //             }
-    //             else {
-    //                 output = this.results;
-    //             }
-    //         }
-    //         isFirstWhere = false;
-    //         if (whereQuery.length > 0) {
-    //             this.results = [];
-    //             processFirstQry();
-    //         }
-    //         else {
-    //             this.results = output;
-    //             if (this.isSubQuery === true) {
-    //                 this.returnResult_();
-    //             }
-    //         }
+                if (isFirstWhere === true) {
+                    output = this.results;
+                }
+                else if (output.length > 0) {
+                    doAnd();
+                }
+            }
+            else {
+                if (output.length > 0) {
+                    this.results = [...output, ...this.results];
+                    this.removeDuplicates();
+                    output = this.results;
+                }
+                else {
+                    output = this.results;
+                }
+            }
+            isFirstWhere = false;
+            if (whereQuery.length > 0) {
+                this.results = [];
+                processFirstQry();
+            }
+            else {
+                this.results = output;
+                if (this.isSubQuery === true) {
+                    this.returnResult_();
+                }
+            }
 
-    //     };
-    //     const processFirstQry = () => {
-    //         this.query.where = whereQuery.shift();
-    //         if (this.query.where[QUERY_OPTION.Or]) {
-    //             if (Object.keys(this.query.where).length === 1) {
-    //                 operation = QUERY_OPTION.Or;
-    //                 this.query.where = this.query.where[QUERY_OPTION.Or];
-    //                 this.onWhereArrayQrySuccess = onSuccess;
-    //             }
-    //             else {
-    //                 operation = QUERY_OPTION.And;
-    //                 this.onWhereArrayQrySuccess = onSuccess;
-    //             }
-    //         }
-    //         else {
-    //             operation = QUERY_OPTION.And;
-    //             this.onWhereArrayQrySuccess = onSuccess;
-    //         }
-    //         this.processWhere_();
-    //     };
-    //     processFirstQry();
-    // }
-
-    protected onQueryFinished() {
-        // if (this.isOr === true) {
-        //     this.orQuerySuccess_();
-        // }
-        // else if (this.isArrayQry === true) {
-        //     this.onWhereArrayQrySuccess();
-        // }
-        // else if (this.isTxQuery === true || this.isSubQuery === true) {
-        //     this.returnResult_();
-        // }
+        };
+        const processFirstQry = () => {
+            this.query.where = whereQuery.shift();
+            if (this.query.where[QUERY_OPTION.Or]) {
+                if (Object.keys(this.query.where).length === 1) {
+                    operation = QUERY_OPTION.Or;
+                    this.query.where = this.query.where[QUERY_OPTION.Or];
+                    this.onWhereArrayQrySuccess = onSuccess;
+                }
+                else {
+                    operation = QUERY_OPTION.And;
+                    this.onWhereArrayQrySuccess = onSuccess;
+                }
+            }
+            else {
+                operation = QUERY_OPTION.And;
+                this.onWhereArrayQrySuccess = onSuccess;
+            }
+            return this.processWhere_().then(onSuccess);
+        };
+        return processFirstQry();
     }
 
     private initTransaction_() {
@@ -198,10 +186,14 @@ export class Select extends BaseFetch {
     }
 
     private processWhere_() {
-        // if (this.query.where.or) {
-        //     return this.processOrLogic_();
-        // }
-        return this.goToWhereLogic();
+        if (this.query.where.or) {
+            this.processOrLogic_();
+        }
+        return this.goToWhereLogic().then(() => {
+            if (this.isOr) {
+                this.orQuerySuccess_();
+            }
+        })
     }
 
     private returnResult_ = () => {
@@ -242,7 +234,7 @@ export class Select extends BaseFetch {
         // free or info memory
         this.orInfo = null;
         this.removeDuplicates();
-        this.onQueryFinished();
+        // this.onQueryFinished();
     }
 
     private orQuerySuccess_() {
@@ -255,15 +247,10 @@ export class Select extends BaseFetch {
                 where[key] = this.orInfo.orQuery[key];
                 delete this.orInfo.orQuery[key];
                 this.query.where = where;
-                this.goToWhereLogic();
-            }
-            else {
-                this.orQueryFinish_();
+                return this.goToWhereLogic();
             }
         }
-        else {
-            this.orQueryFinish_();
-        }
+        return this.orQueryFinish_();
     }
 
     private processOrLogic_() {

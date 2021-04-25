@@ -80,7 +80,7 @@ const executeLimitForRegex_ = function (this: Select, onFinish) {
             }
             cursor.continue();
         } else {
-            this.onQueryFinished();
+            onFinish();
         }
     };
 }
@@ -94,7 +94,7 @@ const executeSimpleForRegex_ = function (this: Select, onFinish) {
             }
             cursor.continue();
         } else {
-            this.onQueryFinished();
+            onFinish();
         }
     };
 }
