@@ -10,8 +10,10 @@ import { ThenEvaluator } from "./then_evaluator";
 import { executeWhereUndefinedLogic } from "./not_where"
 import { processAggregateQry, processGroupDistinctAggr, processOrderBy } from "./order_by";
 import { executeAggregateGroupBy, processGroupBy } from "./group_by";
+import { executeWhereLogic } from "./where";
+import { BaseFetch } from "../base_fetch";
 
-export class Select extends Base {
+export class Select extends BaseFetch {
     sorted = false;
     isOr: boolean;
     isArrayQry: boolean;
@@ -24,8 +26,7 @@ export class Select extends Base {
 
     isSubQuery = false;
 
-    shouldEvaluateLimitAtEnd = false;
-    shouldEvaluateSkipAtEnd = false;
+
 
     protected pushResult: (value) => void;
 
@@ -42,8 +43,8 @@ export class Select extends Base {
     executeAggregateGroupBy = executeAggregateGroupBy;
     processGroupBy = processGroupBy;
 
-    skipRecord;
-    limitRecord;
+
+    executeWhereLogic = executeWhereLogic;
 
     constructor(query: SelectQuery, util: IDBUtil) {
         super();
@@ -69,27 +70,29 @@ export class Select extends Base {
         }
     }
 
-    execute(db: DbMeta) {
+    execute(db: DbMeta): Promise<any> {
         this.db = db;
         const err = new QueryHelper(db).checkSelect(this.query);
         if (err) return Promise.reject(getError(err, true));
         try {
             // if (this.query.join == null) {
-            // if (this.query.where != null) {
-            //     this.initTransaction_();
-            //     if (isArray(this.query.where)) {
-            //         return this.processWhereArrayQry();
-            //     }
-            //     else {
-            //         return this.processWhere_();
-            //     }
-            // }
-            // else {
-            this.initTransaction_();
-            return this.executeWhereUndefinedLogic().then(
-                this.returnResult_.bind(this)
-            );
-            // }
+            if (this.query.where != null) {
+                this.initTransaction_();
+                //     if (isArray(this.query.where)) {
+                //         return this.processWhereArrayQry();
+                //     }
+                //     else {
+                return this.processWhere_().then(
+                    this.returnResult_.bind(this)
+                );
+                //     }
+            }
+            else {
+                this.initTransaction_();
+                return this.executeWhereUndefinedLogic().then(
+                    this.returnResult_.bind(this)
+                );
+            }
 
             // }
             // else {
@@ -193,10 +196,10 @@ export class Select extends Base {
     }
 
     private processWhere_() {
-        if (this.query.where.or) {
-            this.processOrLogic_();
-        }
-        this.goToWhereLogic();
+        // if (this.query.where.or) {
+        //     return this.processOrLogic_();
+        // }
+        return this.goToWhereLogic();
     }
 
     private returnResult_ = () => {

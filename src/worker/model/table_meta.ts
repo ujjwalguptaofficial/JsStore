@@ -22,6 +22,7 @@ export class TableMeta {
             if (column.primaryKey) {
                 this.primaryKey = columnName;
             }
+            column.enableSearch = column.enableSearch == null ? true : column.enableSearch;
             columns.push(column);
         }
         this.columns = columns;

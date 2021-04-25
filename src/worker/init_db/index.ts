@@ -50,9 +50,9 @@ export class InitDb {
                             autoIncrement: true
                         }
                     const store = upgradeConnection.createObjectStore(table.name, option);
-                    for (const columnName in table.columns) {
-                        const column = table.columns[columnName];
+                    table.columns.forEach(column => {
                         if (column.enableSearch) {
+                            const columnName = column.name;
                             const options = column.primaryKey ? { unique: true } : { unique: column.unique };
                             options['multiEntry'] = column.multiEntry;
                             const keyPath = column.keyPath == null ? columnName : column.keyPath;
@@ -64,7 +64,7 @@ export class InitDb {
                                 });
                             }
                         }
-                    }
+                    });
                 }
                 db.tables.forEach(table => {
                     if (table.state === TABLE_STATE.Create) {
