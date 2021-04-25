@@ -4,6 +4,7 @@ import { getRegexFromLikeExpression, promiseReject } from "@worker/utils";
 import { LogHelper, getObjectFirstKey, getDataType, getLength, getError } from "@worker/utils";
 import { WhereChecker } from "./where_checker";
 import { executeWhereLogic } from "./select/where";
+import { executeInLogic } from "./select/in";
 
 export class BaseFetch extends Base {
 
@@ -13,6 +14,7 @@ export class BaseFetch extends Base {
     limitRecord;
     shouldEvaluateLimitAtEnd = false;
     shouldEvaluateSkipAtEnd = false;
+    executeInLogic: typeof executeInLogic;
 
     protected shouldAddValue(value) {
         return this.whereCheckerInstance.check(value);
@@ -37,7 +39,7 @@ export class BaseFetch extends Base {
                     case QUERY_OPTION.Regex:
                         return (this as any).executeRegexLogic(firstColumn, value[QUERY_OPTION.Regex]);
                     case QUERY_OPTION.In:
-                        return (this as any).executeInLogic(
+                        return this.executeInLogic(
                             firstColumn, value[QUERY_OPTION.In]
                         );
                     case QUERY_OPTION.Between:

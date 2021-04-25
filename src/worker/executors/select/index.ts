@@ -12,6 +12,7 @@ import { processAggregateQry, processGroupDistinctAggr, processOrderBy } from ".
 import { executeAggregateGroupBy, processGroupBy } from "./group_by";
 import { executeWhereLogic } from "./where";
 import { BaseFetch } from "../base_fetch";
+import { executeInLogic } from "./in";
 
 export class Select extends BaseFetch {
     sorted = false;
@@ -42,8 +43,7 @@ export class Select extends BaseFetch {
     processAggregateQry = processAggregateQry;
     executeAggregateGroupBy = executeAggregateGroupBy;
     processGroupBy = processGroupBy;
-
-
+    executeInLogic = executeInLogic;
     executeWhereLogic = executeWhereLogic;
 
     constructor(query: SelectQuery, util: IDBUtil) {
