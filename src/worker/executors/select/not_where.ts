@@ -35,7 +35,7 @@ export const executeWhereUndefinedLogic = function (this: Select) {
             return executeSimple;
         }
     })();
-    return promise((res, rej) => {
+    return promise<void>((res, rej) => {
         cursorRequest.onerror = rej;
         cursorRequest.onsuccess = onSuccess.call(this, cursorRequest, res);
     });

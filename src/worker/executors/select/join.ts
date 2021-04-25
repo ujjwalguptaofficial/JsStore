@@ -163,7 +163,7 @@ export class Join {
                     return this.onJoinQueryFinished_();
                 }
 
-                new Select({
+                return new Select({
                     from: query.with,
                     where: query.where,
                     case: query.case,
@@ -172,11 +172,11 @@ export class Join {
                     this.jointables(query.type, jointblInfo, results);
                     this.tablesFetched.push(jointblInfo.table2.table);
                     ++this.currentQueryStackIndex_;
-                    this.startExecutingJoinLogic_();
+                    return this.startExecutingJoinLogic_();
                 });
             }
             catch (ex) {
-                return Promise.reject(ex);
+                return promiseReject(ex);
             }
         }
         else {

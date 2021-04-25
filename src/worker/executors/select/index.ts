@@ -3,7 +3,7 @@ import { SelectQuery, QUERY_OPTION, IDB_MODE, ERROR_TYPE } from "@/common";
 import { IDBUtil } from "@/worker/idb_util";
 import { QueryHelper } from "@worker/executors/query_helper";
 import { DbMeta } from "@/worker/model";
-import { getError, isArray, isObject, getKeys, getObjectFirstKey } from "@/worker/utils";
+import { getError, isArray, isObject, getKeys, getObjectFirstKey, promiseReject } from "@/worker/utils";
 import { setPushResult, setLimitAndSkipEvaluationAtEnd, removeDuplicates } from "./base_select";
 // import "./join";
 import { ThenEvaluator } from "./then_evaluator";
@@ -74,33 +74,31 @@ export class Select extends BaseFetch {
     execute(db: DbMeta): Promise<any> {
         this.db = db;
         const err = new QueryHelper(db).checkSelect(this.query);
-        if (err) return Promise.reject(getError(err, true));
+        if (err) return promiseReject(getError(err, true));
+        let pResult: Promise<void>;
         try {
             if (this.query.join == null) {
                 if (this.query.where != null) {
                     this.initTransaction_();
                     if (isArray(this.query.where)) {
-                        return this.processWhereArrayQry().then(
-                            this.returnResult_.bind(this)
-                        );
+                        pResult = this.processWhereArrayQry();
                     }
                     else {
-                        return this.processWhere_().then(
-                            this.returnResult_.bind(this)
-                        );
+                        pResult = this.processWhere_();
                     }
                 }
                 else {
                     this.initTransaction_();
-                    return this.executeWhereUndefinedLogic().then(
-                        this.returnResult_.bind(this)
-                    );
+                    pResult = this.executeWhereUndefinedLogic();
                 }
 
             }
             else {
-                return this.executeJoinQuery();
+                pResult = this.executeJoinQuery();
             }
+            return pResult.then(
+                this.returnResult_.bind(this)
+            );
         }
         catch (ex) {
             this.onExceptionOccured(ex);
@@ -192,7 +190,7 @@ export class Select extends BaseFetch {
         }
         return this.goToWhereLogic().then(() => {
             if (this.isOr) {
-                this.orQuerySuccess_();
+                return this.orQuerySuccess_();
             }
         })
     }
@@ -264,6 +262,6 @@ export class Select extends BaseFetch {
         delete this.query.where.or;
     }
 
-    
+
 
 }
