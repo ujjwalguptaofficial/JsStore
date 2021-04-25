@@ -13,6 +13,7 @@ import { executeAggregateGroupBy, processGroupBy } from "./group_by";
 import { executeWhereLogic } from "./where";
 import { BaseFetch } from "../base_fetch";
 import { executeInLogic } from "./in";
+import { executeRegexLogic } from "./regex";
 
 export class Select extends BaseFetch {
     sorted = false;
@@ -45,6 +46,7 @@ export class Select extends BaseFetch {
     processGroupBy = processGroupBy;
     executeInLogic = executeInLogic;
     executeWhereLogic = executeWhereLogic;
+    executeRegexLogic = executeRegexLogic;
 
     constructor(query: SelectQuery, util: IDBUtil) {
         super();

@@ -5,6 +5,7 @@ import { LogHelper, getObjectFirstKey, getDataType, getLength, getError } from "
 import { WhereChecker } from "./where_checker";
 import { executeWhereLogic } from "./select/where";
 import { executeInLogic } from "./select/in";
+import { executeRegexLogic } from "./select/regex";
 
 export class BaseFetch extends Base {
 
@@ -15,6 +16,7 @@ export class BaseFetch extends Base {
     shouldEvaluateLimitAtEnd = false;
     shouldEvaluateSkipAtEnd = false;
     executeInLogic: typeof executeInLogic;
+    executeRegexLogic: typeof executeRegexLogic;
 
     protected shouldAddValue(value) {
         return this.whereCheckerInstance.check(value);
@@ -34,10 +36,10 @@ export class BaseFetch extends Base {
                 switch (key) {
                     case QUERY_OPTION.Like: {
                         const regexVal = getRegexFromLikeExpression(value[QUERY_OPTION.Like]);
-                        return (this as any).executeRegexLogic(firstColumn, regexVal);
+                        return this.executeRegexLogic(firstColumn, regexVal);
                     }
                     case QUERY_OPTION.Regex:
-                        return (this as any).executeRegexLogic(firstColumn, value[QUERY_OPTION.Regex]);
+                        return this.executeRegexLogic(firstColumn, value[QUERY_OPTION.Regex]);
                     case QUERY_OPTION.In:
                         return this.executeInLogic(
                             firstColumn, value[QUERY_OPTION.In]
