@@ -14,6 +14,7 @@ import { executeWhereLogic } from "./where";
 import { BaseFetch } from "../base_fetch";
 import { executeInLogic } from "./in";
 import { executeRegexLogic } from "./regex";
+import { executeJoinQuery } from "./join";
 
 export class Select extends BaseFetch {
     sorted = false;
@@ -36,7 +37,7 @@ export class Select extends BaseFetch {
     setPushResult = setPushResult;
     removeDuplicates = removeDuplicates;
     executeWhereUndefinedLogic = executeWhereUndefinedLogic;
-    executeJoinQuery: () => void
+    executeJoinQuery = executeJoinQuery
     processGroupDistinctAggr = processGroupDistinctAggr;
     processOrderBy = processOrderBy;
     processAggregateQry = processAggregateQry;
@@ -75,31 +76,31 @@ export class Select extends BaseFetch {
         const err = new QueryHelper(db).checkSelect(this.query);
         if (err) return Promise.reject(getError(err, true));
         try {
-            // if (this.query.join == null) {
-            if (this.query.where != null) {
-                this.initTransaction_();
-                if (isArray(this.query.where)) {
-                    return this.processWhereArrayQry().then(
-                        this.returnResult_.bind(this)
-                    );
+            if (this.query.join == null) {
+                if (this.query.where != null) {
+                    this.initTransaction_();
+                    if (isArray(this.query.where)) {
+                        return this.processWhereArrayQry().then(
+                            this.returnResult_.bind(this)
+                        );
+                    }
+                    else {
+                        return this.processWhere_().then(
+                            this.returnResult_.bind(this)
+                        );
+                    }
                 }
                 else {
-                    return this.processWhere_().then(
+                    this.initTransaction_();
+                    return this.executeWhereUndefinedLogic().then(
                         this.returnResult_.bind(this)
                     );
                 }
+
             }
             else {
-                this.initTransaction_();
-                return this.executeWhereUndefinedLogic().then(
-                    this.returnResult_.bind(this)
-                );
+                return this.executeJoinQuery();
             }
-
-            // }
-            // else {
-            //     return this.executeJoinQuery();
-            // }
         }
         catch (ex) {
             this.onExceptionOccured(ex);
