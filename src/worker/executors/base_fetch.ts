@@ -6,9 +6,10 @@ import { WhereChecker } from "./where_checker";
 import { executeWhereLogic } from "./select/where";
 import { executeInLogic } from "./select/in";
 import { executeRegexLogic } from "./select/regex";
+import { executeWhereUndefinedLogic } from "./select/not_where";
 
 export class BaseFetch extends Base {
-
+    query: SelectQuery;
     whereCheckerInstance: WhereChecker;
     executeWhereLogic: typeof executeWhereLogic;
     skipRecord;

@@ -1,4 +1,4 @@
-import { WebWorkerRequest, API, IDataBase, InsertQuery, WebWorkerResult, promise, SelectQuery } from "@/common";
+import { WebWorkerRequest, API, IDataBase, InsertQuery, WebWorkerResult, promise, SelectQuery, CountQuery } from "@/common";
 import { DbMeta } from "./model";
 import { InitDb } from "./init_db";
 import { Insert } from "./executors/insert";
@@ -6,6 +6,7 @@ import { IDBUtil } from "./idb_util";
 import { isWorker } from "./constants";
 import { MetaHelper } from "./meta_helper";
 import { Select } from "./executors/select";
+import { Count } from "./executors/count";
 
 export class QueryExecutor {
     util: IDBUtil;
@@ -35,6 +36,9 @@ export class QueryExecutor {
             case API.Select:
                 queryResult = this.select(request.query);
                 break;
+            case API.Count:
+                queryResult = this.count(request.query);
+                break;
             default:
                 if (process.env.NODE_ENV === 'dev') {
                     console.error('The Api:-' + request.name + ' does not support.');
@@ -50,7 +54,7 @@ export class QueryExecutor {
                 error: err
             } as WebWorkerResult;
             this.returnResult_(result);
-        })
+        });
     }
 
     private returnResult_(result: WebWorkerResult) {
@@ -91,7 +95,7 @@ export class QueryExecutor {
                     });
                 }
             });
-        })
+        });
     }
 
     insert(query: InsertQuery) {
@@ -100,7 +104,12 @@ export class QueryExecutor {
     }
 
     select(query: SelectQuery) {
-        const insert = new Select(query, this.util);
-        return insert.execute(this.db);
+        const select = new Select(query, this.util);
+        return select.execute(this.db);
+    }
+
+    count(query: CountQuery) {
+        const count = new Count(query, this.util);
+        return count.execute(this.db);
     }
 }

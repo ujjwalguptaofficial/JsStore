@@ -1,6 +1,6 @@
 import { IDBUtil } from "@worker/idb_util";
-import { InsertQuery, SelectQuery } from "@/common";
-import { LogHelper } from "@worker/utils";
+import { InsertQuery, SelectQuery, ERROR_TYPE } from "@/common";
+import { LogHelper, getError } from "@worker/utils";
 import { DbMeta } from "@worker/model";
 
 export class Base {
@@ -31,6 +31,16 @@ export class Base {
 
     protected getColumnInfo(columnName: string, tableName?: string) {
         return this.table(tableName).columns.find(column => column.name === columnName);
+    }
+
+    protected onExceptionOccured(ex: DOMException) {
+        console.error(ex);
+        return Promise.reject(
+            getError({
+                message: ex.message,
+                type: ERROR_TYPE.InvalidQuery
+            })
+        );
     }
 
 

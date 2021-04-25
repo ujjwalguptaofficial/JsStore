@@ -32,7 +32,7 @@ describe('Test insert', function () {
         });
     });
 
-    it('insert customers', function (done) {
+    it('insert customers with inserted id', function (done) {
         con.insert({
             into: 'Customers',
             values: [{ "customerId": 93, "customerName": "ujjwal gupta", "contactName": "ujjwal", "address": "bhubaneswar odisha", "city": "bhubaneswar", "postalCode": "12345", "country": "India" }]

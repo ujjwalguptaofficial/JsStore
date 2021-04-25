@@ -99,7 +99,9 @@ export class LogHelper implements IError {
                 errMsg = this.info_;
                 break;
             default:
-                this.type = ERROR_TYPE.Unknown
+                if (!this.type) {
+                    this.type = ERROR_TYPE.Unknown
+                }
                 errMsg = this.message;
                 break;
         }

@@ -264,14 +264,6 @@ export class Select extends BaseFetch {
         delete this.query.where.or;
     }
 
-    protected onExceptionOccured(ex: DOMException) {
-        console.error(ex);
-        return Promise.reject(
-            getError({
-                message: ex.message,
-                type: ERROR_TYPE.InvalidQuery
-            })
-        );
-    }
+    
 
 }

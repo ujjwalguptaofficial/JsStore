@@ -22,7 +22,8 @@
         "moduleResolution": "node",
         "paths": {
             "@/*": ["./src/*"],
-            "@worker/*": ["./src/worker/*"]
+            "@worker/*": ["./src/worker/*"],
+            "@executors/*": ["./src/worker/executors/*"]
         }
     },
     "exclude": [

@@ -9,14 +9,27 @@ export class IDBUtil {
         this.con = connection;
     }
 
+    private emptyTx() {
+        this.transaction = null;
+    }
+
     createTransaction(tables: string[], mode = IDB_MODE.ReadWrite) {
         tables.push(MetaHelper.tableName);
         const tx = this.con.transaction(tables, mode);
         this.transaction = tx;
         return promise((res, rej) => {
-            tx.oncomplete = res;
-            tx.onabort = res;
-            tx.onerror = rej;
+            tx.oncomplete = () => {
+                this.emptyTx();
+                res();
+            };
+            tx.onabort = () => {
+                this.emptyTx();
+                res();
+            };
+            tx.onerror = (e) => {
+                this.emptyTx();
+                rej(e);
+            };
         });
     }
 
@@ -38,7 +51,9 @@ export class IDBUtil {
     }
 
     abortTransaction() {
-        this.transaction.abort();
+        if (this.transaction) {
+            this.transaction.abort();
+        }
     }
 
     close() {
