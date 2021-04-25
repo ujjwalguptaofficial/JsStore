@@ -1,10 +1,12 @@
-import { WebWorkerRequest, API, IDataBase, InsertQuery, WebWorkerResult, promise } from "@/common";
+import { WebWorkerRequest, API, IDataBase, InsertQuery, WebWorkerResult, promise, SelectQuery } from "@/common";
 import { DbMeta } from "./model";
 import { InitDb } from "./init_db";
 import { Insert } from "./executors/insert";
 import { IDBUtil } from "./idb_util";
 import { isWorker } from "./constants";
 import { MetaHelper } from "./meta_helper";
+import { Select } from "./executors/select";
+
 export class QueryExecutor {
     util: IDBUtil;
     db: DbMeta;
@@ -29,6 +31,9 @@ export class QueryExecutor {
                 break;
             case API.Insert:
                 queryResult = this.insert(request.query);
+                break;
+            case API.Select:
+                queryResult = this.select(request.query);
                 break;
             default:
                 if (process.env.NODE_ENV === 'dev') {
@@ -91,6 +96,11 @@ export class QueryExecutor {
 
     insert(query: InsertQuery) {
         const insert = new Insert(query, this.util);
+        return insert.execute(this.db);
+    }
+
+    select(query: SelectQuery) {
+        const insert = new Select(query, this.util);
         return insert.execute(this.db);
     }
 }
