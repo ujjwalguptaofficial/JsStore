@@ -1,10 +1,13 @@
 import { Select } from "./";
-import { JoinQuery, DATA_TYPE, QUERY_OPTION, ERROR_TYPE } from "@/common";
+import { JoinQuery, DATA_TYPE, QUERY_OPTION, ERROR_TYPE, SelectQuery } from "@/common";
 import { getDataType, getError, LogHelper, removeSpace, promiseReject } from "@/worker/utils";
 
 
 export const executeJoinQuery = function (this: Select) {
-    return new Join(this).executeJoinQuery();
+    const p = new Join(this).execute();
+    return p.then(results => {
+        this.results = results;
+    })
 }
 
 export class Join {
@@ -27,7 +30,12 @@ export class Join {
         return this.select.table(name);
     }
 
-    executeJoinQuery() {
+    private executeSelect(query: SelectQuery) {
+        return new Select(query, this.select.util).
+            execute(this.select.db);
+    }
+
+    execute() {
         const query = this.select.query;
         if (getDataType(query.join) === DATA_TYPE.Object) {
             this.joinQueryStack_ = [query.join as JoinQuery];
@@ -37,22 +45,20 @@ export class Join {
         }
         // get the data for first table
         const tableName = query.from;
-        return new Select({
+        return this.executeSelect({
             from: tableName,
             where: query.where,
             case: query.case,
             flatten: query.flatten
-        }, this.select.util).
-            execute(this.select.db).
-            then(results => {
-                this.results = results.map((item) => {
-                    return {
-                        [this.currentQueryStackIndex_]: item
-                    };
-                });
-                this.tablesFetched.push(tableName);
-                return this.startExecutingJoinLogic_();
+        }).then(results => {
+            this.results = results.map((item) => {
+                return {
+                    [this.currentQueryStackIndex_]: item
+                };
             });
+            this.tablesFetched.push(tableName);
+            return this.startExecutingJoinLogic_();
+        });
     }
 
     private onJoinQueryFinished_() {
@@ -160,15 +166,15 @@ export class Join {
                     if (err) {
                         return promiseReject(err);
                     }
-                    return this.onJoinQueryFinished_();
+                    //return this.onJoinQueryFinished_();
                 }
 
-                return new Select({
+                return this.executeSelect({
                     from: query.with,
                     where: query.where,
                     case: query.case,
                     flatten: query.flatten
-                }, this.select.util).execute(this.select.db).then(results => {
+                }).then(results => {
                     this.jointables(query.type, jointblInfo, results);
                     this.tablesFetched.push(jointblInfo.table2.table);
                     ++this.currentQueryStackIndex_;
@@ -180,7 +186,7 @@ export class Join {
             }
         }
         else {
-            this.onJoinQueryFinished_();
+            return this.onJoinQueryFinished_();
         }
     }
 
