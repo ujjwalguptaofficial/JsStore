@@ -49,9 +49,6 @@ export enum DATA_TYPE {
 
 export enum API {
     InitDb = "init_db",
-    IsDbExist = "is_db_exist",
-    GetDbVersion = "get_db_version",
-    GetDbList = "get_db_list",
     Get = "get",
     Set = "set",
     Select = "select",

@@ -140,30 +140,16 @@ export class Connection extends ConnectionHelper {
     }
 
     /**
-     * get version of database
+     * open database
      *
-     * @param {(string | DbInfo)} dbName
+     * @param {string} dbName
      * @returns
      * @memberof Connection
      */
-    getDbVersion(dbName: string | DbInfo) {
-        return this.pushApi<number>({
-            name: API.GetDbVersion,
+    openDb(dbName: string) {
+        return this.pushApi<IDataBase>({
+            name: API.OpenDb,
             query: dbName
-        });
-    }
-
-    /**
-     * is database exist
-     *
-     * @param {(DbInfo | string)} dbInfo
-     * @returns
-     * @memberof Connection
-     */
-    isDbExist(dbInfo: DbInfo | string) {
-        return this.pushApi<boolean>({
-            name: API.IsDbExist,
-            query: dbInfo
         });
     }
 
@@ -173,11 +159,9 @@ export class Connection extends ConnectionHelper {
      * @returns
      * @memberof Connection
      */
-    getDbList() {
-        return this.pushApi<string[]>({
-            name: API.GetDbList,
-            query: null
-        });
+    getDbList(): Promise<[{ name: string, version: number }]> {
+        console.warn("Api getDbList is recommended to use for debugging only. Do not use in code.");
+        return (indexedDB as any).databases();
     }
 
     /**

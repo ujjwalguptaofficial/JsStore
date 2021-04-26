@@ -20,9 +20,6 @@ export class ConnectionHelper {
   // these apis have special permissions. These apis dont wait for database open.
   private whiteListApi_ = [
     API.InitDb,
-    API.IsDbExist,
-    API.GetDbVersion,
-    API.GetDbList,
     API.OpenDb,
     API.GetDbSchema,
     API.Get,
@@ -83,7 +80,7 @@ export class ConnectionHelper {
   private openDb_() {
     this.prcoessExecutionOfQry_({
       name: API.OpenDb,
-      query: null,
+      query: this.database.name,
       onSuccess: function () {
 
       },

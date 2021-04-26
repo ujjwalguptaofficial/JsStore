@@ -189,10 +189,14 @@ export class Select extends BaseFetch {
             this.processOrLogic_();
         }
         return this.goToWhereLogic().then(() => {
-            if (this.isOr) {
-                return this.orQuerySuccess_();
-            }
+            return this.onWhereEvaluated();
         })
+    }
+
+    private onWhereEvaluated() {
+        if (this.isOr) {
+            return this.orQuerySuccess_();
+        }
     }
 
     private returnResult_ = () => {
@@ -246,7 +250,7 @@ export class Select extends BaseFetch {
                 where[key] = this.orInfo.orQuery[key];
                 delete this.orInfo.orQuery[key];
                 this.query.where = where;
-                return this.goToWhereLogic();
+                return this.goToWhereLogic().then(this.onWhereEvaluated.bind(this))
             }
         }
         return this.orQueryFinish_();

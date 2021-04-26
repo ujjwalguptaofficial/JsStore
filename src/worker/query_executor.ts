@@ -24,6 +24,8 @@ export class QueryExecutor {
         let queryResult: Promise<any>;
         switch (request.name) {
             case API.OpenDb:
+                queryResult = this.openDb(request.query);
+                break;
             case API.InitDb:
                 queryResult = this.initDb(request.query);
                 break;
@@ -43,7 +45,7 @@ export class QueryExecutor {
                 if (process.env.NODE_ENV === 'dev') {
                     console.error('The Api:-' + request.name + ' does not support.');
                 }
-                return;
+                queryResult = Promise.resolve();
         }
         queryResult.then((result) => {
             this.returnResult_({
@@ -71,9 +73,24 @@ export class QueryExecutor {
         this.db = this.util = null;
     }
 
+    openDb(name: string) {
+        let pResult: Promise<boolean>;
+        if (this.db && name === this.db.name) {
+            pResult = this.initDb();
+        }
+        pResult = this.initDb({
+            name: name,
+            tables: [
+            ]
+        });
+        return pResult.then(() => {
+            return this.db;
+        });
+    }
+
     initDb(dataBase?: IDataBase) {
         const dbMeta = dataBase ? new DbMeta(dataBase) : this.db;
-        return promise((res) => {
+        return promise<boolean>((res) => {
             new InitDb(dbMeta).execute().then((result) => {
                 this.util = new IDBUtil(result.con);
                 this.db = dbMeta;

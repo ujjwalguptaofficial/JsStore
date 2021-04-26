@@ -10,7 +10,6 @@ export class InitDb {
     db: DbMeta;
 
     constructor(db: DbMeta) {
-        db.version = db.version || 1;
         this.db = db;
     }
 

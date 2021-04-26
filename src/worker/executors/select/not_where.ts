@@ -32,16 +32,16 @@ export const executeWhereUndefinedLogic = function (this: Select) {
             else if (this.limitRecord) {
                 return executeLimit;
             }
-            return executeSimple;
         }
+        return executeSimple;
     })();
     return promise<void>((res, rej) => {
         cursorRequest.onerror = rej;
-        cursorRequest.onsuccess = onSuccess.call(this, cursorRequest, res);
+        cursorRequest.onsuccess = onSuccess.call(this, res);
     });
 }
 
-const executeSkipAndLimit = function (this: Select, cursorRequest: IDBRequest, onFinished) {
+const executeSkipAndLimit = function (this: Select, onFinished) {
     let recordSkipped = false,
         cursor: IDBCursorWithValue;
     return (e) => {
@@ -61,7 +61,7 @@ const executeSkipAndLimit = function (this: Select, cursorRequest: IDBRequest, o
     };
 }
 
-const executeSkip = function (this, cursorRequest: IDBRequest, onFinished) {
+const executeSkip = function (this: Select, onFinished) {
     let recordSkipped = false,
         cursor;
     return (e: any) => {
@@ -81,7 +81,7 @@ const executeSkip = function (this, cursorRequest: IDBRequest, onFinished) {
     };
 }
 
-const executeSimple = function (this, cursorRequest: IDBRequest, onFinished) {
+const executeSimple = function (this: Select, onFinished) {
     let cursor;
     return (e: any) => {
         cursor = e.target.result;
@@ -95,7 +95,7 @@ const executeSimple = function (this, cursorRequest: IDBRequest, onFinished) {
     };
 }
 
-const executeLimit = function (this, cursorRequest: IDBRequest, onFinished) {
+const executeLimit = function (this: Select, onFinished) {
     let cursor;
     return (e: any) => {
         cursor = e.target.result;

@@ -21,7 +21,7 @@ export const executeRegexLogic = function (this: BaseFetch, column, exp: RegExp)
 
     const cursorRequest = this.objectStore.index(column).openCursor();
 
-    const onSuccess = () => {
+    const onSuccess = (() => {
         if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {
             if (this.skipRecord && this.limitRecord) {
                 return executeSkipAndLimitForRegex_;
@@ -34,7 +34,7 @@ export const executeRegexLogic = function (this: BaseFetch, column, exp: RegExp)
             }
         }
         return executeSimpleForRegex_;
-    }
+    })();
 
     return promise<any>((res, rej) => {
         cursorRequest.onerror = rej;
