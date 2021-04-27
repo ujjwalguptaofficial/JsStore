@@ -10,6 +10,7 @@ import { Count } from "./executors/count";
 import { Update } from "./executors/update";
 import { Intersect } from "./intersect";
 import { DropDb } from "./executors/drop_db";
+import { Union } from "./union";
 
 export class QueryExecutor {
     util: IDBUtil;
@@ -53,6 +54,12 @@ export class QueryExecutor {
             case API.DropDb:
                 queryResult = this.dropDb();
                 break;
+            case API.Terminate:
+                queryResult = this.terminate();
+                break;
+            case API.Union:
+                queryResult = new Union(request.query, this.util).execute(this.db);
+                break;
             default:
                 if (process.env.NODE_ENV === 'dev') {
                     console.error('The Api:-' + request.name + ' does not support.');
@@ -78,7 +85,7 @@ export class QueryExecutor {
     private dropDb() {
         return this.terminate().then(() => {
             return new DropDb(null, this.util).execute(this.db);
-        })
+        });
     }
 
     closeDb() {
@@ -87,13 +94,13 @@ export class QueryExecutor {
         // sometimes browser takes time to close the connection
         return promise(res => {
             setTimeout(res, 100);
-        })
+        });
     }
 
     terminate() {
         return this.closeDb().then(() => {
             this.db = this.util = null;
-        })
+        });
     }
 
     openDb(name: string) {
