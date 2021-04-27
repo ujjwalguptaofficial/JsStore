@@ -1,12 +1,12 @@
 import { IDBUtil } from "@worker/idb_util";
-import { InsertQuery, SelectQuery, ERROR_TYPE } from "@/common";
-import { LogHelper, getError } from "@worker/utils";
+import { InsertQuery, SelectQuery, ERROR_TYPE, UpdateQuery } from "@/common";
+import { LogHelper, getError, promiseReject } from "@worker/utils";
 import { DbMeta } from "@worker/model";
 
 export class Base {
     db: DbMeta;
     util: IDBUtil;
-    query: InsertQuery | SelectQuery;
+    query: InsertQuery | SelectQuery | UpdateQuery;
     onSuccess: (result: any) => void;
     onError: (err: LogHelper) => void;
     rowAffected = 0;
@@ -24,8 +24,8 @@ export class Base {
         return this.db.tables.find(q => q.name === tableName)
     }
 
-    get primaryKey() {
-        return this.table().primaryKey;
+    primaryKey(tableName?: string) {
+        return this.table(tableName).primaryKey;
     }
 
 
@@ -33,15 +33,13 @@ export class Base {
         return this.table(tableName).columns.find(column => column.name === columnName);
     }
 
-    protected onExceptionOccured(ex: DOMException) {
+    onException(ex: DOMException, type = ERROR_TYPE.InvalidQuery) {
         console.error(ex);
-        return Promise.reject(
-            getError({
+        return promiseReject(
+            {
                 message: ex.message,
-                type: ERROR_TYPE.InvalidQuery
-            })
+                type: type
+            }
         );
     }
-
-
 }

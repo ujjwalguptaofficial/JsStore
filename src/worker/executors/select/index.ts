@@ -73,10 +73,10 @@ export class Select extends BaseFetch {
 
     execute(db: DbMeta): Promise<any> {
         this.db = db;
-        const err = new QueryHelper(db).checkSelect(this.query);
-        if (err) return promiseReject(getError(err, true));
         let pResult: Promise<void>;
         try {
+            const err = new QueryHelper(db).checkSelect(this.query);
+            if (err) return promiseReject(getError(err, true));
             if (this.query.join == null) {
                 if (this.query.where != null) {
                     this.initTransaction_();
@@ -101,14 +101,14 @@ export class Select extends BaseFetch {
             );
         }
         catch (ex) {
-            this.onExceptionOccured(ex);
+            return this.onException(ex);
         }
     }
 
     private processWhereArrayQry() {
         this.isArrayQry = true;
         const whereQuery = this.query.where,
-            pKey = this.primaryKey;
+            pKey = this.primaryKey();
         let isFirstWhere = true, output = [], operation;
 
         const isItemExist = (keyValue) => {

@@ -64,7 +64,7 @@ export class Count extends BaseFetch {
             })
         }
         catch (ex) {
-            this.onExceptionOccured(ex);
+            this.onException(ex);
         }
     }
 

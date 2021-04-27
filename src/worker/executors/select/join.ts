@@ -58,7 +58,7 @@ export class Join {
             });
             this.tablesFetched.push(tableName);
             return this.startExecutingJoinLogic_();
-        });
+        }).catch(this.onException.bind(this));
     }
 
     private onJoinQueryFinished_() {
@@ -99,12 +99,7 @@ export class Join {
                         this.select.processOrderBy();
                     }
                     catch (ex) {
-                        return Promise.reject(
-                            getError({
-                                message: ex.message,
-                                type: ERROR_TYPE.InvalidOrderQuery
-                            })
-                        );
+                        return this.onException(ex, ERROR_TYPE.InvalidOrderQuery);
                     }
                 }
                 else {
@@ -116,12 +111,7 @@ export class Join {
                         this.select.processGroupDistinctAggr();
                     }
                     catch (ex) {
-                        return Promise.reject(
-                            getError({
-                                message: ex.message,
-                                type: ERROR_TYPE.InvalidGroupQuery
-                            })
-                        );
+                        return this.onException(ex, ERROR_TYPE.InvalidGroupQuery);
                     }
                 }
                 else {
@@ -129,12 +119,7 @@ export class Join {
                 }
             }
             catch (ex) {
-                return Promise.reject(
-                    getError({
-                        message: ex.message,
-                        type: ERROR_TYPE.InvalidJoinQuery
-                    })
-                );
+                return this.onException(ex);
             }
 
             if (this.query[QUERY_OPTION.Skip] && this.query[QUERY_OPTION.Limit]) {
@@ -179,15 +164,20 @@ export class Join {
                     this.tablesFetched.push(jointblInfo.table2.table);
                     ++this.currentQueryStackIndex_;
                     return this.startExecutingJoinLogic_();
-                });
+                }).catch(this.onException.bind(this));
             }
             catch (ex) {
-                return promiseReject(ex);
+                return this.onException(ex);
             }
         }
         else {
             return this.onJoinQueryFinished_();
         }
+    }
+
+    onException(ex, type = ERROR_TYPE.InvalidJoinQuery) {
+        debugger;
+        return this.select.onException(ex, type);
     }
 
     private jointables(joinType: string, jointblInfo: JoinTableInfo, secondtableData: any[]) {
@@ -311,7 +301,7 @@ export class Join {
             }
             return true;
         });
-        return err;
+        return err ? getError(err, true) : err;
     }
 }
 

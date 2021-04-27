@@ -37,7 +37,7 @@ export const removeDuplicates = function (this: Select) {
     let datas = this.results;
     // free results memory
     this.results = null;
-    const key = this.primaryKey;
+    const key = this.primaryKey();
     const lookupObject = {};
     for (let i = 0, len = datas.length; i < len; i++) {
         lookupObject[datas[i][key]] = datas[i];

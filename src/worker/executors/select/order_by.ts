@@ -10,7 +10,7 @@ export const processGroupDistinctAggr = function (this: Select) {
         for (const key in result) {
             groupBy.push(key);
         }
-        const primaryKey = this.primaryKey,
+        const primaryKey = this.primaryKey(),
             index = groupBy.indexOf(primaryKey);
         groupBy.splice(index, 1);
         this.query.groupBy = groupBy.length > 0 ? groupBy : null;

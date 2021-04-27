@@ -1,7 +1,8 @@
-import { InsertQuery, DATA_TYPE, ERROR_TYPE, promise, TStringAny, SelectQuery, QUERY_OPTION } from "@/common";
-import { LogHelper, getDataType } from "@/worker/utils";
+import { InsertQuery, DATA_TYPE, ERROR_TYPE, promise, TStringAny, SelectQuery, QUERY_OPTION, UpdateQuery } from "@/common";
+import { LogHelper, getDataType, promiseReject } from "@/worker/utils";
 import { DbMeta } from "../model";
 import { ValuesChecker } from "@worker/executors/insert";
+import { SchemaChecker } from "./update/schema_checker";
 
 export class QueryHelper {
     db: DbMeta;
@@ -36,12 +37,23 @@ export class QueryHelper {
         };
     }
 
+    checkUpdate(query: UpdateQuery) {
+        let err = new SchemaChecker(this.getTable_(query.in)).
+            check(query.set, query.in);
+        if (err) return promiseReject(err);
+        if (query.where != null) {
+            err = this.checkForNullInWhere_(query);
+            if (err) return promiseReject(err);
+            this.addGreatAndLessToNotOp_(query as any);
+        }
+    }
+
     checkSelect(query: SelectQuery) {
         const table = this.getTable_(query.from);
         if (!table) {
             return new LogHelper(ERROR_TYPE.TableNotExist,
                 { tableName: query.from }
-            ).get();
+            );
         }
 
         if (query.where) {
@@ -51,10 +63,10 @@ export class QueryHelper {
         }
     }
 
-    private checkForNullInWhere_(query) {
+    private checkForNullInWhere_(query): LogHelper {
         for (const columnName in query.where) {
             if (query.where[columnName] == null) {
-                return new LogHelper(ERROR_TYPE.NullValueInWhere, { column: columnName }).get();
+                return new LogHelper(ERROR_TYPE.NullValueInWhere, { column: columnName });
             }
         }
     }
