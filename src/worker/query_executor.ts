@@ -8,6 +8,7 @@ import { MetaHelper } from "./meta_helper";
 import { Select } from "./executors/select";
 import { Count } from "./executors/count";
 import { Update } from "./executors/update";
+import { Intersect } from "./intersect";
 
 export class QueryExecutor {
     util: IDBUtil;
@@ -44,6 +45,9 @@ export class QueryExecutor {
                 break;
             case API.Update:
                 queryResult = new Update(request.query, this.util).execute(this.db);
+                break;
+            case API.Intersect:
+                queryResult = new Intersect(request.query, this.util).execute(this.db);
                 break;
             default:
                 if (process.env.NODE_ENV === 'dev') {
