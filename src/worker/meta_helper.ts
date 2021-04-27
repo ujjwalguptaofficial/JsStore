@@ -38,4 +38,21 @@ export class MetaHelper {
             req.onerror = rej;
         });
     }
+
+    static remove(key, util: IDBUtil) {
+        if (!util.transaction) {
+            util.createTransaction([MetaHelper.tableName]);
+        }
+        const store = util.objectStore(MetaHelper.tableName);
+
+        return promise((res, rej) => {
+            const req = store.delete(
+                util.keyRange(key)
+            );
+            req.onsuccess = () => {
+                res();
+            };
+            req.onerror = rej;
+        });
+    }
 }
