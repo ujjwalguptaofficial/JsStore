@@ -1,23 +1,16 @@
 import { DbMeta } from "@worker/model";
-import { LogHelper, promiseReject, getError } from "@worker/utils";
+import { LogHelper, getError } from "@worker/utils";
 import { ERROR_TYPE, promise } from "@/common";
-import { MetaHelper } from "../meta_helper";
-import { IDBUtil } from "../idb_util";
 
 export class DropDb {
 
-    util: IDBUtil;
-    constructor(_, util: IDBUtil) {
-        this.util = util;
-    }
-
-    execute(db: DbMeta) {
+    execute(dbName: string) {
         return promise((res, rej) => {
-            const dropDbRequest = indexedDB.deleteDatabase(db.name);
+            const dropDbRequest = indexedDB.deleteDatabase(dbName);
             dropDbRequest.onblocked = () => {
                 const err = new LogHelper(ERROR_TYPE.DbBlocked);
                 return rej(
-                    getError(err)
+                    getError(err, true)
                 );
             };
             dropDbRequest.onerror = (e) => {
@@ -26,7 +19,6 @@ export class DropDb {
                 )
             };
             dropDbRequest.onsuccess = () => {
-                MetaHelper.remove(MetaHelper.dbSchema, this.util);
                 res();
             };
         })

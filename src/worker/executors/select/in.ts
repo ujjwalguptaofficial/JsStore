@@ -46,7 +46,7 @@ export const executeInLogic = function (this: BaseFetch, column, values) {
 
 const executeSkipAndLimitForIn_ = function (this: Select, onFinish, skipOrPush) {
     return (e: any) => {
-        const cursor = e.target.result;
+        const cursor: IDBCursorWithValue = e.target.result;
         if (this.results.length !== this.limitRecord && cursor) {
             const value = cursor.value;
             if (this.shouldAddValue(value)) {
@@ -63,7 +63,7 @@ const executeSkipAndLimitForIn_ = function (this: Select, onFinish, skipOrPush) 
 const executeSkipForIn_ = function (this: Select, onFinish, skipOrPush) {
 
     return (e: any) => {
-        const cursor = e.target.result;
+        const cursor: IDBCursorWithValue = e.target.result;
         if (cursor) {
             const value = cursor.value
             if (this.shouldAddValue(value)) {
@@ -96,7 +96,7 @@ const executeLimitForIn_ = function (this: Select, onFinish) {
 
 const executeSimpleForIn_ = function (this: Select, onFinish) {
     return (e: any) => {
-        const cursor = e.target.result;
+        const cursor: IDBCursorWithValue = e.target.result;
         if (cursor) {
             const value = cursor.value
             if (this.shouldAddValue(value)) {

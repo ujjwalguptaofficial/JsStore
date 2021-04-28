@@ -151,9 +151,9 @@ export class Select extends BaseFetch {
             }
             else {
                 this.results = output;
-                if (this.isSubQuery === true) {
-                    this.returnResult_();
-                }
+                // if (this.isSubQuery === true) {
+                // return this.returnResult_();
+                // }
             }
 
         };

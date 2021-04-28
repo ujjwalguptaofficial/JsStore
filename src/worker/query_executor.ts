@@ -11,6 +11,7 @@ import { Update } from "./executors/update";
 import { Intersect } from "./intersect";
 import { DropDb } from "./executors/drop_db";
 import { Union } from "./union";
+import { Remove } from "./executors/remove";
 
 export class QueryExecutor {
     util: IDBUtil;
@@ -60,6 +61,9 @@ export class QueryExecutor {
             case API.Union:
                 queryResult = new Union(request.query, this.util).execute(this.db);
                 break;
+            case API.Remove:
+                queryResult = new Remove(request.query, this.util).execute(this.db);
+                break;
             default:
                 if (process.env.NODE_ENV === 'dev') {
                     console.error('The Api:-' + request.name + ' does not support.');
@@ -83,12 +87,19 @@ export class QueryExecutor {
     }
 
     private dropDb() {
+        const dbName = this.db.name;
         return this.terminate().then(() => {
-            return new DropDb(null, this.util).execute(this.db);
+            return new DropDb().execute(dbName);
         });
+        // .then(() => {
+        //     return this.terminate();
+        // });
     }
 
     closeDb() {
+        if (this.util.con == null) {
+            return Promise.resolve();
+        }
         this.util.close();
         // wait for 100 ms before success
         // sometimes browser takes time to close the connection

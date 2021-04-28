@@ -57,6 +57,12 @@ export class IDBUtil {
     }
 
     close() {
-        this.con.close();
+        return promise<void>((res) => {
+            this.con.onclose = () => {
+                this.con = null;
+                res();
+            }
+            this.con.close();
+        })
     }
 }

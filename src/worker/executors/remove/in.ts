@@ -1,20 +1,15 @@
-import { Update } from "./";
-import { promiseAll, promise, UpdateQuery } from "@/common";
-import { updateValue } from "./update_value";
+import { Remove } from ".";
+import { promise, promiseAll } from "@/common";
 
-
-export const executeInLogic = function (this: Update, column, values: any[]) {
-    const columnStore = this.objectStore.index(column);
-    const query: UpdateQuery = this.query as any;
+export const executeInLogic = function (this: Remove, column, values) {
     const runInLogic: (val) => Promise<void> = (value) => {
         return promise((res, rej) => {
-            const cursorRequest = columnStore.openCursor(this.util.keyRange(value));
+            const cursorRequest = this.objectStore.index(column).openCursor(this.util.keyRange(value));
             cursorRequest.onsuccess = (e: any) => {
                 const cursor: IDBCursorWithValue = e.target.result;
                 if (cursor) {
-                    const value = cursor.value;
-                    if (this.whereCheckerInstance.check(value)) {
-                        cursor.update(updateValue(query.set, value));
+                    if (this.whereCheckerInstance.check(cursor.value)) {
+                        cursor.delete();
                         ++this.rowAffected;
                     }
                     cursor.continue();
