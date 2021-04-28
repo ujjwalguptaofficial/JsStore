@@ -1,10 +1,11 @@
-import { IDataBase } from "@/main";
 import { promise } from "@/common";
 import { DbMeta } from "../model";
 import { TABLE_STATE } from "../enums";
 import { TableMeta } from "../model/table_meta";
-import { MetaHelper } from "../meta_helper";
-
+interface IDbResult {
+    isCreated: Boolean;
+    con: IDBDatabase
+}
 export class InitDb {
 
     db: DbMeta;
@@ -14,18 +15,12 @@ export class InitDb {
     }
 
     execute() {
-        interface IDbResult {
-            isCreated: Boolean;
-            con: IDBDatabase
-        }
+
         const db = this.db;
         let isDbCreated = false;
         const initLogic = (res, rej) => {
             const dbOpenRequest = indexedDB.open(db.name, db.version);
-            const metaValues: { key: string, value: any }[] = [{
-                key: MetaHelper.dbSchema,
-                value: db
-            }];
+
             dbOpenRequest.onsuccess = function () {
                 const con = dbOpenRequest.result;
                 if (isDbCreated) {
@@ -56,12 +51,6 @@ export class InitDb {
                             options['multiEntry'] = column.multiEntry;
                             const keyPath = column.keyPath == null ? columnName : column.keyPath;
                             store.createIndex(columnName, keyPath, options);
-                            if (column.autoIncrement) {
-                                metaValues.push({
-                                    key: MetaHelper.autoIncrementKey(table.name, columnName),
-                                    value: 0
-                                });
-                            }
                         }
                     });
                 }

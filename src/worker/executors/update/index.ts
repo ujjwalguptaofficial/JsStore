@@ -25,12 +25,13 @@ export class Update extends BaseFetch {
     }
 
     execute(db: DbMeta) {
+        this.db = db;
         const query: UpdateQuery = this.query as any;
         try {
             const queryHelper = new QueryHelper(db);
             const err = queryHelper.checkUpdate(query);
             if (err) return promiseReject(getError(err, true));
-            
+
             this.initTransaction();
             let pResult: Promise<void>;
             if (query.where != null) {

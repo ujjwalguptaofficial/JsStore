@@ -14,7 +14,7 @@ export class IDBUtil {
     }
 
     createTransaction(tables: string[], mode = IDB_MODE.ReadWrite) {
-        tables.push(MetaHelper.tableName);
+        // tables.push(MetaHelper.tableName);
         const tx = this.con.transaction(tables, mode);
         this.transaction = tx;
         return promise((res, rej) => {
@@ -57,12 +57,10 @@ export class IDBUtil {
     }
 
     close() {
-        return promise<void>((res) => {
-            this.con.onclose = () => {
-                this.con = null;
-                res();
-            }
-            this.con.close();
-        })
+        this.con.close();
+        // wait for 100 ms before success
+        return promise(res => {
+            setTimeout(res, 100);
+        });
     }
 }

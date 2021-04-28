@@ -60,7 +60,7 @@ export class Insert extends Base {
 
 
         this.util.createTransaction(
-            [this.query.into],
+            [this.query.into, MetaHelper.tableName],
         )
         objectStore = this.util.objectStore(this.tableName);
 

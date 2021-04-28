@@ -49,9 +49,7 @@ export class MetaHelper {
             const req = store.delete(
                 util.keyRange(key)
             );
-            req.onsuccess = () => {
-                res();
-            };
+            req.onsuccess = res;
             req.onerror = rej;
         });
     }

@@ -97,15 +97,18 @@ export class QueryExecutor {
     }
 
     closeDb() {
-        if (this.util.con == null) {
+        if (this.util == null) {
             return Promise.resolve();
         }
-        this.util.close();
-        // wait for 100 ms before success
-        // sometimes browser takes time to close the connection
-        return promise(res => {
-            setTimeout(res, 100);
-        });
+        return this.util.close();
+        // .then(() => {
+
+        // })
+        // // wait for 100 ms before success
+        // // sometimes browser takes time to close the connection
+        // return promise(res => {
+        //     setTimeout(res, 100);
+        // });
     }
 
     terminate() {

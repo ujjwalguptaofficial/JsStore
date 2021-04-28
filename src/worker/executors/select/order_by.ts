@@ -46,7 +46,10 @@ const getOrderColumnInfo = function (this: Select, orderColumn: string) {
                 name: orderColumn
             } as IColumn;
         }
-        getError(new LogHelper(ERROR_TYPE.ColumnNotExist, { column: orderColumn, isOrder: true }), true);
+        throw getError(
+            new LogHelper(ERROR_TYPE.ColumnNotExist, { column: orderColumn, isOrder: true }),
+            true
+        );
     }
     return column;
 }
