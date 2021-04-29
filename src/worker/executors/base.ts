@@ -1,4 +1,4 @@
-import { IDBUtil } from "@worker/idb_util";
+import { IDBUtil } from "@worker/idbutil";
 import { InsertQuery, SelectQuery, ERROR_TYPE, UpdateQuery } from "@/common";
 import { LogHelper, getError, promiseReject } from "@worker/utils";
 import { DbMeta } from "@worker/model";

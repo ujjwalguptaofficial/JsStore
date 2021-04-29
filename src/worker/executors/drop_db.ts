@@ -1,4 +1,3 @@
-import { DbMeta } from "@worker/model";
 import { LogHelper, getError } from "@worker/utils";
 import { ERROR_TYPE, promise } from "@/common";
 

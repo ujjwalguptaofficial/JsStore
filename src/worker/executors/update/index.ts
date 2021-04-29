@@ -1,5 +1,5 @@
 import { UpdateQuery, SelectQuery, QUERY_OPTION } from "@/common";
-import { IDBUtil } from "@worker/idb_util";
+import { IDBUtil } from "@/worker/idbutil";
 import { DbMeta } from "@worker/model";
 import { QueryHelper } from "../query_helper";
 import { promiseReject, getError, isArray } from "@worker/utils";

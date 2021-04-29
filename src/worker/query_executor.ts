@@ -1,8 +1,7 @@
 import { WebWorkerRequest, API, IDataBase, InsertQuery, WebWorkerResult, promise, SelectQuery, CountQuery } from "@/common";
 import { DbMeta } from "./model";
-import { InitDb } from "./init_db";
+import { IDBUtil } from "./idbutil";
 import { Insert } from "./executors/insert";
-import { IDBUtil } from "./idb_util";
 import { isWorker } from "./constants";
 import { MetaHelper } from "./meta_helper";
 import { Select } from "./executors/select";
@@ -122,11 +121,13 @@ export class QueryExecutor {
         if (this.db && name === this.db.name) {
             pResult = this.initDb();
         }
-        pResult = this.initDb({
-            name: name,
-            tables: [
-            ]
-        });
+        else {
+            pResult = this.initDb({
+                name: name,
+                tables: [
+                ]
+            });
+        }
         return pResult.then(() => {
             return this.db;
         });
@@ -134,15 +135,15 @@ export class QueryExecutor {
 
     initDb(dataBase?: IDataBase) {
         const dbMeta = dataBase ? new DbMeta(dataBase) : this.db;
+        this.util = new IDBUtil(dbMeta);
         return promise<boolean>((res) => {
-            new InitDb(dbMeta).execute().then((result) => {
-                this.util = new IDBUtil(result.con);
-                this.db = dbMeta;
-                if (result.isCreated) {
+            this.util.initDb().then((result) => {
+                if (result) {
                     MetaHelper.set(
                         MetaHelper.dbSchema, dbMeta,
                         this.util
                     ).then(() => {
+                        this.db = dbMeta;
                         res(true);
                     });
                 }

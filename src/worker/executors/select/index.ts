@@ -1,6 +1,5 @@
-import { Base } from "@worker/executors/base";
 import { SelectQuery, QUERY_OPTION, IDB_MODE, ERROR_TYPE } from "@/common";
-import { IDBUtil } from "@/worker/idb_util";
+import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@worker/executors/query_helper";
 import { DbMeta } from "@/worker/model";
 import { getError, isArray, isObject, getKeys, getObjectFirstKey, promiseReject } from "@/worker/utils";
@@ -11,7 +10,7 @@ import { executeWhereUndefinedLogic } from "./not_where"
 import { processAggregateQry, processGroupDistinctAggr, processOrderBy } from "./order_by";
 import { executeAggregateGroupBy, processGroupBy } from "./group_by";
 import { executeWhereLogic } from "./where";
-import { BaseFetch } from "../base_fetch";
+import { BaseFetch } from "@executors/base_fetch";
 import { executeInLogic } from "./in";
 import { executeRegexLogic } from "./regex";
 import { executeJoinQuery } from "./join";

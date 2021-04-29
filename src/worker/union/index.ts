@@ -2,7 +2,7 @@ import { Base } from "@executors/base";
 import { SelectQuery } from "@/common";
 import { DbMeta } from "@worker/model";
 import { Select } from "@executors/select";
-import { IDBUtil } from "@worker/idb_util";
+import { IDBUtil } from "@/worker/idbutil";
 
 export class Union extends Base {
 

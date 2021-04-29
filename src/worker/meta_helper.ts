@@ -1,4 +1,4 @@
-import { IDBUtil } from "./idb_util";
+import { IDBUtil } from "@/worker/idbutil";
 import { promise } from "@/common";
 
 export class MetaHelper {

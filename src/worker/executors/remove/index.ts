@@ -1,6 +1,6 @@
 import { BaseFetch } from "../base_fetch";
 import { RemoveQuery, QUERY_OPTION } from "@/common";
-import { IDBUtil } from "@/worker/idb_util";
+import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@executors/query_helper";
 import { DbMeta } from "@/worker/model";
 import { promiseReject, isArray, getObjectFirstKey } from "@/worker/utils";

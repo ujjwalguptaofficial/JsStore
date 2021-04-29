@@ -1,7 +1,7 @@
 export * from "./values_checker";
 import { InsertQuery, promise, promiseAll, TStringAny } from "@/common";
 import { Base } from "@worker/executors/base";
-import { IDBUtil } from "@/worker/idb_util";
+import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@worker/executors/query_helper";
 import { DbMeta } from "@/worker/model";
 import { getError, promiseReject } from "@/worker/utils";

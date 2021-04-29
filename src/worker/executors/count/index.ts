@@ -1,7 +1,7 @@
 import { BaseFetch } from "@executors/base_fetch";
 import { Select } from "@executors/select";
 import { CountQuery, SelectQuery, IDB_MODE } from "@/common";
-import { IDBUtil } from "@worker/idb_util";
+import { IDBUtil } from "@/worker/idbutil";
 import { DbMeta } from "@worker/model";
 import { QueryHelper } from "@executors/query_helper";
 import { promiseReject, isArray } from "@worker/utils";

@@ -6,7 +6,7 @@ declare var JsStoreWorker;
 export class ConnectionHelper {
   protected database: IDataBase;
   private worker_: Worker;
-  private isDbOpened_ = false;
+  private isConOpened_ = false;
   private isDbIdle_ = true;
   private requestQueue_: WebWorkerRequest[] = [];
   private isCodeExecuting_ = false;
@@ -26,7 +26,7 @@ export class ConnectionHelper {
     API.Set,
     API.ChangeLogStatus,
     API.Terminate,
-    API.InitKeyStore
+    API.DropDb
   ];
 
   constructor(worker?: Worker) {
@@ -53,12 +53,17 @@ export class ConnectionHelper {
         switch (finishedRequest.name) {
           case API.OpenDb:
           case API.InitDb:
-            this.isDbOpened_ = true; break;
+            this.isConOpened_ = true; break;
           case API.Terminate:
-            this.isDbOpened_ = false;
+            this.isConOpened_ = false;
             if (Config.isRuningInWorker === true) {
               this.worker_.terminate();
             }
+            break;
+          case API.DropDb:
+            this.isConOpened_ = false;
+            this.requestQueue_ = [];
+            this.isDbIdle_ = true;
             break;
           case API.CloseDb:
             if (this.requestQueue_.length > 0) {
@@ -113,7 +118,8 @@ export class ConnectionHelper {
         request.onError = reject;
         if (this.requestQueue_.length === 0) {
           this.callEvent(EVENT.RequestQueueFilled, []);
-          if (this.isDbIdle_ === true && this.isDbOpened_ === true) {
+          const isConnectionApi = [API.CloseDb, API.DropDb, API.OpenDb].indexOf(request.name) >= 0;
+          if (!isConnectionApi && this.isDbIdle_ && this.isConOpened_) {
             this.openDb_();
           }
           else {
@@ -140,7 +146,7 @@ export class ConnectionHelper {
   private executeQry_() {
     const requestQueueLength = this.requestQueue_.length;
     if (!this.isCodeExecuting_ && requestQueueLength > 0) {
-      if (this.isDbOpened_ === true) {
+      if (this.isConOpened_ === true) {
         this.sendRequestToWorker_(this.requestQueue_[0]);
         return;
       }
@@ -159,7 +165,7 @@ export class ConnectionHelper {
         this.sendRequestToWorker_(this.requestQueue_[0]);
       }
     }
-    else if (requestQueueLength === 0 && this.isDbIdle_ === false && this.isDbOpened_) {
+    else if (requestQueueLength === 0 && this.isDbIdle_ === false && this.isConOpened_) {
       this.inactivityTimer_ = setTimeout(() => {
         this.prcoessExecutionOfQry_({
           name: API.CloseDb,
