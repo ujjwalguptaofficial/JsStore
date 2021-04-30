@@ -1,16 +1,17 @@
 import { WebWorkerRequest, API, IDataBase, InsertQuery, WebWorkerResult, promise, SelectQuery, CountQuery } from "@/common";
 import { DbMeta } from "./model";
 import { IDBUtil } from "./idbutil";
-import { Insert } from "./executors/insert";
+import { Insert } from "@executors/insert";
 import { isWorker } from "./constants";
 import { MetaHelper } from "./meta_helper";
-import { Select } from "./executors/select";
-import { Count } from "./executors/count";
-import { Update } from "./executors/update";
+import { Select } from "@executors/select";
+import { Count } from "@executors/count";
+import { Update } from "@executors/update";
 import { Intersect } from "./intersect";
-import { DropDb } from "./executors/drop_db";
+import { DropDb } from "@executors/drop_db";
 import { Union } from "./union";
-import { Remove } from "./executors/remove";
+import { Remove } from "@executors/remove";
+import { Clear } from "@executors/clear";
 
 export class QueryExecutor {
     util: IDBUtil;
@@ -62,6 +63,9 @@ export class QueryExecutor {
                 break;
             case API.Remove:
                 queryResult = new Remove(request.query, this.util).execute(this.db);
+                break;
+            case API.Clear:
+                queryResult = new Clear(request.query, this.util).execute(this.db);
                 break;
             default:
                 if (process.env.NODE_ENV === 'dev') {

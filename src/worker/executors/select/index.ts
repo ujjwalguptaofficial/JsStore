@@ -204,6 +204,7 @@ export class Select extends BaseFetch {
             const indexToDelete = {};
             this.query.flatten.forEach(column => {
                 this.results.forEach((data, i) => {
+                    debugger;
                     data[column].forEach(item => {
                         flattendData.push(
                             { ...data, ...{ [column]: item } }
