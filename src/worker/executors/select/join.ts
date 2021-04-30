@@ -65,9 +65,6 @@ export class Join {
     private onJoinQueryFinished_() {
         const query = this.query;
         if (this.results.length > 0) {
-            // if (query[QUERY_OPTION.Skip] && !query[QUERY_OPTION.Limit]) {
-            //     this.results.splice(0, query[QUERY_OPTION.Skip]);
-            // }
 
             try {
                 let results = [];
@@ -94,6 +91,7 @@ export class Join {
                 });
                 this.select['results'] = results;
                 this.select.setLimitAndSkipEvaluationAtEnd_();
+                this.select.query.flatten = null;
                 if (process.env.NODE_ENV === 'dev') {
                     try {
                         this.select.processOrderBy();

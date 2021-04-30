@@ -107,7 +107,6 @@ describe("Flat", function () {
     });
 
     it("select from Boutique & join with array column", function (done) {
-        debugger;
         con.select({
             from: 'Boutique',
             flatten: ["types"],
