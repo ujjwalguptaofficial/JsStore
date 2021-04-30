@@ -35,6 +35,7 @@ export class Base {
 
     onException(ex: DOMException, type = ERROR_TYPE.InvalidQuery) {
         console.error(ex);
+        this.util.abortTransaction();
         return promiseReject(
             {
                 message: ex.message,

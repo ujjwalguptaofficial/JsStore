@@ -3,7 +3,7 @@ import { RemoveQuery, QUERY_OPTION } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@executors/query_helper";
 import { DbMeta } from "@/worker/model";
-import { promiseReject, isArray, getObjectFirstKey } from "@/worker/utils";
+import { promiseReject, isArray, getObjectFirstKey, getError } from "@/worker/utils";
 import { Select } from "@executors/select";
 import { executeWhereUndefinedLogic } from "./not_where";
 import { executeInLogic } from "./in";
@@ -23,10 +23,13 @@ export class Remove extends BaseFetch {
     }
 
     execute(db: DbMeta) {
+        this.db = db;
         const queryHelper = new QueryHelper(db);
         const query = this.query;
         const err = queryHelper.checkSelect(query);
-        if (err) return promiseReject(err);
+        if (err) return promiseReject(
+            getError(err, true)
+        );
         try {
             this.initTransaction_();
             let pResult: Promise<void>;

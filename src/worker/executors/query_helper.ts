@@ -40,10 +40,10 @@ export class QueryHelper {
     checkUpdate(query: UpdateQuery) {
         let err = new SchemaChecker(this.getTable_(query.in)).
             check(query.set, query.in);
-        if (err) return promiseReject(err);
+        if (err) return err;
         if (query.where != null) {
             err = this.checkForNullInWhere_(query);
-            if (err) return promiseReject(err);
+            if (err) return err;
             this.addGreatAndLessToNotOp_(query as any);
         }
     }

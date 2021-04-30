@@ -4,7 +4,7 @@ import { CountQuery, SelectQuery, IDB_MODE } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { DbMeta } from "@worker/model";
 import { QueryHelper } from "@executors/query_helper";
-import { promiseReject, isArray } from "@worker/utils";
+import { promiseReject, isArray, getError } from "@worker/utils";
 import { executeWhereUndefinedLogic } from "@executors/count/not_where";
 import { executeWhereLogic } from "./where";
 import { executeRegexLogic } from "./regex";
@@ -13,7 +13,7 @@ import { executeInLogic } from "./in";
 export class Count extends BaseFetch {
 
     query: CountQuery;
-    resultCount: number;
+    resultCount: number = 0;
     executeWhereUndefinedLogic = executeWhereUndefinedLogic;
     executeWhereLogic = executeWhereLogic
     executeRegexLogic = executeRegexLogic
@@ -31,7 +31,9 @@ export class Count extends BaseFetch {
         const queryHelper = new QueryHelper(db);
         const err = queryHelper.checkSelect(this.query);
         if (err) {
-            return promiseReject(err);
+            return promiseReject(
+                getError(err, true)
+            );
         }
         try {
             let result: Promise<void>;

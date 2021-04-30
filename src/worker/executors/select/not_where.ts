@@ -1,5 +1,5 @@
 import { Select } from "./index";
-import { LogHelper, promiseReject } from "@/worker/utils";
+import { LogHelper, promiseReject, getError } from "@/worker/utils";
 import { ERROR_TYPE, promise } from "@/common";
 
 export const executeWhereUndefinedLogic = function (this: Select) {
@@ -14,7 +14,13 @@ export const executeWhereUndefinedLogic = function (this: Select) {
         }
         else {
             return promiseReject(
-                new LogHelper(ERROR_TYPE.ColumnNotExist, { column: this.query.order.by, isOrder: true })
+                getError(
+                    new LogHelper(
+                        ERROR_TYPE.ColumnNotExist,
+                        { column: this.query.order.by, isOrder: true }
+                    ),
+                    true
+                )
             );
         }
     }

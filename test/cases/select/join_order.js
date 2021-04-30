@@ -146,6 +146,7 @@ describe('select join order test', function () {
             order: { by: 'Student.Order', type: 'desc' }
         }).then(function (results) {
             expect(results).to.be.an('array').length(5);
+            debugger;
             for (var i = 0, length = results.length; i < length; i++) {
                 expect(results[i]['Order']).to.be.equal((length - i).toString());
             }

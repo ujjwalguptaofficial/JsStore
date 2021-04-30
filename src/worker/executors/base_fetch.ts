@@ -18,6 +18,8 @@ export class BaseFetch extends Base {
     executeInLogic: typeof executeInLogic;
     executeRegexLogic: typeof executeRegexLogic;
 
+    resultCount: number;
+
     protected shouldAddValue(value) {
         return this.whereCheckerInstance.check(value);
     };

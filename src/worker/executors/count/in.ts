@@ -3,20 +3,23 @@ import { BaseFetch } from "../base_fetch";
 
 
 export const executeInLogic = function (this: BaseFetch, column, values) {
-    let cursor: IDBCursorWithValue, cursorRequest;
+    let cursor: IDBCursorWithValue;
     const columnStore = this.objectStore.index(column);
-    const cursorApi = this.objectStore.count ? columnStore.count : columnStore.openCursor;
-    const onSuccess = () => {
+    const runInLogic: (val) => Promise<void> = (value) => {
+        const keyRange = this.util.keyRange(value);
         if (this.objectStore.count) {
-            return function (onFinish) {
-                return function (e: any) {
+            return promise((res, rej) => {
+                const cursorRequest = columnStore.count(keyRange);
+                cursorRequest.onsuccess = (e: any) => {
                     this.resultCount += e.target.result;
-                    onFinish();
+                    res();
                 };
-            }
+                cursorRequest.onerror = rej;
+            });
         }
-        return function (onFinish) {
-            return function (e: any) {
+        return promise<void>((res, rej) => {
+            const cursorRequest = columnStore.openCursor(keyRange);
+            cursorRequest.onsuccess = (e: any) => {
                 cursor = e.target.result;
                 if (cursor) {
                     if (this.whereCheckerInstance.check(cursor.value)) {
@@ -25,15 +28,9 @@ export const executeInLogic = function (this: BaseFetch, column, values) {
                     cursor.continue();
                 }
                 else {
-                    onFinish();
+                    res();
                 }
             };
-        };
-    }
-    const runInLogic: (val) => Promise<void> = (value) => {
-        return promise((res, rej) => {
-            const cursorRequest = cursorApi(this.util.keyRange(value));
-            cursorRequest.onsuccess = onSuccess.call(this, res);
             cursorRequest.onerror = rej;
         });
     };

@@ -1,6 +1,7 @@
 import { Update } from "./";
 import { promiseAll, promise, UpdateQuery } from "@/common";
 import { updateValue } from "./update_value";
+import { getError } from "@/worker/utils";
 
 
 export const executeInLogic = function (this: Update, column, values: any[]) {
@@ -14,10 +15,24 @@ export const executeInLogic = function (this: Update, column, values: any[]) {
                 if (cursor) {
                     const value = cursor.value;
                     if (this.whereCheckerInstance.check(value)) {
-                        cursor.update(updateValue(query.set, value));
-                        ++this.rowAffected;
+                        try {
+                            const cursorUpdateRequest = cursor.update(updateValue(query.set, value));
+                            cursorUpdateRequest.onsuccess = () => {
+                                ++this.rowAffected;
+                                cursor.continue();
+                            };
+                            cursorUpdateRequest.onerror = rej;
+                        }
+                        catch (ex) {
+                            rej(
+                                getError(ex)
+                            );
+                        }
+
                     }
-                    cursor.continue();
+                    else {
+                        cursor.continue();
+                    }
                 }
                 else {
                     res();

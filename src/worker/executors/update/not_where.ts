@@ -1,6 +1,7 @@
 import { Update } from "./";
 import { promise } from "@/common";
 import { updateValue } from "./update_value";
+import { getError } from "@/worker/utils";
 
 
 export const executeWhereUndefinedLogic = function (this: Update) {
@@ -11,12 +12,18 @@ export const executeWhereUndefinedLogic = function (this: Update) {
         cursorRequest.onsuccess = (e) => {
             cursor = (e as any).target.result;
             if (cursor) {
-                const cursorUpdateRequest = cursor.update(updateValue(setValue, cursor.value));
-                cursorUpdateRequest.onsuccess = () => {
-                    ++this.rowAffected;
-                    cursor.continue();
-                };
-                cursorUpdateRequest.onerror = rej;
+                try {
+                    const cursorUpdateRequest = cursor.update(updateValue(setValue, cursor.value));
+                    cursorUpdateRequest.onsuccess = () => {
+                        ++this.rowAffected;
+                        cursor.continue();
+                    };
+                    cursorUpdateRequest.onerror = rej;
+                } catch (ex) {
+                    rej(
+                        getError(ex)
+                    );
+                }
             }
             else {
                 res();

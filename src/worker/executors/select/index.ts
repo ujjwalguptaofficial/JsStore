@@ -146,7 +146,7 @@ export class Select extends BaseFetch {
             isFirstWhere = false;
             if (whereQuery.length > 0) {
                 this.results = [];
-                processFirstQry();
+                return processFirstQry();
             }
             else {
                 this.results = output;

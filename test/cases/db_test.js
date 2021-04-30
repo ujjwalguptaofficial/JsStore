@@ -79,7 +79,7 @@ describe('Db Test', function () {
 
     it('terminate test', function (done) {
         con.terminate().then(function () {
-            if (con.isDbOpened_ === false) {
+            if (con.isConOpened_ === false) {
                 done();
             } else {
                 done('db is opened after terminate');
