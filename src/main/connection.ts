@@ -150,6 +150,9 @@ export class Connection extends ConnectionHelper {
         return this.pushApi<IDataBase>({
             name: API.OpenDb,
             query: dbName
+        }).then((dataBase) => {
+            this.database = dataBase;
+            return dataBase;
         });
     }
 

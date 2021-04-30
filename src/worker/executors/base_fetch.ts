@@ -20,9 +20,7 @@ export class BaseFetch extends Base {
 
     resultCount: number;
 
-    protected shouldAddValue(value) {
-        return this.whereCheckerInstance.check(value);
-    };
+    protected shouldAddValue:(value)=> boolean;
     protected goToWhereLogic() {
         const query = this.query as SelectQuery;
         const firstColumn = getObjectFirstKey(query.where);

@@ -6,6 +6,7 @@ import { getDataType, getError, LogHelper, removeSpace, promiseReject } from "@/
 export const executeJoinQuery = function (this: Select) {
     const p = new Join(this).execute();
     return p.then(results => {
+        return;
         this.results = results;
     })
 }
@@ -64,9 +65,9 @@ export class Join {
     private onJoinQueryFinished_() {
         const query = this.query;
         if (this.results.length > 0) {
-            if (query[QUERY_OPTION.Skip] && !query[QUERY_OPTION.Limit]) {
-                this.results.splice(0, query[QUERY_OPTION.Skip]);
-            }
+            // if (query[QUERY_OPTION.Skip] && !query[QUERY_OPTION.Limit]) {
+            //     this.results.splice(0, query[QUERY_OPTION.Skip]);
+            // }
 
             try {
                 let results = [];
@@ -91,9 +92,8 @@ export class Join {
                     }
                     results.push(data);
                 });
-                this.results = results;
-                // free results memory
-                results = null;
+                this.select['results'] = results;
+                this.select.setLimitAndSkipEvaluationAtEnd_();
                 if (process.env.NODE_ENV === 'dev') {
                     try {
                         this.select.processOrderBy();
@@ -122,15 +122,15 @@ export class Join {
                 return this.onException(ex);
             }
 
-            if (this.query[QUERY_OPTION.Skip] && this.query[QUERY_OPTION.Limit]) {
-                this.results.splice(0, this.query[QUERY_OPTION.Skip]);
-                this.results = this.results.slice(0, this.query[QUERY_OPTION.Limit]);
-            }
-            else if (this.query[QUERY_OPTION.Limit]) {
-                this.results = this.results.slice(0, this.query[QUERY_OPTION.Limit]);
-            }
+            // if (this.query.skip && this.query.limit) {
+            //     this.results.splice(0, this.query.skip);
+            //     this.results = this.results.slice(0, this.query.limit);
+            // }
+            // else if (this.query.limit) {
+            //     this.results = this.results.slice(0, this.query.limit);
+            // }
         }
-        return this.results;
+        return;
     }
 
     private startExecutingJoinLogic_() {
@@ -176,7 +176,6 @@ export class Join {
     }
 
     onException(ex, type = ERROR_TYPE.InvalidJoinQuery) {
-        debugger;
         return this.select.onException(ex, type);
     }
 

@@ -2,7 +2,7 @@ import { SelectQuery, QUERY_OPTION, IDB_MODE, ERROR_TYPE } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@worker/executors/query_helper";
 import { DbMeta } from "@/worker/model";
-import { getError, isArray, isObject, getKeys, getObjectFirstKey, promiseReject } from "@/worker/utils";
+import { getError, isArray, isObject, getKeys, getObjectFirstKey, promiseReject, getLength } from "@/worker/utils";
 import { setPushResult, setLimitAndSkipEvaluationAtEnd, removeDuplicates } from "./base_select";
 // import "./join";
 import { ThenEvaluator } from "./then_evaluator";
@@ -19,7 +19,6 @@ export class Select extends BaseFetch {
     sorted = false;
     isOr: boolean;
     isArrayQry: boolean;
-    onWhereArrayQrySuccess: () => void;
     query: SelectQuery;
     orInfo: {
         results?: any[];
@@ -159,19 +158,16 @@ export class Select extends BaseFetch {
         const processFirstQry = () => {
             this.query.where = whereQuery.shift();
             if (this.query.where[QUERY_OPTION.Or]) {
-                if (Object.keys(this.query.where).length === 1) {
+                if (getLength(this.query.where) === 1) {
                     operation = QUERY_OPTION.Or;
                     this.query.where = this.query.where[QUERY_OPTION.Or];
-                    this.onWhereArrayQrySuccess = onSuccess;
                 }
                 else {
                     operation = QUERY_OPTION.And;
-                    this.onWhereArrayQrySuccess = onSuccess;
                 }
             }
             else {
                 operation = QUERY_OPTION.And;
-                this.onWhereArrayQrySuccess = onSuccess;
             }
             return this.processWhere_().then(onSuccess);
         };
@@ -184,6 +180,9 @@ export class Select extends BaseFetch {
     }
 
     private processWhere_() {
+        this.shouldAddValue = (value) => {
+            return this.whereCheckerInstance.check(value);
+        };
         if (this.query.where.or) {
             this.processOrLogic_();
         }
@@ -204,7 +203,6 @@ export class Select extends BaseFetch {
             const indexToDelete = {};
             this.query.flatten.forEach(column => {
                 this.results.forEach((data, i) => {
-                    debugger;
                     data[column].forEach(item => {
                         flattendData.push(
                             { ...data, ...{ [column]: item } }
