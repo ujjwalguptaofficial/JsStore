@@ -1,4 +1,4 @@
-import { WebWorkerRequest, API, IDataBase, InsertQuery, WebWorkerResult, promise, SelectQuery, CountQuery } from "@/common";
+import { WebWorkerRequest, API, IDataBase, InsertQuery, WebWorkerResult, promise, SelectQuery, CountQuery, SetQuery } from "@/common";
 import { DbMeta } from "./model";
 import { IDBUtil } from "./idbutil";
 import { Insert } from "@executors/insert";
@@ -66,6 +66,13 @@ export class QueryExecutor {
                 break;
             case API.Clear:
                 queryResult = new Clear(request.query, this.util).execute(this.db);
+                break;
+            case API.Get:
+                queryResult = MetaHelper.get(request.query as string, this.util);
+                break;
+            case API.Set:
+                const query = request.query as SetQuery;
+                queryResult = MetaHelper.set(query.key, query.value, this.util);
                 break;
             default:
                 if (process.env.NODE_ENV === 'dev') {
