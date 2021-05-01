@@ -8,7 +8,7 @@ export const getError = (e, customError = false) => {
     else {
         let error;
         if (e.name) {
-            error = new LogHelper((e.name));
+            error = new LogHelper(e.name);
             error.message = e.message;
         }
         else {

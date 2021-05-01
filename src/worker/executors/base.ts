@@ -1,13 +1,13 @@
 import { IDBUtil } from "@worker/idbutil";
 import { InsertQuery, SelectQuery, ERROR_TYPE, UpdateQuery } from "@/common";
-import { LogHelper, getError, promiseReject } from "@worker/utils";
+import { LogHelper, getError, promiseReject, getErrorFromException } from "@worker/utils";
 import { DbMeta } from "@worker/model";
 
 export class Base {
     db: DbMeta;
     util: IDBUtil;
     query: InsertQuery | SelectQuery | UpdateQuery;
-    
+
     rowAffected = 0;
     isTxQuery = false;
     objectStore: IDBObjectStore;
@@ -32,14 +32,13 @@ export class Base {
         return this.table(tableName).columns.find(column => column.name === columnName);
     }
 
-    onException(ex: DOMException, type = ERROR_TYPE.InvalidQuery) {
+
+
+    onException(ex: DOMException, type?) {
         console.error(ex);
         this.util.abortTransaction();
         return promiseReject(
-            {
-                message: ex.message,
-                type: type
-            }
+            getErrorFromException(ex, type)
         );
     }
 }

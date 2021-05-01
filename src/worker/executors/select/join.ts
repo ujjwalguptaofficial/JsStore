@@ -59,7 +59,7 @@ export class Join {
             });
             this.tablesFetched.push(tableName);
             return this.startExecutingJoinLogic_();
-        }).catch(this.onException.bind(this));
+        });
     }
 
     private onJoinQueryFinished_() {
@@ -162,7 +162,7 @@ export class Join {
                     this.tablesFetched.push(jointblInfo.table2.table);
                     ++this.currentQueryStackIndex_;
                     return this.startExecutingJoinLogic_();
-                }).catch(this.onException.bind(this));
+                });
             }
             catch (ex) {
                 return this.onException(ex);
