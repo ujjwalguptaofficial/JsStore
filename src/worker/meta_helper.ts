@@ -33,7 +33,8 @@ export class MetaHelper {
                 util.keyRange(key)
             );
             req.onsuccess = () => {
-                res(req.result.value);
+                const result = req.result;
+                res(result && result.value);
             };
             req.onerror = rej;
         });

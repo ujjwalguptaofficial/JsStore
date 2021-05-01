@@ -13,8 +13,9 @@ import { Union } from "./union";
 import { Remove } from "@executors/remove";
 import { Clear } from "@executors/clear";
 import { Transaction } from "@executors/transaction";
+import { TABLE_STATE } from "./enums";
 
-export class QueryExecutor {
+export class QueryManager {
     util: IDBUtil;
     db: DbMeta;
 
@@ -166,6 +167,31 @@ export class QueryExecutor {
         this.util = new IDBUtil(dbMeta);
         return promise<boolean>((res) => {
             this.util.initDb().then((result) => {
+                return MetaHelper.get(MetaHelper.dbSchema, this.util).then((savedDb: DbMeta) => {
+                    let shouldReCreateDb = false;
+                    let dbVersion;
+                    if (savedDb) {
+                        savedDb.tables.forEach((savedTable, index) => {
+                            const providedTable = dbMeta.tables[index];
+
+                            if (providedTable && savedTable.version < providedTable.version) {
+                                providedTable.state = TABLE_STATE.Delete;
+                                shouldReCreateDb = true;
+                                if (dbVersion < providedTable.version) {
+                                    dbVersion = providedTable.version;
+                                }
+                            }
+                        });
+                    }
+                    if (shouldReCreateDb) {
+                        return this.util.initDb();
+                    }
+                    else {
+                        this.db = savedDb;
+                    }
+                    return result;
+                });
+            }).then(result => {
                 if (result) {
                     MetaHelper.set(
                         MetaHelper.dbSchema, dbMeta,
@@ -176,13 +202,8 @@ export class QueryExecutor {
                     });
                 }
                 else {
-                    MetaHelper.get(
-                        MetaHelper.dbSchema,
-                        this.util
-                    ).then((db: DbMeta) => {
-                        this.db = db;
-                        res(false);
-                    });
+
+                    res(false);
                 }
             });
         });

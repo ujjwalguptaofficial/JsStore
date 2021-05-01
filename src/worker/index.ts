@@ -1,12 +1,13 @@
-import { QueryExecutor } from "@/worker/query_manager";
+import { QueryManager } from "@/worker/query_manager";
 import { isWorker } from "./constants";
+export * from "./query_manager";
 
 export const initialize = () => {
     const isIdbSupported = setCrossBrowserIndexedDb();
     if (isWorker) {
-        const executor = new QueryExecutor();
+        const manager = new QueryManager();
         (self as any).onmessage = function (e) {
-            executor.run(e.data);
+            manager.run(e.data);
             // new QueryExecutor().checkConnectionAndExecuteLogic(e.data);
         };
     }

@@ -29,12 +29,15 @@ export class ConnectionHelper {
     API.DropDb
   ];
 
+  queryManager;
+
   constructor(worker?: Worker) {
     if (worker) {
       this.worker_ = worker;
       this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
     } else {
       Config.isRuningInWorker = false;
+      this.queryManager = new JsStoreWorker.QueryManager(this.processFinishedQuery_.bind(this));
     }
   }
 
@@ -190,9 +193,8 @@ export class ConnectionHelper {
       this.worker_.postMessage(requestForWorker);
     }
     else {
-      new JsStoreWorker.QueryExecutor(this.processFinishedQuery_.bind(this)).checkConnectionAndExecuteLogic(requestForWorker);
+      this.queryManager.run(requestForWorker);
     }
-
   }
 
   private callEvent(event: EVENT, args: any[]) {
