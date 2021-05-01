@@ -46,3 +46,8 @@ export interface IDbStatus {
 export interface IPlugin {
     setup: (connection, params) => any | void;
 }
+
+export interface IDbInfo {
+    name: string;
+    version: number;
+}

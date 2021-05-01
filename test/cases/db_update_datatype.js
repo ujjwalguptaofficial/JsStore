@@ -25,7 +25,7 @@ describe('Db Update data type Test', function () {
     });
 
     it('getDbSchema', function (done) {
-        con.getDbSchema("DbUpdateTest").then(function (schema) {
+        con.openDb("DbUpdateTest").then(function (schema) {
             const processIdColumn = schema.tables[0].columns[1];
             expect(processIdColumn.name).to.equal("process_id");
             expect(processIdColumn.dataType).to.equal("number");
@@ -46,7 +46,7 @@ describe('Db Update data type Test', function () {
     });
 
     it('getDbSchema after updating db', function (done) {
-        con.getDbSchema("DbUpdateTest").then(function (schema) {
+        con.openDb("DbUpdateTest").then(function (schema) {
             const processIdColumn = schema.tables[0].columns[1];
             expect(processIdColumn.name).to.equal("process_id");
             expect(processIdColumn.dataType).to.equal("string");

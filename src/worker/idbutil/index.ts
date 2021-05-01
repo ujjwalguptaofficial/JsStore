@@ -65,6 +65,7 @@ export class IDBUtil {
         this.con.close();
         // wait for 100 ms before success
         return promise(res => {
+            this.con = null;
             setTimeout(res, 100);
         });
     }
@@ -78,15 +79,19 @@ export class IDBUtil {
 
             dbOpenRequest.onsuccess = () => {
                 this.con = dbOpenRequest.result;
-                this.con.onversionchange = (e) => {
-                    if (e.newVersion === null) { // An attempt is made to delete the db
-                        (e.target as any).close(); // Manually close our connection to the db
-                    }
+                this.con.onversionchange = (e: any) => {
+                    // if (e.newVersion === null) { // An attempt is made to delete the db
+                    e.target.close(); // Manually close our connection to the db
+                    // }
                 }
                 res(isDbCreated);
             }
 
-            dbOpenRequest.onerror = rej;
+            dbOpenRequest.onerror = (e) => {
+                debugger;
+                console.log("error", e);
+                rej(e);
+            };
 
             dbOpenRequest.onupgradeneeded = function (e) {
                 const upgradeConnection: IDBDatabase = (e as any).target.result;

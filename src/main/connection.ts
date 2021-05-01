@@ -2,7 +2,7 @@ import { ConnectionHelper } from "./connection_helper";
 import {
     SelectQuery, CountQuery, InsertQuery, SetQuery,
     UpdateQuery, RemoveQuery, DbInfo, TranscationQuery,
-    API, IDataBase, EVENT, IPlugin, IntersectQuery
+    API, IDataBase, EVENT, IPlugin, IntersectQuery, IDbInfo
 } from "../common/index";
 import { Config } from "./config";
 
@@ -146,10 +146,13 @@ export class Connection extends ConnectionHelper {
      * @returns
      * @memberof Connection
      */
-    openDb(dbName: string) {
+    openDb(dbName: string, version?) {
         return this.pushApi<IDataBase>({
             name: API.OpenDb,
-            query: dbName
+            query: {
+                version: version,
+                name: dbName
+            } as IDbInfo
         }).then((dataBase) => {
             this.database = dataBase;
             return dataBase;
@@ -162,7 +165,7 @@ export class Connection extends ConnectionHelper {
      * @returns
      * @memberof Connection
      */
-    getDbList(): Promise<[{ name: string, version: number }]> {
+    getDbList(): Promise<[IDbInfo]> {
         console.warn("Api getDbList is recommended to use for debugging only. Do not use in code.");
         return (indexedDB as any).databases();
     }

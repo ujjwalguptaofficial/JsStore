@@ -97,7 +97,7 @@ export class Select extends BaseFetch {
             }
             return pResult.then(
                 this.returnResult_.bind(this)
-            );
+            )
         }
         catch (ex) {
             return this.onException(ex);

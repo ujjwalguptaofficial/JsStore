@@ -18,7 +18,11 @@ export const executeWhereUndefinedLogic = function (this: Update) {
                         ++this.rowAffected;
                         cursor.continue();
                     };
-                    cursorUpdateRequest.onerror = rej;
+                    cursorUpdateRequest.onerror = (e) => {
+                        rej(
+                            getError(e)
+                        )
+                    };
                 } catch (ex) {
                     rej(
                         getError(ex)

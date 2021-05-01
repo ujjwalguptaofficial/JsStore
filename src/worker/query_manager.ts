@@ -1,4 +1,4 @@
-import { WebWorkerRequest, API, IDataBase, InsertQuery, WebWorkerResult, promise, SelectQuery, CountQuery, SetQuery, ERROR_TYPE } from "@/common";
+import { WebWorkerRequest, API, IDataBase, InsertQuery, WebWorkerResult, promise, SelectQuery, CountQuery, SetQuery, ERROR_TYPE, IDbInfo } from "@/common";
 import { DbMeta } from "./model";
 import { IDBUtil } from "./idbutil";
 import { Insert } from "@executors/insert";
@@ -14,6 +14,7 @@ import { Remove } from "@executors/remove";
 import { Clear } from "@executors/clear";
 import { Transaction } from "@executors/transaction";
 import { TABLE_STATE } from "./enums";
+import { version } from "process";
 
 export class QueryManager {
     util: IDBUtil;
@@ -145,16 +146,17 @@ export class QueryManager {
         });
     }
 
-    openDb(name: string) {
+    openDb(query: IDbInfo) {
         let pResult: Promise<boolean>;
-        if (this.db && name === this.db.name) {
+        if (this.db && query.name === this.db.name) {
             pResult = this.initDb();
         }
         else {
             pResult = this.initDb({
-                name: name,
+                name: query.name,
                 tables: [
-                ]
+                ],
+                version: query.version
             });
         }
         return pResult.then(() => {
@@ -165,32 +167,53 @@ export class QueryManager {
     initDb(dataBase?: IDataBase) {
         const dbMeta = dataBase ? new DbMeta(dataBase) : this.db;
         this.util = new IDBUtil(dbMeta);
-        return promise<boolean>((res) => {
-            this.util.initDb().then((result) => {
-                return MetaHelper.get(MetaHelper.dbSchema, this.util).then((savedDb: DbMeta) => {
+        const upgradeDbSchema = (result) => {
+            return promise((res, rej) => {
+                MetaHelper.get(MetaHelper.dbSchema, this.util).then((savedDb: DbMeta) => {
                     let shouldReCreateDb = false;
                     let dbVersion;
                     if (savedDb) {
+                        dbVersion = savedDb.version;
+
                         savedDb.tables.forEach((savedTable, index) => {
                             const providedTable = dbMeta.tables[index];
 
-                            if (providedTable && savedTable.version < providedTable.version) {
-                                providedTable.state = TABLE_STATE.Delete;
-                                shouldReCreateDb = true;
-                                if (dbVersion < providedTable.version) {
-                                    dbVersion = providedTable.version;
+                            if (providedTable) {
+                                if (savedTable.version < providedTable.version) {
+                                    providedTable.state = TABLE_STATE.Delete;
+                                    shouldReCreateDb = true;
+                                    if (dbVersion < providedTable.version) {
+                                        dbVersion = providedTable.version;
+                                    }
+                                }
+                                else {
+                                    providedTable.state = null;
                                 }
                             }
                         });
                     }
+
                     if (shouldReCreateDb) {
-                        return this.util.initDb();
+                        dbMeta.version = dbVersion;
+                        this.terminate().then(_ => {
+                            this.util = new IDBUtil(dbMeta);
+                            this.util.initDb().then((ok) => {
+                                res(ok);
+                            }).catch(rej);
+                        });
+
+                        return;
                     }
-                    else {
+                    else if (!result) {
                         this.db = savedDb;
                     }
-                    return result;
+                    res(result);
                 });
+            });
+        };
+        return promise<boolean>((res) => {
+            this.util.initDb().then((result) => {
+                return upgradeDbSchema(result);
             }).then(result => {
                 if (result) {
                     MetaHelper.set(

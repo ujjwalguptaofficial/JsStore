@@ -1,6 +1,6 @@
 import { LogHelper } from "./log_helper";
 import { Config } from "./config";
-import { WebWorkerRequest, EventQueue, API, WebWorkerResult, EVENT, promise, IDataBase } from "../common/index";
+import { WebWorkerRequest, EventQueue, API, WebWorkerResult, EVENT, promise, IDataBase, IDbInfo } from "../common/index";
 
 declare var JsStoreWorker;
 export class ConnectionHelper {
@@ -88,7 +88,10 @@ export class ConnectionHelper {
   private openDb_() {
     this.prcoessExecutionOfQry_({
       name: API.OpenDb,
-      query: this.database.name,
+      query: {
+        name: this.database.name,
+        version: this.database.version
+      } as IDbInfo,
       onSuccess: function () {
 
       },
