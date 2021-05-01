@@ -1,5 +1,5 @@
 import { BaseFetch } from "../base_fetch";
-import { RemoveQuery, QUERY_OPTION } from "@/common";
+import { RemoveQuery, QUERY_OPTION, API } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@executors/query_helper";
 import { DbMeta } from "@/worker/model";
@@ -26,7 +26,7 @@ export class Remove extends BaseFetch {
         this.db = db;
         const queryHelper = new QueryHelper(db);
         const query = this.query;
-        const err = queryHelper.checkSelect(query);
+        const err = queryHelper.validate(API.Remove, query);
         if (err) return promiseReject(
             getError(err, true)
         );
@@ -80,7 +80,9 @@ export class Remove extends BaseFetch {
     }
 
     private initTransaction_() {
-        this.util.createTransaction([this.query.from]);
+        if (!this.isTxQuery) {
+            this.util.createTransaction([this.query.from]);
+        }
         this.objectStore = this.util.objectStore(this.query.from);
     }
 

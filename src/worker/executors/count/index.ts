@@ -1,6 +1,6 @@
 import { BaseFetch } from "@executors/base_fetch";
 import { Select } from "@executors/select";
-import { CountQuery, SelectQuery, IDB_MODE } from "@/common";
+import { CountQuery, SelectQuery, IDB_MODE, API } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { DbMeta } from "@worker/model";
 import { QueryHelper } from "@executors/query_helper";
@@ -29,7 +29,7 @@ export class Count extends BaseFetch {
     execute(db: DbMeta) {
         this.db = db;
         const queryHelper = new QueryHelper(db);
-        const err = queryHelper.checkSelect(this.query);
+        const err = queryHelper.validate(API.Count, this.query);
         if (err) {
             return promiseReject(
                 getError(err, true)
@@ -71,7 +71,9 @@ export class Count extends BaseFetch {
     }
 
     private initTransaction_() {
-        this.util.createTransaction([this.query.from], IDB_MODE.ReadOnly);
+        if (!this.isTxQuery) {
+            this.util.createTransaction([this.query.from], IDB_MODE.ReadOnly);
+        }
         this.objectStore = this.util.objectStore(this.query.from);
     }
 }

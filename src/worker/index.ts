@@ -1,4 +1,4 @@
-import { QueryExecutor } from "@/worker/query_executor";
+import { QueryExecutor } from "@/worker/query_manager";
 import { isWorker } from "./constants";
 
 export const initialize = () => {

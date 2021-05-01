@@ -7,8 +7,7 @@ export class Base {
     db: DbMeta;
     util: IDBUtil;
     query: InsertQuery | SelectQuery | UpdateQuery;
-    onSuccess: (result: any) => void;
-    onError: (err: LogHelper) => void;
+    
     rowAffected = 0;
     isTxQuery = false;
     objectStore: IDBObjectStore;

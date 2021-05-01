@@ -1,4 +1,4 @@
-import { UpdateQuery, SelectQuery, QUERY_OPTION } from "@/common";
+import { UpdateQuery, SelectQuery, QUERY_OPTION, API } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { DbMeta } from "@worker/model";
 import { QueryHelper } from "../query_helper";
@@ -29,7 +29,7 @@ export class Update extends BaseFetch {
         const query: UpdateQuery = this.query as any;
         try {
             const queryHelper = new QueryHelper(db);
-            const err = queryHelper.checkUpdate(query);
+            const err = queryHelper.validate(API.Update, query);
             if (err) return promiseReject(getError(err, true));
 
             this.initTransaction();
@@ -77,7 +77,9 @@ export class Update extends BaseFetch {
 
     private initTransaction() {
         const tableName = (this.query as any).in;
-        this.util.createTransaction([tableName]);
+        if (!this.isTxQuery) {
+            this.util.createTransaction([tableName]);
+        }
         this.objectStore = this.util.objectStore(tableName);
     }
 }

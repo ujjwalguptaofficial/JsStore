@@ -1,5 +1,5 @@
-import { InsertQuery, DATA_TYPE, ERROR_TYPE, promise, TStringAny, SelectQuery, QUERY_OPTION, UpdateQuery } from "@/common";
-import { LogHelper, getDataType, promiseReject } from "@/worker/utils";
+import { InsertQuery, DATA_TYPE, ERROR_TYPE, SelectQuery, QUERY_OPTION, UpdateQuery, API } from "@/common";
+import { LogHelper, getDataType } from "@/worker/utils";
 import { DbMeta } from "../model";
 import { ValuesChecker } from "@worker/executors/insert";
 import { SchemaChecker } from "./update/schema_checker";
@@ -9,6 +9,19 @@ export class QueryHelper {
 
     constructor(dbSchema: DbMeta) {
         this.db = dbSchema;
+    }
+
+    validate(api: API, query: InsertQuery | SelectQuery | UpdateQuery) {
+        switch (api) {
+            case API.Select:
+            case API.Remove:
+            case API.Count:
+                return this.checkSelect(query as SelectQuery);
+            case API.Insert:
+                return this.checkInsertQuery(query as InsertQuery);
+            case API.Update:
+                return this.checkUpdate(query as UpdateQuery);
+        }
     }
 
     private getTable_(tableName: string) {
@@ -37,7 +50,7 @@ export class QueryHelper {
         };
     }
 
-    checkUpdate(query: UpdateQuery) {
+    private checkUpdate(query: UpdateQuery) {
         let err = new SchemaChecker(this.getTable_(query.in)).
             check(query.set, query.in);
         if (err) return err;
@@ -48,7 +61,7 @@ export class QueryHelper {
         }
     }
 
-    checkSelect(query: SelectQuery) {
+    private checkSelect(query: SelectQuery) {
         const table = this.getTable_(query.from);
         if (!table) {
             return new LogHelper(ERROR_TYPE.TableNotExist,
@@ -124,7 +137,7 @@ export class QueryHelper {
         }
     }
 
-    checkInsertQuery(query: InsertQuery) {
+    private checkInsertQuery(query: InsertQuery) {
         const validResult = this.isInsertQryValid_(query);
         let table = validResult.table;
         const err = validResult.log;

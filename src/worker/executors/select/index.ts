@@ -1,4 +1,4 @@
-import { SelectQuery, QUERY_OPTION, IDB_MODE, ERROR_TYPE } from "@/common";
+import { SelectQuery, QUERY_OPTION, IDB_MODE, ERROR_TYPE, API } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@worker/executors/query_helper";
 import { DbMeta } from "@/worker/model";
@@ -73,7 +73,7 @@ export class Select extends BaseFetch {
         this.db = db;
         let pResult: Promise<void>;
         try {
-            const err = new QueryHelper(db).checkSelect(this.query);
+            const err = new QueryHelper(db).validate(API.Select, this.query);
             if (err) return promiseReject(getError(err, true));
             if (this.query.join == null) {
                 if (this.query.where != null) {
@@ -175,7 +175,9 @@ export class Select extends BaseFetch {
     }
 
     private initTransaction_() {
-        this.util.createTransaction([this.tableName], IDB_MODE.ReadOnly);
+        if (!this.isTxQuery) {
+            this.util.createTransaction([this.tableName], IDB_MODE.ReadOnly);
+        }
         this.objectStore = this.util.objectStore(this.tableName);
     }
 

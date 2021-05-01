@@ -98,6 +98,9 @@ export class LogHelper implements IError {
             case ERROR_TYPE.InvalidJoinQuery:
                 errMsg = this.info_;
                 break;
+            case ERROR_TYPE.MethodNotExist:
+                errMsg = `method ${this.info_} does not exist.`;
+                break;
             default:
                 if (!this.type) {
                     this.type = ERROR_TYPE.Unknown

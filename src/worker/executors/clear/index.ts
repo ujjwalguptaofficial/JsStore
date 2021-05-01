@@ -14,7 +14,9 @@ export class Clear extends Base {
     execute(db: DbMeta) {
         this.db = db;
         const tableName: string = this.query as any;
-        this.util.createTransaction([tableName, MetaHelper.tableName]);
+        if (!this.isTxQuery) {
+            this.util.createTransaction([tableName, MetaHelper.tableName]);
+        }
         const clearRequest: IDBRequest = this.util.objectStore(tableName).clear();
         try {
             return promise<void>((res, rej) => {
