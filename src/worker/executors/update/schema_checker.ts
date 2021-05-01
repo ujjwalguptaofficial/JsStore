@@ -3,8 +3,6 @@ import { LogHelper, isNull, getDataType } from "@worker/utils";
 import { TableMeta } from "@worker/model/table_meta";
 import { IColumn } from "@worker/interfaces";
 
-
-
 export class SchemaChecker {
     table: TableMeta;
     constructor(table: TableMeta) {
@@ -20,7 +18,7 @@ export class SchemaChecker {
                     if (column.name in setValue) {
                         log = this.checkByColumn_(column, setValue[column.name]);
                     }
-                    return log ? true : false;
+                    return log ? false : true;
                 });
             }
             else {

@@ -24,6 +24,7 @@ export class Count extends BaseFetch {
         super();
         this.query = query;
         this.util = util;
+        this.tableName = query.from;
     }
 
     execute(db: DbMeta) {

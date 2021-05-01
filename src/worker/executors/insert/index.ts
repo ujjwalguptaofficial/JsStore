@@ -17,6 +17,7 @@ export class Insert extends Base {
         super();
         this.query = query;
         this.util = util;
+        this.tableName = query.into;
     }
 
     execute(db: DbMeta) {

@@ -11,12 +11,12 @@ export class Base {
     rowAffected = 0;
     isTxQuery = false;
     objectStore: IDBObjectStore;
-
+    tableName: string;
 
     protected results: any[] = [];
-    get tableName() {
-        return (this.query as SelectQuery).from || (this.query as InsertQuery).into
-    }
+    // get tableName() {
+    //     return (this.query as SelectQuery).from || (this.query as InsertQuery).into
+    // }
 
     table(name?: string) {
         const tableName = name || this.tableName;

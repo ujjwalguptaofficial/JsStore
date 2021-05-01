@@ -49,6 +49,7 @@ export class Select extends BaseFetch {
         super();
         this.query = query;
         this.util = util;
+        this.tableName = query.from;
         this.setPushResult();
         if (isArray(this.query.where)) {
             this.isArrayQry = true;

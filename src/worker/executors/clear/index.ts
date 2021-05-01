@@ -9,6 +9,7 @@ export class Clear extends Base {
         super();
         this.query = tableName as any;
         this.util = util;
+        this.tableName = tableName;
     }
 
     execute(db: DbMeta) {

@@ -22,6 +22,7 @@ export class Update extends BaseFetch {
         super();
         this.query = query as any;
         this.util = util;
+        this.tableName = query.in;
     }
 
     execute(db: DbMeta) {
