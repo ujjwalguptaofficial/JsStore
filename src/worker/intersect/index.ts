@@ -1,4 +1,4 @@
-import { IntersectQuery } from "@/common";
+import { IntersectQuery, SelectQuery } from "@/common";
 import { Base } from "@executors/base";
 import { Select } from "@executors/select";
 import { DbMeta } from "../model";
@@ -73,7 +73,10 @@ export class Intersect extends Base {
                 const limit = intersectQry.limit;
                 const onFinished = () => {
                     select['results'] = results;
-                    select.query.join = {} as any;
+                    Object.assign(select.query, {
+                        order: intersectQry.order,
+                        join: {} as any
+                    } as SelectQuery);
                     select.processOrderBy();
                     select.processGroupDistinctAggr();
                     return (select['results']);
