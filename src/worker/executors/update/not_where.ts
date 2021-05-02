@@ -1,7 +1,6 @@
 import { Update } from "./";
 import { promise } from "@/common";
 import { updateValue } from "./update_value";
-import { getError } from "@/worker/utils";
 
 
 export const executeWhereUndefinedLogic = function (this: Update) {
@@ -20,12 +19,12 @@ export const executeWhereUndefinedLogic = function (this: Update) {
                     };
                     cursorUpdateRequest.onerror = (e) => {
                         rej(
-                            getError(e)
+                            e
                         )
                     };
                 } catch (ex) {
                     rej(
-                        getError(ex)
+                        ex
                     );
                 }
             }

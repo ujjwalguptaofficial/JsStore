@@ -22,12 +22,12 @@ export class Insert extends Base {
 
     execute(db: DbMeta) {
         const err = new QueryHelper(db).validate(API.Insert, this.query);
-        if (err) return Promise.reject(getError(err, true));
+        if (err) return promiseReject(err);
         return this.insertData_(db).then(_ => {
             return this.query.return ? this.valuesAffected_ : this.rowAffected
         }).catch(err => {
             this.util.abortTransaction();
-            return promiseReject(getError(err));
+            return promiseReject(err);
         })
     }
 

@@ -31,7 +31,7 @@ export class Update extends BaseFetch {
         try {
             const queryHelper = new QueryHelper(db);
             const err = queryHelper.validate(API.Update, query);
-            if (err) return promiseReject(getError(err, true));
+            if (err) return promiseReject(err);
 
             this.initTransaction();
             let pResult: Promise<void>;

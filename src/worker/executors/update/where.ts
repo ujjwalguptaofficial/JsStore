@@ -1,7 +1,6 @@
 import { promise } from "@/common";
 import { updateValue } from "./update_value";
 import { Update } from "./";
-import { getError } from "@/worker/utils";
 
 export const executeWhereLogic = function (this: Update, column, value, op) {
     let cursor: IDBCursorWithValue,
@@ -23,7 +22,7 @@ export const executeWhereLogic = function (this: Update, column, value, op) {
                         cursorUpdateRequest.onerror = rej;
                     } catch (ex) {
                         rej(
-                            getError(ex)
+                            ex
                         );
                     }
                 }

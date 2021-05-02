@@ -95,11 +95,15 @@ export class LogHelper implements IError {
             case ERROR_TYPE.NullValueInWhere:
                 errMsg = `Null/undefined is not allowed in where. Column '${this.info_['column']}' has null`;
                 break;
-            case ERROR_TYPE.InvalidJoinQuery:
-                errMsg = this.info_;
-                break;
+
             case ERROR_TYPE.MethodNotExist:
                 errMsg = `method ${this.info_} does not exist.`;
+                break;
+            case ERROR_TYPE.InvalidJoinQuery:
+            case ERROR_TYPE.InvalidGroupQuery:
+            case ERROR_TYPE.InvalidOrderQuery:
+            case ERROR_TYPE.ImportScriptsFailed:
+                errMsg = this.info_;
                 break;
             default:
                 if (!this.type) {

@@ -14,12 +14,9 @@ export const executeWhereUndefinedLogic = function (this: Select) {
         }
         else {
             return promiseReject(
-                getError(
-                    new LogHelper(
-                        ERROR_TYPE.ColumnNotExist,
-                        { column: this.query.order.by, isOrder: true }
-                    ),
-                    true
+                new LogHelper(
+                    ERROR_TYPE.ColumnNotExist,
+                    { column: this.query.order.by, isOrder: true }
                 )
             );
         }

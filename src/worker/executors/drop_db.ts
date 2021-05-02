@@ -9,7 +9,7 @@ export class DropDb {
             dropDbRequest.onblocked = () => {
                 const err = new LogHelper(ERROR_TYPE.DbBlocked);
                 return rej(
-                    getError(err, true)
+                    getError(err)
                 );
             };
             dropDbRequest.onerror = (e) => {

@@ -1,7 +1,6 @@
 import { Update } from "./";
 import { updateValue } from "./update_value";
 import { promise } from "@/common";
-import { getError } from "@/worker/utils";
 
 export const executeRegexLogic = function (this: Update, column: string, exp: RegExp) {
     let cursor: IDBCursorWithValue;
@@ -26,7 +25,7 @@ export const executeRegexLogic = function (this: Update, column: string, exp: Re
                         cursorUpdateRequest.onerror = rej;
                     } catch (ex) {
                         rej(
-                            getError(ex)
+                            ex
                         );
                     }
                 }

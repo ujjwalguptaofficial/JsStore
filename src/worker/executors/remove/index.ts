@@ -29,7 +29,7 @@ export class Remove extends BaseFetch {
         const query = this.query;
         const err = queryHelper.validate(API.Remove, query);
         if (err) return promiseReject(
-            getError(err, true)
+            err
         );
         try {
             this.initTransaction_();

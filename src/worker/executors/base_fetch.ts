@@ -20,7 +20,7 @@ export class BaseFetch extends Base {
 
     resultCount: number;
 
-    protected shouldAddValue:(value)=> boolean;
+    protected shouldAddValue: (value) => boolean;
     protected goToWhereLogic() {
         const query = this.query as SelectQuery;
         const firstColumn = getObjectFirstKey(query.where);
@@ -68,7 +68,7 @@ export class BaseFetch extends Base {
                 new LogHelper(ERROR_TYPE.ColumnNotExist, { column: firstColumn }) :
                 new LogHelper(ERROR_TYPE.EnableSearchOff, { column: firstColumn });
             return promiseReject(
-                getError(error, true)
+                error
             );
         }
     }

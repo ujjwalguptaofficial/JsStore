@@ -1,7 +1,6 @@
 import { Update } from "./";
 import { promiseAll, promise, UpdateQuery } from "@/common";
 import { updateValue } from "./update_value";
-import { getError } from "@/worker/utils";
 
 
 export const executeInLogic = function (this: Update, column, values: any[]) {
@@ -25,7 +24,7 @@ export const executeInLogic = function (this: Update, column, values: any[]) {
                         }
                         catch (ex) {
                             rej(
-                                getError(ex)
+                                ex
                             );
                         }
 

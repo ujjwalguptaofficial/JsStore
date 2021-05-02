@@ -1,7 +1,7 @@
 import { Base } from "@executors/base";
 import { TranscationQuery, WebWorkerRequest, ERROR_TYPE, promiseAll, SelectQuery, API, InsertQuery, UpdateQuery, RemoveQuery, CountQuery, WebWorkerResult, promise } from "@/common";
 import { IDBUtil } from "@worker/idbutil";
-import { promiseReject, LogHelper, getError } from "@worker/utils";
+import { promiseReject, LogHelper } from "@worker/utils";
 import { Insert } from "@executors/insert";
 import { Select } from "@executors/select";
 import { Count } from "@executors/count";
@@ -33,7 +33,7 @@ export class Transaction extends Base {
 
         const err = this.validate();
         if (err) return promiseReject(
-            getError(err, true)
+            err
         );
         this.startExecution_()
 

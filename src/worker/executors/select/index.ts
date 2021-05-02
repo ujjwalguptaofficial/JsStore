@@ -75,7 +75,7 @@ export class Select extends BaseFetch {
         let pResult: Promise<void>;
         try {
             const err = new QueryHelper(db).validate(API.Select, this.query);
-            if (err) return promiseReject(getError(err, true));
+            if (err) return promiseReject(err);
             if (this.query.join == null) {
                 if (this.query.where != null) {
                     this.initTransaction_();

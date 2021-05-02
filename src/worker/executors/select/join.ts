@@ -97,7 +97,9 @@ export class Join {
                         this.select.processOrderBy();
                     }
                     catch (ex) {
-                        return this.onException(ex, ERROR_TYPE.InvalidOrderQuery);
+                        return promiseReject(
+                            new LogHelper(ERROR_TYPE.InvalidOrderQuery, ex.message)
+                        );
                     }
                 }
                 else {
@@ -109,7 +111,9 @@ export class Join {
                         this.select.processGroupDistinctAggr();
                     }
                     catch (ex) {
-                        return this.onException(ex, ERROR_TYPE.InvalidGroupQuery);
+                        return promiseReject(
+                            new LogHelper(ERROR_TYPE.InvalidGroupQuery, ex.message)
+                        );
                     }
                 }
                 else {
@@ -117,7 +121,9 @@ export class Join {
                 }
             }
             catch (ex) {
-                return this.onException(ex);
+                return promiseReject(
+                    new LogHelper(ERROR_TYPE.InvalidJoinQuery, ex.message)
+                );
             }
 
             // if (this.query.skip && this.query.limit) {
@@ -165,16 +171,14 @@ export class Join {
                 });
             }
             catch (ex) {
-                return this.onException(ex);
+                return promiseReject(
+                    new LogHelper(ERROR_TYPE.InvalidJoinQuery, ex.message)
+                );
             }
         }
         else {
             return this.onJoinQueryFinished_();
         }
-    }
-
-    onException(ex, type = ERROR_TYPE.InvalidJoinQuery) {
-        return this.select.onException(ex, type);
     }
 
     private jointables(joinType: string, jointblInfo: JoinTableInfo, secondtableData: any[]) {
@@ -298,7 +302,7 @@ export class Join {
             }
             return true;
         });
-        return err ? getError(err, true) : err;
+        return err;
     }
 }
 

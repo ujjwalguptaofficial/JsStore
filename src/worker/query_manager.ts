@@ -14,7 +14,7 @@ import { Remove } from "@executors/remove";
 import { Clear } from "@executors/clear";
 import { Transaction } from "@executors/transaction";
 import { TABLE_STATE } from "./enums";
-import { version } from "process";
+import { LogHelper, getError } from "@worker/utils";
 
 export class QueryManager {
     util: IDBUtil;
@@ -86,10 +86,8 @@ export class QueryManager {
                         importScripts(...request.query);
                         res();
                     } catch (e) {
-                        rej({
-                            type: ERROR_TYPE.ImportScriptsFailed,
-                            message: e.message
-                        });
+                        const err = new LogHelper(ERROR_TYPE.ImportScriptsFailed, e.message);
+                        rej(err);
                     }
                 });
                 break;
@@ -103,7 +101,8 @@ export class QueryManager {
             this.returnResult_({
                 result: result
             });
-        }).catch(err => {
+        }).catch(ex => {
+            const err = getError(ex);
             const result = {
                 error: err
             } as WebWorkerResult;

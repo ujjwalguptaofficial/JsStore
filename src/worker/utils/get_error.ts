@@ -1,6 +1,7 @@
 import { LogHelper } from "./log_helper";
 
-export const getError = (e, customError = false) => {
+export const getError = (e) => {
+    const customError = e instanceof LogHelper;
     if (customError) {
         e.logError();
         return (e as LogHelper).get();

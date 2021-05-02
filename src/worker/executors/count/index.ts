@@ -33,7 +33,7 @@ export class Count extends BaseFetch {
         const err = queryHelper.validate(API.Count, this.query);
         if (err) {
             return promiseReject(
-                getError(err, true)
+                err
             );
         }
         try {
