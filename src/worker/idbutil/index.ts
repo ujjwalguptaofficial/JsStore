@@ -29,7 +29,7 @@ export class IDBUtil {
             };
             tx.onabort = () => {
                 this.emptyTx();
-                res();
+                // setTimeout(res, 10);
             };
             tx.onerror = (e) => {
                 this.emptyTx();

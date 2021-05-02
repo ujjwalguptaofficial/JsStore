@@ -135,7 +135,9 @@ export class Transaction extends Base {
             tableNames = tableNames.concat(MetaHelper.tableName)
             this.util.createTransaction(tableNames).then(_ => {
                 this.onSuccess(this.results);
-            });
+            }).catch(err => {
+                this.onError(err);
+            })
             return this.processExecutionOfQry_();
         }
         catch (ex) {
