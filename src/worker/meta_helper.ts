@@ -18,7 +18,9 @@ export class MetaHelper {
             const req = store.put({
                 key, value
             });
-            req.onsuccess = res;
+            req.onsuccess = () => {
+                res();
+            };
             req.onerror = rej;
         });
     }
