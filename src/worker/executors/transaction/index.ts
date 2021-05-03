@@ -104,11 +104,7 @@ export class Transaction extends Base {
         };
 
         const start = () => {
-            this.checkQueries_(this.reqQueue).then(_ => {
-                this.startTx_();
-            }).catch(err => {
-                this.onError(err);
-            });
+            this.startTx_();
         };
         const methodName = query.method
         let txLogic = self[methodName];
@@ -238,13 +234,8 @@ export class Transaction extends Base {
             };
         });
         if (this.isTxStarted_ === true) {
-            this.checkQueries_([request]).then(() => {
-                push();
-                this.processExecutionOfQry_();
-            }).catch(err => {
-                this.onError(err);
-                this.abortTx_(JSON.stringify(err));
-            });
+            push();
+            this.processExecutionOfQry_();
         }
         else {
             push();
@@ -261,13 +252,6 @@ export class Transaction extends Base {
                 this.executeRequest_(this.reqQueue[0]);
             }
         }
-    }
-
-    private checkQueries_(requestQueue: WebWorkerRequest[]) {
-        const queryHelper = new QueryHelper(this.db);
-        return promiseAll(requestQueue.map(request => {
-            return queryHelper.validate(request.name, request.query);
-        }));
     }
 
     private notExistingTable_(tables: string[]) {

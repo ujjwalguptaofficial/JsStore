@@ -111,6 +111,9 @@ export class QueryManager {
     }
 
     private returnResult_(result: WebWorkerResult) {
+        if (this.util) {
+            this.util.emptyTx();
+        }
         this.onQryFinished(result);
     }
 

@@ -14,26 +14,19 @@ export class IDBUtil {
         this.db = db;
     }
 
-    private emptyTx() {
+    emptyTx() {
+        if (!this.tx) return;
+        this.tx.oncomplete = null;
+        this.tx.onabort = null;
+        this.tx.onerror = null;
         this.tx = null;
     }
-
     createTransaction(tables: string[], mode = IDB_MODE.ReadWrite) {
-        // tables.push(MetaHelper.tableName);
         this.tx = this.con.transaction(tables, mode);
         return promise((res, rej) => {
-            this.tx.oncomplete = () => {
-                this.emptyTx();
-                res();
-            };
-            this.tx.onabort = () => {
-                this.emptyTx();
-                // setTimeout(res, 10);
-            };
-            this.tx.onerror = (e) => {
-                this.emptyTx();
-                rej(e);
-            };
+            this.tx.oncomplete = res;
+            this.tx.onabort = res;
+            this.tx.onerror = rej;
         });
     }
 
