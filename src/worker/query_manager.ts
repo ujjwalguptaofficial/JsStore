@@ -30,6 +30,7 @@ export class QueryManager {
 
     run(request: WebWorkerRequest) {
         let queryResult: Promise<any>;
+        console.log('%c executing query! ', 'background: pink; color: #fff', JSON.stringify(request));
         switch (request.name) {
             case API.OpenDb:
                 queryResult = this.openDb(request.query);
@@ -97,6 +98,7 @@ export class QueryManager {
                 }
                 queryResult = Promise.resolve();
         }
+
         queryResult.then((result) => {
             this.returnResult_({
                 result: result
@@ -111,6 +113,12 @@ export class QueryManager {
     }
 
     private returnResult_(result: WebWorkerResult) {
+        console.log('%c returning result! ', 'background: maroon; color: #fff', result);
+        if (this.util) {
+            console.log("tx is alive", this.util.tx);
+            this.util.emptyTx();
+            console.log("tx emptied", this.util.tx);
+        }
         this.onQryFinished(result);
     }
 

@@ -22,6 +22,8 @@ export class Transaction extends Base {
     onSuccess: (result: any) => void;
     onError: (err: LogHelper) => void;
 
+    returned = false;
+
     constructor(qry: TranscationQuery, util: IDBUtil) {
         super();
         this.query = qry as any;
@@ -38,8 +40,22 @@ export class Transaction extends Base {
         this.startExecution_()
 
         return promise<void>((res, rej) => {
-            this.onSuccess = res;
-            this.onError = rej;
+            this.onSuccess = (result) => {
+                if (this.returned) {
+                    console.log("returned true", this.query);
+                }
+                console.log("returning result", result);
+                this.returned = true;
+                res(result);
+            }
+            this.onError = (e) => {
+                if (this.returned) {
+                    console.log("returned true", this.query);
+                }
+                console.log("returning error", e);
+                this.returned = true;
+                rej(e);
+            };
         }).then(result => {
             if (process.env.NODE_ENV === 'dev') {
                 console.log(`transaction finished`);
@@ -104,11 +120,7 @@ export class Transaction extends Base {
         };
 
         const start = () => {
-            this.checkQueries_(this.reqQueue).then(_ => {
-                this.startTx_();
-            }).catch(err => {
-                this.onError(err);
-            });
+            this.startTx_();
         };
         const methodName = query.method
         let txLogic = self[methodName];
@@ -133,6 +145,7 @@ export class Transaction extends Base {
             this.isTxStarted_ = true;
             let tableNames = (this.query as any).tables as string[];
             tableNames = tableNames.concat(MetaHelper.tableName)
+            console.log("creating tx", this.util.tx);
             this.util.createTransaction(tableNames).then(_ => {
                 this.onSuccess(this.results);
             }).catch(err => {
@@ -160,6 +173,8 @@ export class Transaction extends Base {
                 if (process.env.NODE_ENV === 'dev') {
                     console.log(`transaction aborted due to error occured`);
                 }
+                console.warn("err occured", "tx val", this.util.tx);
+                console.warn("req queue", this.reqQueue);
                 this.onError(result.error);
             }
             else {
@@ -174,6 +189,7 @@ export class Transaction extends Base {
 
     private abortTx_(msg: string) {
         this.reqQueue = [];
+        console.log("aborting tx", this.util.tx);
         this.util.abortTransaction();
         if (process.env.NODE_ENV === 'dev') {
             console.log(`transaction aborted. Msg : ${msg}`);
@@ -238,13 +254,8 @@ export class Transaction extends Base {
             };
         });
         if (this.isTxStarted_ === true) {
-            this.checkQueries_([request]).then(() => {
-                push();
-                this.processExecutionOfQry_();
-            }).catch(err => {
-                this.onError(err);
-                this.abortTx_(JSON.stringify(err));
-            });
+            push();
+            this.processExecutionOfQry_();
         }
         else {
             push();
@@ -263,12 +274,12 @@ export class Transaction extends Base {
         }
     }
 
-    private checkQueries_(requestQueue: WebWorkerRequest[]) {
-        const queryHelper = new QueryHelper(this.db);
-        return promiseAll(requestQueue.map(request => {
-            return queryHelper.validate(request.name, request.query);
-        }));
-    }
+    // private checkQueries_(requestQueue: WebWorkerRequest[]) {
+    //     const queryHelper = new QueryHelper(this.db);
+    //     requestQueue.map(request => {
+    //         return queryHelper.validate(request.name, request.query);
+    //     })
+    // }
 
     private notExistingTable_(tables: string[]) {
         let invalidTable: string = null;
