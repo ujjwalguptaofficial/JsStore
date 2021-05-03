@@ -9,7 +9,7 @@ export class MetaHelper {
     static dbSchema = `JsStore_DbSchema`;
 
     static set(key, value, util: IDBUtil) {
-        if (!util.transaction) {
+        if (!util.tx) {
             util.createTransaction([MetaHelper.tableName]);
         }
         const store = util.objectStore(MetaHelper.tableName);
@@ -25,7 +25,7 @@ export class MetaHelper {
         });
     }
     static get(key, util: IDBUtil) {
-        if (!util.transaction) {
+        if (!util.tx) {
             util.createTransaction([MetaHelper.tableName]);
         }
         const store = util.objectStore(MetaHelper.tableName);
@@ -43,7 +43,7 @@ export class MetaHelper {
     }
 
     static remove(key, util: IDBUtil) {
-        if (!util.transaction) {
+        if (!util.tx) {
             util.createTransaction([MetaHelper.tableName]);
         }
         const store = util.objectStore(MetaHelper.tableName);

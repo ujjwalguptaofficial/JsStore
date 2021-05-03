@@ -40,6 +40,7 @@ export class Count extends BaseFetch {
             let result: Promise<void>;
             const getDataFromSelect = () => {
                 const selectInstance = new Select(this.query as SelectQuery, this.util);
+                selectInstance.isTxQuery = this.isTxQuery;
                 return selectInstance.execute(db).then(results => {
                     this.resultCount = results.length;
                 });

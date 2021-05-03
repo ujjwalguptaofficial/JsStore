@@ -8,30 +8,29 @@ export class IDBUtil {
     db: DbMeta;
 
     con: IDBDatabase;
-    transaction: IDBTransaction;
+    tx: IDBTransaction;
 
     constructor(db: DbMeta) {
         this.db = db;
     }
 
     private emptyTx() {
-        this.transaction = null;
+        this.tx = null;
     }
 
     createTransaction(tables: string[], mode = IDB_MODE.ReadWrite) {
         // tables.push(MetaHelper.tableName);
-        const tx = this.con.transaction(tables, mode);
-        this.transaction = tx;
+        this.tx = this.con.transaction(tables, mode);
         return promise((res, rej) => {
-            tx.oncomplete = () => {
+            this.tx.oncomplete = () => {
                 this.emptyTx();
                 res();
             };
-            tx.onabort = () => {
+            this.tx.onabort = () => {
                 this.emptyTx();
                 // setTimeout(res, 10);
             };
-            tx.onerror = (e) => {
+            this.tx.onerror = (e) => {
                 this.emptyTx();
                 rej(e);
             };
@@ -52,12 +51,12 @@ export class IDBUtil {
     }
 
     objectStore(name: string) {
-        return this.transaction.objectStore(name);
+        return this.tx.objectStore(name);
     }
 
     abortTransaction() {
-        if (this.transaction) {
-            this.transaction.abort();
+        if (this.tx) {
+            this.tx.abort();
         }
     }
 

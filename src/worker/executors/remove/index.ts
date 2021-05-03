@@ -58,6 +58,7 @@ export class Remove extends BaseFetch {
 
     private processWhereArrayQry() {
         const selectObject = new Select(this.query, this.util);
+        selectObject.isTxQuery = this.isTxQuery;
         return selectObject.execute(this.db).then((results) => {
             const keyList = [];
             const pkey = this.primaryKey(this.query.from);

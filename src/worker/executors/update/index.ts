@@ -62,6 +62,7 @@ export class Update extends BaseFetch {
             where: query.where,
             ignoreCase: query.ignoreCase
         } as SelectQuery, this.util);
+        selectObject.isTxQuery = this.isTxQuery;
         return selectObject.execute(this.db).then((results: any[]) => {
             const key = this.primaryKey(query.in);
             const inQuery = [];
