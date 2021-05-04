@@ -37,13 +37,19 @@ export class ConnectionHelper {
 
   logger = new LogHelper(null);
 
+  private $worker;
+
+  get jsstoreWorker() {
+    return this.$worker || JsStoreWorker;
+  }
+
   constructor(worker?: Worker) {
     if (worker) {
       this.worker_ = worker;
       this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
     } else {
       this.isRuningInWorker = false;
-      this.queryManager = new JsStoreWorker.QueryManager(this.processFinishedQuery_.bind(this));
+      this.queryManager = new this.jsstoreWorker.QueryManager(this.processFinishedQuery_.bind(this));
     }
   }
 
