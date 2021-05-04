@@ -41,12 +41,6 @@ export class LogHelper implements IError {
     private getMsg() {
         let errMsg: string;
         switch (this.type) {
-            case ERROR_TYPE.WorkerNotSupplied:
-                errMsg = "Worker object is not passed in instance constructor";
-                break;
-            case ERROR_TYPE.IndexedDbUndefined:
-                errMsg = "Browser does not support indexeddb";
-                break;
             default:
                 errMsg = this.message;
                 break;

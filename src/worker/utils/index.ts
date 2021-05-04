@@ -13,3 +13,4 @@ export * from "./promise_reject";
 export * from "./clone";
 export * from "./is_equal";
 export * from "./get_error_from_exception";
+export * from "./set_cross_browser_idb";

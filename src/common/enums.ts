@@ -1,6 +1,4 @@
 export enum ERROR_TYPE {
-    WorkerNotSupplied = "worker_not_supplied",
-    IndexedDbUndefined = "indexeddb_undefined",
     UndefinedColumn = "undefined_column",
     UndefinedValue = "undefined_value",
     UndefinedColumnName = "undefined_column_name",

@@ -2,7 +2,7 @@ import { WebWorkerRequest, API, IDataBase, InsertQuery, WebWorkerResult, promise
 import { DbMeta } from "./model";
 import { IDBUtil } from "./idbutil";
 import { Insert } from "@executors/insert";
-import { isWorker } from "./constants";
+import { IS_WORKER, IS_IDB_SUPPORTED } from "./constants";
 import { MetaHelper } from "./meta_helper";
 import { Select } from "@executors/select";
 import { Count } from "@executors/count";
@@ -14,7 +14,7 @@ import { Remove } from "@executors/remove";
 import { Clear } from "@executors/clear";
 import { Transaction } from "@executors/transaction";
 import { TABLE_STATE } from "./enums";
-import { LogHelper, getError } from "@worker/utils";
+import { LogHelper, getError, promiseReject } from "@worker/utils";
 
 export class QueryManager {
     util: IDBUtil;
@@ -23,7 +23,7 @@ export class QueryManager {
     private onQryFinished;
 
     constructor(fn?: (result: any) => void) {
-        this.onQryFinished = isWorker ? (result) => {
+        this.onQryFinished = IS_WORKER ? (result) => {
             self.postMessage(result);
         } : fn;
     }
@@ -156,6 +156,12 @@ export class QueryManager {
     }
 
     initDb(dataBase?: IDataBase) {
+        if (!IS_IDB_SUPPORTED) {
+            return promiseReject(
+                new LogHelper(ERROR_TYPE.IndexedDbNotSupported)
+            );
+        }
+
         const dbMeta = dataBase ? new DbMeta(dataBase) : this.db;
         this.util = new IDBUtil(dbMeta);
         const upgradeDbSchema = (result) => {
