@@ -250,13 +250,19 @@ export class Connection extends ConnectionHelper {
     }
 
     off(event: EVENT, eventCallBack: Function) {
-        const indexes = this.eventQueue.map((ev, i) => {
+        if (eventCallBack) {
+            const index = this.eventQueue.findIndex(q => q.event === event);
+            this.eventQueue.splice(index, 0);
+            return;
+        }
+        const indexes = [];
+        this.eventQueue.forEach((ev, i) => {
             if (ev.event === event) {
-                return i;
+                indexes.push(i);
             }
         });
         indexes.forEach(i => {
-            this.eventQueue.splice(i, 0);
+            this.eventQueue.splice(i, 1);
         });
     }
 
