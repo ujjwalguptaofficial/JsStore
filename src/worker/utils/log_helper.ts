@@ -1,5 +1,4 @@
 import { ERROR_TYPE, IError } from "@/common";
-// import { Config } from "@/main";
 
 export class LogHelper implements IError {
     type: ERROR_TYPE;
@@ -16,10 +15,8 @@ export class LogHelper implements IError {
         throw this.get();
     }
 
-    static log(msg) {
-        // if (Config.isLogEnabled) {
+    log(msg) {
         console.log(msg);
-        // }
     }
 
     logError() {

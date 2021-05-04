@@ -1,6 +1,8 @@
 import { LogHelper } from "./log_helper";
-import { Config } from "./config";
-import { WebWorkerRequest, EventQueue, API, WebWorkerResult, EVENT, promise, IDataBase, IDbInfo } from "../common/index";
+import {
+  WebWorkerRequest, EventQueue, API, WebWorkerResult,
+  EVENT, promise, IDataBase, IDbInfo
+} from "@/common/index";
 
 declare var JsStoreWorker;
 export class ConnectionHelper {
@@ -31,12 +33,16 @@ export class ConnectionHelper {
 
   queryManager;
 
+  isRuningInWorker = true;
+
+  logger = new LogHelper(null);
+
   constructor(worker?: Worker) {
     if (worker) {
       this.worker_ = worker;
       this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
     } else {
-      Config.isRuningInWorker = false;
+      this.isRuningInWorker = false;
       this.queryManager = new JsStoreWorker.QueryManager(this.processFinishedQuery_.bind(this));
     }
   }
@@ -49,7 +55,7 @@ export class ConnectionHelper {
 
     const finishedRequest: WebWorkerRequest = this.requestQueue_.shift();
     if (finishedRequest) {
-      LogHelper.log(`request ${finishedRequest.name} finished`);
+      this.logger.log(`request ${finishedRequest.name} finished`);
       if (message.error) {
         finishedRequest.onError(message.error);
       } else {
@@ -59,7 +65,7 @@ export class ConnectionHelper {
             this.isConOpened_ = true; break;
           case API.Terminate:
             this.isConOpened_ = false;
-            if (Config.isRuningInWorker === true) {
+            if (this.isRuningInWorker === true) {
               this.worker_.terminate();
             }
             break;
@@ -145,7 +151,7 @@ export class ConnectionHelper {
     else {
       this.requestQueue_.push(request);
     }
-    LogHelper.log("request pushed: " + request.name);
+    this.logger.log("request pushed: " + request.name);
     this.executeQry_();
   }
 
@@ -192,7 +198,7 @@ export class ConnectionHelper {
       name: request.name,
       query: request.query
     } as WebWorkerRequest;
-    if (Config.isRuningInWorker === true) {
+    if (this.isRuningInWorker === true) {
       this.worker_.postMessage(requestForWorker);
     }
     else {

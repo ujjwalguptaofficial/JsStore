@@ -122,9 +122,6 @@ export class QueryManager {
         return this.terminate().then(() => {
             return new DropDb().execute(dbName);
         });
-        // .then(() => {
-        //     return this.terminate();
-        // });
     }
 
     closeDb() {
@@ -132,14 +129,6 @@ export class QueryManager {
             return Promise.resolve();
         }
         return this.util.close();
-        // .then(() => {
-
-        // })
-        // // wait for 100 ms before success
-        // // sometimes browser takes time to close the connection
-        // return promise(res => {
-        //     setTimeout(res, 100);
-        // });
     }
 
     terminate() {

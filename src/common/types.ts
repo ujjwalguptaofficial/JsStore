@@ -82,13 +82,7 @@ export type WebWorkerRequest = {
     onError?: (err: IError) => void;
 };
 
-export type DbInfo = {
-    dbName: string;
-    table: {
-        name: string,
-        version: number
-    };
-};
+ 
 
 export type CountQuery = {
     from: string;

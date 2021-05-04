@@ -1,10 +1,9 @@
 import { ConnectionHelper } from "./connection_helper";
 import {
     SelectQuery, CountQuery, InsertQuery, SetQuery,
-    UpdateQuery, RemoveQuery, DbInfo, TranscationQuery,
+    UpdateQuery, RemoveQuery, TranscationQuery,
     API, IDataBase, EVENT, IPlugin, IntersectQuery, IDbInfo
-} from "../common/index";
-import { Config } from "./config";
+} from "@/common/index";
 
 export class Connection extends ConnectionHelper {
 
@@ -131,11 +130,11 @@ export class Connection extends ConnectionHelper {
      * @param {boolean} status
      * @memberof Connection
      */
-    setLogStatus(status: boolean) {
-        Config.isLogEnabled = status ? status : Config.isLogEnabled;
+    set logStatus(status: boolean) {
+        this.logger.status = status;
         this.pushApi({
             name: API.ChangeLogStatus,
-            query: Config.isLogEnabled
+            query: status
         });
     }
 

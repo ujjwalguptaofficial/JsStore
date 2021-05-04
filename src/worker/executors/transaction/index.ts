@@ -1,5 +1,5 @@
 import { Base } from "@executors/base";
-import { TranscationQuery, WebWorkerRequest, ERROR_TYPE, promiseAll, SelectQuery, API, InsertQuery, UpdateQuery, RemoveQuery, CountQuery, WebWorkerResult, promise } from "@/common";
+import { TranscationQuery, WebWorkerRequest, ERROR_TYPE, SelectQuery, API, InsertQuery, UpdateQuery, RemoveQuery, CountQuery, WebWorkerResult, promise } from "@/common";
 import { IDBUtil } from "@worker/idbutil";
 import { promiseReject, LogHelper } from "@worker/utils";
 import { Insert } from "@executors/insert";
@@ -7,7 +7,6 @@ import { Select } from "@executors/select";
 import { Count } from "@executors/count";
 import { Update } from "@executors/update";
 import { Remove } from "@executors/remove";
-import { QueryHelper } from "@executors/query_helper";
 import { DbMeta } from "@worker/model";
 import { IQueryExecutor } from "@/worker/interfaces";
 import { MetaHelper } from "@/worker/meta_helper";

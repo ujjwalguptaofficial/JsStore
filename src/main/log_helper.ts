@@ -1,13 +1,13 @@
 
 import { ERROR_TYPE, IError } from "../common/index";
-import { Config } from "./config";
 
 export class LogHelper implements IError {
     type: ERROR_TYPE;
     message: string;
     private _info: any;
+    status;
 
-    constructor(type: ERROR_TYPE, info: any = null) {
+    constructor(type: ERROR_TYPE, info?) {
         this.type = type;
         this._info = info;
         this.message = this.getMsg();
@@ -17,8 +17,8 @@ export class LogHelper implements IError {
         throw this.get();
     }
 
-    static log(msg) {
-        if (Config.isLogEnabled) {
+    log(msg) {
+        if (this.status) {
             console.log(msg);
         }
     }
