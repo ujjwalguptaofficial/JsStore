@@ -36,17 +36,33 @@ export type JoinQuery = {
     type?: string //'inner',
     with: string // 'Customers',
     on: string // "Customers.customerId = Orders.customerId"
-    where?: { [columnName: string]: any };
+    where?: WhereQuery | WhereQuery[];
     order?: OrderQuery;
     as?: { [originalColumnName: string]: string },
     case?: { [columnName: string]: [CaseOption] },
     flatten?: string[];
 };
 
+export type WhereQueryOption = {
+    '>'?: any;
+    '<'?: any;
+    '>='?: any;
+    '<='?: any;
+    '!='?: any;
+    '-'?: any;
+    like?: any;
+    regex?: any;
+    or?: WhereQuery;
+    in?: any[];
+};
+
+export type WhereQuery = { [columnName: string]: WhereQueryOption | any };
+
+
 export type SelectQuery = {
     from: string;
     join?: JoinQuery | JoinQuery[];
-    where?: { [columnName: string]: any };
+    where?: WhereQuery | WhereQuery[];
     skip?: number;
     limit?: number;
     order?: OrderQuery;
@@ -82,24 +98,24 @@ export type WebWorkerRequest = {
     onError?: (err: IError) => void;
 };
 
- 
+
 
 export type CountQuery = {
     from: string;
     join?: JoinQuery;
-    where?: { [columnName: string]: any };
+    where?: WhereQuery | WhereQuery[];
 };
 
 export type RemoveQuery = {
     from: string;
-    where?: { [columnName: string]: any };
+    where?: WhereQuery | WhereQuery[];
 };
 
 export type UpdateQuery = {
     in: string;
     ignoreCase?: boolean;
     set: { [columnName: string]: any };
-    where?: { [columnName: string]: any };
+    where?: WhereQuery | WhereQuery[];
 };
 
 export type InsertQuery = {

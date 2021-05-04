@@ -1,8 +1,8 @@
-import { UpdateQuery, SelectQuery, QUERY_OPTION, API } from "@/common";
+import { UpdateQuery, SelectQuery, QUERY_OPTION, API, WhereQuery } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { DbMeta } from "@worker/model";
 import { QueryHelper } from "../query_helper";
-import { promiseReject, getError, isArray } from "@worker/utils";
+import { promiseReject, isArray } from "@worker/utils";
 import { BaseFetch } from "@executors/base_fetch";
 import { Select } from "@executors/select";
 import { executeWhereUndefinedLogic } from "./not_where";
@@ -36,7 +36,7 @@ export class Update extends BaseFetch {
             this.initTransaction();
             let pResult: Promise<void>;
             if (query.where != null) {
-                if (query.where.or || isArray(query.where)) {
+                if ((query.where as WhereQuery).or || isArray(query.where)) {
                     pResult = this.executeComplexLogic_();
                 }
                 else {
@@ -71,7 +71,7 @@ export class Update extends BaseFetch {
             });
             results = null;
             const whereQry = { [key]: { [QUERY_OPTION.In]: inQuery } };
-            this.query[QUERY_OPTION.Where] = whereQry;
+            this.query.where = whereQry;
             this.initTransaction();
             return this.goToWhereLogic();
         });

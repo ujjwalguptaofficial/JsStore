@@ -1,10 +1,9 @@
-import { SelectQuery, QUERY_OPTION, IDB_MODE, ERROR_TYPE, API } from "@/common";
+import { SelectQuery, QUERY_OPTION, IDB_MODE, API, WhereQuery } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@worker/executors/query_helper";
 import { DbMeta } from "@/worker/model";
-import { getError, isArray, isObject, getKeys, getObjectFirstKey, promiseReject, getLength } from "@/worker/utils";
+import { isArray, isObject, getKeys, getObjectFirstKey, promiseReject, getLength } from "@/worker/utils";
 import { setPushResult, setLimitAndSkipEvaluationAtEnd, removeDuplicates } from "./base_select";
-// import "./join";
 import { ThenEvaluator } from "./then_evaluator";
 import { executeWhereUndefinedLogic } from "./not_where"
 import { processAggregateQry, processGroupDistinctAggr, processOrderBy } from "./order_by";
@@ -186,7 +185,7 @@ export class Select extends BaseFetch {
         this.shouldAddValue = (value) => {
             return this.whereCheckerInstance.check(value);
         };
-        if (this.query.where.or) {
+        if ((this.query.where as WhereQuery).or) {
             this.processOrLogic_();
         }
         return this.goToWhereLogic().then(() => {
@@ -259,12 +258,13 @@ export class Select extends BaseFetch {
 
     private processOrLogic_() {
         this.isOr = true;
+        const where = this.query.where as WhereQuery;
         this.orInfo = {
-            orQuery: this.query.where.or,
+            orQuery: where.or,
             results: []
         };
         // free or memory
-        delete this.query.where.or;
+        delete where.or;
     }
 
 

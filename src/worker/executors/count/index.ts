@@ -1,6 +1,6 @@
 import { BaseFetch } from "@executors/base_fetch";
 import { Select } from "@executors/select";
-import { CountQuery, SelectQuery, IDB_MODE, API } from "@/common";
+import { CountQuery, SelectQuery, IDB_MODE, API, WhereQuery } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { DbMeta } from "@worker/model";
 import { QueryHelper } from "@executors/query_helper";
@@ -30,7 +30,8 @@ export class Count extends BaseFetch {
     execute(db: DbMeta) {
         this.db = db;
         const queryHelper = new QueryHelper(db);
-        const err = queryHelper.validate(API.Count, this.query);
+        const query = this.query;
+        const err = queryHelper.validate(API.Count, query);
         if (err) {
             return promiseReject(
                 err
@@ -45,9 +46,9 @@ export class Count extends BaseFetch {
                     this.resultCount = results.length;
                 });
             };
-            if (this.query.join == null) {
-                if (this.query.where != null) {
-                    if (this.query.where.or || isArray(this.query.where)) {
+            if (query.join == null) {
+                if (query.where != null) {
+                    if ((query.where as WhereQuery).or || isArray(this.query.where)) {
                         result = getDataFromSelect();
                     }
                     else {
