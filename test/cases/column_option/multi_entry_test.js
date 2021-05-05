@@ -1,7 +1,7 @@
 describe('Multi Entry Test', function () {
     it('terminate connection', function (done) {
         con.terminate().then(function () {
-            con = new JsStore.Instance();
+            con = new JsStore.Connection();
             done();
         }).catch(function (error) {
             done(error);

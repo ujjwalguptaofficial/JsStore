@@ -184,7 +184,7 @@ function getDashboardSchema() {
 describe("dashboard test", function () {
     var connection;
     it('create dashboard database', function (done) {
-        connection = new JsStore.Instance();
+        connection = new JsStore.Connection();
         var dbName = "Dashboard";
         var db = getDashboardSchema();
         connection.initDb(db).then(function (isDbCreated) {
