@@ -1,4 +1,3 @@
-var conWithoutWorker;
 describe('Db Test', function () {
 
     // it('drop db employee_db', function (done) {
@@ -8,6 +7,10 @@ describe('Db Test', function () {
     //         }).catch(done);
     //     }).catch(done);
     // });
+
+    if (!GetBrowserName().match(/chrome/i)) {
+        return;
+    }
 
     it('getDbList api test', function (done) {
         con.getDbList().then(function (result) {

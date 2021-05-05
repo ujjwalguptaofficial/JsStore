@@ -54,7 +54,9 @@ export class IDBUtil {
     }
 
     close() {
-        this.con.close();
+        if (this.con) {
+            this.con.close();
+        }
         // wait for 100 ms before success
         return promise(res => {
             this.con = null;
@@ -80,8 +82,7 @@ export class IDBUtil {
             }
 
             dbOpenRequest.onerror = (e) => {
-                debugger;
-                console.log("error", e);
+                console.error("error", e);
                 rej(e);
             };
 

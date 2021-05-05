@@ -170,20 +170,6 @@ export class Connection extends ConnectionHelper {
     }
 
     /**
-     * get Database Schema
-     *
-     * @param {string} dbName
-     * @returns
-     * @memberof Connection
-     */
-    getDbSchema(dbName: string) {
-        return this.pushApi<IDataBase>({
-            name: API.GetDbSchema,
-            query: dbName
-        });
-    }
-
-    /**
      * get the value from keystore table
      *
      * @template T
