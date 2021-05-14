@@ -208,10 +208,9 @@ export class QueryManager {
                 });
             });
         };
-        return promise<boolean>((res) => {
+        return promise<boolean>((res, rej) => {
             this.util.initDb().then((isCreated) => {
                 if (isCreated) {
-                    debugger;
                     return isCreated;
                 }
                 return upgradeDbSchema(isCreated);
@@ -229,7 +228,7 @@ export class QueryManager {
 
                     res(false);
                 }
-            });
+            }).catch(rej);
         });
     }
 

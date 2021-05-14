@@ -37,6 +37,17 @@ describe('Db upgrade Test', function () {
         });
     });
 
+    it('open db with old version', function (done) {
+        connection.openDb("DbUpdateTest").catch(function (err) {
+            const expected = {
+                "message": "The requested version (1) is less than the existing version (2).",
+                "type": "VersionError"
+            };
+            expect(err.type).to.equal(expected.type);
+            done();
+        });
+    })
+
     it('getDbSchema after updating db', function (done) {
         connection.openDb("DbUpdateTest", 2).then(function (schema) {
             const processIdColumn = schema.tables[0].columns[1];
