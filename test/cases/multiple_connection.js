@@ -7,9 +7,8 @@ describe('Multiple db connection', function () {
     //         }).catch(done);
     //     }).catch(done);
     // });
-
-    if (!GetBrowserName().match(/chrome/i)) {
-        it('getDbList api test', function (done) {
+    if (GetBrowserName().match(/chrome/i)) {
+        it('getDbList api', function (done) {
             con.getDbList().then(function (result) {
                 expect(result).to.be.an('array').to.length(3);
                 done();
