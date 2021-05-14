@@ -14,6 +14,7 @@
     "build:dev": "npm run lint && npm run webpack:dev && node minifier.js && npm run test:dev",
     "build:prod": "npm run webpack:prod && npm run build:ie && npm run test:prod",
     "build:all": "npm run build:dev && npm run build:prod",
+    "test:fire": "karma start test/karma/karma.config.firefox.js",
     "test:sauce": "npm run test:sauce:b2 ; npm run test:sauce:b1 ",
     "test:sauce:b1": "karma start test/karma/karma.config.saucelab.js --batch1",
     "test:sauce:b2": "karma start test/karma/karma.config.saucelab.js --batch2",
@@ -22,7 +23,7 @@
     "webpack:dev": "webpack --config webpack/webpack.dev.config.js",
     "webpack:prod": "webpack --config webpack/webpack.prod.config.js",
     "move:deploy_file": "node deployer.js",
-    "deploy": "npm run build:all && npm run move:deploy_file"
+    "deploy": "npm run build:all && npm run test:fire && npm run move:deploy_file"
   },
   "repository": {
     "type": "git",
