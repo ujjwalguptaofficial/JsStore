@@ -70,7 +70,9 @@
     "webpack-merge": "^4.2.2"
   },
   "displayName": "JsStore",
-  "dependencies": {},
+  "dependencies": {
+    "karma-firefox-launcher": "^2.1.0"
+  },
   "collective": {
     "type": "opencollective",
     "url": "https://opencollective.com/JsStore"
