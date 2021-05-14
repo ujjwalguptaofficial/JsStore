@@ -5,7 +5,7 @@ export class LogHelper implements IError {
     type: ERROR_TYPE;
     message: string;
     private _info: any;
-    status;
+    status: boolean;
 
     constructor(type: ERROR_TYPE, info?) {
         this.type = type;

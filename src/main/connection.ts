@@ -3,7 +3,7 @@ import {
     SelectQuery, CountQuery, InsertQuery, SetQuery,
     UpdateQuery, RemoveQuery, TranscationQuery,
     API, IDataBase, EVENT, IPlugin, IntersectQuery, IDbInfo
-} from "@/common/index";
+} from "../common";
 
 export class Connection extends ConnectionHelper {
 

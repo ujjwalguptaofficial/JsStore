@@ -105,8 +105,8 @@ export class Select extends BaseFetch {
 
     private processWhereArrayQry() {
         this.isArrayQry = true;
-        const whereQuery = this.query.where,
-            pKey = this.primaryKey();
+        const whereQuery = this.query.where as WhereQuery[];
+        const pKey = this.primaryKey();
         let isFirstWhere = true, output = [], operation;
 
         const isItemExist = (keyValue) => {
@@ -160,7 +160,7 @@ export class Select extends BaseFetch {
             if (this.query.where[QUERY_OPTION.Or]) {
                 if (getLength(this.query.where) === 1) {
                     operation = QUERY_OPTION.Or;
-                    this.query.where = this.query.where[QUERY_OPTION.Or];
+                    this.query.where = this.query.where[QUERY_OPTION.Or] as any;
                 }
                 else {
                     operation = QUERY_OPTION.And;
@@ -260,7 +260,7 @@ export class Select extends BaseFetch {
         this.isOr = true;
         const where = this.query.where as WhereQuery;
         this.orInfo = {
-            orQuery: where.or,
+            orQuery: where.or as any,
             results: []
         };
         // free or memory

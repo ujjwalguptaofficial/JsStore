@@ -16,10 +16,10 @@ module.exports = [{
         }]
     },
     resolve: {
-        alias: {
-            "@": path.resolve(__dirname, "../src"),
-            "@worker": path.resolve(__dirname, "../src/worker")
-        },
+        // alias: {
+        //     "@": path.resolve(__dirname, "../src"),
+        //     "@worker": path.resolve(__dirname, "../src/worker")
+        // },
         extensions: ['.ts'] // '' is needed to find modules like "jquery"
     },
     plugins: [

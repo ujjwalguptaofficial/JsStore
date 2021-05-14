@@ -56,7 +56,7 @@ export type WhereQueryOption = {
     in?: any[];
 };
 
-export type WhereQuery = { [columnName: string]: WhereQueryOption | any };
+export type WhereQuery = { [columnName: string]: WhereQueryOption | string | number | boolean };
 
 
 export type SelectQuery = {

@@ -53,7 +53,6 @@ export enum API {
     Insert = "insert",
     Update = "update",
     Remove = "remove",
-    GetDbSchema = "get_db_schema",
     OpenDb = "open_db",
     Clear = "clear",
     DropDb = "drop_db",

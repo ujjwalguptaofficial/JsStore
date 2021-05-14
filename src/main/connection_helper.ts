@@ -2,7 +2,7 @@ import { LogHelper } from "./log_helper";
 import {
   WebWorkerRequest, EventQueue, API, WebWorkerResult,
   EVENT, promise, IDataBase, IDbInfo
-} from "@/common/index";
+} from "../common";
 
 declare var JsStoreWorker;
 export class ConnectionHelper {
@@ -23,7 +23,6 @@ export class ConnectionHelper {
   private whiteListApi_ = [
     API.InitDb,
     API.OpenDb,
-    API.GetDbSchema,
     API.Get,
     API.Set,
     API.ChangeLogStatus,
