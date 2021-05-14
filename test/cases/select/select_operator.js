@@ -211,4 +211,72 @@ describe('Test operator', function () {
             done(err);
         })
     })
+
+    it('between with date', function (done) {
+        con.select({
+            from: 'Orders',
+            where: {
+                orderDate: {
+                    '-': {
+                        low: new Date("1996-07-04"),
+                        high: new Date("1996-07-10")
+                    }
+                }
+            }
+        }).
+            then(function (results) {
+                expect(results).to.be.an('array').length(6);
+                // done(results.map(q => q.orderId));
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            })
+    });
+
+    it('between with date & some other column', function (done) {
+        let resultFromFirstQuery;
+        con.select({
+            from: 'Orders',
+            where: {
+                orderId: {
+                    in: [10248, 10249, 10250, 10251, 10252, 10253]
+                },
+                orderDate: {
+                    '-': {
+                        low: new Date("1996-07-04"),
+                        high: new Date("1996-07-10")
+                    }
+                }
+            }
+        }).
+            then(function (results) {
+                resultFromFirstQuery = results;
+                expect(results).to.be.an('array').length(6);
+                return con.select({
+                    from: 'Orders',
+                    where: {
+                        orderDate: {
+                            '-': {
+                                low: new Date("1996-07-04"),
+                                high: new Date("1996-07-10")
+                            }
+                        },
+                        orderId: {
+                            in: [10248, 10249, 10250, 10251, 10252, 10253]
+                        },
+                    }
+                })
+            }).
+            then(function (results) {
+                expect(results).to.be.an('array').length(6);
+                results.forEach((item, index) => {
+                    expect(item.orderId).equal(resultFromFirstQuery[index].orderId);
+                })
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            })
+    });
 });

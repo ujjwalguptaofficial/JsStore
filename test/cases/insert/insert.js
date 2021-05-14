@@ -95,6 +95,9 @@ describe('Test insert', function () {
 
     it('insert Orders', function (done) {
         $.getJSON("test/static/Orders.json", function (results) {
+            results.forEach(val => {
+                val.orderDate = new Date(val.orderDate);
+            })
             con.insert({
                 into: 'Orders',
                 values: results
@@ -109,6 +112,9 @@ describe('Test insert', function () {
 
     it('insert Orders a second time without option upsert', function (done) {
         $.getJSON("test/static/Orders.json", function (results) {
+            results.forEach(val => {
+                val.orderDate = new Date(val.orderDate);
+            })
             con.insert({
                 into: 'Orders',
                 values: results
@@ -128,6 +134,9 @@ describe('Test insert', function () {
 
     it('insert Orders a second time with option upsert', function (done) {
         $.getJSON("test/static/Orders.json", function (results) {
+            results.forEach(val => {
+                val.orderDate = new Date(val.orderDate);
+            })
             con.insert({
                 into: 'Orders',
                 values: results,
@@ -143,24 +152,22 @@ describe('Test insert', function () {
 
 
     it('insert into orders with existing primaryKey', function (done) {
-        $.getJSON("test/static/Orders.json", function (results) {
-            con.insert({
-                into: 'Orders',
-                values: [{
-                    orderId: 10248,
-                    customerId: 90,
-                    employeeId: 5,
-                    orderDate: "2019-04-05T02:48:32.955Z",
-                    shipperId: 3
-                }]
-            }).catch(function (err) {
-                var error = {
-                    "message": "Key already exists in the object store.",
-                    "type": "ConstraintError"
-                };
-                expect(err).to.be.an('object').to.haveOwnProperty('type').equal('ConstraintError')
-                done();
-            });
+        con.insert({
+            into: 'Orders',
+            values: [{
+                orderId: 10248,
+                customerId: 90,
+                employeeId: 5,
+                orderDate: new Date("2019-04-05T02:48:32.955Z"),
+                shipperId: 3
+            }]
+        }).catch(function (err) {
+            var error = {
+                "message": "Key already exists in the object store.",
+                "type": "ConstraintError"
+            };
+            expect(err).to.be.an('object').to.haveOwnProperty('type').equal(error.type)
+            done();
         });
     });
 
