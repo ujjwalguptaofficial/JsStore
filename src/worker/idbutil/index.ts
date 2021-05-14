@@ -95,6 +95,12 @@ export class IDBUtil {
                     } : {
                             autoIncrement: true
                         }
+
+                    // Delete the old datastore.    
+                    if (upgradeConnection.objectStoreNames.contains(table.name)) {
+                        upgradeConnection.deleteObjectStore(table.name);
+                    }
+
                     const store = upgradeConnection.createObjectStore(table.name, option);
                     table.columns.forEach(column => {
                         if (column.enableSearch) {
@@ -106,15 +112,9 @@ export class IDBUtil {
                         }
                     });
                 }
+                const createStates = [TABLE_STATE.Create, TABLE_STATE.Delete];
                 db.tables.forEach(table => {
-                    if (table.state === TABLE_STATE.Create) {
-                        createObjectStore(table);
-                    }
-                    else if (table.state === TABLE_STATE.Delete) {
-                        // Delete the old datastore.    
-                        if (upgradeConnection.objectStoreNames.contains(table.name)) {
-                            upgradeConnection.deleteObjectStore(table.name);
-                        }
+                    if (createStates.indexOf(table.state) >= 0) {
                         createObjectStore(table);
                     }
                 });

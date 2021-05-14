@@ -1,20 +1,9 @@
-describe('Db Update data type Test', function () {
-    it('terminate connection', function (done) {
-        con.terminate().then(function () {
-            con = new JsStore.Connection();
-            done();
-        }).catch(function (error) {
-            done(error);
-        });
-    });
+describe('Db upgrade Test', function () {
+    var connection = new JsStore.Connection();
 
     it('create db DbUpdateTest', function (done) {
-        var db = DbUpdateTest.getDbSchema();
-        console.log("executing create db 1");
-        console.log(db)
-        con.initDb(db).then(function (isDbCreated) {
-            console.log("executing create db 2");
-
+        var db = DbUpgradeTest.getDbSchema();
+        connection.initDb(db).then(function (isDbCreated) {
             expect(isDbCreated).to.be.an('boolean').equal(true);
             done();
         }).catch(function () {
@@ -25,7 +14,7 @@ describe('Db Update data type Test', function () {
     });
 
     it('getDbSchema', function (done) {
-        con.openDb("DbUpdateTest").then(function (schema) {
+        connection.openDb(DbUpgradeTest.getDbSchema().name).then(function (schema) {
             const processIdColumn = schema.tables[0].columns[1];
             expect(processIdColumn.name).to.equal("process_id");
             expect(processIdColumn.dataType).to.equal("number");
@@ -38,8 +27,9 @@ describe('Db Update data type Test', function () {
     });
 
     it('change db', function (done) {
-        var db = DbUpdateTest.getV2DbSchema();
-        con.initDb(db).then(function (isDbCreated) {
+        var db = DbUpgradeTest.getDbSchema();
+        db.version = 2;
+        connection.initDb(db).then(function (isDbCreated) {
             expect(isDbCreated).to.be.an('boolean').equal(true);
             done();
         }).catch(function (err) {
@@ -48,11 +38,11 @@ describe('Db Update data type Test', function () {
     });
 
     it('getDbSchema after updating db', function (done) {
-        con.openDb("DbUpdateTest").then(function (schema) {
+        connection.openDb("DbUpdateTest", 2).then(function (schema) {
             const processIdColumn = schema.tables[0].columns[1];
             expect(processIdColumn.name).to.equal("process_id");
             expect(processIdColumn.dataType).to.equal("string");
-            expect(schema.tables[0].version).equal(2);
+            expect(schema.tables[0].version).equal(2)
             expect(schema.version).equal(2);
             done();
         }).catch(function (err) {
@@ -60,9 +50,13 @@ describe('Db Update data type Test', function () {
         });
     });
 
+    it('drop db', function () {
+        return connection.dropDb();
+    })
+
 });
 
-var DbUpdateTest = {
+var DbUpgradeTest = {
     getDbSchema: function () {
         var people = {
             "name": "test",
@@ -81,30 +75,7 @@ var DbUpdateTest = {
 
         },
             dataBase = {
-                name: 'DbUpdateTest',
-                tables: [people]
-            };
-        return dataBase;
-    },
-    getV2DbSchema: function () {
-        var people = {
-            "name": "test",
-            "columns":
-            {
-                "id": {
-                    "primaryKey": true,
-                    "dataType": "number",
-                    "autoIncrement": true,
-                    "notNull": true
-                },
-                "process_id": {
-                    "dataType": "string"
-                },
-            },
-            version: 2
-        },
-            dataBase = {
-                name: 'DbUpdateTest',
+                name: 'DbUpgradeTest',
                 tables: [people]
             };
         return dataBase;

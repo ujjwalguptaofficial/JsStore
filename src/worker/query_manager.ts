@@ -194,8 +194,8 @@ export class QueryManager {
                         dbMeta.version = dbVersion;
                         this.terminate().then(_ => {
                             this.util = new IDBUtil(dbMeta);
-                            this.util.initDb().then((ok) => {
-                                res(ok);
+                            this.util.initDb().then((isCreated) => {
+                                res(isCreated);
                             }).catch(rej);
                         });
 
@@ -209,8 +209,12 @@ export class QueryManager {
             });
         };
         return promise<boolean>((res) => {
-            this.util.initDb().then((result) => {
-                return upgradeDbSchema(result);
+            this.util.initDb().then((isCreated) => {
+                if (isCreated) {
+                    debugger;
+                    return isCreated;
+                }
+                return upgradeDbSchema(isCreated);
             }).then(result => {
                 if (result) {
                     MetaHelper.set(

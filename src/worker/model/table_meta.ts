@@ -11,7 +11,7 @@ export class TableMeta {
     version: number;
     autoIncColumnValue = {};
 
-    constructor(table: ITable) {
+    constructor(table: ITable, dbVersion: number) {
         const columns = [];
         for (const columnName in table.columns) {
             const column: IColumn = table.columns[columnName] as any;
@@ -28,6 +28,9 @@ export class TableMeta {
         this.columns = columns;
         this.name = table.name;
         this.version = table.version || 1;
+        if (dbVersion > this.version) {
+            this.version = dbVersion;
+        }
         this.setState_();
     }
 
