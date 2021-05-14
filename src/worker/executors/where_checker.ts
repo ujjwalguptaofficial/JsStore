@@ -1,5 +1,5 @@
 import { QUERY_OPTION } from "@/common";
-import { getDataType, clone, isEqual, getRegexFromLikeExpression } from "@worker/utils";
+import { getDataType, clone, compare, getRegexFromLikeExpression } from "@worker/utils";
 
 /**
  * For matching the different column value existance for where option
@@ -60,14 +60,14 @@ export class WhereChecker {
         }
       }
       else {
-        status = isEqual(whereColumnValue, columnValue);
+        status = compare(whereColumnValue, columnValue);
       }
     }
     return status;
   }
 
   private checkIn(column, value) {
-    return (this.where[column][QUERY_OPTION.In] as any[]).find(q => isEqual(q, value)) != null;
+    return (this.where[column][QUERY_OPTION.In] as any[]).find(q => compare(q, value)) != null;
   }
 
   private checkLike_(column, value) {
@@ -80,26 +80,10 @@ export class WhereChecker {
 
   private checkComparisionOp_(column, value, symbol) {
     const compareValue = this.where[column][symbol];
-    switch (symbol) {
-      // greater than
-      case QUERY_OPTION.GreaterThan:
-        return value > compareValue;
-      // less than
-      case QUERY_OPTION.LessThan:
-        return value < compareValue;
-      // less than equal
-      case QUERY_OPTION.LessThanEqualTo:
-        return value <= compareValue;
-      // greather than equal
-      case QUERY_OPTION.GreaterThanEqualTo:
-        return value >= compareValue;
-      // between
-      case QUERY_OPTION.Between:
-        return value >= compareValue.low &&
-          value <= compareValue.high;
-      // Not equal to
-      case QUERY_OPTION.NotEqualTo:
-        return value !== compareValue;
+    if (symbol != QUERY_OPTION.Between) {
+      return compare(value, compareValue, symbol);
     }
+    return compare(value, compareValue.low, '>=') &&
+      compare(value, compareValue.high, '<=');
   }
 }

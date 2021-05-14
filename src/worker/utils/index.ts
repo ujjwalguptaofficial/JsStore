@@ -11,6 +11,6 @@ export * from "./get_regex_from_like";
 export * from "./remove_space";
 export * from "./promise_reject";
 export * from "./clone";
-export * from "./is_equal";
+export * from "./compare";
 export * from "./get_error_from_exception";
 export * from "./set_cross_browser_idb";
