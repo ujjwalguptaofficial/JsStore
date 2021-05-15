@@ -73,7 +73,6 @@ export class ConnectionHelper {
             if (this.isRuningInWorker === true) {
               this.worker_.terminate();
             }
-            break;
           case API.DropDb:
             this.isConOpened_ = false;
             this.requestQueue_ = [];
@@ -109,7 +108,7 @@ export class ConnectionHelper {
       onError: function (err) {
         console.error(err);
       }
-    }, 1);
+    }, 0);
   }
 
   private executeMiddleware_(input: WebWorkerRequest) {
@@ -135,7 +134,7 @@ export class ConnectionHelper {
         request.onError = reject;
         if (this.requestQueue_.length === 0) {
           this.callEvent(EVENT.RequestQueueFilled, []);
-          const isConnectionApi = [API.CloseDb, API.DropDb, API.OpenDb].indexOf(request.name) >= 0;
+          const isConnectionApi = [API.CloseDb, API.DropDb, API.OpenDb, API.Terminate].indexOf(request.name) >= 0;
           if (!isConnectionApi && this.isDbIdle_ && this.isConOpened_) {
             this.openDb_();
           }
@@ -199,6 +198,7 @@ export class ConnectionHelper {
 
   private sendRequestToWorker_(request: WebWorkerRequest) {
     this.isCodeExecuting_ = true;
+    this.logger.log("request executing: " + request.name);
     const requestForWorker = {
       name: request.name,
       query: request.query

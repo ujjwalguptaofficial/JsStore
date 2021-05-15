@@ -18,6 +18,22 @@ describe('Test insert', function () {
             })
     });
 
+    it('wrong table test with some waiting', function (done) {
+        con.insert({
+            into: 'Customer'
+        }).
+            catch(function (err) {
+                console.log(err);
+                var error = {
+                    message: "Table 'Customer' does not exist",
+                    type: 'table_not_exist'
+                };
+                expect(err).to.be.an('object').eql(error);
+                setTimeout(done,100);
+                // done();
+            })
+    });
+
     it('insert customers', function (done) {
         $.getJSON("test/static/Customers.json", function (results) {
             con.insert({
