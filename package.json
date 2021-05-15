@@ -68,12 +68,11 @@
     "uglify-js": "^3.4.9",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.11",
-    "webpack-merge": "^4.2.2"
-  },
-  "displayName": "JsStore",
-  "dependencies": {
+    "webpack-merge": "^4.2.2",
     "karma-firefox-launcher": "^2.1.0"
   },
+  "displayName": "JsStore",
+  "dependencies": {},
   "collective": {
     "type": "opencollective",
     "url": "https://opencollective.com/JsStore"

@@ -39,6 +39,7 @@ describe('Db upgrade Test', function () {
 
     it('open db with old version', function (done) {
         connection.openDb("DbUpdateTest").catch(function (err) {
+            console.error(JSON.stringify(err));
             const expected = {
                 "message": "The requested version (1) is less than the existing version (2).",
                 "type": "VersionError"
