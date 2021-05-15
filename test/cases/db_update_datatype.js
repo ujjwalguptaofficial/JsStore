@@ -1,7 +1,7 @@
 describe('Db Update data type Test', function () {
     it('terminate connection', function (done) {
         con.terminate().then(function () {
-            con = new JsStore.Instance();
+            con = new JsStore.Connection();
             done();
         }).catch(function (error) {
             done(error);
@@ -25,10 +25,12 @@ describe('Db Update data type Test', function () {
     });
 
     it('getDbSchema', function (done) {
-        con.getDbSchema("DbUpdateTest").then(function (schema) {
+        con.openDb("DbUpdateTest").then(function (schema) {
             const processIdColumn = schema.tables[0].columns[1];
             expect(processIdColumn.name).to.equal("process_id");
             expect(processIdColumn.dataType).to.equal("number");
+            expect(schema.tables[0].version).equal(1)
+            expect(schema.version).equal(1);
             done();
         }).catch(function (err) {
             done(err);
@@ -46,10 +48,12 @@ describe('Db Update data type Test', function () {
     });
 
     it('getDbSchema after updating db', function (done) {
-        con.getDbSchema("DbUpdateTest").then(function (schema) {
+        con.openDb("DbUpdateTest").then(function (schema) {
             const processIdColumn = schema.tables[0].columns[1];
             expect(processIdColumn.name).to.equal("process_id");
             expect(processIdColumn.dataType).to.equal("string");
+            expect(schema.tables[0].version).equal(2);
+            expect(schema.version).equal(2);
             done();
         }).catch(function (err) {
             done(err);

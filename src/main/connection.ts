@@ -1,30 +1,14 @@
 import { ConnectionHelper } from "./connection_helper";
 import {
     SelectQuery, CountQuery, InsertQuery, SetQuery,
-    UpdateQuery, RemoveQuery, DbInfo, TranscationQuery,
-    API, IDataBase, EVENT, IPlugin, IntersectQuery
-} from "../common/index";
-import { Config } from "./config";
+    UpdateQuery, RemoveQuery, TranscationQuery,
+    API, IDataBase, EVENT, IPlugin, IntersectQuery, IDbInfo
+} from "../common";
 
 export class Connection extends ConnectionHelper {
 
     constructor(worker?: Worker) {
         super(worker);
-    }
-
-    /**
-     * open database
-     *
-     * @param {string} dbName
-     * @returns
-     * @memberof Connection
-     */
-    openDb(dbName: string) {
-        this.activeDbName = dbName;
-        return this.pushApi<null>({
-            name: API.OpenDb,
-            query: dbName
-        });
     }
 
     /**
@@ -35,7 +19,7 @@ export class Connection extends ConnectionHelper {
      * @memberof Connection
      */
     initDb(dataBase: IDataBase) {
-        this.activeDbName = dataBase.name;
+        this.database = dataBase;
         return this.pushApi<boolean>({
             name: API.InitDb,
             query: dataBase
@@ -146,39 +130,31 @@ export class Connection extends ConnectionHelper {
      * @param {boolean} status
      * @memberof Connection
      */
-    setLogStatus(status: boolean) {
-        Config.isLogEnabled = status ? status : Config.isLogEnabled;
+    set logStatus(status: boolean) {
+        this.logger.status = status;
         this.pushApi({
             name: API.ChangeLogStatus,
-            query: Config.isLogEnabled
+            query: status
         });
     }
 
     /**
-     * get version of database
+     * open database
      *
-     * @param {(string | DbInfo)} dbName
+     * @param {string} dbName
      * @returns
      * @memberof Connection
      */
-    getDbVersion(dbName: string | DbInfo) {
-        return this.pushApi<number>({
-            name: API.GetDbVersion,
-            query: dbName
-        });
-    }
-
-    /**
-     * is database exist
-     *
-     * @param {(DbInfo | string)} dbInfo
-     * @returns
-     * @memberof Connection
-     */
-    isDbExist(dbInfo: DbInfo | string) {
-        return this.pushApi<boolean>({
-            name: API.IsDbExist,
-            query: dbInfo
+    openDb(dbName: string, version?) {
+        return this.pushApi<IDataBase>({
+            name: API.OpenDb,
+            query: {
+                version: version,
+                name: dbName
+            } as IDbInfo
+        }).then((dataBase) => {
+            this.database = dataBase;
+            return dataBase;
         });
     }
 
@@ -188,25 +164,9 @@ export class Connection extends ConnectionHelper {
      * @returns
      * @memberof Connection
      */
-    getDbList() {
-        return this.pushApi<string[]>({
-            name: API.GetDbList,
-            query: null
-        });
-    }
-
-    /**
-     * get Database Schema
-     *
-     * @param {string} dbName
-     * @returns
-     * @memberof Connection
-     */
-    getDbSchema(dbName: string) {
-        return this.pushApi<IDataBase>({
-            name: API.GetDbSchema,
-            query: dbName
-        });
+    getDbList(): Promise<[IDbInfo]> {
+        console.warn("Api getDbList is recommended to use for debugging only. Do not use in code.");
+        return (indexedDB as any).databases();
     }
 
     /**
@@ -240,7 +200,7 @@ export class Connection extends ConnectionHelper {
             } as SetQuery
         });
     }
-    
+
     /**
      * terminate the connection
      *
@@ -276,13 +236,19 @@ export class Connection extends ConnectionHelper {
     }
 
     off(event: EVENT, eventCallBack: Function) {
-        const indexes = this.eventQueue.map((ev, i) => {
+        if (eventCallBack) {
+            const index = this.eventQueue.findIndex(q => q.event === event);
+            this.eventQueue.splice(index, 0);
+            return;
+        }
+        const indexes = [];
+        this.eventQueue.forEach((ev, i) => {
             if (ev.event === event) {
-                return i;
+                indexes.push(i);
             }
         });
         indexes.forEach(i => {
-            this.eventQueue.splice(i, 0);
+            this.eventQueue.splice(i, 1);
         });
     }
 

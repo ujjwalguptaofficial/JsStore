@@ -1,4 +1,3 @@
-var conWithoutWorker;
 describe('Db Test', function () {
 
     // it('drop db employee_db', function (done) {
@@ -8,6 +7,10 @@ describe('Db Test', function () {
     //         }).catch(done);
     //     }).catch(done);
     // });
+
+    if (!GetBrowserName().match(/chrome/i)) {
+        return;
+    }
 
     it('getDbList api test', function (done) {
         con.getDbList().then(function (result) {
@@ -22,6 +25,7 @@ describe('Db Test', function () {
         con.dropDb().then(function () {
             con.getDbList().then(function (result) {
                 console.log(result);
+                result = result.map(q => q.name);
                 expect(result).to.be.an('array').to.deep.equal(['Demo', 'employee_db', 'shop']);
                 done();
             }).catch(function (err) {
@@ -52,6 +56,7 @@ describe('Db Test', function () {
 
     it('getDbList api test after dropping demo', function (done) {
         con.getDbList().then(function (result) {
+            result = result.map(q => q.name);
             expect(result).to.be.an('array').to.deep.equal(['employee_db', 'shop']);
             done();
         }).catch(function (err) {
@@ -70,6 +75,7 @@ describe('Db Test', function () {
 
     it('getDbList api test after dropping pinCodeDetails', function (done) {
         con.getDbList().then(function (result) {
+            result = result.map(q => q.name);
             expect(result).to.be.an('array').to.deep.equal(['employee_db']);
             done();
         }).catch(function (err) {
@@ -79,7 +85,7 @@ describe('Db Test', function () {
 
     it('terminate test', function (done) {
         con.terminate().then(function () {
-            if (con.isDbOpened_ === false) {
+            if (con.isConOpened_ === false) {
                 done();
             } else {
                 done('db is opened after terminate');

@@ -1,13 +1,13 @@
 
 import { ERROR_TYPE, IError } from "../common/index";
-import { Config } from "./config";
 
 export class LogHelper implements IError {
     type: ERROR_TYPE;
     message: string;
     private _info: any;
+    status: boolean;
 
-    constructor(type: ERROR_TYPE, info: any = null) {
+    constructor(type: ERROR_TYPE, info?) {
         this.type = type;
         this._info = info;
         this.message = this.getMsg();
@@ -17,8 +17,8 @@ export class LogHelper implements IError {
         throw this.get();
     }
 
-    static log(msg) {
-        if (Config.isLogEnabled) {
+    log(msg) {
+        if (this.status) {
             console.log(msg);
         }
     }
@@ -41,12 +41,6 @@ export class LogHelper implements IError {
     private getMsg() {
         let errMsg: string;
         switch (this.type) {
-            case ERROR_TYPE.WorkerNotSupplied:
-                errMsg = "Worker object is not passed in instance constructor";
-                break;
-            case ERROR_TYPE.IndexedDbUndefined:
-                errMsg = "Browser does not support indexeddb";
-                break;
             default:
                 errMsg = this.message;
                 break;

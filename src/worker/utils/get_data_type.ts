@@ -1,4 +1,4 @@
-import { DATA_TYPE } from "../../common/index";
+import { DATA_TYPE } from "@/common";
 
 export const getDataType = (value) => {
     if (value == null) {

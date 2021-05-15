@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
+        "baseUrl": "../",
         "noImplicitAny": false,
-        "noEmitOnError": true,
+        "noEmitOnError": false,
         "removeComments": false,
         "sourceMap": true,
         "inlineSources": true,
@@ -9,14 +10,21 @@
         "target": "es5",
         "preserveConstEnums": true,
         "declaration": true,
-        "module": "es6",
+        "module": "ESNext",
         "outDir": "../build/ts",
         "lib": [
             "es2015",
             "dom",
-            "webworker"
+            "webworker",
+            "ES5",
+            "ES6"
         ],
-        "moduleResolution": "Node"
+        "moduleResolution": "node",
+        "paths": {
+            "@/*": ["./src/*"],
+            "@worker/*": ["./src/worker/*"],
+            "@executors/*": ["./src/worker/executors/*"]
+        }
     },
     "exclude": [
         "node_namespaces",

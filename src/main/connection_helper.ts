@@ -1,12 +1,14 @@
 import { LogHelper } from "./log_helper";
-import { Config } from "./config";
-import { WebWorkerRequest, EventQueue, API, WebWorkerResult, EVENT } from "../common/index";
+import {
+  WebWorkerRequest, EventQueue, API, WebWorkerResult,
+  EVENT, promise, IDataBase, IDbInfo
+} from "../common";
 
 declare var JsStoreWorker;
 export class ConnectionHelper {
-  protected activeDbName: string;
+  protected database: IDataBase;
   private worker_: Worker;
-  private isDbOpened_ = false;
+  private isConOpened_ = false;
   private isDbIdle_ = true;
   private requestQueue_: WebWorkerRequest[] = [];
   private isCodeExecuting_ = false;
@@ -20,43 +22,34 @@ export class ConnectionHelper {
   // these apis have special permissions. These apis dont wait for database open.
   private whiteListApi_ = [
     API.InitDb,
-    API.IsDbExist,
-    API.GetDbVersion,
-    API.GetDbList,
     API.OpenDb,
-    API.GetDbSchema,
     API.Get,
     API.Set,
     API.ChangeLogStatus,
     API.Terminate,
-    API.InitKeyStore
+    API.DropDb
   ];
+
+  queryManager;
+
+  isRuningInWorker = true;
+
+  logger = new LogHelper(null);
+
+  private $worker;
+
+  get jsstoreWorker() {
+    return this.$worker || JsStoreWorker;
+  }
 
   constructor(worker?: Worker) {
     if (worker) {
       this.worker_ = worker;
       this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
     } else {
-      Config.isRuningInWorker = false;
+      this.isRuningInWorker = false;
+      this.queryManager = new this.jsstoreWorker.QueryManager(this.processFinishedQuery_.bind(this));
     }
-  }
-
-  private initKeyStore_() {
-    if (Config.isRuningInWorker) {
-      this.prcoessExecutionOfQry_({
-        name: API.InitKeyStore,
-        onSuccess: function () {
-
-        },
-        onError: function (err) {
-          console.error(err);
-        }
-      }, 0);
-    }
-    else {
-      JsStoreWorker.KeyStore.init();
-    }
-
   }
 
   private onMessageFromWorker_(msg) {
@@ -67,19 +60,24 @@ export class ConnectionHelper {
 
     const finishedRequest: WebWorkerRequest = this.requestQueue_.shift();
     if (finishedRequest) {
-      LogHelper.log(`request ${finishedRequest.name} finished`);
-      if (message.errorOccured) {
-        finishedRequest.onError(message.errorDetails);
+      this.logger.log(`request ${finishedRequest.name} finished`);
+      if (message.error) {
+        finishedRequest.onError(message.error);
       } else {
         switch (finishedRequest.name) {
           case API.OpenDb:
           case API.InitDb:
-            this.isDbOpened_ = true; break;
+            this.isConOpened_ = true; break;
           case API.Terminate:
-            this.isDbOpened_ = false;
-            if (Config.isRuningInWorker === true) {
+            this.isConOpened_ = false;
+            if (this.isRuningInWorker === true) {
               this.worker_.terminate();
             }
+            break;
+          case API.DropDb:
+            this.isConOpened_ = false;
+            this.requestQueue_ = [];
+            this.isDbIdle_ = true;
             break;
           case API.CloseDb:
             if (this.requestQueue_.length > 0) {
@@ -91,7 +89,7 @@ export class ConnectionHelper {
             }
             break;
         }
-        finishedRequest.onSuccess(message.returnedValue);
+        finishedRequest.onSuccess(message.result);
       }
       this.isCodeExecuting_ = false;
       this.executeQry_();
@@ -99,10 +97,12 @@ export class ConnectionHelper {
   }
 
   private openDb_() {
-    this.initKeyStore_();
     this.prcoessExecutionOfQry_({
       name: API.OpenDb,
-      query: this.activeDbName,
+      query: {
+        name: this.database.name,
+        version: this.database.version
+      } as IDbInfo,
       onSuccess: function () {
 
       },
@@ -113,7 +113,7 @@ export class ConnectionHelper {
   }
 
   private executeMiddleware_(input: WebWorkerRequest) {
-    return new Promise((res) => {
+    return promise<void>((res) => {
       let index = 0;
       const lastIndex = this.middlewares.length - 1;
       const callNextMiddleware = () => {
@@ -135,12 +135,12 @@ export class ConnectionHelper {
         request.onError = reject;
         if (this.requestQueue_.length === 0) {
           this.callEvent(EVENT.RequestQueueFilled, []);
-          if (this.isDbIdle_ === true && this.isDbOpened_ === true) {
+          const isConnectionApi = [API.CloseDb, API.DropDb, API.OpenDb].indexOf(request.name) >= 0;
+          if (!isConnectionApi && this.isDbIdle_ && this.isConOpened_) {
             this.openDb_();
           }
           else {
             clearTimeout(this.inactivityTimer_);
-            this.initKeyStore_();
           }
         }
         this.prcoessExecutionOfQry_(request);
@@ -156,14 +156,14 @@ export class ConnectionHelper {
     else {
       this.requestQueue_.push(request);
     }
-    LogHelper.log("request pushed: " + request.name);
+    this.logger.log("request pushed: " + request.name);
     this.executeQry_();
   }
 
   private executeQry_() {
     const requestQueueLength = this.requestQueue_.length;
     if (!this.isCodeExecuting_ && requestQueueLength > 0) {
-      if (this.isDbOpened_ === true) {
+      if (this.isConOpened_ === true) {
         this.sendRequestToWorker_(this.requestQueue_[0]);
         return;
       }
@@ -182,7 +182,7 @@ export class ConnectionHelper {
         this.sendRequestToWorker_(this.requestQueue_[0]);
       }
     }
-    else if (requestQueueLength === 0 && this.isDbIdle_ === false && this.isDbOpened_) {
+    else if (requestQueueLength === 0 && this.isDbIdle_ === false && this.isConOpened_) {
       this.inactivityTimer_ = setTimeout(() => {
         this.prcoessExecutionOfQry_({
           name: API.CloseDb,
@@ -203,13 +203,12 @@ export class ConnectionHelper {
       name: request.name,
       query: request.query
     } as WebWorkerRequest;
-    if (Config.isRuningInWorker === true) {
+    if (this.isRuningInWorker === true) {
       this.worker_.postMessage(requestForWorker);
     }
     else {
-      new JsStoreWorker.QueryExecutor(this.processFinishedQuery_.bind(this)).checkConnectionAndExecuteLogic(requestForWorker);
+      this.queryManager.run(requestForWorker);
     }
-
   }
 
   private callEvent(event: EVENT, args: any[]) {

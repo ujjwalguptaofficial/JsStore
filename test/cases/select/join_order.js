@@ -127,7 +127,12 @@ describe('select join order test', function () {
             }
             else {
                 var error = { "message": "Cannot read property 'columns' of undefined", "type": "invalid_order_query" };
-                expect(error).to.be.eql(err);
+                if (GetBrowserName().match(/chrome/i)) {
+                    expect(error).to.be.eql(err);
+                }
+                else {
+                    expect(err.type).to.be.eql(error.type);
+                }
             }
             done();
         })

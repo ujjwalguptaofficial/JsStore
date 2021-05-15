@@ -1,7 +1,7 @@
 describe('Multi Entry Test', function () {
     it('terminate connection', function (done) {
         con.terminate().then(function () {
-            con = new JsStore.Instance();
+            con = new JsStore.Connection();
             done();
         }).catch(function (error) {
             done(error);
@@ -92,21 +92,12 @@ describe('Multi Entry Test', function () {
     });
 
     it('change db with multientry column', function (done) {
-        con.isDbExist({
-            dbName: 'MultiEntryTest',
-            table: {
-                name: 'person',
-                version: 2
-            }
-        }).then(function (isExist) {
-            expect(isExist).to.be.an('boolean').equal(false);
-            var db = MultiEntryTest.getDbSchema();
-            db.tables[0].version = 2;
-            db.tables[0].columns[Object.keys(db.tables[0].columns)[1]].multiEntry = true;
-            con.initDb(db).then(function (isDbCreated) {
-                expect(isDbCreated).to.be.an('boolean').equal(true);
-                done();
-            })
+        var db = MultiEntryTest.getDbSchema();
+        db.tables[0].version = 2;
+        db.tables[0].columns[Object.keys(db.tables[0].columns)[1]].multiEntry = true;
+        con.initDb(db).then(function (isDbCreated) {
+            expect(isDbCreated).to.be.an('boolean').equal(true);
+            done();
         }).catch(function (err) {
             done(err);
         });

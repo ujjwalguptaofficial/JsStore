@@ -306,7 +306,8 @@ describe('Test join', function () {
             }
             else {
                 var error = {
-                    "message": "on value should contains value of with", "type": "invalid_join_query"
+                    "message": "on value should contains value of with",
+                    "type": "invalid_join_query"
                 }
                 expect(err).to.eql(error);
             }

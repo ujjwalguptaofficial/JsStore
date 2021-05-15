@@ -22,6 +22,12 @@ module.exports = function (config) {
         logLevel: config.LOG_INFO,
         browsers: ['HeadlessChrome'],
         customLaunchers: {
+            HeadlessFireFox: {
+                base: 'Firefox',
+                flags: [
+                    '-headless'
+                ]
+            },
             HeadlessChrome: {
                 base: 'ChromeHeadless',
                 flags: [

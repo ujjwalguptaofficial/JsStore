@@ -66,7 +66,7 @@ var getDemoDbSchema = function () {
             orderId: { primaryKey: true },
             customerId: { notNull: true },
             employeeId: { notNull: true, dataType: 'number' },
-            orderDate: { notNull: true, dataType: 'string' },
+            orderDate: { notNull: true, dataType: 'date_time' },
             shipperId: { notNull: true, dataType: 'number' }
         }
     }

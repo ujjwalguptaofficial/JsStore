@@ -16,6 +16,10 @@ module.exports = [{
         }]
     },
     resolve: {
+        // alias: {
+        //     "@": path.resolve(__dirname, "../src"),
+        //     "@worker": path.resolve(__dirname, "../src/worker")
+        // },
         extensions: ['.ts'] // '' is needed to find modules like "jquery"
     },
     plugins: [
@@ -40,6 +44,11 @@ module.exports = [{
         }]
     },
     resolve: {
+        alias: {
+            "@": path.resolve(__dirname, "../src"),
+            "@worker": path.resolve(__dirname, "../src/worker"),
+            "@executors": path.resolve(__dirname, "../src/worker/executors")
+        },
         extensions: ['.ts'] // '' is needed to find modules like "jquery"
     },
     plugins: [

@@ -8,7 +8,7 @@ describe('keyPath test', function () {
         it('terminate connection', function (done) {
             con.terminate().then(function () {
                 console.log('terminated');
-                con = new JsStore.Instance();
+                con = new JsStore.Connection();
                 done();
             }).catch(function (error) {
                 done(error);

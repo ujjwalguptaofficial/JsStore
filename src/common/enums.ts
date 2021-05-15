@@ -1,6 +1,4 @@
 export enum ERROR_TYPE {
-    WorkerNotSupplied = "worker_not_supplied",
-    IndexedDbUndefined = "indexeddb_undefined",
     UndefinedColumn = "undefined_column",
     UndefinedValue = "undefined_value",
     UndefinedColumnName = "undefined_column_name",
@@ -28,6 +26,7 @@ export enum ERROR_TYPE {
     InvalidGroupQuery = 'invalid_group_query',
     ImportScriptsFailed = 'import_scripts_failed',
     MethodNotExist = 'method_not_exist',
+    Unknown = "unknown"
 }
 
 export enum WORKER_STATUS {
@@ -48,16 +47,12 @@ export enum DATA_TYPE {
 
 export enum API {
     InitDb = "init_db",
-    IsDbExist = "is_db_exist",
-    GetDbVersion = "get_db_version",
-    GetDbList = "get_db_list",
     Get = "get",
     Set = "set",
     Select = "select",
     Insert = "insert",
     Update = "update",
     Remove = "remove",
-    GetDbSchema = "get_db_schema",
     OpenDb = "open_db",
     Clear = "clear",
     DropDb = "drop_db",
@@ -65,7 +60,6 @@ export enum API {
     ChangeLogStatus = "change_log_status",
     Terminate = "terminate",
     Transaction = "transaction",
-    InitKeyStore = "init_keystore",
     CloseDb = "close_db",
     Union = "union",
     Intersect = "intersect",

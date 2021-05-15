@@ -9,13 +9,15 @@ export interface IError {
 export interface IDataBase {
     name: string;
     tables: ITable[];
+    version?: number;
 }
 
+export type TColumns = {
+    [columnName: string]: IColumnOption
+};
 export interface ITable {
     name: string;
-    columns: {
-        [columnName: string]: IColumnOption
-    };
+    columns: TColumns;
     version?: number;
 }
 
@@ -43,4 +45,9 @@ export interface IDbStatus {
 
 export interface IPlugin {
     setup: (connection, params) => any | void;
+}
+
+export interface IDbInfo {
+    name: string;
+    version: number;
 }

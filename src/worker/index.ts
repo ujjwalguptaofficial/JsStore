@@ -1,4 +1,11 @@
-export * from './query_executor';
-export * from './start';
-export * from './config';
-export * from './keystore/instance';
+import { QueryManager } from "@/worker/query_manager";
+import { IS_WORKER } from "./constants";
+export * from "./query_manager";
+
+if (IS_WORKER) {
+    const manager = new QueryManager();
+    (self as any).onmessage = function (e) {
+        manager.run(e.data);
+    };
+}
+
