@@ -27,6 +27,7 @@ module.exports = [{
         new CopyPlugin({
             patterns: [
                 { from: 'build_helper', to: '' },
+                { from: 'src/worker_injector', to: 'worker_injector' },
             ],
         }),
     ]

@@ -30,16 +30,16 @@ export class ConnectionHelper {
     API.DropDb
   ];
 
-  queryManager;
+  private queryManager;
 
   isRuningInWorker = true;
 
-  logger = new LogHelper(null);
+  protected logger = new LogHelper(null);
 
   private $worker;
 
-  get jsstoreWorker() {
-    return this.$worker || JsStoreWorker;
+  private get jsstoreWorker() {
+    return this.$worker || window['JsStoreWorker'];
   }
 
   constructor(worker?: Worker) {
@@ -48,7 +48,14 @@ export class ConnectionHelper {
       this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
     } else {
       this.isRuningInWorker = false;
-      this.queryManager = new this.jsstoreWorker.QueryManager(this.processFinishedQuery_.bind(this));
+      this.initQueryManager_();
+    }
+  }
+
+  private initQueryManager_() {
+    const workerRef = this.jsstoreWorker;
+    if (workerRef) {
+      this.queryManager = new workerRef.QueryManager(this.processFinishedQuery_.bind(this));
     }
   }
 
