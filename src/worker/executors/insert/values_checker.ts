@@ -1,5 +1,5 @@
 import { TableMeta } from "@/worker/model/table_meta";
-import { promise, IColumnOption, TStringAny, ERROR_TYPE, DATA_TYPE } from "@/common";
+import { promise, IColumnOption, TStringAny, ERROR_TYPE, DATA_TYPE, InsertQuery } from "@/common";
 import { IColumn } from "@/worker/interfaces";
 import { getDataType, LogHelper, isNull } from "@/worker/utils";
 
@@ -7,14 +7,17 @@ import { getDataType, LogHelper, isNull } from "@/worker/utils";
 export class ValuesChecker {
     table: TableMeta;
     autoIncrementValue;
+    query: InsertQuery;
 
     constructor(table: TableMeta, autoIncValues) {
         this.table = table;
         this.autoIncrementValue = autoIncValues;
     }
 
-    checkAndModifyValues(values: object[]) {
+    checkAndModifyValues(query: InsertQuery) {
         let err: LogHelper;
+        this.query = query;
+        const values = query.values;
         values.every((item) => {
             err = this.checkAndModifyValue(item);
             return err ? false : true;
@@ -65,7 +68,10 @@ export class ValuesChecker {
         else if (column.default !== undefined && isNull(columnValue)) {
             value[column.name] = column.default;
         }
-        return this.checkNotNullAndDataType_(column, value);
+        const query = this.query;
+        if (!(query.ignore || query.skipDataCheck)) {
+            return this.checkNotNullAndDataType_(column, value);
+        }
     }
 
     private getError(error: ERROR_TYPE, details: object) {

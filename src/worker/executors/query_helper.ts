@@ -140,16 +140,11 @@ export class QueryHelper {
     private checkInsertQuery(query: InsertQuery) {
         const validResult = this.isInsertQryValid_(query);
         let table = validResult.table;
-        const err = validResult.log;
-        if (err) return err;
-        if (query.skipDataCheck) {
-            return;
-        }
-        else {
-            const valueCheckerInstance = new ValuesChecker(table, table.autoIncColumnValue);
-            const { values, err } = valueCheckerInstance.checkAndModifyValues(query.values);
-            query.values = values;
-            return err;
-        }
+        const error = validResult.log;
+        if (error) return error;
+        const valueCheckerInstance = new ValuesChecker(table, table.autoIncColumnValue);
+        const { values, err } = valueCheckerInstance.checkAndModifyValues(query);
+        query.values = values;
+        return err;
     }
 }

@@ -37,7 +37,8 @@ export class Insert extends Base {
         let onInsertData;
         let addMethod;
 
-        if (this.query.return) {
+        const query = this.query;
+        if (query.return) {
             onInsertData = (value) => {
                 this.valuesAffected_.push(value);
             };
@@ -48,7 +49,7 @@ export class Insert extends Base {
                 ++this.rowAffected;
             };
         }
-        if (this.query.upsert) {
+        if (query.upsert) {
             addMethod = (value) => {
                 return objectStore.put(value);
             };
@@ -61,16 +62,22 @@ export class Insert extends Base {
 
         if (!this.isTxQuery) {
             this.util.createTransaction(
-                [this.query.into, MetaHelper.tableName],
+                [query.into, MetaHelper.tableName],
             )
         }
         objectStore = this.util.objectStore(this.tableName);
 
         return promiseAll(
-            this.query.values.map(function (value) {
+            query.values.map(function (value) {
                 return promise(function (res, rej) {
                     const addResult = addMethod(value);
-                    addResult.onerror = rej;
+                    addResult.onerror = (err) => {
+                        if (!query.ignore) {
+                            rej(err);
+                        } else {
+                            res();
+                        }
+                    }
                     addResult.onsuccess = function () {
                         onInsertData(value);
                         res();

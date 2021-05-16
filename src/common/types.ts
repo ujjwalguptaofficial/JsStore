@@ -124,6 +124,7 @@ export type InsertQuery = {
     return?: boolean;
     skipDataCheck?: boolean;
     upsert?: boolean;
+    ignore?: boolean;
 };
 
 export type WebWorkerResult = {
