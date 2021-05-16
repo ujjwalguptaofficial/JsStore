@@ -1,0 +1,13 @@
+contact_links:
+  - name: Question 🙋
+    url: https://github.com/ujjwalguptaofficial/JsStore/discussions/categories/q-a
+    about: Ask your question in JsStore Discussions
+  - name: Show & Tell ⚡
+    url: https://github.com/ujjwalguptaofficial/JsStore/discussions/categories/show-and-tell
+    about: Show everyone what you have made. This will motivate other users & authors.
+  - name: Ideas
+    url: https://github.com/ujjwalguptaofficial/JsStore/discussions/categories/ideas
+    about: Have some idea, let's discuss.
+  - name: Share article, news or general talk 
+    url: https://github.com/ujjwalguptaofficial/JsStore/discussions/categories/general
+    about: Share anything with us. It might be an article, news or anything which is beneficial for community.
