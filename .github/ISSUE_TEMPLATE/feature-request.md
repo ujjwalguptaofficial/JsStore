@@ -1,6 +1,6 @@
 ---
 name: "Feature request \U0001F680"
-about: Suggest an idea for JsStore
+about: Suggest a feature for JsStore
 
 ---
 
