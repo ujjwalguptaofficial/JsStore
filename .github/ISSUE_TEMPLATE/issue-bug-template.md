@@ -1,14 +1,18 @@
 ---
-name: issue/bug template
-about: Use this template to add an issue
+name: Bug report 🐞
+about: File a report to help us improve
 title: ''
 labels: ''
 assignees: ujjwalguptaofficial
 
 ---
 
-# Title // Add your title here
+# Title 
 
-# Description // Add your description here
+// Add your title here
+
+# Description 
+
+// Add your description here
 
 Note: Description should contains the query, the current output & the expected output. You can use idbstudio to generate the example.
