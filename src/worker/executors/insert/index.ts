@@ -1,5 +1,5 @@
 export * from "./values_checker";
-import { InsertQuery, promise, promiseAll, TStringAny, API } from "@/common";
+import { InsertQuery, promise, promiseAll, TStringAny, API, IDB_MODE } from "@/common";
 import { Base } from "@worker/executors/base";
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@worker/executors/query_helper";
@@ -33,7 +33,6 @@ export class Insert extends Base {
 
     private insertData_(db: DbMeta) {
 
-        let objectStore: IDBObjectStore;
         let onInsertData;
         let addMethod;
 
@@ -49,33 +48,38 @@ export class Insert extends Base {
                 ++this.rowAffected;
             };
         }
-        if (query.upsert) {
-            addMethod = (value) => {
-                return objectStore.put(value);
-            };
-        }
-        else {
-            addMethod = (value) => {
-                return objectStore.add(value);
-            };
-        }
+        addMethod = (() => {
+            const idbMethod = query.upsert ? "put" : "add";
+            if (query.ignore) {
+                return (value) => {
+                    const tx = this.util.con.transaction(query.into, IDB_MODE.ReadWrite);
+                    const objectStore = tx.objectStore(query.into);
+                    return objectStore[idbMethod](value);
+                };
+            }
+            else {
+                if (!this.isTxQuery) {
+                    this.util.createTransaction(
+                        [query.into, MetaHelper.tableName],
+                    )
+                }
+                this.objectStore = this.util.objectStore(this.tableName);
+                return (value) => {
+                    return this.objectStore[idbMethod](value);
+                };
+            }
 
-        if (!this.isTxQuery) {
-            this.util.createTransaction(
-                [query.into, MetaHelper.tableName],
-            )
-        }
-        objectStore = this.util.objectStore(this.tableName);
+        })();
 
         return promiseAll(
-            query.values.map(function (value) {
-                return promise(function (res, rej) {
+            query.values.map((value) => {
+                return promise((res, rej) => {
                     const addResult = addMethod(value);
                     addResult.onerror = (err) => {
-                        if (!query.ignore) {
-                            rej(err);
-                        } else {
+                        if (query.ignore) {
                             res();
+                        } else {
+                            rej(err);
                         }
                     }
                     addResult.onsuccess = function () {

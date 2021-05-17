@@ -71,6 +71,26 @@ describe('Insert ignore', function () {
         })
     })
 
+    it('insert data with ignore & duplicate primarykey, valid data', function () {
+
+        return connection.insert({
+            into: "Categories",
+            ignore: true,
+            values: [{
+                id: 1,
+                categoryName: "Beverages",
+                description: "Soft drinks, coffees, teas, beers, and ales"
+            },
+            {
+                categoryName: "Condiments",
+                description: "Sweet and savory sauces, relishes, spreads, and seasonings"
+            },
+            ]
+        }).then(result => {
+            expect(result).to.equal(1);
+        })
+    })
+
 
     it('drop db', function () {
         return connection.dropDb();

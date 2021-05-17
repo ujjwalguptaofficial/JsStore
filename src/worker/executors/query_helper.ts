@@ -28,7 +28,7 @@ export class QueryHelper {
         return this.db.tables.find(q => q.name === tableName);
     }
 
-    private isInsertQryValid_(query: InsertQuery) {
+    isInsertQryValid(query: InsertQuery) {
         const table = this.getTable_(query.into);
         let log: LogHelper;
         if (table) {
@@ -138,7 +138,7 @@ export class QueryHelper {
     }
 
     private checkInsertQuery(query: InsertQuery) {
-        const validResult = this.isInsertQryValid_(query);
+        const validResult = this.isInsertQryValid(query);
         let table = validResult.table;
         const error = validResult.log;
         if (error) return error;
