@@ -76,18 +76,67 @@ describe('Insert ignore', function () {
         return connection.insert({
             into: "Categories",
             ignore: true,
-            values: [{
-                id: 1,
-                categoryName: "Beverages",
-                description: "Soft drinks, coffees, teas, beers, and ales"
-            },
-            {
-                categoryName: "Condiments",
-                description: "Sweet and savory sauces, relishes, spreads, and seasonings"
-            },
+            values: [
+                {
+                    id: 1,
+                    categoryName: "Beverages",
+                    description: "Soft drinks, coffees, teas, beers, and ales"
+                },
+                {
+                    categoryName: "Condiments",
+                    description: "Sweet and savory sauces, relishes, spreads, and seasonings"
+                },
             ]
         }).then(result => {
             expect(result).to.equal(1);
+        })
+    })
+
+    it('insert data  with null value in one column', function () {
+
+        return connection.insert({
+            into: "Categories",
+            ignore: true,
+            values: [{
+                categoryName: null,
+                description: "Soft drinks, coffees, teas, beers, and ales"
+            },
+            {
+                categoryName: "Dairy Products",
+                description: "Cheeses"
+            }
+            ]
+        }).then(result => {
+            expect(result).to.equal(1);
+        })
+    })
+
+    it('insert data  with random error', function () {
+
+        return connection.insert({
+            into: "Categories",
+            ignore: true,
+            values: [
+                {
+                    categoryName: null,
+                    description: "Soft drinks, coffees, teas, beers, and ales"
+                },
+                {
+                    categoryName: "Dairy Products",
+                    description: "Cheeses"
+                },
+                {
+                    id: 1,
+                    categoryName: "Beverages",
+                    description: "Soft drinks, coffees, teas, beers, and ales"
+                },
+                {
+                    categoryName: "Condiments",
+                    description: "Sweet and savory sauces, relishes, spreads, and seasonings"
+                },
+            ]
+        }).then(result => {
+            expect(result).to.equal(2);
         })
     })
 

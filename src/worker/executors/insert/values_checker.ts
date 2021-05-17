@@ -18,9 +18,17 @@ export class ValuesChecker {
         let err: LogHelper;
         this.query = query;
         const values = query.values;
-        values.every((item) => {
+        const ignoreIndexes = [];
+        values.every((item, index) => {
             err = this.checkAndModifyValue(item);
+            if (query.ignore && err) {
+                ignoreIndexes.push(index);
+                err = null;
+            }
             return err ? false : true;
+        });
+        ignoreIndexes.forEach(index => {
+            values.splice(index, 1);
         });
         return { err, values };
     }
@@ -69,7 +77,7 @@ export class ValuesChecker {
             value[column.name] = column.default;
         }
         const query = this.query;
-        if (!(query.ignore || query.skipDataCheck)) {
+        if (!query.skipDataCheck) {
             return this.checkNotNullAndDataType_(column, value);
         }
     }
