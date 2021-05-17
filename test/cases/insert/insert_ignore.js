@@ -46,7 +46,7 @@ describe('Insert ignore', function () {
 
         return connection.insert({
             into: "Categories",
-            skipDataCheck: true,
+            validation: false,
             values: [{
                 categoryName: "Beverages",
                 description: "Soft drinks, coffees, teas, beers, and ales"

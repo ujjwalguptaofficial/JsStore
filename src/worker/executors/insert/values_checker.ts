@@ -77,7 +77,7 @@ export class ValuesChecker {
             value[column.name] = column.default;
         }
         const query = this.query;
-        if (!query.skipDataCheck) {
+        if (query.validation) {
             return this.checkNotNullAndDataType_(column, value);
         }
     }

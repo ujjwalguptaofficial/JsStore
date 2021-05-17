@@ -142,6 +142,7 @@ export class QueryHelper {
         let table = validResult.table;
         const error = validResult.log;
         if (error) return error;
+        if (query.skipDataCheck) return;
         const valueCheckerInstance = new ValuesChecker(table, table.autoIncColumnValue);
         const { values, err } = valueCheckerInstance.checkAndModifyValues(query);
         query.values = values;

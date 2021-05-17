@@ -15,6 +15,9 @@ export class Insert extends Base {
 
     constructor(query: InsertQuery, util: IDBUtil) {
         super();
+        if (query.validation == null) {
+            query.validation = true;
+        }
         this.query = query;
         this.util = util;
         this.tableName = query.into;
