@@ -53,25 +53,22 @@ export class Insert extends Base {
         }
         addMethod = (() => {
             const idbMethod = query.upsert ? "put" : "add";
-            if (query.ignore) {
+            if (query.ignore && !this.isTxQuery) {
                 return (value) => {
                     const tx = this.util.con.transaction(query.into, IDB_MODE.ReadWrite);
                     const objectStore = tx.objectStore(query.into);
                     return objectStore[idbMethod](value);
                 };
             }
-            else {
-                if (!this.isTxQuery) {
-                    this.util.createTransaction(
-                        [query.into, MetaHelper.tableName],
-                    )
-                }
-                this.objectStore = this.util.objectStore(this.tableName);
-                return (value) => {
-                    return this.objectStore[idbMethod](value);
-                };
+            if (!this.isTxQuery) {
+                this.util.createTransaction(
+                    [query.into, MetaHelper.tableName],
+                )
             }
-
+            this.objectStore = this.util.objectStore(this.tableName);
+            return (value) => {
+                return this.objectStore[idbMethod](value);
+            };
         })();
 
         return promiseAll(

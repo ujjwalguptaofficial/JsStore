@@ -22,6 +22,8 @@ export class QueryManager {
 
     private onQryFinished;
 
+    protected logger = new LogHelper(null);
+
     constructor(fn?: (result: any) => void) {
         this.onQryFinished = IS_WORKER ? (result) => {
             self.postMessage(result);
@@ -30,30 +32,33 @@ export class QueryManager {
 
     run(request: WebWorkerRequest) {
         let queryResult: Promise<any>;
+        const query = request.query;
         switch (request.name) {
             case API.OpenDb:
-                queryResult = this.openDb(request.query);
+                queryResult = this.openDb(query);
                 break;
             case API.InitDb:
-                queryResult = this.initDb(request.query);
+                queryResult = this.initDb(query);
                 break;
             case API.CloseDb:
                 queryResult = this.closeDb();
                 break;
             case API.Insert:
-                queryResult = this.insert(request.query);
+                queryResult = new Insert(query, this.util).
+                    execute(this.db);
                 break;
             case API.Select:
-                queryResult = this.select(request.query);
+                queryResult = new Select(query, this.util).
+                    execute(this.db);
                 break;
             case API.Count:
-                queryResult = this.count(request.query);
+                queryResult = new Count(query, this.util).execute(this.db);
                 break;
             case API.Update:
-                queryResult = new Update(request.query, this.util).execute(this.db);
+                queryResult = new Update(query, this.util).execute(this.db);
                 break;
             case API.Intersect:
-                queryResult = new Intersect(request.query, this.util).execute(this.db);
+                queryResult = new Intersect(query, this.util).execute(this.db);
                 break;
             case API.DropDb:
                 queryResult = this.dropDb();
@@ -62,34 +67,29 @@ export class QueryManager {
                 queryResult = this.terminate();
                 break;
             case API.Union:
-                queryResult = new Union(request.query, this.util).execute(this.db);
+                queryResult = new Union(query, this.util).execute(this.db);
                 break;
             case API.Remove:
-                queryResult = new Remove(request.query, this.util).execute(this.db);
+                queryResult = new Remove(query, this.util).execute(this.db);
                 break;
             case API.Clear:
-                queryResult = new Clear(request.query, this.util).execute(this.db);
+                queryResult = new Clear(query, this.util).execute(this.db);
                 break;
             case API.Transaction:
-                queryResult = new Transaction(request.query, this.util).execute(this.db);
+                queryResult = new Transaction(query, this.util).execute(this.db);
                 break;
             case API.Get:
-                queryResult = MetaHelper.get(request.query as string, this.util);
+                queryResult = MetaHelper.get(query as string, this.util);
                 break;
             case API.Set:
-                const query = request.query as SetQuery;
                 queryResult = MetaHelper.set(query.key, query.value, this.util);
                 break;
             case API.ImportScripts:
-                queryResult = promise<void>((res, rej) => {
-                    try {
-                        importScripts(...request.query);
-                        res();
-                    } catch (e) {
-                        const err = new LogHelper(ERROR_TYPE.ImportScriptsFailed, e.message);
-                        rej(err);
-                    }
-                });
+                queryResult = this.importScripts_(request);
+                break;
+            case API.ChangeLogStatus:
+                this.logger.status = query;
+                queryResult = Promise.resolve();
                 break;
             default:
                 if (process.env.NODE_ENV === 'dev') {
@@ -97,6 +97,7 @@ export class QueryManager {
                 }
                 queryResult = Promise.resolve();
         }
+        this.logger.log(`Executing query ${request.name} in web worker`);
         queryResult.then((result) => {
             this.returnResult_({
                 result: result
@@ -110,7 +111,20 @@ export class QueryManager {
         });
     }
 
+    private importScripts_(request: WebWorkerRequest) {
+        return promise<void>((res, rej) => {
+            try {
+                importScripts(...request.query);
+                res();
+            } catch (e) {
+                const err = new LogHelper(ERROR_TYPE.ImportScriptsFailed, e.message);
+                rej(err);
+            }
+        });
+    }
+
     private returnResult_(result: WebWorkerResult) {
+        this.logger.log(`Query finished inside web worker`);
         if (this.util) {
             this.util.emptyTx();
         }
@@ -232,18 +246,7 @@ export class QueryManager {
         });
     }
 
-    insert(query: InsertQuery) {
-        const insert = new Insert(query, this.util);
-        return insert.execute(this.db);
-    }
 
-    select(query: SelectQuery) {
-        const select = new Select(query, this.util);
-        return select.execute(this.db);
-    }
 
-    count(query: CountQuery) {
-        const count = new Count(query, this.util);
-        return count.execute(this.db);
-    }
+
 }

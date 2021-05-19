@@ -5,7 +5,15 @@ export class LogHelper implements IError {
     message: string;
     private info_: any;
 
-    constructor(type: ERROR_TYPE, info: any = null) {
+    status: boolean;
+
+    log(msg) {
+        if (this.status) {
+            console.log(msg);
+        }
+    }
+
+    constructor(type: ERROR_TYPE, info?) {
         this.type = type;
         this.info_ = info;
         this.message = this.getMsg_();
@@ -15,9 +23,6 @@ export class LogHelper implements IError {
         throw this.get();
     }
 
-    log(msg) {
-        console.log(msg);
-    }
 
     logError() {
         console.error(this.get());
