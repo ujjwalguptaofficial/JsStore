@@ -2,9 +2,10 @@ import { Remove } from ".";
 import { promise, promiseAll } from "@/common";
 
 export const executeInLogic = function (this: Remove, column, values) {
+    const columnIndex = this.objectStore.index(column)
     const runInLogic: (val) => Promise<void> = (value) => {
         return promise((res, rej) => {
-            const cursorRequest = this.objectStore.index(column).openCursor(this.util.keyRange(value));
+            const cursorRequest = columnIndex.openCursor(this.util.keyRange(value));
             cursorRequest.onsuccess = (e: any) => {
                 const cursor: IDBCursorWithValue = e.target.result;
                 if (cursor) {

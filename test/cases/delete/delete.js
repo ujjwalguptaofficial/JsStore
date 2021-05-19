@@ -68,27 +68,22 @@ describe('Test remove Api', function () {
         })
     });
 
-    it('remove with ignore case', function (done) {
+    it('remove with where as array', function (done) {
 
         var Count;
-        con.select({
+        const query = {
             from: 'Customers',
-            where: {
-                country: 'meXico'
-            }
-        }).then(function (results) {
-            Count = results.length;
+            where: [{
+                country: "Sweden"
+            }]
+        };
+        con.count(query).then(function (results) {
+            Count = results;
         }).catch(function (err) {
             done(err);
         })
 
-        con.remove({
-            from: 'Customers',
-            ignoreCase: true,
-            where: {
-                country: 'meXico'
-            }
-        }).then(function (results) {
+        con.remove(query).then(function (results) {
             expect(results).to.be.an('number').to.equal(Count);
             done();
         }).catch(function (err) {
