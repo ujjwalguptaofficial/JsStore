@@ -1,19 +1,19 @@
 import { Select } from "./";
-import { JoinQuery, DATA_TYPE, QUERY_OPTION, ERROR_TYPE, SelectQuery } from "@/common";
-import { getDataType, getError, LogHelper, removeSpace, promiseReject } from "@/worker/utils";
+import { JoinQuery, DATA_TYPE, ERROR_TYPE, SelectQuery } from "@/common";
+import { getDataType, LogHelper, removeSpace, promiseReject } from "@/worker/utils";
 
 
 export const executeJoinQuery = function (this: Select) {
-    const p = new Join(this).execute();
-    return p.then(results => {
-        return;
-        this.results = results;
-    })
+    return new Join(this).execute();
+}
+
+interface JoinQueryWithInfo extends JoinQuery {
+    joinTableInfo: JoinTableInfo
 }
 
 export class Join {
 
-    private joinQueryStack_: JoinQuery[] = [];
+    private joinQueryStack_: JoinQueryWithInfo[] = [];
     private currentQueryStackIndex_ = 0;
     tablesFetched = [];
     results = [];
@@ -32,21 +32,43 @@ export class Join {
     }
 
     private executeSelect(query: SelectQuery) {
-        this.select.util.emptyTx();
+        // this.select.util.emptyTx();
         return new Select(query, this.select.util).
             execute(this.select.db);
     }
 
     execute() {
         const query = this.query;
-        if (getDataType(query.join) === DATA_TYPE.Object) {
-            this.joinQueryStack_ = [query.join as JoinQuery];
-        }
-        else {
-            this.joinQueryStack_ = query.join as JoinQuery[];
-        }
+        this.joinQueryStack_ = getDataType(query.join) === DATA_TYPE.Object ?
+            [query.join as JoinQueryWithInfo] : query.join as JoinQueryWithInfo[];
         // get the data for first table
         const tableName = query.from;
+        const tablesToFetch = [tableName];
+        for (let i = 0, length = this.joinQueryStack_.length; i < length; i++) {
+            const item = this.joinQueryStack_[i];
+            let jointblInfo = this.getJoinTableInfo_(item.on);
+            // table 1 is fetched & table2 needs to be fetched for join
+            if (item.with === jointblInfo.table1.table) {
+                jointblInfo = {
+                    table1: jointblInfo.table2,
+                    table2: jointblInfo.table1
+                };
+            }
+
+            if (process.env.NODE_ENV === 'dev') {
+                const err = this.checkJoinQuery_(jointblInfo, item);
+                if (err) {
+                    return promiseReject(err);
+                }
+            }
+            this.joinQueryStack_[i].joinTableInfo = jointblInfo;
+            tablesToFetch.push(item.with)
+        }
+
+        if (!this.select.isTxQuery) {
+            this.select.util.createTransaction(tablesToFetch);
+        }
+
         return this.executeSelect({
             from: tableName,
             where: query.where,
@@ -131,33 +153,17 @@ export class Join {
     }
 
     private startExecutingJoinLogic_() {
-        const query = this.joinQueryStack_[this.currentQueryStackIndex_];
-        if (query) {
+        const joinQuery = this.joinQueryStack_[this.currentQueryStackIndex_];
+        if (joinQuery) {
             try {
-                let jointblInfo = this.getJoinTableInfo_(query.on);
-                // table 1 is fetched & table2 needs to be fetched for join
-                if (query.with === jointblInfo.table1.table) {
-                    jointblInfo = {
-                        table1: jointblInfo.table2,
-                        table2: jointblInfo.table1
-                    };
-                }
-
-                if (process.env.NODE_ENV === 'dev') {
-                    const err = this.checkJoinQuery_(jointblInfo, query);
-                    if (err) {
-                        return promiseReject(err);
-                    }
-                    //return this.onJoinQueryFinished_();
-                }
-
+                let jointblInfo = joinQuery.joinTableInfo;
                 return this.executeSelect({
-                    from: query.with,
-                    where: query.where,
-                    case: query.case,
-                    flatten: query.flatten
+                    from: joinQuery.with,
+                    where: joinQuery.where,
+                    case: joinQuery.case,
+                    flatten: joinQuery.flatten
                 }).then(results => {
-                    this.jointables(query.type, jointblInfo, results);
+                    this.jointables(joinQuery.type, jointblInfo, results);
                     this.tablesFetched.push(jointblInfo.table2.table);
                     ++this.currentQueryStackIndex_;
                     return this.startExecutingJoinLogic_();
