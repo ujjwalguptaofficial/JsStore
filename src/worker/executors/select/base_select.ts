@@ -1,11 +1,5 @@
 import { Select } from "./index";
 
-// declare module "./index" {
-//     interface Select {
-//         methodY(): void;
-//     }
-// }
-
 export const setPushResult = function (this: Select) {
     if (this.query.case) {
         this.pushResult = (value) => {

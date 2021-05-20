@@ -21,6 +21,13 @@ export class IDBUtil {
         this.tx.onerror = null;
         this.tx = null;
     }
+
+    createTransactionIfNotExist(tables: string[], mode?: IDB_MODE) {
+        if (!this.tx) {
+            this.createTransaction(tables, mode);
+        }
+    }
+
     createTransaction(tables: string[], mode = IDB_MODE.ReadWrite) {
         this.tx = this.con.transaction(tables, mode);
         return promise((res, rej) => {

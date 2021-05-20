@@ -32,12 +32,13 @@ export class Join {
     }
 
     private executeSelect(query: SelectQuery) {
+        this.select.util.emptyTx();
         return new Select(query, this.select.util).
             execute(this.select.db);
     }
 
     execute() {
-        const query = this.select.query;
+        const query = this.query;
         if (getDataType(query.join) === DATA_TYPE.Object) {
             this.joinQueryStack_ = [query.join as JoinQuery];
         }
@@ -63,7 +64,7 @@ export class Join {
     }
 
     private onJoinQueryFinished_() {
-        const query = this.query;
+        // const query = this.query;
         if (this.results.length > 0) {
 
             try {
@@ -125,14 +126,6 @@ export class Join {
                     new LogHelper(ERROR_TYPE.InvalidJoinQuery, ex.message)
                 );
             }
-
-            // if (this.query.skip && this.query.limit) {
-            //     this.results.splice(0, this.query.skip);
-            //     this.results = this.results.slice(0, this.query.limit);
-            // }
-            // else if (this.query.limit) {
-            //     this.results = this.results.slice(0, this.query.limit);
-            // }
         }
         return;
     }

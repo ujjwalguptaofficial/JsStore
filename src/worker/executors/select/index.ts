@@ -149,9 +149,6 @@ export class Select extends BaseFetch {
             }
             else {
                 this.results = output;
-                // if (this.isSubQuery === true) {
-                // return this.returnResult_();
-                // }
             }
 
         };
@@ -176,7 +173,7 @@ export class Select extends BaseFetch {
 
     private initTransaction_() {
         if (!this.isTxQuery) {
-            this.util.createTransaction([this.tableName], IDB_MODE.ReadOnly);
+            this.util.createTransactionIfNotExist([this.tableName], IDB_MODE.ReadOnly);
         }
         this.objectStore = this.util.objectStore(this.tableName);
     }

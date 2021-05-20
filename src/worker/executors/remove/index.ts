@@ -68,7 +68,6 @@ export class Remove extends BaseFetch {
             results = null;
             const whereQry = { [pkey]: { [QUERY_OPTION.In]: keyList } };
             this.query[QUERY_OPTION.Where] = whereQry;
-            this.initTransaction_();
             return this.processWhere_();
         })
     }

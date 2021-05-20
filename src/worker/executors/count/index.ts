@@ -46,18 +46,17 @@ export class Count extends BaseFetch {
                     this.resultCount = results.length;
                 });
             };
+            this.initTransaction_();
             if (query.join == null) {
                 if (query.where != null) {
                     if ((query.where as WhereQuery).or || isArray(this.query.where)) {
                         result = getDataFromSelect();
                     }
                     else {
-                        this.initTransaction_();
                         result = this.goToWhereLogic();
                     }
                 }
                 else {
-                    this.initTransaction_();
                     result = this.executeWhereUndefinedLogic() as any;
                 }
             }
