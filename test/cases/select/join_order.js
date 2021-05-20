@@ -52,15 +52,9 @@ describe('select join order test', function () {
                 done(results);
             }
         }).catch(function (err) {
-            if (isRuningForProd() || isRuningForSauce()) {
-                done(err);
-            }
-            else {
-                var error = { "message": "column Id exist in both table Student & StudentDetail", "type": "invalid_join_query" };
-                expect(error).to.be.eql(err);
-                done();
-            }
-
+            var error = { "message": "column Id exist in both table Student & StudentDetail", "type": "invalid_join_query" };
+            expect(error).to.be.eql(err);
+            done();
         })
     });
 

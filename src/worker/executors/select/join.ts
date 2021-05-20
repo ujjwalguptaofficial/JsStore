@@ -55,11 +55,9 @@ export class Join {
                 };
             }
 
-            if (process.env.NODE_ENV === 'dev') {
-                const err = this.checkJoinQuery_(jointblInfo, item);
-                if (err) {
-                    return promiseReject(err);
-                }
+            const err = this.checkJoinQuery_(jointblInfo, item);
+            if (err) {
+                return promiseReject(err);
             }
             this.joinQueryStack_[i].joinTableInfo = jointblInfo;
             tablesToFetch.push(item.with)

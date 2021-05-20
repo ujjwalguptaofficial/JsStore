@@ -300,17 +300,12 @@ describe('Test join', function () {
         }).then(function (result) {
             done(result);
         }).catch(function (err) {
-            if (isRuningForProd() || isRuningForSauce()) {
-                var error = { "message": "Table 'invalid_table' does not exist", "type": "table_not_exist" };
-                expect(err).to.eql(error);
+
+            var error = {
+                "message": "on value should contains value of with",
+                "type": "invalid_join_query"
             }
-            else {
-                var error = {
-                    "message": "on value should contains value of with",
-                    "type": "invalid_join_query"
-                }
-                expect(err).to.eql(error);
-            }
+            expect(err).to.eql(error);
             done();
         })
     });
