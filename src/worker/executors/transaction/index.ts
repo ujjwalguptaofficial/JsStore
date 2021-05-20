@@ -40,9 +40,7 @@ export class Transaction extends Base {
             this.onSuccess = res;
             this.onError = rej;
         }).then(result => {
-            if (process.env.NODE_ENV === 'dev') {
-                console.log(`transaction finished`);
-            }
+            this.log(`transaction finished`);
             return result;
         })
     }
@@ -107,9 +105,9 @@ export class Transaction extends Base {
         };
         const methodName = query.method
         let txLogic = self[methodName];
-        if (process.env.NODE_ENV === 'dev') {
-            console.log(`transaction query started`);
-        }
+
+        this.log(`transaction query started`);
+
         return txLogic.call(
             this,
             {
@@ -121,6 +119,10 @@ export class Transaction extends Base {
                 start: start
             }
         );
+    }
+
+    log(message) {
+        this.util.logger.log(message);
     }
 
     private startTx_() {
@@ -146,15 +148,13 @@ export class Transaction extends Base {
 
     private onReqFinished_(result) {
         const finisehdRequest = this.reqQueue.shift();
-        if (process.env.NODE_ENV === 'dev') {
-            console.log(`finished request : ${finisehdRequest.name} `);
-        }
+
+        this.log(`finished request : ${finisehdRequest.name} `);
+
         if (finisehdRequest) {
             if (result.error) {
                 this.abortTx_("automatic abort of transaction due to error occured");
-                if (process.env.NODE_ENV === 'dev') {
-                    console.log(`transaction aborted due to error occured`);
-                }
+                this.log(`transaction aborted due to error occured`);
                 this.onError(result.error);
             }
             else {
@@ -170,18 +170,14 @@ export class Transaction extends Base {
     private abortTx_(msg: string) {
         this.reqQueue = [];
         this.util.abortTransaction();
-        if (process.env.NODE_ENV === 'dev') {
-            console.log(`transaction aborted. Msg : ${msg}`);
-        }
+        this.log(`transaction aborted. Msg : ${msg}`);
 
     }
 
     private executeRequest_(request: WebWorkerRequest) {
         this.isQueryExecuting = true;
         let requestObj: IQueryExecutor;
-        if (process.env.NODE_ENV === 'dev') {
-            console.log(`executing request : ${request.name} `);
-        }
+        this.log(`executing request : ${request.name} `);
         const onReqFinished = this.onReqFinished_.bind(this);
         const query = request.query
         switch (request.name) {
@@ -239,9 +235,7 @@ export class Transaction extends Base {
         else {
             push();
         }
-        if (process.env.NODE_ENV === 'dev') {
-            console.log(`request pushed : ${request.name} with query value - ${JSON.stringify(request.query)}`);
-        }
+        this.log(`request pushed : ${request.name}`);
         return promiseObj;
     }
 

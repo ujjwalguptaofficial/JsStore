@@ -1,7 +1,7 @@
-import { DbMeta } from "@worker/model";
+import { DbMeta, TableMeta } from "@worker/model";
 import { TABLE_STATE } from "@worker/enums";
-import { TableMeta } from "@worker/model/table_meta";
 import { IDB_MODE, QUERY_OPTION, promise } from "@/common";
+import { LogHelper } from "@worker/utils";
 
 export class IDBUtil {
 
@@ -9,6 +9,8 @@ export class IDBUtil {
 
     con: IDBDatabase;
     tx: IDBTransaction;
+
+    logger = new LogHelper(null);
 
     constructor(db: DbMeta) {
         this.db = db;

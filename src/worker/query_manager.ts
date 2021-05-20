@@ -22,7 +22,9 @@ export class QueryManager {
 
     private onQryFinished;
 
-    protected logger = new LogHelper(null);
+    protected get logger() {
+        return this.util.logger;
+    }
 
     constructor(fn?: (result: any) => void) {
         this.onQryFinished = IS_WORKER ? (result) => {
@@ -139,15 +141,12 @@ export class QueryManager {
     }
 
     closeDb() {
-        if (this.util == null) {
-            return Promise.resolve();
-        }
         return this.util.close();
     }
 
     terminate() {
         return this.closeDb().then(() => {
-            this.db = this.util = null;
+            this.db = null;
         });
     }
 
