@@ -14,11 +14,7 @@ export class Count extends BaseFetch {
 
     query: CountQuery;
     resultCount: number = 0;
-    executeWhereUndefinedLogic = executeWhereUndefinedLogic;
-    executeWhereLogic = executeWhereLogic
-    executeRegexLogic = executeRegexLogic
-    executeInLogic = executeInLogic
-
+    executeWhereUndefinedLogic: typeof executeWhereUndefinedLogic;
 
     constructor(query: CountQuery, util: IDBUtil) {
         super();
@@ -79,3 +75,8 @@ export class Count extends BaseFetch {
         this.objectStore = this.util.objectStore(this.query.from);
     }
 }
+
+Count.prototype.executeWhereUndefinedLogic = executeWhereUndefinedLogic;
+Count.prototype.executeWhereLogic = executeWhereLogic
+Count.prototype.executeRegexLogic = executeRegexLogic
+Count.prototype.executeInLogic = executeInLogic

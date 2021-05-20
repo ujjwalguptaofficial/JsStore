@@ -11,12 +11,7 @@ import { executeRegexLogic } from "./regex";
 import { executeWhereLogic } from "./where";
 
 export class Update extends BaseFetch {
-
-    executeWhereUndefinedLogic = executeWhereUndefinedLogic
-    executeInLogic = executeInLogic;
-    executeRegexLogic = executeRegexLogic;
-
-    executeWhereLogic = executeWhereLogic
+    executeWhereUndefinedLogic: typeof executeWhereUndefinedLogic
 
     constructor(query: UpdateQuery, util: IDBUtil) {
         super();
@@ -85,3 +80,8 @@ export class Update extends BaseFetch {
         this.objectStore = this.util.objectStore(tableName);
     }
 }
+
+Update.prototype.executeWhereUndefinedLogic = executeWhereUndefinedLogic;
+Update.prototype.executeWhereLogic = executeWhereLogic
+Update.prototype.executeRegexLogic = executeRegexLogic
+Update.prototype.executeInLogic = executeInLogic

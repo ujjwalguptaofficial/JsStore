@@ -30,19 +30,18 @@ export class Select extends BaseFetch {
 
     protected thenEvaluator = new ThenEvaluator();
 
-    setLimitAndSkipEvaluationAtEnd_ = setLimitAndSkipEvaluationAtEnd
-    setPushResult = setPushResult;
-    removeDuplicates = removeDuplicates;
-    executeWhereUndefinedLogic = executeWhereUndefinedLogic;
-    executeJoinQuery = executeJoinQuery
-    processGroupDistinctAggr = processGroupDistinctAggr;
-    processOrderBy = processOrderBy;
-    processAggregateQry = processAggregateQry;
-    executeAggregateGroupBy = executeAggregateGroupBy;
-    processGroupBy = processGroupBy;
-    executeInLogic = executeInLogic;
-    executeWhereLogic = executeWhereLogic;
-    executeRegexLogic = executeRegexLogic;
+    executeWhereUndefinedLogic: typeof executeWhereUndefinedLogic;
+
+    setLimitAndSkipEvaluationAtEnd_: typeof setLimitAndSkipEvaluationAtEnd
+    setPushResult: typeof setPushResult;
+    removeDuplicates: typeof removeDuplicates;
+    executeJoinQuery: typeof executeJoinQuery
+    processGroupDistinctAggr: typeof processGroupDistinctAggr;
+    processOrderBy: typeof processOrderBy;
+    processAggregateQry: typeof processAggregateQry;
+    executeAggregateGroupBy: typeof executeAggregateGroupBy;
+    processGroupBy: typeof processGroupBy;
+
 
     constructor(query: SelectQuery, util: IDBUtil) {
         super();
@@ -75,9 +74,9 @@ export class Select extends BaseFetch {
         try {
             const err = new QueryHelper(db).validate(API.Select, this.query);
             if (err) return promiseReject(err);
+            this.initTransaction_();
             if (this.query.join == null) {
                 if (this.query.where != null) {
-                    this.initTransaction_();
                     if (isArray(this.query.where)) {
                         pResult = this.processWhereArrayQry();
                     }
@@ -86,10 +85,8 @@ export class Select extends BaseFetch {
                     }
                 }
                 else {
-                    this.initTransaction_();
                     pResult = this.executeWhereUndefinedLogic();
                 }
-
             }
             else {
                 pResult = this.executeJoinQuery();
@@ -263,7 +260,19 @@ export class Select extends BaseFetch {
         // free or memory
         delete where.or;
     }
-
-
-
 }
+
+Select.prototype.executeInLogic = executeInLogic;
+Select.prototype.executeWhereUndefinedLogic = executeWhereUndefinedLogic;
+Select.prototype.executeWhereLogic = executeWhereLogic;
+Select.prototype.executeRegexLogic = executeRegexLogic;
+
+Select.prototype.setLimitAndSkipEvaluationAtEnd_ = setLimitAndSkipEvaluationAtEnd
+Select.prototype.setPushResult = setPushResult;
+Select.prototype.removeDuplicates = removeDuplicates;
+Select.prototype.executeJoinQuery = executeJoinQuery
+Select.prototype.processGroupDistinctAggr = processGroupDistinctAggr;
+Select.prototype.processOrderBy = processOrderBy;
+Select.prototype.processAggregateQry = processAggregateQry;
+Select.prototype.executeAggregateGroupBy = executeAggregateGroupBy;
+Select.prototype.processGroupBy = processGroupBy;
