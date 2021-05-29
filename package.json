@@ -23,7 +23,8 @@
     "webpack:dev": "webpack --config webpack/webpack.dev.config.js",
     "webpack:prod": "webpack --config webpack/webpack.prod.config.js",
     "move:deploy_file": "node deployer.js",
-    "deploy": "npm run lint && npm run build:all && npm run test:fire && npm run move:deploy_file"
+    "test:injector": "node test/injector/build.js",
+    "deploy": "npm run lint && npm run build:all && npm run test:fire && npm run test:injector && npm run move:deploy_file"
   },
   "repository": {
     "type": "git",
