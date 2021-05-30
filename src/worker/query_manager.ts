@@ -40,7 +40,13 @@ export class QueryManager {
             const lastIndex = this.middlewares.length - 1;
             const callNextMiddleware = () => {
                 if (index <= lastIndex) {
-                    variableFromPath(this.middlewares[index++])(request, callNextMiddleware);
+                    let promiseResult = variableFromPath(this.middlewares[index++])(request);
+                    if (!promiseResult || !promiseResult.then) {
+                        promiseResult = Promise.resolve(promiseResult);
+                    }
+                    promiseResult.then(_ => {
+                        callNextMiddleware();
+                    })
                 }
                 else {
                     res();

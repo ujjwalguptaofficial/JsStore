@@ -1,5 +1,5 @@
 var JsStoreOptions = {
-    countMiddleware: function (request, next) {
+    countMiddleware: function (request) {
         if (request.name == "count" && request.query['add5']) {
             request.onResult(result => {
                 result = result + 5;
@@ -9,6 +9,5 @@ var JsStoreOptions = {
                 return result + 5;
             })
         }
-        next();
     }
 }

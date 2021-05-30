@@ -124,7 +124,11 @@ export class ConnectionHelper {
       const lastIndex = this.middlewares.length - 1;
       const callNextMiddleware = () => {
         if (index <= lastIndex) {
-          this.middlewares[index++](input).then(_ => {
+          let promiseResult = this.middlewares[index++](input);
+          if (!promiseResult || !promiseResult.then) {
+            promiseResult = Promise.resolve(promiseResult);
+          }
+          promiseResult.then(_ => {
             callNextMiddleware();
           })
         }

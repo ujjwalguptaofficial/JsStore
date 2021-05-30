@@ -327,11 +327,22 @@ describe('Test count Api', function () {
         con.importScripts("../cases/count/count_middleware.js").then(done).catch(done);
     });
 
-    it('add middleware', function (done) {
+    it('add middleware in worker', function (done) {
         con.addMiddleware("JsStoreOptions.countMiddleware", true).then(done).catch(done);
     })
 
-    it('middleware test', function (done) {
+    it('add invalid middleware in worker', function (done) {
+        con.addMiddleware("d.countMiddleware", true).then(done).catch((err) => {
+            const error = {
+                "message": "No function d.countMiddleware is found.",
+                "type": "invalid_middleware"
+            };
+            expect(err).to.be.an('object').eql(error);
+            done();
+        });
+    })
+
+    it('middleware test in worker', function (done) {
         con.count({
             from: 'Customers',
             where: {
@@ -348,5 +359,34 @@ describe('Test count Api', function () {
         })
     });
 
+    it('add middleware', function (done) {
+        con.addMiddleware(function (request) {
+            if (request.name == "count" && request.query['add10']) {
+                request.onResult(result => {
+                    result = result + 10;
+                    return Promise.resolve(result);
+                })
+                request.onResult(result => {
+                    return result + 10;
+                })
+            }
+        }).then(done).catch(done);
+    })
 
+    it('middleware test', function (done) {
+        con.count({
+            from: 'Customers',
+            where: {
+                customerName: {
+                    like: '%o'
+                }
+            },
+            'add10': true
+        }).then(function (results) {
+            expect(results).to.be.an('number').to.equal(26);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
 });
