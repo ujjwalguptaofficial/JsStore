@@ -1,4 +1,4 @@
-import { WebWorkerRequest, API, IDataBase, WebWorkerResult, promise, ERROR_TYPE, IDbInfo } from "@/common";
+import { WebWorkerRequest, promiseResolve, API, IDataBase, WebWorkerResult, promise, ERROR_TYPE, IDbInfo } from "@/common";
 import { DbMeta } from "./model";
 import { IDBUtil } from "./idbutil";
 import { Insert } from "@executors/insert";
@@ -14,7 +14,7 @@ import { Remove } from "@executors/remove";
 import { Clear } from "@executors/clear";
 import { Transaction } from "@executors/transaction";
 import { TABLE_STATE } from "./enums";
-import { LogHelper, getError, promiseReject, variableFromPath, promiseResolve } from "@worker/utils";
+import { LogHelper, getError, promiseReject, variableFromPath } from "@worker/utils";
 
 export class QueryManager {
     util: IDBUtil;

@@ -1,7 +1,8 @@
 import { LogHelper } from "./log_helper";
 import {
   WebWorkerRequest, EventQueue, API, WebWorkerResult,
-  EVENT, promise, IDataBase, IDbInfo, TMiddleware
+  EVENT, promise, IDataBase, IDbInfo, TMiddleware,
+  promiseResolve
 } from "../common";
 
 declare var JsStoreWorker;
@@ -126,7 +127,7 @@ export class ConnectionHelper {
         if (index <= lastIndex) {
           let promiseResult = this.middlewares[index++](input);
           if (!promiseResult || !promiseResult.then) {
-            promiseResult = Promise.resolve(promiseResult);
+            promiseResult = promiseResolve(promiseResult);
           }
           promiseResult.then(_ => {
             callNextMiddleware();
@@ -148,7 +149,7 @@ export class ConnectionHelper {
         if (index <= lastIndex) {
           let promiseResult = middlewares[index++](result);
           if (!promiseResult.then) {
-            promiseResult = Promise.resolve(promiseResult);
+            promiseResult = promiseResolve(promiseResult);
           }
           promiseResult.then(modifiedResult => {
             result = modifiedResult;
