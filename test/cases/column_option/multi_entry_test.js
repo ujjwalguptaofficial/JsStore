@@ -53,8 +53,12 @@ describe('Multi Entry Test', function () {
         con.addMiddleware(function (request) {
             expect(request.name).equal('select');
             request.query.where.name = "Marc";
-            request.result().then((result) => {
+            request.onResult((result) => {
                 result.push("ujjwal");
+                return result;
+            });
+            request.onResult((result) => {
+                result.push("gupta");
                 return result;
             });
             return new Promise((res) => {
@@ -74,6 +78,7 @@ describe('Multi Entry Test', function () {
             const tags = results[0].tags;
             expect(tags).to.be.an('array').length(3).eql(["mongo", "jenkins", 'JsStore'])
             expect(results[1]).to.be.equal('ujjwal')
+            expect(results[2]).to.be.equal('gupta')
             con.middlewares = [];
             done();
         }).catch(function (err) {

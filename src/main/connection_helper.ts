@@ -136,13 +136,17 @@ export class ConnectionHelper {
     });
   }
 
-  protected callResultMiddleware(middlewares: any[], result) {
+  private callResultMiddleware(middlewares: any[], result) {
     return promise<any>((res) => {
       let index = 0;
-      const lastIndex = this.middlewares.length - 1;
+      const lastIndex = middlewares.length - 1;
       const callNextMiddleware = () => {
         if (index <= lastIndex) {
-          middlewares[index++](result).then(modifiedResult => {
+          let promiseResult = middlewares[index++](result);
+          if (!promiseResult.then) {
+            promiseResult = Promise.resolve(promiseResult);
+          }
+          promiseResult.then(modifiedResult => {
             result = modifiedResult;
             callNextMiddleware();
           })
@@ -158,19 +162,15 @@ export class ConnectionHelper {
   protected pushApi<T>(request: WebWorkerRequest): Promise<T> {
     return new Promise((resolve, reject) => {
       let middlewares = [];
-      request.result = () => {
-        const promiseObj = promise(res => {
-          middlewares.push((result) => {
-            res(result);
-            return promiseObj;
-          });
+      request.onResult = (cb) => {
+        middlewares.push((result) => {
+          return cb(result);
         });
-        return promiseObj;
       };
       this.executeMiddleware_(request).then(() => {
         request.onSuccess = (result) => {
-          this.callResultMiddleware(middlewares, result).then(_ => {
-            resolve(result);
+          this.callResultMiddleware(middlewares, result).then(modifiedResult => {
+            resolve(modifiedResult);
           }).catch(err => {
             request.onError(err);
           })

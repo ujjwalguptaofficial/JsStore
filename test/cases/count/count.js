@@ -291,7 +291,7 @@ describe('Test count Api', function () {
             })
     });
 
-    it('select with like - "%o"', function (done) {
+    it('count with like - "%o"', function (done) {
         con.count({
             from: 'Customers',
             where: {
@@ -322,4 +322,31 @@ describe('Test count Api', function () {
                 done();
             });
     });
+
+    it("load script", function (done) {
+        con.importScripts("../cases/count/count_middleware.js").then(done).catch(done);
+    });
+
+    it('add middleware', function (done) {
+        con.addMiddleware("JsStoreOptions.countMiddleware", true).then(done).catch(done);
+    })
+
+    it('middleware test', function (done) {
+        con.count({
+            from: 'Customers',
+            where: {
+                customerName: {
+                    like: '%o'
+                }
+            },
+            'add5': true
+        }).then(function (results) {
+            expect(results).to.be.an('number').to.equal(16);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+
 });

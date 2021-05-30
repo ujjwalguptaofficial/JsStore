@@ -96,7 +96,7 @@ export type WebWorkerRequest = {
     query?: any;
     onSuccess?: (results?) => void;
     onError?: (err: IError) => void;
-    result?: () => Promise<any>;
+    onResult?: (cb: (result: any) => Promise<any>) => void;
     middleware?: Array<Function>;
 };
 

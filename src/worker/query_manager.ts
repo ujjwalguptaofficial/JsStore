@@ -113,7 +113,7 @@ export class QueryManager {
                 break;
             case API.Middleware:
                 const value = variableFromPath(query);
-                if (value) {
+                if (!value) {
                     return promiseReject(new LogHelper(ERROR_TYPE.InvalidMiddleware, query))
                 }
                 this.middlewares.push(query);
@@ -128,22 +128,43 @@ export class QueryManager {
         return queryResult;
     }
 
+    private callResultMiddleware(middlewares: any[], result) {
+        return promise<any>((res) => {
+            let index = 0;
+            const lastIndex = middlewares.length - 1;
+            const callNextMiddleware = () => {
+                if (index <= lastIndex) {
+                    let promiseResult = middlewares[index++](result);
+                    if (!promiseResult.then) {
+                        promiseResult = promiseResolve(promiseResult);
+                    }
+                    promiseResult.then(modifiedResult => {
+                        result = modifiedResult;
+                        callNextMiddleware();
+                    })
+                }
+                else {
+                    res(result);
+                }
+            };
+            callNextMiddleware();
+        });
+    }
+
     run(request: WebWorkerRequest) {
         let middlewares = [];
-        request.result = () => {
-            const promiseObj = promise(res => {
-                middlewares.push(res);
+        request.onResult = (cb) => {
+            middlewares.push((result) => {
+                return cb(result);
             });
-            return promiseObj;
         };
         this.executeMiddleware_(request).then(_ => {
             return this.executeQuery(request).then((result) => {
-                middlewares.forEach(middleware => {
-                    result = middleware(result);
-                });
-                this.returnResult_({
-                    result: result
-                });
+                return this.callResultMiddleware(middlewares, result).then(modifiedResult => {
+                    this.returnResult_({
+                        result: modifiedResult
+                    });
+                })
             })
         }).catch(ex => {
             middlewares = [];

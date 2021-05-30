@@ -1,11 +1,12 @@
 var JsStoreOptions = {
     countMiddleware: function (request, next) {
         if (request.name == "count" && request.query['add5']) {
-            request.result().then(result => {
-                return result += 5;
+            request.onResult(result => {
+                result = result + 5;
+                return Promise.resolve(result);
             })
-            request.result().then(result => {
-                return result += 10;
+            request.onResult(result => {
+                return result + 5;
             })
         }
         next();
