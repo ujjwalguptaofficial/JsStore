@@ -131,7 +131,7 @@ export class ConnectionHelper {
           }
           promiseResult.then(_ => {
             callNextMiddleware();
-          })
+          });
         }
         else {
           res();
@@ -154,7 +154,7 @@ export class ConnectionHelper {
           promiseResult.then(modifiedResult => {
             result = modifiedResult;
             callNextMiddleware();
-          })
+          });
         }
         else {
           res(result);
@@ -178,7 +178,7 @@ export class ConnectionHelper {
             resolve(modifiedResult);
           }).catch(err => {
             request.onError(err);
-          })
+          });
         };
         request.onError = (err) => {
           middlewares = [];

@@ -5,7 +5,7 @@ if (packageInfo) {
     const version = packageInfo.version;
     console.log('version', version);
     execSync(`npm pack`);
-    execSync(`cd test/injector && npm i ../../jsstore-${version}.tgz`);
+    execSync(`cd test/injector && npm i ../../jsstore-${version}.tgz --no-save`);
     console.log('building')
     execSync(`cd test/injector && npm run builds`);
 

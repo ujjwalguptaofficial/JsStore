@@ -46,7 +46,7 @@ export class QueryManager {
                     }
                     promiseResult.then(_ => {
                         callNextMiddleware();
-                    })
+                    });
                 }
                 else {
                     res();
@@ -120,7 +120,9 @@ export class QueryManager {
             case API.Middleware:
                 const value = variableFromPath(query);
                 if (!value) {
-                    return promiseReject(new LogHelper(ERROR_TYPE.InvalidMiddleware, query))
+                    return promiseReject(
+                        new LogHelper(ERROR_TYPE.InvalidMiddleware, query)
+                    );
                 }
                 this.middlewares.push(query);
                 return promiseResolve();
@@ -147,7 +149,7 @@ export class QueryManager {
                     promiseResult.then(modifiedResult => {
                         result = modifiedResult;
                         callNextMiddleware();
-                    })
+                    });
                 }
                 else {
                     res(result);
@@ -170,8 +172,8 @@ export class QueryManager {
                     this.returnResult_({
                         result: modifiedResult
                     });
-                })
-            })
+                });
+            });
         }).catch(ex => {
             middlewares = [];
             const err = getError(ex);

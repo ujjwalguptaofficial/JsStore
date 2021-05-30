@@ -275,7 +275,7 @@ export class Connection extends ConnectionHelper {
             return this.pushApi({
                 name: API.Middleware,
                 query: middleware
-            })
+            });
         }
         this.middlewares.push(middleware as TMiddleware);
         return Promise.resolve();
