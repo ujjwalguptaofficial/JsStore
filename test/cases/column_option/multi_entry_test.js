@@ -50,11 +50,16 @@ describe('Multi Entry Test', function () {
     });
 
     it('add middleware', function (done) {
-        con.addMiddleware(function (request, next) {
+        con.addMiddleware(function (request) {
             expect(request.name).equal('select');
             request.query.where.name = "Marc";
-            con.middlewares = [];
-            next();
+            request.result().then((result) => {
+                result.push("ujjwal");
+                return result;
+            });
+            return new Promise((res) => {
+                res();
+            })
         });
         done();
     })
@@ -68,6 +73,8 @@ describe('Multi Entry Test', function () {
         }).then(function (results) {
             const tags = results[0].tags;
             expect(tags).to.be.an('array').length(3).eql(["mongo", "jenkins", 'JsStore'])
+            expect(results[1]).to.be.equal('ujjwal')
+            con.middlewares = [];
             done();
         }).catch(function (err) {
             done(err);

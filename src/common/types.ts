@@ -96,6 +96,8 @@ export type WebWorkerRequest = {
     query?: any;
     onSuccess?: (results?) => void;
     onError?: (err: IError) => void;
+    result?: () => Promise<any>;
+    middleware?: Array<Function>;
 };
 
 
@@ -163,4 +165,4 @@ export type IntersectQuery = {
 
 export type TStringAny = { [key: string]: any };
 
-export type TMiddleware = (request: WebWorkerRequest, next: () => void) => void;
+export type TMiddleware = (request: WebWorkerRequest) => Promise<any>;

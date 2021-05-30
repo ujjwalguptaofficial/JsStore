@@ -109,6 +109,9 @@ export class LogHelper implements IError {
             case ERROR_TYPE.ImportScriptsFailed:
                 errMsg = this.info_;
                 break;
+            case ERROR_TYPE.InvalidMiddleware:
+                errMsg = `No function ${this.info_} is found.`;
+                break;
             default:
                 if (!this.type) {
                     this.type = ERROR_TYPE.Unknown

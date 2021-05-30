@@ -1,4 +1,4 @@
-import { WebWorkerRequest, API, IDataBase, InsertQuery, WebWorkerResult, promise, SelectQuery, CountQuery, SetQuery, ERROR_TYPE, IDbInfo } from "@/common";
+import { WebWorkerRequest, API, IDataBase, WebWorkerResult, promise, ERROR_TYPE, IDbInfo } from "@/common";
 import { DbMeta } from "./model";
 import { IDBUtil } from "./idbutil";
 import { Insert } from "@executors/insert";
@@ -14,11 +14,13 @@ import { Remove } from "@executors/remove";
 import { Clear } from "@executors/clear";
 import { Transaction } from "@executors/transaction";
 import { TABLE_STATE } from "./enums";
-import { LogHelper, getError, promiseReject } from "@worker/utils";
+import { LogHelper, getError, promiseReject, variableFromPath, promiseResolve } from "@worker/utils";
 
 export class QueryManager {
     util: IDBUtil;
     db: DbMeta;
+
+    middlewares: string[] = [];
 
     private onQryFinished;
 
@@ -32,7 +34,23 @@ export class QueryManager {
         } : fn;
     }
 
-    run(request: WebWorkerRequest) {
+    private executeMiddleware_(request: WebWorkerRequest) {
+        return promise<void>((res) => {
+            let index = 0;
+            const lastIndex = this.middlewares.length - 1;
+            const callNextMiddleware = () => {
+                if (index <= lastIndex) {
+                    variableFromPath(this.middlewares[index++])(request, callNextMiddleware);
+                }
+                else {
+                    res();
+                }
+            };
+            callNextMiddleware();
+        });
+    }
+
+    executeQuery(request: WebWorkerRequest) {
         let queryResult: Promise<any>;
         const query = request.query;
         switch (request.name) {
@@ -93,18 +111,42 @@ export class QueryManager {
                 this.logger.status = query;
                 queryResult = Promise.resolve();
                 break;
+            case API.Middleware:
+                const value = variableFromPath(query);
+                if (value) {
+                    return promiseReject(new LogHelper(ERROR_TYPE.InvalidMiddleware, query))
+                }
+                this.middlewares.push(query);
+                return promiseResolve();
             default:
                 if (process.env.NODE_ENV === 'dev') {
                     console.error('The Api:-' + request.name + ' does not support.');
                 }
-                queryResult = Promise.resolve();
+                queryResult = promiseResolve();
         }
         this.logger.log(`Executing query ${request.name} in web worker`);
-        queryResult.then((result) => {
-            this.returnResult_({
-                result: result
+        return queryResult;
+    }
+
+    run(request: WebWorkerRequest) {
+        let middlewares = [];
+        request.result = () => {
+            const promiseObj = promise(res => {
+                middlewares.push(res);
             });
+            return promiseObj;
+        };
+        this.executeMiddleware_(request).then(_ => {
+            return this.executeQuery(request).then((result) => {
+                middlewares.forEach(middleware => {
+                    result = middleware(result);
+                });
+                this.returnResult_({
+                    result: result
+                });
+            })
         }).catch(ex => {
+            middlewares = [];
             const err = getError(ex);
             const result = {
                 error: err

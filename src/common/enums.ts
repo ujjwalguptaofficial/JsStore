@@ -26,7 +26,8 @@ export enum ERROR_TYPE {
     InvalidGroupQuery = 'invalid_group_query',
     ImportScriptsFailed = 'import_scripts_failed',
     MethodNotExist = 'method_not_exist',
-    Unknown = "unknown"
+    Unknown = "unknown",
+    InvalidMiddleware = "invalid_middleware"
 }
 
 export enum WORKER_STATUS {
@@ -64,6 +65,7 @@ export enum API {
     Union = "union",
     Intersect = "intersect",
     ImportScripts = "import_scripts",
+    Middleware = "middleware"
 }
 
 export enum EVENT {

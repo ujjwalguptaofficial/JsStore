@@ -1,7 +1,7 @@
 import { Base } from "@executors/base";
 import { TranscationQuery, WebWorkerRequest, ERROR_TYPE, SelectQuery, API, InsertQuery, UpdateQuery, RemoveQuery, CountQuery, WebWorkerResult, promise } from "@/common";
 import { IDBUtil } from "@worker/idbutil";
-import { promiseReject, LogHelper } from "@worker/utils";
+import { promiseReject, LogHelper, variableFromPath } from "@worker/utils";
 import { Insert } from "@executors/insert";
 import { Select } from "@executors/select";
 import { Count } from "@executors/count";
@@ -52,7 +52,7 @@ export class Transaction extends Base {
             return new LogHelper(ERROR_TYPE.TableNotExist, { tableName: notExistingTable });
         }
         const methodName = query.method;
-        let txLogic = self[methodName];
+        let txLogic = variableFromPath(methodName);
         if (!txLogic) {
             return new LogHelper(ERROR_TYPE.MethodNotExist, methodName);
         }
@@ -104,7 +104,7 @@ export class Transaction extends Base {
             this.startTx_();
         };
         const methodName = query.method
-        let txLogic = self[methodName];
+        let txLogic = variableFromPath(methodName);
 
         this.log(`transaction query started`);
 

@@ -124,7 +124,9 @@ export class ConnectionHelper {
       const lastIndex = this.middlewares.length - 1;
       const callNextMiddleware = () => {
         if (index <= lastIndex) {
-          this.middlewares[index++](input, callNextMiddleware);
+          this.middlewares[index++](input).then(_ => {
+            callNextMiddleware();
+          })
         }
         else {
           res();
@@ -134,11 +136,49 @@ export class ConnectionHelper {
     });
   }
 
+  protected callResultMiddleware(middlewares: any[], result) {
+    return promise<any>((res) => {
+      let index = 0;
+      const lastIndex = this.middlewares.length - 1;
+      const callNextMiddleware = () => {
+        if (index <= lastIndex) {
+          middlewares[index++](result).then(modifiedResult => {
+            result = modifiedResult;
+            callNextMiddleware();
+          })
+        }
+        else {
+          res(result);
+        }
+      };
+      callNextMiddleware();
+    });
+  }
+
   protected pushApi<T>(request: WebWorkerRequest): Promise<T> {
     return new Promise((resolve, reject) => {
+      let middlewares = [];
+      request.result = () => {
+        const promiseObj = promise(res => {
+          middlewares.push((result) => {
+            res(result);
+            return promiseObj;
+          });
+        });
+        return promiseObj;
+      };
       this.executeMiddleware_(request).then(() => {
-        request.onSuccess = resolve;
-        request.onError = reject;
+        request.onSuccess = (result) => {
+          this.callResultMiddleware(middlewares, result).then(_ => {
+            resolve(result);
+          }).catch(err => {
+            request.onError(err);
+          })
+        };
+        request.onError = (err) => {
+          middlewares = [];
+          reject(err);
+        };
         if (this.requestQueue_.length === 0) {
           this.callEvent(EVENT.RequestQueueFilled, []);
           const isConnectionApi = [API.CloseDb, API.DropDb, API.OpenDb, API.Terminate].indexOf(request.name) >= 0;

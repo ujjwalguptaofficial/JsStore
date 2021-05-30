@@ -270,8 +270,15 @@ export class Connection extends ConnectionHelper {
         plugin.setup(this, params);
     }
 
-    addMiddleware(middleware: TMiddleware) {
-        this.middlewares.push(middleware);
+    addMiddleware(middleware: TMiddleware | string, forWorker: boolean) {
+        if (forWorker) {
+            return this.pushApi({
+                name: API.Middleware,
+                query: middleware
+            })
+        }
+        this.middlewares.push(middleware as TMiddleware);
+        return Promise.resolve();
     }
 
     /**

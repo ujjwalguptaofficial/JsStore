@@ -14,3 +14,5 @@ export * from "./clone";
 export * from "./compare";
 export * from "./get_error_from_exception";
 export * from "./set_cross_browser_idb";
+export * from "./resolve";
+export * from "./promise_resolve";
