@@ -162,3 +162,5 @@ export type IntersectQuery = {
 };
 
 export type TStringAny = { [key: string]: any };
+
+export type TMiddleware = (request: WebWorkerRequest, next: () => void) => void;

@@ -2,7 +2,7 @@ import { ConnectionHelper } from "./connection_helper";
 import {
     SelectQuery, CountQuery, InsertQuery, SetQuery,
     UpdateQuery, RemoveQuery, TranscationQuery,
-    API, IDataBase, EVENT, IPlugin, IntersectQuery, IDbInfo
+    API, IDataBase, EVENT, IPlugin, IntersectQuery, IDbInfo, TMiddleware
 } from "../common";
 
 export class Connection extends ConnectionHelper {
@@ -270,7 +270,7 @@ export class Connection extends ConnectionHelper {
         plugin.setup(this, params);
     }
 
-    addMiddleware(middleware) {
+    addMiddleware(middleware: TMiddleware) {
         this.middlewares.push(middleware);
     }
 

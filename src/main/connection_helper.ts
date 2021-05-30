@@ -1,7 +1,7 @@
 import { LogHelper } from "./log_helper";
 import {
   WebWorkerRequest, EventQueue, API, WebWorkerResult,
-  EVENT, promise, IDataBase, IDbInfo
+  EVENT, promise, IDataBase, IDbInfo, TMiddleware
 } from "../common";
 
 declare var JsStoreWorker;
@@ -17,7 +17,7 @@ export class ConnectionHelper {
 
   protected eventQueue: EventQueue[] = [];
 
-  protected middlewares = [];
+  protected middlewares: TMiddleware[] = [];
 
   // these apis have special permissions. These apis dont wait for database open.
   private whiteListApi_ = [
