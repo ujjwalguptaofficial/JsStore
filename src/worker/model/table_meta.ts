@@ -1,5 +1,4 @@
-import { ITable } from "@/main";
-import { TColumns } from "@/common";
+import { ITable } from "@/common";
 import { TABLE_STATE } from "@/worker/enums";
 import { IColumn } from "@/worker/interfaces";
 

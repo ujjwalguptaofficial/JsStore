@@ -1,6 +1,5 @@
 import { getDataType } from "./get_data_type"
-import { DATA_TYPE } from "../../main";
-import { QUERY_OPTION } from "@/common";
+import { QUERY_OPTION, DATA_TYPE } from "@/common";
 
 export const compare = (value, compareValue, symbol?) => {
     const type1 = getDataType(value);

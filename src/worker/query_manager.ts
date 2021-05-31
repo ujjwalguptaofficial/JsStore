@@ -14,7 +14,7 @@ import { Remove } from "@executors/remove";
 import { Clear } from "@executors/clear";
 import { Transaction } from "@executors/transaction";
 import { TABLE_STATE } from "./enums";
-import { LogHelper, getError, promiseReject, variableFromPath } from "@worker/utils";
+import { LogHelper, getError, promiseReject, variableFromPath, userDbSchema, getLength } from "@worker/utils";
 
 export class QueryManager {
     util: IDBUtil;
@@ -35,12 +35,22 @@ export class QueryManager {
     }
 
     private executeMiddleware_(request: WebWorkerRequest) {
+        const lastIndex = (getLength(this.middlewares) as any) - 1;
+        if (lastIndex < 0) {
+            return promiseResolve();
+        }
+        const middlewareContext = {};
+        const db = this.db;
+        Object.defineProperty(middlewareContext, 'database', {
+            get() {
+                return userDbSchema(db)
+            }
+        });
         return promise<void>((res) => {
             let index = 0;
-            const lastIndex = this.middlewares.length - 1;
             const callNextMiddleware = () => {
                 if (index <= lastIndex) {
-                    let promiseResult = variableFromPath(this.middlewares[index++])(request);
+                    let promiseResult = variableFromPath(this.middlewares[index++])(request, middlewareContext);
                     if (!promiseResult || !promiseResult.then) {
                         promiseResult = Promise.resolve(promiseResult);
                     }
@@ -139,7 +149,7 @@ export class QueryManager {
     private callResultMiddleware(middlewares: any[], result) {
         return promise<any>((res) => {
             let index = 0;
-            const lastIndex = middlewares.length - 1;
+            const lastIndex = (getLength(middlewares) as any) - 1;
             const callNextMiddleware = () => {
                 if (index <= lastIndex) {
                     let promiseResult = middlewares[index++](result);

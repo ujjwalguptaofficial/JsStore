@@ -359,6 +359,28 @@ describe('Test count Api', function () {
         })
     });
 
+    it('middleware test in worker - get db', function (done) {
+        con.count({
+            from: 'Customers',
+            where: {
+                customerName: {
+                    like: '%o'
+                }
+            },
+            'db': true
+        }).then(function (results) {
+            expect(results.name).to.equal("Demo");
+            expect(results.tables).to.be.an('array').length(11);
+            const categories = results.tables.find(q => q.name === "Categories");
+            expect(categories.columns).to.be.an('object');
+            expect(Object.keys(categories.columns).length).to.equal(3)
+            expect(categories.columns.categoryId.primaryKey).to.equal(true)
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
     it('add middleware', function (done) {
         con.addMiddleware(function (request) {
             if (request.name == "count" && request.query['add10']) {
