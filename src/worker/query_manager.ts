@@ -43,7 +43,7 @@ export class QueryManager {
         const db = this.db;
         Object.defineProperty(middlewareContext, 'database', {
             get() {
-                return userDbSchema(db)
+                return userDbSchema(db);
             }
         });
         return promise<void>((res) => {
