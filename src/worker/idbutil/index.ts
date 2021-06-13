@@ -1,5 +1,4 @@
 import { DbMeta, TableMeta } from "@worker/model";
-import { TABLE_STATE } from "@worker/enums";
 import { IDB_MODE, QUERY_OPTION, promise } from "@/common";
 import { LogHelper } from "@worker/utils";
 
@@ -121,9 +120,8 @@ export class IDBUtil {
                         }
                     });
                 }
-                const createStates = [TABLE_STATE.Create, TABLE_STATE.Delete];
                 db.tables.forEach(table => {
-                    if (createStates.indexOf(table.state) >= 0) {
+                    if (table.upgrade) {
                         createObjectStore(table);
                     }
                 });

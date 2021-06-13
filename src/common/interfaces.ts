@@ -18,7 +18,7 @@ export type TColumns = {
 export interface ITable {
     name: string;
     columns: TColumns;
-    version?: number;
+    upgrade?: boolean;
 }
 
 export interface IColumnOption {

@@ -13,7 +13,6 @@ import { Union } from "./union";
 import { Remove } from "@executors/remove";
 import { Clear } from "@executors/clear";
 import { Transaction } from "@executors/transaction";
-import { TABLE_STATE } from "./enums";
 import { LogHelper, getError, promiseReject, variableFromPath, userDbSchema, getLength } from "@worker/utils";
 
 export class QueryManager {
@@ -244,9 +243,11 @@ export class QueryManager {
                 version: query.version
             });
         }
-        return pResult.then(() => {
-            return this.db;
-        });
+        return this.closeDb().then(_ => {
+            return pResult.then(() => {
+                return this.db;
+            });
+        })
     }
 
     initDb(dataBase?: IDataBase) {
@@ -258,69 +259,26 @@ export class QueryManager {
 
         const dbMeta = dataBase ? new DbMeta(dataBase) : this.db;
         this.util = new IDBUtil(dbMeta);
-        const upgradeDbSchema = (result) => {
-            return promise((res, rej) => {
-                MetaHelper.get(MetaHelper.dbSchema, this.util).then((savedDb: DbMeta) => {
-                    let shouldReCreateDb = false;
-                    let dbVersion;
-                    if (savedDb) {
-                        dbVersion = savedDb.version;
 
-                        savedDb.tables.forEach((savedTable, index) => {
-                            const providedTable = dbMeta.tables[index];
-
-                            if (providedTable) {
-                                if (savedTable.version < providedTable.version) {
-                                    providedTable.state = TABLE_STATE.Delete;
-                                    shouldReCreateDb = true;
-                                    if (dbVersion < providedTable.version) {
-                                        dbVersion = providedTable.version;
-                                    }
-                                }
-                                else {
-                                    providedTable.state = null;
-                                }
-                            }
-                        });
-                    }
-
-                    if (shouldReCreateDb) {
-                        dbMeta.version = dbVersion;
-                        this.terminate().then(_ => {
-                            this.util = new IDBUtil(dbMeta);
-                            this.util.initDb().then((isCreated) => {
-                                res(isCreated);
-                            }).catch(rej);
-                        });
-
-                        return;
-                    }
-                    else if (!result) {
-                        this.db = savedDb;
-                    }
-                    res(result);
-                });
-            });
-        };
         return promise<boolean>((res, rej) => {
             this.util.initDb().then((isCreated) => {
                 if (isCreated) {
-                    return isCreated;
-                }
-                return upgradeDbSchema(isCreated);
-            }).then(result => {
-                if (result) {
+                    this.db = dbMeta;
                     MetaHelper.set(
                         MetaHelper.dbSchema, dbMeta,
                         this.util
                     ).then(() => {
-                        this.db = dbMeta;
                         res(true);
                     });
                 }
                 else {
-
-                    res(false);
+                    MetaHelper.get(
+                        MetaHelper.dbSchema,
+                        this.util
+                    ).then((value: any) => {
+                        this.db = value;
+                        res(false);
+                    });
                 }
             }).catch(rej);
         });

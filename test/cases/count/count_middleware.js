@@ -1,6 +1,6 @@
 var JsStoreOptions = {
     countMiddleware: function (request, context) {
-        debugger;
+        // debugger;
         // do not delete data
         const name = context.database.name;
         if (request.name == "count" && request.query['add5']) {

@@ -29,7 +29,7 @@ describe('Db Update data type Test', function () {
             const processIdColumn = schema.tables[0].columns[1];
             expect(processIdColumn.name).to.equal("process_id");
             expect(processIdColumn.dataType).to.equal("number");
-            expect(schema.tables[0].version).equal(1)
+            // expect(schema.tables[0].version).equal(1)
             expect(schema.version).equal(1);
             done();
         }).catch(function (err) {
@@ -52,7 +52,7 @@ describe('Db Update data type Test', function () {
             const processIdColumn = schema.tables[0].columns[1];
             expect(processIdColumn.name).to.equal("process_id");
             expect(processIdColumn.dataType).to.equal("string");
-            expect(schema.tables[0].version).equal(2);
+            expect(schema.tables[0].upgrade).equal(true);
             expect(schema.version).equal(2);
             done();
         }).catch(function (err) {
@@ -101,11 +101,13 @@ var DbUpdateTest = {
                     "dataType": "string"
                 },
             },
-            version: 2
+            // upgrade:false
         },
             dataBase = {
                 name: 'DbUpdateTest',
-                tables: [people]
+                tables: [people],
+                version: 2
+
             };
         return dataBase;
     },

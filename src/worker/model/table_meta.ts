@@ -1,16 +1,14 @@
 import { ITable } from "@/common";
-import { TABLE_STATE } from "@/worker/enums";
 import { IColumn } from "@/worker/interfaces";
 
 export class TableMeta {
     name: string;
     columns: IColumn[];
     primaryKey: string;
-    state: TABLE_STATE;
-    version: number;
     autoIncColumnValue = {};
+    upgrade: boolean;
 
-    constructor(table: ITable, dbVersion: number) {
+    constructor(table: ITable) {
         const columns = [];
         for (const columnName in table.columns) {
             const column: IColumn = table.columns[columnName] as any;
@@ -26,14 +24,8 @@ export class TableMeta {
         }
         this.columns = columns;
         this.name = table.name;
-        this.version = table.version || 1;
-        if (dbVersion > this.version) {
-            this.version = dbVersion;
-        }
-        this.setState_();
+        this.upgrade = table.upgrade == null ? true : table.upgrade;
     }
 
-    private setState_() {
-        this.state = TABLE_STATE.Create;
-    }
+
 }

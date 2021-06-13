@@ -10,7 +10,6 @@ export const userDbSchema = (db: DbMeta) => {
     db.tables.forEach(table => {
         const tableAsObj = {
             name: table.name,
-            version: table.version,
             columns: {}
         } as ITable;
         table.columns.forEach(column => {

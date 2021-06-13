@@ -154,7 +154,7 @@ describe('select join order test', function () {
         })
     });
 
-    it('drop db', function (done) {
+    it('drop db student', function (done) {
         con.dropDb().then(function () {
             done();
         }).catch(function (err) {

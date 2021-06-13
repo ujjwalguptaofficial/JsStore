@@ -10,6 +10,7 @@ export class DbMeta {
 
     constructor(db: IDataBase) {
         this.name = db.name;
+        this.version = db.version || 1;
         db.tables.push({
             name: MetaHelper.tableName,
             columns: {
@@ -19,11 +20,12 @@ export class DbMeta {
                 value: {
                     enableSearch: false
                 }
-            }
+            },
+            upgrade: this.version === 1
         })
         this.tables = db.tables.map(table => {
-            return new TableMeta(table, db.version);
+            return new TableMeta(table);
         });
-        this.version = db.version || 1;
+
     }
 }
