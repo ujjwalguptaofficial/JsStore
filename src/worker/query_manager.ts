@@ -247,7 +247,7 @@ export class QueryManager {
             return pResult.then(() => {
                 return this.db;
             });
-        })
+        });
     }
 
     initDb(dataBase?: IDataBase) {
