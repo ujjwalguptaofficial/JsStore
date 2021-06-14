@@ -19,7 +19,7 @@ export type TColumns = {
 export interface ITable {
     name: string;
     columns: TColumns;
-    alter?: AlterQuery
+    alter?: AlterQuery;
 }
 
 export interface IColumn extends IColumnOption {

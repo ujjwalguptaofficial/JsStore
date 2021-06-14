@@ -8,7 +8,7 @@ export type AlterQuery = {
         drop: TColumns,
         modify: TColumns
     }
-}
+};
 
 export type OrderQuery = {
 
