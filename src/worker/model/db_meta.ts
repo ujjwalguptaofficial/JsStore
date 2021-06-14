@@ -5,7 +5,6 @@ import { MetaHelper } from "@worker/meta_helper";
 export class DbMeta {
     name: string;
     version: number;
-
     tables: TableMeta[];
 
     constructor(db: IDataBase) {
@@ -21,7 +20,6 @@ export class DbMeta {
                     enableSearch: false
                 }
             },
-            upgrade: this.version === 1
         })
         this.tables = db.tables.map(table => {
             return new TableMeta(table);

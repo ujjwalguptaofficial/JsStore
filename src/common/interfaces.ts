@@ -19,7 +19,6 @@ export type TColumns = {
 export interface ITable {
     name: string;
     columns: TColumns;
-    upgrade?: boolean;
     alter?: AlterQuery
 }
 

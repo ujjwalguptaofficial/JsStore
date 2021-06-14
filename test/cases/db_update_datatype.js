@@ -52,7 +52,6 @@ describe('Db Update data type Test', function () {
             const processIdColumn = schema.tables[0].columns[1];
             expect(processIdColumn.name).to.equal("process_id");
             expect(processIdColumn.dataType).to.equal("string");
-            expect(schema.tables[0].upgrade).equal(true);
             expect(schema.version).equal(2);
             done();
         }).catch(function (err) {

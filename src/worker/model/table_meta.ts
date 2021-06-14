@@ -5,7 +5,6 @@ export class TableMeta {
     columns: IColumn[];
     primaryKey: string;
     autoIncColumnValue = {};
-    upgrade: boolean;
     alter?: AlterQuery;
 
     constructor(table: ITable) {
@@ -24,7 +23,6 @@ export class TableMeta {
         }
         this.columns = columns;
         this.name = table.name;
-        this.upgrade = table.upgrade == null ? true : table.upgrade;
         this.alter = table.alter || {};
     }
 

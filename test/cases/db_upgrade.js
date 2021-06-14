@@ -30,7 +30,6 @@ describe('Db upgrade Test', function () {
             expect(processIdColumn.dataType).to.equal("number");
             expect(schema.tables[0].columns[1].encrypt).equal(true)
             expect(schema.version).equal(1);
-            expect(schema.tables[1].upgrade).equal(true);
             done();
         }).catch(function (err) {
             done(err);
