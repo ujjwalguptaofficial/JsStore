@@ -40,7 +40,6 @@ describe('Db upgrade Test', function () {
     it('change db to v2', function (done) {
         var db = DbUpgradeTest.getDbSchema();
         db.version = 2;
-        db.tables[0].upgrade = false;
         connection.initDb(db).then(function (isDbCreated) {
             expect(isDbCreated).to.be.an('boolean').equal(true);
             done();
@@ -68,8 +67,7 @@ describe('Db upgrade Test', function () {
             expect(processIdColumn.name).to.equal("process_id");
             expect(processIdColumn.dataType).to.equal("number");
             // expect(schema.tables[0].version).equal(2)
-            expect(schema.tables[0].upgrade).equal(false);
-            expect(schema.tables[1].upgrade).equal(false);
+
             expect(schema.version).equal(2);
             expect(schema.tables[0].columns[1].encrypt).equal(true)
             done();
@@ -98,11 +96,11 @@ describe('Db upgrade Test', function () {
         });
     });
 
-    it('count data to ensure data is deleted', function () {
+    it('count data to ensure data is there', function () {
         return connection.count({
             from: "test",
         }).then(results => {
-            expect(results).to.equal(0);
+            expect(results).to.equal(3);
         })
     })
 
@@ -112,8 +110,6 @@ describe('Db upgrade Test', function () {
             expect(processIdColumn.name).to.equal("process_id");
             expect(processIdColumn.dataType).to.equal("number");
             // expect(schema.tables[0].version).equal(2)
-            expect(schema.tables[0].upgrade).equal(true);
-            expect(schema.tables[1].upgrade).equal(false);
             expect(schema.version).equal(3);
             expect(schema.tables[0].columns[1].encrypt).equal(false)
             done();

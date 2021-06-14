@@ -1,6 +1,7 @@
 import { DbMeta, TableMeta } from "@worker/model";
-import { IDB_MODE, QUERY_OPTION, promise } from "@/common";
-import { LogHelper } from "@worker/utils";
+import { IDB_MODE, QUERY_OPTION, promise, forObj, IColumn } from "@/common";
+import { LogHelper, getKeys } from "@worker/utils";
+import { Insert } from "../executors/insert";
 
 export class IDBUtil {
 
@@ -76,9 +77,12 @@ export class IDBUtil {
 
         const db = this.db;
         let isDbCreated = false;
+        const version = db.version;
+        const dbDeleted: {
+            [tableName: string]: Array<IColumn>
+        } = {};
         const initLogic = (res, rej) => {
-            const dbOpenRequest = indexedDB.open(db.name, db.version);
-
+            const dbOpenRequest = indexedDB.open(db.name, version);
             dbOpenRequest.onsuccess = () => {
                 this.con = dbOpenRequest.result;
                 this.con.onversionchange = (e: any) => {
@@ -86,6 +90,11 @@ export class IDBUtil {
                     e.target.close(); // Manually close our connection to the db
                     // }
                 }
+                // this.createTransaction(getKeys(dbDeleted));
+                // forObj(dbDeleted, (tableName, columns) => {
+                //     const objectStore = this.objectStore(tableName);
+                //     objectStore.getAll()
+                // })
                 res(isDbCreated);
             }
 
@@ -94,9 +103,15 @@ export class IDBUtil {
                 rej(e);
             };
 
-            dbOpenRequest.onupgradeneeded = function (e) {
-                const upgradeConnection: IDBDatabase = (e as any).target.result;
+            dbOpenRequest.onupgradeneeded = (e: IDBVersionChangeEvent) => {
+                const target: {
+                    result: IDBDatabase,
+                    transaction: IDBTransaction
+                } = (e as any).target
+                const upgradeConnection = target.result;
                 isDbCreated = true;
+                const transaction = target.transaction;
+                const storeNames = upgradeConnection.objectStoreNames;
                 const createObjectStore = (table: TableMeta) => {
                     const option: IDBObjectStoreParameters = table.primaryKey ? {
                         keyPath: table.primaryKey
@@ -104,26 +119,57 @@ export class IDBUtil {
                             autoIncrement: true
                         }
 
-                    // Delete the old datastore.    
-                    if (upgradeConnection.objectStoreNames.contains(table.name)) {
-                        upgradeConnection.deleteObjectStore(table.name);
-                    }
-
                     const store = upgradeConnection.createObjectStore(table.name, option);
                     table.columns.forEach(column => {
-                        if (column.enableSearch) {
-                            const columnName = column.name;
-                            const options = column.primaryKey ? { unique: true } : { unique: column.unique };
-                            options['multiEntry'] = column.multiEntry;
-                            const keyPath = column.keyPath == null ? columnName : column.keyPath;
-                            store.createIndex(columnName, keyPath, options);
-                        }
+                        addColumn(store, column)
                     });
                 }
+                const addColumn = (store: IDBObjectStore, column: IColumn) => {
+                    if (column.enableSearch) {
+                        const columnName = column.name;
+                        const options = column.primaryKey ? { unique: true } : { unique: column.unique };
+                        options['multiEntry'] = column.multiEntry;
+                        const keyPath = column.keyPath == null ? columnName : column.keyPath;
+                        store.createIndex(columnName, keyPath, options);
+                    }
+                }
+                const deleteColumn = (store: IDBObjectStore, table: TableMeta, columnName: string) => {
+                    const index = table.columns.findIndex(q => q.name === columnName);
+                    if (index >= 0) {
+                        table.columns.splice(index, 1);
+                        store.deleteIndex(columnName);
+                    }
+                }
                 db.tables.forEach(table => {
-                    if (table.upgrade) {
+                    if (!storeNames.contains(table.name)) {
                         createObjectStore(table);
                     }
+                    const alterQuery = table.alter[version];
+                    if (!alterQuery) return;
+                    const store = transaction.objectStore(table.name);
+                    forObj(
+                        alterQuery.add || {}, ((_, column) => {
+                            addColumn(store, column);
+                            table.columns.push(column);
+                        })
+                    )
+                    forObj(
+                        alterQuery.drop || {}, ((columnName) => {
+                            deleteColumn(store, table, columnName);
+                        })
+                    )
+                    forObj(
+                        alterQuery.modify || {}, ((columnName, column: IColumn) => {
+                            const shouldDelete = column.multiEntry || column.keyPath || column.unique;
+                            let targetColumn = table.columns.find(q => q.name === columnName);
+                            const newColumn = Object.assign(targetColumn, column);
+                            if (shouldDelete) {
+                                deleteColumn(store, table, columnName);
+                                addColumn(store, newColumn);
+                                table.columns.push(newColumn);
+                            }
+                        })
+                    )
                 });
             }
         }

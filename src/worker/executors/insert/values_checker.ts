@@ -1,6 +1,5 @@
 import { TableMeta } from "@/worker/model/table_meta";
-import { promise, IColumnOption, TStringAny, ERROR_TYPE, DATA_TYPE, InsertQuery } from "@/common";
-import { IColumn } from "@/worker/interfaces";
+import { IColumn, TStringAny, ERROR_TYPE, DATA_TYPE, InsertQuery } from "@/common";
 import { getDataType, LogHelper, isNull } from "@/worker/utils";
 
 

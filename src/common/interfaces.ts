@@ -1,5 +1,5 @@
 import { ERROR_TYPE, CONNECTION_STATUS } from "./enums";
-import { SqlWebResult } from "./types";
+import { SqlWebResult, AlterQuery } from "./types";
 
 export interface IError {
     type: ERROR_TYPE;
@@ -15,10 +15,16 @@ export interface IDataBase {
 export type TColumns = {
     [columnName: string]: IColumnOption
 };
+
 export interface ITable {
     name: string;
     columns: TColumns;
     upgrade?: boolean;
+    alter?: AlterQuery
+}
+
+export interface IColumn extends IColumnOption {
+    name: string;
 }
 
 export interface IColumnOption {

@@ -1,5 +1,14 @@
-import { IError } from "./interfaces";
+import { IError, IColumn, TColumns } from "./interfaces";
 import { API, EVENT } from "./enums";
+
+
+export type AlterQuery = {
+    [version: number]: {
+        add: TColumns,
+        drop: TColumns,
+        modify: TColumns
+    }
+}
 
 export type OrderQuery = {
 

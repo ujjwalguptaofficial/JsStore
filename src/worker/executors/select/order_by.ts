@@ -1,7 +1,6 @@
 import { Select } from "./";
-import { IColumn } from "@/worker/interfaces";
 import { removeSpace, getDataType, getError, LogHelper } from "@/worker/utils";
-import { ERROR_TYPE, DATA_TYPE, CaseOption, OrderQuery } from "@/common";
+import { ERROR_TYPE, DATA_TYPE, CaseOption, IColumn, OrderQuery } from "@/common";
 
 export const processGroupDistinctAggr = function (this: Select) {
     if (this.query.distinct) {

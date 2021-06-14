@@ -26,6 +26,5 @@ export class DbMeta {
         this.tables = db.tables.map(table => {
             return new TableMeta(table);
         });
-
     }
 }

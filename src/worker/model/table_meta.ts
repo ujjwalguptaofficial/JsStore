@@ -1,5 +1,4 @@
-import { ITable } from "@/common";
-import { IColumn } from "@/worker/interfaces";
+import { ITable, AlterQuery, IColumn } from "@/common";
 
 export class TableMeta {
     name: string;
@@ -7,6 +6,7 @@ export class TableMeta {
     primaryKey: string;
     autoIncColumnValue = {};
     upgrade: boolean;
+    alter?: AlterQuery;
 
     constructor(table: ITable) {
         const columns = [];
@@ -25,6 +25,7 @@ export class TableMeta {
         this.columns = columns;
         this.name = table.name;
         this.upgrade = table.upgrade == null ? true : table.upgrade;
+        this.alter = table.alter || {};
     }
 
 

@@ -1,7 +1,6 @@
-import { ITable, DATA_TYPE, ERROR_TYPE } from "@/common";
+import { IColumn, DATA_TYPE, ERROR_TYPE } from "@/common";
 import { LogHelper, isNull, getDataType } from "@worker/utils";
-import { TableMeta } from "@worker/model/table_meta";
-import { IColumn } from "@worker/interfaces";
+import { TableMeta } from "@worker/model";
 
 export class SchemaChecker {
     table: TableMeta;

@@ -107,7 +107,18 @@ describe('Multi Entry Test', function () {
         var db = MultiEntryTest.getDbSchema();
         db.version = 2;
         // db.tables[0].version = 2;
-        db.tables[0].columns[Object.keys(db.tables[0].columns)[1]].multiEntry = true;
+        const columnName = "tags"
+        const alter = {
+            2: {
+                modify: {
+                    tags: {
+                        multiEntry: true
+                    }
+                }
+            }
+        }
+
+        db.tables[0].alter = alter;
         con.initDb(db).then(function (isDbCreated) {
             expect(isDbCreated).to.be.an('boolean').equal(true);
             done();
@@ -116,12 +127,12 @@ describe('Multi Entry Test', function () {
         });
     });
 
-    it('insert data into table multiEntryTest', function (done) {
+    it('select data from table multiEntryTest', function (done) {
         var values = MultiEntryTest.getValues();
         //console.log(values);
-        con.insert({
-            into: 'people',
-            values: values
+        con.count({
+            from: 'people',
+            // values: values
         }).
             then(function (results) {
                 expect(results).to.be.an('number').equal(3);
