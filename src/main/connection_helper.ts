@@ -263,21 +263,4 @@ export class ConnectionHelper {
       this.queryManager.run(requestForWorker);
     }
   }
-
-  // protected callEvent_(event: EVENT, args: any[]) {
-  //   const events = this.eventQueue.filter(function (ev) {
-  //     if (ev.event === event) {
-  //       return ev;
-  //     }
-  //   });
-  //   // events.forEach(function (ev) {
-  //   //   ev.callback(...args);
-  //   // });
-  //   return Promise.all(
-  //     events.map(cb => {
-  //       const result = cb.callback.call(this, ...args);
-  //       return result && result.then ? result : Promise.resolve(result);
-  //     })
-  //   );
-  // }
 }

@@ -264,6 +264,7 @@ export class QueryManager {
             this.util.initDb().then((dbInfo) => {
                 if (dbInfo.isCreated) {
                     this.db = dbMeta;
+                    dbInfo.database = userDbSchema(this.db);
                     MetaHelper.set(
                         MetaHelper.dbSchema, dbMeta,
                         this.util
@@ -277,6 +278,7 @@ export class QueryManager {
                         this.util
                     ).then((value: any) => {
                         this.db = value;
+                        dbInfo.database = userDbSchema(this.db);
                         res(dbInfo);
                     });
                 }

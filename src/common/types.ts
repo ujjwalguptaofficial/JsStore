@@ -177,7 +177,7 @@ export type TMiddleware = (request: WebWorkerRequest) => Promise<any>;
 
 export type InitDbResult = {
     isCreated: Boolean,
-    database: IDataBase,
+    database?: IDataBase,
     oldVersion: number,
     newVersion: number
 }

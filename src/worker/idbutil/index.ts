@@ -91,7 +91,6 @@ export class IDBUtil {
 
                 res({
                     isCreated: isDbCreated,
-                    database: userDbSchema(db),
                     oldVersion: oldVersion,
                     newVersion: dbVersion
                 } as InitDbResult);
@@ -144,32 +143,37 @@ export class IDBUtil {
                     if (!storeNames.contains(table.name)) {
                         createObjectStore(table);
                     }
-                    const alterQuery = table.alter[dbVersion];
-                    if (!alterQuery) return;
-                    const store = transaction.objectStore(table.name);
-                    forObj(
-                        alterQuery.add || {}, ((_, column) => {
-                            addColumn(store, column);
-                            table.columns.push(column);
-                        })
-                    )
-                    forObj(
-                        alterQuery.drop || {}, ((columnName) => {
-                            deleteColumn(store, table, columnName);
-                        })
-                    )
-                    forObj(
-                        alterQuery.modify || {}, ((columnName, column: IColumn) => {
-                            const shouldDelete = column.multiEntry || column.keyPath || column.unique;
-                            let targetColumn = table.columns.find(q => q.name === columnName);
-                            const newColumn = Object.assign(targetColumn, column);
-                            if (shouldDelete) {
-                                deleteColumn(store, table, columnName);
-                                addColumn(store, newColumn);
-                                table.columns.push(newColumn);
-                            }
-                        })
-                    )
+                    for (let i = oldVersion; i <= dbVersion; i++) {
+                        const alterQuery = table.alter[i];
+                        if (alterQuery) {
+                            const store = transaction.objectStore(table.name);
+                            forObj(
+                                alterQuery.add || {}, ((name, column) => {
+                                    column.name = name;
+                                    addColumn(store, column);
+                                    table.columns.push(column);
+                                })
+                            )
+                            forObj(
+                                alterQuery.drop || {}, ((columnName) => {
+                                    deleteColumn(store, table, columnName);
+                                })
+                            )
+                            forObj(
+                                alterQuery.modify || {}, ((columnName, column: IColumn) => {
+                                    const shouldDelete = column.multiEntry || column.keyPath || column.unique;
+                                    let targetColumn = table.columns.find(q => q.name === columnName);
+                                    const newColumn = Object.assign(targetColumn, column);
+                                    newColumn.name = columnName;
+                                    if (shouldDelete) {
+                                        deleteColumn(store, table, columnName);
+                                        addColumn(store, newColumn);
+                                        table.columns.push(newColumn);
+                                    }
+                                })
+                            )
+                        }
+                    }
                 });
             }
         }

@@ -119,8 +119,19 @@ describe('Multi Entry Test', function () {
         }
 
         db.tables[0].alter = alter;
+        let isUpgradeCalled = false;
+        con.on("upgrade", (dataBase, oldVersion, newVersion) => {
+            isUpgradeCalled = true;
+            expect(db.version).equal(dataBase.version);
+            expect(db.name).equal(dataBase.name);
+            expect(db.tables.length).equal(dataBase.tables.length);
+            expect(oldVersion).equal(1);
+            expect(newVersion).equal(2);
+            expect(dataBase.tables[0].columns['tags'].multiEntry).equal(true);
+        })
         con.initDb(db).then(function (isDbCreated) {
             expect(isDbCreated).to.be.an('boolean').equal(true);
+            expect(isUpgradeCalled).to.be.an('boolean').equal(true);
             done();
         }).catch(function (err) {
             done(err);
