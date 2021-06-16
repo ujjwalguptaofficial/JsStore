@@ -1,7 +1,7 @@
 import { DbMeta, TableMeta } from "@worker/model";
-import { IDB_MODE, QUERY_OPTION, promise, forObj, IColumn } from "@/common";
-import { LogHelper, getKeys } from "@worker/utils";
-import { Insert } from "../executors/insert";
+import { IDB_MODE, QUERY_OPTION, promise, forObj, IColumn, IDataBase, InitDbResult } from "@/common";
+import { LogHelper, userDbSchema } from "@worker/utils";
+
 
 export class IDBUtil {
 
@@ -77,12 +77,10 @@ export class IDBUtil {
 
         const db = this.db;
         let isDbCreated = false;
-        const version = db.version;
-        const dbDeleted: {
-            [tableName: string]: Array<IColumn>
-        } = {};
+        const dbVersion = db.version;
+        let oldVersion;
         const initLogic = (res, rej) => {
-            const dbOpenRequest = indexedDB.open(db.name, version);
+            const dbOpenRequest = indexedDB.open(db.name, dbVersion);
             dbOpenRequest.onsuccess = () => {
                 this.con = dbOpenRequest.result;
                 this.con.onversionchange = (e: any) => {
@@ -90,12 +88,13 @@ export class IDBUtil {
                     e.target.close(); // Manually close our connection to the db
                     // }
                 }
-                // this.createTransaction(getKeys(dbDeleted));
-                // forObj(dbDeleted, (tableName, columns) => {
-                //     const objectStore = this.objectStore(tableName);
-                //     objectStore.getAll()
-                // })
-                res(isDbCreated);
+
+                res({
+                    isCreated: isDbCreated,
+                    database: userDbSchema(db),
+                    oldVersion: oldVersion,
+                    newVersion: dbVersion
+                } as InitDbResult);
             }
 
             dbOpenRequest.onerror = (e) => {
@@ -104,6 +103,7 @@ export class IDBUtil {
             };
 
             dbOpenRequest.onupgradeneeded = (e: IDBVersionChangeEvent) => {
+                oldVersion = e.oldVersion;
                 const target: {
                     result: IDBDatabase,
                     transaction: IDBTransaction
@@ -144,7 +144,7 @@ export class IDBUtil {
                     if (!storeNames.contains(table.name)) {
                         createObjectStore(table);
                     }
-                    const alterQuery = table.alter[version];
+                    const alterQuery = table.alter[dbVersion];
                     if (!alterQuery) return;
                     const store = transaction.objectStore(table.name);
                     forObj(
@@ -173,6 +173,6 @@ export class IDBUtil {
                 });
             }
         }
-        return promise<boolean>(initLogic)
+        return promise<InitDbResult>(initLogic)
     }
 }

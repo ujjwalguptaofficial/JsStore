@@ -41,13 +41,29 @@ describe("initiate database", function () {
         con.on("requestQueueEmpty", function () {
             isEmpty = true;
         });
+        con.on("open", (db) => {
+            expect(db.version).equal(1);
+            expect(db.name).equal("Demo");
+        })
+        con.on("create", (db) => {
+            expect(db.version).equal(1);
+            expect(db.name).equal("Demo");
+        })
+        var isUpgradeCalled = false;
+        con.on("upgrade", (db) => {
+            isUpgradeCalled = true;
+        })
         con.initDb(getDemoDbSchema()).then(function (isDbCreated) {
             console.log('Database created', isDbCreated);
             expect(isDbCreated).to.be.an('boolean').equal(true);
             expect(isFilled).to.be.an('boolean').equal(true);
             setTimeout(function () {
                 expect(isEmpty).to.be.an('boolean').equal(true);
+                expect(isUpgradeCalled).to.be.an('boolean').equal(false);
                 expect(con.requestQueue_.length).to.be.equal(0);
+                con.off("open");
+                con.off("create");
+                con.off("upgrade");
                 done();
             }, 2000);
         });

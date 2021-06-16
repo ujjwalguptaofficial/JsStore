@@ -4,6 +4,7 @@ import {
   EVENT, promise, IDataBase, IDbInfo, TMiddleware,
   promiseResolve
 } from "../common";
+import { EventBus } from "./event_bus";
 
 declare var JsStoreWorker;
 export class ConnectionHelper {
@@ -16,9 +17,9 @@ export class ConnectionHelper {
 
   private inactivityTimer_ = -1000;
 
-  protected eventQueue: EventQueue[] = [];
-
   protected middlewares: TMiddleware[] = [];
+
+  protected eventBus_: EventBus = new EventBus(this);
 
   // these apis have special permissions. These apis dont wait for database open.
   private whiteListApi_ = [
@@ -92,7 +93,7 @@ export class ConnectionHelper {
             }
             else {
               this.isDbIdle_ = true;
-              this.callEvent(EVENT.RequestQueueEmpty, []);
+              this.eventBus_.emit(EVENT.RequestQueueEmpty, []);
             }
             break;
         }
@@ -185,7 +186,7 @@ export class ConnectionHelper {
           reject(err);
         };
         if (this.requestQueue_.length === 0) {
-          this.callEvent(EVENT.RequestQueueFilled, []);
+          this.eventBus_.emit(EVENT.RequestQueueFilled, []);
           const isConnectionApi = [API.CloseDb, API.DropDb, API.OpenDb, API.Terminate].indexOf(request.name) >= 0;
           if (!isConnectionApi && this.isDbIdle_ && this.isConOpened_) {
             this.openDb_();
@@ -263,14 +264,20 @@ export class ConnectionHelper {
     }
   }
 
-  private callEvent(event: EVENT, args: any[]) {
-    const events = this.eventQueue.filter(function (ev) {
-      if (ev.event === event) {
-        return ev;
-      }
-    });
-    events.forEach(function (ev) {
-      ev.callback(...args);
-    });
-  }
+  // protected callEvent_(event: EVENT, args: any[]) {
+  //   const events = this.eventQueue.filter(function (ev) {
+  //     if (ev.event === event) {
+  //       return ev;
+  //     }
+  //   });
+  //   // events.forEach(function (ev) {
+  //   //   ev.callback(...args);
+  //   // });
+  //   return Promise.all(
+  //     events.map(cb => {
+  //       const result = cb.callback.call(this, ...args);
+  //       return result && result.then ? result : Promise.resolve(result);
+  //     })
+  //   );
+  // }
 }

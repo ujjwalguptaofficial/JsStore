@@ -1,4 +1,4 @@
-import { IError, IColumn, TColumns } from "./interfaces";
+import { IError, IColumn, TColumns, IDataBase } from "./interfaces";
 import { API, EVENT } from "./enums";
 
 
@@ -174,3 +174,10 @@ export type IntersectQuery = {
 export type TStringAny = { [key: string]: any };
 
 export type TMiddleware = (request: WebWorkerRequest) => Promise<any>;
+
+export type InitDbResult = {
+    isCreated: Boolean,
+    database: IDataBase,
+    oldVersion: number,
+    newVersion: number
+}

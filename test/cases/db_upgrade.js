@@ -87,8 +87,32 @@ describe('Db upgrade Test', function () {
         var db = DbUpgradeTest.getDbSchema();
         db.version = 3;
         db.tables[0].columns.process_id.encrypt = false;
+        let isUpgradeCalled = false;
+        connection.on("upgrade", (dataBase, oldVersion, newVersion) => {
+            isUpgradeCalled = true;
+            expect(db.version).equal(dataBase.version);
+            expect(db.name).equal(dataBase.name);
+            expect(db.tables.length).equal(dataBase.tables.length);
+            expect(oldVersion).equal(2);
+            expect(newVersion).equal(3);
+        })
+        let isOpenCalled = false;
+        connection.on("open", () => {
+            expect(isUpgradeCalled).to.be.an('boolean').equal(true);
+            con.off("upgrade");
+            isOpenCalled = true;
+            debugger;
+        })
+        let isCreateCalled = false;
+        connection.on("create", () => {
+            isCreateCalled = true;
+        })
         connection.initDb(db).then(function (isDbCreated) {
             expect(isDbCreated).to.be.an('boolean').equal(true);
+            expect(isCreateCalled).to.be.an('boolean').equal(false);
+            expect(isUpgradeCalled).to.be.an('boolean').equal(true);
+            expect(isOpenCalled).to.be.an('boolean').equal(true);
+            con.off("open");
             done();
         }).catch(function (err) {
             done(err);

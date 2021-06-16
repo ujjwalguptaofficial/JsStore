@@ -261,14 +261,14 @@ export class QueryManager {
         this.util = new IDBUtil(dbMeta);
 
         return promise<boolean>((res, rej) => {
-            this.util.initDb().then((isCreated) => {
-                if (isCreated) {
+            this.util.initDb().then((dbInfo) => {
+                if (dbInfo.isCreated) {
                     this.db = dbMeta;
                     MetaHelper.set(
                         MetaHelper.dbSchema, dbMeta,
                         this.util
                     ).then(() => {
-                        res(true);
+                        res(dbInfo);
                     });
                 }
                 else {
@@ -277,7 +277,7 @@ export class QueryManager {
                         this.util
                     ).then((value: any) => {
                         this.db = value;
-                        res(false);
+                        res(dbInfo);
                     });
                 }
             }).catch(rej);

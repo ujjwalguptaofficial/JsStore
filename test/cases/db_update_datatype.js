@@ -39,9 +39,28 @@ describe('Db Update data type Test', function () {
 
     it('change db', function (done) {
         var db = DbUpdateTest.getV2DbSchema();
+        let isUpgradeCalled = false;
+        con.on("upgrade", (dataBase, oldVersion, newVersion) => {
+            isUpgradeCalled = true;
+            expect(db.version).equal(dataBase.version);
+            expect(db.name).equal(dataBase.name);
+            expect(db.tables.length).equal(dataBase.tables.length);
+            expect(oldVersion).equal(1);
+            expect(newVersion).equal(2);
+        })
+        con.on("open", () => {
+            expect(isUpgradeCalled).to.be.an('boolean').equal(true);
+            con.off("upgrade");
+            done();
+        })
+        let isCreateCalled = false;
+        con.on("create", () => {
+            isCreateCalled = true;
+        })
         con.initDb(db).then(function (isDbCreated) {
             expect(isDbCreated).to.be.an('boolean').equal(true);
-            done();
+            expect(isCreateCalled).to.be.an('boolean').equal(false);
+            con.off("open");
         }).catch(function (err) {
             done(err);
         });

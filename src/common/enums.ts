@@ -70,7 +70,10 @@ export enum API {
 
 export enum EVENT {
     RequestQueueEmpty = "requestQueueEmpty",
-    RequestQueueFilled = "requestQueueFilled"
+    RequestQueueFilled = "requestQueueFilled",
+    Upgrade = "upgrade",
+    Create = "create",
+    Open = "open"
 }
 
 export enum QUERY_OPTION {

@@ -2,7 +2,7 @@ import { ConnectionHelper } from "./connection_helper";
 import {
     SelectQuery, CountQuery, InsertQuery, SetQuery,
     UpdateQuery, RemoveQuery, TranscationQuery,
-    API, IDataBase, EVENT, IPlugin, IntersectQuery, IDbInfo, TMiddleware
+    API, IDataBase, EVENT, IPlugin, IntersectQuery, IDbInfo, TMiddleware, promiseResolve, InitDbResult
 } from "../common";
 
 export class Connection extends ConnectionHelper {
@@ -12,7 +12,7 @@ export class Connection extends ConnectionHelper {
     }
 
     /**
-     * creates DataBase
+     * initiate DataBase
      *
      * @param {IDataBase} dataBase
      * @returns
@@ -20,10 +20,26 @@ export class Connection extends ConnectionHelper {
      */
     initDb(dataBase: IDataBase) {
         this.database = dataBase;
-        return this.pushApi<boolean>({
+        return this.pushApi({
             name: API.InitDb,
             query: dataBase
-        });
+        }).then((result: InitDbResult) => {
+            let promiseObj: Promise<any>;
+            const db = result.database;
+            if (result.isCreated) {
+                if (result.oldVersion) {
+                    promiseObj = this.eventBus_.emit(EVENT.Upgrade, db, result.oldVersion, result.newVersion);
+                }
+                else {
+                    promiseObj = this.eventBus_.emit(EVENT.Create, db);
+                }
+            }
+            return (promiseObj || promiseResolve()).then(_ => {
+                return this.eventBus_.emit(EVENT.Open, db);
+            }).then(_ => {
+                return result.isCreated;
+            })
+        })
     }
 
     /**
@@ -229,27 +245,11 @@ export class Connection extends ConnectionHelper {
     }
 
     on(event: EVENT, eventCallBack: Function) {
-        this.eventQueue.push({
-            event: event,
-            callback: eventCallBack
-        });
+        this.eventBus_.on(event, eventCallBack)
     }
 
     off(event: EVENT, eventCallBack: Function) {
-        if (eventCallBack) {
-            const index = this.eventQueue.findIndex(q => q.event === event);
-            this.eventQueue.splice(index, 0);
-            return;
-        }
-        const indexes = [];
-        this.eventQueue.forEach((ev, i) => {
-            if (ev.event === event) {
-                indexes.push(i);
-            }
-        });
-        indexes.forEach(i => {
-            this.eventQueue.splice(i, 1);
-        });
+        this.eventBus_.off(event, eventCallBack);
     }
 
     union<T>(query: SelectQuery[]) {
