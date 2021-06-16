@@ -33,7 +33,7 @@ export class EventBus {
     emit(event: string, ...args) {
         const events = this._events[event] || [];
         let index = 0;
-        let length = events.length;
+        const length = events.length;
         const results = [];
         const callMethod = () => {
             const eventCb = events[index++];
@@ -41,7 +41,7 @@ export class EventBus {
                 const result = eventCb.call(this._ctx, ...args);
                 return result && result.then ? result : Promise.resolve(result);
             }
-        }
+        };
 
         return new Promise<any[]>((res) => {
             const checkAndCall = () => {
@@ -49,14 +49,14 @@ export class EventBus {
                     callMethod().then(result => {
                         results.push(result);
                         checkAndCall();
-                    })
+                    });
                 }
                 else {
                     res(results);
                 }
             };
             checkAndCall();
-        })
+        });
 
     }
 

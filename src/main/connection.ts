@@ -38,8 +38,8 @@ export class Connection extends ConnectionHelper {
                 return this.eventBus_.emit(EVENT.Open, db);
             }).then(_ => {
                 return result.isCreated;
-            })
-        })
+            });
+        });
     }
 
     /**
@@ -245,7 +245,7 @@ export class Connection extends ConnectionHelper {
     }
 
     on(event: EVENT, eventCallBack: Function) {
-        this.eventBus_.on(event, eventCallBack)
+        this.eventBus_.on(event, eventCallBack);
     }
 
     off(event: EVENT, eventCallBack: Function) {

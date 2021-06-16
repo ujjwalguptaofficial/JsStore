@@ -176,8 +176,8 @@ export type TStringAny = { [key: string]: any };
 export type TMiddleware = (request: WebWorkerRequest) => Promise<any>;
 
 export type InitDbResult = {
-    isCreated: Boolean,
+    isCreated: boolean,
     database?: IDataBase,
     oldVersion: number,
     newVersion: number
-}
+};
