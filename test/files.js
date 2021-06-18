@@ -24,8 +24,14 @@ exports.list_of_files = [
     'test/cases/db_update_datatype.js',
     'test/cases/multiple_connection.js',
     'test/cases/db_upgrade.js',
+    'test/cases/service_worker.js',
     {
         pattern: 'test/static/*.json',
+        included: false,
+        served: true,
+    },
+    {
+        pattern: 'test/static/*.js',
         included: false,
         served: true,
     },
