@@ -4,7 +4,7 @@ var base = require('./karma.config.base');
 module.exports = function (config) {
     config.set({
         ...base(config), ...{
-            files: ['build/jsstore.js', 'build/jsstore.worker.js',
+            files: [
                 ...files.list_of_files
             ],
         }

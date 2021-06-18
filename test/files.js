@@ -1,5 +1,7 @@
 var nodeModules = "node_modules/"
 exports.list_of_files = [
+    'build/jsstore.js', 
+    'build/jsstore.worker.js',
     'test/scripts/common.js',
     'test/helpers/*.js',
     nodeModules + 'promise-polyfill/dist/polyfill.min.js',
