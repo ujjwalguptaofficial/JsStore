@@ -270,8 +270,8 @@ export class QueryManager {
                         if (value) {
                             value.tables.forEach((table, index) => {
                                 dbMeta.tables[index].autoIncColumnValue =
-                                    table.autoIncColumnValue
-                            })
+                                    table.autoIncColumnValue;
+                            });
                         }
                         this.db = dbMeta;
                         dbInfo.database = userDbSchema(this.db);
