@@ -39,8 +39,12 @@ describe('Db upgrade Test', function () {
     it('change db to v2', function (done) {
         var db = DbUpgradeTest.getDbSchema();
         db.version = 2;
+        connection.on('upgrade', function (oldVersion, newVersion, db) {
+            // debugger;
+        })
         connection.initDb(db).then(function (isDbCreated) {
             expect(isDbCreated).to.be.an('boolean').equal(true);
+            connection.off('upgrade');
             done();
         }).catch(function (err) {
             done(err);
@@ -62,7 +66,10 @@ describe('Db upgrade Test', function () {
 
     it('getDbSchema after updating db', function (done) {
         connection.openDb("DbUpgradeTest", 2).then(function (schema) {
-            const processIdColumn = schema.tables[0].columns[1];
+            const testTable = schema.tables[0];
+            expect(testTable.autoIncColumnValue['id']).equal(3);
+
+            const processIdColumn = testTable.columns[1];
             expect(processIdColumn.name).to.equal("process_id");
             expect(processIdColumn.dataType).to.equal("number");
             // expect(schema.tables[0].version).equal(2)
@@ -226,8 +233,8 @@ describe('Db upgrade Test', function () {
             expect(db.version).equal(dataBase.version);
             expect(db.name).equal(dataBase.name);
             expect(db.tables.length).equal(dataBase.tables.length);
-
-            const columns = dataBase.tables[0].columns;
+            const testTable = dataBase.tables[0];
+            const columns = testTable.columns;
 
             expect(Object.keys(columns)).length(4);
 
@@ -285,12 +292,44 @@ describe('Db upgrade Test', function () {
         }).then(results => {
             expect(results).to.equal(3);
         })
-        .catch(err => {
-            var error = {
-                "message": "Supplied value for column 'gender' have wrong data type",
-                "type": "wrong_data_type"
-            };
-            expect(err).to.be.an('object').eql(error);
+            .catch(err => {
+                var error = {
+                    "message": "Supplied value for column 'gender' have wrong data type",
+                    "type": "wrong_data_type"
+                };
+                expect(err).to.be.an('object').eql(error);
+            })
+    })
+
+    it('select data to ensure data is there', function () {
+        return connection.select({
+            from: "test",
+        }).then(results => {
+            expect(results).length(3);
+        })
+    })
+
+    it('insert valid data', function () {
+        return connection.insert({
+            into: "test",
+            values: [{
+                process_id: 2,
+                name: 'ujjwal',
+                gender: 'male'
+            }]
+        }).then(results => {
+            expect(results).to.equal(1);
+        })
+    })
+
+    it('select by name', function () {
+        return connection.count({
+            from: "test",
+            where: {
+                name: 'ujjwal'
+            }
+        }).then(results => {
+            expect(results).to.equal(1);
         })
     })
 

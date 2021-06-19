@@ -263,13 +263,24 @@ export class QueryManager {
         return promise<boolean>((res, rej) => {
             this.util.initDb().then((dbInfo) => {
                 if (dbInfo.isCreated) {
-                    this.db = dbMeta;
-                    dbInfo.database = userDbSchema(this.db);
-                    MetaHelper.set(
-                        MetaHelper.dbSchema, dbMeta,
+                    MetaHelper.get(
+                        MetaHelper.dbSchema,
                         this.util
-                    ).then(() => {
-                        res(dbInfo);
+                    ).then((value: DbMeta) => {
+                        if (value) {
+                            value.tables.forEach((table, index) => {
+                                dbMeta.tables[index].autoIncColumnValue =
+                                    table.autoIncColumnValue
+                            })
+                        }
+                        this.db = dbMeta;
+                        dbInfo.database = userDbSchema(this.db);
+                        MetaHelper.set(
+                            MetaHelper.dbSchema, dbMeta,
+                            this.util
+                        ).then(() => {
+                            res(dbInfo);
+                        });
                     });
                 }
                 else {

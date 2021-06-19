@@ -1,6 +1,7 @@
 import { DbMeta, TableMeta } from "@worker/model";
 import { IDB_MODE, QUERY_OPTION, promise, forObj, IColumn, IDataBase, InitDbResult } from "@/common";
 import { LogHelper, userDbSchema } from "@worker/utils";
+import { MetaHelper } from "../meta_helper";
 
 
 export class IDBUtil {
@@ -141,19 +142,19 @@ export class IDBUtil {
                 }
                 db.tables.forEach(table => {
                     if (!storeNames.contains(table.name)) {
-                        createObjectStore(table);
+                        return createObjectStore(table);
                     }
+                    const store = transaction.objectStore(table.name);
                     for (let i = oldVersion; i <= dbVersion; i++) {
                         const alterQuery = table.alter[i];
                         if (alterQuery) {
-                            const store = transaction.objectStore(table.name);
-                            forObj(
-                                alterQuery.add || {}, ((name, column) => {
-                                    column.name = name;
+                            if (alterQuery.add) {
+                                const newColumns = table.setColumn(alterQuery.add);
+                                newColumns.forEach(column => {
                                     addColumn(store, column);
                                     table.columns.push(column);
                                 })
-                            )
+                            }
                             forObj(
                                 alterQuery.drop || {}, ((columnName) => {
                                     deleteColumn(store, table, columnName);
