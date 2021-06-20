@@ -267,7 +267,7 @@ export class Connection extends ConnectionHelper {
     }
 
     addPlugin(plugin: IPlugin, params?) {
-        plugin.setup(this, params);
+        return plugin.setup(this, params);
     }
 
     addMiddleware(middleware: TMiddleware | string, forWorker: boolean) {

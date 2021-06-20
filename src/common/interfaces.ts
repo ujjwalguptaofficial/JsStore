@@ -49,7 +49,7 @@ export interface IDbStatus {
 }
 
 export interface IPlugin {
-    setup: (connection, params) => any | void;
+    setup: (connection, params) => any;
 }
 
 export interface IDbInfo {
