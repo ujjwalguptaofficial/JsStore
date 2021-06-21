@@ -1,11 +1,11 @@
 import { Update } from "./";
-import { promiseAll, promise, UpdateQuery } from "@/common";
+import { promiseAll, promise, IUpdateQuery } from "@/common";
 import { updateValue } from "./update_value";
 
 
 export const executeInLogic = function (this: Update, column, values: any[]) {
     const columnStore = this.objectStore.index(column);
-    const query: UpdateQuery = this.query as any;
+    const query: IUpdateQuery = this.query as any;
     const runInLogic: (val) => Promise<void> = (value) => {
         return promise((res, rej) => {
             const cursorRequest = columnStore.openCursor(this.util.keyRange(value));

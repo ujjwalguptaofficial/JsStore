@@ -1,5 +1,5 @@
 import { Select } from "./";
-import { JoinQuery, DATA_TYPE, ERROR_TYPE, SelectQuery } from "@/common";
+import { IJoinQuery, DATA_TYPE, ERROR_TYPE, ISelectQuery } from "@/common";
 import { getDataType, LogHelper, removeSpace, promiseReject } from "@/worker/utils";
 
 
@@ -7,7 +7,7 @@ export const executeJoinQuery = function (this: Select) {
     return new Join(this).execute();
 }
 
-interface JoinQueryWithInfo extends JoinQuery {
+interface JoinQueryWithInfo extends IJoinQuery {
     joinTableInfo: JoinTableInfo
 }
 
@@ -31,7 +31,7 @@ export class Join {
         return this.select.table(name);
     }
 
-    private executeSelect(query: SelectQuery) {
+    private executeSelect(query: ISelectQuery) {
         // this.select.util.emptyTx();
         return new Select(query, this.select.util).
             execute(this.select.db);
@@ -91,7 +91,7 @@ export class Join {
                 let results = [];
                 const tables = Object.keys(this.results[0]);
                 const tablesLength = tables.length;
-                const mapWithAlias = (query: JoinQuery, value: object) => {
+                const mapWithAlias = (query: IJoinQuery, value: object) => {
                     if (query.as != null) {
                         for (const key in query.as) {
                             if (value[(query.as as any)[key]] === undefined) {
@@ -258,7 +258,7 @@ export class Join {
         return info;
     }
 
-    private checkJoinQuery_(jointblInfo: JoinTableInfo, qry: JoinQuery) {
+    private checkJoinQuery_(jointblInfo: JoinTableInfo, qry: IJoinQuery) {
         const table1 = jointblInfo.table1;
         const table2 = jointblInfo.table2;
         const tableSchemaOf1stTable = this.getTable(table1.table);

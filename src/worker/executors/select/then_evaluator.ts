@@ -1,10 +1,10 @@
-import { CaseOption, QUERY_OPTION } from "@/common";
+import { ICaseOption, QUERY_OPTION } from "@/common";
 
 export class ThenEvaluator {
     private columnName_: string;
     private value;
-    private caseQuery_: { [columnName: string]: [CaseOption] };
-    private caseColumnQuery_: CaseOption[];
+    private caseQuery_: { [columnName: string]: [ICaseOption] };
+    private caseColumnQuery_: ICaseOption[];
     private length_: number;
 
     setCaseAndValue(caseQuery: any, value) {
@@ -12,7 +12,7 @@ export class ThenEvaluator {
         this.setValue(value);
     }
 
-    setCaseAndColumn(caseQuery: { [columnName: string]: [CaseOption] }, columnName: string) {
+    setCaseAndColumn(caseQuery: { [columnName: string]: [ICaseOption] }, columnName: string) {
         this.caseQuery_ = caseQuery;
         this.setColumn(columnName);
         return this;
@@ -40,7 +40,7 @@ export class ThenEvaluator {
         return lastThen == null ? this.value[this.columnName_] : lastThen;
     }
 
-    private checkCase_(cond: CaseOption) {
+    private checkCase_(cond: ICaseOption) {
         let queryOption;
         for (queryOption in cond) {
             switch (queryOption) {

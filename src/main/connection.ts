@@ -1,8 +1,8 @@
 import { ConnectionHelper } from "./connection_helper";
 import {
-    SelectQuery, CountQuery, InsertQuery, SetQuery,
-    UpdateQuery, RemoveQuery, TranscationQuery,
-    API, IDataBase, EVENT, IPlugin, IntersectQuery, IDbInfo, TMiddleware, promiseResolve, InitDbResult
+    ISelectQuery, ICountQuery, IInsertQuery, SetQuery,
+    IUpdateQuery, IRemoveQuery, ITranscationQuery,
+    API, IDataBase, EVENT, IPlugin, IIntersectQuery, IDbInfo, TMiddleware, promiseResolve, InitDbResult
 } from "../common";
 
 export class Connection extends ConnectionHelper {
@@ -58,11 +58,11 @@ export class Connection extends ConnectionHelper {
      * select data from table
      *
      * @template T
-     * @param {SelectQuery} query
+     * @param {ISelectQuery} query
      * @returns
      * @memberof Connection
      */
-    select<T>(query: SelectQuery) {
+    select<T>(query: ISelectQuery) {
         return this.pushApi<T[]>({
             name: API.Select,
             query: query
@@ -72,11 +72,11 @@ export class Connection extends ConnectionHelper {
     /**
      * get no of record from table
      *
-     * @param {CountQuery} query
+     * @param {ICountQuery} query
      * @returns
      * @memberof Connection
      */
-    count(query: CountQuery) {
+    count(query: ICountQuery) {
         return this.pushApi<number>({
             name: API.Count,
             query: query
@@ -87,11 +87,11 @@ export class Connection extends ConnectionHelper {
      * insert data into table
      *
      * @template T
-     * @param {InsertQuery} query
+     * @param {IInsertQuery} query
      * @returns
      * @memberof Connection
      */
-    insert<T>(query: InsertQuery) {
+    insert<T>(query: IInsertQuery) {
         return this.pushApi<number | T[]>({
             name: API.Insert,
             query: query
@@ -101,11 +101,11 @@ export class Connection extends ConnectionHelper {
     /**
      * update data into table
      *
-     * @param {UpdateQuery} query
+     * @param {IUpdateQuery} query
      * @returns
      * @memberof Connection
      */
-    update(query: UpdateQuery) {
+    update(query: IUpdateQuery) {
         return this.pushApi<number>({
             name: API.Update,
             query: query
@@ -115,11 +115,11 @@ export class Connection extends ConnectionHelper {
     /**
      * remove data from table
      *
-     * @param {RemoveQuery} query
+     * @param {IRemoveQuery} query
      * @returns
      * @memberof Connection
      */
-    remove(query: RemoveQuery) {
+    remove(query: IRemoveQuery) {
         return this.pushApi<number>({
             name: API.Remove,
             query: query
@@ -233,11 +233,11 @@ export class Connection extends ConnectionHelper {
      * execute transaction
      *
      * @template T
-     * @param {TranscationQuery} query
+     * @param {ITranscationQuery} query
      * @returns
      * @memberof Connection
      */
-    transaction<T>(query: TranscationQuery) {
+    transaction<T>(query: ITranscationQuery) {
         return this.pushApi<T>({
             name: API.Transaction,
             query: query
@@ -252,14 +252,14 @@ export class Connection extends ConnectionHelper {
         this.eventBus_.off(event, eventCallBack);
     }
 
-    union<T>(query: SelectQuery[]) {
+    union<T>(query: ISelectQuery[]) {
         return this.pushApi<T>({
             name: API.Union,
             query
         });
     }
 
-    intersect<T>(query: IntersectQuery) {
+    intersect<T>(query: IIntersectQuery) {
         return this.pushApi<T>({
             name: API.Intersect,
             query

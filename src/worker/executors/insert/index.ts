@@ -1,5 +1,5 @@
 export * from "./values_checker";
-import { InsertQuery, promise, promiseAll, TStringAny, API, IDB_MODE } from "@/common";
+import { IInsertQuery, promise, promiseAll, TStringAny, API, IDB_MODE } from "@/common";
 import { Base } from "@worker/executors/base";
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@worker/executors/query_helper";
@@ -9,11 +9,11 @@ import { MetaHelper } from "@/worker/meta_helper";
 
 export class Insert extends Base {
 
-    query: InsertQuery;
+    query: IInsertQuery;
 
     private valuesAffected_ = [];
 
-    constructor(query: InsertQuery, util: IDBUtil) {
+    constructor(query: IInsertQuery, util: IDBUtil) {
         super();
         if (query.validation == null) {
             query.validation = true;

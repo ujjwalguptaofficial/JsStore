@@ -1,5 +1,5 @@
 import { Base } from "@executors/base";
-import { TranscationQuery, WebWorkerRequest, ERROR_TYPE, SelectQuery, API, InsertQuery, UpdateQuery, RemoveQuery, CountQuery, WebWorkerResult, promise } from "@/common";
+import { ITranscationQuery, WebWorkerRequest, ERROR_TYPE, ISelectQuery, API, IInsertQuery, IUpdateQuery, IRemoveQuery, ICountQuery, WebWorkerResult, promise } from "@/common";
 import { IDBUtil } from "@worker/idbutil";
 import { promiseReject, LogHelper, variableFromPath } from "@worker/utils";
 import { Insert } from "@executors/insert";
@@ -21,7 +21,7 @@ export class Transaction extends Base {
     onSuccess: (result: any) => void;
     onError: (err: LogHelper) => void;
 
-    constructor(qry: TranscationQuery, util: IDBUtil) {
+    constructor(qry: ITranscationQuery, util: IDBUtil) {
         super();
         this.query = qry as any;
         this.util = util;
@@ -46,7 +46,7 @@ export class Transaction extends Base {
     }
 
     validate() {
-        const query: TranscationQuery = this.query as any;
+        const query: ITranscationQuery = this.query as any;
         const notExistingTable = this.notExistingTable_(query.tables);
         if (notExistingTable) {
             return new LogHelper(ERROR_TYPE.TableNotExist, { tableName: notExistingTable });
@@ -59,32 +59,32 @@ export class Transaction extends Base {
     }
 
     private startExecution_() {
-        const query: TranscationQuery = this.query as any;
-        const select = (qry: SelectQuery) => {
+        const query: ITranscationQuery = this.query as any;
+        const select = (qry: ISelectQuery) => {
             return this.pushReq_({
                 name: API.Select,
                 query: qry
             } as WebWorkerRequest);
         };
-        const insert = (qry: InsertQuery) => {
+        const insert = (qry: IInsertQuery) => {
             return this.pushReq_({
                 name: API.Insert,
                 query: qry
             } as WebWorkerRequest);
         };
-        const update = (qry: UpdateQuery) => {
+        const update = (qry: IUpdateQuery) => {
             return this.pushReq_({
                 name: API.Update,
                 query: qry
             } as WebWorkerRequest);
         };
-        const remove = (qry: RemoveQuery) => {
+        const remove = (qry: IRemoveQuery) => {
             return this.pushReq_({
                 name: API.Remove,
                 query: qry
             } as WebWorkerRequest);
         };
-        const count = (qry: CountQuery) => {
+        const count = (qry: ICountQuery) => {
             return this.pushReq_({
                 name: API.Count,
                 query: qry

@@ -1,11 +1,11 @@
-import { ITable, AlterQuery, IColumn, TColumns } from "@/common";
+import { ITable, IAlterQuery, IColumn, TColumns } from "@/common";
 
 export class TableMeta {
     name: string;
     columns: IColumn[] = [];
     primaryKey: string;
     autoIncColumnValue = {};
-    alter?: AlterQuery;
+    alter?: IAlterQuery;
 
     constructor(table: ITable) {
         this.columns = this.setColumn(table.columns);

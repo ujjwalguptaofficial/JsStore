@@ -1,12 +1,12 @@
 import { Base } from "@executors/base";
-import { SelectQuery } from "@/common";
+import { ISelectQuery } from "@/common";
 import { DbMeta } from "@worker/model";
 import { Select } from "@executors/select";
 import { IDBUtil } from "@/worker/idbutil";
 
 export class Union extends Base {
 
-    constructor(query: SelectQuery[], util: IDBUtil) {
+    constructor(query: ISelectQuery[], util: IDBUtil) {
         super();
         this.query = query as any;
         this.util = util;
@@ -14,7 +14,7 @@ export class Union extends Base {
 
     execute(db: DbMeta) {
         this.db = db;
-        const query: SelectQuery[] = this.query as any;
+        const query: ISelectQuery[] = this.query as any;
         let index = 0;
         const hashMap = {};
         let isQueryForSameTable = true;

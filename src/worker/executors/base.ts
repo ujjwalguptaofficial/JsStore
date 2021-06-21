@@ -1,12 +1,12 @@
 import { IDBUtil } from "@worker/idbutil";
-import { InsertQuery, SelectQuery, ERROR_TYPE, UpdateQuery } from "@/common";
+import { IInsertQuery, ISelectQuery, ERROR_TYPE, IUpdateQuery } from "@/common";
 import { LogHelper, getError, promiseReject, getErrorFromException } from "@worker/utils";
 import { DbMeta } from "@worker/model";
 
 export class Base {
     db: DbMeta;
     util: IDBUtil;
-    query: InsertQuery | SelectQuery | UpdateQuery;
+    query: IInsertQuery | ISelectQuery | IUpdateQuery;
 
     rowAffected = 0;
     isTxQuery = false;

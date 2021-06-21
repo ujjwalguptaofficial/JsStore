@@ -1,4 +1,4 @@
-import { InsertQuery, DATA_TYPE, ERROR_TYPE, SelectQuery, QUERY_OPTION, UpdateQuery, API } from "@/common";
+import { IInsertQuery, DATA_TYPE, ERROR_TYPE, ISelectQuery, QUERY_OPTION, IUpdateQuery, API } from "@/common";
 import { LogHelper, getDataType } from "@/worker/utils";
 import { DbMeta } from "../model";
 import { ValuesChecker } from "@worker/executors/insert";
@@ -11,16 +11,16 @@ export class QueryHelper {
         this.db = dbSchema;
     }
 
-    validate(api: API, query: InsertQuery | SelectQuery | UpdateQuery) {
+    validate(api: API, query: IInsertQuery | ISelectQuery | IUpdateQuery) {
         switch (api) {
             case API.Select:
             case API.Remove:
             case API.Count:
-                return this.checkSelect(query as SelectQuery);
+                return this.checkSelect(query as ISelectQuery);
             case API.Insert:
-                return this.checkInsertQuery(query as InsertQuery);
+                return this.checkInsertQuery(query as IInsertQuery);
             case API.Update:
-                return this.checkUpdate(query as UpdateQuery);
+                return this.checkUpdate(query as IUpdateQuery);
         }
     }
 
@@ -28,7 +28,7 @@ export class QueryHelper {
         return this.db.tables.find(q => q.name === tableName);
     }
 
-    isInsertQryValid(query: InsertQuery) {
+    isInsertQryValid(query: IInsertQuery) {
         const table = this.getTable_(query.into);
         let log: LogHelper;
         if (table) {
@@ -50,7 +50,7 @@ export class QueryHelper {
         };
     }
 
-    private checkUpdate(query: UpdateQuery) {
+    private checkUpdate(query: IUpdateQuery) {
         let err = new SchemaChecker(this.getTable_(query.in)).
             check(query.set, query.in);
         if (err) return err;
@@ -61,7 +61,7 @@ export class QueryHelper {
         }
     }
 
-    private checkSelect(query: SelectQuery) {
+    private checkSelect(query: ISelectQuery) {
         const table = this.getTable_(query.from);
         if (!table) {
             return new LogHelper(ERROR_TYPE.TableNotExist,
@@ -84,7 +84,7 @@ export class QueryHelper {
         }
     }
 
-    private addGreatAndLessToNotOp_(query: SelectQuery) {
+    private addGreatAndLessToNotOp_(query: ISelectQuery) {
         const whereQuery = query.where;
         const containsNot = (qry: object, keys: string[]) => {
             return keys.findIndex(key => qry[key][QUERY_OPTION.NotEqualTo] != null) >= 0;
@@ -137,7 +137,7 @@ export class QueryHelper {
         }
     }
 
-    private checkInsertQuery(query: InsertQuery) {
+    private checkInsertQuery(query: IInsertQuery) {
         const validResult = this.isInsertQryValid(query);
         let table = validResult.table;
         const error = validResult.log;

@@ -1,11 +1,11 @@
-import { IntersectQuery, SelectQuery } from "@/common";
+import { IIntersectQuery, ISelectQuery } from "@/common";
 import { Base } from "@executors/base";
 import { Select } from "@executors/select";
 import { DbMeta } from "../model";
 
 export class Intersect extends Base {
 
-    constructor(intersectQry: IntersectQuery, util) {
+    constructor(intersectQry: IIntersectQuery, util) {
         super();
         this.query = intersectQry as any;
         this.util = util;
@@ -13,7 +13,7 @@ export class Intersect extends Base {
 
     execute(db: DbMeta) {
         this.db = db;
-        const intersectQry: IntersectQuery = this.query as any;
+        const intersectQry: IIntersectQuery = this.query as any;
         let index = 0;
         let hashMap = {};
         let hashMapTemp = {};
@@ -76,7 +76,7 @@ export class Intersect extends Base {
                     Object.assign(select.query, {
                         order: intersectQry.order,
                         join: {} as any
-                    } as SelectQuery);
+                    } as ISelectQuery);
                     select.processOrderBy();
                     select.processGroupDistinctAggr();
                     return (select['results']);

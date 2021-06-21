@@ -1,19 +1,19 @@
 import { TableMeta } from "@/worker/model/table_meta";
-import { IColumn, TStringAny, ERROR_TYPE, DATA_TYPE, InsertQuery } from "@/common";
+import { IColumn, TStringAny, ERROR_TYPE, DATA_TYPE, IInsertQuery } from "@/common";
 import { getDataType, LogHelper, isNull } from "@/worker/utils";
 
 
 export class ValuesChecker {
     table: TableMeta;
     autoIncrementValue;
-    query: InsertQuery;
+    query: IInsertQuery;
 
     constructor(table: TableMeta, autoIncValues) {
         this.table = table;
         this.autoIncrementValue = autoIncValues;
     }
 
-    checkAndModifyValues(query: InsertQuery) {
+    checkAndModifyValues(query: IInsertQuery) {
         let err: LogHelper;
         this.query = query;
         const values = query.values;

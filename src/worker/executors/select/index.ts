@@ -1,4 +1,4 @@
-import { SelectQuery, QUERY_OPTION, IDB_MODE, API, WhereQuery } from "@/common";
+import { ISelectQuery, QUERY_OPTION, IDB_MODE, API, IWhereQuery } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@worker/executors/query_helper";
 import { DbMeta } from "@/worker/model";
@@ -18,7 +18,7 @@ export class Select extends BaseFetch {
     sorted = false;
     isOr: boolean;
     isArrayQry: boolean;
-    query: SelectQuery;
+    query: ISelectQuery;
     orInfo: {
         results?: any[];
         orQuery: object
@@ -43,7 +43,7 @@ export class Select extends BaseFetch {
     processGroupBy: typeof processGroupBy;
 
 
-    constructor(query: SelectQuery, util: IDBUtil) {
+    constructor(query: ISelectQuery, util: IDBUtil) {
         super();
         this.query = query;
         this.util = util;
@@ -102,7 +102,7 @@ export class Select extends BaseFetch {
 
     private processWhereArrayQry() {
         this.isArrayQry = true;
-        const whereQuery = this.query.where as WhereQuery[];
+        const whereQuery = this.query.where as IWhereQuery[];
         const pKey = this.primaryKey();
         let isFirstWhere = true, output = [], operation;
 
@@ -179,7 +179,7 @@ export class Select extends BaseFetch {
         this.shouldAddValue = (value) => {
             return this.whereCheckerInstance.check(value);
         };
-        if ((this.query.where as WhereQuery).or) {
+        if ((this.query.where as IWhereQuery).or) {
             this.processOrLogic_();
         }
         return this.goToWhereLogic().then(() => {
@@ -256,7 +256,7 @@ export class Select extends BaseFetch {
 
     private processOrLogic_() {
         this.isOr = true;
-        const where = this.query.where as WhereQuery;
+        const where = this.query.where as IWhereQuery;
         this.orInfo = {
             orQuery: where.or as any,
             results: []

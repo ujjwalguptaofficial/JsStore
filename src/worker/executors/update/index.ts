@@ -1,4 +1,4 @@
-import { UpdateQuery, SelectQuery, QUERY_OPTION, API, WhereQuery } from "@/common";
+import { IUpdateQuery, ISelectQuery, QUERY_OPTION, API, IWhereQuery } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { DbMeta } from "@worker/model";
 import { QueryHelper } from "../query_helper";
@@ -13,7 +13,7 @@ import { executeWhereLogic } from "./where";
 export class Update extends BaseFetch {
     executeWhereUndefinedLogic: typeof executeWhereUndefinedLogic
 
-    constructor(query: UpdateQuery, util: IDBUtil) {
+    constructor(query: IUpdateQuery, util: IDBUtil) {
         super();
         this.query = query as any;
         this.util = util;
@@ -22,7 +22,7 @@ export class Update extends BaseFetch {
 
     execute(db: DbMeta) {
         this.db = db;
-        const query: UpdateQuery = this.query as any;
+        const query: IUpdateQuery = this.query as any;
         try {
             const queryHelper = new QueryHelper(db);
             const err = queryHelper.validate(API.Update, query);
@@ -31,7 +31,7 @@ export class Update extends BaseFetch {
             this.initTransaction();
             let pResult: Promise<void>;
             if (query.where != null) {
-                if ((query.where as WhereQuery).or || isArray(query.where)) {
+                if ((query.where as IWhereQuery).or || isArray(query.where)) {
                     pResult = this.executeComplexLogic_();
                 }
                 else {
@@ -51,12 +51,12 @@ export class Update extends BaseFetch {
     }
 
     private executeComplexLogic_() {
-        const query: UpdateQuery = this.query as any;
+        const query: IUpdateQuery = this.query as any;
         const selectObject = new Select({
             from: query.in,
             where: query.where,
             ignoreCase: query.ignoreCase
-        } as SelectQuery, this.util);
+        } as ISelectQuery, this.util);
         selectObject.isTxQuery = this.isTxQuery;
         return selectObject.execute(this.db).then((results: any[]) => {
             const key = this.primaryKey(query.in);

@@ -1,5 +1,5 @@
 import { Base } from "./base";
-import { SelectQuery, QUERY_OPTION, ERROR_TYPE } from "@/common";
+import { ISelectQuery, QUERY_OPTION, ERROR_TYPE } from "@/common";
 import { getRegexFromLikeExpression, promiseReject } from "@worker/utils";
 import { LogHelper, getObjectFirstKey, getDataType, getLength, getError } from "@worker/utils";
 import { WhereChecker } from "./where_checker";
@@ -8,7 +8,7 @@ import { executeInLogic } from "./select/in";
 import { executeRegexLogic } from "./select/regex";
 
 export class BaseFetch extends Base {
-    query: SelectQuery;
+    query: ISelectQuery;
     whereCheckerInstance: WhereChecker;
     executeWhereLogic: typeof executeWhereLogic;
     skipRecord;
@@ -22,7 +22,7 @@ export class BaseFetch extends Base {
 
     protected shouldAddValue: (value) => boolean;
     protected goToWhereLogic() {
-        const query = this.query as SelectQuery;
+        const query = this.query as ISelectQuery;
         const firstColumn = getObjectFirstKey(query.where);
         if (this.objectStore.indexNames.contains(firstColumn)) {
             const value = query.where[firstColumn];

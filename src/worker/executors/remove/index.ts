@@ -1,5 +1,5 @@
 import { BaseFetch } from "../base_fetch";
-import { RemoveQuery, QUERY_OPTION, API, WhereQuery } from "@/common";
+import { IRemoveQuery, QUERY_OPTION, API, IWhereQuery } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@executors/query_helper";
 import { DbMeta } from "@/worker/model";
@@ -15,7 +15,7 @@ export class Remove extends BaseFetch {
     executeWhereUndefinedLogic;
 
     constructor(
-        query: RemoveQuery, util: IDBUtil
+        query: IRemoveQuery, util: IDBUtil
     ) {
         super();
         this.query = query;
@@ -73,7 +73,7 @@ export class Remove extends BaseFetch {
     }
 
     private processWhere_() {
-        if ((this.query.where as WhereQuery).or) {
+        if ((this.query.where as IWhereQuery).or) {
             this.processOrLogic();
         }
         return this.goToWhereLogic().then(() => {
@@ -112,7 +112,7 @@ export class Remove extends BaseFetch {
 
     private processOrLogic() {
         this.isOr = true;
-        const where = this.query.where as WhereQuery;
+        const where = this.query.where as IWhereQuery;
         (this as any)._orInfo = {
             OrQuery: where.or
         };

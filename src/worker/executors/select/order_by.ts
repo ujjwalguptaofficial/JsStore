@@ -1,6 +1,6 @@
 import { Select } from "./";
 import { removeSpace, getDataType, getError, LogHelper } from "@/worker/utils";
-import { ERROR_TYPE, DATA_TYPE, CaseOption, IColumn, OrderQuery } from "@/common";
+import { ERROR_TYPE, DATA_TYPE, ICaseOption, IColumn, IOrderQuery } from "@/common";
 
 export const processGroupDistinctAggr = function (this: Select) {
     if (this.query.distinct) {
@@ -85,7 +85,7 @@ const compareDateInAsc_ = (a: Date, b: Date) => {
     return a.getTime() - b.getTime();
 }
 
-const getValInDesc_ = function (this: Select, value1, value2, caseQuery: { [columnName: string]: [CaseOption] }) {
+const getValInDesc_ = function (this: Select, value1, value2, caseQuery: { [columnName: string]: [ICaseOption] }) {
     for (const columnName in caseQuery) {
         this.thenEvaluator.setCaseAndValue(caseQuery, value1);
         const column1 = this.thenEvaluator.setColumn(columnName).evaluate();
@@ -100,7 +100,7 @@ const getValInDesc_ = function (this: Select, value1, value2, caseQuery: { [colu
     }
 }
 
-const getValInAsc_ = function (this: Select, value1, value2, caseQuery: { [columnName: string]: [CaseOption] }) {
+const getValInAsc_ = function (this: Select, value1, value2, caseQuery: { [columnName: string]: [ICaseOption] }) {
     for (const columnName in caseQuery) {
         this.thenEvaluator.setCaseAndValue(caseQuery, value1);
         const column1 = this.thenEvaluator.setColumn(columnName).evaluate();
@@ -115,7 +115,7 @@ const getValInAsc_ = function (this: Select, value1, value2, caseQuery: { [colum
     }
 }
 
-const getValueComparer_ = (column: IColumn, order: OrderQuery): (a, b) => number => {
+const getValueComparer_ = (column: IColumn, order: IOrderQuery): (a, b) => number => {
     switch (column.dataType) {
         case DATA_TYPE.String:
             return order.type === 'asc' ? compareStringinAsc_ : compareStringInDesc_;
@@ -129,7 +129,7 @@ const getValueComparer_ = (column: IColumn, order: OrderQuery): (a, b) => number
 
 }
 
-const orderBy_ = function (this: Select, order: OrderQuery) {
+const orderBy_ = function (this: Select, order: IOrderQuery) {
     order.type = getOrderType_(order.type);
     let orderColumn = order.by;
     if (orderColumn != null && typeof orderColumn === DATA_TYPE.Object) {
@@ -184,7 +184,7 @@ export const processOrderBy = function (this: Select) {
             for (let i = 1, length = (order as any).length; i < length; i++) {
                 // if (this.error == null) {
                 const prevOrderQueryBy = order[i - 1].by;
-                const currentOrderQuery: OrderQuery = order[i];
+                const currentOrderQuery: IOrderQuery = order[i];
                 let currentorderQueryBy = currentOrderQuery.by;
                 const orderColumnDetail = getOrderColumnInfo.call(this, currentorderQueryBy as string);
                 if (orderColumnDetail != null) {

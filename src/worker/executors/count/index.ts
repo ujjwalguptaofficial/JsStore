@@ -1,6 +1,6 @@
 import { BaseFetch } from "@executors/base_fetch";
 import { Select } from "@executors/select";
-import { CountQuery, SelectQuery, IDB_MODE, API, WhereQuery } from "@/common";
+import { ICountQuery, ISelectQuery, IDB_MODE, API, IWhereQuery } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { DbMeta } from "@worker/model";
 import { QueryHelper } from "@executors/query_helper";
@@ -12,11 +12,11 @@ import { executeInLogic } from "./in";
 
 export class Count extends BaseFetch {
 
-    query: CountQuery;
+    query: ICountQuery;
     resultCount: number = 0;
     executeWhereUndefinedLogic: typeof executeWhereUndefinedLogic;
 
-    constructor(query: CountQuery, util: IDBUtil) {
+    constructor(query: ICountQuery, util: IDBUtil) {
         super();
         this.query = query;
         this.util = util;
@@ -36,7 +36,7 @@ export class Count extends BaseFetch {
         try {
             let result: Promise<void>;
             const getDataFromSelect = () => {
-                const selectInstance = new Select(this.query as SelectQuery, this.util);
+                const selectInstance = new Select(this.query as ISelectQuery, this.util);
                 selectInstance.isTxQuery = this.isTxQuery;
                 return selectInstance.execute(db).then(results => {
                     this.resultCount = results.length;
@@ -45,7 +45,7 @@ export class Count extends BaseFetch {
             this.initTransaction_();
             if (query.join == null) {
                 if (query.where != null) {
-                    if ((query.where as WhereQuery).or || isArray(this.query.where)) {
+                    if ((query.where as IWhereQuery).or || isArray(this.query.where)) {
                         result = getDataFromSelect();
                     }
                     else {
