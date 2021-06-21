@@ -37,8 +37,12 @@ jobs:
       - name: Run test
         run: npm run build:ci
       
-      - name: Install saucectl
-        uses: saucelabs/saucectl-run-action@v1
-        
+      - name: Install sauce connection
+        uses: saucelabs/sauce-connect-action@v1
+        with:
+          username: ${{ secrets.SAUCE_USERNAME }}
+          accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
+          tunnelIdentifier: github-action-tunnel
+              
       - name: Run test sauce
         run: npm run test:sauce
