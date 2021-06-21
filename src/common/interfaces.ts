@@ -27,39 +27,39 @@ export interface IIntersectQuery {
     skip: number;
     limit: number;
     order?: IOrderQuery;
-};
+}
 
 export interface ITranscationQuery {
     tables: string[];
     method: string;
     data?: any;
-};
+}
 
 export interface ICountQuery {
     from: string;
     join?: IJoinQuery;
     where?: IWhereQuery | IWhereQuery[];
-};
+}
 
 export interface IRemoveQuery {
     from: string;
     where?: IWhereQuery | IWhereQuery[];
-};
+}
 
 export interface IUpdateQuery {
     in: string;
     ignoreCase?: boolean;
     set: { [columnName: string]: any };
     where?: IWhereQuery | IWhereQuery[];
-};
+}
 
 export interface IAlterQuery {
     [version: number]: {
         add: TColumns,
         drop: TColumns,
         modify: TColumns
-    }
-};
+    };
+}
 
 export interface IOrderQuery {
 
@@ -89,19 +89,19 @@ export interface IOrderQuery {
      *
      * @type {[ICaseOption]}
      */
-    case?: [ICaseOption]
-};
+    case?: [ICaseOption];
+}
 
 export interface IJoinQuery {
-    type?: string //'inner',
-    with: string // 'Customers',
-    on: string // "Customers.customerId = Orders.customerId"
+    type?: string; //'inner',
+    with: string; // 'Customers',
+    on: string; // "Customers.customerId = Orders.customerId"
     where?: IWhereQuery | IWhereQuery[];
     order?: IOrderQuery;
-    as?: { [originalColumnName: string]: string },
-    case?: { [columnName: string]: [ICaseOption] },
+    as?: { [originalColumnName: string]: string };
+    case?: { [columnName: string]: [ICaseOption] };
     flatten?: string[];
-};
+}
 
 export interface IWhereQueryOption {
     '>'?: any;
@@ -114,12 +114,11 @@ export interface IWhereQueryOption {
     regex?: any;
     or?: IWhereQuery;
     in?: any[];
-};
+}
 
-export interface IWhereQuery { [columnName: string]: IWhereQueryOption | string | number | boolean };
-
-
-
+export interface IWhereQuery {
+    [columnName: string]: IWhereQueryOption | string | number | boolean;
+}
 
 export interface ICaseOption {
     '>'?: any;
@@ -129,7 +128,7 @@ export interface ICaseOption {
     '-'?: any;
     '!='?: any;
     then: any;
-};
+}
 
 export interface IAggregateOption {
     max?: string | string[];
@@ -137,7 +136,7 @@ export interface IAggregateOption {
     sum?: string | string[];
     count?: string | string[];
     avg?: string | string[];
-};
+}
 
 export interface IColumn extends IColumnOption {
     name: string;
@@ -153,9 +152,9 @@ export interface ISelectQuery {
     groupBy?: string | string[] | { [columnName: string]: [ICaseOption] };
     aggregate?: IAggregateOption;
     distinct?: boolean;
-    case?: { [columnName: string]: [ICaseOption] },
+    case?: { [columnName: string]: [ICaseOption] };
     flatten?: string[];
-};
+}
 
 export interface IInsertQuery {
     into: string;
@@ -165,7 +164,7 @@ export interface IInsertQuery {
     upsert?: boolean;
     ignore?: boolean;
     validation?: boolean;
-};
+}
 
 export interface IColumnOption {
 
