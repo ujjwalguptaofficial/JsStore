@@ -28,6 +28,7 @@ export class QueryManager {
     }
 
     constructor(fn?: (result: any) => void) {
+        this.util = new IDBUtil();
         this.onQryFinished = IS_WORKER ? (result) => {
             self.postMessage(result);
         } : fn;
@@ -258,10 +259,10 @@ export class QueryManager {
         }
 
         const dbMeta = dataBase ? new DbMeta(dataBase) : this.db;
-        this.util = new IDBUtil(dbMeta);
+        this.util = new IDBUtil();
 
         return promise<boolean>((res, rej) => {
-            this.util.initDb().then((dbInfo) => {
+            this.util.initDb(dbMeta).then((dbInfo) => {
                 if (dbInfo.isCreated) {
                     MetaHelper.get(
                         MetaHelper.dbSchema,

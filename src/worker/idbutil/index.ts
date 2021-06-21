@@ -13,10 +13,6 @@ export class IDBUtil {
 
     logger = new LogHelper(null);
 
-    constructor(db: DbMeta) {
-        this.db = db;
-    }
-
     emptyTx() {
         if (!this.tx) return;
         this.tx.oncomplete = null;
@@ -74,9 +70,8 @@ export class IDBUtil {
         });
     }
 
-    initDb() {
-
-        const db = this.db;
+    initDb(db) {
+        this.db = db;
         let isDbCreated = false;
         const dbVersion = db.version;
         let oldVersion;

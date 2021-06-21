@@ -19,20 +19,13 @@ describe("initiate database", function () {
                 // con.setLogStatus(true);
             }
         }
-        // con.setLogStatus(true);
+       
     })
 
     it("create db exist", function (done) {
-        // con.isDbExist('Demo').then(function (exist) {
-        //     console.log('db exist :' + exist);
-        //     if (exist) {
-        //         con.openDb('Demo').then(done);
-        //     } else {
-
-        //     }
-        // }).catch(function (err) {
-        //     done(err);
-        // });
+        con.logStatus = true;
+        con.logStatus = false;
+        
         var isFilled = false;
         var isEmpty = false;
         con.on("requestQueueFilled", function () {
