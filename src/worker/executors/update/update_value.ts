@@ -1,20 +1,21 @@
 import { getDataType } from "@worker/utils";
 import { DATA_TYPE } from "@/common";
 
-export const updateValue = (suppliedValue, storedValue) => {
-    for (const key in suppliedValue) {
-        if (getDataType(suppliedValue[key]) !== DATA_TYPE.Object) {
-            storedValue[key] = suppliedValue[key];
+export const updateValue = (setValue, storedValue) => {
+    for (const key in setValue) {
+        const columnSetValue = setValue[key];
+        if (getDataType(columnSetValue) !== DATA_TYPE.Object) {
+            storedValue[key] = columnSetValue;
         }
         else {
-            for (const op in suppliedValue[key]) {
+            for (const op in columnSetValue) {
                 switch (op as any) {
-                    case '+': storedValue[key] += suppliedValue[key][op]; break;
-                    case '-': storedValue[key] -= suppliedValue[key][op]; break;
-                    case '*': storedValue[key] *= suppliedValue[key][op]; break;
-                    case '/': storedValue[key] /= suppliedValue[key][op]; break;
-                    case '{push}': storedValue[key].push(suppliedValue[key][op]); break;
-                    default: storedValue[key] = suppliedValue[key];
+                    case '+': storedValue[key] += columnSetValue[op]; break;
+                    case '-': storedValue[key] -= columnSetValue[op]; break;
+                    case '*': storedValue[key] *= columnSetValue[op]; break;
+                    case '/': storedValue[key] /= columnSetValue[op]; break;
+                    case '{push}': storedValue[key].push(columnSetValue[op]); break;
+                    default: storedValue[key] = columnSetValue;
                 }
                 break;
             }
