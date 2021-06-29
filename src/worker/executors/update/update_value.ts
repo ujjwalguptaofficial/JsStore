@@ -1,5 +1,7 @@
 import { getDataType } from "@worker/utils";
-import { DATA_TYPE } from "@/common";
+import { DATA_TYPE, ERROR_TYPE } from "@/common";
+import { type } from "os";
+import { LogHelper } from "@/main/log_helper";
 
 export const updateValue = (setValue, storedValue) => {
     for (const key in setValue) {
@@ -9,12 +11,25 @@ export const updateValue = (setValue, storedValue) => {
         }
         else {
             for (const op in columnSetValue) {
+                let value = columnSetValue[op];
+                if (typeof value == 'string') {
+                    if (value.match(/'|"/)) {
+                        value = value.replace(/'|"/g, '');
+                    }
+                    else if (storedValue[value]) {
+                        value = storedValue[value];
+                    }
+                    else {
+                        new LogHelper(ERROR_TYPE.InvalidUpdateColumn).throw();
+                    }
+                }
+
                 switch (op as any) {
-                    case '+': storedValue[key] += columnSetValue[op]; break;
-                    case '-': storedValue[key] -= columnSetValue[op]; break;
-                    case '*': storedValue[key] *= columnSetValue[op]; break;
-                    case '/': storedValue[key] /= columnSetValue[op]; break;
-                    case '{push}': storedValue[key].push(columnSetValue[op]); break;
+                    case '+': storedValue[key] += value; break;
+                    case '-': storedValue[key] -= value; break;
+                    case '*': storedValue[key] *= value; break;
+                    case '/': storedValue[key] /= value; break;
+                    case '{push}': storedValue[key].push(value); break;
                     default: storedValue[key] = columnSetValue;
                 }
                 break;

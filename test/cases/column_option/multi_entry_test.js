@@ -38,7 +38,7 @@ describe('Multi Entry Test', function () {
             },
             set: {
                 tags: {
-                    '{push}': 'JsStore'
+                    '{push}': '"JsStore"'
                 }
             },
         }).then(function (results) {

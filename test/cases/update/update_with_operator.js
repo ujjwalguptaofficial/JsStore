@@ -13,7 +13,8 @@ describe('Test update with operator option', function () {
             done(err);
         });
 
-        con.update({ in: "Products",
+        con.update({
+            in: "Products",
             set: {
                 price: {
                     '+': 5
@@ -54,7 +55,8 @@ describe('Test update with operator option', function () {
             done(err);
         });
 
-        con.update({ in: "Products",
+        con.update({
+            in: "Products",
             set: {
                 price: {
                     '-': 5
@@ -94,7 +96,8 @@ describe('Test update with operator option', function () {
         }).catch(function (err) {
             done(err);
         });
-        con.update({ in: "Products",
+        con.update({
+            in: "Products",
             set: {
                 price: {
                     '*': 5
@@ -134,7 +137,8 @@ describe('Test update with operator option', function () {
         }).catch(function (err) {
             done(err);
         });
-        con.update({ in: "Products",
+        con.update({
+            in: "Products",
             set: {
                 price: {
                     '/': 5
@@ -174,10 +178,11 @@ describe('Test update with operator option', function () {
         }).catch(function (err) {
             done(err);
         });
-        con.update({ in: "Products",
+        con.update({
+            in: "Products",
             set: {
                 productName: {
-                    '+': 'temp'
+                    '+': "'temp'"
                 }
             },
             where: {
@@ -203,7 +208,8 @@ describe('Test update with operator option', function () {
     });
 
     it('update with wrong operator - #', function (done) {
-        con.update({ in: "Products",
+        con.update({
+            in: "Products",
             set: {
                 productName: {
                     '#': 'temp'
@@ -221,6 +227,47 @@ describe('Test update with operator option', function () {
             };
             expect(err).to.be.an('object').eql(error);
             done();
+        });
+    });
+
+    it('update with operator & column value - *', function (done) {
+        var price;
+        con.select({
+            from: "Products",
+            where: {
+                productId: 7
+            }
+        }).then(function (results) {
+            price = results[0].price;
+        }).catch(function (err) {
+            done(err);
+        });
+        con.update({
+            in: "Products",
+            set: {
+                price: {
+                    '*': 'price'
+                }
+            },
+            where: {
+                productId: 7
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('number').to.equal(1);
+        }).catch(function (err) {
+            done(err);
+        });
+
+        con.select({
+            from: "Products",
+            where: {
+                productId: 7
+            }
+        }).then(function (results) {
+            expect(results[0].price).to.be.an('number').to.equal(price * price);
+            done();
+        }).catch(function (err) {
+            done(err);
         });
     });
 });

@@ -1,4 +1,5 @@
 export enum ERROR_TYPE {
+    InvalidUpdateColumn = "invalid_update_column",
     UndefinedColumn = "undefined_column",
     UndefinedValue = "undefined_value",
     UndefinedColumnName = "undefined_column_name",
