@@ -1,9 +1,19 @@
-import { getDataType } from "@worker/utils";
-import { DATA_TYPE, ERROR_TYPE } from "@/common";
-import { type } from "os";
+import { getDataType, variableFromPath } from "@worker/utils";
+import { DATA_TYPE, ERROR_TYPE, IUpdateQuery } from "@/common";
 import { LogHelper } from "@/main/log_helper";
 
-export const updateValue = (setValue, storedValue) => {
+export const updateValue = (query: IUpdateQuery, storedValue) => {
+    let setValue = query.set;
+    const mapSet = query.mapSet;
+    if (mapSet) {
+        const method = variableFromPath(mapSet);
+        if (method) {
+            const result = method(setValue, storedValue);
+            if (result != null) {
+                setValue = result;
+            }
+        }
+    }
     for (const key in setValue) {
         const columnSetValue = setValue[key];
         if (getDataType(columnSetValue) !== DATA_TYPE.Object) {

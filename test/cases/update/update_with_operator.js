@@ -230,7 +230,11 @@ describe('Test update with operator option', function () {
         });
     });
 
-    it('update with operator & column value - *', function (done) {
+    it("load script", function (done) {
+        con.importScripts("../cases/update/update_worker.js").then(done).catch(done);
+    });
+
+    it('update with mapSet - modify value', function (done) {
         var price;
         con.select({
             from: "Products",
@@ -245,13 +249,12 @@ describe('Test update with operator option', function () {
         con.update({
             in: "Products",
             set: {
-                price: {
-                    '*': 'price'
-                }
+                price: 0
             },
             where: {
                 productId: 7
-            }
+            },
+            mapSet: 'JsStoreUpdate.mapSetProductId7'
         }).then(function (results) {
             expect(results).to.be.an('number').to.equal(1);
         }).catch(function (err) {
@@ -265,6 +268,45 @@ describe('Test update with operator option', function () {
             }
         }).then(function (results) {
             expect(results[0].price).to.be.an('number').to.equal(price * price);
+            done();
+        }).catch(function (err) {
+            done(err);
+        });
+    });
+    it('update with mapSet - return value', function (done) {
+        var price;
+        con.select({
+            from: "Products",
+            where: {
+                productId: 8
+            }
+        }).then(function (results) {
+            price = results[0].price;
+        }).catch(function (err) {
+            done(err);
+        });
+        con.update({
+            in: "Products",
+            set: {
+                price: 0
+            },
+            where: {
+                productId: 8
+            },
+            mapSet: 'JsStoreUpdate.mapSetProductId8'
+        }).then(function (results) {
+            expect(results).to.be.an('number').to.equal(1);
+        }).catch(function (err) {
+            done(err);
+        });
+
+        con.select({
+            from: "Products",
+            where: {
+                productId: 8
+            }
+        }).then(function (results) {
+            expect(results[0].price).to.be.an('number').to.equal(price * 2);
             done();
         }).catch(function (err) {
             done(err);

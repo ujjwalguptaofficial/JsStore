@@ -9,7 +9,6 @@ export const executeRegexLogic = function (this: Update, column: string, exp: Re
         return exp.test(cursor.key) &&
             this.whereCheckerInstance.check(cursor.value);
     };
-    const setValue = (this.query as any).set;
     return promise<void>((res, rej) => {
 
         cursorOpenRequest.onsuccess = (e: any) => {
@@ -17,7 +16,7 @@ export const executeRegexLogic = function (this: Update, column: string, exp: Re
             if (cursor) {
                 if (this.shouldAddValue(cursor)) {
                     try {
-                        const cursorUpdateRequest = cursor.update(updateValue(setValue, cursor.value));
+                        const cursorUpdateRequest = cursor.update(updateValue(this.query as any, cursor.value));
                         cursorUpdateRequest.onsuccess = () => {
                             ++this.rowAffected;
                             cursor.continue();

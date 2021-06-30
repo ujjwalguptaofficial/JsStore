@@ -15,7 +15,7 @@ export const executeInLogic = function (this: Update, column, values: any[]) {
                     const value = cursor.value;
                     if (this.whereCheckerInstance.check(value)) {
                         try {
-                            const cursorUpdateRequest = cursor.update(updateValue(query.set, value));
+                            const cursorUpdateRequest = cursor.update(updateValue(query, value));
                             cursorUpdateRequest.onsuccess = () => {
                                 ++this.rowAffected;
                                 cursor.continue();
