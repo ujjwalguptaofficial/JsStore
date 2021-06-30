@@ -22,7 +22,7 @@ describe('Transaction - error test', function () {
         }
         con.transaction(transaction_query).then(done).catch(function (err) {
             var error = {
-                "message": "method invalidMethod does not exist.",
+                "message": "method 'invalidMethod' does not exist.",
                 "type": "method_not_exist"
             };
             expect(err).to.be.an('object').eql(error);

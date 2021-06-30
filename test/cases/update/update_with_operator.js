@@ -234,6 +234,27 @@ describe('Test update with operator option', function () {
         con.importScripts("../cases/update/update_worker.js").then(done).catch(done);
     });
 
+    it('mapSet invalid method', function (done) {
+        con.update({
+            in: "Products",
+            set: {
+                price: 0
+            },
+            where: {
+                productId: 7
+            },
+            mapSet: 'not_existing'
+        }).then(done).catch(function (err) {
+            const error = {
+                "message": "method 'not_existing' does not exist.",
+                "type": "method_not_exist"
+            };
+            expect(err).to.eql(error);
+            done();
+        });
+
+    })
+
     it('update with mapSet - modify value', function (done) {
         var price;
         con.select({

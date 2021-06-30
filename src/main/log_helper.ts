@@ -3,6 +3,7 @@ import { ERROR_TYPE, IError } from "../common/index";
 
 export class LogHelper implements IError {
     type: ERROR_TYPE;
+    name: ERROR_TYPE;
     message: string;
     private _info: any;
     status: boolean;
@@ -14,7 +15,7 @@ export class LogHelper implements IError {
     }
 
     throw() {
-        throw this.get();
+        throw this;
     }
 
     log(msg) {

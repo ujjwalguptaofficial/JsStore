@@ -1,6 +1,5 @@
-import { getDataType, variableFromPath } from "@worker/utils";
+import { getDataType, variableFromPath, promiseReject, LogHelper } from "@worker/utils";
 import { DATA_TYPE, ERROR_TYPE, IUpdateQuery } from "@/common";
-import { LogHelper } from "@/main/log_helper";
 
 export const updateValue = (query: IUpdateQuery, storedValue) => {
     let setValue = query.set;
@@ -12,6 +11,9 @@ export const updateValue = (query: IUpdateQuery, storedValue) => {
             if (result != null) {
                 setValue = result;
             }
+        }
+        else {
+            throw new LogHelper(ERROR_TYPE.MethodNotExist, mapSet);
         }
     }
     for (const key in setValue) {

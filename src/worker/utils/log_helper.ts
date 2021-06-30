@@ -98,7 +98,7 @@ export class LogHelper implements IError {
                 errMsg = `Null/undefined is not allowed in where. Column '${this.info_['column']}' has null`;
                 break;
             case ERROR_TYPE.MethodNotExist:
-                errMsg = `method ${this.info_} does not exist.`;
+                errMsg = `method '${this.info_}' does not exist.`;
                 break;
             case ERROR_TYPE.IndexedDbNotSupported:
                 errMsg = "Browser does not support indexeddb";
