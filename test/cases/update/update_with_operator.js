@@ -182,7 +182,7 @@ describe('Test update with operator option', function () {
             in: "Products",
             set: {
                 productName: {
-                    '+': "'temp'"
+                    '+': 'temp'
                 }
             },
             where: {

@@ -22,18 +22,6 @@ export const updateValue = (query: IUpdateQuery, storedValue) => {
         else {
             for (const op in columnSetValue) {
                 let value = columnSetValue[op];
-                if (typeof value == 'string') {
-                    if (value.match(/'|"/)) {
-                        value = value.replace(/'|"/g, '');
-                    }
-                    else if (storedValue[value]) {
-                        value = storedValue[value];
-                    }
-                    else {
-                        new LogHelper(ERROR_TYPE.InvalidUpdateColumn).throw();
-                    }
-                }
-
                 switch (op as any) {
                     case '+': storedValue[key] += value; break;
                     case '-': storedValue[key] -= value; break;
