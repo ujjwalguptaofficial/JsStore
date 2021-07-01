@@ -402,7 +402,13 @@ describe('Db upgrade Test', function () {
                         add: {
                             name: {
                                 dataType: 'string'
-                            }
+                            },
+                            "id": {
+                                "primaryKey": true,
+                                "dataType": "number",
+                                "autoIncrement": true,
+                                "notNull": true
+                            },
                         },
                     },
                     5: {

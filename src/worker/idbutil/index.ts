@@ -120,8 +120,8 @@ export class IDBUtil {
                     });
                 }
                 const addColumn = (store: IDBObjectStore, column: IColumn) => {
-                    if (column.enableSearch) {
-                        const columnName = column.name;
+                    const columnName = column.name;
+                    if (column.enableSearch && !store.indexNames.contains(columnName)) {
                         const options = column.primaryKey ? { unique: true } : { unique: column.unique };
                         options['multiEntry'] = column.multiEntry;
                         const keyPath = column.keyPath == null ? columnName : column.keyPath;
