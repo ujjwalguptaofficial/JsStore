@@ -5,15 +5,9 @@ export const updateValue = (query: IUpdateQuery, storedValue) => {
     let setValue = query.set;
     const mapSet = query.mapSet;
     if (mapSet) {
-        const method = variableFromPath(mapSet);
-        if (method) {
-            const result = method(setValue, storedValue);
-            if (result != null) {
-                setValue = result;
-            }
-        }
-        else {
-            throw new LogHelper(ERROR_TYPE.MethodNotExist, mapSet);
+        const result = (mapSet as Function)(setValue, storedValue);
+        if (result != null) {
+            setValue = result;
         }
     }
     for (const key in setValue) {

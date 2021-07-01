@@ -1,8 +1,8 @@
-import { IUpdateQuery, ISelectQuery, QUERY_OPTION, API, IWhereQuery } from "@/common";
+import { IUpdateQuery, ISelectQuery, QUERY_OPTION, API, IWhereQuery, DATA_TYPE, ERROR_TYPE } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { DbMeta } from "@worker/model";
 import { QueryHelper } from "../query_helper";
-import { promiseReject, isArray } from "@worker/utils";
+import { promiseReject, isArray, getDataType, variableFromPath, LogHelper } from "@worker/utils";
 import { BaseFetch } from "@executors/base_fetch";
 import { Select } from "@executors/select";
 import { executeWhereUndefinedLogic } from "./not_where";
@@ -18,6 +18,16 @@ export class Update extends BaseFetch {
         this.query = query as any;
         this.util = util;
         this.tableName = query.in;
+        const mapSet = query.mapSet;
+        if (mapSet) {
+            const method = getDataType(mapSet) === DATA_TYPE.String ?
+                variableFromPath(mapSet as string) : mapSet;
+            if (!method) {
+                throw new LogHelper(ERROR_TYPE.MethodNotExist, mapSet);
+            }
+            query.mapSet = method;
+        }
+
     }
 
     execute(db: DbMeta) {

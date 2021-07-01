@@ -51,7 +51,7 @@ export interface IUpdateQuery {
     ignoreCase?: boolean;
     set: { [columnName: string]: any };
     where?: IWhereQuery | IWhereQuery[];
-    mapSet?: string;
+    mapSet?: string | Function;
 }
 
 export interface IAlterQuery {

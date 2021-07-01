@@ -294,6 +294,7 @@ describe('Test update with operator option', function () {
             done(err);
         });
     });
+
     it('update with mapSet - return value', function (done) {
         var price;
         con.select({
@@ -329,6 +330,50 @@ describe('Test update with operator option', function () {
         }).then(function (results) {
             expect(results[0].price).to.be.an('number').to.equal(price * 2);
             done();
+        }).catch(function (err) {
+            done(err);
+        });
+    });
+
+    it('update with mapSet - without web worker', function (done) {
+        var connection = new JsStore.Connection();
+        connection.openDb("Demo");
+        connection.select({
+            from: "Products",
+            where: {
+                productId: 8
+            }
+        }).then(function (selectResults) {
+            return connection.update({
+                in: "Products",
+                set: {
+                    price: 0
+                },
+                where: {
+                    productId: 8
+                },
+                mapSet: function (setValue, storedValue) {
+                    return {
+                        price: storedValue.price * 2
+                    }
+                }
+            }).then(function (results) {
+                expect(results).to.be.an('number').to.equal(1);
+                return selectResults[0].price;
+            });
+        }).then(function (price) {
+            return connection.select({
+                from: "Products",
+                where: {
+                    productId: 8
+                }
+            }).then(function (results) {
+                expect(results[0].price).to.be.an('number').to.equal(price * 2);
+            })
+        }).then(function () {
+            return connection.terminate().then(function () {
+                done();
+            });
         }).catch(function (err) {
             done(err);
         });
