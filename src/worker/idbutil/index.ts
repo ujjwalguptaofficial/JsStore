@@ -70,7 +70,7 @@ export class IDBUtil {
         });
     }
 
-    initDb(db) {
+    initDb(db: DbMeta) {
         this.db = db;
         let isDbCreated = false;
         const dbVersion = db.version;
@@ -140,7 +140,7 @@ export class IDBUtil {
                         return createObjectStore(table);
                     }
                     const store = transaction.objectStore(table.name);
-                    for (let i = oldVersion; i <= dbVersion; i++) {
+                    for (let i = oldVersion + 1; i <= dbVersion; i++) {
                         const alterQuery = table.alter[i];
                         if (alterQuery) {
                             if (alterQuery.add) {
@@ -171,6 +171,15 @@ export class IDBUtil {
                         }
                     }
                 });
+
+                for (let i = 0, length = storeNames.length; i < length; i++) {
+                    const storeName = storeNames.item(i);
+                    const tableIndex = db.tables.findIndex(qry => qry.name === storeName);
+                    if (tableIndex < 0) {
+                        upgradeConnection.deleteObjectStore(storeName);
+                    }
+                }
+
             }
         }
         return promise<InitDbResult>(initLogic)

@@ -333,6 +333,125 @@ describe('Db upgrade Test', function () {
         })
     })
 
+    it('create version v6 with new table', function (done) {
+        var db = DbUpgradeTestV6.getDbSchema();
+        let isUpgradeCalled = false;
+        connection.on("upgrade", (dataBase, oldVersion, newVersion) => {
+            isUpgradeCalled = true;
+            expect(db.version).equal(dataBase.version);
+            expect(db.name).equal(dataBase.name);
+            expect(db.tables.length).equal(dataBase.tables.length);
+            expect(oldVersion).equal(5);
+            expect(newVersion).equal(6);
+        })
+        let isOpenCalled = false;
+        connection.on("open", () => {
+            expect(isUpgradeCalled).to.be.an('boolean').equal(true);
+            connection.off("upgrade");
+            isOpenCalled = true;
+        })
+        let isCreateCalled = false;
+        connection.on("create", () => {
+            isCreateCalled = true;
+        })
+        connection.initDb(db).then(function (isDbCreated) {
+            expect(isDbCreated).to.be.an('boolean').equal(true);
+            expect(isCreateCalled).to.be.an('boolean').equal(false);
+            expect(isUpgradeCalled).to.be.an('boolean').equal(true);
+            expect(isOpenCalled).to.be.an('boolean').equal(true);
+            connection.off("open");
+            connection.off("create");
+            done();
+        }).catch(function (err) {
+            done(err);
+        });
+    })
+
+    it('create version v7 - delete new table', function (done) {
+        var db = DbUpgradeTestV6.getDbSchema();
+        db.version = 7;
+        db.tables.splice(0, 1);
+        let isUpgradeCalled = false;
+        connection.on("upgrade", (dataBase, oldVersion, newVersion) => {
+            isUpgradeCalled = true;
+            expect(db.version).equal(dataBase.version);
+            expect(db.name).equal(dataBase.name);
+            expect(db.tables.length).equal(dataBase.tables.length);
+            expect(oldVersion).equal(6);
+            expect(newVersion).equal(7);
+        })
+        let isOpenCalled = false;
+        connection.on("open", () => {
+            expect(isUpgradeCalled).to.be.an('boolean').equal(true);
+            connection.off("upgrade");
+            isOpenCalled = true;
+        })
+        let isCreateCalled = false;
+        connection.on("create", () => {
+            isCreateCalled = true;
+        })
+        connection.initDb(db).then(function (isDbCreated) {
+            expect(isDbCreated).to.be.an('boolean').equal(true);
+            expect(isCreateCalled).to.be.an('boolean').equal(false);
+            expect(isUpgradeCalled).to.be.an('boolean').equal(true);
+            expect(isOpenCalled).to.be.an('boolean').equal(true);
+            connection.off("open");
+            connection.off("create");
+            done();
+        }).catch(function (err) {
+            done(err);
+        });
+    })
+
+    it('open db version v7', function (done) {
+        var db = DbUpgradeTestV6.getDbSchema();
+        db.version = 7;
+        db.tables.splice(0, 1);
+
+        let isUpgradeCalled = false;
+        connection.on("upgrade", () => {
+            isUpgradeCalled = true;
+        })
+        let isOpenCalled = false;
+        connection.on("open", (dataBase) => {
+            con.off("upgrade");
+            isOpenCalled = true;
+
+            expect(db.version).equal(dataBase.version);
+            expect(db.name).equal(dataBase.name);
+            expect(db.tables.length).equal(dataBase.tables.length);
+            const testTable = dataBase.tables[0];
+            const columns = testTable.columns;
+
+            expect(Object.keys(columns)).length(5);
+
+            expect(columns.id).not.null;
+            expect(columns.name).not.null;
+            expect(columns.name.dataType).equal('string');
+            expect(columns.name.notNull).equal(true);
+
+            expect(columns.gender.notNull).equal(undefined);
+            expect(columns.gender.dataType).equal('string');
+
+        })
+        let isCreateCalled = false;
+        connection.on("create", () => {
+            isCreateCalled = true;
+        })
+        connection.initDb(db).then(function (isDbCreated) {
+            expect(isDbCreated).to.be.an('boolean').equal(false);
+            expect(isCreateCalled).to.be.an('boolean').equal(false);
+            expect(isUpgradeCalled).to.be.an('boolean').equal(false);
+            expect(isOpenCalled).to.be.an('boolean').equal(true);
+            connection.off("open");
+            connection.off("create");
+            done();
+        }).catch(function (err) {
+            done(err);
+        });
+    })
+
+
     it('drop db', function () {
         return connection.dropDb();
     })
@@ -447,6 +566,88 @@ describe('Db upgrade Test', function () {
             }
             ];
             return values;
+        }
+    }
+    var DbUpgradeTestV6 = {
+        getDbSchema: function () {
+            var people = {
+                "name": "test",
+                "columns":
+                {
+                    "id": {
+                        "primaryKey": true,
+                        "dataType": "number",
+                        "autoIncrement": true,
+                        "notNull": true
+                    },
+                    "process_id": {
+                        "dataType": "number",
+                        encrypt: true
+                    },
+                },
+
+                alter: {
+                    4: {
+                        add: {
+                            name: {
+                                dataType: 'string'
+                            },
+                            "id": {
+                                "primaryKey": true,
+                                "dataType": "number",
+                                "autoIncrement": true,
+                                "notNull": true
+                            },
+                        },
+                    },
+                    5: {
+                        add: {
+                            gender: {
+                                dataType: 'string'
+                            }
+                        },
+                        modify: {
+                            name: {
+                                notNull: true
+                            }
+                        },
+                    },
+                }
+
+            },
+                tableStudent = {
+
+                    name: 'Students',
+                    columns: {
+                        id: {
+                            primaryKey: true,
+                            autoIncrement: true
+                        },
+                        name: {
+                            notNull: true,
+                            dataType: JsStore.DATA_TYPE.String
+                        },
+                        gender: {
+                            dataType: JsStore.DATA_TYPE.String,
+                            default: 'male'
+                        },
+                        country: {
+                            notNull: true,
+                            dataType: JsStore.DATA_TYPE.String
+                        },
+                        city: {
+                            dataType: JsStore.DATA_TYPE.String,
+                            notNull: true
+                        }
+                    }
+
+                },
+                dataBase = {
+                    name: 'DbUpgradeTest',
+                    tables: [people, tableStudent],
+                    version: 6
+                };
+            return dataBase;
         }
     }
 

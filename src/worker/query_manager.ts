@@ -270,8 +270,11 @@ export class QueryManager {
                     ).then((value: DbMeta) => {
                         if (value) {
                             value.tables.forEach((table, index) => {
-                                dbMeta.tables[index].autoIncColumnValue =
-                                    table.autoIncColumnValue;
+                                const targetTable = dbMeta.tables[index];
+                                if (targetTable) {
+                                    targetTable.autoIncColumnValue =
+                                        table.autoIncColumnValue;
+                                }
                             });
                         }
                         this.db = dbMeta;
