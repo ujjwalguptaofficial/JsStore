@@ -24,6 +24,7 @@ export class MetaHelper {
             req.onerror = rej;
         });
     }
+
     static get(key, util: IDBUtil) {
         if (!util.tx) {
             util.createTransaction([MetaHelper.tableName]);

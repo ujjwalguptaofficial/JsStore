@@ -17,7 +17,10 @@ import { LogHelper, getError, promiseReject, variableFromPath, userDbSchema, get
 
 export class QueryManager {
     util: IDBUtil;
-    db: DbMeta;
+
+    get db() {
+        return this.util.db;
+    }
 
     middlewares: string[] = [];
 
@@ -227,7 +230,7 @@ export class QueryManager {
 
     terminate() {
         return this.closeDb().then(() => {
-            this.db = null;
+            this.util.db = null;
         });
     }
 
@@ -277,7 +280,6 @@ export class QueryManager {
                                 }
                             });
                         }
-                        this.db = dbMeta;
                         this.util.db = dbMeta;
                         dbInfo.database = userDbSchema(this.db);
                         MetaHelper.set(
@@ -293,7 +295,6 @@ export class QueryManager {
                         MetaHelper.dbSchema,
                         this.util
                     ).then((value: any) => {
-                        this.db = value;
                         this.util.db = value;
                         dbInfo.database = userDbSchema(this.db);
                         res(dbInfo);
