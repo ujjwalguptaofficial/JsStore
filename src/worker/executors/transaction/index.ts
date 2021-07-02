@@ -28,7 +28,6 @@ export class Transaction extends Base {
     }
 
     execute(db: DbMeta) {
-        this.db = db;
 
         const err = this.validate();
         if (err) return promiseReject(

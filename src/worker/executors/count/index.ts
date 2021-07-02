@@ -24,7 +24,6 @@ export class Count extends BaseFetch {
     }
 
     execute(db: DbMeta) {
-        this.db = db;
         const queryHelper = new QueryHelper(db);
         const query = this.query;
         const err = queryHelper.validate(API.Count, query);
@@ -38,7 +37,7 @@ export class Count extends BaseFetch {
             const getDataFromSelect = () => {
                 const selectInstance = new Select(this.query as ISelectQuery, this.util);
                 selectInstance.isTxQuery = this.isTxQuery;
-                return selectInstance.execute(db).then(results => {
+                return selectInstance.execute().then(results => {
                     this.resultCount = results.length;
                 });
             };

@@ -13,7 +13,6 @@ export class Union extends Base {
     }
 
     execute(db: DbMeta) {
-        this.db = db;
         const query: ISelectQuery[] = this.query as any;
         let index = 0;
         const hashMap = {};
@@ -46,7 +45,7 @@ export class Union extends Base {
         const fetchData = () => {
             if (index < query.length) {
                 select = new Select(query[index++], this.util);
-                return select.execute(db).then((selectResult) => {
+                return select.execute().then((selectResult) => {
                     selectResult.forEach(val => {
                         hashMap[getHashKey(val)] = val;
                     });

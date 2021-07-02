@@ -12,7 +12,6 @@ export class Intersect extends Base {
     }
 
     execute(db: DbMeta) {
-        this.db = db;
         const intersectQry: IIntersectQuery = this.query as any;
         let index = 0;
         let hashMap = {};
@@ -48,7 +47,7 @@ export class Intersect extends Base {
         const fetchData = () => {
             if (index < queryLength) {
                 select = new Select(queries[index], this.util);
-                return select.execute(this.db).then((selectResult) => {
+                return select.execute().then((selectResult) => {
                     hashMap = {};
                     selectResult.forEach(val => {
                         const columnValKey = getHashKey(val);

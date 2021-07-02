@@ -13,7 +13,6 @@ export class Clear extends Base {
     }
 
     execute(db: DbMeta) {
-        this.db = db;
         const tableName: string = this.query as any;
         if (!this.isTxQuery) {
             this.util.createTransaction([tableName, MetaHelper.tableName]);

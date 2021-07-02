@@ -31,7 +31,6 @@ export class Update extends BaseFetch {
     }
 
     execute(db: DbMeta) {
-        this.db = db;
         const query: IUpdateQuery = this.query as any;
         try {
             const queryHelper = new QueryHelper(db);
@@ -68,7 +67,7 @@ export class Update extends BaseFetch {
             ignoreCase: query.ignoreCase
         } as ISelectQuery, this.util);
         selectObject.isTxQuery = this.isTxQuery;
-        return selectObject.execute(this.db).then((results: any[]) => {
+        return selectObject.execute().then((results: any[]) => {
             const key = this.primaryKey(query.in);
             const inQuery = [];
             results.forEach((value) => {

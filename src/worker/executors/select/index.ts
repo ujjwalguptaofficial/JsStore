@@ -68,11 +68,10 @@ export class Select extends BaseFetch {
         }
     }
 
-    execute(db: DbMeta): Promise<any> {
-        this.db = db;
+    execute(): Promise<any> {
         let pResult: Promise<void>;
         try {
-            const err = new QueryHelper(db).validate(API.Select, this.query);
+            const err = new QueryHelper(this.db).validate(API.Select, this.query);
             if (err) return promiseReject(err);
             this.initTransaction_();
             if (this.query.join == null) {

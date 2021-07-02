@@ -34,7 +34,7 @@ export class Join {
     private executeSelect(query: ISelectQuery) {
         // this.select.util.emptyTx();
         return new Select(query, this.select.util).
-            execute(this.select.db);
+            execute();
     }
 
     execute() {

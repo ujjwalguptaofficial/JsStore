@@ -4,7 +4,12 @@ import { LogHelper, getError, promiseReject, getErrorFromException } from "@work
 import { DbMeta } from "@worker/model";
 
 export class Base {
-    db: DbMeta;
+    // db: DbMeta;
+
+    get db() {
+        return this.util.db;
+    }
+
     util: IDBUtil;
     query: IInsertQuery | ISelectQuery | IUpdateQuery;
 

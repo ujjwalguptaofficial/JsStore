@@ -24,7 +24,6 @@ export class Remove extends BaseFetch {
     }
 
     execute(db: DbMeta) {
-        this.db = db;
         const queryHelper = new QueryHelper(db);
         const query = this.query;
         const err = queryHelper.validate(API.Remove, query);
@@ -59,7 +58,7 @@ export class Remove extends BaseFetch {
     private processWhereArrayQry() {
         const selectObject = new Select(this.query, this.util);
         selectObject.isTxQuery = this.isTxQuery;
-        return selectObject.execute(this.db).then((results) => {
+        return selectObject.execute().then((results) => {
             const keyList = [];
             const pkey = this.primaryKey(this.query.from);
             results.forEach((item) => {

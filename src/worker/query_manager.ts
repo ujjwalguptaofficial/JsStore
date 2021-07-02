@@ -85,7 +85,7 @@ export class QueryManager {
                 break;
             case API.Select:
                 queryResult = new Select(query, this.util).
-                    execute(this.db);
+                    execute();
                 break;
             case API.Count:
                 queryResult = new Count(query, this.util).execute(this.db);
@@ -232,23 +232,23 @@ export class QueryManager {
     }
 
     openDb(query: IDbInfo) {
-        let pResult: Promise<boolean>;
-        if (this.db && query.name === this.db.name) {
-            pResult = this.initDb();
-        }
-        else {
-            pResult = this.initDb({
-                name: query.name,
-                tables: [
-                ],
-                version: query.version
-            });
-        }
         return this.closeDb().then(_ => {
+            let pResult: Promise<boolean>;
+            if (this.db && query.name === this.db.name) {
+                pResult = this.initDb();
+            }
+            else {
+                pResult = this.initDb({
+                    name: query.name,
+                    tables: [
+                    ],
+                    version: query.version
+                });
+            }
             return pResult.then(() => {
                 return this.db;
             });
-        });
+        })
     }
 
     initDb(dataBase?: IDataBase) {
@@ -278,6 +278,7 @@ export class QueryManager {
                             });
                         }
                         this.db = dbMeta;
+                        this.util.db = dbMeta;
                         dbInfo.database = userDbSchema(this.db);
                         MetaHelper.set(
                             MetaHelper.dbSchema, dbMeta,
@@ -293,6 +294,7 @@ export class QueryManager {
                         this.util
                     ).then((value: any) => {
                         this.db = value;
+                        this.util.db = value;
                         dbInfo.database = userDbSchema(this.db);
                         res(dbInfo);
                     });

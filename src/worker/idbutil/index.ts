@@ -72,6 +72,7 @@ export class IDBUtil {
 
     initDb(db: DbMeta) {
         this.db = db;
+        
         let isDbCreated = false;
         const dbVersion = db.version;
         let oldVersion;
