@@ -12,7 +12,7 @@ export class Clear extends Base {
         this.tableName = tableName;
     }
 
-    execute(db: DbMeta) {
+    execute() {
         const tableName: string = this.query as any;
         if (!this.isTxQuery) {
             this.util.createTransaction([tableName, MetaHelper.tableName]);
@@ -25,7 +25,7 @@ export class Clear extends Base {
                     for (const columnName in currentTable.autoIncColumnValue) {
                         currentTable.autoIncColumnValue[columnName] = 0;
                     }
-                    MetaHelper.set(MetaHelper.dbSchema, db, this.util).then(() => {
+                    MetaHelper.set(MetaHelper.dbSchema, this.util.db, this.util).then(() => {
                         res();
                     }).catch(rej);
                 };

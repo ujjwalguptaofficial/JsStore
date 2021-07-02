@@ -23,7 +23,8 @@ export class Insert extends Base {
         this.tableName = query.into;
     }
 
-    execute(db: DbMeta) {
+    execute() {
+        const db = this.db;
         const err = new QueryHelper(db).validate(API.Insert, this.query);
         if (err) return promiseReject(err);
         return this.insertData_(db).then(_ => {

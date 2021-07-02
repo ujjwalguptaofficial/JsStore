@@ -30,10 +30,10 @@ export class Update extends BaseFetch {
 
     }
 
-    execute(db: DbMeta) {
+    execute() {
         const query: IUpdateQuery = this.query as any;
         try {
-            const queryHelper = new QueryHelper(db);
+            const queryHelper = new QueryHelper(this.db);
             const err = queryHelper.validate(API.Update, query);
             if (err) return promiseReject(err);
 

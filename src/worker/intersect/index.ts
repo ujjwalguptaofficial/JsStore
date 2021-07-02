@@ -1,7 +1,6 @@
 import { IIntersectQuery, ISelectQuery } from "@/common";
 import { Base } from "@executors/base";
 import { Select } from "@executors/select";
-import { DbMeta } from "../model";
 
 export class Intersect extends Base {
 
@@ -11,7 +10,7 @@ export class Intersect extends Base {
         this.util = util;
     }
 
-    execute(db: DbMeta) {
+    execute() {
         const intersectQry: IIntersectQuery = this.query as any;
         let index = 0;
         let hashMap = {};

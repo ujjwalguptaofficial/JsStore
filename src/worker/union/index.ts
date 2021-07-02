@@ -1,6 +1,5 @@
 import { Base } from "@executors/base";
 import { ISelectQuery } from "@/common";
-import { DbMeta } from "@worker/model";
 import { Select } from "@executors/select";
 import { IDBUtil } from "@/worker/idbutil";
 
@@ -12,7 +11,7 @@ export class Union extends Base {
         this.util = util;
     }
 
-    execute(db: DbMeta) {
+    execute() {
         const query: ISelectQuery[] = this.query as any;
         let index = 0;
         const hashMap = {};

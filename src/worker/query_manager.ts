@@ -81,20 +81,20 @@ export class QueryManager {
                 break;
             case API.Insert:
                 queryResult = new Insert(query, this.util).
-                    execute(this.db);
+                    execute();
                 break;
             case API.Select:
                 queryResult = new Select(query, this.util).
                     execute();
                 break;
             case API.Count:
-                queryResult = new Count(query, this.util).execute(this.db);
+                queryResult = new Count(query, this.util).execute();
                 break;
             case API.Update:
-                queryResult = new Update(query, this.util).execute(this.db);
+                queryResult = new Update(query, this.util).execute();
                 break;
             case API.Intersect:
-                queryResult = new Intersect(query, this.util).execute(this.db);
+                queryResult = new Intersect(query, this.util).execute();
                 break;
             case API.DropDb:
                 queryResult = this.dropDb();
@@ -103,16 +103,16 @@ export class QueryManager {
                 queryResult = this.terminate();
                 break;
             case API.Union:
-                queryResult = new Union(query, this.util).execute(this.db);
+                queryResult = new Union(query, this.util).execute();
                 break;
             case API.Remove:
-                queryResult = new Remove(query, this.util).execute(this.db);
+                queryResult = new Remove(query, this.util).execute();
                 break;
             case API.Clear:
-                queryResult = new Clear(query, this.util).execute(this.db);
+                queryResult = new Clear(query, this.util).execute();
                 break;
             case API.Transaction:
-                queryResult = new Transaction(query, this.util).execute(this.db);
+                queryResult = new Transaction(query, this.util).execute();
                 break;
             case API.Get:
                 queryResult = MetaHelper.get(query as string, this.util);

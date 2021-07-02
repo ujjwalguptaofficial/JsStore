@@ -27,7 +27,7 @@ export class Transaction extends Base {
         this.util = util;
     }
 
-    execute(db: DbMeta) {
+    execute() {
 
         const err = this.validate();
         if (err) return promiseReject(

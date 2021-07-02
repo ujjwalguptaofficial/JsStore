@@ -23,8 +23,8 @@ export class Count extends BaseFetch {
         this.tableName = query.from;
     }
 
-    execute(db: DbMeta) {
-        const queryHelper = new QueryHelper(db);
+    execute() {
+        const queryHelper = new QueryHelper(this.db);
         const query = this.query;
         const err = queryHelper.validate(API.Count, query);
         if (err) {
