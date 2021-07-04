@@ -7,6 +7,7 @@ export type WebWorkerRequest = {
     onSuccess?: (results?) => void;
     onError?: (err: IError) => void;
     onResult?: (cb: (result: any) => Promise<any>) => void;
+    beforeExecute?: (cb: (result: any) => Promise<any>) => void;
 };
 
 export type WebWorkerResult = {

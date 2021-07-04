@@ -69,7 +69,7 @@ export class QueryManager {
         });
     }
 
-    executeQuery(request: WebWorkerRequest) {
+    executeQuery(request: WebWorkerRequest, cb: () => Promise<any>) {
         let queryResult: Promise<any>;
         const query = request.query;
         switch (request.name) {
@@ -84,7 +84,7 @@ export class QueryManager {
                 break;
             case API.Insert:
                 queryResult = new Insert(query, this.util).
-                    execute();
+                    execute(cb);
                 break;
             case API.Select:
                 queryResult = new Select(query, this.util).
@@ -115,7 +115,7 @@ export class QueryManager {
                 queryResult = new Clear(query, this.util).execute();
                 break;
             case API.Transaction:
-                queryResult = new Transaction(query, this.util).execute();
+                queryResult = new Transaction(query, this.util).execute(cb);
                 break;
             case API.Get:
                 queryResult = MetaHelper.get(query as string, this.util);
@@ -171,24 +171,51 @@ export class QueryManager {
             callNextMiddleware();
         });
     }
+    private callBeforeMiddleware(middlewares: any[]) {
+        return promise<any>((res) => {
+            let index = 0;
+            const lastIndex = (getLength(middlewares) as any) - 1;
+            const callNextMiddleware = () => {
+                if (index <= lastIndex) {
+                    let promiseResult = middlewares[index++]();
+                    if (!promiseResult.then) {
+                        promiseResult = promiseResolve(promiseResult);
+                    }
+                    promiseResult.then(callNextMiddleware);
+                }
+                else {
+                    res();
+                }
+            };
+            callNextMiddleware();
+        });
+    }
 
     run(request: WebWorkerRequest) {
-        let middlewares = [];
+        let onResultCallback = [];
+        let beforeExecuteCallback = [];
         request.onResult = (cb) => {
-            middlewares.push((result) => {
+            onResultCallback.push((result) => {
+                return cb(result);
+            });
+        };
+        request.beforeExecute = (cb) => {
+            beforeExecuteCallback.push((result) => {
                 return cb(result);
             });
         };
         this.executeMiddleware_(request).then(_ => {
-            return this.executeQuery(request).then((result) => {
-                return this.callResultMiddleware(middlewares, result).then(modifiedResult => {
+            return this.executeQuery(request, () => {
+                return this.callBeforeMiddleware(beforeExecuteCallback);
+            }).then((result) => {
+                return this.callResultMiddleware(onResultCallback, result).then(modifiedResult => {
                     this.returnResult_({
                         result: modifiedResult
                     });
                 });
             });
         }).catch(ex => {
-            middlewares = [];
+            onResultCallback = [];
             const err = getError(ex);
             const result = {
                 error: err

@@ -23,12 +23,15 @@ export class Insert extends Base {
         this.tableName = query.into;
     }
 
-    execute() {
+    execute(beforeInsert: () => Promise<any>) {
         const db = this.db;
         const err = new QueryHelper(db).validate(API.Insert, this.query);
         if (err) return promiseReject(err);
-        return this.insertData_(db).then(_ => {
-            return this.query.return ? this.valuesAffected_ : this.rowAffected
+
+        return beforeInsert().then(_ => {
+            return this.insertData_(db).then(_ => {
+                return this.query.return ? this.valuesAffected_ : this.rowAffected
+            })
         }).catch(err => {
             this.util.abortTransaction();
             return promiseReject(err);

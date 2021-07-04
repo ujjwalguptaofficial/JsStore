@@ -21,14 +21,16 @@ export class Transaction extends Base {
     onSuccess: (result: any) => void;
     onError: (err: LogHelper) => void;
 
+    beforeExecute: () => Promise<void>;
+
     constructor(qry: ITranscationQuery, util: IDBUtil) {
         super();
         this.query = qry as any;
         this.util = util;
     }
 
-    execute() {
-
+    execute(cb: () => Promise<void>) {
+        this.beforeExecute = cb;
         const err = this.validate();
         if (err) return promiseReject(
             err
@@ -39,6 +41,7 @@ export class Transaction extends Base {
             this.onSuccess = res;
             this.onError = rej;
         }).then(result => {
+            this.beforeExecute = null;
             this.log(`transaction finished`);
             return result;
         })
@@ -207,7 +210,7 @@ export class Transaction extends Base {
                 break;
         }
         requestObj.isTxQuery = true;
-        requestObj.execute(this.db).then(onReqFinished).catch(err => {
+        requestObj.execute(this.beforeExecute).then(onReqFinished).catch(err => {
             const result = {
                 error: err
             } as WebWorkerResult;

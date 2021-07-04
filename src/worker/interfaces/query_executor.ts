@@ -1,7 +1,7 @@
 import { DbMeta } from "@worker/model";
 
 export interface IQueryExecutor {
-    execute(db: DbMeta): Promise<any>;
+    execute(beforeExecute: () => Promise<void>): Promise<any>;
     isTxQuery: boolean;
 
 }
