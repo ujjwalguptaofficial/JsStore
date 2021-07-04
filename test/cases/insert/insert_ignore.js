@@ -42,18 +42,36 @@ describe('Insert ignore', function () {
         })
     })
 
-    it('insert data with skipDataCheck', function () {
+    it('insert data into Categories table', function (done) {
+        $.getJSON("test/static/Categories.json", function (results) {
+            // var startDate = new Date(1994, 0, 1);
+            // var endDate = new Date();
+            // results.forEach(function (value) {
+            //     value.id = value
+            // });
 
-        return connection.insert({
-            into: "Categories",
-            validation: false,
-            values: [{
-                categoryName: "Beverages",
-                description: "Soft drinks, coffees, teas, beers, and ales"
-            }]
-        }).then(result => {
-            expect(result).to.equal(1);
-        })
+            connection.insert({
+                into: 'Categories',
+                validation: false,
+                values: results,
+                ignore: true
+            }).then(function (results) {
+                expect(results).to.be.an('number').to.equal(8);
+                done();
+            }).catch(function (err) {
+                done(err);
+            });
+        });
+        // return connection.insert({
+        //     into: "Categories",
+        //     validation: false,
+        //     values: [{
+        //         categoryName: "Beverages",
+        //         description: "Soft drinks, coffees, teas, beers, and ales"
+        //     }]
+        // }).then(result => {
+        //     expect(result).to.equal(1);
+        // })
     })
 
     it('insert data with ignore & duplicate primarykey', function () {
