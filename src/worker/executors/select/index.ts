@@ -1,4 +1,4 @@
-import { ISelectQuery, QUERY_OPTION, IDB_MODE, API, IWhereQuery } from "@/common";
+import { ISelectQuery, QUERY_OPTION, IDB_MODE, API, IWhereQuery, promiseResolve } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@worker/executors/query_helper";
 import { DbMeta } from "@/worker/model";
@@ -68,31 +68,37 @@ export class Select extends BaseFetch {
         }
     }
 
-    execute(): Promise<any> {
+    execute(beforeExecute?: () => Promise<any>): Promise<any> {
         let pResult: Promise<void>;
+        if (!beforeExecute) {
+            beforeExecute = () => promiseResolve(null);
+        }
         try {
             const err = new QueryHelper(this.db).validate(API.Select, this.query);
             if (err) return promiseReject(err);
-            this.initTransaction_();
-            if (this.query.join == null) {
-                if (this.query.where != null) {
-                    if (isArray(this.query.where)) {
-                        pResult = this.processWhereArrayQry();
+            return beforeExecute().then(_ => {
+                this.initTransaction_();
+                if (this.query.join == null) {
+                    if (this.query.where != null) {
+                        if (isArray(this.query.where)) {
+                            pResult = this.processWhereArrayQry();
+                        }
+                        else {
+                            pResult = this.processWhere_();
+                        }
                     }
                     else {
-                        pResult = this.processWhere_();
+                        pResult = this.executeWhereUndefinedLogic();
                     }
                 }
                 else {
-                    pResult = this.executeWhereUndefinedLogic();
+                    pResult = this.executeJoinQuery();
                 }
-            }
-            else {
-                pResult = this.executeJoinQuery();
-            }
-            return pResult.then(
-                this.returnResult_.bind(this)
-            )
+                return pResult.then(
+                    this.returnResult_.bind(this)
+                )
+            })
+
         }
         catch (ex) {
             return this.onException(ex);

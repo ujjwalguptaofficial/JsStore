@@ -30,28 +30,29 @@ export class Update extends BaseFetch {
 
     }
 
-    execute() {
+    execute(beforeExecute: () => Promise<any>) {
         const query: IUpdateQuery = this.query as any;
         try {
             const queryHelper = new QueryHelper(this.db);
             const err = queryHelper.validate(API.Update, query);
             if (err) return promiseReject(err);
-
-            this.initTransaction();
-            let pResult: Promise<void>;
-            if (query.where != null) {
-                if ((query.where as IWhereQuery).or || isArray(query.where)) {
-                    pResult = this.executeComplexLogic_();
+            return beforeExecute().then(_ => {
+                this.initTransaction();
+                let pResult: Promise<void>;
+                if (query.where != null) {
+                    if ((query.where as IWhereQuery).or || isArray(query.where)) {
+                        pResult = this.executeComplexLogic_();
+                    }
+                    else {
+                        pResult = this.goToWhereLogic();
+                    }
                 }
                 else {
-                    pResult = this.goToWhereLogic();
+                    pResult = this.executeWhereUndefinedLogic();
                 }
-            }
-            else {
-                pResult = this.executeWhereUndefinedLogic();
-            }
-            return pResult.then(() => {
-                return this.rowAffected;
+                return pResult.then(() => {
+                    return this.rowAffected;
+                })
             })
         }
         catch (ex) {

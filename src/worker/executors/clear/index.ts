@@ -12,30 +12,31 @@ export class Clear extends Base {
         this.tableName = tableName;
     }
 
-    execute() {
+    execute(beforeExecute: () => Promise<any>) {
         const tableName: string = this.query as any;
         if (!this.isTxQuery) {
             this.util.createTransaction([tableName, MetaHelper.tableName]);
         }
-        const clearRequest: IDBRequest = this.util.objectStore(tableName).clear();
-        try {
-            return promise<void>((res, rej) => {
-                clearRequest.onsuccess = (e) => {
-                    const currentTable = this.table(tableName);
-                    for (const columnName in currentTable.autoIncColumnValue) {
-                        currentTable.autoIncColumnValue[columnName] = 0;
-                    }
-                    MetaHelper.set(MetaHelper.dbSchema, this.util.db, this.util).then(() => {
-                        res();
-                    }).catch(rej);
-                };
+        return beforeExecute().then(_ => {
+            const clearRequest: IDBRequest = this.util.objectStore(tableName).clear();
+            try {
+                return promise<void>((res, rej) => {
+                    clearRequest.onsuccess = (e) => {
+                        const currentTable = this.table(tableName);
+                        for (const columnName in currentTable.autoIncColumnValue) {
+                            currentTable.autoIncColumnValue[columnName] = 0;
+                        }
+                        MetaHelper.set(MetaHelper.dbSchema, this.util.db, this.util).then(() => {
+                            res();
+                        }).catch(rej);
+                    };
 
-                clearRequest.onerror = rej;
-            })
-        }
-        catch (ex) {
-            return this.onException(ex);
-        }
-
+                    clearRequest.onerror = rej;
+                })
+            }
+            catch (ex) {
+                return this.onException(ex);
+            }
+        })
     }
 }

@@ -23,36 +23,37 @@ export class Remove extends BaseFetch {
         this.tableName = query.from;
     }
 
-    execute() {
+    execute(beforeExecute: () => Promise<any>) {
         const queryHelper = new QueryHelper(this.db);
         const query = this.query;
         const err = queryHelper.validate(API.Remove, query);
         if (err) return promiseReject(
             err
         );
-        try {
-            this.initTransaction_();
-            let pResult: Promise<void>;
-            if (query.where != null) {
-                if (isArray(query.where)) {
-                    pResult = this.processWhereArrayQry();
+        let pResult: Promise<void>;
+        return beforeExecute().then(_ => {
+            try {
+                this.initTransaction_();
+                if (query.where != null) {
+                    if (isArray(query.where)) {
+                        pResult = this.processWhereArrayQry();
+                    }
+                    else {
+                        pResult = this.processWhere_();
+                    }
                 }
                 else {
-                    pResult = this.processWhere_();
+                    pResult = this.executeWhereUndefinedLogic();
                 }
+
             }
-            else {
-                pResult = this.executeWhereUndefinedLogic();
+            catch (ex) {
+                return this.onException(ex);
             }
             return pResult.then(() => {
                 return this.rowAffected;
             })
-
-        }
-        catch (ex) {
-            return this.onException(ex);
-        }
-
+        })
     }
 
     private processWhereArrayQry() {

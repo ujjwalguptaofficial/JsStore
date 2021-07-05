@@ -74,12 +74,15 @@ export class QueryManager {
         const query = request.query;
         switch (request.name) {
             case API.OpenDb:
+                cb();
                 queryResult = this.openDb(query);
                 break;
             case API.InitDb:
+                cb()
                 queryResult = this.initDb(query);
                 break;
             case API.CloseDb:
+                cb()
                 queryResult = this.closeDb();
                 break;
             case API.Insert:
@@ -88,49 +91,65 @@ export class QueryManager {
                 break;
             case API.Select:
                 queryResult = new Select(query, this.util).
-                    execute();
+                    execute(cb);
                 break;
             case API.Count:
-                queryResult = new Count(query, this.util).execute();
+                queryResult = new Count(query, this.util).
+                    execute(cb);
                 break;
             case API.Update:
-                queryResult = new Update(query, this.util).execute();
+                queryResult = new Update(query, this.util).
+                    execute(cb);
                 break;
             case API.Intersect:
-                queryResult = new Intersect(query, this.util).execute();
+                cb();
+                queryResult = new Intersect(query, this.util).
+                    execute();
                 break;
             case API.DropDb:
+                cb();
                 queryResult = this.dropDb();
                 break;
             case API.Terminate:
+                cb();
                 queryResult = this.terminate();
                 break;
             case API.Union:
-                queryResult = new Union(query, this.util).execute();
+                cb()
+                queryResult = new Union(query, this.util).
+                    execute();
                 break;
             case API.Remove:
-                queryResult = new Remove(query, this.util).execute();
+                queryResult = new Remove(query, this.util).
+                    execute(cb);
                 break;
             case API.Clear:
-                queryResult = new Clear(query, this.util).execute();
+                queryResult = new Clear(query, this.util).
+                    execute(cb);
                 break;
             case API.Transaction:
-                queryResult = new Transaction(query, this.util).execute(cb);
+                queryResult = new Transaction(query, this.util).
+                    execute(cb);
                 break;
             case API.Get:
+                cb();
                 queryResult = MetaHelper.get(query as string, this.util);
                 break;
             case API.Set:
+                cb();
                 queryResult = MetaHelper.set(query.key, query.value, this.util);
                 break;
             case API.ImportScripts:
+                cb();
                 queryResult = this.importScripts_(request);
                 break;
             case API.ChangeLogStatus:
+                cb();
                 this.logger.status = query;
                 queryResult = Promise.resolve();
                 break;
             case API.Middleware:
+                cb();
                 const value = variableFromPath(query);
                 if (!value) {
                     return promiseReject(
@@ -330,8 +349,4 @@ export class QueryManager {
             }).catch(rej);
         });
     }
-
-
-
-
 }

@@ -23,7 +23,7 @@ export class Count extends BaseFetch {
         this.tableName = query.from;
     }
 
-    execute() {
+    execute(beforeExecute: () => Promise<any>) {
         const queryHelper = new QueryHelper(this.db);
         const query = this.query;
         const err = queryHelper.validate(API.Count, query);
@@ -32,39 +32,41 @@ export class Count extends BaseFetch {
                 err
             );
         }
-        try {
+        return beforeExecute().then(_ => {
             let result: Promise<void>;
-            const getDataFromSelect = () => {
-                const selectInstance = new Select(this.query as ISelectQuery, this.util);
-                selectInstance.isTxQuery = this.isTxQuery;
-                return selectInstance.execute().then(results => {
-                    this.resultCount = results.length;
-                });
-            };
-            this.initTransaction_();
-            if (query.join == null) {
-                if (query.where != null) {
-                    if ((query.where as IWhereQuery).or || isArray(this.query.where)) {
-                        result = getDataFromSelect();
+            try {
+                const getDataFromSelect = () => {
+                    const selectInstance = new Select(this.query as ISelectQuery, this.util);
+                    selectInstance.isTxQuery = this.isTxQuery;
+                    return selectInstance.execute().then(results => {
+                        this.resultCount = results.length;
+                    });
+                };
+                this.initTransaction_();
+                if (query.join == null) {
+                    if (query.where != null) {
+                        if ((query.where as IWhereQuery).or || isArray(this.query.where)) {
+                            result = getDataFromSelect();
+                        }
+                        else {
+                            result = this.goToWhereLogic();
+                        }
                     }
                     else {
-                        result = this.goToWhereLogic();
+                        result = this.executeWhereUndefinedLogic() as any;
                     }
                 }
                 else {
-                    result = this.executeWhereUndefinedLogic() as any;
+                    result = getDataFromSelect();
                 }
             }
-            else {
-                result = getDataFromSelect();
+            catch (ex) {
+                this.onException(ex);
             }
             return result.then(_ => {
                 return this.resultCount;
             })
-        }
-        catch (ex) {
-            this.onException(ex);
-        }
+        });
     }
 
     private initTransaction_() {
