@@ -3,6 +3,11 @@ function randomDate(start, end) {
 }
 
 describe('Test insert', function () {
+
+    it("load script", function (done) {
+        con.importScripts("../cases/insert/insert_middleware.js").then(done).catch(done);
+    });
+
     it('wrong table test', function (done) {
         con.insert({
             into: 'Customer'
@@ -29,7 +34,7 @@ describe('Test insert', function () {
                     type: 'table_not_exist'
                 };
                 expect(err).to.be.an('object').eql(error);
-                setTimeout(done,100);
+                setTimeout(done, 100);
                 // done();
             })
     });
@@ -203,18 +208,25 @@ describe('Test insert', function () {
         });
     });
 
+    it('add middleware in worker', function (done) {
+        con.addMiddleware("InsertMiddleware.insertEmployees", true).then(done).catch(done);
+    })
+
+
     it('insert Employees', function (done) {
         $.getJSON("test/static/Employees.json", function (results) {
-            var startDate = new Date(1994, 0, 1);
-            var endDate = new Date();
-            results.forEach(function (value) {
-                value.birthDate = randomDate(startDate, endDate);
-            });
+            // var startDate = new Date(1994, 0, 1);
+            // var endDate = new Date();
+            // results.forEach(function (value) {
+            //     value.birthDate = randomDate(startDate, endDate);
+            // });
             con.insert({
                 into: 'Employees',
                 values: results
             }).then(function (results) {
-                expect(results).to.be.an('number').to.equal(34);
+                expect(results).to.be.an('string').to.equal(
+                    "Total inserted record is 34"
+                );
                 done();
             }).catch(function (err) {
                 done(err);

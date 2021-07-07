@@ -8,8 +8,10 @@ var JsStoreOptions = {
                 result = result + 5;
                 return Promise.resolve(result);
             })
-            request.onResult(result => {
-                return result + 5;
+            request.beforeExecute(_ => {
+                request.onResult(result => {
+                    return result + 5;
+                })
             })
         }
         else if (request.name == "count" && request.query['db']) {

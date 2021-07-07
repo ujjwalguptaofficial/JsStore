@@ -175,7 +175,7 @@ export class QueryManager {
             const callNextMiddleware = () => {
                 if (index <= lastIndex) {
                     let promiseResult = middlewares[index++](result);
-                    if (!promiseResult.then) {
+                    if (!(promiseResult instanceof Promise)) {
                         promiseResult = promiseResolve(promiseResult);
                     }
                     promiseResult.then(modifiedResult => {
@@ -197,7 +197,7 @@ export class QueryManager {
             const callNextMiddleware = () => {
                 if (index <= lastIndex) {
                     let promiseResult = middlewares[index++]();
-                    if (!promiseResult.then) {
+                    if (!(promiseResult instanceof Promise)) {
                         promiseResult = promiseResolve(promiseResult);
                     }
                     promiseResult.then(callNextMiddleware);
