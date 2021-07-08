@@ -78,11 +78,11 @@ export class QueryManager {
                 queryResult = this.openDb(query);
                 break;
             case API.InitDb:
-                cb()
+                cb();
                 queryResult = this.initDb(query);
                 break;
             case API.CloseDb:
-                cb()
+                cb();
                 queryResult = this.closeDb();
                 break;
             case API.Insert:
@@ -115,7 +115,7 @@ export class QueryManager {
                 queryResult = this.terminate();
                 break;
             case API.Union:
-                cb()
+                cb();
                 queryResult = new Union(query, this.util).
                     execute();
                 break;
@@ -212,7 +212,7 @@ export class QueryManager {
 
     run(request: WebWorkerRequest) {
         let onResultCallback = [];
-        let beforeExecuteCallback = [];
+        const beforeExecuteCallback = [];
         request.onResult = (cb) => {
             onResultCallback.push((result) => {
                 return cb(result);
@@ -297,7 +297,7 @@ export class QueryManager {
             return pResult.then(() => {
                 return this.db;
             });
-        })
+        });
     }
 
     initDb(dataBase?: IDataBase) {
