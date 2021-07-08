@@ -1,4 +1,7 @@
 describe('Test Select Api', function () {
+
+
+
     it('select all', function (done) {
         con.select({
             from: 'Customers'
@@ -241,15 +244,13 @@ describe('Test Select Api', function () {
                 customerName: {
                     like: 'o%'
                 }
-            }
+            },
+            returnCustomerId: true
+
         }).then(function (results) {
             expect(results).to.be.an('array').length(3)
             var expected_id_list = [54, 55, 56];
-            var id_list = [];
-            results.forEach(function (element) {
-                id_list.push(element.customerId);
-            });
-            expect(id_list).to.be.an('array').length(3).deep.equal(expected_id_list);
+            expect(results).to.be.an('array').length(3).deep.equal(expected_id_list);
             done();
 
         }).catch(function (err) {
@@ -264,14 +265,11 @@ describe('Test Select Api', function () {
                 customerName: {
                     like: '%o'
                 }
-            }
+            },
+            returnCustomerId: true
         }).then(function (results) {
             var expected_id_list = [15, 21, 29, 46, 69, 73];
-            var id_list = [];
-            results.forEach(function (element) {
-                id_list.push(element.customerId);
-            });
-            expect(id_list).to.be.an('array').length(6).deep.equal(expected_id_list);
+            expect(results).to.be.an('array').length(6).deep.equal(expected_id_list);
             done();
         }).catch(function (err) {
             done(err);

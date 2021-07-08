@@ -1,4 +1,12 @@
 describe('Test Select Api with case', function () {
+    it("load script", function (done) {
+        con.importScripts("../cases/select/middleware.js").then(done).catch(done);
+    });
+
+    it('add middleware in worker', function (done) {
+        con.addMiddleware("selectMiddleware", true).then(done).catch(done);
+    })
+    
     it('select all', function (done) {
         con.select({
             from: 'Customers',

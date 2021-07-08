@@ -135,13 +135,15 @@ describe('Select with order', function () {
     });
 
     it('things table test', function (done) {
+        debugger;
         con.select({
             from: 'things',
             order: {
                 by: 'value',
                 type: 'asc',
-                idbSorting: false
-            }
+                // idbSorting: false
+            },
+            sortManually: true
         }).
             then(function (results) {
                 results = results.map(function (val) {
