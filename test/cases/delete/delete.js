@@ -1,4 +1,13 @@
 describe('Test remove Api', function () {
+
+    it("load script", function (done) {
+        con.importScripts("../cases/delete/middleware.js").then(done).catch(done);
+    });
+
+    it('add middleware in worker', function (done) {
+        con.addMiddleware("RemoveMiddleware.filterCountry", true).then(done).catch(done);
+    })
+
     it('remove with where', function (done) {
         var Count;
         con.select({
@@ -15,10 +24,11 @@ describe('Test remove Api', function () {
         con.remove({
             from: 'Customers',
             where: {
-                country: 'Mexico'
-            }
+                // country: 'Mexico'
+            },
+            country: 'Mexico'
         }).then(function (results) {
-            expect(results).to.be.an('number').to.equal(Count);
+            expect(results).to.be.an('number').to.equal(Count + 1);
             done();
         }).catch(function (err) {
             done(err);

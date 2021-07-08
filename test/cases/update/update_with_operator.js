@@ -1,4 +1,11 @@
 describe('Test update with operator option', function () {
+    it("load script", function (done) {
+        con.importScripts("../cases/update/update_worker.js").then(done).catch(done);
+    });
+
+    it('add middleware in worker', function (done) {
+        con.addMiddleware("JsStoreUpdate.middleware", true).then(done).catch(done);
+    })
 
     it('update with operator - +', function (done) {
         var price;
@@ -21,10 +28,11 @@ describe('Test update with operator option', function () {
                 }
             },
             where: {
-                productId: 1
-            }
+                // productId: 1
+            },
+            whereProductId: 1
         }).then(function (results) {
-            expect(results).to.be.an('number').to.equal(1);
+            expect(results).to.be.an('number').to.equal(2);
         }).catch(function (err) {
             done(err);
         });
@@ -218,8 +226,6 @@ describe('Test update with operator option', function () {
             where: {
                 productId: 1
             }
-        }).then(function (results) {
-            expect(results).to.be.an('number').to.equal(1);
         }).catch(function (err) {
             var error = {
                 "message": "Supplied value for column 'productName' have wrong data type",
@@ -230,9 +236,7 @@ describe('Test update with operator option', function () {
         });
     });
 
-    it("load script", function (done) {
-        con.importScripts("../cases/update/update_worker.js").then(done).catch(done);
-    });
+
 
     it('mapSet invalid method', function (done) {
         con.update({
