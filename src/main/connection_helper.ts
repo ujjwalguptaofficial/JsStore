@@ -34,7 +34,7 @@ export class ConnectionHelper {
 
   private queryManager;
 
-  isRuningInWorker = true;
+  isWorker = true;
 
   protected logger = new LogHelper(null);
 
@@ -49,7 +49,7 @@ export class ConnectionHelper {
       this.worker_ = worker;
       this.worker_.onmessage = this.onMessageFromWorker_.bind(this);
     } else {
-      this.isRuningInWorker = false;
+      this.isWorker = false;
       this.initQueryManager_();
     }
   }
@@ -79,7 +79,7 @@ export class ConnectionHelper {
             this.isConOpened_ = true; break;
           case API.Terminate:
             this.isConOpened_ = false;
-            if (this.isRuningInWorker === true) {
+            if (this.isWorker === true) {
               this.worker_.terminate();
             }
           case API.DropDb:
@@ -256,7 +256,7 @@ export class ConnectionHelper {
       name: request.name,
       query: request.query
     } as WebWorkerRequest;
-    if (this.isRuningInWorker === true) {
+    if (this.isWorker === true) {
       this.worker_.postMessage(requestForWorker);
     }
     else {

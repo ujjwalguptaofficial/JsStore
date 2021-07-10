@@ -19,13 +19,15 @@ describe("initiate database", function () {
                 // con.setLogStatus(true);
             }
         }
-       
+
     })
 
     it("create db exist", function (done) {
+
+        expect(con.isWorker).equal(true);
         con.logStatus = true;
         con.logStatus = false;
-        
+
         var isFilled = false;
         var isEmpty = false;
         con.on("requestQueueFilled", function () {

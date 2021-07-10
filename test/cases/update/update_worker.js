@@ -13,7 +13,10 @@ var JsStoreUpdate = {
             const productId = request.query.whereProductId;
             if (productId) {
                 request.beforeExecute(_ => {
-                    request.query.where.productId = productId
+                    return new Promise(res => {
+                        request.query.where.productId = productId
+                        res();
+                    })
                 })
                 request.onResult(results => {
                     return results + 1;

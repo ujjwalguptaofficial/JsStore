@@ -341,6 +341,7 @@ describe('Test update with operator option', function () {
 
     it('update with mapSet - without web worker', function (done) {
         var connection = new JsStore.Connection();
+        expect(connection.isWorker).equal(false);
         connection.openDb("Demo");
         connection.select({
             from: "Products",
