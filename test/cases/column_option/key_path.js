@@ -57,6 +57,37 @@ describe('keyPath test', function () {
             })
         })
 
+
+        it('insert metingen', function (done) {
+
+            con.insert({
+                into: 'metingen',
+                values: metingenValues
+            }).then(function (results) {
+                expect(results).to.be.an('number').to.equal(1);
+                done();
+            }).
+                catch(function (err) {
+                    done(err);
+                });
+        })
+
+        it('check metingen unique', function (done) {
+
+            con.insert({
+                into: 'metingen',
+                values: metingenValues
+            }).then(function (results) {
+                expect(results).to.be.an('number').to.equal(1);
+                done();
+            }).catch(function (err) {
+                var error = { "message": "Key already exists in the object store.", "type": "ConstraintError" };
+                expect(err).to.be.an('object').to.haveOwnProperty('type').equal('ConstraintError')
+                done();
+            });
+        })
+
+
         it('drop db pincodes', function (done) {
             con.dropDb().then(function () {
                 done();
@@ -65,45 +96,68 @@ describe('keyPath test', function () {
             });
         });
     }
-})
 
-function getDbSchemaOfPinCodes() {
-    var table = {
-        name: 'pinCodes',
-        columns: {
-            id: {
-                primaryKey: true,
-                autoIncrement: true
-            },
-            officename: {
-                dataType: 'string'
-            }, pincode: {
-                dataType: 'string'
-            },
-            officetype: {
-                dataType: 'string'
-            }, Deliverystatus: {
-                dataType: 'string'
-            }, officetypeAndDeliverystatus: {
-                keyPath: ['officetype', 'Deliverystatus']
-            }, divisionname: {
-                dataType: 'string'
-            }, regionname: {
-                dataType: 'string'
-            }, circlename: {
-                dataType: 'string'
-            }, taluk: {
-                dataType: 'string'
-            }, districtname: {
-                dataType: 'string'
-            }, statename: {
-                dataType: 'string'
+    function getDbSchemaOfPinCodes() {
+        var table = {
+            name: 'pinCodes',
+            columns: {
+                id: {
+                    primaryKey: true,
+                    autoIncrement: true
+                },
+                officename: {
+                    dataType: 'string'
+                }, pincode: {
+                    dataType: 'string'
+                },
+                officetype: {
+                    dataType: 'string'
+                }, Deliverystatus: {
+                    dataType: 'string'
+                }, officetypeAndDeliverystatus: {
+                    keyPath: ['officetype', 'Deliverystatus']
+                }, divisionname: {
+                    dataType: 'string'
+                }, regionname: {
+                    dataType: 'string'
+                }, circlename: {
+                    dataType: 'string'
+                }, taluk: {
+                    dataType: 'string'
+                }, districtname: {
+                    dataType: 'string'
+                }, statename: {
+                    dataType: 'string'
+                }
             }
         }
+        var metingen = {
+            name: 'metingen',
+            columns: {
+                id: { primaryKey: true, autoIncrement: true },
+                userID: { notNull: true, dataType: 'number' },
+                date: { notNull: true, dataType: 'string' },
+                time: { notNull: true, dataType: 'string' },
+                unique: {
+                    keyPath: ['userID', 'date', 'time'],
+                    unique: true
+                }
+            },
+            alter: {
+
+            }
+        };
+        var database = {
+            name: 'pinCodeDetails',
+            tables: [table, metingen]
+        }
+        return database;
     }
-    var database = {
-        name: 'pinCodeDetails',
-        tables: [table]
-    }
-    return database;
-}
+
+    var metingenValues = [{
+        userID: 1,
+        date: new Date().toString(),
+        time: new Date().getTime().toString()
+    }]
+})
+
