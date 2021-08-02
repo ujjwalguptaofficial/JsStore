@@ -29,4 +29,58 @@ describe("select in query", function () {
             done();
         }).catch(done);
     })
+
+    it("in with limit", function (done) {
+        con.select({
+            from: "Customers",
+            limit: 5,
+            where: {
+                customerId: {
+                    in: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                }
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(5);
+            done();
+        }).catch(done);
+    })
+
+    it("in with skip", function (done) {
+        con.select({
+            from: "Customers",
+            skip: 5,
+            where: {
+                customerId: {
+                    in: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                }
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(5);
+            const expectedIds = [6, 7, 8, 9, 10];
+            expectedIds.forEach(function (id, index) {
+                expect(id).to.equal(results[index].customerId);
+            })
+            done();
+        }).catch(done);
+    })
+
+    it("in with limit & skip", function (done) {
+        con.select({
+            from: "Customers",
+            skip: 5,
+            limit: 2,
+            where: {
+                customerId: {
+                    in: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                }
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(2);
+            const expectedIds = [6, 7];
+            expectedIds.forEach(function (id, index) {
+                expect(id).to.equal(results[index].customerId);
+            })
+            done();
+        }).catch(done);
+    })
 })

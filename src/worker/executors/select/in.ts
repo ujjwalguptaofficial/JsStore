@@ -21,7 +21,7 @@ export const executeInLogic = function (this: BaseFetch, column, values) {
                 return executeSkipForIn_;
             }
             else if (this.limitRecord) {
-                executeLimitForIn_;
+                return executeLimitForIn_;
             }
         }
         return executeSimpleForIn_;
