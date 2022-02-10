@@ -44,7 +44,11 @@ You are very welcome to contribute, please see contributing guidelines - [[Contr
 Thank you to all the people who already contributed to JsStore!
 <a href="https://github.com/ujjwalguptaofficial/JsStore/graphs/contributors"><img src="https://opencollective.com/JsStore/contributors.svg?width=890&button=false" /></a>
 
-## Sponsors
+## Support JsStore
+
+Support this project by stars. We would be more greateful if you sponsor the project which allows us to keep developing, educate people, organize different events.
+
+### Sponsors
 
 Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/JsStore#sponsor)]
 
