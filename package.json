@@ -24,7 +24,6 @@
     "webpack:prod": "webpack --config webpack/webpack.prod.config.js",
     "move:deploy_file": "node deployer.js",
     "test:injector": "node test/injector/build.js",
-    "prepublish": "npm run deploy",
     "deploy": "npm run lint && npm run build:all && npm run test:fire && npm run test:injector && npm run move:deploy_file"
   },
   "repository": {
