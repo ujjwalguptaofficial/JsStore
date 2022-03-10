@@ -34,13 +34,13 @@ class Main{
 
 ## TypeScript guidelines
 
-* Every variable should be staticly typed . If it may accept multiple type then add multiple type or any. Though any is not recommended until and unless there is hard requirement.
+* Every variable should be statically typed . If it may accept multiple type then add multiple type or any. Though any is not recommended until and unless there is hard requirement.
 
 ## CodeThink Approach
 
 * A class name should clearly explain its behaviour.
 * Always intialize and assign member variable in constructor method.
-* If there are multiple files which are realted to each other then keep them in a single folder create a es6 mopdule by exporting all of them in a common file index.ts.
+* If there are multiple files which are realted to each other then keep them in a single folder create a es6 module by exporting all of them in a common file index.ts.
 * Do not create any global variable instead create a class and add the variable as static.
 * Remove something if its not being used. Do not comment and keep it for the future reference.
 * Always use arrowType function.
