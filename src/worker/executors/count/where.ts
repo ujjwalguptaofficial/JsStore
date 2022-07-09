@@ -8,9 +8,10 @@ export const executeWhereLogic = function (this: BaseFetch, column, value, op) {
     let cursorRequest;
     let cursor: IDBCursorWithValue;
 
+    const isWhereKeysLengthOne = getLength(this.query.where) === 1;
 
     return promise((res, rej) => {
-        if (getLength(this.query.where) === 1 && this.objectStore.count) {
+        if (isWhereKeysLengthOne && this.objectStore.count) {
             cursorRequest = this.objectStore.index(column).count(this.util.keyRange(value, op));
             cursorRequest.onsuccess = () => {
                 (this as Count).resultCount = cursorRequest.result;

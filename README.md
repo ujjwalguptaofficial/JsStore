@@ -33,7 +33,7 @@ A complete IndexedDB wrapper with SQL like syntax.
 
 Check out repo - https://github.com/ujjwalguptaofficial/jsstore-examples
 
-# Website
+# Docs
 
 http://jsstore.net/
 

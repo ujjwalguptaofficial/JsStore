@@ -1,13 +1,16 @@
 import { promise, promiseAll } from "@/common";
+import { getLength } from "@/worker/utils";
 import { BaseFetch } from "../base_fetch";
 
 
 export const executeInLogic = function (this: BaseFetch, column, values) {
     let cursor: IDBCursorWithValue;
     const columnStore = this.objectStore.index(column);
+    const isWhereKeysLengthOne = getLength(this.query.where) === 1;
+
     const runInLogic: (val) => Promise<void> = (value) => {
         const keyRange = this.util.keyRange(value);
-        if (this.objectStore.count) {
+        if (isWhereKeysLengthOne && this.objectStore.count) {
             return promise((res, rej) => {
                 const cursorRequest = columnStore.count(keyRange);
                 cursorRequest.onsuccess = (e: any) => {
