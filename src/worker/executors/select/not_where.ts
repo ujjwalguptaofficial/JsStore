@@ -1,10 +1,10 @@
 import { Select } from "./index";
-import { LogHelper, promiseReject, getError } from "@/worker/utils";
+import { LogHelper, promiseReject, getError, isNotOrderQueryArray } from "@/worker/utils";
 import { ERROR_TYPE, promise } from "@/common";
 
 export const executeWhereUndefinedLogic = function (this: Select) {
     let cursorRequest: IDBRequest;
-    if (this.query.order && this.query.order.idbSorting !== false && this.query.order.by) {
+    if (isNotOrderQueryArray(this.query.order) && this.query.order && this.query.order.idbSorting !== false && this.query.order.by) {
         if (this.objectStore.indexNames.contains(this.query.order.by as string)) {
             const orderType: IDBCursorDirection = this.query.order.type &&
                 this.query.order.type.toLowerCase() === 'desc' ? 'prev' : 'next';

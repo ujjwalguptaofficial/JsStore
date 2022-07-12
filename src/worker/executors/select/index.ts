@@ -2,7 +2,7 @@ import { ISelectQuery, QUERY_OPTION, IDB_MODE, API, IWhereQuery, promiseResolve 
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@worker/executors/query_helper";
 import { DbMeta } from "@/worker/model";
-import { isArray, isObject, getKeys, getObjectFirstKey, promiseReject, getLength } from "@/worker/utils";
+import { isArray, isObject, getKeys, getObjectFirstKey, promiseReject, getLength, isNotOrderQueryArray } from "@/worker/utils";
 import { setPushResult, setLimitAndSkipEvaluationAtEnd, removeDuplicates } from "./base_select";
 import { ThenEvaluator } from "./then_evaluator";
 import { executeWhereUndefinedLogic } from "./not_where"
@@ -13,6 +13,7 @@ import { BaseFetch } from "@executors/base_fetch";
 import { executeInLogic } from "./in";
 import { executeRegexLogic } from "./regex";
 import { executeJoinQuery } from "./join";
+import { IOrderQuery } from '../../../common/interfaces';
 
 export class Select extends BaseFetch {
     sorted = false;
@@ -58,7 +59,12 @@ export class Select extends BaseFetch {
             this.limitRecord = query.limit;
         }
         if (query.order) {
-            if (isArray(query.order) || query.order.case || isObject(query.order.by)) {
+            if(isArray(query.order)){
+                for(let order of this.query.order as IOrderQuery[]){
+                    order.idbSorting = false;
+                }
+            }
+            else if (isNotOrderQueryArray(this.query.order) && (this.query.order.case || isObject(this.query.order.by))) {
                 this.query.order.idbSorting = false;
             }
             this.setLimitAndSkipEvaluationAtEnd_();

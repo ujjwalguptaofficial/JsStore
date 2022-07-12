@@ -16,3 +16,4 @@ export * from "./get_error_from_exception";
 export * from "./set_cross_browser_idb";
 export * from "./resolve";
 export * from "./db_schema";
+export * from "./is_not_order_query_array";

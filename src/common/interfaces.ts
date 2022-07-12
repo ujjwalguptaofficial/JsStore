@@ -149,7 +149,7 @@ export interface ISelectQuery {
     where?: IWhereQuery | IWhereQuery[];
     skip?: number;
     limit?: number;
-    order?: IOrderQuery;
+    order?: IOrderQuery | IOrderQuery[];
     groupBy?: string | string[] | { [columnName: string]: [ICaseOption] };
     aggregate?: IAggregateOption;
     distinct?: boolean;
