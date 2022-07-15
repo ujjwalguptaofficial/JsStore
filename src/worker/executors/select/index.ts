@@ -59,12 +59,7 @@ export class Select extends BaseFetch {
             this.limitRecord = query.limit;
         }
         if (query.order) {
-            if(isArray(query.order)){
-                for(let order of this.query.order as IOrderQuery[]){
-                    order.idbSorting = false;
-                }
-            }
-            else if (isNotOrderQueryArray(this.query.order) && (this.query.order.case || isObject(this.query.order.by))) {
+            if (isNotOrderQueryArray(this.query.order) && (this.query.order.case || isObject(this.query.order.by))) {
                 this.query.order.idbSorting = false;
             }
             this.setLimitAndSkipEvaluationAtEnd_();
