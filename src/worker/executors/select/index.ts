@@ -1,4 +1,4 @@
-import { ISelectQuery, QUERY_OPTION, IDB_MODE, API, IWhereQuery, promiseResolve } from "@/common";
+import { ISelectQuery, QUERY_OPTION, IDB_MODE, API, IWhereQuery, promiseResolve, IOrderQuery } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@worker/executors/query_helper";
 import { DbMeta } from "@/worker/model";
@@ -58,8 +58,8 @@ export class Select extends BaseFetch {
             this.limitRecord = query.limit;
         }
         if (query.order) {
-            if (isArray(query.order) || query.order.case || isObject(query.order.by)) {
-                this.query.order.idbSorting = false;
+            if (isArray(query.order) || (query.order as IOrderQuery).case || isObject((query.order as IOrderQuery).by)) {
+                ((query.order as IOrderQuery).idbSorting) = false;
             }
             this.setLimitAndSkipEvaluationAtEnd_();
         }
