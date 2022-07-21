@@ -1,22 +1,23 @@
 import { Select } from "./index";
-import { LogHelper, promiseReject, getError } from "@/worker/utils";
-import { ERROR_TYPE, promise } from "@/common";
+import { LogHelper, promiseReject } from "@/worker/utils";
+import { ERROR_TYPE, IOrderQuery, promise } from "@/common";
 
 export const executeWhereUndefinedLogic = function (this: Select) {
     let cursorRequest: IDBRequest;
-    if (this.query.order && this.query.order.idbSorting !== false && this.query.order.by) {
-        if (this.objectStore.indexNames.contains(this.query.order.by as string)) {
-            const orderType: IDBCursorDirection = this.query.order.type &&
-                this.query.order.type.toLowerCase() === 'desc' ? 'prev' : 'next';
+    const orderQuery = this.query.order;
+    if (orderQuery && (orderQuery as IOrderQuery).idbSorting !== false && (orderQuery as IOrderQuery).by) {
+        if (this.objectStore.indexNames.contains((orderQuery as IOrderQuery).by as string)) {
+            const orderType: IDBCursorDirection = (orderQuery as IOrderQuery).type &&
+                (orderQuery as IOrderQuery).type.toLowerCase() === 'desc' ? 'prev' : 'next';
             this.sorted = true;
-            cursorRequest = this.objectStore.index(this.query.order.by as string).
+            cursorRequest = this.objectStore.index((orderQuery as IOrderQuery).by as string).
                 openCursor(null, orderType);
         }
         else {
             return promiseReject(
                 new LogHelper(
                     ERROR_TYPE.ColumnNotExist,
-                    { column: this.query.order.by, isOrder: true }
+                    { column: (orderQuery as IOrderQuery).by, isOrder: true }
                 )
             );
         }
