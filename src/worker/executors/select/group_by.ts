@@ -5,13 +5,14 @@ import { QUERY_OPTION, DATA_TYPE } from "@/common";
 export const processGroupBy = function (this: Select) {
     const groupBy = this.query.groupBy as any;
     let datas = this.results;
-    const lookUpObj = {};
+    const lookUpObj = new Map<string, any>();
     // free results memory
     this.results = this.query.groupBy = null;
-    if (getDataType(groupBy) !== DATA_TYPE.Object) {
-        if (getDataType(groupBy) === DATA_TYPE.String) {
+    const groupByDataType = getDataType(groupBy);
+    if (groupByDataType !== DATA_TYPE.Object) {
+        if (groupByDataType === DATA_TYPE.String) {
             for (const i in datas) {
-                lookUpObj[datas[i][groupBy as string]] = datas[i];
+                lookUpObj.set(datas[i][groupBy as string], datas[i]);
             }
         }
         else {
@@ -21,7 +22,7 @@ export const processGroupBy = function (this: Select) {
                 for (const column in groupBy) {
                     objKey += datas[i][groupBy[column]];
                 }
-                lookUpObj[objKey] = datas[i];
+                lookUpObj.set(objKey, datas[i]);
             }
         }
     }
@@ -31,7 +32,7 @@ export const processGroupBy = function (this: Select) {
             const groupByColumn = getObjectFirstKey(groupBy);
             this.thenEvaluator.setCaseAndColumn(groupBy, groupByColumn);
             for (const i in datas) {
-                lookUpObj[this.thenEvaluator.setValue(datas[i]).evaluate()] = datas[i];
+                lookUpObj.set(this.thenEvaluator.setValue(datas[i]).evaluate(), datas[i]);
             }
         }
         else {
@@ -42,16 +43,12 @@ export const processGroupBy = function (this: Select) {
                 for (const column in groupBy) {
                     objKey += this.thenEvaluator.setColumn(column).evaluate();
                 }
-                lookUpObj[objKey] = datas[i];
+                lookUpObj.set(objKey, datas[i]);
             }
         }
     }
-    // free datas memory
-    datas = [];
-    for (const i in lookUpObj) {
-        datas.push(lookUpObj[i]);
-    }
-    this.results = datas;
+
+    this.results = Array.from(lookUpObj.values());
 }
 
 export const executeAggregateGroupBy = function (this: Select) {
@@ -59,7 +56,7 @@ export const executeAggregateGroupBy = function (this: Select) {
     let datas = this.results;
     // free results memory
     this.results = undefined;
-    const lookUpObj = {};
+    const lookUpObj = new Map<string, any>();
     // assign aggregate
     const aggregateQry = this.query.aggregate;
 
@@ -69,7 +66,7 @@ export const executeAggregateGroupBy = function (this: Select) {
     let columnToAggregate;
     const calculateAggregate = () => {
         const getCount = () => {
-            value = lookUpObj[objKey];
+            value = lookUpObj.get(objKey);
             // get old value
             value = value ? value["count(" + columnToAggregate + ")"] : 0;
             // add with old value if data exist
@@ -77,7 +74,7 @@ export const executeAggregateGroupBy = function (this: Select) {
             return value;
         };
         const getMax = () => {
-            value = lookUpObj[objKey];
+            value = lookUpObj.get(objKey);
             // get old value
             value = value ? value["max(" + columnToAggregate + ")"] : 0;
             datas[index][columnToAggregate] = datas[index][columnToAggregate] ?
@@ -86,7 +83,7 @@ export const executeAggregateGroupBy = function (this: Select) {
             return value > datas[index][columnToAggregate] ? value : datas[index][columnToAggregate];
         };
         const getMin = () => {
-            value = lookUpObj[objKey];
+            value = lookUpObj.get(objKey);
             // get old value
             value = value ? value["min(" + columnToAggregate + ")"] : Infinity;
             datas[index][columnToAggregate] = datas[index][columnToAggregate] ?
@@ -95,7 +92,7 @@ export const executeAggregateGroupBy = function (this: Select) {
             return value < datas[index][columnToAggregate] ? value : datas[index][columnToAggregate];
         };
         const getSum = () => {
-            value = lookUpObj[objKey];
+            value = lookUpObj.get(objKey);
             // get old value
             value = value ? value["sum(" + columnToAggregate + ")"] : 0;
             // add with old value if data exist
@@ -103,7 +100,7 @@ export const executeAggregateGroupBy = function (this: Select) {
             return value;
         };
         const getAvg = () => {
-            value = lookUpObj[objKey];
+            value = lookUpObj.get(objKey)
             // get old sum value
             let sumOfColumn = value ? value["sum(" + columnToAggregate + ")"] : 0;
             // add with old value if data exist
@@ -154,7 +151,7 @@ export const executeAggregateGroupBy = function (this: Select) {
         for (index in datas) {
             objKey = datas[index][grpQry];
             calculateAggregate();
-            lookUpObj[objKey] = datas[index];
+            lookUpObj.set(objKey, datas[index]);
         }
     }
     else {
@@ -164,27 +161,25 @@ export const executeAggregateGroupBy = function (this: Select) {
                 objKey += datas[index][grpQry[column]];
             }
             calculateAggregate();
-            lookUpObj[objKey] = datas[index];
+            lookUpObj.set(objKey, datas[index]);
         }
 
     }
-    // free datas memory
-    datas = [];
-    for (const i in lookUpObj) {
-        datas.push(lookUpObj[i]);
-    }
+    datas = Array.from(lookUpObj.values());
+
     // Checking for avg and if exist then fill the datas;
-    if (aggregateQry.avg) {
-        if (getDataType(aggregateQry.avg) === DATA_TYPE.String) {
+    const avgQuery = aggregateQry.avg;
+    if (avgQuery) {
+        if (getDataType(avgQuery) === DATA_TYPE.String) {
             for (index in datas) {
-                const sumForAvg = datas[index]["sum(" + aggregateQry.avg + ")"],
-                    countForAvg = datas[index]["count(" + aggregateQry.avg + ")"];
-                datas[index]["avg(" + aggregateQry.avg + ")"] = sumForAvg / countForAvg;
-                if (aggregateQry.count !== aggregateQry.avg) {
-                    delete datas[index]["count(" + aggregateQry.avg + ")"];
+                const sumForAvg = datas[index]["sum(" + avgQuery + ")"],
+                    countForAvg = datas[index]["count(" + avgQuery + ")"];
+                datas[index]["avg(" + avgQuery + ")"] = sumForAvg / countForAvg;
+                if (aggregateQry.count !== avgQuery) {
+                    delete datas[index]["count(" + avgQuery + ")"];
                 }
-                if (aggregateQry.sum !== aggregateQry.avg) {
-                    delete datas[index]["sum(" + aggregateQry.avg + ")"];
+                if (aggregateQry.sum !== avgQuery) {
+                    delete datas[index]["sum(" + avgQuery + ")"];
                 }
             }
         }
@@ -192,8 +187,8 @@ export const executeAggregateGroupBy = function (this: Select) {
             const isCountTypeString = getDataType(aggregateQry.count) === DATA_TYPE.String;
             const isSumTypeString = getDataType(aggregateQry.sum) === DATA_TYPE.String;
             for (index in datas) {
-                for (const column in aggregateQry.avg as any) {
-                    const avgColumn = aggregateQry.avg[column],
+                for (const column in avgQuery as any) {
+                    const avgColumn = avgQuery[column],
                         sum = datas[index]["sum(" + avgColumn + ")"],
                         count = datas[index]["count(" + avgColumn + ")"];
                     datas[index]["avg(" + avgColumn + ")"] = sum / count;

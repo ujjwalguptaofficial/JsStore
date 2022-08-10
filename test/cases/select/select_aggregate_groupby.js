@@ -8,15 +8,15 @@ describe('Test aggregate option with groupby', function () {
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(8);
-            var ExpectedResult = [4.5, 10, 9.2, 2.5, 7, 7.45, 10, 6];
+            var ExpectedResult = [4.5, 10, 10, 7.45, 6, 2.5, 9.2, 7];
             for (var i = 0; i < 8; i++) {
                 expect(results[i]).to.have.property('min(price)').to.equal(ExpectedResult[i]);
             }
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     })
 
     it('select with agregate - max', function (done) {
@@ -28,15 +28,15 @@ describe('Test aggregate option with groupby', function () {
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(8);
-            var ExpectedResult = [263.5, 43.9, 81, 55, 38, 123.79, 53, 62.5];
+            var ExpectedResult = [263.5, 43.9, 53, 123.79, 62.5, 55, 81, 38,];
             for (var i = 0; i < 8; i++) {
                 expect(results[i]).to.have.property('max(price)').to.equal(ExpectedResult[i]);
             }
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('select with agregate - sum', function (done) {
@@ -47,16 +47,17 @@ describe('Test aggregate option with groupby', function () {
                 sum: "price"
             }
         }).then(function (results) {
+
             expect(results).to.be.an('array').length(8);
-            var ExpectedResult = [455.75, 276.75, 327.08, 287.3, 141.75, 324.04, 161.85, 248.19];
+            var ExpectedResult = [455.75, 276.75, 161.85, 324.04, 248.19, 287.3, 327.08, 141.75,];
             for (var i = 0; i < 8; i++) {
                 expect(results[i]).to.have.property('sum(price)').to.equal(ExpectedResult[i]);
             }
             done();
         }).
-        catch(function (err) {
-            done(err);
-        })
+            catch(function (err) {
+                done(err);
+            })
     });
 
     it('select with agregate - count', function (done) {
@@ -67,8 +68,9 @@ describe('Test aggregate option with groupby', function () {
             },
             groupBy: 'categoryId'
         }).then(function (results) {
+
             expect(results).to.be.an('array').length(8);
-            var ExpectedResult = [12, 12, 13, 10, 7, 6, 5, 12];
+            var ExpectedResult = [12, 12, 5, 6, 12, 10, 13, 7];
             for (var i = 0; i < 8; i++) {
                 expect(results[i]).to.have.property('count(price)').to.equal(ExpectedResult[i]);
             }
@@ -87,7 +89,7 @@ describe('Test aggregate option with groupby', function () {
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(8);
-            var ExpectedResult = [37.979166666666664, 23.0625, 25.16, 28.73, 20.25, 54.00666666666667, 32.37, 20.6825];
+            var ExpectedResult = [37.979166666666664, 23.0625, 32.37, 54.00666666666667, 20.6825, 28.73, 25.16, 20.25,];
             for (var i = 0; i < 8; i++) {
                 expect(results[i]).to.have.property('avg(price)').to.equal(ExpectedResult[i]);
             }
