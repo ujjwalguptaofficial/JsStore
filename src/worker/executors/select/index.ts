@@ -200,24 +200,23 @@ export class Select extends BaseFetch {
 
     private returnResult_ = () => {
         if (this.results.length > 0) {
-
-
-            if (this.query.flatten) {
+            const query = this.query;
+            if (query.flatten) {
                 const flattendData = [];
-                const indexToDelete = {};
-                this.query.flatten.forEach(column => {
+                const indexToDelete = new Map<number, Boolean>();
+                query.flatten.forEach(column => {
                     this.results.forEach((data, i) => {
                         data[column].forEach(item => {
                             flattendData.push(
                                 { ...data, ...{ [column]: item } }
                             );
                         });
-                        indexToDelete[i] = true;
+                        indexToDelete.set(i, true);
                     });
                 });
                 let itemsDeleted = 0;
-                getKeys(indexToDelete).forEach(key => {
-                    this.results.splice(Number(key) - itemsDeleted, 1);
+                indexToDelete.forEach((_, key) => {
+                    this.results.splice(key - itemsDeleted, 1);
                     ++itemsDeleted;
                 });
                 this.results = this.results.concat(flattendData);
@@ -225,10 +224,10 @@ export class Select extends BaseFetch {
             this.processGroupDistinctAggr();
             this.processOrderBy();
             if (this.shouldEvaluateSkipAtEnd) {
-                this.results.splice(0, this.query.skip);
+                this.results.splice(0, query.skip);
             }
             if (this.shouldEvaluateLimitAtEnd) {
-                this.results = this.results.slice(0, this.query.limit);
+                this.results = this.results.slice(0, query.limit);
             }
         }
         return this.results;

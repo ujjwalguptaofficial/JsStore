@@ -14,7 +14,7 @@ export class Union extends Base {
     execute() {
         const query: ISelectQuery[] = this.query as any;
         let index = 0;
-        const hashMap = {};
+        const hashMap = new Map();
         let isQueryForSameTable = true;
         const queryLength = query.length;
         query.every((qry, i) => {
@@ -46,17 +46,13 @@ export class Union extends Base {
                 select = new Select(query[index++], this.util);
                 return select.execute().then((selectResult) => {
                     selectResult.forEach(val => {
-                        hashMap[getHashKey(val)] = val;
+                        hashMap.set(getHashKey(val), val);
                     });
                     return fetchData();
                 })
             }
             else {
-                const results = [];
-                for (const key in hashMap) {
-                    results.push(hashMap[key]);
-                }
-                return results;
+                return Array.from(hashMap.values());
             }
         };
         return fetchData();
