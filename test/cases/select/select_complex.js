@@ -164,7 +164,7 @@ describe('Test select complex case', function () {
             ]
         }).then(function (results) {
             if (results.length > 0) {
-                var expected_id_list = [2, 3, 13, 58, 80];
+                var expected_id_list = [80, 2, 58, 3, 13];
                 var id_list = [];
                 results.forEach(function (element) {
                     id_list.push(element.customerId);
@@ -218,7 +218,7 @@ describe('Test select complex case', function () {
             }
             ]
         }).then(function (results) {
-            var expected_id_list = [2, 3, 4, 11, 13, 16, 58, 72, 80];
+            var expected_id_list = [2, 3, 13, 58, 80, 4, 11, 16, 72];
             var id_list = [];
             results.forEach(function (element) {
                 id_list.push(element.customerId);
@@ -410,7 +410,7 @@ describe('Test select complex case', function () {
             }],
             skip: 2
         }).then(function (results) {
-            const expectedId = [4, 11, 13, 16, 19, 38, 53, 58, 72, 80];
+            const expectedId = [13, 58, 80, 4, 11, 16, 19, 38, 53, 72];
             expect(results).to.be.an('array').length(expectedId.length);
             results.forEach(function (val, index) {
                 expect(val.customerId).to.equal(expectedId[index]);
@@ -436,7 +436,7 @@ describe('Test select complex case', function () {
             skip: 2,
             limit: 2
         }).then(function (results) {
-            const expectedId = [4, 11];
+            const expectedId = [13, 58];
             expect(results).to.be.an('array').length(expectedId.length);
             results.forEach(function (val, index) {
                 expect(val.customerId).to.equal(expectedId[index]);

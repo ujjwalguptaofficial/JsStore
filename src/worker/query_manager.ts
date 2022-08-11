@@ -159,7 +159,7 @@ export class QueryManager {
                 this.middlewares.push(query);
                 return promiseResolve();
             default:
-                if (process.env.NODE_ENV === 'dev') {
+                if (process.env.NODE_ENV !== 'production') {
                     console.error('The Api:-' + request.name + ' does not support.');
                 }
                 queryResult = promiseResolve();

@@ -182,7 +182,6 @@ export const processOrderBy = function (this: Select) {
         else if (orderQueryType === DATA_TYPE.Array) {
             orderBy_.call(this, order[0]);
             for (let i = 1, length = (order as any).length; i < length; i++) {
-                // if (this.error == null) {
                 const prevOrderQueryBy = order[i - 1].by;
                 const currentOrderQuery: IOrderQuery = order[i];
                 let currentorderQueryBy = currentOrderQuery.by;
@@ -195,12 +194,12 @@ export const processOrderBy = function (this: Select) {
                         if (a[prevOrderQueryBy] === b[prevOrderQueryBy]) {
                             return orderMethod(
                                 a[currentorderQueryBy as string],
-                                b[currentorderQueryBy as string]);
+                                b[currentorderQueryBy as string]
+                            );
                         }
                         return 0;
                     });
                 }
-                // }
             }
         }
     }
@@ -211,8 +210,7 @@ export const processAggregateQry = function (this: Select) {
     const datasLength = datas.length;
     const results = {};
     let columnToAggregate;
-    // free results memory
-    this.results = undefined;
+
     const getCount = () => {
         let result = 0;
         for (const i in datas) {

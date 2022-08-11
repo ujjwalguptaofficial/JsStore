@@ -16,7 +16,7 @@ export const getError = (e) => {
             error = new LogHelper((e as any).target.error.name);
             error.message = (e as any).target.error.message;
         }
-        if (process.env.NODE_ENV === 'dev') {
+        if (process.env.NODE_ENV !== 'production') {
             error.logError();
         }
         return error.get();

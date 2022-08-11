@@ -6,8 +6,7 @@ export const processGroupBy = function (this: Select) {
     const groupBy = this.query.groupBy as any;
     let datas = this.results;
     const lookUpObj = new Map<string, any>();
-    // free results memory
-    this.results = this.query.groupBy = null;
+
     const groupByDataType = getDataType(groupBy);
     if (groupByDataType !== DATA_TYPE.Object) {
         if (groupByDataType === DATA_TYPE.String) {
@@ -54,8 +53,7 @@ export const processGroupBy = function (this: Select) {
 export const executeAggregateGroupBy = function (this: Select) {
     const grpQry = this.query.groupBy as any;
     let datas = this.results;
-    // free results memory
-    this.results = undefined;
+
     const lookUpObj = new Map<string, any>();
     // assign aggregate
     const aggregateQry = this.query.aggregate;

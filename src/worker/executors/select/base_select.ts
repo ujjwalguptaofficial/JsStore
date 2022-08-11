@@ -29,16 +29,11 @@ export const setLimitAndSkipEvaluationAtEnd = function (this: Select) {
 
 export const removeDuplicates = function (this: Select) {
     let datas = this.results;
-    // free results memory
-    this.results = null;
     const key = this.primaryKey();
-    const lookupObject = {};
+    const lookupObject = new Map();
     for (let i = 0, len = datas.length; i < len; i++) {
-        lookupObject[datas[i][key]] = datas[i];
+        lookupObject.set(datas[i][key], datas[i]);
     }
-    datas = [];
-    for (const i in lookupObject) {
-        datas.push(lookupObject[i]);
-    }
-    this.results = datas;
+
+    this.results = Array.from(lookupObject.values());
 }

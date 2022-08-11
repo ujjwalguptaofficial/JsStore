@@ -219,9 +219,6 @@ export class Transaction extends Base {
     }
 
     private pushReq_(request: WebWorkerRequest) {
-        const push = () => {
-            this.reqQueue.push(request);
-        };
         const promiseObj = promise((resolve, reject) => {
             request.onSuccess = (result) => {
                 resolve(result);
@@ -230,13 +227,11 @@ export class Transaction extends Base {
                 reject(error);
             };
         });
+        this.reqQueue.push(request);
         if (this.isTxStarted_ === true) {
-            push();
             this.processExecutionOfQry_();
         }
-        else {
-            push();
-        }
+
         this.log(`request pushed : ${request.name}`);
         return promiseObj;
     }

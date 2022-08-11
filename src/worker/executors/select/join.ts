@@ -113,7 +113,7 @@ export class Join {
                 this.select['results'] = results;
                 this.select.setLimitAndSkipEvaluationAtEnd_();
                 this.select.query.flatten = null;
-                if (process.env.NODE_ENV === 'dev') {
+                if (process.env.NODE_ENV !== 'production') {
                     try {
                         this.select.processOrderBy();
                     }
@@ -127,7 +127,7 @@ export class Join {
                     this.select.processOrderBy();
                 }
 
-                if (process.env.NODE_ENV === 'dev') {
+                if (process.env.NODE_ENV !== 'production') {
                     try {
                         this.select.processGroupDistinctAggr();
                     }
