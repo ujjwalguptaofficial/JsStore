@@ -2,8 +2,7 @@ import { BaseFetch } from "../base_fetch";
 import { IRemoveQuery, QUERY_OPTION, API, IWhereQuery } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@executors/query_helper";
-import { DbMeta } from "@/worker/model";
-import { promiseReject, isArray, getObjectFirstKey, getError } from "@/worker/utils";
+import { promiseReject, isArray, getObjectFirstKey } from "@/worker/utils";
 import { Select } from "@executors/select";
 import { executeWhereUndefinedLogic } from "./not_where";
 import { executeInLogic } from "./in";
@@ -95,11 +94,12 @@ export class Remove extends BaseFetch {
     }
 
     private orQuerySuccess_() {
-        const key = getObjectFirstKey((this as any)._orInfo.OrQuery);
+        const orQueryFromOrInfo = (this as any)._orInfo.OrQuery
+        const key = getObjectFirstKey(orQueryFromOrInfo);
         if (key != null) {
             const where = {};
-            where[key] = (this as any)._orInfo.OrQuery[key];
-            delete (this as any)._orInfo.OrQuery[key];
+            where[key] = orQueryFromOrInfo[key];
+            delete orQueryFromOrInfo[key];
             this.query.where = where;
             return this.goToWhereLogic().then(() => {
                 return this.onWhereEvaluated();

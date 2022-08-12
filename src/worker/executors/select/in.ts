@@ -1,6 +1,7 @@
 import { Select } from "./";
 import { promise, promiseAll } from "@/common";
 import { BaseFetch } from "../base_fetch";
+import { executeLimitForWhere_, executeSimpleForWhere_ } from "./where";
 
 export const executeInLogic = function (this: BaseFetch, column, values) {
     let skip = this.skipRecord;
@@ -21,25 +22,22 @@ export const executeInLogic = function (this: BaseFetch, column, values) {
                 return executeSkipForIn_;
             }
             else if (this.limitRecord) {
-                return executeLimitForIn_;
+                return executeLimitForWhere_;
             }
         }
-        return executeSimpleForIn_;
+        return executeSimpleForWhere_;
     })();
 
-    const columnStore = this.objectStore.index(column);
     const runInLogic: (val) => Promise<void> = (value) => {
         return promise((res, rej) => {
-            const cursorRequest = columnStore.openCursor(this.util.keyRange(value));
+            const cursorRequest = this.objectStore.index(column).openCursor(this.util.keyRange(value));
             cursorRequest.onsuccess = onSuccess.call(this, res, skipOrPush);
             cursorRequest.onerror = rej;
         });
     };
 
     return promiseAll<void>(
-        values.map(function (val) {
-            return runInLogic(val);
-        })
+        values.map(runInLogic)
     );
 
 };
@@ -68,39 +66,6 @@ const executeSkipForIn_ = function (this: Select, onFinish, skipOrPush) {
             const value = cursor.value
             if (this.shouldAddValue(value)) {
                 skipOrPush(value);
-            }
-            cursor.continue();
-        }
-        else {
-            onFinish();
-        }
-    };
-}
-
-const executeLimitForIn_ = function (this: Select, onFinish) {
-    return (e: any) => {
-        const cursor: IDBCursorWithValue = e.target.result;
-        if (cursor && this.results.length !== this.limitRecord) {
-            const value = cursor.value;
-            if (this.shouldAddValue(value)) {
-                this.pushResult(cursor.value);
-            }
-            cursor.continue();
-        }
-        else {
-            onFinish();
-        }
-    };
-
-}
-
-const executeSimpleForIn_ = function (this: Select, onFinish) {
-    return (e: any) => {
-        const cursor: IDBCursorWithValue = e.target.result;
-        if (cursor) {
-            const value = cursor.value
-            if (this.shouldAddValue(value)) {
-                this.pushResult(value);
             }
             cursor.continue();
         }

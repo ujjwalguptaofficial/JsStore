@@ -79,7 +79,7 @@ const executeSkipForWhere_ = function (this: Select, onFinish) {
     };
 }
 
-const executeLimitForWhere_ = function (this: Select, onFinish) {
+export const executeLimitForWhere_ = function (this: Select, onFinish) {
     return (e: any) => {
         const cursor = e.target.result;
         if (cursor && this.results.length !== this.limitRecord) {
@@ -96,7 +96,7 @@ const executeLimitForWhere_ = function (this: Select, onFinish) {
 
 }
 
-const executeSimpleForWhere_ = function (this: Select, onFinish) {
+export const executeSimpleForWhere_ = function (this: Select, onFinish) {
     return (e: any) => {
         const cursor: IDBCursorWithValue = e.target.result;
         if (cursor) {

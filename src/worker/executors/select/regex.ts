@@ -8,7 +8,7 @@ export const executeRegexLogic = function (this: BaseFetch, column, exp: RegExp)
     let skip = this.skipRecord;
     const skipOrPush = (val) => {
         if (skip === 0) {
-            (this as Select).pushResult(val);
+            (this as Select)['pushResult'](val);
         }
         else {
             --skip;
