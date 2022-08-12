@@ -62,11 +62,13 @@ export class QueryHelper {
     }
 
     private checkSelect(query: ISelectQuery) {
-        const table = this.getTable_(query.from);
-        if (!table) {
-            return new LogHelper(ERROR_TYPE.TableNotExist,
-                { tableName: query.from }
-            );
+        if (!query.store) {
+            const table = this.getTable_(query.from);
+            if (!table) {
+                return new LogHelper(ERROR_TYPE.TableNotExist,
+                    { tableName: query.from }
+                );
+            }
         }
 
         if (query.where) {

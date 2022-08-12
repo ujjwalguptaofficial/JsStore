@@ -29,13 +29,15 @@ export const processGroupDistinctAggr = function (this: Select) {
 
 const getOrderColumnInfo = function (this: Select, orderColumn: string) {
     let column: IColumn;
-    if (this.query.join == null) {
-        column = this.getColumnInfo(orderColumn);
-    }
-    else {
-        const splittedByDot = removeSpace(orderColumn).split(".");
-        orderColumn = splittedByDot[1];
-        column = this.getColumnInfo(orderColumn, splittedByDot[0]);
+    if (!this.query.store) {
+        if (this.query.join == null) {
+            column = this.getColumnInfo(orderColumn);
+        }
+        else {
+            const splittedByDot = removeSpace(orderColumn).split(".");
+            orderColumn = splittedByDot[1];
+            column = this.getColumnInfo(orderColumn, splittedByDot[0]);
+        }
     }
     if (column == null) {
         const valueFromFirstColumn = this.results[0][orderColumn];

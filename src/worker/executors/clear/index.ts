@@ -1,6 +1,5 @@
 import { Base } from "@executors/base";
 import { IDBUtil } from "@/worker/idbutil";
-import { DbMeta } from "@/worker/model";
 import { MetaHelper } from "@/worker/meta_helper";
 import { promise } from "@/common";
 
