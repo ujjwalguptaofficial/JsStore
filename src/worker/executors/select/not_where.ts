@@ -5,12 +5,13 @@ import { ERROR_TYPE, IOrderQuery, promise } from "@/common";
 export const executeWhereUndefinedLogic = function (this: Select) {
     let cursorRequest: IDBRequest;
     const orderQuery = this.query.order;
+    const objectStore = this.objectStore;
     if (orderQuery && (orderQuery as IOrderQuery).idbSorting !== false && (orderQuery as IOrderQuery).by) {
-        if (this.objectStore.indexNames.contains((orderQuery as IOrderQuery).by as string)) {
+        if (objectStore.indexNames.contains((orderQuery as IOrderQuery).by as string)) {
             const orderType: IDBCursorDirection = (orderQuery as IOrderQuery).type &&
                 (orderQuery as IOrderQuery).type.toLowerCase() === 'desc' ? 'prev' : 'next';
             this.sorted = true;
-            cursorRequest = this.objectStore.index((orderQuery as IOrderQuery).by as string).
+            cursorRequest = objectStore.index((orderQuery as IOrderQuery).by as string).
                 openCursor(null, orderType);
         }
         else {
@@ -23,7 +24,7 @@ export const executeWhereUndefinedLogic = function (this: Select) {
         }
     }
     else {
-        cursorRequest = this.objectStore.openCursor();
+        cursorRequest = objectStore.openCursor();
     }
     const onSuccess = (() => {
         if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {

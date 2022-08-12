@@ -1,10 +1,10 @@
 export * from "./values_checker";
-import { IInsertQuery, promise, promiseAll, TStringAny, API, IDB_MODE } from "@/common";
+import { IInsertQuery, promise, promiseAll, API, IDB_MODE } from "@/common";
 import { Base } from "@worker/executors/base";
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@worker/executors/query_helper";
 import { DbMeta } from "@/worker/model";
-import { getError, promiseReject } from "@/worker/utils";
+import { promiseReject } from "@/worker/utils";
 import { MetaHelper } from "@/worker/meta_helper";
 
 export class Insert extends Base {

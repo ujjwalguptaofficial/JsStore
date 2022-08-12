@@ -1,8 +1,7 @@
 import { ISelectQuery, QUERY_OPTION, IDB_MODE, API, IWhereQuery, promiseResolve, IOrderQuery } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@worker/executors/query_helper";
-import { DbMeta } from "@/worker/model";
-import { isArray, isObject, getKeys, getObjectFirstKey, promiseReject, getLength } from "@/worker/utils";
+import { isArray, isObject, getObjectFirstKey, promiseReject, getLength } from "@/worker/utils";
 import { setPushResult, setLimitAndSkipEvaluationAtEnd, removeDuplicates } from "./base_select";
 import { ThenEvaluator } from "./then_evaluator";
 import { executeWhereUndefinedLogic } from "./not_where"
@@ -49,7 +48,7 @@ export class Select extends BaseFetch {
         this.util = util;
         this.tableName = query.from;
         this.setPushResult();
-        if (isArray(this.query.where)) {
+        if (isArray(query.where)) {
             this.isArrayQry = true;
             this.setLimitAndSkipEvaluationAtEnd_();
         }
@@ -57,9 +56,10 @@ export class Select extends BaseFetch {
             this.skipRecord = query.skip;
             this.limitRecord = query.limit;
         }
-        if (query.order) {
-            if (isArray(query.order) || (query.order as IOrderQuery).case || isObject((query.order as IOrderQuery).by)) {
-                ((query.order as IOrderQuery).idbSorting) = false;
+        const orderQuery = query.order;
+        if (orderQuery) {
+            if (isArray(orderQuery) || (orderQuery as IOrderQuery).case || isObject((orderQuery as IOrderQuery).by)) {
+                ((orderQuery as IOrderQuery).idbSorting) = false;
             }
             this.setLimitAndSkipEvaluationAtEnd_();
         }
@@ -72,6 +72,12 @@ export class Select extends BaseFetch {
         let pResult: Promise<void>;
         if (!beforeExecute) {
             beforeExecute = () => promiseResolve(null);
+        }
+        const query = this.query;
+        if (query.data) {
+            this.results = query.data;
+            this.setLimitAndSkipEvaluationAtEnd_();
+            return promiseResolve(this.returnResult_());
         }
         try {
             const err = new QueryHelper(this.db).validate(API.Select, this.query);

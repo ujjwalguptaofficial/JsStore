@@ -2,7 +2,6 @@ import { BaseFetch } from "@executors/base_fetch";
 import { Select } from "@executors/select";
 import { ICountQuery, ISelectQuery, IDB_MODE, API, IWhereQuery } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
-import { DbMeta } from "@worker/model";
 import { QueryHelper } from "@executors/query_helper";
 import { promiseReject, isArray, getError } from "@worker/utils";
 import { executeWhereUndefinedLogic } from "@executors/count/not_where";

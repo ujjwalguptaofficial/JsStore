@@ -155,6 +155,7 @@ export interface ISelectQuery {
     distinct?: boolean;
     case?: { [columnName: string]: [ICaseOption] };
     flatten?: string[];
+    data?: any[];
 }
 
 export interface IInsertQuery {

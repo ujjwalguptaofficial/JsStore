@@ -61,7 +61,10 @@ function createConfigsForAllLibraryTargetForWebWorker() {
                 // }),
             ],
             mode: "production",
-            devtool: 'source-map'
+            devtool: 'source-map',
+            optimization: {
+                minimize: true,
+            }
         }
     }
     var configs = [];
