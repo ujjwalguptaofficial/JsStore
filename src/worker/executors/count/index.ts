@@ -3,7 +3,7 @@ import { Select } from "@executors/select";
 import { ICountQuery, ISelectQuery, IDB_MODE, API, IWhereQuery } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@executors/query_helper";
-import { promiseReject, isArray, getError } from "@worker/utils";
+import { promiseReject, isArray } from "@worker/utils";
 import { executeWhereUndefinedLogic } from "@executors/count/not_where";
 import { executeWhereLogic } from "./where";
 import { executeRegexLogic } from "./regex";
@@ -44,10 +44,13 @@ export class Count extends BaseFetch {
                 this.initTransaction_();
                 if (query.join == null) {
                     if (query.where != null) {
-                        if ((query.where as IWhereQuery).or || isArray(this.query.where)) {
+                        if ((query.where as IWhereQuery).or || isArray(query.where)) {
                             result = getDataFromSelect();
                         }
                         else {
+                            this.shouldAddValue = (cursor) => {
+                                return this.whereCheckerInstance.check(cursor.value);
+                            };
                             result = this.goToWhereLogic();
                         }
                     }

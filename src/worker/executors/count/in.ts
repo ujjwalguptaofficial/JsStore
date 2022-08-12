@@ -1,10 +1,10 @@
 import { promise, promiseAll } from "@/common";
 import { getLength } from "@/worker/utils";
 import { BaseFetch } from "../base_fetch";
+import { onWhereCount } from "./where";
 
 
 export const executeInLogic = function (this: BaseFetch, column, values) {
-    let cursor: IDBCursorWithValue;
     const objectStore = this.objectStore;
     const columnStore = objectStore.index(column);
     const isWhereKeysLengthOne = getLength(this.query.where) === 1;
@@ -23,18 +23,7 @@ export const executeInLogic = function (this: BaseFetch, column, values) {
         }
         return promise<void>((res, rej) => {
             const cursorRequest = columnStore.openCursor(keyRange);
-            cursorRequest.onsuccess = (e: any) => {
-                cursor = e.target.result;
-                if (cursor) {
-                    if (this.whereCheckerInstance.check(cursor.value)) {
-                        ++this.resultCount;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    res();
-                }
-            };
+            cursorRequest.onsuccess = onWhereCount.call(this, res);
             cursorRequest.onerror = rej;
         });
     };

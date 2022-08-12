@@ -1,24 +1,13 @@
 import { Remove } from ".";
 import { promise, promiseAll } from "@/common";
+import { onWhereRemove } from "./where";
 
 export const executeInLogic = function (this: Remove, column, values) {
     const columnIndex = this.objectStore.index(column)
     const runInLogic: (val) => Promise<void> = (value) => {
         return promise((res, rej) => {
             const cursorRequest = columnIndex.openCursor(this.util.keyRange(value));
-            cursorRequest.onsuccess = (e: any) => {
-                const cursor: IDBCursorWithValue = e.target.result;
-                if (cursor) {
-                    if (this.whereCheckerInstance.check(cursor.value)) {
-                        cursor.delete();
-                        ++this.rowAffected;
-                    }
-                    cursor.continue();
-                }
-                else {
-                    res();
-                }
-            };
+            cursorRequest.onsuccess = onWhereRemove.call(this, res);
             cursorRequest.onerror = rej;
         });
     };

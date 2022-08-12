@@ -72,6 +72,9 @@ export class Remove extends BaseFetch {
     }
 
     private processWhere_() {
+        this.shouldAddValue = (value) => {
+            return this.whereCheckerInstance.check(value);
+        };
         if ((this.query.where as IWhereQuery).or) {
             this.processOrLogic();
         }
