@@ -187,8 +187,8 @@ export class Select extends BaseFetch {
     }
 
     private processWhere_() {
-        this.shouldAddValue = (value) => {
-            return this.whereCheckerInstance.check(value);
+        this.shouldAddValue = (cursor: IDBCursorWithValue) => {
+            return this.whereCheckerInstance.check(cursor.value);
         };
         if ((this.query.where as IWhereQuery).or) {
             this.processOrLogic_();

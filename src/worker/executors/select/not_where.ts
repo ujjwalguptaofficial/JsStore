@@ -1,6 +1,7 @@
 import { Select } from "./index";
 import { LogHelper, promiseReject } from "@/worker/utils";
 import { ERROR_TYPE, IOrderQuery, promise } from "@/common";
+import { getCursorOnSuccess } from "./where";
 
 export const executeWhereUndefinedLogic = function (this: Select) {
     let cursorRequest: IDBRequest;
@@ -26,20 +27,15 @@ export const executeWhereUndefinedLogic = function (this: Select) {
     else {
         cursorRequest = objectStore.openCursor();
     }
-    const onSuccess = (() => {
-        if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {
-            if (this.skipRecord && this.limitRecord) {
-                return executeSkipAndLimit;
-            }
-            else if (this.skipRecord) {
-                return executeSkip;
-            }
-            else if (this.limitRecord) {
-                return executeLimit;
-            }
-        }
-        return executeSimple;
-    })();
+
+    const onSuccess = getCursorOnSuccess.call(
+        this,
+        executeSimple,
+        executeLimit,
+        executeSkip,
+        executeSkipAndLimit
+    );
+
     return promise<void>((res, rej) => {
         cursorRequest.onerror = rej;
         cursorRequest.onsuccess = onSuccess.call(this, res);

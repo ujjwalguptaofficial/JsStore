@@ -2,6 +2,18 @@ import { Select } from "./";
 import { promise } from "@/common";
 import { BaseFetch } from "../base_fetch";
 
+export const getCursorOnSuccess = function (this: Select, simpleFn, limitFn, skipFn, skipAndLimitFn) {
+    if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {
+        if (this.skipRecord) {
+            return this.limitRecord ? skipAndLimitFn : skipFn
+        }
+        if (this.limitRecord) {
+            return limitFn;
+        }
+    }
+    return simpleFn;
+}
+
 export const executeWhereLogic = function (this: BaseFetch, column, value, op, dir) {
 
     value = op ? value[op] : value;
@@ -10,21 +22,13 @@ export const executeWhereLogic = function (this: BaseFetch, column, value, op, d
         dir
     );
 
-    const onSuccess = (() => {
-        if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {
-            if (this.skipRecord && this.limitRecord) {
-                return executeSkipAndLimitForWhere_;
-            }
-            else if (this.skipRecord) {
-                return executeSkipForWhere_;
-            }
-            else if (this.limitRecord) {
-                return executeLimitForWhere_;
-            }
-
-        }
-        return executeSimpleForWhere_;
-    })();
+    const onSuccess = getCursorOnSuccess.call(
+        this,
+        executeSimpleForWhere_,
+        executeLimitForWhere_,
+        executeSkipForWhere_,
+        executeSkipAndLimitForWhere_
+    );
 
     return promise<any>((res, rej) => {
         cursorRequest.onerror = rej;
@@ -39,9 +43,8 @@ const executeSkipAndLimitForWhere_ = function (this: Select, onFinish) {
         const cursor: IDBCursorWithValue = e.target.result;
         if (cursor) {
             if (recordSkipped && this.results.length !== this.limitRecord) {
-                const value = cursor.value;
-                if (this.shouldAddValue(value)) {
-                    this.pushResult(value);
+                if (this.shouldAddValue(cursor)) {
+                    this.pushResult(cursor.value);
                 }
                 cursor.continue();
             }
@@ -62,9 +65,8 @@ const executeSkipForWhere_ = function (this: Select, onFinish) {
         const cursor = e.target.result;
         if (cursor) {
             if (recordSkipped) {
-                const value = cursor.value;
-                if (this.shouldAddValue(value)) {
-                    this.pushResult(value);
+                if (this.shouldAddValue(cursor)) {
+                    this.pushResult(cursor.value);
                 }
                 cursor.continue();
             }
@@ -83,9 +85,8 @@ export const executeLimitForWhere_ = function (this: Select, onFinish) {
     return (e: any) => {
         const cursor = e.target.result;
         if (cursor && this.results.length !== this.limitRecord) {
-            const value = cursor.value;
-            if (this.shouldAddValue(value)) {
-                this.pushResult(value);
+            if (this.shouldAddValue(cursor)) {
+                this.pushResult(cursor.value);
             }
             cursor.continue();
         }
@@ -100,9 +101,8 @@ export const executeSimpleForWhere_ = function (this: Select, onFinish) {
     return (e: any) => {
         const cursor: IDBCursorWithValue = e.target.result;
         if (cursor) {
-            const value = cursor.value;
-            if (this.shouldAddValue(value)) {
-                this.pushResult(value);
+            if (this.shouldAddValue(cursor)) {
+                this.pushResult(cursor.value);
             }
             cursor.continue();
         }

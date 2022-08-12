@@ -35,7 +35,7 @@ export class Count extends BaseFetch {
             let result: Promise<void>;
             try {
                 const getDataFromSelect = () => {
-                    const selectInstance = new Select(this.query as ISelectQuery, this.util);
+                    const selectInstance = new Select(query as ISelectQuery, this.util);
                     selectInstance.isTxQuery = this.isTxQuery;
                     return selectInstance.execute().then(results => {
                         this.resultCount = results.length;
@@ -72,10 +72,11 @@ export class Count extends BaseFetch {
     }
 
     private initTransaction_() {
+        const tableName = this.query.from;
         if (!this.isTxQuery) {
-            this.util.createTransaction([this.query.from], IDB_MODE.ReadOnly);
+            this.util.createTransaction([tableName], IDB_MODE.ReadOnly);
         }
-        this.objectStore = this.util.objectStore(this.query.from);
+        this.objectStore = this.util.objectStore(tableName);
     }
 }
 

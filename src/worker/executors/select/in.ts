@@ -1,7 +1,10 @@
 import { Select } from "./";
 import { promise, promiseAll } from "@/common";
 import { BaseFetch } from "../base_fetch";
-import { executeLimitForWhere_, executeSimpleForWhere_ } from "./where";
+import { executeLimitForWhere_, executeSimpleForWhere_, getCursorOnSuccess } from "./where";
+import { executeSkipAndLimitForWhere_, executeSkipForWhere_ } from "./regex";
+
+
 
 export const executeInLogic = function (this: BaseFetch, column, values) {
     let skip = this.skipRecord;
@@ -13,20 +16,13 @@ export const executeInLogic = function (this: BaseFetch, column, values) {
             --skip;
         }
     };
-    const onSuccess = (() => {
-        if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {
-            if (this.skipRecord && this.limitRecord) {
-                return executeSkipAndLimitForIn_;
-            }
-            else if (this.skipRecord) {
-                return executeSkipForIn_;
-            }
-            else if (this.limitRecord) {
-                return executeLimitForWhere_;
-            }
-        }
-        return executeSimpleForWhere_;
-    })();
+    const onSuccess = getCursorOnSuccess.call(
+        this,
+        executeSimpleForWhere_,
+        executeLimitForWhere_,
+        executeSkipForWhere_,
+        executeSkipAndLimitForWhere_
+    );
 
     const runInLogic: (val) => Promise<void> = (value) => {
         return promise((res, rej) => {
@@ -41,36 +37,3 @@ export const executeInLogic = function (this: BaseFetch, column, values) {
     );
 
 };
-
-const executeSkipAndLimitForIn_ = function (this: Select, onFinish, skipOrPush) {
-    return (e: any) => {
-        const cursor: IDBCursorWithValue = e.target.result;
-        if (this.results.length !== this.limitRecord && cursor) {
-            const value = cursor.value;
-            if (this.shouldAddValue(value)) {
-                skipOrPush(value);
-            }
-            cursor.continue();
-        }
-        else {
-            onFinish();
-        }
-    };
-}
-
-const executeSkipForIn_ = function (this: Select, onFinish, skipOrPush) {
-
-    return (e: any) => {
-        const cursor: IDBCursorWithValue = e.target.result;
-        if (cursor) {
-            const value = cursor.value
-            if (this.shouldAddValue(value)) {
-                skipOrPush(value);
-            }
-            cursor.continue();
-        }
-        else {
-            onFinish();
-        }
-    };
-}
