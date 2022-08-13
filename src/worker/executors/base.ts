@@ -1,10 +1,8 @@
 import { IDBUtil } from "@worker/idbutil";
-import { IInsertQuery, ISelectQuery, ERROR_TYPE, IUpdateQuery } from "@/common";
-import { LogHelper, getError, promiseReject, getErrorFromException } from "@worker/utils";
-import { DbMeta } from "@worker/model";
+import { IInsertQuery, ISelectQuery, IUpdateQuery } from "@/common";
+import { promiseReject, getErrorFromException } from "@worker/utils";
 
 export class Base {
-    // db: DbMeta;
 
     get db() {
         return this.util.db;
@@ -19,9 +17,6 @@ export class Base {
     tableName: string;
 
     protected results: any[] = [];
-    // get tableName() {
-    //     return (this.query as SelectQuery).from || (this.query as InsertQuery).into
-    // }
 
     table(name?: string) {
         const tableName = name || this.tableName;
@@ -42,8 +37,12 @@ export class Base {
         }
         const table = this.table(tableName);
         if (process.env.NODE_ENV !== 'production') {
-            if (table == null) {
-                console.warn(`no primary key found for query - ${JSON.stringify(this.query)}`);
+            if (table == null && query.store) {
+                delete query.store;
+                const metaValue = query.meta;
+                if (!metaValue || !metaValue.primaryKey) {
+                    console.warn(`no primary key found for query - ${JSON.stringify(this.query)}. Please supply primary key in meta field.`);
+                }
             }
         }
         return table.primaryKey;

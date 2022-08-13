@@ -45,13 +45,10 @@
             const results = await jsstoreCon.select({
                 // from: "Customers",
                 store: data,
-                where: {
-                    country: 'Mexico',
-                    or: {
-                        city: 'Madrid'
-                    }
-                },
-                meta: 'customerId'
+                where: [{
+                    country: "Mexico"
+                }],
+                // meta: 'customerId'
                 // skip:10,
 
             });
