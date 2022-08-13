@@ -30,8 +30,23 @@ export class Base {
 
     primaryKey(tableName?: string) {
         const query = this.query as ISelectQuery;
-        return query.store && query.from == null ? query.meta.primaryKey :
-            this.table(tableName).primaryKey;
+        if (!query.from && query.store && query.meta) {
+            const primaryKey = query.meta.primaryKey;
+            if (process.env.NODE_ENV !== 'production') {
+                if (primaryKey == null) {
+                    delete query.store;
+                    console.warn(`no primary key found for query - ${JSON.stringify(this.query)}`);
+                }
+            }
+            return primaryKey;
+        }
+        const table = this.table(tableName);
+        if (process.env.NODE_ENV !== 'production') {
+            if (table == null) {
+                console.warn(`no primary key found for query - ${JSON.stringify(this.query)}`);
+            }
+        }
+        return table.primaryKey;
     }
 
 

@@ -86,6 +86,27 @@ describe('Select Api with store', function () {
             })
     });
 
+    it('select with distinct without primary key', function (done) {
+        con.select({
+            store: customers,
+            distinct: true,
+            where: {
+                city: 'bhubaneswar'
+            },
+            meta: {
+                
+            }
+        }).
+            then(function (results) {
+                // console.log(results);
+                expect(results).to.be.an('array').length(1);
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            })
+    });
+
     it('select with distinct', function (done) {
         con.select({
             store: customers,
