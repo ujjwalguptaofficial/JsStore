@@ -156,6 +156,9 @@ export interface ISelectQuery {
     case?: { [columnName: string]: [ICaseOption] };
     flatten?: string[];
     store?: any[] | { [tableName: string]: any[] };
+    meta?: {
+        primaryKey?: string;
+    }
 }
 
 export interface IInsertQuery {

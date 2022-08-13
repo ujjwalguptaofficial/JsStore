@@ -29,7 +29,10 @@ export const setLimitAndSkipEvaluationAtEnd = function (this: Select) {
 
 export const removeDuplicates = function (this: Select) {
     let datas = this.results;
-    const key = this.primaryKey();
+    const key =  this.primaryKey();
+    // if (process.env.NODE_ENV !== 'production') {
+    //     console.error('The Api:-' + request.name + ' does not support.');
+    // }
     const lookupObject = new Map();
     for (let i = 0, len = datas.length; i < len; i++) {
         lookupObject.set(datas[i][key], datas[i]);

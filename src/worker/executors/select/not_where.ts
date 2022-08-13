@@ -9,6 +9,7 @@ export const executeWhereUndefinedLogic = function (this: Select) {
     const store = query.store;
     if (store) {
         this.results = store as any[];
+        this.setLimitAndSkipEvaluationAtEnd_();
         return promiseResolve();
     }
     const orderQuery = query.order;

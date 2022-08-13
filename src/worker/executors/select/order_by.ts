@@ -3,26 +3,27 @@ import { removeSpace, getDataType, getError, LogHelper } from "@/worker/utils";
 import { ERROR_TYPE, DATA_TYPE, ICaseOption, IColumn, IOrderQuery } from "@/common";
 
 export const processGroupDistinctAggr = function (this: Select) {
-    if (this.query.distinct) {
+    const query = this.query;
+    if (query.distinct) {
         const groupBy = [];
         const result = this.results[0];
         for (const key in result) {
             groupBy.push(key);
         }
-        const primaryKey = this.primaryKey(),
-            index = groupBy.indexOf(primaryKey);
+        const primaryKey = this.primaryKey();
+        const index = groupBy.indexOf(primaryKey);
         groupBy.splice(index, 1);
-        this.query.groupBy = groupBy.length > 0 ? groupBy : null;
+        query.groupBy = groupBy.length > 0 ? groupBy : null;
     }
-    if (this.query.groupBy) {
-        if (this.query.aggregate) {
+    if (query.groupBy) {
+        if (query.aggregate) {
             this.executeAggregateGroupBy();
         }
         else {
             this.processGroupBy();
         }
     }
-    else if (this.query.aggregate) {
+    else if (query.aggregate) {
         this.processAggregateQry();
     }
 };

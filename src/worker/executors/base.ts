@@ -29,7 +29,9 @@ export class Base {
     }
 
     primaryKey(tableName?: string) {
-        return this.table(tableName).primaryKey;
+        const query = this.query as ISelectQuery;
+        return query.store && query.from == null ? query.meta.primaryKey :
+            this.table(tableName).primaryKey;
     }
 
 

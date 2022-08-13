@@ -24,7 +24,7 @@ export class BaseFetch extends Base {
     protected goToWhereLogic() {
         const query = this.query as ISelectQuery;
         const firstColumn = getObjectFirstKey(query.where);
-        if (this.objectStore.indexNames.contains(firstColumn)) {
+        if (this.objectStore.indexNames.contains(firstColumn) || query.store) {
             const value = query.where[firstColumn];
             if (getDataType(value) === 'object') {
                 const checkFlag = getLength(value) > 1 ||

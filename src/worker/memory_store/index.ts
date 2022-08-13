@@ -44,7 +44,7 @@ export class MemoryObjectStore {
                     const value = this.data[index];
                     if (value) {
                         const columnValue = value[column];
-                        if (keyRange == null || keyRange.includes(columnValue)) {
+                        if (columnValue && (keyRange == null || keyRange.includes(columnValue))) {
                             (cursor as any).key = columnValue;
                             (cursor as any).value = value;
                             callOnSuccess(cursor)
@@ -57,9 +57,7 @@ export class MemoryObjectStore {
                         callOnSuccess(null);
                     }
                 }
-                promiseResolve().then(_ => {
-                    execute();
-                });
+                promiseResolve().then(execute);
                 return cursorRequest;
             }
         }

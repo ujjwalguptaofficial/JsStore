@@ -43,25 +43,17 @@
                 return response.json()
             });
             const results = await jsstoreCon.select({
-                from: "Customers",
-                // order: {
-
-                // },
-                // where: {
-                //     country: {
-                //         in: ['Mexico', 'Brazil']
-                //     }
-                // },
-                order: {
-                    by: 'address',
-                    type: "asc"
-                },
+                // from: "Customers",
+                store: data,
                 where: {
-                    country: {
-                        regex: /mexico|brazil/i
+                    country: 'Mexico',
+                    or: {
+                        city: 'Madrid'
                     }
                 },
-                // store: data
+                meta: 'customerId'
+                // skip:10,
+
             });
             console.table(results);
         }
