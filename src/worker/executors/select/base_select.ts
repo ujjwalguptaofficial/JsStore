@@ -1,5 +1,3 @@
-import { ERROR_TYPE } from "@/common";
-import { LogHelper } from "@/worker/utils";
 import { Select } from "./index";
 
 export const setPushResult = function (this: Select) {
@@ -23,10 +21,10 @@ export const setPushResult = function (this: Select) {
 
 export const setLimitAndSkipEvaluationAtEnd = function (this: Select) {
     if (this.query.limit) {
-        this.shouldEvaluateLimitAtEnd = true;
+        this.limitAtEnd = true;
     }
     if (this.query.skip) {
-        this.shouldEvaluateSkipAtEnd = true;
+        this.skipAtEnd = true;
     }
 }
 

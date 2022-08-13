@@ -194,7 +194,7 @@ export class Select extends BaseFetch {
 
     private processWhere_() {
         this.shouldAddValue = (cursor: IDBCursorWithValue) => {
-            return this.whereCheckerInstance.check(cursor.value);
+            return this.whereChecker.check(cursor.value);
         };
         if ((this.query.where as IWhereQuery).or) {
             this.processOrLogic_();
@@ -235,10 +235,10 @@ export class Select extends BaseFetch {
             }
             this.processGroupDistinctAggr();
             this.processOrderBy();
-            if (this.shouldEvaluateSkipAtEnd) {
+            if (this.skipAtEnd) {
                 this.results.splice(0, query.skip);
             }
-            if (this.shouldEvaluateLimitAtEnd) {
+            if (this.limitAtEnd) {
                 this.results = this.results.slice(0, query.limit);
             }
         }

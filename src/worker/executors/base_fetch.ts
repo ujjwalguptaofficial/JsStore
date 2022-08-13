@@ -1,7 +1,7 @@
 import { Base } from "./base";
 import { ISelectQuery, QUERY_OPTION, ERROR_TYPE } from "@/common";
 import { getRegexFromLikeExpression, promiseReject } from "@worker/utils";
-import { LogHelper, getObjectFirstKey, getDataType, getLength, getError } from "@worker/utils";
+import { LogHelper, getObjectFirstKey, getDataType, getLength } from "@worker/utils";
 import { WhereChecker } from "./where_checker";
 import { executeWhereLogic } from "./select/where";
 import { executeInLogic } from "./select/in";
@@ -9,12 +9,12 @@ import { executeRegexLogic } from "./select/regex";
 
 export class BaseFetch extends Base {
     query: ISelectQuery;
-    whereCheckerInstance: WhereChecker;
+    whereChecker: WhereChecker;
     executeWhereLogic: typeof executeWhereLogic;
     skipRecord;
     limitRecord;
-    shouldEvaluateLimitAtEnd = false;
-    shouldEvaluateSkipAtEnd = false;
+    limitAtEnd = false;
+    skipAtEnd = false;
     executeInLogic: typeof executeInLogic;
     executeRegexLogic: typeof executeRegexLogic;
 
@@ -30,9 +30,9 @@ export class BaseFetch extends Base {
                 const checkFlag = getLength(value) > 1 ||
                     getLength(query.where) > 1
 
-                this.whereCheckerInstance = new WhereChecker(query.where, checkFlag);
+                this.whereChecker = new WhereChecker(query.where, checkFlag);
                 const key = getObjectFirstKey(value);
-                this.whereCheckerInstance.remove([firstColumn, key]);
+                this.whereChecker.remove([firstColumn, key]);
                 switch (key) {
                     case QUERY_OPTION.Like: {
                         const regexVal = getRegexFromLikeExpression(value[QUERY_OPTION.Like]);
@@ -57,8 +57,8 @@ export class BaseFetch extends Base {
             }
             else {
                 const checkFlag = getLength(query.where) > 1;
-                this.whereCheckerInstance = new WhereChecker(query.where, checkFlag);
-                this.whereCheckerInstance.remove([firstColumn]);
+                this.whereChecker = new WhereChecker(query.where, checkFlag);
+                this.whereChecker.remove([firstColumn]);
                 return this.executeWhereLogic(firstColumn, value, null, "next");
             }
         }

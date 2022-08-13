@@ -3,7 +3,7 @@ import { promise } from "@/common";
 import { BaseFetch } from "../base_fetch";
 
 export const getCursorOnSuccess = function (this: Select, simpleFn, limitFn, skipFn, skipAndLimitFn) {
-    if (this.shouldEvaluateLimitAtEnd === false && this.shouldEvaluateSkipAtEnd === false) {
+    if (this.limitAtEnd === false && this.skipAtEnd === false) {
         if (this.skipRecord) {
             return this.limitRecord ? skipAndLimitFn : skipFn
         }

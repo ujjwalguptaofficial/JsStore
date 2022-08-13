@@ -10,7 +10,7 @@ export const executeWhereLogic = function (this: Update, column, value, op) {
         cursorRequest.onsuccess = (e: any) => {
             const cursor: IDBCursorWithValue = e.target.result;
             if (cursor) {
-                if (this.whereCheckerInstance.check(cursor.value)) {
+                if (this.whereChecker.check(cursor.value)) {
                     try {
                         const cursorUpdateRequest = cursor.update(updateValue(query, cursor.value));
                         cursorUpdateRequest.onsuccess = () => {
