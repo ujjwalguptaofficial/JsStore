@@ -43,17 +43,25 @@
                 return response.json()
             });
             const results = await jsstoreCon.select({
-                from: "Customerss",
+                from: "Customers",
+                // order: {
+
+                // },
+                // where: {
+                //     country: {
+                //         in: ['Mexico', 'Brazil']
+                //     }
+                // },
                 order: {
                     by: 'address',
                     type: "asc"
                 },
                 where: {
                     country: {
-                        in: ['Mexico', 'Brazil']
+                        regex: /mexico|brazil/i
                     }
                 },
-                store: data
+                // store: data
             });
             console.table(results);
         }

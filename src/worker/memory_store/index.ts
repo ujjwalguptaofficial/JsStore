@@ -19,7 +19,7 @@ export class MemoryObjectStore {
 
     index(column: string) {
         return {
-            openCursor: (keyRange: IDBKeyRange, dir?) => {
+            openCursor: (keyRange?: IDBKeyRange) => {
                 const cursorRequest = {
 
                 } as {
@@ -32,8 +32,6 @@ export class MemoryObjectStore {
                         ++index;
                         execute();
                     },
-                    key: column,
-                    value: null
                 }
                 const callOnSuccess = (result) => {
                     cursorRequest.onsuccess({
@@ -46,8 +44,9 @@ export class MemoryObjectStore {
                     const value = this.data[index];
                     if (value) {
                         const columnValue = value[column];
-                        if (keyRange.includes(columnValue)) {
-                            cursor.value = value;
+                        if (keyRange == null || keyRange.includes(columnValue)) {
+                            (cursor as any).key = columnValue;
+                            (cursor as any).value = value;
                             callOnSuccess(cursor)
                         }
                         else {
