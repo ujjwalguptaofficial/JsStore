@@ -35,7 +35,7 @@ if (process.env.NODE_ENV !== 'production') {
     Object.assign(ERROR_TYPE, {
         InvalidOrderQuery: 'invalid_order_query',
         InvalidGroupQuery: 'invalid_group_query'
-    })
+    });
 }
 
 export enum WORKER_STATUS {

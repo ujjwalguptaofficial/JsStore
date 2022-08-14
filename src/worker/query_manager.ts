@@ -74,10 +74,10 @@ export class QueryManager {
         const query = request.query;
         const ctx = this;
         const idbutil = ctx.util;
-        const callAPI = (api: typeof Select, cb?: () => Promise<any>) => {
+        const callAPI = (api: typeof Select, beforeExecute?: () => Promise<any>) => {
             queryResult = new api(query, idbutil).
-                execute(cb);
-        }
+                execute(beforeExecute);
+        };
         switch (request.name) {
             case API.OpenDb:
                 cb();
