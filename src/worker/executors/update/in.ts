@@ -13,7 +13,7 @@ export const executeInLogic = function (this: Update, column, values: any[]) {
                 const cursor: IDBCursorWithValue = e.target.result;
                 if (cursor) {
                     const value = cursor.value;
-                    if (this.whereCheckerInstance.check(value)) {
+                    if (this.whereChecker.check(value)) {
                         try {
                             const cursorUpdateRequest = cursor.update(updateValue(query, value));
                             cursorUpdateRequest.onsuccess = () => {

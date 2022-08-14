@@ -102,6 +102,10 @@ export interface IJoinQuery {
     as?: { [originalColumnName: string]: string };
     case?: { [columnName: string]: [ICaseOption] };
     flatten?: string[];
+    store?: any[];
+    meta?: {
+        primaryKey?: string;
+    }
 }
 
 export interface IWhereQueryOption {
@@ -155,7 +159,10 @@ export interface ISelectQuery {
     distinct?: boolean;
     case?: { [columnName: string]: [ICaseOption] };
     flatten?: string[];
-    data?: any[];
+    store?: any[];
+    meta?: {
+        primaryKey?: string;
+    }
 }
 
 export interface IInsertQuery {

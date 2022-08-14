@@ -26,7 +26,9 @@ export const executeInLogic = function (this: BaseFetch, column, values) {
 
     const runInLogic: (val) => Promise<void> = (value) => {
         return promise((res, rej) => {
-            const cursorRequest = this.objectStore.index(column).openCursor(this.util.keyRange(value));
+            const cursorRequest = this.objectStore.index(column).openCursor(
+                this.util.keyRange(value)
+            );
             cursorRequest.onsuccess = onSuccess.call(this, res, skipOrPush);
             cursorRequest.onerror = rej;
         });

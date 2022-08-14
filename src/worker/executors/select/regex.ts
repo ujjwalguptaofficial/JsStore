@@ -17,7 +17,7 @@ export const executeRegexLogic = function (this: BaseFetch, column, exp: RegExp)
     };
     this.shouldAddValue = (cursor) => {
         return exp.test(cursor.key) &&
-            this.whereCheckerInstance.check(cursor.value);
+            this.whereChecker.check(cursor.value);
     };
 
     const cursorRequest = this.objectStore.index(column).openCursor();

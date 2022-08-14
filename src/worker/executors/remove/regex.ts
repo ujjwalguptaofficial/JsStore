@@ -6,7 +6,7 @@ export const executeRegexLogic = function (this: Remove, column: string, exp: Re
     const cursorRequest = this.objectStore.index(column).openCursor();
     this.shouldAddValue = (cursor) => {
         return exp.test(cursor.key) &&
-            this.whereCheckerInstance.check(cursor.value);
+            this.whereChecker.check(cursor.value);
     };
     return promise<void>((res, rej) => {
         cursorRequest.onsuccess = (e: any) => {

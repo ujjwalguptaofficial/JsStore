@@ -6,7 +6,7 @@ export const executeRegexLogic = function (this: BaseFetch, column: string, exp:
     const cursorRequest = this.objectStore.index(column).openCursor();
     this.shouldAddValue = (cursor) => {
         return exp.test(cursor.key) &&
-            this.whereCheckerInstance.check(cursor.value);
+            this.whereChecker.check(cursor.value);
     };
     return promise((res, rej) => {
         cursorRequest.onerror = rej;

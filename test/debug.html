@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="../build//jsstore.js"></script>
+    <script src="../build//jsstore.worker.js"></script>
+</head>
+
+<body>
+    <script>
+        var jsstoreCon = new JsStore.Connection();
+
+        window.onload = function () {
+
+            initDb();
+        };
+
+        async function initDb() {
+            var isDbCreated = await jsstoreCon.initDb(getDemoDbSchema());
+            if (isDbCreated) {
+                console.log('db created');
+                const data = await fetch("../test/static/Customers.json").then(response => {
+                    return response.json()
+                });
+                jsstoreCon.insert({
+                    into: 'Customers',
+                    values: data
+                }).then(function (results) {
+                    alert('data inserted')
+                })
+            }
+            else {
+                console.log('db opened');
+            }
+        }
+
+        async function selectDataFromStore() {
+            const customers = await fetch("../test/static/Customers.json").then(response => {
+                return response.json()
+            });
+            const orders = await fetch("../test/static/Orders.json").then(response => {
+                return response.json()
+            });
+            const results = await jsstoreCon.select({
+                store: orders,
+                meta: {
+                    primaryKey: 'orderId'
+                },
+                join: {
+                    // with: "Customers",
+                    type: "inner",
+                    on: "A.customerId=B.customerId",
+                    as: {
+                        customerName: "name",
+                        contactName: "cName",
+                        customerId: "cId"
+                    },
+                    store: customers,
+                    meta: {
+                        primaryKey: 'customerId'
+                    },
+                }
+
+            });
+            console.table(results);
+        }
+
+
+        var getDemoDbSchema = function () {
+
+            var DATA_TYPE = JsStore.DATA_TYPE;
+
+            var customers = {
+                name: 'Customers',
+                columns: {
+                    customerId: { primaryKey: true, autoIncrement: true },
+                    customerName: { notNull: true, dataType: DATA_TYPE.String },
+                    contactName: { notNull: true, dataType: DATA_TYPE.String },
+                    address: { notNull: true, dataType: 'string' },
+                    city: { notNull: true, dataType: 'string' },
+                    postalCode: { dataType: 'string' },
+                    country: { notNull: true, dataType: 'string' },
+                    email: { dataType: 'string' }
+                }
+            };
+
+            var categoriesGarbage = {
+                name: 'Categories_Garbage',
+                columns: {
+                    categoryId: { primaryKey: true, autoIncrement: true },
+                    categoryName: { notNull: true, dataType: 'string' },
+                    description: { notNull: true, dataType: 'string' },
+                    invalidColumn: { notNull: true, dataType: 'string', enableSearch: false }
+                }
+            }
+
+            var categories = {
+                name: 'Categories',
+                columns: {
+                    categoryId: { primaryKey: true, autoIncrement: true },
+                    categoryName: { notNull: true, dataType: 'string' },
+                    description: { notNull: true, dataType: 'string' }
+                }
+            }
+
+
+
+            var employees = {
+                name: 'Employees',
+                columns: {
+                    employeeId: { primaryKey: true, autoIncrement: true },
+                    lastName: { notNull: true, dataType: 'string' },
+                    birthDate: { notNull: true, dataType: DATA_TYPE.DateTime },
+                    photo: { notNull: true, dataType: 'string' },
+                    notes: { dataType: 'string' },
+                    state: { notNull: true, dataType: 'string' },
+                    jobSuspendedFlag: { notNull: true, dataType: 'number' }
+                }
+            }
+
+            var orderDetails = {
+                name: 'OrderDetails',
+                columns: {
+                    orderDetailId: { primaryKey: true, autoIncrement: true },
+                    orderId: { notNull: true, dataType: 'number' },
+                    productId: { notNull: true, dataType: 'number' },
+                    quantity: { notNull: true, dataType: 'number' },
+                }
+            }
+
+            var orders = {
+                name: 'Orders',
+                columns: {
+                    orderId: { primaryKey: true },
+                    customerId: { notNull: true },
+                    employeeId: { notNull: true, dataType: 'number' },
+                    orderDate: { notNull: true, dataType: 'date_time' },
+                    shipperId: { notNull: true, dataType: 'number' }
+                }
+            }
+
+            var products = {
+                name: 'Products',
+                columns: {
+                    productId: { primaryKey: true, autoIncrement: true },
+                    productName: { notNull: true, dataType: 'string' },
+                    supplierId: { notNull: true, dataType: 'number' },
+                    categoryId: { notNull: true, dataType: 'number' },
+                    unit: { notNull: true, dataType: 'string' },
+                    price: { notNull: true, dataType: 'number' },
+                }
+            }
+
+            var shippers = {
+                name: 'Shippers',
+                columns: {
+                    shipperId: { primaryKey: true, autoIncrement: true },
+                    shipperName: { notNull: true, dataType: 'string' },
+                    phone: { notNull: true, dataType: 'string' }
+                }
+            }
+
+            var suppliers = {
+                name: 'Suppliers',
+                columns: {
+                    supplierId: { primaryKey: true, autoIncrement: true },
+                    supplierName: { notNull: true },
+                    contactName: { notNull: true, dataType: 'string' },
+                    address: { notNull: true, dataType: 'string' },
+                    city: { notNull: true, dataType: 'string' },
+                    postalCode: { notNull: true, dataType: 'string' },
+                    country: { notNull: true, dataType: 'string' },
+                    phone: { notNull: true, dataType: 'string' },
+                }
+            }
+
+            var things = {
+                name: "things",
+                columns: {
+                    value: { dataType: 'string' }
+                }
+            }
+
+            var dataBase = {
+                name: "Demo",
+                tables: [categories, customers, categoriesGarbage, employees, orderDetails, orders, products, shippers, suppliers, things]
+            };
+            return dataBase;
+        }
+    </script>
+</body>
+
+</html>

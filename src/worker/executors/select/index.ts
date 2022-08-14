@@ -12,6 +12,7 @@ import { BaseFetch } from "@executors/base_fetch";
 import { executeInLogic } from "./in";
 import { executeRegexLogic } from "./regex";
 import { executeJoinQuery } from "./join";
+import { MemoryObjectStore } from "@/worker/memory_store";
 
 export class Select extends BaseFetch {
     sorted = false;
@@ -74,19 +75,19 @@ export class Select extends BaseFetch {
             beforeExecute = () => promiseResolve(null);
         }
         const query = this.query;
-        if (query.data) {
-            this.results = query.data;
-            this.setLimitAndSkipEvaluationAtEnd_();
-            return promiseResolve(this.returnResult_());
-        }
+        // if (query.store) {
+        //     this.results = query.store;
+        //     this.setLimitAndSkipEvaluationAtEnd_();
+        //     return promiseResolve(this.returnResult_());
+        // }
         try {
-            const err = new QueryHelper(this.db).validate(API.Select, this.query);
+            const err = new QueryHelper(this.db).validate(API.Select, query);
             if (err) return promiseReject(err);
             return beforeExecute().then(_ => {
                 this.initTransaction_();
-                if (this.query.join == null) {
-                    if (this.query.where != null) {
-                        if (isArray(this.query.where)) {
+                if (query.join == null) {
+                    if (query.where != null) {
+                        if (isArray(query.where)) {
                             pResult = this.processWhereArrayQry();
                         }
                         else {
@@ -180,6 +181,11 @@ export class Select extends BaseFetch {
     }
 
     private initTransaction_() {
+        const store = this.query.store
+        if (store) {
+            this.objectStore = new MemoryObjectStore(store as any[]) as any;
+            return
+        }
         if (!this.isTxQuery) {
             this.util.createTransactionIfNotExist([this.tableName], IDB_MODE.ReadOnly);
         }
@@ -188,7 +194,7 @@ export class Select extends BaseFetch {
 
     private processWhere_() {
         this.shouldAddValue = (cursor: IDBCursorWithValue) => {
-            return this.whereCheckerInstance.check(cursor.value);
+            return this.whereChecker.check(cursor.value);
         };
         if ((this.query.where as IWhereQuery).or) {
             this.processOrLogic_();
@@ -229,10 +235,10 @@ export class Select extends BaseFetch {
             }
             this.processGroupDistinctAggr();
             this.processOrderBy();
-            if (this.shouldEvaluateSkipAtEnd) {
+            if (this.skipAtEnd) {
                 this.results.splice(0, query.skip);
             }
-            if (this.shouldEvaluateLimitAtEnd) {
+            if (this.limitAtEnd) {
                 this.results = this.results.slice(0, query.limit);
             }
         }

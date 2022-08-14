@@ -49,7 +49,7 @@ export class Count extends BaseFetch {
                         }
                         else {
                             this.shouldAddValue = (cursor) => {
-                                return this.whereCheckerInstance.check(cursor.value);
+                                return this.whereChecker.check(cursor.value);
                             };
                             result = this.goToWhereLogic();
                         }

@@ -1,6 +1,6 @@
 import { Select } from "./";
 import { IJoinQuery, DATA_TYPE, ERROR_TYPE, ISelectQuery } from "@/common";
-import { getDataType, LogHelper, removeSpace, promiseReject } from "@/worker/utils";
+import { getDataType, LogHelper, removeSpace, promiseReject, getKeys } from "@/worker/utils";
 
 
 export const executeJoinQuery = function (this: Select) {
@@ -11,7 +11,7 @@ interface JoinQueryWithInfo extends IJoinQuery {
     joinTableInfo: JoinTableInfo
 }
 
-export class Join {
+class Join {
 
     private joinQueryStack_: JoinQueryWithInfo[] = [];
     private currentQueryStackIndex_ = 0;
@@ -43,9 +43,13 @@ export class Join {
             [query.join as JoinQueryWithInfo] : query.join as JoinQueryWithInfo[];
         // get the data for first table
         const tableName = query.from;
-        const tablesToFetch = [tableName];
-        for (let i = 0, length = this.joinQueryStack_.length; i < length; i++) {
-            const item = this.joinQueryStack_[i];
+        const tablesToFetch = [];
+        if (tableName) {
+            tablesToFetch.push(tableName);
+        }
+        const joinQueryStack = this.joinQueryStack_;
+        for (let i = 0, length = joinQueryStack.length; i < length; i++) {
+            const item = joinQueryStack[i];
             let jointblInfo = this.getJoinTableInfo_(item.on);
             // table 1 is fetched & table2 needs to be fetched for join
             if (item.with === jointblInfo.table1.table) {
@@ -59,11 +63,13 @@ export class Join {
             if (err) {
                 return promiseReject(err);
             }
-            this.joinQueryStack_[i].joinTableInfo = jointblInfo;
-            tablesToFetch.push(item.with)
+            joinQueryStack[i].joinTableInfo = jointblInfo;
+            if (item.with) {
+                tablesToFetch.push(item.with)
+            }
         }
 
-        if (!this.select.isTxQuery) {
+        if (!this.select.isTxQuery && tablesToFetch.length > 0) {
             this.select.util.createTransaction(tablesToFetch);
         }
 
@@ -71,83 +77,84 @@ export class Join {
             from: tableName,
             where: query.where,
             case: query.case,
-            flatten: query.flatten
+            flatten: query.flatten,
+            store: query.store,
+            meta: query.meta
         }).then(results => {
             this.results = results.map((item) => {
                 return {
                     [this.currentQueryStackIndex_]: item
                 };
             });
-            this.tablesFetched.push(tableName);
+            this.tablesFetched.push(
+                joinQueryStack[0].joinTableInfo.table1.table
+            );
             return this.startExecutingJoinLogic_();
         });
     }
 
     private onJoinQueryFinished_() {
-        // const query = this.query;
-        if (this.results.length > 0) {
-
-            try {
-                let results = [];
-                const tables = Object.keys(this.results[0]);
-                const tablesLength = tables.length;
-                const mapWithAlias = (query: IJoinQuery, value: object) => {
-                    if (query.as != null) {
-                        for (const key in query.as) {
-                            if (value[(query.as as any)[key]] === undefined) {
-                                value[(query.as as any)[key]] = value[key];
-                                delete value[key];
-                            }
+        if (this.results.length === 0) return;
+        const selectApi = this.select;
+        try {
+            let results = [];
+            const tables = getKeys(this.results[0]);
+            const tablesLength = tables.length;
+            const mapWithAlias = (query: IJoinQuery, value: object) => {
+                if (query.as != null) {
+                    for (const key in query.as) {
+                        if (value[(query.as as any)[key]] === undefined) {
+                            value[(query.as as any)[key]] = value[key];
+                            delete value[key];
                         }
                     }
-                    return value;
-                };
-                this.results.forEach((result) => {
-                    let data = result["0"]; // first table data
-                    for (let i = 1; i < tablesLength; i++) {
-                        const query = this.joinQueryStack_[i - 1];
-                        data = { ...data, ...mapWithAlias(query, result[i]) };
-                    }
-                    results.push(data);
-                });
-                this.select['results'] = results;
-                this.select.setLimitAndSkipEvaluationAtEnd_();
-                this.select.query.flatten = null;
-                if (process.env.NODE_ENV !== 'production') {
-                    try {
-                        this.select.processOrderBy();
-                    }
-                    catch (ex) {
-                        return promiseReject(
-                            new LogHelper(ERROR_TYPE.InvalidOrderQuery, ex.message)
-                        );
-                    }
                 }
-                else {
-                    this.select.processOrderBy();
+                return value;
+            };
+            this.results.forEach((result) => {
+                let data = result["0"]; // first table data
+                for (let i = 1; i < tablesLength; i++) {
+                    const query = this.joinQueryStack_[i - 1];
+                    data = { ...data, ...mapWithAlias(query, result[i]) };
                 }
-
-                if (process.env.NODE_ENV !== 'production') {
-                    try {
-                        this.select.processGroupDistinctAggr();
-                    }
-                    catch (ex) {
-                        return promiseReject(
-                            new LogHelper(ERROR_TYPE.InvalidGroupQuery, ex.message)
-                        );
-                    }
+                results.push(data);
+            });
+            selectApi['results'] = results;
+            selectApi.setLimitAndSkipEvaluationAtEnd_();
+            selectApi.query.flatten = null;
+            if (process.env.NODE_ENV !== 'production') {
+                try {
+                    selectApi.processOrderBy();
                 }
-                else {
-                    this.select.processGroupDistinctAggr();
+                catch (ex) {
+                    return promiseReject(
+                        new LogHelper(ERROR_TYPE.InvalidOrderQuery, ex.message)
+                    );
                 }
             }
-            catch (ex) {
-                return promiseReject(
-                    new LogHelper(ERROR_TYPE.InvalidJoinQuery, ex.message)
-                );
+            else {
+                selectApi.processOrderBy();
+            }
+
+            if (process.env.NODE_ENV !== 'production') {
+                try {
+                    selectApi.processGroupDistinctAggr();
+                }
+                catch (ex) {
+                    return promiseReject(
+                        new LogHelper(ERROR_TYPE.InvalidGroupQuery, ex.message)
+                    );
+                }
+            }
+            else {
+                selectApi.processGroupDistinctAggr();
             }
         }
-        return;
+        catch (ex) {
+            return promiseReject(
+                new LogHelper(ERROR_TYPE.InvalidJoinQuery, ex.message)
+            );
+        }
     }
 
     private startExecutingJoinLogic_() {
@@ -159,9 +166,11 @@ export class Join {
                     from: joinQuery.with,
                     where: joinQuery.where,
                     case: joinQuery.case,
-                    flatten: joinQuery.flatten
+                    flatten: joinQuery.flatten,
+                    store: joinQuery.store,
+                    meta: joinQuery.meta
                 }).then(results => {
-                    this.jointables(joinQuery.type, jointblInfo, results);
+                    this.jointables(joinQuery, jointblInfo, results);
                     this.tablesFetched.push(jointblInfo.table2.table);
                     ++this.currentQueryStackIndex_;
                     return this.startExecutingJoinLogic_();
@@ -178,8 +187,8 @@ export class Join {
         }
     }
 
-    private jointables(joinType: string, jointblInfo: JoinTableInfo, secondtableData: any[]) {
-
+    private jointables(joinQuery: JoinQueryWithInfo, jointblInfo: JoinTableInfo, secondtableData: any[]) {
+        const joinType = joinQuery.type;
         const results = [];
         const column1 = jointblInfo.table1.column;
         const column2 = jointblInfo.table2.column;
@@ -201,9 +210,16 @@ export class Join {
             let valueMatchedFromSecondTable: any[];
             let callBack;
             const columnDefaultValue = {};
-            this.getTable(jointblInfo.table2.table).columns.forEach(col => {
-                columnDefaultValue[col.name] = null;
-            });
+            if (joinQuery.store) {
+                getKeys(joinQuery.store).forEach(columnName => {
+                    columnDefaultValue[columnName] = null;
+                })
+            }
+            else {
+                this.getTable(jointblInfo.table2.table).columns.forEach(col => {
+                    columnDefaultValue[col.name] = null;
+                });
+            }
             this.results.forEach((valueFromFirstTable) => {
                 valueMatchedFromSecondTable = [];
                 if (table2Index === 1) {
@@ -259,12 +275,13 @@ export class Join {
     }
 
     private checkJoinQuery_(jointblInfo: JoinTableInfo, qry: IJoinQuery) {
+        if (qry.store) return null;
+
         const table1 = jointblInfo.table1;
         const table2 = jointblInfo.table2;
         const tableSchemaOf1stTable = this.getTable(table1.table);
         const tableSchemaOf2ndTable = this.getTable(table2.table);
         let err: LogHelper;
-
         // check on info & with info 
         if (qry.with !== table2.table) {
             err = new LogHelper(ERROR_TYPE.InvalidJoinQuery,
@@ -273,7 +290,6 @@ export class Join {
         }
 
         // check for column existance
-
         if (tableSchemaOf1stTable.columns.find(q => q.name === table1.column) == null) {
             err = new LogHelper(ERROR_TYPE.InvalidJoinQuery,
                 `column ${table1.column} does not exist in table ${table1.table}`

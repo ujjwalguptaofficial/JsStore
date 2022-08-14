@@ -1,11 +1,18 @@
 import { Select } from "./index";
 import { LogHelper, promiseReject } from "@/worker/utils";
-import { ERROR_TYPE, IOrderQuery, promise } from "@/common";
+import { ERROR_TYPE, IOrderQuery, promise, promiseResolve } from "@/common";
 import { getCursorOnSuccess } from "./where";
 
 export const executeWhereUndefinedLogic = function (this: Select) {
     let cursorRequest: IDBRequest;
-    const orderQuery = this.query.order;
+    const query = this.query;
+    const store = query.store;
+    if (store) {
+        this.results = store as any[];
+        this.setLimitAndSkipEvaluationAtEnd_();
+        return promiseResolve();
+    }
+    const orderQuery = query.order;
     const objectStore = this.objectStore;
     if (orderQuery && (orderQuery as IOrderQuery).idbSorting !== false && (orderQuery as IOrderQuery).by) {
         if (objectStore.indexNames.contains((orderQuery as IOrderQuery).by as string)) {
