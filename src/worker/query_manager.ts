@@ -72,80 +72,82 @@ export class QueryManager {
     executeQuery(request: WebWorkerRequest, cb: () => Promise<any>) {
         let queryResult: Promise<any>;
         const query = request.query;
+        const ctx = this;
+        const idbutil = ctx.util;
         switch (request.name) {
             case API.OpenDb:
                 cb();
-                queryResult = this.openDb(query);
+                queryResult = ctx.openDb(query);
                 break;
             case API.InitDb:
                 cb();
-                queryResult = this.initDb(query);
+                queryResult = ctx.initDb(query);
                 break;
             case API.CloseDb:
                 cb();
-                queryResult = this.closeDb();
+                queryResult = ctx.closeDb();
                 break;
             case API.Insert:
-                queryResult = new Insert(query, this.util).
+                queryResult = new Insert(query, idbutil).
                     execute(cb);
                 break;
             case API.Select:
-                queryResult = new Select(query, this.util).
+                queryResult = new Select(query, idbutil).
                     execute(cb);
                 break;
             case API.Count:
-                queryResult = new Count(query, this.util).
+                queryResult = new Count(query, idbutil).
                     execute(cb);
                 break;
             case API.Update:
-                queryResult = new Update(query, this.util).
+                queryResult = new Update(query, idbutil).
                     execute(cb);
                 break;
             case API.Intersect:
                 cb();
-                queryResult = new Intersect(query, this.util).
+                queryResult = new Intersect(query, idbutil).
                     execute();
                 break;
             case API.DropDb:
                 cb();
-                queryResult = this.dropDb();
+                queryResult = ctx.dropDb();
                 break;
             case API.Terminate:
                 cb();
-                queryResult = this.terminate();
+                queryResult = ctx.terminate();
                 break;
             case API.Union:
                 cb();
-                queryResult = new Union(query, this.util).
+                queryResult = new Union(query, idbutil).
                     execute();
                 break;
             case API.Remove:
-                queryResult = new Remove(query, this.util).
+                queryResult = new Remove(query, idbutil).
                     execute(cb);
                 break;
             case API.Clear:
-                queryResult = new Clear(query, this.util).
+                queryResult = new Clear(query, idbutil).
                     execute(cb);
                 break;
             case API.Transaction:
-                queryResult = new Transaction(query, this.util).
+                queryResult = new Transaction(query, idbutil).
                     execute(cb);
                 break;
             case API.Get:
                 cb();
-                queryResult = MetaHelper.get(query as string, this.util);
+                queryResult = MetaHelper.get(query as string, idbutil);
                 break;
             case API.Set:
                 cb();
-                queryResult = MetaHelper.set(query.key, query.value, this.util);
+                queryResult = MetaHelper.set(query.key, query.value, idbutil);
                 break;
             case API.ImportScripts:
                 cb();
-                queryResult = this.importScripts_(request);
+                queryResult = ctx.importScripts_(request);
                 break;
             case API.ChangeLogStatus:
                 cb();
-                this.logger.status = query;
+                ctx.logger.status = query;
                 queryResult = Promise.resolve();
                 break;
             case API.Middleware:
@@ -156,7 +158,7 @@ export class QueryManager {
                         new LogHelper(ERROR_TYPE.InvalidMiddleware, query)
                     );
                 }
-                this.middlewares.push(query);
+                ctx.middlewares.push(query);
                 return promiseResolve();
             default:
                 if (process.env.NODE_ENV !== 'production') {
@@ -164,11 +166,11 @@ export class QueryManager {
                 }
                 queryResult = promiseResolve();
         }
-        this.logger.log(`Executing query ${request.name} in web worker`);
+        ctx.logger.log(`Executing query ${request.name} in web worker`);
         return queryResult;
     }
 
-    private callResultMiddleware(middlewares: any[], result) {
+    private callMiddleware_(middlewares: any[], result?) {
         return promise<any>((res) => {
             let index = 0;
             const lastIndex = (getLength(middlewares) as any) - 1;
@@ -190,25 +192,6 @@ export class QueryManager {
             callNextMiddleware();
         });
     }
-    private callBeforeMiddleware(middlewares: any[]) {
-        return promise<any>((res) => {
-            let index = 0;
-            const lastIndex = (getLength(middlewares) as any) - 1;
-            const callNextMiddleware = () => {
-                if (index <= lastIndex) {
-                    let promiseResult = middlewares[index++]();
-                    if (!(promiseResult instanceof Promise)) {
-                        promiseResult = promiseResolve(promiseResult);
-                    }
-                    promiseResult.then(callNextMiddleware);
-                }
-                else {
-                    res();
-                }
-            };
-            callNextMiddleware();
-        });
-    }
 
     run(request: WebWorkerRequest) {
         let onResultCallback = [];
@@ -225,9 +208,9 @@ export class QueryManager {
         };
         this.executeMiddleware_(request).then(_ => {
             return this.executeQuery(request, () => {
-                return this.callBeforeMiddleware(beforeExecuteCallback);
+                return this.callMiddleware_(beforeExecuteCallback);
             }).then((result) => {
-                return this.callResultMiddleware(onResultCallback, result).then(modifiedResult => {
+                return this.callMiddleware_(onResultCallback, result).then(modifiedResult => {
                     this.returnResult_({
                         result: modifiedResult
                     });
