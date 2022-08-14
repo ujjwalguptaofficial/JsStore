@@ -10,7 +10,7 @@ export const ERROR_TYPE = {
     NotArray: "not_array",
     NoValueSupplied: "no_value_supplied",
     ColumnNotExist: "column_not_exist",
-    EnableSearchOff: "enable_search_off",
+    NoIndexFound: "no_index_found",
     InvalidOp: "invalid_operator",
     NullValue: "null_value",
     WrongDataType: "wrong_data_type",

@@ -70,8 +70,8 @@ export class LogHelper implements IError {
                     `Column '${info['column']}' in order query does not exist` :
                     `Column '${info['column']}' does not exist`;
             },
-            [ERROR_TYPE.EnableSearchOff]() {
-                errMsg = "Search is turned off for the Column '" + info['column'] + "'";
+            [ERROR_TYPE.NoIndexFound]() {
+                errMsg = "No index found for column '" + info['column'] + "'. Query can not be executed without index.";
             },
             [ERROR_TYPE.NullValue]() {
                 errMsg = "Null value is not allowed for column '" + info['ColumnName'] + "'";

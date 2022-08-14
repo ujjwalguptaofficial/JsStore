@@ -51,10 +51,7 @@ describe('Test Select Api', function () {
                 emailId: 'uk@gmail.com'
             }
         }).catch(function (err) {
-            var error = {
-                message: "Column 'emailId' does not exist",
-                type: "column_not_exist"
-            };
+            var error = { message: "No index found for column 'emailId'. Query can not be executed without index.", type: 'no_index_found' };
             expect(err).to.be.an('object').eql(error);
             done();
         })
@@ -67,10 +64,7 @@ describe('Test Select Api', function () {
                 invalidColumn: 'invalidColumn'
             }
         }).catch(function (err) {
-            var error = {
-                message: "Search is turned off for the Column 'invalidColumn'",
-                type: "enable_search_off"
-            };
+            var error = { message: "No index found for column 'invalidColumn'. Query can not be executed without index.", type: 'no_index_found' };
             expect(err).to.be.an('object').eql(error);
             done();
         })

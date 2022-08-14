@@ -31,10 +31,7 @@ describe('Test update Api', function () {
                 CustomerId: 1
             }
         }).catch(function (err) {
-            var error = {
-                message: "Column 'CustomerId' does not exist",
-                type: "column_not_exist"
-            };
+            var error = { message: "No index found for column 'CustomerId'. Query can not be executed without index.", type: 'no_index_found' };
             expect(err).to.be.an('object').eql(error);
             done();
         })
