@@ -216,7 +216,7 @@ export interface IErrorType {
     NotArray: "not_array";
     NoValueSupplied: "no_value_supplied";
     ColumnNotExist: "column_not_exist";
-    NoIndexFound: "no_index_found",
+    NoIndexFound: "no_index_found";
     InvalidOp: "invalid_operator";
     NullValue: "null_value";
     WrongDataType: "wrong_data_type";
