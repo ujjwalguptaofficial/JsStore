@@ -159,7 +159,7 @@ export interface ISelectQuery {
     distinct?: boolean;
     case?: { [columnName: string]: [ICaseOption] };
     flatten?: string[];
-    store?: any[] | { [tableName: string]: any[] };
+    store?: any[];
     meta?: {
         primaryKey?: string;
     }
