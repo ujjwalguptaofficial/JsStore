@@ -11,7 +11,7 @@ interface JoinQueryWithInfo extends IJoinQuery {
     joinTableInfo: JoinTableInfo
 }
 
-export class Join {
+class Join {
 
     private joinQueryStack_: JoinQueryWithInfo[] = [];
     private currentQueryStackIndex_ = 0;
@@ -47,8 +47,9 @@ export class Join {
         if (tableName) {
             tablesToFetch.push(tableName);
         }
-        for (let i = 0, length = this.joinQueryStack_.length; i < length; i++) {
-            const item = this.joinQueryStack_[i];
+        const joinQueryStack = this.joinQueryStack_;
+        for (let i = 0, length = joinQueryStack.length; i < length; i++) {
+            const item = joinQueryStack[i];
             let jointblInfo = this.getJoinTableInfo_(item.on);
             // table 1 is fetched & table2 needs to be fetched for join
             if (item.with === jointblInfo.table1.table) {
@@ -62,7 +63,7 @@ export class Join {
             if (err) {
                 return promiseReject(err);
             }
-            this.joinQueryStack_[i].joinTableInfo = jointblInfo;
+            joinQueryStack[i].joinTableInfo = jointblInfo;
             if (item.with) {
                 tablesToFetch.push(item.with)
             }
@@ -86,77 +87,74 @@ export class Join {
                 };
             });
             this.tablesFetched.push(
-                this.joinQueryStack_[0].joinTableInfo.table1.table
+                joinQueryStack[0].joinTableInfo.table1.table
             );
             return this.startExecutingJoinLogic_();
         });
     }
 
     private onJoinQueryFinished_() {
-        // const query = this.query;
-        if (this.results.length > 0) {
-
-            try {
-                let results = [];
-                const tables = Object.keys(this.results[0]);
-                const tablesLength = tables.length;
-                const mapWithAlias = (query: IJoinQuery, value: object) => {
-                    if (query.as != null) {
-                        for (const key in query.as) {
-                            if (value[(query.as as any)[key]] === undefined) {
-                                value[(query.as as any)[key]] = value[key];
-                                delete value[key];
-                            }
+        if (this.results.length === 0) return;
+        const selectApi = this.select;
+        try {
+            let results = [];
+            const tables = getKeys(this.results[0]);
+            const tablesLength = tables.length;
+            const mapWithAlias = (query: IJoinQuery, value: object) => {
+                if (query.as != null) {
+                    for (const key in query.as) {
+                        if (value[(query.as as any)[key]] === undefined) {
+                            value[(query.as as any)[key]] = value[key];
+                            delete value[key];
                         }
                     }
-                    return value;
-                };
-                this.results.forEach((result) => {
-                    let data = result["0"]; // first table data
-                    for (let i = 1; i < tablesLength; i++) {
-                        const query = this.joinQueryStack_[i - 1];
-                        data = { ...data, ...mapWithAlias(query, result[i]) };
-                    }
-                    results.push(data);
-                });
-                this.select['results'] = results;
-                this.select.setLimitAndSkipEvaluationAtEnd_();
-                this.select.query.flatten = null;
-                if (process.env.NODE_ENV !== 'production') {
-                    try {
-                        this.select.processOrderBy();
-                    }
-                    catch (ex) {
-                        return promiseReject(
-                            new LogHelper(ERROR_TYPE.InvalidOrderQuery, ex.message)
-                        );
-                    }
                 }
-                else {
-                    this.select.processOrderBy();
+                return value;
+            };
+            this.results.forEach((result) => {
+                let data = result["0"]; // first table data
+                for (let i = 1; i < tablesLength; i++) {
+                    const query = this.joinQueryStack_[i - 1];
+                    data = { ...data, ...mapWithAlias(query, result[i]) };
                 }
-
-                if (process.env.NODE_ENV !== 'production') {
-                    try {
-                        this.select.processGroupDistinctAggr();
-                    }
-                    catch (ex) {
-                        return promiseReject(
-                            new LogHelper(ERROR_TYPE.InvalidGroupQuery, ex.message)
-                        );
-                    }
+                results.push(data);
+            });
+            selectApi['results'] = results;
+            selectApi.setLimitAndSkipEvaluationAtEnd_();
+            selectApi.query.flatten = null;
+            if (process.env.NODE_ENV !== 'production') {
+                try {
+                    selectApi.processOrderBy();
                 }
-                else {
-                    this.select.processGroupDistinctAggr();
+                catch (ex) {
+                    return promiseReject(
+                        new LogHelper(ERROR_TYPE.InvalidOrderQuery, ex.message)
+                    );
                 }
             }
-            catch (ex) {
-                return promiseReject(
-                    new LogHelper(ERROR_TYPE.InvalidJoinQuery, ex.message)
-                );
+            else {
+                selectApi.processOrderBy();
+            }
+
+            if (process.env.NODE_ENV !== 'production') {
+                try {
+                    selectApi.processGroupDistinctAggr();
+                }
+                catch (ex) {
+                    return promiseReject(
+                        new LogHelper(ERROR_TYPE.InvalidGroupQuery, ex.message)
+                    );
+                }
+            }
+            else {
+                selectApi.processGroupDistinctAggr();
             }
         }
-        return;
+        catch (ex) {
+            return promiseReject(
+                new LogHelper(ERROR_TYPE.InvalidJoinQuery, ex.message)
+            );
+        }
     }
 
     private startExecutingJoinLogic_() {

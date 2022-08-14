@@ -1,5 +1,5 @@
 import { Select } from "./";
-import { removeSpace, getDataType, getError, LogHelper } from "@/worker/utils";
+import { removeSpace, getDataType, LogHelper } from "@/worker/utils";
 import { ERROR_TYPE, DATA_TYPE, ICaseOption, IColumn, IOrderQuery } from "@/common";
 
 export const processGroupDistinctAggr = function (this: Select) {
@@ -88,36 +88,6 @@ const compareDateInAsc_ = (a: Date, b: Date) => {
     return a.getTime() - b.getTime();
 }
 
-const getValInDesc_ = function (this: Select, value1, value2, caseQuery: { [columnName: string]: [ICaseOption] }) {
-    for (const columnName in caseQuery) {
-        this.thenEvaluator.setCaseAndValue(caseQuery, value1);
-        const column1 = this.thenEvaluator.setColumn(columnName).evaluate();
-        this.thenEvaluator.setCaseAndValue(caseQuery, value2);
-        const column2 = this.thenEvaluator.setColumn(columnName).evaluate();
-        switch (typeof value1[column1]) {
-            case DATA_TYPE.String:
-                return compareStringInDesc_(value1[column1], value2[column2]);
-            default:
-                return compareNumberInDesc_(value1[column1], value2[column2]);
-        }
-    }
-}
-
-const getValInAsc_ = function (this: Select, value1, value2, caseQuery: { [columnName: string]: [ICaseOption] }) {
-    for (const columnName in caseQuery) {
-        this.thenEvaluator.setCaseAndValue(caseQuery, value1);
-        const column1 = this.thenEvaluator.setColumn(columnName).evaluate();
-        this.thenEvaluator.setCaseAndValue(caseQuery, value2);
-        const column2 = this.thenEvaluator.setColumn(columnName).evaluate();
-        switch (typeof value1[column1]) {
-            case DATA_TYPE.String:
-                return compareStringinAsc_(value1[column1], value2[column2]);
-            default:
-                return compareNumberinAsc_(value1[column1], value2[column2]);
-        }
-    }
-}
-
 const getValueComparer_ = (column: IColumn, order: IOrderQuery): (a, b) => number => {
     switch (column.dataType) {
         case DATA_TYPE.String:
@@ -135,17 +105,30 @@ const getValueComparer_ = (column: IColumn, order: IOrderQuery): (a, b) => numbe
 const orderBy_ = function (this: Select, order: IOrderQuery) {
     order.type = getOrderType_(order.type);
     let orderColumn = order.by;
+    const thenEvaluator = this.thenEvaluator;
     if (orderColumn != null && typeof orderColumn === DATA_TYPE.Object) {
-        if (order.type === "asc") {
-            this.results.sort((a, b) => {
-                return getValInAsc_.call(this, a, b, orderColumn as any);
-            });
-        }
-        else {
-            this.results.sort((a, b) => {
-                return getValInDesc_.call(this, a, b, orderColumn as any);
-            });
-        }
+        const caseQuery = orderColumn as { [columnName: string]: [ICaseOption] };
+        const getValInAscDesc = (stringComparer, numberComparer) => {
+            return (value1, value2) => {
+                for (const columnName in caseQuery) {
+                    thenEvaluator.setCaseAndValue(caseQuery, value1);
+                    const column1 = thenEvaluator.setColumn(columnName).evaluate();
+                    thenEvaluator.setCaseAndValue(caseQuery, value2);
+                    const column2 = thenEvaluator.setColumn(columnName).evaluate();
+                    switch (typeof value1[column1]) {
+                        case DATA_TYPE.String:
+                            return stringComparer(value1[column1], value2[column2]);
+                        default:
+                            return numberComparer(value1[column1], value2[column2]);
+                    }
+                }
+            }
+        };
+        let sortMethod = order.type === 'asc' ?
+            getValInAscDesc(compareStringinAsc_, compareNumberinAsc_) :
+            getValInAscDesc(compareStringInDesc_, compareNumberInDesc_);
+
+        this.results.sort(sortMethod);
     }
     else {
         const columnInfo = getOrderColumnInfo.call(this, orderColumn as string);
@@ -158,11 +141,11 @@ const orderBy_ = function (this: Select, order: IOrderQuery) {
                 });
             }
             else {
-                this.thenEvaluator.setCaseAndColumn({ [orderColumn as string]: order.case }, orderColumn as string);
+                thenEvaluator.setCaseAndColumn({ [orderColumn as string]: order.case }, orderColumn as string);
                 this.results.sort((a, b) => {
                     return orderMethod(
-                        this.thenEvaluator.setValue(a).evaluate(),
-                        this.thenEvaluator.setValue(b).evaluate()
+                        thenEvaluator.setValue(a).evaluate(),
+                        thenEvaluator.setValue(b).evaluate()
                     );
                 });
             }
@@ -246,14 +229,11 @@ export const processAggregateQry = function (this: Select) {
         return result;
     };
     const getAvg = () => {
-        let result = 0;
-        for (const i in datas) {
-            result += datas[i][columnToAggregate];
-        }
-        return result / datasLength;
+        return getSum() / datasLength;
     };
-    for (const prop in this.query.aggregate) {
-        const aggregateColumn = this.query.aggregate[prop];
+    const aggregateQry = this.query.aggregate;
+    for (const prop in aggregateQry) {
+        const aggregateColumn = aggregateQry[prop];
         const aggregateValType = getDataType(aggregateColumn);
         let aggregateCalculator;
         switch (prop) {
@@ -266,7 +246,7 @@ export const processAggregateQry = function (this: Select) {
             case 'sum':
                 aggregateCalculator = getSum; break;
             case 'avg':
-                aggregateCalculator = getAvg; break;
+                aggregateCalculator = getAvg;
         }
         switch (aggregateValType) {
             case DATA_TYPE.String:
