@@ -74,6 +74,10 @@ export class QueryManager {
         const query = request.query;
         const ctx = this;
         const idbutil = ctx.util;
+        const callAPI = (api: typeof Select, cb?: () => Promise<any>) => {
+            queryResult = new api(query, idbutil).
+                execute(cb);
+        }
         switch (request.name) {
             case API.OpenDb:
                 cb();
@@ -88,25 +92,20 @@ export class QueryManager {
                 queryResult = ctx.closeDb();
                 break;
             case API.Insert:
-                queryResult = new Insert(query, idbutil).
-                    execute(cb);
+                callAPI(Insert as any, cb);
                 break;
             case API.Select:
-                queryResult = new Select(query, idbutil).
-                    execute(cb);
+                callAPI(Select as any, cb);
                 break;
             case API.Count:
-                queryResult = new Count(query, idbutil).
-                    execute(cb);
+                callAPI(Count as any, cb);
                 break;
             case API.Update:
-                queryResult = new Update(query, idbutil).
-                    execute(cb);
+                callAPI(Update as any, cb);
                 break;
             case API.Intersect:
                 cb();
-                queryResult = new Intersect(query, idbutil).
-                    execute();
+                callAPI(Intersect as any);
                 break;
             case API.DropDb:
                 cb();
@@ -118,20 +117,16 @@ export class QueryManager {
                 break;
             case API.Union:
                 cb();
-                queryResult = new Union(query, idbutil).
-                    execute();
+                callAPI(Union as any);
                 break;
             case API.Remove:
-                queryResult = new Remove(query, idbutil).
-                    execute(cb);
+                callAPI(Remove as any, cb);
                 break;
             case API.Clear:
-                queryResult = new Clear(query, idbutil).
-                    execute(cb);
+                callAPI(Clear as any, cb);
                 break;
             case API.Transaction:
-                queryResult = new Transaction(query, idbutil).
-                    execute(cb);
+                callAPI(Transaction as any, cb);
                 break;
             case API.Get:
                 cb();
