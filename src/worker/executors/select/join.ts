@@ -189,7 +189,7 @@ class Join {
 
     private jointables(joinQuery: JoinQueryWithInfo, jointblInfo: JoinTableInfo, secondtableData: any[]) {
         const joinType = joinQuery.type;
-        const results = [];
+        const output = [];
         const column1 = jointblInfo.table1.column;
         const column2 = jointblInfo.table2.column;
         const table1Index = this.tablesFetched.indexOf(jointblInfo.table1.table);
@@ -199,8 +199,8 @@ class Join {
             this.results.forEach(valueFromFirstTable => {
                 secondtableData.forEach((valueFromSecondTable) => {
                     if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
-                        results[index] = { ...valueFromFirstTable };
-                        results[index++][table2Index] = valueFromSecondTable;
+                        output[index] = { ...valueFromFirstTable };
+                        output[index++][table2Index] = valueFromSecondTable;
                     }
                 });
             });
@@ -242,8 +242,8 @@ class Join {
                     valueMatchedFromSecondTable = [columnDefaultValue];
                 }
                 valueMatchedFromSecondTable.forEach(function (value) {
-                    results[index] = { ...valueFromFirstTable };
-                    results[index++][table2Index] = value;
+                    output[index] = { ...valueFromFirstTable };
+                    output[index++][table2Index] = value;
                 });
             });
         };
@@ -253,7 +253,7 @@ class Join {
             default:
                 performInnerJoin();
         }
-        this.results = results;
+        this.results = output;
     }
 
     private getJoinTableInfo_(joinOn: string) {

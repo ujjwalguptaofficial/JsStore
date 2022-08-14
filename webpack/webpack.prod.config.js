@@ -2,6 +2,7 @@ const path = require('path');
 const baseConfig = require('./webpack.base.config');
 const { merge } = require('webpack-merge');
 var webpack = require('webpack');
+const CompressionPlugin = require("compression-webpack-plugin");
 
 function createConfigsForAllLibraryTarget() {
     const libraryTarget = [{
@@ -20,7 +21,13 @@ function createConfigsForAllLibraryTarget() {
                 libraryTarget: target.type
             },
             plugins: [
-
+                ...(
+                    target.type === 'var' ?
+                        [new CompressionPlugin({
+                            test: /jsstore/
+                        })] :
+                        []
+                )
             ],
             mode: "production",
             devtool: 'source-map',

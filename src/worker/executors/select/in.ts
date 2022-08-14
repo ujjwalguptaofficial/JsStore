@@ -4,13 +4,11 @@ import { BaseFetch } from "../base_fetch";
 import { executeLimitForWhere_, executeSimpleForWhere_, getCursorOnSuccess } from "./where";
 import { executeSkipAndLimitForWhere_, executeSkipForWhere_ } from "./regex";
 
-
-
 export const executeInLogic = function (this: BaseFetch, column, values) {
     let skip = this.skipRecord;
     const skipOrPush = (val) => {
         if (skip === 0) {
-            (this as Select).pushResult(val);
+            (this as Select)['pushResult'](val);
         }
         else {
             --skip;
