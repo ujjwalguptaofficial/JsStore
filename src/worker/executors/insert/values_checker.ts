@@ -81,7 +81,7 @@ export class ValuesChecker {
         }
     }
 
-    private getError(error: ERROR_TYPE, details: object) {
+    private getError(error: string, details: object) {
         return new LogHelper(error, details);
     }
 }

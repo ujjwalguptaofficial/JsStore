@@ -1,7 +1,7 @@
 import { ERROR_TYPE, IError } from "@/common";
 
 export class LogHelper implements IError {
-    type: ERROR_TYPE;
+    type: string;
     message: string;
     private info_: any;
 
@@ -13,7 +13,7 @@ export class LogHelper implements IError {
         }
     }
 
-    constructor(type: ERROR_TYPE, info?) {
+    constructor(type: string, info?) {
         this.type = type;
         this.info_ = info;
         this.message = this.getMsg_();
@@ -39,85 +39,104 @@ export class LogHelper implements IError {
 
     private getMsg_() {
         let errMsg: string;
-        switch (this.type) {
-            case ERROR_TYPE.NotArray:
+        const info = this.info_;
+        const errorHandler = {
+            [ERROR_TYPE.NotArray]() {
                 errMsg = "Supplied value is not an array";
-                break;
-            case ERROR_TYPE.UndefinedColumn:
+            },
+            [ERROR_TYPE.UndefinedColumn]() {
                 errMsg = "Column is undefined in Where";
-                break;
-            case ERROR_TYPE.UndefinedValue:
+            },
+            [ERROR_TYPE.UndefinedValue]() {
                 errMsg = "Value is undefined in Where";
-                break;
-            case ERROR_TYPE.UndefinedColumnName:
-                errMsg = "Column name is undefined '" + this.info_['TableName'] + "'";
-                break;
-            case ERROR_TYPE.UndefinedDbName:
+            },
+            [ERROR_TYPE.UndefinedColumnName]() {
+                errMsg = "Column name is undefined '" + info['TableName'] + "'";
+            },
+            [ERROR_TYPE.UndefinedDbName]() {
                 errMsg = "Database name is not supplied";
-                break;
-            case ERROR_TYPE.UndefinedColumnValue:
+            },
+            [ERROR_TYPE.UndefinedColumnValue]() {
                 errMsg = "Column value is undefined";
-                break;
-            case ERROR_TYPE.NoValueSupplied:
+            },
+            [ERROR_TYPE.NoValueSupplied]() {
                 errMsg = "No value is supplied";
-                break;
-            case ERROR_TYPE.InvalidOp:
-                errMsg = "Invalid Op Value '" + this.info_['Op'] + "'";
-                break;
-            case ERROR_TYPE.ColumnNotExist:
-                errMsg = this.info_['isOrder'] ?
-                    `Column '${this.info_['column']}' in order query does not exist` :
-                    `Column '${this.info_['column']}' does not exist`;
-                break;
-            case ERROR_TYPE.EnableSearchOff:
-                errMsg = "Search is turned off for the Column '" + this.info_['column'] + "'";
-                break;
-            case ERROR_TYPE.NullValue:
-                errMsg = "Null value is not allowed for column '" + this.info_['ColumnName'] + "'";
-                break;
-            case ERROR_TYPE.WrongDataType:
-                errMsg = "Supplied value for column '" + this.info_['column'] +
+            },
+            [ERROR_TYPE.InvalidOp]() {
+                errMsg = "Invalid Op Value '" + info['Op'] + "'";
+            },
+            [ERROR_TYPE.ColumnNotExist]() {
+                errMsg = info['isOrder'] ?
+                    `Column '${info['column']}' in order query does not exist` :
+                    `Column '${info['column']}' does not exist`;
+            },
+            [ERROR_TYPE.EnableSearchOff]() {
+                errMsg = "Search is turned off for the Column '" + info['column'] + "'";
+            },
+            [ERROR_TYPE.NullValue]() {
+                errMsg = "Null value is not allowed for column '" + info['ColumnName'] + "'";
+            },
+            [ERROR_TYPE.WrongDataType]() {
+                errMsg = "Supplied value for column '" + info['column'] +
                     "' have wrong data type";
-                break;
-            case ERROR_TYPE.TableNotExist:
-                errMsg = "Table '" + this.info_['tableName'] + "' does not exist";
-                break;
-            case ERROR_TYPE.DbNotExist:
-                errMsg = `Database with name ${this.info_['dbName']} does not exist`;
-                break;
-            case ERROR_TYPE.NotObject:
+            },
+            [ERROR_TYPE.TableNotExist]() {
+                errMsg = "Table '" + info['tableName'] + "' does not exist";
+            },
+            [ERROR_TYPE.DbNotExist]() {
+                errMsg = `Database with name ${info['dbName']} does not exist`;
+            },
+            [ERROR_TYPE.NotObject]() {
                 errMsg = "supplied value is not object";
-                break;
-            case ERROR_TYPE.InvalidOp:
-                errMsg = "Invalid Config '" + this.info_['Config'] + " '";
-                break;
-            case ERROR_TYPE.DbBlocked:
+            },
+            [ERROR_TYPE.InvalidOp]() {
+                errMsg = "Invalid Config '" + info['Config'] + " '";
+            },
+            [ERROR_TYPE.DbBlocked]() {
                 errMsg = `database is blocked, cant be deleted right now`;
-                break;
-            case ERROR_TYPE.NullValueInWhere:
-                errMsg = `Null/undefined is not allowed in where. Column '${this.info_['column']}' has null`;
-                break;
-            case ERROR_TYPE.MethodNotExist:
-                errMsg = `method '${this.info_}' does not exist.`;
-                break;
-            case ERROR_TYPE.IndexedDbNotSupported:
+            },
+            [ERROR_TYPE.NullValueInWhere]() {
+                errMsg = `Null/undefined is not allowed in where. Column '${info['column']}' has null`;
+            },
+            [ERROR_TYPE.MethodNotExist]() {
+                errMsg = `method '${info}' does not exist.`;
+            },
+            [ERROR_TYPE.IndexedDbNotSupported]() {
                 errMsg = "Browser does not support indexeddb";
-                break;
-            case ERROR_TYPE.InvalidJoinQuery:
-            case ERROR_TYPE.InvalidGroupQuery:
-            case ERROR_TYPE.InvalidOrderQuery:
-            case ERROR_TYPE.ImportScriptsFailed:
-                errMsg = this.info_;
-                break;
-            case ERROR_TYPE.InvalidMiddleware:
-                errMsg = `No function ${this.info_} is found.`;
-                break;
-            default:
-                if (!this.type) {
-                    this.type = ERROR_TYPE.Unknown
-                }
-                errMsg = this.message;
-                break;
+            },
+            getInfo() {
+                errMsg = info;
+            },
+            [ERROR_TYPE.InvalidJoinQuery]() {
+                errorHandler.getInfo();
+            },
+            [ERROR_TYPE.ImportScriptsFailed]() {
+                errorHandler.getInfo();
+            },
+            [ERROR_TYPE.InvalidMiddleware]() {
+                errMsg = `No function ${info} is found.`;
+            },
+        };
+        if (process.env.NODE_ENV !== 'production') {
+            Object.assign(errorHandler, {
+                [ERROR_TYPE.InvalidOrderQuery]() {
+                    errorHandler.getInfo();
+                },
+                [ERROR_TYPE.InvalidGroupQuery]() {
+                    errorHandler.getInfo();
+                },
+            })
+        }
+        const errorType = this.type;
+        const method = errorHandler[errorType];
+        if (method) {
+            method();
+        }
+        else {
+            if (!errorType) {
+                this.type = ERROR_TYPE.Unknown
+            }
+            errMsg = this.message;
         }
         return errMsg;
     }

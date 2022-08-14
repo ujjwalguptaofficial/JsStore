@@ -2,13 +2,12 @@
 import { ERROR_TYPE, IError } from "../common/index";
 
 export class LogHelper implements IError {
-    type: ERROR_TYPE;
-    name: ERROR_TYPE;
+    type: string;
     message: string;
     private _info: any;
     status: boolean;
 
-    constructor(type: ERROR_TYPE, info?) {
+    constructor(type: string, info?) {
         this.type = type;
         this._info = info;
         this.message = this.getMsg();

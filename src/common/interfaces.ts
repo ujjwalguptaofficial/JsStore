@@ -2,7 +2,7 @@ import { ERROR_TYPE, CONNECTION_STATUS } from "./enums";
 import { SqlWebResult } from "./types";
 
 export interface IError {
-    type: ERROR_TYPE;
+    type: string;
     message: string;
 }
 
@@ -194,7 +194,7 @@ export interface ISqlWeb {
 
 export interface IDbStatus {
     conStatus: CONNECTION_STATUS;
-    lastError?: ERROR_TYPE;
+    lastError?: IErrorType;
 }
 
 export interface IPlugin {
@@ -204,4 +204,37 @@ export interface IPlugin {
 export interface IDbInfo {
     name: string;
     version: number;
+}
+
+export interface IErrorType {
+    InvalidUpdateColumn: "invalid_update_column",
+    UndefinedColumn: "undefined_column",
+    UndefinedValue: "undefined_value",
+    UndefinedColumnName: "undefined_column_name",
+    UndefinedDbName: "undefined_database_name",
+    UndefinedColumnValue: "undefined_column_value",
+    NotArray: "not_array",
+    NoValueSupplied: "no_value_supplied",
+    ColumnNotExist: "column_not_exist",
+    EnableSearchOff: "enable_search_off",
+    InvalidOp: "invalid_operator",
+    NullValue: "null_value",
+    WrongDataType: "wrong_data_type",
+    TableNotExist: "table_not_exist",
+    DbNotExist: "db_not_exist",
+    ConnectionAborted: "connection_aborted",
+    ConnectionClosed: "connection_closed",
+    NotObject: "not_object",
+    InvalidConfig: "invalid_config",
+    DbBlocked: "Db_blocked",
+    IndexedDbNotSupported: "indexeddb_not_supported",
+    NullValueInWhere: "null_value_in_where",
+    InvalidJoinQuery: 'invalid_join_query',
+    InvalidOrderQuery: 'invalid_order_query',
+    InvalidQuery: 'invalid_query',
+    InvalidGroupQuery: 'invalid_group_query',
+    ImportScriptsFailed: 'import_scripts_failed',
+    MethodNotExist: 'method_not_exist',
+    Unknown: "unknown",
+    InvalidMiddleware: "invalid_middleware"
 }
