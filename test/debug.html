@@ -39,17 +39,31 @@
         }
 
         async function selectDataFromStore() {
-            const data = await fetch("../test/static/Customers.json").then(response => {
+            const customers = await fetch("../test/static/Customers.json").then(response => {
+                return response.json()
+            });
+            const orders = await fetch("../test/static/Orders.json").then(response => {
                 return response.json()
             });
             const results = await jsstoreCon.select({
-                // from: "Customers",
-                store: data,
-                where: [{
-                    country: "Mexico"
-                }],
-                // meta: 'customerId'
-                // skip:10,
+                store: orders,
+                meta: {
+                    primaryKey: 'orderId'
+                },
+                join: {
+                    // with: "Customers",
+                    type: "inner",
+                    on: "A.customerId=B.customerId",
+                    as: {
+                        customerName: "name",
+                        contactName: "cName",
+                        customerId: "cId"
+                    },
+                    store: customers,
+                    meta: {
+                        primaryKey: 'customerId'
+                    },
+                }
 
             });
             console.table(results);

@@ -102,6 +102,10 @@ export interface IJoinQuery {
     as?: { [originalColumnName: string]: string };
     case?: { [columnName: string]: [ICaseOption] };
     flatten?: string[];
+    store?: any[];
+    meta?: {
+        primaryKey?: string;
+    }
 }
 
 export interface IWhereQueryOption {

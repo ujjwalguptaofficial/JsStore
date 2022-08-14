@@ -1,6 +1,6 @@
 import { Select } from "./";
 import { IJoinQuery, DATA_TYPE, ERROR_TYPE, ISelectQuery } from "@/common";
-import { getDataType, LogHelper, removeSpace, promiseReject } from "@/worker/utils";
+import { getDataType, LogHelper, removeSpace, promiseReject, getKeys } from "@/worker/utils";
 
 
 export const executeJoinQuery = function (this: Select) {
@@ -43,7 +43,10 @@ export class Join {
             [query.join as JoinQueryWithInfo] : query.join as JoinQueryWithInfo[];
         // get the data for first table
         const tableName = query.from;
-        const tablesToFetch = [tableName];
+        const tablesToFetch = [];
+        if (tableName) {
+            tablesToFetch.push(tableName);
+        }
         for (let i = 0, length = this.joinQueryStack_.length; i < length; i++) {
             const item = this.joinQueryStack_[i];
             let jointblInfo = this.getJoinTableInfo_(item.on);
@@ -60,10 +63,12 @@ export class Join {
                 return promiseReject(err);
             }
             this.joinQueryStack_[i].joinTableInfo = jointblInfo;
-            tablesToFetch.push(item.with)
+            if (item.with) {
+                tablesToFetch.push(item.with)
+            }
         }
 
-        if (!this.select.isTxQuery) {
+        if (!this.select.isTxQuery && tablesToFetch.length > 0) {
             this.select.util.createTransaction(tablesToFetch);
         }
 
@@ -71,14 +76,18 @@ export class Join {
             from: tableName,
             where: query.where,
             case: query.case,
-            flatten: query.flatten
+            flatten: query.flatten,
+            store: query.store,
+            meta: query.meta
         }).then(results => {
             this.results = results.map((item) => {
                 return {
                     [this.currentQueryStackIndex_]: item
                 };
             });
-            this.tablesFetched.push(tableName);
+            this.tablesFetched.push(
+                this.joinQueryStack_[0].joinTableInfo.table1.table
+            );
             return this.startExecutingJoinLogic_();
         });
     }
@@ -159,9 +168,11 @@ export class Join {
                     from: joinQuery.with,
                     where: joinQuery.where,
                     case: joinQuery.case,
-                    flatten: joinQuery.flatten
+                    flatten: joinQuery.flatten,
+                    store: joinQuery.store,
+                    meta: joinQuery.meta
                 }).then(results => {
-                    this.jointables(joinQuery.type, jointblInfo, results);
+                    this.jointables(joinQuery, jointblInfo, results);
                     this.tablesFetched.push(jointblInfo.table2.table);
                     ++this.currentQueryStackIndex_;
                     return this.startExecutingJoinLogic_();
@@ -178,8 +189,8 @@ export class Join {
         }
     }
 
-    private jointables(joinType: string, jointblInfo: JoinTableInfo, secondtableData: any[]) {
-
+    private jointables(joinQuery: JoinQueryWithInfo, jointblInfo: JoinTableInfo, secondtableData: any[]) {
+        const joinType = joinQuery.type;
         const results = [];
         const column1 = jointblInfo.table1.column;
         const column2 = jointblInfo.table2.column;
@@ -201,9 +212,16 @@ export class Join {
             let valueMatchedFromSecondTable: any[];
             let callBack;
             const columnDefaultValue = {};
-            this.getTable(jointblInfo.table2.table).columns.forEach(col => {
-                columnDefaultValue[col.name] = null;
-            });
+            if (joinQuery.store) {
+                getKeys(joinQuery.store).forEach(columnName => {
+                    columnDefaultValue[columnName] = null;
+                })
+            }
+            else {
+                this.getTable(jointblInfo.table2.table).columns.forEach(col => {
+                    columnDefaultValue[col.name] = null;
+                });
+            }
             this.results.forEach((valueFromFirstTable) => {
                 valueMatchedFromSecondTable = [];
                 if (table2Index === 1) {
@@ -259,12 +277,13 @@ export class Join {
     }
 
     private checkJoinQuery_(jointblInfo: JoinTableInfo, qry: IJoinQuery) {
+        if (qry.store) return null;
+
         const table1 = jointblInfo.table1;
         const table2 = jointblInfo.table2;
         const tableSchemaOf1stTable = this.getTable(table1.table);
         const tableSchemaOf2ndTable = this.getTable(table2.table);
         let err: LogHelper;
-
         // check on info & with info 
         if (qry.with !== table2.table) {
             err = new LogHelper(ERROR_TYPE.InvalidJoinQuery,
@@ -273,7 +292,6 @@ export class Join {
         }
 
         // check for column existance
-
         if (tableSchemaOf1stTable.columns.find(q => q.name === table1.column) == null) {
             err = new LogHelper(ERROR_TYPE.InvalidJoinQuery,
                 `column ${table1.column} does not exist in table ${table1.table}`
