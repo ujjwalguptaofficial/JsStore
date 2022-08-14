@@ -105,7 +105,7 @@ export interface IJoinQuery {
     store?: any[];
     meta?: {
         primaryKey?: string;
-    }
+    };
 }
 
 export interface IWhereQueryOption {
@@ -162,7 +162,7 @@ export interface ISelectQuery {
     store?: any[];
     meta?: {
         primaryKey?: string;
-    }
+    };
 }
 
 export interface IInsertQuery {
