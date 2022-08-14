@@ -1,7 +1,9 @@
 const path = require('path');
-const SmartBannerPlugin = require('smart-banner-webpack-plugin');
+const webpack = require('webpack');
 const banner = require('./../license');
 const CopyPlugin = require('copy-webpack-plugin');
+
+console.log('building for', process.env.NODE_ENV);
 
 module.exports = [{
     name: "jsstore",
@@ -23,12 +25,17 @@ module.exports = [{
         extensions: ['.ts'] // '' is needed to find modules like "jquery"
     },
     plugins: [
-        new SmartBannerPlugin(banner),
+        new webpack.BannerPlugin(banner),
         new CopyPlugin({
             patterns: [
                 { from: 'build_helper', to: '' },
                 { from: 'src/worker_injector', to: 'worker_injector' },
             ],
+        }),
+        new webpack.DefinePlugin({
+            'process.env.NODE_ENV': JSON.stringify(
+                process.env.NODE_ENV
+            )
         }),
     ]
 },
@@ -53,7 +60,12 @@ module.exports = [{
         extensions: ['.ts'] // '' is needed to find modules like "jquery"
     },
     plugins: [
-        new SmartBannerPlugin(banner)
+        new webpack.BannerPlugin(banner),
+        new webpack.DefinePlugin({
+            'process.env.NODE_ENV': JSON.stringify(
+                process.env.NODE_ENV
+            )
+        }),
     ]
 }
 ];

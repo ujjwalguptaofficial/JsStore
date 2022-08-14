@@ -1,6 +1,6 @@
 const path = require('path');
 const baseConfig = require('./webpack.base.config');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 var webpack = require('webpack');
 
 function createConfigsForAllLibraryTarget() {
@@ -20,9 +20,7 @@ function createConfigsForAllLibraryTarget() {
                 libraryTarget: target.type
             },
             plugins: [
-                // new webpack.DefinePlugin({
-                //     'process.env.NODE_ENV': JSON.stringify("dev")
-                // }),
+
             ],
             mode: "production",
             devtool: 'source-map',
