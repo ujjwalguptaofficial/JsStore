@@ -1,5 +1,5 @@
 import { Base } from "@executors/base";
-import { ITranscationQuery, WebWorkerRequest, ERROR_TYPE, ISelectQuery, API, IInsertQuery, IUpdateQuery, IRemoveQuery, ICountQuery, WebWorkerResult, promise } from "@/common";
+import { ITranscationQuery, WebWorkerRequest, ERROR_TYPE, API, WebWorkerResult, promise } from "@/common";
 import { IDBUtil } from "@worker/idbutil";
 import { promiseReject, LogHelper, variableFromPath } from "@worker/utils";
 import { Insert } from "@executors/insert";
@@ -7,7 +7,6 @@ import { Select } from "@executors/select";
 import { Count } from "@executors/count";
 import { Update } from "@executors/update";
 import { Remove } from "@executors/remove";
-import { DbMeta } from "@worker/model";
 import { IQueryExecutor } from "@/worker/interfaces";
 import { MetaHelper } from "@/worker/meta_helper";
 
@@ -62,35 +61,13 @@ export class Transaction extends Base {
 
     private startExecution_() {
         const query: ITranscationQuery = this.query as any;
-        const select = (qry: ISelectQuery) => {
-            return this.pushReq_({
-                name: API.Select,
-                query: qry
-            } as WebWorkerRequest);
-        };
-        const insert = (qry: IInsertQuery) => {
-            return this.pushReq_({
-                name: API.Insert,
-                query: qry
-            } as WebWorkerRequest);
-        };
-        const update = (qry: IUpdateQuery) => {
-            return this.pushReq_({
-                name: API.Update,
-                query: qry
-            } as WebWorkerRequest);
-        };
-        const remove = (qry: IRemoveQuery) => {
-            return this.pushReq_({
-                name: API.Remove,
-                query: qry
-            } as WebWorkerRequest);
-        };
-        const count = (qry: ICountQuery) => {
-            return this.pushReq_({
-                name: API.Count,
-                query: qry
-            } as WebWorkerRequest);
+        const createPusher = (api: any) => {
+            return (qry) => {
+                return this.pushReq_({
+                    name: api,
+                    query: qry
+                } as WebWorkerRequest);
+            }
         };
         const setResult = (key: string, value) => {
             this.results[key] = value;
@@ -114,9 +91,12 @@ export class Transaction extends Base {
             this,
             {
                 data: query.data,
-                insert: insert, select: select,
-                update: update, remove: remove,
-                count: count, setResult: setResult,
+                insert: createPusher(API.Insert),
+                select: createPusher(API.Select),
+                update: createPusher(API.Update),
+                remove: createPusher(API.Remove),
+                count: createPusher(API.Count),
+                setResult: setResult,
                 getResult: getResult, abort: abort,
                 start: start
             }
@@ -181,32 +161,29 @@ export class Transaction extends Base {
         let requestObj: IQueryExecutor;
         this.log(`executing request : ${request.name} `);
         const onReqFinished = this.onReqFinished_.bind(this);
-        const query = request.query
+        const query = request.query;
+
+        const callAPI = (api: typeof Select) => {
+            requestObj = new api(
+                query, this.util
+            );
+        };
+
         switch (request.name) {
             case API.Select:
-                requestObj = new Select(
-                    query, this.util
-                );
+                callAPI(Select);
                 break;
             case API.Insert:
-                requestObj = new Insert(
-                    query, this.util
-                );
+                callAPI(Insert as any);
                 break;
             case API.Update:
-                requestObj = new Update(
-                    query, this.util
-                );
+                callAPI(Update as any);
                 break;
             case API.Remove:
-                requestObj = new Remove(
-                    query, this.util
-                );
+                callAPI(Remove as any);
                 break;
             case API.Count:
-                requestObj = new Count(
-                    query, this.util
-                );
+                callAPI(Count as any);
                 break;
         }
         requestObj.isTxQuery = true;
