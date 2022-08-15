@@ -32,10 +32,47 @@
                 }).then(function (results) {
                     alert('data inserted')
                 })
+
             }
             else {
                 console.log('db opened');
             }
+        }
+
+        window.getPricyProductCount = async function (ctx) {
+
+            var allProducts;
+            ctx.insert({
+                into: 'Products',
+                values: ctx.data,
+                upsert: true
+            })
+
+            ctx.select({
+                from: 'Products',
+                meta: {
+                    primaryKey: 'productId'
+                },
+            }).then(result => {
+                allProducts = result.map(item => {
+                    item.pricy = item.price > 40
+                    return item;
+                })
+            });
+
+            ctx.select({
+                store: allProducts,
+                meta: {
+                    primaryKey: 'productId'
+                },
+                groupBy: 'pricy',
+                aggregate: {
+                    count: 'price'
+                }
+            }).then(results => {
+                ctx.setResult('products', results);
+            })
+            ctx.start();
         }
 
         async function selectDataFromStore() {
@@ -45,27 +82,17 @@
             const orders = await fetch("../test/static/Orders.json").then(response => {
                 return response.json()
             });
-            const results = await jsstoreCon.select({
-                store: orders,
-                meta: {
-                    primaryKey: 'orderId'
-                },
-                join: {
-                    // with: "Customers",
-                    type: "inner",
-                    on: "A.customerId=B.customerId",
-                    as: {
-                        customerName: "name",
-                        contactName: "cName",
-                        customerId: "cId"
-                    },
-                    store: customers,
-                    meta: {
-                        primaryKey: 'customerId'
-                    },
-                }
-
+            const products = await fetch("../test/static/Products.json").then(response => {
+                return response.json()
             });
+
+
+            const results = await jsstoreCon.transaction({
+                tables: ['Products'],
+                method: "getPricyProductCount",
+                data: products
+            });
+
             console.table(results);
         }
 

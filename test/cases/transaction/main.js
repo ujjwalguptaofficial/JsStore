@@ -30,6 +30,29 @@ describe('Test transaction', function () {
         })
     });
 
+    it('getPricyProductCount', function (done) {
+        var transaction_query = {
+            tables: ['Products'],
+            method: "getPricyProductCount"
+        }
+        con.transaction(transaction_query).then(function (results) {
+            const products = results.products;
+            // done(products.length);
+            expect(products).to.be.an('array').length(2);
+            products.forEach(element => {
+                if (element.pricy) {
+                    expect(element['count(price)']).to.equal(12);
+                }
+                else {
+                    expect(element['count(price)']).to.equal(65);
+                }
+            });
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
     it('simple insert', function (done) {
         var transaction_query = {
             tables: ['Customers'],

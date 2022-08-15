@@ -162,11 +162,11 @@ export class Select extends BaseFetch {
 
         };
         const processFirstQry = () => {
-            this.query.where = whereQuery.shift();
-            if (this.query.where[QUERY_OPTION.Or]) {
-                if (getLength(this.query.where) === 1) {
+            let whereQueryToProcess = whereQuery.shift();
+            if (whereQueryToProcess[QUERY_OPTION.Or]) {
+                if (getLength(whereQueryToProcess) === 1) {
                     operation = QUERY_OPTION.Or;
-                    this.query.where = this.query.where[QUERY_OPTION.Or] as any;
+                    whereQueryToProcess = whereQueryToProcess[QUERY_OPTION.Or] as any;
                 }
                 else {
                     operation = QUERY_OPTION.And;
@@ -175,6 +175,7 @@ export class Select extends BaseFetch {
             else {
                 operation = QUERY_OPTION.And;
             }
+            this.query.where = whereQueryToProcess;
             return this.processWhere_().then(onSuccess);
         };
         return processFirstQry();

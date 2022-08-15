@@ -78,3 +78,32 @@ function simpleUpdate(ctx) {
     ctx.start();
 
 }
+
+function getPricyProductCount(ctx) {
+    var allProducts;
+    ctx.select({
+        from: 'Products',
+    }).then(function (result) {
+        allProducts = result.map(item => {
+            item.pricy = item.price > 40
+            return item;
+        })
+
+        ctx.select({
+            store: allProducts,
+            meta: {
+                primaryKey: 'productId'
+            },
+            groupBy: 'pricy',
+            aggregate: {
+                count: 'price'
+            }
+        }).then(function (result) {
+            ctx.setResult('products', result);
+        })
+    })
+
+
+
+    ctx.start();
+}
