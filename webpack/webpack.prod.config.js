@@ -17,7 +17,7 @@ function createConfigsForAllLibraryTarget() {
             output: {
                 path: path.join(__dirname, "./../build"),
                 filename: target.name,
-                library: 'JsStore',
+                library: target.type === 'var' ? 'JsStore' : undefined,
                 libraryTarget: target.type
             },
             plugins: [
