@@ -135,20 +135,6 @@ class Join {
             else {
                 selectApi.processOrderBy();
             }
-
-            if (process.env.NODE_ENV !== 'production') {
-                try {
-                    selectApi.processGroupDistinctAggr();
-                }
-                catch (ex) {
-                    return promiseReject(
-                        new LogHelper(ERROR_TYPE.InvalidGroupQuery, ex.message)
-                    );
-                }
-            }
-            else {
-                selectApi.processGroupDistinctAggr();
-            }
         }
         catch (ex) {
             return promiseReject(
