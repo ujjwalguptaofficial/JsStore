@@ -120,13 +120,18 @@ describe('select join order test', function () {
                 expect(err).to.be.an('object').haveOwnProperty('type').equal('invalid_join_query');
             }
             else {
-                var error = { "message": "Cannot read property 'columns' of undefined", "type": "invalid_order_query" };
-                if (GetBrowserName().match(/chrome/i)) {
-                    expect(error).to.be.eql(err);
-                }
-                else {
-                    expect(err.type).to.be.eql(error.type);
-                }
+                var error = {
+                    "message": "Column 'Order' in order query is invalid. Please use '<table>.<column>' format for specifying a column in join query.",
+                    "type": "invalid_order_query"
+                };
+                expect(error).to.be.eql(err);
+                // var error = { "message": "Cannot read property 'columns' of undefined", "type": "invalid_order_query" };
+                // if (GetBrowserName().match(/chrome/i)) {
+                //     expect(error).to.be.eql(err);
+                // }
+                // else {
+                //     expect(err.type).to.be.eql(error.type);
+                // }
             }
             done();
         })

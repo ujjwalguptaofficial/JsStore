@@ -66,9 +66,14 @@ export class LogHelper implements IError {
                 errMsg = "Invalid Op Value '" + info['Op'] + "'";
             },
             [ERROR_TYPE.ColumnNotExist]() {
+                const column = info['column'];
                 errMsg = info['isOrder'] ?
-                    `Column '${info['column']}' in order query does not exist` :
-                    `Column '${info['column']}' does not exist`;
+                    (
+                        process.env.NODE_ENV !== 'production' && info.isJoin ?
+                            `Column '${column}' in order query is invalid. Please use '<table>.<column>' format for specifying a column in join query.` :
+                            `Column '${column}' in order query does not exist`
+                    ) :
+                    `Column '${column}' does not exist`;
             },
             [ERROR_TYPE.NoIndexFound]() {
                 errMsg = "No index found for column '" + info['column'] + "'. Query can not be executed without index.";

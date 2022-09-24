@@ -36,8 +36,13 @@ const getOrderColumnInfo = function (this: Select, orderColumn: string) {
         }
         else {
             const splittedByDot = removeSpace(orderColumn).split(".");
-            orderColumn = splittedByDot[1];
-            column = this.getColumnInfo(orderColumn, splittedByDot[0]);
+            const joinOrderColumn = splittedByDot[1];
+            if (process.env.NODE_ENV !== 'production' && joinOrderColumn == null) {
+                new LogHelper(ERROR_TYPE.ColumnNotExist,
+                    { column: orderColumn, isOrder: true, isJoin: true }
+                ).throw()
+            }
+            column = this.getColumnInfo(joinOrderColumn, splittedByDot[0]);
         }
     }
     if (column == null) {
