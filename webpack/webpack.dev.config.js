@@ -53,7 +53,7 @@ function createConfigsForAllLibraryTargetForWebWorker() {
             output: {
                 path: path.join(__dirname, "./../build"),
                 filename: target.name,
-                library: 'JsStoreWorker',
+                library: target.type === 'var' ? 'JsStoreWorker' : undefined,
                 libraryTarget: target.type
             },
             plugins: [

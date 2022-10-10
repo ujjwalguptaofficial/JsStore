@@ -1,0 +1,63 @@
+---
+name: mahal_intro.mahal
+description: Shows Welcome and important links
+dateCreated:
+---
+
+<html>
+<div class="mahal-app">
+	
+	
+</div>
+</html>
+
+<script>
+import { reactive, Component } from "mahal";
+import { initJsStore, StudentService } from "../db_services/index";
+import { Student } from "../model/student";
+
+export default class extends Component {
+    studentIdbService: StudentService;
+
+    constructor() {
+        super();
+        this.studentIdbService = new StudentService();
+    }
+
+    onInit() {
+        window["studentComp"] = this;
+        initJsStore();
+    }
+
+    insertIntoIdb(student: Student) {
+        return this.studentIdbService.addStudent(student);
+    }
+
+    getStudentsFromIndexedDb() {
+        return this.studentIdbService.getStudents();
+    }
+}
+</script>
+
+<style lang="scss">
+.mahal-app {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+.mahal-app_logo {
+    width: 200px;
+}
+.mahal-app_imp-links-label {
+    font-size: 18px;
+}
+.mahal-app_imp-links {
+    max-width: 300px;
+    font-size: 20px;
+    padding: 20px;
+    a {
+        color: #ffb431;
+        margin-left: 15px;
+    }
+}
+</style>

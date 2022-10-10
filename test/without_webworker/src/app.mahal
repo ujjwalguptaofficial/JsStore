@@ -1,0 +1,26 @@
+---
+name: app.mahal
+description: This component is the main parent component which is used to initiate the app.
+dateCreated:
+---
+
+<html>
+<div>
+	<Student />
+</div>
+</html>
+
+<script>
+import { Component, children } from "mahal";
+import Student from "@/components/student.mahal";
+
+@children({
+    Student,
+})
+export default class extends Component {
+    
+}
+</script>
+
+<style>
+</style>

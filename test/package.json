@@ -1,0 +1,13 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "files.js",
+  "scripts": {
+    "install:lib": "node installer.js",
+    "test:without:webworker": "cd without_webworker && npm run test:e2e",
+    "test:without:webworker:prod": "cd without_webworker && npm run test:e2e:prod"
+  },
+  "author": "",
+  "license": "ISC"
+}

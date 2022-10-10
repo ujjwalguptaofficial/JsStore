@@ -1,0 +1,57 @@
+{
+  "name": "mahal-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack serve --open --config config/webpack/dev.config.js",
+    "deploy": "cross-env NODE_ENV=production webpack --config config/webpack/prod.config.js",
+    "build": "cross-env NODE_ENV=development webpack --config config/webpack/prod.config.js",
+    "test:e2e": "npm run build && karma start tests/karma.conf.js",
+    "test:e2e:prod": "npm run deploy && karma start tests/karma.conf.js",
+    "test:unit": "cross-env BUILD_ENV=test mochapack --require ./tests/jsdom.setup.js --webpack-config config/webpack/dev.config.js \"tests/unit/**/*.test.(ts|js)\"  --full-trace"
+  },
+  "author": "",
+  "license": "",
+  "private": "true",
+  "dependencies": {
+    "mahal": "^1.5.0"
+  },
+  "devDependencies": {
+    "@mahaljs/test-utils": "^1.5.0",
+    "@mahaljs/webpack-loader": "^1.5.0",
+    "@types/chai": "^4.3.3",
+    "@types/mocha": "^9.1.1",
+    "chai": "^4.3.6",
+    "clean-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^10.2.4",
+    "cross-env": "^7.0.3",
+    "css-loader": "^6.5.1",
+    "css-minimizer-webpack-plugin": "^3.4.1",
+    "html-webpack-plugin": "^5.2.0",
+    "jsdom": "^20.0.0",
+    "karma": "^6.4.0",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^3.1.1",
+    "karma-mocha": "^2.0.1",
+    "karma-mocha-reporter": "^2.2.5",
+    "karma-typescript": "^5.5.3",
+    "mini-css-extract-plugin": "^2.5.3",
+    "mocha": "^10.0.0",
+    "mochapack": "^2.1.4",
+    "sass": "^1.49.0",
+    "sass-loader": "^12.4.0",
+    "style-loader": "^3.3.1",
+    "ts-loader": "^9.2.6",
+    "typescript": "^4.5.5",
+    "webpack": "^5.67.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.7.3",
+    "webpack-merge": "^5.8.0",
+    "webpack-node-externals": "^3.0.0"
+  },
+  "project": {
+    "framework": "mahal",
+    "language": "ts"
+  }
+}
