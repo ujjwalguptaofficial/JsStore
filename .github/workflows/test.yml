@@ -31,12 +31,12 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Install dependencies
-        run: npm ci
+        run: npm ci |
+            cd test/without_webworker && npm ci
 
       # Runs a set of commands using the runners shell
       - name: Run test
-        run: cd test/without_webworker && npm ci |
-            npm run build:ci
+        run: npm run build:ci
       
       - name: Install sauce connection
         uses: saucelabs/sauce-connect-action@v1
