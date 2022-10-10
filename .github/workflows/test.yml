@@ -35,7 +35,8 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Run test
-        run: npm run build:ci
+        run: cd test/without_webworker && npm ci |
+            npm run build:ci
       
       - name: Install sauce connection
         uses: saucelabs/sauce-connect-action@v1
