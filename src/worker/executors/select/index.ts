@@ -75,11 +75,6 @@ export class Select extends BaseFetch {
             beforeExecute = () => promiseResolve(null);
         }
         const query = this.query;
-        // if (query.store) {
-        //     this.results = query.store;
-        //     this.setLimitAndSkipEvaluationAtEnd_();
-        //     return promiseResolve(this.returnResult_());
-        // }
         try {
             const err = new QueryHelper(this.db).validate(API.Select, query);
             if (err) return promiseReject(err);
@@ -256,15 +251,21 @@ export class Select extends BaseFetch {
     }
 
     private orQuerySuccess_() {
-        this.orInfo.results = [... this.orInfo.results, ...this.results];
-        if (!this.query.limit || (this.query.limit > this.orInfo.results.length)) {
+        if (this.results.length > 0) {
+            this.orInfo.results = [... this.orInfo.results, ...this.results];
+        }
+        const query = this.query;
+        if (query.skip) {
+            query.skip = this.skipRecord = null;
+        }
+        if (!query.limit || (query.limit > this.orInfo.results.length)) {
             this.results = [];
             const key = getObjectFirstKey(this.orInfo.orQuery);
             if (key != null) {
                 const where = {};
                 where[key] = this.orInfo.orQuery[key];
                 delete this.orInfo.orQuery[key];
-                this.query.where = where;
+                query.where = where;
                 return this.goToWhereLogic().then(this.onWhereEvaluated.bind(this))
             }
         }

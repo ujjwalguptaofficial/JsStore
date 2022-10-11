@@ -195,6 +195,30 @@ describe('Test Select Api', function () {
             })
     });
 
+    it('with or and skip', function (done) {
+        const query = {
+            from: "Orders",
+            where: {
+                employeeId: 5,
+                or: {
+                    customerId: 81,
+                    orderId: 10256,
+                },
+            },
+        };
+        Promise.all([
+            con.select(query),
+            con.select(Object.assign({ skip: 1 }, query))
+        ]).then(function (results) {
+            expect(results[0]).to.be.an('array').length(14);
+            const skipResult = results[1];
+            expect(skipResult).to.be.an('array').length(13);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
     it('select with in', function (done) {
         con.select({
             from: 'Customers',
