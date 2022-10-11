@@ -251,13 +251,11 @@ export class Select extends BaseFetch {
     }
 
     private orQuerySuccess_() {
+        const query = this.query;
         if (this.results.length > 0) {
             this.orInfo.results = [... this.orInfo.results, ...this.results];
         }
-        const query = this.query;
-        if (query.skip) {
-            query.skip = this.skipRecord = null;
-        }
+
         if (!query.limit || (query.limit > this.orInfo.results.length)) {
             this.results = [];
             const key = getObjectFirstKey(this.orInfo.orQuery);
@@ -279,6 +277,7 @@ export class Select extends BaseFetch {
             orQuery: where.or as any,
             results: []
         };
+        this.setLimitAndSkipEvaluationAtEnd_();
         // free or memory
         delete where.or;
     }

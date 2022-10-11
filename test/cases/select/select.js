@@ -208,11 +208,15 @@ describe('Test Select Api', function () {
         };
         Promise.all([
             con.select(query),
-            con.select(Object.assign({ skip: 1 }, query))
+            con.select(Object.assign({ skip: 1 }, query)),
+            con.select(Object.assign({ skip: 12 }, query)),
+            con.select(Object.assign({ skip: 14 }, query))
         ]).then(function (results) {
-            expect(results[0]).to.be.an('array').length(14);
-            const skipResult = results[1];
-            expect(skipResult).to.be.an('array').length(13);
+            const totalResults = results[0];
+            expect(totalResults).to.be.an('array').length(14);
+            expect(results[1]).to.be.an('array').length(totalResults.length - 1);
+            expect(results[2]).to.be.an('array').length(totalResults.length - 12);
+            expect(results[3]).to.be.an('array').length(totalResults.length - 14);
             done();
         }).catch(function (err) {
             done(err);
