@@ -256,16 +256,14 @@ export class Select extends BaseFetch {
             this.orInfo.results = [... this.orInfo.results, ...this.results];
         }
 
-        if (!query.limit || (query.limit > this.orInfo.results.length)) {
-            this.results = [];
-            const key = getObjectFirstKey(this.orInfo.orQuery);
-            if (key != null) {
-                const where = {};
-                where[key] = this.orInfo.orQuery[key];
-                delete this.orInfo.orQuery[key];
-                query.where = where;
-                return this.goToWhereLogic().then(this.onWhereEvaluated.bind(this))
-            }
+        this.results = [];
+        const key = getObjectFirstKey(this.orInfo.orQuery);
+        if (key != null) {
+            const where = {};
+            where[key] = this.orInfo.orQuery[key];
+            delete this.orInfo.orQuery[key];
+            query.where = where;
+            return this.goToWhereLogic().then(this.onWhereEvaluated.bind(this))
         }
         return this.orQueryFinish_();
     }

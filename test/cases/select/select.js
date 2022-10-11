@@ -223,6 +223,34 @@ describe('Test Select Api', function () {
         })
     });
 
+    it('with or and limit', function (done) {
+        const query = {
+            from: "Orders",
+            where: {
+                employeeId: 5,
+                or: {
+                    employeeId: 5,
+                    shipperId: 3
+                },
+            },
+        };
+        Promise.all([
+            con.select(query),
+            con.select(Object.assign({ limit: 10 }, query)),
+            con.select(Object.assign({ limit: 12 }, query)),
+            con.select(Object.assign({ limit: 14 }, query))
+        ]).then(function (results) {
+            const totalResults = results[0];
+            expect(totalResults).to.be.an('array').length(74);
+            expect(results[1]).to.be.an('array').length(10);
+            expect(results[2]).to.be.an('array').length(12);
+            expect(results[3]).to.be.an('array').length(14);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
     it('select with in', function (done) {
         con.select({
             from: 'Customers',
