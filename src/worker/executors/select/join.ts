@@ -1,6 +1,7 @@
 import { Select } from "./";
 import { IJoinQuery, DATA_TYPE, ERROR_TYPE, ISelectQuery, IErrorType } from "@/common";
 import { getDataType, LogHelper, removeSpace, promiseReject, getKeys } from "@/worker/utils";
+import { WhereChecker } from "@executors/where_checker";
 
 
 export const executeJoinQuery = function (this: Select) {
@@ -206,28 +207,35 @@ class Join {
                     columnDefaultValue[col.name] = null;
                 });
             }
+
+            if (table2Index === 1) {
+                callBack = function (valueFromSecondTable, valueFromFirstTable) {
+                    if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
+                        valueMatchedFromSecondTable.push(valueFromSecondTable);
+                    }
+                };
+            }
+            else {
+                callBack = function (valueFromSecondTable, valueFromFirstTable) {
+                    const value = valueFromFirstTable[table1Index];
+                    if (value != null && value[column1] === valueFromSecondTable[column2]) {
+                        valueMatchedFromSecondTable.push(valueFromSecondTable);
+                    }
+                };
+            }
+            const whereCheker = new WhereChecker(joinQuery.where, joinQuery.where != null);
             this.results.forEach((valueFromFirstTable) => {
                 valueMatchedFromSecondTable = [];
-                if (table2Index === 1) {
-                    callBack = function (valueFromSecondTable) {
-                        if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
-                            valueMatchedFromSecondTable.push(valueFromSecondTable);
-                        }
-                    };
-                }
-                else {
-                    callBack = function (valueFromSecondTable) {
-                        const value = valueFromFirstTable[table1Index];
-                        if (value != null && value[column1] === valueFromSecondTable[column2]) {
-                            valueMatchedFromSecondTable.push(valueFromSecondTable);
-                        }
-                    };
-                }
-                secondtableData.forEach(callBack);
+                secondtableData.forEach(val => {
+                    callBack(val, valueFromFirstTable)
+                });
                 if (valueMatchedFromSecondTable.length === 0) {
                     valueMatchedFromSecondTable = [columnDefaultValue];
                 }
+
                 valueMatchedFromSecondTable.forEach(function (value) {
+                    if (!whereCheker.check(value)) return;
+
                     output[index] = { ...valueFromFirstTable };
                     output[index++][table2Index] = value;
                 });

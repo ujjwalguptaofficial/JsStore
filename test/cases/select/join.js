@@ -118,6 +118,50 @@ describe('Test join', function () {
 
     });
 
+    it('left join when data match from second table using where', function (done) {
+        con.select({
+            from: 'Customers',
+            join: {
+                with: 'Orders',
+                on: "Orders.customerId=Customers.customerId",
+                type: "left",
+                as: {
+                    customerId: "orders.customerId"
+                },
+                where: {
+                    customerId: 2
+                },
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(1);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('left join when data does not match from second table using where', function (done) {
+        con.select({
+            from: 'Customers',
+            join: {
+                with: 'Orders',
+                on: "Orders.customerId=Customers.customerId",
+                type: "left",
+                as: {
+                    customerId: "orders.customerId"
+                },
+                where: {
+                    customerId: -1234
+                },
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(0);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
 
     it('left join with alias when data does not match in second table', function (done) {
         con.update({
