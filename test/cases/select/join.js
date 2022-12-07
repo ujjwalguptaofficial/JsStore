@@ -126,10 +126,10 @@ describe('Test join', function () {
                 on: "Orders.customerId=Customers.customerId",
                 type: "left",
                 as: {
-                    customerId: "orders.customerId"
+                    customerId: "orderCustomerId"
                 },
                 where: {
-                    customerId: 2
+                    orderCustomerId: 2
                 },
             }
         }).then(function (results) {
@@ -156,6 +156,28 @@ describe('Test join', function () {
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(0);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('left join with where in second table with null value', function (done) {
+        con.select({
+            from: 'Customers',
+            join: {
+                with: 'Orders',
+                on: "Orders.customerId=Customers.customerId",
+                type: "left",
+                as: {
+                    customerId: "orderCustomerId"
+                },
+                where: {
+                    orderCustomerId: null
+                },
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(19);
             done();
         }).catch(function (err) {
             done(err);

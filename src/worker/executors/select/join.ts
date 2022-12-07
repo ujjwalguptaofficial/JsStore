@@ -1,6 +1,6 @@
 import { Select } from "./";
 import { IJoinQuery, DATA_TYPE, ERROR_TYPE, ISelectQuery, IErrorType } from "@/common";
-import { getDataType, LogHelper, removeSpace, promiseReject, getKeys } from "@/worker/utils";
+import { getDataType, LogHelper, removeSpace, promiseReject, getKeys, getLength } from "@/worker/utils";
 import { WhereChecker } from "@executors/where_checker";
 
 
@@ -101,22 +101,10 @@ class Join {
             let results = [];
             const tables = getKeys(this.results[0]);
             const tablesLength = tables.length;
-            const mapWithAlias = (query: IJoinQuery, value: object) => {
-                if (query.as != null) {
-                    for (const key in query.as) {
-                        if (value[(query.as as any)[key]] === undefined) {
-                            value[(query.as as any)[key]] = value[key];
-                            delete value[key];
-                        }
-                    }
-                }
-                return value;
-            };
             this.results.forEach((result) => {
                 let data = result["0"]; // first table data
                 for (let i = 1; i < tablesLength; i++) {
-                    const query = this.joinQueryStack_[i - 1];
-                    data = { ...data, ...mapWithAlias(query, result[i]) };
+                    data = { ...data, ...result[i] };
                 }
                 results.push(data);
             });
@@ -181,11 +169,25 @@ class Join {
         const column2 = jointblInfo.table2.column;
         const table1Index = this.tablesFetched.indexOf(jointblInfo.table1.table);
         const table2Index = this.currentQueryStackIndex_ + 1;
+        const mapWithAlias = (value: object) => {
+            const query = joinQuery;
+            if (query.as != null) {
+                for (const key in query.as) {
+                    const asValue = query.as[key];
+                    if (value[asValue] === undefined) {
+                        value[asValue] = value[key];
+                        delete value[key];
+                    }
+                }
+            }
+            return value;
+        };
         const performInnerJoin = () => {
             let index = 0;
             this.results.forEach(valueFromFirstTable => {
                 secondtableData.forEach((valueFromSecondTable) => {
                     if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
+                        valueFromSecondTable = mapWithAlias({ ...valueFromSecondTable });
                         output[index] = { ...valueFromFirstTable };
                         output[index++][table2Index] = valueFromSecondTable;
                     }
@@ -197,14 +199,15 @@ class Join {
             let valueMatchedFromSecondTable: any[];
             let callBack;
             const columnDefaultValue = {};
+            const nullValue = null;
             if (joinQuery.store) {
                 getKeys(joinQuery.store).forEach(columnName => {
-                    columnDefaultValue[columnName] = null;
+                    columnDefaultValue[columnName] = nullValue;
                 })
             }
             else {
                 this.getTable(jointblInfo.table2.table).columns.forEach(col => {
-                    columnDefaultValue[col.name] = null;
+                    columnDefaultValue[col.name] = nullValue;
                 });
             }
 
@@ -223,17 +226,21 @@ class Join {
                     }
                 };
             }
-            const whereCheker = new WhereChecker(joinQuery.where, joinQuery.where != null);
+            const whereQry = Object.assign(joinQuery.where || {}, joinQuery['whereJoin'] || {});
+            const whereCheker = new WhereChecker(whereQry, getLength(whereQry) > 0);
             this.results.forEach((valueFromFirstTable) => {
                 valueMatchedFromSecondTable = [];
+                // perform left join
                 secondtableData.forEach(val => {
                     callBack(val, valueFromFirstTable)
                 });
+
                 if (valueMatchedFromSecondTable.length === 0) {
                     valueMatchedFromSecondTable = [columnDefaultValue];
                 }
 
                 valueMatchedFromSecondTable.forEach(function (value) {
+                    value = mapWithAlias(value);
                     if (!whereCheker.check(value)) return;
 
                     output[index] = { ...valueFromFirstTable };
@@ -309,6 +316,22 @@ class Join {
             }
             return true;
         });
+        const whereQry = qry.where;
+        if (whereQry) {
+            const whereJoin = {};
+            for (const key in whereQry) {
+                // const whereQueryVal = whereQry[key];
+                const columnFound = tableSchemaOf2ndTable.columns.find(q => q.name === key);
+                if (!columnFound) {
+                    whereJoin[key] = whereQry[key];
+                    delete whereQry[key];
+                }
+            }
+            qry['whereJoin'] = whereJoin;
+            if (getLength(whereQry) === 0) {
+                qry.where = null;
+            }
+        }
         return err;
     }
 }

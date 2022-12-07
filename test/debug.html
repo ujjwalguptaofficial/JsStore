@@ -26,10 +26,22 @@
                 const data = await fetch("../test/static/Customers.json").then(response => {
                     return response.json()
                 });
-                jsstoreCon.insert({
+                const orders = await fetch("../test/static/Orders.json").then(response => {
+                    return response.json()
+                });
+                debugger;
+                const promiseCustomerInsert = jsstoreCon.insert({
                     into: 'Customers',
                     values: data
-                }).then(function (results) {
+                });
+                const promiseOrdersInsert = jsstoreCon.insert({
+                    into: 'Orders',
+                    values: orders.map(q => {
+                        q.orderDate = new Date(q.orderDate);
+                        return q;
+                    })
+                });
+                Promise.all([promiseCustomerInsert, promiseOrdersInsert]).then(function (results) {
                     alert('data inserted')
                 })
 
@@ -37,6 +49,35 @@
             else {
                 console.log('db opened');
             }
+        }
+
+        window.runQuery = async function () {
+            const results = await jsstoreCon.select({
+                from: "Orders",
+                case: {
+                    employeeId: [
+                        {
+                            '>': 8,
+                            then: 'I am 8'
+                        },
+                        {
+                            then: 'others'
+                        }
+                    ]
+                },
+                join: {
+                    with: "Customers",
+                    type: "inner",
+                    on: "Orders.customerId=Customers.customerId",
+                    as: {
+                        customerName: "name",
+                        contactName: "cName",
+                        customerId: "cId"
+                    }
+                }
+            });
+            console.table(results);
+
         }
 
         window.getPricyProductCount = async function (ctx) {
@@ -165,6 +206,7 @@
                     orderId: { primaryKey: true },
                     customerId: { notNull: true },
                     employeeId: { notNull: true, dataType: 'number' },
+                    // orderDate: { notNull: true, dataType: 'date_time' },
                     orderDate: { notNull: true, dataType: 'date_time' },
                     shipperId: { notNull: true, dataType: 'number' }
                 }
