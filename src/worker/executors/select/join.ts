@@ -169,27 +169,24 @@ class Join {
         const column2 = jointblInfo.table2.column;
         const table1Index = this.tablesFetched.indexOf(jointblInfo.table1.table);
         const table2Index = this.currentQueryStackIndex_ + 1;
-        const mapWithAlias = (value: object) => {
-            const query = joinQuery;
-            if (query.as != null) {
-                for (const key in query.as) {
-                    const asValue = query.as[key];
-                    if (value[asValue] === undefined) {
-                        value[asValue] = value[key];
-                        delete value[key];
-                    }
+        const asQuery = joinQuery.as;
+        const mapWithAlias = asQuery ? (value: object) => {
+            for (const key in asQuery) {
+                const asValue = asQuery[key];
+                if (value[asValue] === undefined) {
+                    value[asValue] = value[key];
+                    delete value[key];
                 }
             }
             return value;
-        };
+        } : (val) => val;
         const performInnerJoin = () => {
             let index = 0;
             this.results.forEach(valueFromFirstTable => {
                 secondtableData.forEach((valueFromSecondTable) => {
                     if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
-                        valueFromSecondTable = mapWithAlias({ ...valueFromSecondTable });
                         output[index] = { ...valueFromFirstTable };
-                        output[index++][table2Index] = valueFromSecondTable;
+                        output[index++][table2Index] = mapWithAlias({ ...valueFromSecondTable });
                     }
                 });
             });
