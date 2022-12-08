@@ -74,6 +74,36 @@ describe('Test Aggregate option', function () {
         })
     });
 
+    it('select with agregate - list', function (done) {
+        con.select({
+            from: "Customers",
+            aggregate: {
+                count: "city",
+                list: "city",
+            },
+            groupBy: "country"
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(22);
+            const map = {
+                'Germany': ['Berlin', 'Mannheim', 'Aachen', 'München', 'Brandenburg', 'Frankfurt a.M.', 'Leipzig', 'Köln', 'Cunewalde', 'Münster', 'Stuttgart'],
+                'India': ['bhubaneswar', 'bhubaneswar'],
+                'Norway': ['Stavern'],
+                'Poland': ['Walla'],
+                'Ireland': ['Cork'],
+            };
+            results.slice(0, Object.keys(map).length).forEach(result => {
+                const cityList = map[result.country];
+                if (cityList) {
+                    expect(result['list(city)']).eql(cityList);
+                    expect(result['count(city)']).equal(cityList.length);
+                }
+            })
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
     it('select with agregate - min,max', function (done) {
         con.select({
             from: 'Products',
@@ -117,7 +147,7 @@ describe('Test Aggregate option', function () {
                 min: "price",
                 max: "price",
                 avg: "price",
-                count: ["price","productName"]
+                count: ["price", "productName"]
             }
         }).then(function (results) {
             expect(results).to.be.an('array').length(1);
