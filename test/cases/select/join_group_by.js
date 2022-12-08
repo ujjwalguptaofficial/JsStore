@@ -83,4 +83,38 @@ describe("join with group by", function () {
         })
     });
 
+    it('list agrregate', (done) => {
+        con.select({
+            "from": "Customers",
+            join: {
+                with: 'Orders',
+                on: 'Customers.customerId=Orders.customerId'
+            },
+            groupBy: 'customerId',
+            aggregate: {
+                list: 'orderId',
+                count: 'orderId'
+                // array: 'orderId' would be great here
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(74);
+            const map = {
+                2: [10308],
+                3: [10365],
+                4: [10355, 10383],
+                5: [10278, 10280, 10384],
+                6: [],
+            };
+            results.slice(0, Object.keys(map).length).forEach(result => {
+                const orderIdList = map[result.customerId];
+                if (orderIdList) {
+                    expect(result['list(orderId)']).eql(orderIdList);
+                    expect(result['count(orderId)']).equal(orderIdList.length);
+                }
+            })
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    })
 });

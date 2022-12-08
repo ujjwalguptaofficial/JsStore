@@ -141,6 +141,7 @@ export interface IAggregateOption {
     sum?: string | string[];
     count?: string | string[];
     avg?: string | string[];
+    list?: string | string[];
 }
 
 export interface IColumn extends IColumnOption {

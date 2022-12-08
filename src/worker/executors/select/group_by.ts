@@ -71,6 +71,14 @@ export const executeAggregateGroupBy = function (this: Select) {
             value += datas[index][columnToAggregate] ? 1 : 0;
             return value;
         };
+        const getList = () => {
+            value = lookUpObj.get(objKey);
+            // get old value
+            value = value ? value["list(" + columnToAggregate + ")"] : [];
+            // push value
+            value.push(datas[index][columnToAggregate]);
+            return value;
+        };
         const getMax = () => {
             value = lookUpObj.get(objKey);
             // get old value
@@ -129,6 +137,9 @@ export const executeAggregateGroupBy = function (this: Select) {
                     break;
                 case QUERY_OPTION.Avg:
                     aggregateCalculator = getAvg;
+                    break;
+                case QUERY_OPTION.List:
+                    aggregateCalculator = getList;
                     break;
             }
             switch (aggregateValType) {

@@ -102,6 +102,7 @@ export enum QUERY_OPTION {
     Avg = "avg",
     Count = "count",
     Sum = "sum",
+    List = "list",
     Or = "or",
     Skip = "skip",
     Limit = "limit",
