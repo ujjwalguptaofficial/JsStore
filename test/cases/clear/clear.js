@@ -1,4 +1,13 @@
 describe('Test clear', function () {
+
+    it('check autoincrment field before reset', function (done) {
+        con.get("JsStore_DbSchema").then(result => {
+            const table = result.tables.find(q => q.name === 'Customers');
+            expect(table.autoIncColumnValue).to.haveOwnProperty("customerId", 96);
+            done();
+        }).catch(done)
+    })
+
     it('clear customers using promise', function (done) {
         con.clear('Customers').
             then(function (results) {
@@ -22,6 +31,14 @@ describe('Test clear', function () {
                 done(err);
             })
     });
+
+    it('check autoincrment field reset', function (done) {
+        con.get("JsStore_DbSchema").then(result => {
+            const table = result.tables.find(q => q.name === 'Customers');
+            expect(table.autoIncColumnValue).to.haveOwnProperty("customerId", 0);
+            done();
+        }).catch(done)
+    })
 
     it('select all Customers with aggregate', function (done) {
         con.select({
