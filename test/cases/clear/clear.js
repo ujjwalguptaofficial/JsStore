@@ -40,6 +40,28 @@ describe('Test clear', function () {
         }).catch(done)
     })
 
+    it('insert data into customer table to check autoincrement field', function (done) {
+        con.insert({
+            into: "Customers",
+            values: [{
+                customerName: 'ujjwal gupta',
+                contactName: 'ujjwal',
+                address: 'bhubaneswar odisha',
+                city: 'bhubaneswar',
+                postalCode: '12345',
+                country: 'India'
+            }],
+            return: true
+        }).then(results => {
+            expect(results).length(1);
+            expect(results[0].customerId).to.equal(1);
+            con.clear('Customers').
+                then(function (results) {
+                    done();
+                }).catch(done);
+        }).catch(done);
+    });
+
     it('select all Customers with aggregate', function (done) {
         con.select({
             from: 'Customers',
