@@ -25,9 +25,7 @@ export class Clear extends Base {
                         for (const columnName in currentTable.autoIncColumnValue) {
                             currentTable.autoIncColumnValue[columnName] = 0;
                         }
-                        MetaHelper.set(MetaHelper.dbSchema, this.util.db, this.util).then(() => {
-                            res();
-                        }).catch(rej);
+                        MetaHelper.set(MetaHelper.dbSchema, this.util.db, this.util).then(res).catch(rej);
                     };
 
                     clearRequest.onerror = rej;
