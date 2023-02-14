@@ -59,9 +59,6 @@ export class ConnectionHelper {
     if (workerRef) {
       this.queryManager = new workerRef.QueryManager(this.processFinishedQuery_.bind(this));
     }
-    else if (process.env.NODE_ENV !== 'production') {
-      throw new Error(`JsStoreWorker not found. Either pass web worker or inject JsStore Worker.`);
-    }
   }
 
   private onMessageFromWorker_(msg) {
@@ -169,6 +166,9 @@ export class ConnectionHelper {
   }
 
   protected pushApi<T>(request: WebWorkerRequest): Promise<T> {
+    if (process.env.NODE_ENV !== 'production' && !this.jsstoreWorker) {
+      throw new Error(`JsStoreWorker not found. Either pass web worker or inject JsStore Worker.`);
+    }
     return new Promise((resolve, reject) => {
       let middlewares = [];
       request.onResult = (cb) => {
