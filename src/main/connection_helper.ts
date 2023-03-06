@@ -38,6 +38,12 @@ export class ConnectionHelper {
 
   protected logger = new LogHelper(null);
 
+  /**
+   * injected by jsstore worker plugin
+   *
+   * @private
+   * @memberof ConnectionHelper
+   */
   private $worker;
 
   private get jsstoreWorker() {
@@ -166,7 +172,7 @@ export class ConnectionHelper {
   }
 
   protected pushApi<T>(request: WebWorkerRequest): Promise<T> {
-    if (process.env.NODE_ENV !== 'production' && !this.jsstoreWorker) {
+    if (process.env.NODE_ENV !== 'production' && !this.jsstoreWorker && !this.worker_) {
       throw new Error(`JsStoreWorker not found. Either pass web worker or inject JsStore Worker.`);
     }
     return new Promise((resolve, reject) => {
