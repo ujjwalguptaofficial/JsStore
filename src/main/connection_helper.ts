@@ -38,10 +38,8 @@ export class ConnectionHelper {
 
   protected logger = new LogHelper(null);
 
-  private $worker;
-
   private get jsstoreWorker() {
-    return this.$worker || self['JsStoreWorker'];
+    return this.worker_ || self['JsStoreWorker'];
   }
 
   constructor(worker?: Worker) {
