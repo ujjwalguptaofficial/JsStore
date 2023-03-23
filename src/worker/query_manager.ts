@@ -294,10 +294,10 @@ export class QueryManager {
                     MetaHelper.get(
                         MetaHelper.dbSchema,
                         this.util
-                    ).then((value: DbMeta) => {
-                        if (value) {
-                            value.tables.forEach((table, index) => {
-                                const targetTable = dbMeta.tables[index];
+                    ).then((dbFromCache: DbMeta) => {
+                        if (dbFromCache) {
+                            dbFromCache.tables.forEach((table, index) => {
+                                const targetTable = dbMeta.tables.find(q => q.name === table.name);
                                 if (targetTable) {
                                     targetTable.autoIncColumnValue =
                                         table.autoIncColumnValue;

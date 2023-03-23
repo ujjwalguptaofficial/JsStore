@@ -367,6 +367,29 @@ describe('Db upgrade Test', function () {
         });
     })
 
+    it('insert data into new table student added in v6', (done) => {
+        connection.insert({
+            into: "Students",
+            return: true,
+            values: [{
+                city: "New Delhi",
+                country: "India",
+                name: "Ujjwal",
+                gender: "male"
+            }]
+        }).then(function (result) {
+            expect(result).to.length(1);
+            expect(result[0]).to.eql({
+                city: "New Delhi",
+                country: "India",
+                name: "Ujjwal",
+                gender: "male",
+                id: 1
+            });
+            done();
+        }).catch(done)
+    })
+
     it('create version v7 - delete new table', function (done) {
         var db = DbUpgradeTestV6.getDbSchema();
         db.version = 7;
