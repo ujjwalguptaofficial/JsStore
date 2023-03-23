@@ -390,10 +390,8 @@ describe('Db upgrade Test', function () {
         }).catch(done)
     })
 
-    it('create version v7 - delete new table', function (done) {
-        var db = DbUpgradeTestV6.getDbSchema();
-        db.version = 7;
-        db.tables.splice(0, 1);
+    it('create version v7 -  new table', function (done) {
+        var db = DbUpgradeTestV7.getDbSchema();
         let isUpgradeCalled = false;
         connection.on("upgrade", (dataBase, oldVersion, newVersion) => {
             isUpgradeCalled = true;
@@ -426,9 +424,69 @@ describe('Db upgrade Test', function () {
         });
     })
 
-    it('open db version v7', function (done) {
+    it("insert new data", function (done) {
+        connection.insert({
+            into: "Students",
+            return: true,
+            values: [{
+                city: "New Delhi",
+                country: "India",
+                name: "Ujjwal",
+                gender: "male"
+            }]
+        }).then(function (result) {
+            expect(result).to.length(1);
+            expect(result[0]).to.eql({
+                city: "New Delhi",
+                country: "India",
+                name: "Ujjwal",
+                gender: "male",
+                id: 2,
+                tempId: 1
+            });
+            done();
+        }).catch(done)
+    })
+
+    it('create version v8 - delete new table', function (done) {
         var db = DbUpgradeTestV6.getDbSchema();
-        db.version = 7;
+        db.version = 8;
+        db.tables.splice(0, 1);
+        let isUpgradeCalled = false;
+        connection.on("upgrade", (dataBase, oldVersion, newVersion) => {
+            isUpgradeCalled = true;
+            expect(db.version).equal(dataBase.version);
+            expect(db.name).equal(dataBase.name);
+            expect(db.tables.length).equal(dataBase.tables.length);
+            expect(oldVersion).equal(7);
+            expect(newVersion).equal(8);
+        })
+        let isOpenCalled = false;
+        connection.on("open", () => {
+            expect(isUpgradeCalled).to.be.an('boolean').equal(true);
+            connection.off("upgrade");
+            isOpenCalled = true;
+        })
+        let isCreateCalled = false;
+        connection.on("create", () => {
+            isCreateCalled = true;
+        })
+        connection.initDb(db).then(function (isDbCreated) {
+            expect(isDbCreated).to.be.an('boolean').equal(true);
+            expect(isCreateCalled).to.be.an('boolean').equal(false);
+            expect(isUpgradeCalled).to.be.an('boolean').equal(true);
+            expect(isOpenCalled).to.be.an('boolean').equal(true);
+            connection.off("open");
+            connection.off("create");
+            done();
+        }).catch(function (err) {
+            done(err);
+        });
+    })
+
+    it('open db version v8', function (done) {
+        var db = DbUpgradeTestV6.getDbSchema();
+        db.version = 8;
         db.tables.splice(0, 1);
 
         let isUpgradeCalled = false;
@@ -669,6 +727,98 @@ describe('Db upgrade Test', function () {
                     name: 'DbUpgradeTest',
                     tables: [people, tableStudent],
                     version: 6
+                };
+            return dataBase;
+        }
+    }
+    var DbUpgradeTestV7 = {
+        getDbSchema: function () {
+            var people = {
+                "name": "test",
+                "columns":
+                {
+                    "id": {
+                        "primaryKey": true,
+                        "dataType": "number",
+                        "autoIncrement": true,
+                        "notNull": true
+                    },
+                    "process_id": {
+                        "dataType": "number",
+                        encrypt: true
+                    },
+                },
+
+                alter: {
+                    4: {
+                        add: {
+                            name: {
+                                dataType: 'string'
+                            },
+                            "id": {
+                                "primaryKey": true,
+                                "dataType": "number",
+                                "autoIncrement": true,
+                                "notNull": true
+                            },
+                        },
+                    },
+                    5: {
+                        add: {
+                            gender: {
+                                dataType: 'string'
+                            }
+                        },
+                        modify: {
+                            name: {
+                                notNull: true
+                            }
+                        },
+                    },
+                }
+
+            },
+                tableStudent = {
+
+                    name: 'Students',
+                    columns: {
+                        id: {
+                            primaryKey: true,
+                            autoIncrement: true
+                        },
+                        name: {
+                            notNull: true,
+                            dataType: JsStore.DATA_TYPE.String
+                        },
+                        gender: {
+                            dataType: JsStore.DATA_TYPE.String,
+                            default: 'male'
+                        },
+                        country: {
+                            notNull: true,
+                            dataType: JsStore.DATA_TYPE.String
+                        },
+                        city: {
+                            dataType: JsStore.DATA_TYPE.String,
+                            notNull: true
+                        }
+                    },
+                    alter: {
+                        7: {
+                            add: {
+                                "tempId": {
+                                    "dataType": "number",
+                                    "autoIncrement": true,
+                                    "notNull": true
+                                },
+                            },
+                        },
+                    }
+                },
+                dataBase = {
+                    name: 'DbUpgradeTest',
+                    tables: [people, tableStudent],
+                    version: 7
                 };
             return dataBase;
         }

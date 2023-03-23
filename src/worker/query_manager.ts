@@ -296,11 +296,15 @@ export class QueryManager {
                         this.util
                     ).then((dbFromCache: DbMeta) => {
                         if (dbFromCache) {
-                            dbFromCache.tables.forEach((table, index) => {
-                                const targetTable = dbMeta.tables.find(q => q.name === table.name);
+                            dbFromCache.tables.forEach((tableFromCache, index) => {
+                                const targetTable = dbMeta.tables.find(q => q.name === tableFromCache.name);
                                 if (targetTable) {
-                                    targetTable.autoIncColumnValue =
-                                        table.autoIncColumnValue;
+                                    for (const key in tableFromCache.autoIncColumnValue) {
+                                        const savedAutoIncrementValue = tableFromCache.autoIncColumnValue[key];
+                                        if (savedAutoIncrementValue) {
+                                            targetTable.autoIncColumnValue[key] = savedAutoIncrementValue;
+                                        }
+                                    }
                                 }
                             });
                         }
