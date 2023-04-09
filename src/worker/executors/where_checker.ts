@@ -33,6 +33,18 @@ export class WhereChecker {
       const whereColumnValue = where[columnName];
       const columnValue = rowValue[columnName];
       const isArrayColumnValue = Array.isArray(columnValue);
+      const executeCompare = (executor: Function) => {
+        if (isArrayColumnValue) {
+          columnValue.every(q => {
+            status = executor(q);
+            return !status;
+          })
+        }
+        else {
+          status = executor(columnValue);
+        }
+        return
+      }
 
       if (getDataType(whereColumnValue) === "object") {
         for (const key in whereColumnValue) {
@@ -41,13 +53,19 @@ export class WhereChecker {
           }
           switch (key) {
             case QUERY_OPTION.In:
-              status = this.checkIn(whereColumnValue[QUERY_OPTION.In], columnValue);
+              executeCompare((compareValue) => {
+                return this.checkIn(whereColumnValue[QUERY_OPTION.In], compareValue);
+              })
               break;
             case QUERY_OPTION.Like:
-              status = this.checkLike_(columnName, columnValue);
+              executeCompare((compareValue) => {
+                return this.checkLike_(columnName, compareValue);
+              })
               break;
             case QUERY_OPTION.Regex:
-              status = this.checkRegex(columnName, columnValue);
+              executeCompare((compareValue) => {
+                return this.checkRegex(columnName, compareValue);
+              })
               break;
             case QUERY_OPTION.Between:
             case QUERY_OPTION.GreaterThan:
@@ -55,7 +73,9 @@ export class WhereChecker {
             case QUERY_OPTION.GreaterThanEqualTo:
             case QUERY_OPTION.LessThanEqualTo:
             case QUERY_OPTION.NotEqualTo:
-              status = this.checkComparisionOp_(columnName, columnValue, key);
+              executeCompare((compareValue) => {
+                return this.checkComparisionOp_(columnName, compareValue, key);
+              })
               break;
             default:
               status = false;
@@ -63,12 +83,9 @@ export class WhereChecker {
         }
       }
       else {
-        if (isArrayColumnValue) {
-          status = this.checkIn(columnValue, whereColumnValue);
-        }
-        else {
-          status = compare(whereColumnValue, columnValue);
-        }
+        executeCompare((storedValue) => {
+          return compare(whereColumnValue, storedValue);
+        });
       }
     }
     return status;

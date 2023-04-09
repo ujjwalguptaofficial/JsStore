@@ -179,12 +179,50 @@ describe('Multi Entry Test', function () {
             })
     });
 
-    it('select with multiple column', function (done) {
+    it('select with multiple column with =', function (done) {
         con.select({
             from: 'people',
             where: {
                 name: 'Marc',
                 tags: 'mongo'
+            }
+        }).
+            then(function (results) {
+                expect(results).to.be.an('array').length(1);
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            })
+    });
+
+    it('select with multiple column with in', function (done) {
+        con.select({
+            from: 'people',
+            where: {
+                name: 'Marc',
+                tags: {
+                    in: ['marc', 'mongo']
+                }
+            }
+        }).
+            then(function (results) {
+                expect(results).to.be.an('array').length(1);
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            })
+    });
+
+    it('select with multiple column with like', function (done) {
+        con.select({
+            from: 'people',
+            where: {
+                name: 'Marc',
+                tags: {
+                    like: '%mongo%'
+                }
             }
         }).
             then(function (results) {
