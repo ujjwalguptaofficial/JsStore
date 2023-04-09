@@ -179,6 +179,23 @@ describe('Multi Entry Test', function () {
             })
     });
 
+    it('select with multiple column', function (done) {
+        con.select({
+            from: 'people',
+            where: {
+                name: 'Marc',
+                tags: 'mongo'
+            }
+        }).
+            then(function (results) {
+                expect(results).to.be.an('array').length(1);
+                done();
+            }).
+            catch(function (err) {
+                done(err);
+            })
+    });
+
     it('unique column test for insert', function (done) {
         var value = {
             name: "Ray",

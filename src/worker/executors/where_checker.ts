@@ -25,12 +25,15 @@ export class WhereChecker {
   check(rowValue) {
     let status = true;
     if (!this.checkFlag) return status;
-    for (let columnName in this.where) {
+    const where = this.where;
+    for (let columnName in where) {
       if (!status) {
         return status;
       }
-      const whereColumnValue = this.where[columnName];
+      const whereColumnValue = where[columnName];
       const columnValue = rowValue[columnName];
+      const isArrayColumnValue = Array.isArray(columnValue);
+
       if (getDataType(whereColumnValue) === "object") {
         for (const key in whereColumnValue) {
           if (!status) {
@@ -38,7 +41,7 @@ export class WhereChecker {
           }
           switch (key) {
             case QUERY_OPTION.In:
-              status = this.checkIn(columnName, columnValue);
+              status = this.checkIn(whereColumnValue[QUERY_OPTION.In], columnValue);
               break;
             case QUERY_OPTION.Like:
               status = this.checkLike_(columnName, columnValue);
@@ -60,14 +63,19 @@ export class WhereChecker {
         }
       }
       else {
-        status = compare(whereColumnValue, columnValue);
+        if (isArrayColumnValue) {
+          status = this.checkIn(columnValue, whereColumnValue);
+        }
+        else {
+          status = compare(whereColumnValue, columnValue);
+        }
       }
     }
     return status;
   }
 
-  private checkIn(column, value) {
-    return (this.where[column][QUERY_OPTION.In] as any[]).find(q => compare(q, value)) != null;
+  private checkIn(whereColumnValue: any[], value) {
+    return whereColumnValue.find(q => compare(q, value)) != null;
   }
 
   private checkLike_(column, value) {

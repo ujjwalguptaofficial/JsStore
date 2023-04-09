@@ -224,7 +224,7 @@ class Join {
                 };
             }
             const whereQry = Object.assign(joinQuery.where || {}, joinQuery['whereJoin'] || {});
-            const whereCheker = new WhereChecker(whereQry, getLength(whereQry) > 0);
+            const whereCheker = new WhereChecker(whereQry, (getLength(whereQry) > 0));
             this.results.forEach((valueFromFirstTable) => {
                 valueMatchedFromSecondTable = [];
                 // perform left join
