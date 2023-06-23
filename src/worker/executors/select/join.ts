@@ -211,7 +211,9 @@ class Join {
             if (table2Index === 1) {
                 callBack = function (valueFromSecondTable, valueFromFirstTable) {
                     if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
-                        valueMatchedFromSecondTable.push(valueFromSecondTable);
+                        valueMatchedFromSecondTable.push({
+                            ...valueFromSecondTable
+                        });
                     }
                 };
             }
@@ -219,7 +221,9 @@ class Join {
                 callBack = function (valueFromSecondTable, valueFromFirstTable) {
                     const value = valueFromFirstTable[table1Index];
                     if (value != null && value[column1] === valueFromSecondTable[column2]) {
-                        valueMatchedFromSecondTable.push(valueFromSecondTable);
+                        valueMatchedFromSecondTable.push({
+                            ...valueFromSecondTable
+                        });
                     }
                 };
             }

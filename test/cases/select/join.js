@@ -89,6 +89,49 @@ describe('Test join', function () {
         })
     });
 
+    it('left join - check for data in second table', function (done) {
+        con.select({
+            from: "Orders",
+            order: {
+                by: 'Orders.customerId',
+
+                type: 'asc' //supprted sort type is - asc,desc
+
+            },
+            join: {
+                with: "Customers",
+
+                type: "left",
+
+                on: "Orders.customerId=Customers.customerId",
+
+                as: {
+
+                    customerId: 'cId'
+                }
+
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(196);
+            const customerIdMap = {};
+            results.forEach(result => {
+                if (customerIdMap[result.customerId]) {
+                    const expectedData = customerIdMap[result.customerId];
+                    for (const key in expectedData) {
+                        expect(expectedData[key]).equal(result[key]);
+                    }
+                }
+                else {
+                    customerIdMap[result.customerId] = {
+                        customerName: result.customerName
+                    }
+                }
+            });
+            done();
+        }).catch(done);
+
+    })
+
     it('left join when some data does not match from first table', function (done) {
         con.update({
             in: "Orders",
@@ -521,38 +564,5 @@ describe('Test join', function () {
         })
 
     });
-
-    // it('join with ignoreCase', function (done) {
-    //     con.select({
-    //         from: "Customers",
-    //         where: {
-    //             country: "Mexico"
-    //         },
-    //         join: {
-    //             with: 'Orders',
-    //             on: 'Customers.customerId=Orders.customerId',
-    //             type: 'left'
-    //         }
-    //     }).then(function (results) {
-    //         return results.length;
-    //     }).then(function (length) {
-    //         con.select({
-    //             from: "Customers",
-    //             ignoreCase: true,
-    //             where: {
-    //                 country: "mexico"
-    //             },
-    //             join: {
-    //                 with: 'Orders',
-    //                 on: 'Customers.customerId=Orders.customerId',
-    //                 type: 'left'
-    //             }
-    //         }).then(function (results) {
-    //             expect(length).equal(results.length);
-    //             done();
-    //         }).catch(done);
-    //     }).catch(done);
-
-    // })
 
 });
