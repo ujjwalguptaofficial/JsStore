@@ -56,9 +56,9 @@ export interface IUpdateQuery {
 
 export interface IAlterQuery {
     [version: number]: {
-        add: TColumns,
-        drop: TColumns,
-        modify: TColumns
+        add?: TColumns,
+        drop?: TColumns,
+        modify?: TColumns
     };
 }
 
