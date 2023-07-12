@@ -33,7 +33,6 @@ class Join {
     }
 
     private executeSelect(query: ISelectQuery) {
-        // this.select.util.emptyTx();
         return new Select(query, this.select.util).
             execute();
     }
@@ -72,6 +71,31 @@ class Join {
 
         if (!this.select.isTxQuery && tablesToFetch.length > 0) {
             this.select.util.createTransaction(tablesToFetch);
+        }
+
+        const whereQuery = query.where;
+
+        // remove column which not exist in first table
+
+        if (whereQuery && !query.store) {
+            const whereQryAfterJoin = {};
+            const table = this.getTable(tableName);
+            for (const column in whereQuery) {
+                const columnInTable = table.columns.find(q => q.name === column);
+                if (!columnInTable) {
+                    whereQryAfterJoin[column] = whereQuery[column];
+                }
+            }
+            for (const column in whereQryAfterJoin) {
+                delete whereQuery[column];
+            }
+            if (Object.keys(whereQuery).length === 0) {
+                delete query.where;
+            }
+            // query['whereAfterJoin'] = whereQryAfterJoin;
+
+            const joinQuery = this.joinQueryStack_[0];
+            Object.assign(joinQuery['whereJoin'], whereQryAfterJoin);
         }
 
         return this.executeSelect({
@@ -227,7 +251,7 @@ class Join {
                     }
                 };
             }
-            const whereQry = Object.assign(joinQuery.where || {}, joinQuery['whereJoin'] || {});
+            const whereQry = Object.assign({}, joinQuery['whereJoin']);
             const whereCheker = new WhereChecker(whereQry, (getLength(whereQry) > 0));
             this.results.forEach((valueFromFirstTable) => {
                 valueMatchedFromSecondTable = [];
@@ -318,8 +342,8 @@ class Join {
             return true;
         });
         const whereQry = qry.where;
+        const whereJoin = {};
         if (whereQry) {
-            const whereJoin = {};
             for (const key in whereQry) {
                 // const whereQueryVal = whereQry[key];
                 const columnFound = tableSchemaOf2ndTable.columns.find(q => q.name === key);
@@ -328,11 +352,11 @@ class Join {
                     delete whereQry[key];
                 }
             }
-            qry['whereJoin'] = whereJoin;
             if (getLength(whereQry) === 0) {
                 qry.where = null;
             }
         }
+        qry['whereJoin'] = whereJoin;
         return err;
     }
 }

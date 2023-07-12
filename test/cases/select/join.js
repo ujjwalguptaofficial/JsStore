@@ -191,14 +191,42 @@ describe('Test join', function () {
                 on: "Orders.customerId=Customers.customerId",
                 type: "left",
                 as: {
+                    customerId: "orders_customerId"
+                }
+            },
+            where: {
+                orders_customerId: -1234
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(0);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('left join when data does not match from second table using and', function (done) {
+
+        const selectQry = con.select({
+            from: 'Customers',
+            join: {
+                with: 'Orders',
+                on: "Orders.customerId=Customers.customerId",
+                type: "left",
+                as: {
                     customerId: "orders.customerId"
                 },
                 where: {
                     customerId: -1234
                 },
             }
-        }).then(function (results) {
-            expect(results).to.be.an('array').length(0);
+        });
+
+        const countQry = con.count({
+            from: 'Customers'
+        });
+        Promise.all([selectQry, countQry]).then(function (results) {
+            expect(results[0]).to.be.an('array').length(results[1]);
             done();
         }).catch(function (err) {
             done(err);
