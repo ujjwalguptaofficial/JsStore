@@ -217,11 +217,15 @@ class Join {
             }
             return value;
         } : (val) => val;
+
+        let index = 0;
+        let valueMatchedFromSecondTable: any[];
+        const whereQry = Object.assign({}, joinQuery['whereJoin']);
+        const whereCheker = new WhereChecker(whereQry, (getLength(whereQry) > 0));
+
         const performInnerJoin = () => {
             let index = 0;
             let valueMatchedFromSecondTable: any[];
-            const whereQry = Object.assign({}, joinQuery['whereJoin']);
-            const whereCheker = new WhereChecker(whereQry, (getLength(whereQry) > 0));
             this.results.forEach(valueFromFirstTable => {
                 valueMatchedFromSecondTable = [];
                 secondtableData.forEach((valueFromSecondTable) => {
@@ -242,8 +246,6 @@ class Join {
             });
         };
         const performleftJoin = () => {
-            let index = 0;
-            let valueMatchedFromSecondTable: any[];
             let callBack;
             const columnDefaultValue = {};
             const nullValue = null;
@@ -277,8 +279,6 @@ class Join {
                     }
                 };
             }
-            const whereQry = Object.assign({}, joinQuery['whereJoin']);
-            const whereCheker = new WhereChecker(whereQry, (getLength(whereQry) > 0));
             this.results.forEach((valueFromFirstTable) => {
                 valueMatchedFromSecondTable = [];
                 // perform left join
