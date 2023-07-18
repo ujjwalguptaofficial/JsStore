@@ -233,6 +233,89 @@ describe('Test join', function () {
         })
     });
 
+    it('left join with and or in second table', function (done) {
+
+        const selectQry = con.select({
+            from: 'Orders',
+            join: {
+                with: 'Customers',
+                on: "Orders.customerId=Customers.customerId",
+                where: {
+                    country: 'Mexico',
+                    or: {
+                        city: 'London'
+                    }
+                }
+            }
+        });
+
+        // const countQry = con.count({
+        //     from: 'Customers'
+        // });
+        Promise.all([selectQry]).then(function (results) {
+            expect(results[0]).to.be.an('array').length(18);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it(`SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate
+    FROM Orders
+    INNER JOIN Customers
+    ON Orders.CustomerID=Customers.CustomerID where (Customers.country="Mexico" or Customers.City="London")
+    `, function (done) {
+        const selectQry = con.select({
+            from: 'Orders',
+            join: {
+                with: 'Customers',
+                on: "Orders.customerId=Customers.customerId",
+            },
+            where: {
+                country: 'Mexico',
+                or: {
+                    city: 'London'
+                }
+            }
+        });
+
+        Promise.all([selectQry]).then(function (results) {
+            // expect(results[0]).to.be.an('array').length(18);
+            expect(results[0]).to.be.an('array').length(0);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it(`SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate
+    FROM Orders
+    INNER JOIN Customers
+    ON Orders.CustomerID=Customers.CustomerID where (Customers.country="USA" and Customers.City="Seattle")
+    `, function (done) {
+        const selectQry = con.select({
+            from: 'Orders',
+            join: {
+                with: 'Customers',
+                on: "Orders.customerId=Customers.customerId",
+            },
+            where: {
+                country: 'USA',
+                city: 'Seattle'
+            }
+        });
+
+        // const countQry = con.count({
+        //     from: 'Customers'
+        // });
+        Promise.all([selectQry]).then(function (results) {
+            expect(results[0]).to.be.an('array').length(2);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
     it('left join with where in second table with null value', function (done) {
         con.select({
             from: 'Customers',

@@ -74,16 +74,31 @@ class Join {
         }
 
         const whereQuery = query.where;
-
         // remove column which not exist in first table
-
         if (whereQuery && !query.store) {
             const whereQryAfterJoin = {};
             const table = this.getTable(tableName);
             for (const column in whereQuery) {
-                const columnInTable = table.columns.find(q => q.name === column);
-                if (!columnInTable) {
-                    whereQryAfterJoin[column] = whereQuery[column];
+                switch (column) {
+                    case "or":
+                        const filteredOr = {};
+                        const whereQryOr = whereQuery[column];
+                        for (const orColumn in whereQryOr) {
+                            const columnInTable = table.columns.find(q => q.name === orColumn);
+                            if (!columnInTable) {
+                                filteredOr[orColumn] = whereQryOr[orColumn];
+                            }
+                        }
+                        whereQryAfterJoin['or'] = filteredOr;
+                        for (const orColumn in filteredOr) {
+                            delete whereQryOr[orColumn];
+                        }
+                        break;
+                    default:
+                        const columnInTable = table.columns.find(q => q.name === column);
+                        if (!columnInTable) {
+                            whereQryAfterJoin[column] = whereQuery[column];
+                        }
                 }
             }
             for (const column in whereQryAfterJoin) {
@@ -92,8 +107,6 @@ class Join {
             if (Object.keys(whereQuery).length === 0) {
                 delete query.where;
             }
-            // query['whereAfterJoin'] = whereQryAfterJoin;
-
             const joinQuery = this.joinQueryStack_[0];
             Object.assign(joinQuery['whereJoin'], whereQryAfterJoin);
         }
@@ -206,12 +219,25 @@ class Join {
         } : (val) => val;
         const performInnerJoin = () => {
             let index = 0;
+            let valueMatchedFromSecondTable: any[];
+            const whereQry = Object.assign({}, joinQuery['whereJoin']);
+            const whereCheker = new WhereChecker(whereQry, (getLength(whereQry) > 0));
             this.results.forEach(valueFromFirstTable => {
+                valueMatchedFromSecondTable = [];
                 secondtableData.forEach((valueFromSecondTable) => {
                     if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
-                        output[index] = { ...valueFromFirstTable };
-                        output[index++][table2Index] = mapWithAlias({ ...valueFromSecondTable });
+                        valueMatchedFromSecondTable.push({
+                            ...valueFromSecondTable
+                        });
                     }
+                });
+
+                valueMatchedFromSecondTable.forEach(function (value) {
+                    value = mapWithAlias(value);
+                    if (!whereCheker.check(value)) return;
+
+                    output[index] = { ...valueFromFirstTable };
+                    output[index++][table2Index] = value;
                 });
             });
         };
@@ -344,12 +370,17 @@ class Join {
         const whereQry = qry.where;
         const whereJoin = {};
         if (whereQry) {
-            for (const key in whereQry) {
-                // const whereQueryVal = whereQry[key];
-                const columnFound = tableSchemaOf2ndTable.columns.find(q => q.name === key);
-                if (!columnFound) {
-                    whereJoin[key] = whereQry[key];
-                    delete whereQry[key];
+            for (const columnName in whereQry) {
+                switch (columnName) {
+                    case "or":
+                    case "in":
+                        break;
+                    default:
+                        const columnFound = tableSchemaOf2ndTable.columns.find(q => q.name === columnName);
+                        if (!columnFound) {
+                            whereJoin[columnName] = whereQry[columnName];
+                            delete whereQry[columnName];
+                        }
                 }
             }
             if (getLength(whereQry) === 0) {
