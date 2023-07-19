@@ -222,31 +222,17 @@ class Join {
         let valueMatchedFromSecondTable: any[];
         const whereQry = Object.assign({}, joinQuery['whereJoin']);
         const whereCheker = new WhereChecker(whereQry, (getLength(whereQry) > 0));
+        let joinerComparer: (valueFromSecondTable, valueFromFirstTable) => boolean;
 
         const performInnerJoin = () => {
-            let index = 0;
-            let valueMatchedFromSecondTable: any[];
-            this.results.forEach(valueFromFirstTable => {
-                valueMatchedFromSecondTable = [];
-                secondtableData.forEach((valueFromSecondTable) => {
-                    if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
-                        valueMatchedFromSecondTable.push({
-                            ...valueFromSecondTable
-                        });
-                    }
-                });
-
-                valueMatchedFromSecondTable.forEach(function (value) {
-                    value = mapWithAlias(value);
-                    if (!whereCheker.check(value)) return;
-
-                    output[index] = { ...valueFromFirstTable };
-                    output[index++][table2Index] = value;
-                });
-            });
+            joinerComparer = (valueFromSecondTable, valueFromFirstTable,) => {
+                return valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2];
+            }
+            defaultValueSetter = () => { };
         };
+
+        let defaultValueSetter;
         const performleftJoin = () => {
-            let callBack;
             const columnDefaultValue = {};
             const nullValue = null;
             if (joinQuery.store) {
@@ -261,43 +247,22 @@ class Join {
             }
 
             if (table2Index === 1) {
-                callBack = function (valueFromSecondTable, valueFromFirstTable) {
-                    if (valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2]) {
-                        valueMatchedFromSecondTable.push({
-                            ...valueFromSecondTable
-                        });
-                    }
+                joinerComparer = function (valueFromSecondTable, valueFromFirstTable) {
+                    return valueFromFirstTable[table1Index][column1] === valueFromSecondTable[column2];
                 };
             }
             else {
-                callBack = function (valueFromSecondTable, valueFromFirstTable) {
+                joinerComparer = function (valueFromSecondTable, valueFromFirstTable) {
                     const value = valueFromFirstTable[table1Index];
-                    if (value != null && value[column1] === valueFromSecondTable[column2]) {
-                        valueMatchedFromSecondTable.push({
-                            ...valueFromSecondTable
-                        });
-                    }
+                    return value != null && value[column1] === valueFromSecondTable[column2];
                 };
             }
-            this.results.forEach((valueFromFirstTable) => {
-                valueMatchedFromSecondTable = [];
-                // perform left join
-                secondtableData.forEach(val => {
-                    callBack(val, valueFromFirstTable)
-                });
 
+            defaultValueSetter = () => {
                 if (valueMatchedFromSecondTable.length === 0) {
                     valueMatchedFromSecondTable = [columnDefaultValue];
                 }
-
-                valueMatchedFromSecondTable.forEach(function (value) {
-                    value = mapWithAlias(value);
-                    if (!whereCheker.check(value)) return;
-
-                    output[index] = { ...valueFromFirstTable };
-                    output[index++][table2Index] = value;
-                });
-            });
+            }
         };
         switch (joinType) {
             case "left":
@@ -305,6 +270,27 @@ class Join {
             default:
                 performInnerJoin();
         }
+        this.results.forEach((valueFromFirstTable) => {
+            valueMatchedFromSecondTable = [];
+            // perform left join
+            secondtableData.forEach(valueFromSecondTable => {
+                if (joinerComparer(valueFromSecondTable, valueFromFirstTable)) {
+                    valueMatchedFromSecondTable.push({
+                        ...valueFromSecondTable
+                    });
+                }
+            });
+
+            defaultValueSetter();
+
+            valueMatchedFromSecondTable.forEach(function (value) {
+                value = mapWithAlias(value);
+                if (!whereCheker.check(value)) return;
+
+                output[index] = { ...valueFromFirstTable };
+                output[index++][table2Index] = value;
+            });
+        });
         this.results = output;
     }
 
