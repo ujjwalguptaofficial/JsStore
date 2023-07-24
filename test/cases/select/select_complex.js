@@ -477,4 +477,29 @@ describe('Test select complex case', function () {
             done(err);
         })
     });
+
+    it('SELECT * from Products where supplierID=1 and ((categoryId=1 and price=18) or (categoryId=2 and price=22))    ', function (done) {
+        con.select({
+            from: "Products",
+            where: [{
+                supplierId: 1,
+            }, [{
+                categoryId: 1,
+                price: 18,
+            }, {
+                or: {
+                    categoryId: 2,
+                    price: 22,
+                }
+            }]
+            ]
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(1).eql([
+                { "productId": 1, "productName": "Chais", "supplierId": 1, "categoryId": 1, "unit": "10 boxes x 20 bags", "price": 18 }
+            ])
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
 });

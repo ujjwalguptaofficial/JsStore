@@ -100,7 +100,6 @@ export class Select extends BaseFetch {
                     this.returnResult_.bind(this)
                 )
             })
-
         }
         catch (ex) {
             return this.onException(ex);
@@ -140,11 +139,8 @@ export class Select extends BaseFetch {
                 if (output.length > 0) {
                     this.results = [...output, ...this.results];
                     this.removeDuplicates();
-                    output = this.results;
                 }
-                else {
-                    output = this.results;
-                }
+                output = this.results;
             }
             isFirstWhere = false;
             if (whereQuery.length > 0) {
@@ -154,10 +150,20 @@ export class Select extends BaseFetch {
             else {
                 this.results = output;
             }
-
         };
         const processFirstQry = () => {
             let whereQueryToProcess = whereQuery.shift();
+            if (Array.isArray(whereQueryToProcess)) {
+                operation = QUERY_OPTION.And;
+                const select = new Select({
+                    from: this.query.from,
+                    where: whereQueryToProcess
+                }, this.util);
+                return select.execute().then(results => {
+                    this.results = results;
+                    onSuccess();
+                });
+            }
             if (whereQueryToProcess[QUERY_OPTION.Or]) {
                 if (getLength(whereQueryToProcess) === 1) {
                     operation = QUERY_OPTION.Or;
