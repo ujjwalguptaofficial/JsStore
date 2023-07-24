@@ -151,24 +151,27 @@ export class Select extends BaseFetch {
                 this.results = output;
             }
         };
+        const executeWhere = (whereQuery) => {
+            const select = new Select({
+                from: this.query.from,
+                where: whereQuery as any
+            }, this.util);
+            return select.execute().then(results => {
+                this.results = results;
+                onSuccess();
+            });
+        };
         const processFirstQry = () => {
             let whereQueryToProcess = whereQuery.shift();
-
-            if (whereQueryToProcess[QUERY_OPTION.Or]) {
-                if (Array.isArray(whereQueryToProcess[QUERY_OPTION.Or])) {
-                    const select = new Select({
-                        from: this.query.from,
-                        where: whereQueryToProcess[QUERY_OPTION.Or] as any
-                    }, this.util);
+            const whereQueryOr = whereQueryToProcess[QUERY_OPTION.Or];
+            if (whereQueryOr) {
+                if (Array.isArray(whereQueryOr)) {
                     operation = QUERY_OPTION.Or;
-                    return select.execute().then(results => {
-                        this.results = results;
-                        onSuccess();
-                    });
+                    return executeWhere(whereQueryOr);
                 }
                 if (getLength(whereQueryToProcess) === 1) {
                     operation = QUERY_OPTION.Or;
-                    whereQueryToProcess = whereQueryToProcess[QUERY_OPTION.Or] as any;
+                    whereQueryToProcess = whereQueryOr as any;
                 }
                 else {
                     operation = QUERY_OPTION.And;
@@ -176,15 +179,8 @@ export class Select extends BaseFetch {
             }
             else {
                 operation = QUERY_OPTION.And;
-                if (Array.isArray(whereQueryToProcess)) {
-                    const select = new Select({
-                        from: this.query.from,
-                        where: whereQueryToProcess
-                    }, this.util);
-                    return select.execute().then(results => {
-                        this.results = results;
-                        onSuccess();
-                    });
+                if (isArray(whereQueryToProcess)) {
+                    return executeWhere(whereQueryToProcess);
                 }
             }
             this.query.where = whereQueryToProcess;
