@@ -153,18 +153,19 @@ export class Select extends BaseFetch {
         };
         const processFirstQry = () => {
             let whereQueryToProcess = whereQuery.shift();
-            if (Array.isArray(whereQueryToProcess)) {
-                operation = QUERY_OPTION.And;
-                const select = new Select({
-                    from: this.query.from,
-                    where: whereQueryToProcess
-                }, this.util);
-                return select.execute().then(results => {
-                    this.results = results;
-                    onSuccess();
-                });
-            }
+
             if (whereQueryToProcess[QUERY_OPTION.Or]) {
+                if (Array.isArray(whereQueryToProcess[QUERY_OPTION.Or])) {
+                    const select = new Select({
+                        from: this.query.from,
+                        where: whereQueryToProcess[QUERY_OPTION.Or] as any
+                    }, this.util);
+                    operation = QUERY_OPTION.Or;
+                    return select.execute().then(results => {
+                        this.results = results;
+                        onSuccess();
+                    });
+                }
                 if (getLength(whereQueryToProcess) === 1) {
                     operation = QUERY_OPTION.Or;
                     whereQueryToProcess = whereQueryToProcess[QUERY_OPTION.Or] as any;
@@ -175,6 +176,16 @@ export class Select extends BaseFetch {
             }
             else {
                 operation = QUERY_OPTION.And;
+                if (Array.isArray(whereQueryToProcess)) {
+                    const select = new Select({
+                        from: this.query.from,
+                        where: whereQueryToProcess
+                    }, this.util);
+                    return select.execute().then(results => {
+                        this.results = results;
+                        onSuccess();
+                    });
+                }
             }
             this.query.where = whereQueryToProcess;
             return this.processWhere_().then(onSuccess);
