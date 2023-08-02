@@ -182,6 +182,26 @@ describe('Test join', function () {
             done(err);
         })
     });
+    
+    it('left join when data match from second table using where', function (done) {
+        con.select({
+            from: "Orders",
+            join: {
+                with: "Customers",
+                type: "left",
+                on: "Orders.customerId=Customers.customerId",
+                as: {
+                    customerId: 'cId'
+                },
+            },
+            where: [{
+                shipperId: 2
+            }]
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(74);
+            done();
+        }).catch(done)
+    });
 
     it('left join when data does not match from second table using where', function (done) {
         con.select({
