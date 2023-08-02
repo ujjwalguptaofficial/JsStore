@@ -182,8 +182,12 @@ describe('Test join', function () {
             done(err);
         })
     });
-    
-    it('left join when data match from second table using where', function (done) {
+
+    it(`SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate
+    FROM Orders
+    INNER JOIN Customers
+    ON Orders.CustomerID=Customers.CustomerID where shipperId=2
+    `, function (done) {
         con.select({
             from: "Orders",
             join: {
@@ -202,6 +206,81 @@ describe('Test join', function () {
             done();
         }).catch(done)
     });
+
+    it(`SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate
+    FROM Orders
+    INNER JOIN Customers
+    ON Orders.CustomerID=Customers.CustomerID where shipperId=2 or employeeId=4
+    `, function (done) {
+        con.select({
+            from: "Orders",
+            join: {
+                with: "Customers",
+                type: "left",
+                on: "Orders.customerId=Customers.customerId",
+                as: {
+                    customerId: 'cId'
+                },
+            },
+            where: [
+                {
+                    shipperId: 2,
+                },
+                {
+                    or: {
+                        employeeId: 4,
+                    }
+                }
+            ]
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(97);
+            done();
+        }).catch(done)
+    });
+
+    it(`SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate
+    FROM Orders
+    INNER JOIN Customers
+    ON Orders.CustomerID=Customers.CustomerID where shipperId=2 and (employeeId=4 and Orders.customerId=34) or (employeeId=4 and Orders.customerId=76) order by orderid asc    
+    `, function (done) {
+        con.select({
+            from: "Orders",
+            join: {
+                with: "Customers",
+                type: "left",
+                on: "Orders.customerId=Customers.customerId",
+                as: {
+                    customerId: 'cId'
+                },
+            },
+            where: [
+                {
+                    shipperId: 2,
+                },
+                {
+                    employeeId: 4,
+                    customerId: 34,
+                },
+                {
+                    or: {
+                        employeeId: 4,
+                        customerId: 76,
+                    }
+                }
+            ],
+            order: {
+                by: 'Orders.orderId',
+                type: 'asc'
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(3);
+            const expectedIds = results.map(result => result.orderId);
+            expect(expectedIds).eql([10250, 10252, 10302])
+            done();
+        }).catch(done)
+    });
+
+ 
 
     it('left join when data does not match from second table using where', function (done) {
         con.select({
