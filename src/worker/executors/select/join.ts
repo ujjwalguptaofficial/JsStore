@@ -78,60 +78,58 @@ class Join {
         if (whereQuery && !query.store) {
             const table = this.getTable(tableName);
             const removeJoinColumn = (whereQryParam) => {
-                const whereQryAfterJoin = {};
-                for (const column in whereQryParam) {
-                    switch (column) {
-                        case "or":
-                            const filteredOr = {};
-                            const whereQryOr = whereQryParam[column];
-                            for (const orColumn in whereQryOr) {
-                                const columnInTable = table.columns.find(q => q.name === orColumn);
-                                if (!columnInTable) {
-                                    filteredOr[orColumn] = whereQryOr[orColumn];
-                                }
-                            }
-                            if (getLength(filteredOr) > 0) {
-                                whereQryAfterJoin['or'] = filteredOr;
-                                for (const orColumn in filteredOr) {
-                                    delete whereQryOr[orColumn];
-                                }
-                            }
-                            break;
-                        default:
-                            const columnInTable = table.columns.find(q => q.name === column);
-                            if (!columnInTable) {
-                                whereQryAfterJoin[column] = whereQuery[column];
-                            }
-                    }
+                let whereQryAfterJoin;
+                if (Array.isArray(whereQryParam)) {
+                    whereQryAfterJoin = [];
+                    whereQryParam = whereQryParam.filter((qry) => {
+                        const result = removeJoinColumn(qry);
+                        if (Object.keys(result.whereQryAfterJoin).length > 0) {
+                            whereQryAfterJoin.push(result.whereQryAfterJoin);
+                        }
+                        return !result.isWhereEmpty
+                    });
                 }
-                for (const column in whereQryAfterJoin) {
-                    delete whereQryParam[column];
+                else {
+                    whereQryAfterJoin = {};
+                    for (const column in whereQryParam) {
+                        switch (column) {
+                            case "or":
+                                const filteredOr = {};
+                                const whereQryOr = whereQryParam[column];
+                                for (const orColumn in whereQryOr) {
+                                    const columnInTable = table.columns.find(q => q.name === orColumn);
+                                    if (!columnInTable) {
+                                        filteredOr[orColumn] = whereQryOr[orColumn];
+                                    }
+                                }
+                                if (getLength(filteredOr) > 0) {
+                                    whereQryAfterJoin['or'] = filteredOr;
+                                    for (const orColumn in filteredOr) {
+                                        delete whereQryOr[orColumn];
+                                    }
+                                }
+                                break;
+                            default:
+                                const columnInTable = table.columns.find(q => q.name === column);
+                                if (!columnInTable) {
+                                    whereQryAfterJoin[column] = whereQuery[column];
+                                }
+                        }
+                    }
+                    for (const column in whereQryAfterJoin) {
+                        delete whereQryParam[column];
+                    }
                 }
                 return {
-                    isWhereEmpty: Object.keys(whereQryParam).length === 0,
-                    whereQryAfterJoin
+                    isWhereEmpty: getLength(whereQryParam) === 0,
+                    whereQryAfterJoin,
+                    whereQueryModified: whereQryParam
                 }
             }
-            let whereQryAfterJoin, shouldDeleteWhere;
-            if (Array.isArray(whereQuery)) {
-                whereQryAfterJoin = [];
-                query.where = whereQuery.filter((qry) => {
-                    const result = removeJoinColumn(qry);
-                    if (Object.keys(result.whereQryAfterJoin).length > 0) {
-                        whereQryAfterJoin.push(result.whereQryAfterJoin);
-                    }
-                    return !result.isWhereEmpty
-                });
-                console.log("query.where", query.where);
-                debugger;
-                shouldDeleteWhere = query.where.length === 0;
-            }
-            else {
-                const result = removeJoinColumn(whereQuery);
-                whereQryAfterJoin = result.whereQryAfterJoin;
-                shouldDeleteWhere = result.isWhereEmpty;
-            }
-            if (shouldDeleteWhere) {
+            const result = removeJoinColumn(whereQuery);
+            const whereQryAfterJoin = result.whereQryAfterJoin;
+            query.where = result.whereQueryModified;
+            if (result.isWhereEmpty) {
                 delete query.where;
             }
             const joinQuery = this.joinQueryStack_[0];
