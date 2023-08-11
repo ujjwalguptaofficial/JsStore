@@ -203,7 +203,23 @@ export class Select extends BaseFetch {
 
     private processWhere_() {
         this.shouldAddValue = (cursor: IDBCursorWithValue) => {
-            return this.whereChecker.check(cursor.value);
+            const cursorValue = cursor.value;
+            const that = this;
+            const proxy = new Proxy(cursorValue, {
+                get(target, p, receiver) {
+                    let val = cursorValue[p];
+                    if (!val) {
+                        const column = that.getColumnInfo(p as string);
+                        if (column && column.keyPath) {
+                            return column.keyPath.map(col => {
+                                return cursorValue[col];
+                            });
+                        }
+                    }
+                    return val;
+                },
+            });
+            return this.whereChecker.check(proxy);
         };
         if ((this.query.where as IWhereQuery).or) {
             this.processOrLogic_();

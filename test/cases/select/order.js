@@ -135,7 +135,6 @@ describe('Select with order', function () {
     });
 
     it('things table test', function (done) {
-        debugger;
         con.select({
             from: 'things',
             order: {

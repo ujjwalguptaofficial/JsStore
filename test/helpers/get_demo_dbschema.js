@@ -12,6 +12,7 @@ var getDemoDbSchema = function () {
             city: { notNull: true, dataType: 'string' },
             postalCode: { dataType: 'string' },
             country: { notNull: true, dataType: 'string' },
+            countryCity: { keyPath: ['country', 'city'] },
             email: { dataType: 'string' }
         }
     };

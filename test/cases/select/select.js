@@ -579,4 +579,29 @@ describe('Test Select Api', function () {
         }).catch(done);
     });
 
+    it('keypath', function (done) {
+        con.select({
+            from: 'Customers',
+            where: {
+                countryCity: ["UK", "London"]
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(6);
+            done();
+        }).catch(done);
+    });
+
+    it('keypath with and', function (done) {
+        con.select({
+            from: 'Customers',
+            where: {
+                customerId: 11,
+                countryCity: ["UK", "London"]
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(1);
+            done();
+        }).catch(done);
+    });
+
 });

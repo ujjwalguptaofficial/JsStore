@@ -592,7 +592,8 @@ describe('Test join', function () {
                     address: "address",
                     postalCode: "postalCode",
                     country: "country",
-                    email: "email"
+                    email: "email",
+                    countryCity: "c_countryCity"
                 }
             }
         }).then(function (results) {
@@ -617,7 +618,8 @@ describe('Test join', function () {
                     address: "address",
                     postalCode: "postalCode",
                     country: "country",
-                    email: "email"
+                    email: "email",
+                    countryCity: "c_countryCity"
                 },
                 where: {
                     customerId: { '<': 90 }

@@ -1,5 +1,5 @@
 import { QUERY_OPTION } from "@/common";
-import { getDataType, clone, compare, getRegexFromLikeExpression } from "@worker/utils";
+import { getDataType, clone, compare, getRegexFromLikeExpression, isArray } from "@worker/utils";
 
 /**
  * For matching the different column value existance for where option
@@ -32,9 +32,10 @@ export class WhereChecker {
       }
       const whereColumnValue = where[columnName];
       const columnValue = rowValue[columnName];
-      const isArrayColumnValue = Array.isArray(columnValue);
+      const isArrayColumnValue = isArray(columnValue);
+      const isArrayWhereColumnValue = isArray(whereColumnValue);
       const executeCompare = (executor: Function) => {
-        if (isArrayColumnValue) {
+        if (isArrayColumnValue && !isArrayWhereColumnValue) {
           columnValue.every(q => {
             status = executor(q);
             return !status;
