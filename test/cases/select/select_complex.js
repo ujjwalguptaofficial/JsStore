@@ -530,4 +530,75 @@ describe('Test select complex case', function () {
             done(err);
         })
     });
+
+    it(`SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate
+    FROM Orders
+    where orderId<1000000 && shipperId=2 and ((employeeId=4 and customerId=34) or (employeeId=4 and customerId=76)) order by orderid asc        
+    `, function (done) {
+        con.select({
+            from: "Orders",
+            order: {
+                by: 'customerId',
+                type: 'asc' //supprted sort type is - asc,desc
+            },
+            where: [{
+                orderId: {
+                    '<': 1000000
+                }
+            }, {
+                shipperId: 2,
+            },
+            [{
+                employeeId: 4,
+                customerId: 34,
+            }, {
+                or: {
+                    employeeId: 4,
+                    customerId: 76
+                }
+            }],
+            ]
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(3);
+            const expectedIds = results.map(result => result.orderId);
+            expect(expectedIds).eql([10250, 10252, 10302])
+            done();
+        }).catch(done)
+    });
+
+    it(`SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate
+    FROM Orders
+    where shipperId=2 and ((employeeId=4 and customerId=34) or (employeeId=4 and customerId=76)) and orderId<1000000 order by orderid asc        
+    `, function (done) {
+        con.select({
+            from: "Orders",
+            order: {
+                by: 'customerId',
+                type: 'asc' //supprted sort type is - asc,desc
+            },
+            where: [{
+                shipperId: 2,
+            },
+            [{
+                employeeId: 4,
+                customerId: 34,
+            }, {
+                or: {
+                    employeeId: 4,
+                    customerId: 76
+                }
+            }],
+            {
+                orderId: {
+                    '<': 1000000
+                }
+            },
+            ]
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(3);
+            const expectedIds = results.map(result => result.orderId);
+            expect(expectedIds).eql([10250, 10252, 10302])
+            done();
+        }).catch(done)
+    });
 });

@@ -150,22 +150,23 @@ export class Select extends BaseFetch {
             else {
                 this.results = output;
             }
+            return promiseResolve();
         };
-        const executeWhere = (whereQuery) => {
+        const executeWhere = (whereQuery): Promise<any> => {
             const select = new Select({
                 from: this.query.from,
                 where: whereQuery as any
             }, this.util);
             return select.execute().then(results => {
                 this.results = results;
-                onSuccess();
+                return onSuccess();
             });
         };
-        const processFirstQry = () => {
+        const processFirstQry = (): Promise<any> => {
             let whereQueryToProcess = whereQuery.shift();
             const whereQueryOr = whereQueryToProcess[QUERY_OPTION.Or];
             if (whereQueryOr) {
-                if (Array.isArray(whereQueryOr)) {
+                if (isArray(whereQueryOr)) {
                     operation = QUERY_OPTION.Or;
                     return executeWhere(whereQueryOr);
                 }

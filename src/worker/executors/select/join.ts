@@ -126,10 +126,10 @@ class Join {
                     whereQueryModified: whereQryParam
                 }
             }
-            const result = removeJoinColumn(whereQuery);
-            const whereQryAfterJoin = result.whereQryAfterJoin;
-            query.where = result.whereQueryModified;
-            if (result.isWhereEmpty) {
+            const removeJoinColumnResult = removeJoinColumn(whereQuery);
+            const whereQryAfterJoin = removeJoinColumnResult.whereQryAfterJoin;
+            query.where = removeJoinColumnResult.whereQueryModified;
+            if (removeJoinColumnResult.isWhereEmpty) {
                 delete query.where;
             }
             const joinQuery = this.joinQueryStack_[0];
