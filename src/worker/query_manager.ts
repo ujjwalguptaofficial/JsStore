@@ -1,4 +1,4 @@
-import { WebWorkerRequest, promiseResolve, API, IDataBase, WebWorkerResult, promise, ERROR_TYPE, IDbInfo } from "@/common";
+import { WebWorkerRequest, promiseResolve, API, IDataBase, WebWorkerResult, promise, ERROR_TYPE, IDbInfo, InitDbResult } from "@/common";
 import { DbMeta } from "./model";
 import { IDBUtil } from "./idbutil";
 import { Insert } from "@executors/insert";
@@ -260,7 +260,7 @@ export class QueryManager {
 
     openDb(query: IDbInfo) {
         return this.closeDb().then(_ => {
-            let pResult: Promise<boolean>;
+            let pResult: Promise<InitDbResult>;
             if (this.db && query.name === this.db.name) {
                 pResult = this.initDb();
             }
@@ -291,47 +291,45 @@ export class QueryManager {
         }
         this.util = new IDBUtil();
 
-        return promise<boolean>((res, rej) => {
-            this.util.initDb(dbMeta).then((dbInfo) => {
+        return this.util.initDb(dbMeta).then(dbInfo => {
+            return MetaHelper.get(
+                MetaHelper.dbSchema,
+                this.util
+            ).then((dbFromCache: DbMeta) => {
                 if (dbInfo.isCreated) {
-                    MetaHelper.get(
-                        MetaHelper.dbSchema,
-                        this.util
-                    ).then((dbFromCache: DbMeta) => {
-                        if (dbFromCache) {
-                            dbFromCache.tables.forEach((tableFromCache) => {
-                                const targetTable = dbMeta.tables.find(q => q.name === tableFromCache.name);
-                                if (targetTable) {
-                                    for (const key in tableFromCache.autoIncColumnValue) {
-                                        const savedAutoIncrementValue = tableFromCache.autoIncColumnValue[key];
-                                        if (savedAutoIncrementValue) {
-                                            targetTable.autoIncColumnValue[key] = savedAutoIncrementValue;
-                                        }
+                    if (dbFromCache) {
+                        dbFromCache.tables.forEach((tableFromCache) => {
+                            const targetTable = dbMeta.tables.find(q => q.name === tableFromCache.name);
+                            if (targetTable) {
+                                for (const key in tableFromCache.autoIncColumnValue) {
+                                    const savedAutoIncrementValue = tableFromCache.autoIncColumnValue[key];
+                                    if (savedAutoIncrementValue) {
+                                        targetTable.autoIncColumnValue[key] = savedAutoIncrementValue;
                                     }
                                 }
-                            });
-                        }
-                        this.util.db = dbMeta;
-                        dbInfo.database = userDbSchema(this.db);
-                        MetaHelper.set(
-                            MetaHelper.dbSchema, dbMeta,
-                            this.util
-                        ).then(() => {
-                            res(dbInfo);
-                        }).catch(rej);
-                    }).catch(rej);
+                            }
+                        });
+                    }
+                    this.util.db = dbMeta;
+                    dbInfo.database = userDbSchema(this.db);
+                    return MetaHelper.set(
+                        MetaHelper.dbSchema, dbMeta,
+                        this.util
+                    ).then(() => {
+                        return dbInfo;
+                    })
                 }
                 else {
-                    MetaHelper.get(
+                    return MetaHelper.get(
                         MetaHelper.dbSchema,
                         this.util
                     ).then((value: any) => {
                         this.util.db = value;
                         dbInfo.database = userDbSchema(this.db);
-                        res(dbInfo);
-                    }).catch(rej);
+                        return dbInfo;
+                    });
                 }
-            }).catch(rej);
+            });
         });
     }
 }
