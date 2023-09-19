@@ -93,7 +93,7 @@ export class Insert extends Base {
                 });
             })
         ).then(() => {
-            MetaHelper.set(MetaHelper.dbSchema, db, this.util);
+            return MetaHelper.set(MetaHelper.dbSchema, db, this.util);
         });
     }
 }
