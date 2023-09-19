@@ -94,12 +94,10 @@ export class ConnectionHelper {
             this.isDbIdle_ = true;
             break;
           case API.CloseDb:
+            this.isDbIdle_ = true;
+            this.eventBus_.emit(EVENT.RequestQueueEmpty, []);
             if (this.requestQueue_.length > 0) {
-              this.openDb_();
-            }
-            else {
-              this.isDbIdle_ = true;
-              this.eventBus_.emit(EVENT.RequestQueueEmpty, []);
+              this.openDb_(false);
             }
             break;
         }
@@ -110,8 +108,8 @@ export class ConnectionHelper {
     }
   }
 
-  private openDb_() {
-    this.prcoessExecutionOfQry_({
+  private openDb_(execute = true) {
+    const request = {
       name: API.OpenDb,
       query: {
         name: this.database.name,
@@ -123,7 +121,13 @@ export class ConnectionHelper {
       onError: function (err) {
         console.error(err);
       }
-    }, 0);
+    };
+    if (execute) {
+      this.prcoessExecutionOfQry_(request, 0);
+    }
+    else {
+      this.requestQueue_.splice(0, 0, request);
+    }
   }
 
   private executeMiddleware_(input: WebWorkerRequest) {

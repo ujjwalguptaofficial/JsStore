@@ -299,7 +299,7 @@ export class QueryManager {
                         this.util
                     ).then((dbFromCache: DbMeta) => {
                         if (dbFromCache) {
-                            dbFromCache.tables.forEach((tableFromCache, index) => {
+                            dbFromCache.tables.forEach((tableFromCache) => {
                                 const targetTable = dbMeta.tables.find(q => q.name === tableFromCache.name);
                                 if (targetTable) {
                                     for (const key in tableFromCache.autoIncColumnValue) {
