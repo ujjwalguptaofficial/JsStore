@@ -329,7 +329,7 @@ export class QueryManager {
                         this.util.db = value;
                         dbInfo.database = userDbSchema(this.db);
                         res(dbInfo);
-                    }).catch(rej)
+                    }).catch(rej);
                 }
             }).catch(rej);
         });
