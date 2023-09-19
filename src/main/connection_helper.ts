@@ -1,6 +1,6 @@
 import { LogHelper } from "./log_helper";
 import {
-  WebWorkerRequest, EventQueue, API, WebWorkerResult,
+  WebWorkerRequest, API, WebWorkerResult,
   EVENT, promise, IDataBase, IDbInfo, TMiddleware,
   promiseResolve
 } from "../common";

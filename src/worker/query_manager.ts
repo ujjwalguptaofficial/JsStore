@@ -318,8 +318,8 @@ export class QueryManager {
                             this.util
                         ).then(() => {
                             res(dbInfo);
-                        });
-                    });
+                        }).catch(rej);
+                    }).catch(rej);
                 }
                 else {
                     MetaHelper.get(
@@ -329,7 +329,7 @@ export class QueryManager {
                         this.util.db = value;
                         dbInfo.database = userDbSchema(this.db);
                         res(dbInfo);
-                    });
+                    }).catch(rej)
                 }
             }).catch(rej);
         });
