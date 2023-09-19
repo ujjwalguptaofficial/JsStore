@@ -317,7 +317,7 @@ export class QueryManager {
                         this.util
                     ).then(() => {
                         return dbInfo;
-                    })
+                    });
                 }
                 else {
                     return MetaHelper.get(
