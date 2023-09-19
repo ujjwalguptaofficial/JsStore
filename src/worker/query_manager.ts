@@ -286,6 +286,9 @@ export class QueryManager {
         }
 
         const dbMeta = dataBase ? new DbMeta(dataBase) : this.db;
+        if (dbMeta == null) {
+            throw new Error(`dbMeta is null`);
+        }
         this.util = new IDBUtil();
 
         return promise<boolean>((res, rej) => {

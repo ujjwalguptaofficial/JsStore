@@ -200,9 +200,7 @@ export class ConnectionHelper {
           if (!isConnectionApi && this.isDbIdle_ && this.isConOpened_) {
             this.openDb_();
           }
-          else {
-            clearTimeout(this.inactivityTimer_);
-          }
+          clearTimeout(this.inactivityTimer_);
         }
         this.prcoessExecutionOfQry_(request);
       }).catch(reject);

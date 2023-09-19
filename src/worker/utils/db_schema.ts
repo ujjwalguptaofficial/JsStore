@@ -2,6 +2,9 @@ import { DbMeta } from "@worker/model";
 import { IDataBase, ITable } from "@/common";
 
 export const userDbSchema = (db: DbMeta) => {
+    if (db == null) {
+        throw new Error(`userDbSchema db is null`);
+    }
     const database = {
         name: db.name,
         version: db.version,
