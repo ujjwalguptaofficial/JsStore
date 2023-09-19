@@ -200,9 +200,11 @@ export class ConnectionHelper {
         };
         if (this.requestQueue_.length === 0) {
           this.eventBus_.emit(EVENT.RequestQueueFilled, []);
-          const isConnectionApi = [API.CloseDb, API.DropDb, API.OpenDb, API.Terminate].indexOf(request.name) >= 0;
-          if (!isConnectionApi && this.isDbIdle_ && this.isConOpened_) {
-            this.openDb_();
+          if (this.isDbIdle_ && this.isConOpened_) {
+            const isConnectionApi = [API.InitDb, API.CloseDb, API.DropDb, API.OpenDb, API.Terminate].indexOf(request.name) >= 0;
+            if (!isConnectionApi) {
+              this.openDb_();
+            }
           }
           clearTimeout(this.inactivityTimer_);
         }
