@@ -23,7 +23,7 @@ export class JsStoreMap {
     }
 
     /**
-     * Returns a boolean indicating whether a value has been associated with the passed key in the Map object or not. 
+     * Returns a boolean indicating whether a value has been associated with the passed key in the MapStore or not. 
      *
      * @param {string} key
      * @return {*} 
