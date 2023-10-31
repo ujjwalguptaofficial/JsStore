@@ -191,6 +191,7 @@ export class Connection extends ConnectionHelper {
      *
      * @memberof Connection
      */
+    // tslint:disable-next-line
     Map = new JsStoreMap(this);
 
     /**

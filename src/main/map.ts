@@ -30,7 +30,7 @@ export class JsStoreMap {
      * @memberof JsStoreMap
      */
     has(key: string) {
-        return this.con['pushApi']<Boolean>({
+        return this.con['pushApi']<boolean>({
             name: API.MapHas,
             query: key
         });

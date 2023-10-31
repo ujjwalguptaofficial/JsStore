@@ -2,7 +2,7 @@
   "name": "jsstore_typescript_example",
   "version": "1.0.0",
   "scripts": {
-    "builds": "webpack",
+    "builds": "export NODE_OPTIONS=--openssl-legacy-provider; webpack",
     "start": "webpack-dev-server",
     "dev": "npm run start"
   },

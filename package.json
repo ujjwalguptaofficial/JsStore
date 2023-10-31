@@ -1,6 +1,6 @@
 {
   "name": "jsstore",
-  "version": "4.6.4",
+  "version": "4.7.0",
   "description": "A complete IndexedDB wrapper with SQL like syntax.",
   "main": "dist/npm.export.js",
   "types": "dist/ts/main/index.d.ts",
