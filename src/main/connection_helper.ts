@@ -25,8 +25,10 @@ export class ConnectionHelper {
   private whiteListApi_ = [
     API.InitDb,
     API.OpenDb,
-    API.Get,
-    API.Set,
+    API.MapGet,
+    API.MapSet,
+    API.MapHas,
+    API.MapDelete,
     API.ChangeLogStatus,
     API.Terminate,
     API.DropDb

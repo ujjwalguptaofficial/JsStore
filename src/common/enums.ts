@@ -54,10 +54,13 @@ export enum DATA_TYPE {
     DateTime = "date_time"
 }
 
+
 export enum API {
     InitDb = "init_db",
-    Get = "get",
-    Set = "set",
+    MapGet = "map_get",
+    MapSet = "map_set",
+    MapHas = "map_has",
+    MapDelete = "map_delete",
     Select = "select",
     Insert = "insert",
     Update = "update",

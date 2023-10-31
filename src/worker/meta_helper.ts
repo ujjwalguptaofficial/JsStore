@@ -8,12 +8,15 @@ export class MetaHelper {
     }
     static dbSchema = `JsStore_DbSchema`;
 
-    static set(key, value, util: IDBUtil) {
+    static getStore(util: IDBUtil) {
         if (!util.tx) {
             util.createTransaction([MetaHelper.tableName]);
         }
-        const store = util.objectStore(MetaHelper.tableName);
+        return util.objectStore(MetaHelper.tableName);
+    }
 
+    static set(key, value, util: IDBUtil) {
+        const store = MetaHelper.getStore(util);
         return promise((res, rej) => {
             const req = store.put({
                 key, value
@@ -26,10 +29,7 @@ export class MetaHelper {
     }
 
     static get(key, util: IDBUtil) {
-        if (!util.tx) {
-            util.createTransaction([MetaHelper.tableName]);
-        }
-        const store = util.objectStore(MetaHelper.tableName);
+        const store = MetaHelper.getStore(util);
 
         return promise((res, rej) => {
             const req = store.get(
@@ -44,16 +44,30 @@ export class MetaHelper {
     }
 
     static remove(key, util: IDBUtil) {
-        if (!util.tx) {
-            util.createTransaction([MetaHelper.tableName]);
-        }
-        const store = util.objectStore(MetaHelper.tableName);
+        const store = MetaHelper.getStore(util);
 
         return promise((res, rej) => {
             const req = store.delete(
                 util.keyRange(key)
             );
-            req.onsuccess = res;
+            req.onsuccess = () => {
+                res();
+            };
+            req.onerror = rej;
+        });
+    }
+
+    static has(key, util: IDBUtil) {
+        const store = MetaHelper.getStore(util);
+
+        return promise((res, rej) => {
+            const req = store.count(
+                util.keyRange(key)
+            );
+            req.onsuccess = () => {
+                const result = req.result;
+                res(result > 0);
+            };
             req.onerror = rej;
         });
     }

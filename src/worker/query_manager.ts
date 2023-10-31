@@ -128,13 +128,21 @@ export class QueryManager {
             case API.Transaction:
                 callAPI(Transaction as any, cb);
                 break;
-            case API.Get:
+            case API.MapGet:
                 cb();
                 queryResult = MetaHelper.get(query as string, idbutil);
                 break;
-            case API.Set:
+            case API.MapSet:
                 cb();
                 queryResult = MetaHelper.set(query.key, query.value, idbutil);
+                break;
+            case API.MapHas:
+                cb();
+                queryResult = MetaHelper.has(query as string, idbutil);
+                break;
+            case API.MapDelete:
+                cb();
+                queryResult = MetaHelper.remove(query as string, idbutil);
                 break;
             case API.ImportScripts:
                 cb();

@@ -185,6 +185,35 @@ export class Connection extends ConnectionHelper {
         return (indexedDB as any).databases();
     }
 
+    Map = {
+        get: <T>(key: string) => {
+            return this.pushApi<T>({
+                name: API.MapGet,
+                query: key
+            });
+        },
+        has: (key: string) => {
+            return this.pushApi<Boolean>({
+                name: API.MapHas,
+                query: key
+            });
+        },
+        set: (key: string, value: any) => {
+            return this.pushApi<void>({
+                name: API.MapSet,
+                query: {
+                    key: key, value: value
+                } as SetQuery
+            });
+        },
+        delete: (key: string) => {
+            return this.pushApi<void>({
+                name: API.MapDelete,
+                query: key
+            });
+        },
+    }
+
     /**
      * get the value from keystore table
      *
@@ -194,10 +223,7 @@ export class Connection extends ConnectionHelper {
      * @memberof Connection
      */
     get<T>(key: string) {
-        return this.pushApi<T>({
-            name: API.Get,
-            query: key
-        });
+        return this.Map.get<T>(key);
     }
 
     /**
@@ -209,12 +235,7 @@ export class Connection extends ConnectionHelper {
      * @memberof Connection
      */
     set(key: string, value: any) {
-        return this.pushApi<void>({
-            name: API.Set,
-            query: {
-                key: key, value: value
-            } as SetQuery
-        });
+        return this.Map.set(key, value);
     }
 
     /**
