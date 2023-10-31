@@ -4,6 +4,7 @@ import {
     IUpdateQuery, IRemoveQuery, ITranscationQuery,
     API, IDataBase, EVENT, IPlugin, IIntersectQuery, IDbInfo, TMiddleware, promiseResolve, InitDbResult
 } from "../common";
+import { JsStoreMap } from "./map";
 
 export class Connection extends ConnectionHelper {
 
@@ -185,34 +186,12 @@ export class Connection extends ConnectionHelper {
         return (indexedDB as any).databases();
     }
 
-    Map = {
-        get: <T>(key: string) => {
-            return this.pushApi<T>({
-                name: API.MapGet,
-                query: key
-            });
-        },
-        has: (key: string) => {
-            return this.pushApi<Boolean>({
-                name: API.MapHas,
-                query: key
-            });
-        },
-        set: (key: string, value: any) => {
-            return this.pushApi<void>({
-                name: API.MapSet,
-                query: {
-                    key: key, value: value
-                } as SetQuery
-            });
-        },
-        delete: (key: string) => {
-            return this.pushApi<void>({
-                name: API.MapDelete,
-                query: key
-            });
-        },
-    }
+    /**
+     * stores data in the key value format
+     *
+     * @memberof Connection
+     */
+    Map = new JsStoreMap(this);
 
     /**
      * get the value from keystore table
@@ -223,6 +202,7 @@ export class Connection extends ConnectionHelper {
      * @memberof Connection
      */
     get<T>(key: string) {
+        console.warn(`This API is obsolete, please use Map`);
         return this.Map.get<T>(key);
     }
 
@@ -235,6 +215,7 @@ export class Connection extends ConnectionHelper {
      * @memberof Connection
      */
     set(key: string, value: any) {
+        console.warn(`This API is obsolete, please use Map`);
         return this.Map.set(key, value);
     }
 

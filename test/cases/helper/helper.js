@@ -53,6 +53,15 @@ describe('Test helper Api', function () {
         });
     });
 
+    it('delete not existing key', function (done) {
+        con.Map.delete('hello').then(function (value) {
+            expect(value).to.be.an('undefined').equal(undefined);
+            done();
+        }).catch(function (err) {
+            done(err);
+        });
+    });
+
     it('get after delete', function (done) {
         con.Map.get('hello').then(function (value) {
             expect(value).to.be.an('undefined').equal(undefined);
