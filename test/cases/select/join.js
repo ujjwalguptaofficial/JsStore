@@ -855,7 +855,60 @@ describe('Test join', function () {
         });
 
         Promise.all([qry1, qry2]).then(results => {
-            console.log("results", results[0]);
+            expect(results[0].length).eql(results[1].length);
+            expect(results[0]).eql(results[1]);
+            done();
+        }).catch(done);
+    })
+
+    it("where array query with or", function (done) {
+        const qry1 = con.select({
+            from: "Orders",
+            join: [{
+                with: 'Customers',
+                on: 'Customers.customerId=Orders.customerId',
+                where: {
+                    customerId: 87,
+                    or: {
+                        customerId: 90,
+                    },
+                }
+            },
+            {
+                with: 'Employees',
+                on: 'Employees.employeeId = Orders.employeeId',
+            },
+            ],
+            where: [{
+                shipperId: 3
+            }]
+        });
+
+        const qry2 = con.select({
+            from: "Orders",
+            join: [{
+                with: 'Customers',
+                on: 'Customers.customerId=Orders.customerId',
+                where: [{
+                    customerId: 87,
+                },
+                {
+                    or: {
+                        customerId: 90,
+                    },
+                }]
+            },
+            {
+                with: 'Employees',
+                on: 'Employees.employeeId = Orders.employeeId',
+            },
+            ],
+            where: [{
+                shipperId: 3
+            }]
+        });
+
+        Promise.all([qry1, qry2]).then(results => {
             expect(results[0].length).eql(results[1].length);
             expect(results[0]).eql(results[1]);
             done();
