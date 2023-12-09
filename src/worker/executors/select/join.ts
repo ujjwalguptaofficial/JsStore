@@ -378,27 +378,47 @@ class Join {
             }
             return true;
         });
-        const whereQry = qry.where;
-        const whereJoin = {};
+        let whereQry = qry.where;
         if (whereQry) {
-            for (const columnName in whereQry) {
-                switch (columnName) {
-                    case "or":
-                    case "in":
-                        break;
-                    default:
-                        const columnFound = tableSchemaOf2ndTable.columns.find(q => q.name === columnName);
-                        if (!columnFound) {
-                            whereJoin[columnName] = whereQry[columnName];
-                            delete whereQry[columnName];
-                        }
+            const removeNonExistingColumnFromCurrentTable = (qry, whereJoinParam) => {
+                for (const columnName in qry) {
+                    switch (columnName) {
+                        case "or":
+                        case "in":
+                            break;
+                        default:
+                            const columnFound = tableSchemaOf2ndTable.columns.find(q => q.name === columnName);
+                            if (!columnFound) {
+                                whereJoinParam[columnName] = qry[columnName];
+                                delete qry[columnName];
+                            }
+                    }
                 }
+            }
+            let whereJoin;
+            if (Array.isArray(whereQry)) {
+                whereJoin = [];
+                whereQry = whereQry.filter(item => {
+                    const whereForExtraColumn = {};
+                    removeNonExistingColumnFromCurrentTable(item, whereForExtraColumn);
+                    if (getLength(whereForExtraColumn) !== 0) {
+                        whereJoin.push(whereForExtraColumn);
+                    }
+                    return getLength(item) !== 0
+                });
+            }
+            else {
+                whereJoin = {};
+                removeNonExistingColumnFromCurrentTable(whereQry, whereJoin);
             }
             if (getLength(whereQry) === 0) {
                 qry.where = null;
             }
+            qry['whereJoin'] = whereJoin;
         }
-        qry['whereJoin'] = whereJoin;
+        else {
+            qry['whereJoin'] = {};
+        }
         return err;
     }
 }
