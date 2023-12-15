@@ -125,7 +125,7 @@ export interface IWhereQueryOption {
 //     [columnName: string]: IWhereQueryOption | string | number | boolean;
 // }
 
-export type IWhereQuery = Record<string, IWhereQueryOption | string | number | boolean> | { or?: IWhereQuery }
+export type IWhereQuery = Record<string, IWhereQueryOption | string | number | boolean> | { or?: IWhereQuery };
 
 export interface ICaseOption {
     '>'?: any;
