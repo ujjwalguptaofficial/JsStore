@@ -5,7 +5,15 @@ export class StudentService extends BaseService {
 
     getStudents() {
         return this.connection.select<Student>({
-            from: 'Students'
+            from: 'Students',
+            where: {
+                column1: {
+                    "!=":"ss"
+                },
+                or: {
+                    column2: {}
+                }
+            }
         });
     }
 
