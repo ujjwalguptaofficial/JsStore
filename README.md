@@ -16,7 +16,7 @@
 
 # Overview
 
-A complete IndexedDB wrapper with SQL like syntax.
+Harness the power of JsStore to streamline database operations in your web applications. With its SQL-like API, JsStore simplifies IndexedDB interactions, enabling developers to easily query, filter, and manipulate data with familiar syntax and efficiency.
 
 # Features 
 

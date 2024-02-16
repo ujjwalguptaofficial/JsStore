@@ -1,7 +1,7 @@
 {
   "name": "jsstore",
-  "version": "4.7.2",
-  "description": "A complete IndexedDB wrapper with SQL like syntax.",
+  "version": "4.7.3",
+  "description": "Harness the power of JsStore to streamline database operations in your web applications. With its SQL-like API, JsStore simplifies IndexedDB interactions, enabling developers to easily query, filter, and manipulate data with familiar syntax and efficiency.",
   "main": "dist/npm.export.js",
   "types": "dist/ts/main/index.d.ts",
   "sideEffects": false,
