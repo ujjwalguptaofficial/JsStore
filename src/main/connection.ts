@@ -1,7 +1,7 @@
 import { ConnectionHelper } from "./connection_helper";
 import {
     ISelectQuery, ICountQuery, IInsertQuery, SetQuery,
-    IUpdateQuery, IRemoveQuery, ITranscationQuery,
+    IUpdateQuery, IRemoveQuery, ITransactionQuery,
     API, IDataBase, EVENT, IPlugin, IIntersectQuery, IDbInfo, TMiddleware, promiseResolve, InitDbResult
 } from "../common";
 import { JsStoreMap } from "./map";
@@ -236,11 +236,11 @@ export class Connection extends ConnectionHelper {
      * execute transaction
      *
      * @template T
-     * @param {ITranscationQuery} query
+     * @param {ITransactionQuery} query
      * @returns
      * @memberof Connection
      */
-    transaction<T>(query: ITranscationQuery) {
+    transaction<T>(query: ITransactionQuery) {
         return this.pushApi<T>({
             name: API.Transaction,
             query: query

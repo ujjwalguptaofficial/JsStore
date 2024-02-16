@@ -1,5 +1,5 @@
 import { Base } from "@executors/base";
-import { ITranscationQuery, WebWorkerRequest, ERROR_TYPE, API, WebWorkerResult, promise } from "@/common";
+import { ITransactionQuery, WebWorkerRequest, ERROR_TYPE, API, WebWorkerResult, promise } from "@/common";
 import { IDBUtil } from "@worker/idbutil";
 import { promiseReject, LogHelper, variableFromPath } from "@worker/utils";
 import { Insert } from "@executors/insert";
@@ -22,7 +22,7 @@ export class Transaction extends Base {
 
     beforeExecute: () => Promise<void>;
 
-    constructor(qry: ITranscationQuery, util: IDBUtil) {
+    constructor(qry: ITransactionQuery, util: IDBUtil) {
         super();
         this.query = qry as any;
         this.util = util;
@@ -47,7 +47,7 @@ export class Transaction extends Base {
     }
 
     validate() {
-        const query: ITranscationQuery = this.query as any;
+        const query: ITransactionQuery = this.query as any;
         const notExistingTable = this.notExistingTable_(query.tables);
         if (notExistingTable) {
             return new LogHelper(ERROR_TYPE.TableNotExist, { tableName: notExistingTable });
@@ -60,7 +60,7 @@ export class Transaction extends Base {
     }
 
     private startExecution_() {
-        const query: ITranscationQuery = this.query as any;
+        const query: ITransactionQuery = this.query as any;
         const createPusher = (api: any) => {
             return (qry) => {
                 return this.pushReq_({

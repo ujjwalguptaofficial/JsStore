@@ -29,7 +29,7 @@ export interface IIntersectQuery {
     order?: IOrderQuery;
 }
 
-export interface ITranscationQuery {
+export interface ITransactionQuery {
     tables: string[];
     method: string;
     data?: any;
