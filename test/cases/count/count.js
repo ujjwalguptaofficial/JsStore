@@ -52,6 +52,24 @@ describe('Test count Api', function () {
         })
     });
 
+    it('count from customers where customerId ', function (done) {
+        con.count({
+            from: "Customers",
+            where: {
+                customerId: {
+                    ">=": 1,
+                    "<=": 5
+                }
+            }
+        }).then(function (results) {
+            expect(results).to.be.an('number').to.equal(5);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+
 
     it('count without ignore case', function (done) {
         con.count({

@@ -84,4 +84,32 @@ describe('count with in', function () {
             done(err);
         });
     });
+
+    it('count from orders where customerId in [1,5,20] && customerid <= 5', function (done) {
+        Promise.all([
+            con.select({
+                from: "Customers",
+                where: {
+                    customerId: {
+                        "in": [1, 5, 20],
+                        "<=": 5
+                    }
+                }
+            }),
+            con.count({
+                from: "Customers",
+                where: {
+                    customerId: {
+                        "in": [1, 5, 20],
+                        "<=": 5
+                    }
+                }
+            })
+        ]).then(function (results) {
+            expect(results[0].length).to.equal(2).to.equal(results[1]);
+            done();
+        }).catch(function (err) {
+            done(err);
+        });
+    });
 });

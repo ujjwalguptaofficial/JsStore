@@ -1,17 +1,17 @@
 import { promise, promiseAll } from "@/common";
-import { getLength } from "@/worker/utils";
 import { BaseFetch } from "../base_fetch";
 import { onWhereCount } from "./where";
+import { isWhereKeysLengthOne } from "./is_where_keys_length_one";
 
 
 export const executeInLogic = function (this: BaseFetch, column, values) {
     const objectStore = this.objectStore;
     const columnStore = objectStore.index(column);
-    const isWhereKeysLengthOne = getLength(this.query.where) === 1;
+    const isWhereKeysLengthOneValue = isWhereKeysLengthOne(this.query.where);
 
     const runInLogic: (val) => Promise<void> = (value) => {
         const keyRange = this.util.keyRange(value);
-        if (isWhereKeysLengthOne && objectStore.count) {
+        if (isWhereKeysLengthOneValue && objectStore.count) {
             return promise((res, rej) => {
                 const cursorRequest = columnStore.count(keyRange);
                 cursorRequest.onsuccess = (e: any) => {
