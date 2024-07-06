@@ -285,7 +285,7 @@ export class Select extends BaseFetch {
         const orInfo = this.orInfo;
         const mergeResults = () => {
             if (this.results.length > 0) {
-                this.orInfo.results = [... this.orInfo.results, ...this.results];
+                orInfo.results = [...orInfo.results, ...this.results];
             }
         }
         mergeResults();
@@ -302,11 +302,11 @@ export class Select extends BaseFetch {
 
 
         this.results = [];
-        const key = getObjectFirstKey(this.orInfo.orQuery);
+        const key = getObjectFirstKey(orInfo.orQuery);
         if (key != null) {
             const where = {};
-            where[key] = this.orInfo.orQuery[key];
-            delete this.orInfo.orQuery[key];
+            where[key] = orInfo.orQuery[key];
+            delete orInfo.orQuery[key];
             query.where = where;
             return this.goToWhereLogic().then(this.onWhereEvaluated.bind(this))
         }
