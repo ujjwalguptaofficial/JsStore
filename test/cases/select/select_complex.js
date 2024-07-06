@@ -29,8 +29,10 @@ describe('Test select complex case', function () {
                 country: 'Mexico',
                 or: {
                     city: 'Madrid',
-                    address: {
-                        like: '%a%'
+                    or: {
+                        address: {
+                            like: '%a%'
+                        }
                     }
                 }
             }
@@ -252,6 +254,53 @@ describe('Test select complex case', function () {
                 id_list.push(element.customerId);
             });
             expect(id_list).to.be.an('array').length(5).deep.equal(expected_id_list);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it("sql qry - SELECT * FROM Customers WHERE country='Mexico' or (city='London' and customerId < 53)", function (done) {
+        const qry1 = con.select({
+            from: 'Customers',
+            where: {
+                city: 'Berlin',
+                or: [{
+                    city: 'London',
+                }, {
+                    customerId: {
+                        '<': 53
+                    }
+                }]
+            }
+        });
+        const qry2 = con.select({
+            from: 'Customers',
+            where: [
+                {
+                    city: 'Berlin',
+                },
+                {
+                    or: [{
+                        city: 'London',
+                    }, {
+                        customerId: {
+                            '<': 53
+                        }
+                    }]
+                }
+            ]
+        });
+        Promise.all([qry1, qry2]).then(function (results) {
+            const result1 = results[0];
+            const result2 = results[1];
+            var expected_id_list = [1, 4, 11, 16, 19];
+            var id_list = [];
+            result1.forEach(function (element) {
+                id_list.push(element.customerId);
+            });
+            expect(id_list).to.be.an('array').length(5).deep.equal(expected_id_list);
+            expect(result1).to.deep.equal(result2);
             done();
         }).catch(function (err) {
             done(err);
@@ -509,6 +558,40 @@ describe('Test select complex case', function () {
             where: [{
                 supplierId: 1,
             }, {
+                or: [{ categoryId: 1 }, { price: 18 }]
+
+                // old
+                // or: [{
+                //     categoryId: 1,
+                //     price: 18,
+                // }, {
+                //     or: {
+                //         categoryId: 2,
+                //         price: 22,
+                //     }
+                // }]
+            }, {
+                or: [{ categoryId: 2 }, { price: 22 }]
+            }
+            ]
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(7);
+            const productIds = results.map(item => item.productId);
+            const expectedIds = [1, 2, 3, 35, 39, 76, 4];
+            expect(productIds).eql(expectedIds);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('SELECT * from Products where supplierID=1 or ((categoryId=1 and price=18) or (categoryId=2 and price=22))    ', function (done) {
+        con.select({
+            from: "Products",
+            where: [{
+                supplierId: 1,
+            }, {
+
                 or: [{
                     categoryId: 1,
                     price: 18,

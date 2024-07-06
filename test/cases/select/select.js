@@ -202,7 +202,9 @@ describe('Test Select Api', function () {
                 employeeId: 5,
                 or: {
                     customerId: 81,
-                    orderId: 10256,
+                    or: {
+                        orderId: 10256,
+                    }
                 },
             },
         };
@@ -230,7 +232,7 @@ describe('Test Select Api', function () {
                 employeeId: 5,
                 or: {
                     employeeId: 5,
-                    shipperId: 3
+                    or: { shipperId: 3 }
                 },
             },
         };

@@ -282,20 +282,24 @@ export class Select extends BaseFetch {
 
     private orQuerySuccess_() {
         const query = this.query;
-        if (this.results.length > 0) {
-            this.orInfo.results = [... this.orInfo.results, ...this.results];
+        const orInfo = this.orInfo;
+        const mergeResults = () => {
+            if (this.results.length > 0) {
+                orInfo.results = [...orInfo.results, ...this.results];
+            }
         }
-
-        this.results = [];
-        const key = getObjectFirstKey(this.orInfo.orQuery);
-        if (key != null) {
-            const where = {};
-            where[key] = this.orInfo.orQuery[key];
-            delete this.orInfo.orQuery[key];
-            query.where = where;
-            return this.goToWhereLogic().then(this.onWhereEvaluated.bind(this))
-        }
-        return this.orQueryFinish_();
+        mergeResults();
+        return new Select({
+            where: orInfo.orQuery,
+            from: query.from,
+            case: query.case,
+            store: query.store,
+            meta: query.meta
+        }, this.util).execute().then(results => {
+            this.results = results;
+            mergeResults();
+            return this.orQueryFinish_();
+        });
     }
 
     private processOrLogic_() {
