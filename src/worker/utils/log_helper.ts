@@ -94,7 +94,7 @@ export class LogHelper implements IError {
             [ERROR_TYPE.NotObject]() {
                 errMsg = "supplied value is not object";
             },
-            [ERROR_TYPE.InvalidOp]() {
+            [ERROR_TYPE.InvalidConfig]() {
                 errMsg = "Invalid Config '" + info['Config'] + " '";
             },
             [ERROR_TYPE.DbBlocked]() {
