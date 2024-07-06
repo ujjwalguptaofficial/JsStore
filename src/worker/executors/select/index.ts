@@ -282,9 +282,24 @@ export class Select extends BaseFetch {
 
     private orQuerySuccess_() {
         const query = this.query;
-        if (this.results.length > 0) {
-            this.orInfo.results = [... this.orInfo.results, ...this.results];
+        const orInfo = this.orInfo;
+        const mergeResults = () => {
+            if (this.results.length > 0) {
+                this.orInfo.results = [... this.orInfo.results, ...this.results];
+            }
         }
+        mergeResults();
+        if (isArray(orInfo.orQuery)) {
+            return new Select({
+                where: orInfo.orQuery,
+                from: query.from,
+            }, this.util).execute().then(results => {
+                this.results = results;
+                mergeResults();
+                return this.orQueryFinish_();
+            });
+        }
+
 
         this.results = [];
         const key = getObjectFirstKey(this.orInfo.orQuery);

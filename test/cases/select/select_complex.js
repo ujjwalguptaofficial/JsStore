@@ -258,6 +258,32 @@ describe('Test select complex case', function () {
         })
     });
 
+    it("sql qry - SELECT * FROM Customers WHERE country='Mexico' or (city='London' and customerId < 53)", function (done) {
+        con.select({
+            from: 'Customers',
+            where: {
+                city: 'Berlin',
+                or: [{
+                    city: 'London',
+                }, {
+                    customerId: {
+                        '<': 53
+                    }
+                }]
+            }
+        }).then(function (results) {
+            var expected_id_list = [1, 4, 11, 16, 19];
+            var id_list = [];
+            results.forEach(function (element) {
+                id_list.push(element.customerId);
+            });
+            expect(id_list).to.be.an('array').length(5).deep.equal(expected_id_list);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
 
     it("sql qry - SELECT * FROM Customers WHERE country='Mexico' and (city='London' or address like '%a%') and contactName like '%a%'", function (done) {
         con.select({
