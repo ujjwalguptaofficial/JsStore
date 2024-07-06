@@ -556,6 +556,40 @@ describe('Test select complex case', function () {
             where: [{
                 supplierId: 1,
             }, {
+                or: [{ categoryId: 1 }, { price: 18 }]
+
+                // old
+                // or: [{
+                //     categoryId: 1,
+                //     price: 18,
+                // }, {
+                //     or: {
+                //         categoryId: 2,
+                //         price: 22,
+                //     }
+                // }]
+            }, {
+                or: [{ categoryId: 2 }, { price: 22 }]
+            }
+            ]
+        }).then(function (results) {
+            expect(results).to.be.an('array').length(7);
+            const productIds = results.map(item => item.productId);
+            const expectedIds = [1, 2, 3, 35, 39, 76, 4];
+            expect(productIds).eql(expectedIds);
+            done();
+        }).catch(function (err) {
+            done(err);
+        })
+    });
+
+    it('SELECT * from Products where supplierID=1 or ((categoryId=1 and price=18) or (categoryId=2 and price=22))    ', function (done) {
+        con.select({
+            from: "Products",
+            where: [{
+                supplierId: 1,
+            }, {
+
                 or: [{
                     categoryId: 1,
                     price: 18,
