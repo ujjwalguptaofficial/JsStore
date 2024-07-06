@@ -259,7 +259,7 @@ describe('Test select complex case', function () {
     });
 
     it("sql qry - SELECT * FROM Customers WHERE country='Mexico' or (city='London' and customerId < 53)", function (done) {
-        con.select({
+        const qry1 = con.select({
             from: 'Customers',
             where: {
                 city: 'Berlin',
@@ -271,13 +271,34 @@ describe('Test select complex case', function () {
                     }
                 }]
             }
-        }).then(function (results) {
+        });
+        const qry2 = con.select({
+            from: 'Customers',
+            where: [
+                {
+                    city: 'Berlin',
+                },
+                {
+                    or: [{
+                        city: 'London',
+                    }, {
+                        customerId: {
+                            '<': 53
+                        }
+                    }]
+                }
+            ]
+        });
+        Promise.all([qry1, qry2]).then(function (results) {
+            const result1 = results[0];
+            const result2 = results[1];
             var expected_id_list = [1, 4, 11, 16, 19];
             var id_list = [];
-            results.forEach(function (element) {
+            result1.forEach(function (element) {
                 id_list.push(element.customerId);
             });
             expect(id_list).to.be.an('array').length(5).deep.equal(expected_id_list);
+            expect(result1).to.deep.equal(result2);
             done();
         }).catch(function (err) {
             done(err);
