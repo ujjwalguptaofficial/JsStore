@@ -289,16 +289,26 @@ export class Select extends BaseFetch {
             }
         }
         mergeResults();
-        if (isArray(orInfo.orQuery)) {
-            return new Select({
-                where: orInfo.orQuery,
-                from: query.from,
-            }, this.util).execute().then(results => {
-                this.results = results;
-                mergeResults();
-                return this.orQueryFinish_();
-            });
-        }
+        // if (isArray(orInfo.orQuery)) {
+        return new Select({
+            where: orInfo.orQuery,
+            from: query.from,
+            case: query.case,
+            store: query.store,
+            meta: query.meta
+        }, this.util).execute().then(results => {
+            this.results = results;
+            mergeResults();
+            return this.orQueryFinish_();
+        });
+        // }
+        // else {
+        //     query.where = orInfo.orQuery;
+        //     return this.goToWhereLogic().then(_ => {
+        //         mergeResults();
+        //         return this.orQueryFinish_();
+        //     })
+        // }
 
 
         this.results = [];

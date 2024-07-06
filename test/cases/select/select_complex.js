@@ -29,8 +29,10 @@ describe('Test select complex case', function () {
                 country: 'Mexico',
                 or: {
                     city: 'Madrid',
-                    address: {
-                        like: '%a%'
+                    or: {
+                        address: {
+                            like: '%a%'
+                        }
                     }
                 }
             }
