@@ -289,7 +289,6 @@ export class Select extends BaseFetch {
             }
         }
         mergeResults();
-        // if (isArray(orInfo.orQuery)) {
         return new Select({
             where: orInfo.orQuery,
             from: query.from,
@@ -301,26 +300,6 @@ export class Select extends BaseFetch {
             mergeResults();
             return this.orQueryFinish_();
         });
-        // }
-        // else {
-        //     query.where = orInfo.orQuery;
-        //     return this.goToWhereLogic().then(_ => {
-        //         mergeResults();
-        //         return this.orQueryFinish_();
-        //     })
-        // }
-
-
-        this.results = [];
-        const key = getObjectFirstKey(orInfo.orQuery);
-        if (key != null) {
-            const where = {};
-            where[key] = orInfo.orQuery[key];
-            delete orInfo.orQuery[key];
-            query.where = where;
-            return this.goToWhereLogic().then(this.onWhereEvaluated.bind(this))
-        }
-        return this.orQueryFinish_();
     }
 
     private processOrLogic_() {
