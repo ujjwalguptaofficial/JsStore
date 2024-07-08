@@ -240,4 +240,5 @@ export interface IErrorType {
     MethodNotExist: 'method_not_exist';
     Unknown: "unknown";
     InvalidMiddleware: "invalid_middleware";
+    NoPrimaryKey: "no_primary_key"
 }

@@ -28,13 +28,14 @@ export const ERROR_TYPE = {
     ImportScriptsFailed: 'import_scripts_failed',
     MethodNotExist: 'method_not_exist',
     Unknown: "unknown",
-    InvalidMiddleware: "invalid_middleware"
+    InvalidMiddleware: "invalid_middleware",
 } as IErrorType;
 
 if (process.env.NODE_ENV !== 'production') {
     Object.assign(ERROR_TYPE, {
         InvalidOrderQuery: 'invalid_order_query',
-        InvalidGroupQuery: 'invalid_group_query'
+        InvalidGroupQuery: 'invalid_group_query',
+        NoPrimaryKey: "no_primary_key"
     });
 }
 

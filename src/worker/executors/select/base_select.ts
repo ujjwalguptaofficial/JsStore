@@ -1,4 +1,6 @@
+import { LogHelper } from "@/worker/utils";
 import { Select } from "./index";
+import { ERROR_TYPE } from "@/common";
 
 export const setPushResult = function (this: Select) {
     const caseQuery = this.query.case;
@@ -31,6 +33,9 @@ export const setLimitAndSkipEvaluationAtEnd = function (this: Select) {
 export const removeDuplicates = function (this: Select) {
     let datas = this.results;
     const key = this.primaryKey();
+    if (process.env.NODE_ENV !== 'production' && !key) {
+        new LogHelper(ERROR_TYPE.NoPrimaryKey, this.query).warn();
+    }
     const lookupObject = new Map();
     for (let i = 0, len = datas.length; i < len; i++) {
         lookupObject.set(datas[i][key], datas[i]);

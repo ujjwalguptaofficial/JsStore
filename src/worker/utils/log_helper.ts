@@ -37,6 +37,10 @@ export class LogHelper implements IError {
         } as IError;
     }
 
+    warn() {
+        console.warn(this.get());
+    }
+
     private getMsg_() {
         let errMsg: string;
         const info = this.info_;
@@ -129,6 +133,9 @@ export class LogHelper implements IError {
                 },
                 [ERROR_TYPE.InvalidGroupQuery]() {
                     errorHandler.getInfo();
+                },
+                [ERROR_TYPE.NoPrimaryKey]() {
+                    errMsg = `No primary key exists for the query table. The query ${JSON.stringify(info)} will not yield proper output.`
                 },
             })
         }
