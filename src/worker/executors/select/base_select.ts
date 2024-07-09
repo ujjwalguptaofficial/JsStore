@@ -37,10 +37,9 @@ export const mergeWithResults = function (this: Select, from: any[]) {
         new LogHelper(ERROR_TYPE.NoPrimaryKey, this.query).warn();
     }
     const lookupObject = new Map();
-    for (let i = 0, len = datas.length; i < len; i++) {
-        lookupObject.set(datas[i][key], 1);
-    }
-
+    datas.forEach(data => {
+        lookupObject.set(data[key], 1);
+    });
     from.forEach(item => {
         if (!lookupObject.has(item[key])) {
             datas.push(item);
