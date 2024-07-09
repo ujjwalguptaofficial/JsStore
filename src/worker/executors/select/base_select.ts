@@ -30,16 +30,19 @@ export const setLimitAndSkipEvaluationAtEnd = function (this: Select) {
     }
 }
 
-export const removeDuplicates = function (this: Select) {
+export const mergeWithResults = function (this: Select, from: any[]) {
     let datas = this.results;
     const key = this.primaryKey();
     if (process.env.NODE_ENV !== 'production' && !key) {
         new LogHelper(ERROR_TYPE.NoPrimaryKey, this.query).warn();
     }
     const lookupObject = new Map();
-    for (let i = 0, len = datas.length; i < len; i++) {
-        lookupObject.set(datas[i][key], datas[i]);
-    }
-
-    this.results = Array.from(lookupObject.values());
+    datas.forEach(data => {
+        lookupObject.set(data[key], 1);
+    });
+    from.forEach(item => {
+        if (!lookupObject.has(item[key])) {
+            datas.push(item);
+        }
+    });
 }

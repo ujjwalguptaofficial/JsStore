@@ -2,7 +2,7 @@ import { ISelectQuery, QUERY_OPTION, IDB_MODE, API, IWhereQuery, promiseResolve,
 import { IDBUtil } from "@/worker/idbutil";
 import { QueryHelper } from "@worker/executors/query_helper";
 import { isArray, isObject, getObjectFirstKey, promiseReject, getLength } from "@/worker/utils";
-import { setPushResult, setLimitAndSkipEvaluationAtEnd, removeDuplicates } from "./base_select";
+import { setPushResult, setLimitAndSkipEvaluationAtEnd, mergeWithResults } from "./base_select";
 import { ThenEvaluator } from "./then_evaluator";
 import { executeWhereUndefinedLogic } from "./not_where"
 import { processAggregateQry, processGroupDistinctAggr, processOrderBy } from "./order_by";
@@ -34,7 +34,7 @@ export class Select extends BaseFetch {
 
     setLimitAndSkipEvaluationAtEnd_: typeof setLimitAndSkipEvaluationAtEnd
     setPushResult: typeof setPushResult;
-    removeDuplicates: typeof removeDuplicates;
+    mergeWithResults: typeof mergeWithResults;
     executeJoinQuery: typeof executeJoinQuery
     processGroupDistinctAggr: typeof processGroupDistinctAggr;
     processOrderBy: typeof processOrderBy;
@@ -137,8 +137,8 @@ export class Select extends BaseFetch {
             }
             else {
                 if (output.length > 0) {
-                    this.results = [...output, ...this.results];
-                    this.removeDuplicates();
+                    // this.results = [...output, ...this.results];
+                    this.mergeWithResults(output);
                 }
                 output = this.results;
             }
@@ -271,24 +271,12 @@ export class Select extends BaseFetch {
         return this.results;
     }
 
-    private orQueryFinish_() {
-        this.isOr = false;
-        this.results = this.orInfo.results;
-        // free or info memory
-        this.orInfo = null;
-        this.removeDuplicates();
-        // this.onQueryFinished();
-    }
-
     private orQuerySuccess_() {
         const query = this.query;
         const orInfo = this.orInfo;
-        const mergeResults = () => {
-            if (this.results.length > 0) {
-                orInfo.results = [...orInfo.results, ...this.results];
-            }
+        if (this.results.length > 0) {
+            this.mergeWithResults(orInfo.results);
         }
-        mergeResults();
         return new Select({
             where: orInfo.orQuery,
             from: query.from,
@@ -296,9 +284,10 @@ export class Select extends BaseFetch {
             store: query.store,
             meta: query.meta
         }, this.util).execute().then(results => {
-            this.results = results;
-            mergeResults();
-            return this.orQueryFinish_();
+            this.mergeWithResults(results);
+            this.isOr = false;
+            // free or info memory
+            this.orInfo = null;
         });
     }
 
@@ -322,7 +311,7 @@ Select.prototype.executeRegexLogic = executeRegexLogic;
 
 Select.prototype.setLimitAndSkipEvaluationAtEnd_ = setLimitAndSkipEvaluationAtEnd
 Select.prototype.setPushResult = setPushResult;
-Select.prototype.removeDuplicates = removeDuplicates;
+Select.prototype.mergeWithResults = mergeWithResults;
 Select.prototype.executeJoinQuery = executeJoinQuery
 Select.prototype.processGroupDistinctAggr = processGroupDistinctAggr;
 Select.prototype.processOrderBy = processOrderBy;
