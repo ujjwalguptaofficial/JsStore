@@ -45,6 +45,4 @@ export const mergeWithResults = function (this: Select, from: any[]) {
             datas.push(item);
         }
     });
-
-    // this.results = Array.from(lookupObject.values());
 }
