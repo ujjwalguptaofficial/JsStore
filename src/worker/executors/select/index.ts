@@ -137,8 +137,8 @@ export class Select extends BaseFetch {
             }
             else {
                 if (output.length > 0) {
-                    this.results = [...output, ...this.results];
-                    this.removeDuplicates();
+                    // this.results = [...output, ...this.results];
+                    this.removeDuplicates(output);
                 }
                 output = this.results;
             }
@@ -273,10 +273,10 @@ export class Select extends BaseFetch {
 
     private orQueryFinish_() {
         this.isOr = false;
-        this.results = this.orInfo.results;
+        // this.results = this.orInfo.results;
         // free or info memory
         this.orInfo = null;
-        this.removeDuplicates();
+        // this.removeDuplicates();
         // this.onQueryFinished();
     }
 
@@ -285,7 +285,8 @@ export class Select extends BaseFetch {
         const orInfo = this.orInfo;
         const mergeResults = () => {
             if (this.results.length > 0) {
-                orInfo.results = [...orInfo.results, ...this.results];
+                // orInfo.results = [...orInfo.results, ...this.results];
+                this.removeDuplicates(orInfo.results);
             }
         }
         mergeResults();
@@ -296,8 +297,9 @@ export class Select extends BaseFetch {
             store: query.store,
             meta: query.meta
         }, this.util).execute().then(results => {
-            this.results = results;
-            mergeResults();
+            // this.results = results;
+            // mergeResults();
+            this.removeDuplicates(results);
             return this.orQueryFinish_();
         });
     }

@@ -30,7 +30,7 @@ export const setLimitAndSkipEvaluationAtEnd = function (this: Select) {
     }
 }
 
-export const removeDuplicates = function (this: Select) {
+export const removeDuplicates = function (this: Select, from: any[]) {
     let datas = this.results;
     const key = this.primaryKey();
     if (process.env.NODE_ENV !== 'production' && !key) {
@@ -38,8 +38,14 @@ export const removeDuplicates = function (this: Select) {
     }
     const lookupObject = new Map();
     for (let i = 0, len = datas.length; i < len; i++) {
-        lookupObject.set(datas[i][key], datas[i]);
+        lookupObject.set(datas[i][key], 1);
     }
 
-    this.results = Array.from(lookupObject.values());
+    from.forEach(item => {
+        if (!lookupObject.has(item[key])) {
+            datas.push(item);
+        }
+    });
+
+    // this.results = Array.from(lookupObject.values());
 }
