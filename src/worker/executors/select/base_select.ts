@@ -30,7 +30,7 @@ export const setLimitAndSkipEvaluationAtEnd = function (this: Select) {
     }
 }
 
-export const removeDuplicates = function (this: Select, from: any[]) {
+export const mergeWithResults = function (this: Select, from: any[]) {
     let datas = this.results;
     const key = this.primaryKey();
     if (process.env.NODE_ENV !== 'production' && !key) {
