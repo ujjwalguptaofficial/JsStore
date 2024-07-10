@@ -40,9 +40,12 @@
   "keywords": [
     "storage",
     "indexeddb",
-    "sql",
-    "library",
-    "wrapper"
+    "indexeddb wrapper",
+    "indexeddb sql",
+    "indexeddb library",
+    "wrapper",
+    "javascript",
+    "indexeddb framework"
   ],
   "author": "Ujjwal Gupta",
   "license": "MIT",
