@@ -6,6 +6,7 @@ export class TableMeta {
     primaryKey: string;
     autoIncColumnValue = {};
     alter?: IAlterQuery;
+    keypath: string | string[];
 
     constructor(table: ITable) {
         this.columns = this.setColumn(table.columns);
@@ -23,6 +24,7 @@ export class TableMeta {
             }
             if (column.primaryKey) {
                 this.primaryKey = columnName;
+                this.keypath = column.keyPath || columnName;
             }
             column.enableSearch = column.enableSearch == null ? true : column.enableSearch;
             const existingColumnIndex = this.columns.indexOf(q => q.name === columnName);
