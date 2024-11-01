@@ -107,7 +107,6 @@ export class IDBUtil {
                 const transaction = target.transaction;
                 const storeNames = upgradeConnection.objectStoreNames;
                 const createObjectStore = (table: TableMeta) => {
-                    console.log("table primary key", table.name, table.primaryKey);
                     const option: IDBObjectStoreParameters = table.primaryKey ? {
                         keyPath: table.columns.find(q => q.name === table.primaryKey).keyPath ||
                             table.primaryKey
