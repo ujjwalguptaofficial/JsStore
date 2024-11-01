@@ -112,9 +112,33 @@ describe('keyPath test', function () {
                 expect(err).to.be.an('object').to.haveOwnProperty('type').equal('ConstraintError')
                 done();
             });
-        })
+        });
 
+        it('select all value from metigenv2', function (done) {
+            con.select({
+                from: 'metingenV2'
+            }).then(function (results) {
+                expect(results).to.be.an('array').length(1);
+                done();
+            }).catch(function (err) {
+                done(err);
+            });
+        });
 
+        it('select all value from metigenv2 with where keypath', function (done) {
+            const value = metingenV2Values[0];
+            con.select({
+                from: 'metingenV2',
+                where: {
+                    unique: [value.userID, value.date, value.time]
+                }
+            }).then(function (results) {
+                expect(results).to.be.an('array').length(1);
+                done();
+            }).catch(function (err) {
+                done(err);
+            });
+        });
 
         it('drop db pincodes', function (done) {
             con.dropDb().then(function () {
