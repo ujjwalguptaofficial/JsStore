@@ -88,7 +88,6 @@ describe('keyPath test', function () {
         })
 
         it('insert metingen v2', function (done) {
-
             con.insert({
                 into: 'metingenV2',
                 values: metingenV2Values
@@ -101,20 +100,19 @@ describe('keyPath test', function () {
                 });
         })
 
-        // it('check metingen unique', function (done) {
-
-        //     con.insert({
-        //         into: 'metingen',
-        //         values: metingenValues
-        //     }).then(function (results) {
-        //         expect(results).to.be.an('number').to.equal(1);
-        //         done();
-        //     }).catch(function (err) {
-        //         var error = { "message": "Key already exists in the object store.", "type": "ConstraintError" };
-        //         expect(err).to.be.an('object').to.haveOwnProperty('type').equal('ConstraintError')
-        //         done();
-        //     });
-        // })
+        it('check metingenv2 unique', function (done) {
+            con.insert({
+                into: 'metingen',
+                values: metingenValues
+            }).then(function (results) {
+                expect(results).to.be.an('number').to.equal(1);
+                done();
+            }).catch(function (err) {
+                var error = { "message": "Key already exists in the object store.", "type": "ConstraintError" };
+                expect(err).to.be.an('object').to.haveOwnProperty('type').equal('ConstraintError')
+                done();
+            });
+        })
 
 
 

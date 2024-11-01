@@ -108,8 +108,7 @@ export class IDBUtil {
                 const storeNames = upgradeConnection.objectStoreNames;
                 const createObjectStore = (table: TableMeta) => {
                     const option: IDBObjectStoreParameters = table.primaryKey ? {
-                        keyPath: table.columns.find(q => q.name === table.primaryKey).keyPath ||
-                            table.primaryKey
+                        keyPath: table.keypath,
                     } : {
                         autoIncrement: true
                     }
