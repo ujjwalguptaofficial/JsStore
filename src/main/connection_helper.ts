@@ -83,6 +83,7 @@ export class ConnectionHelper {
       this.isDbClosedForcefully = true;
       this.requestQueue_ = [];
       console.warn('Database closed forcefully');
+      this.eventBus_.emit(EVENT.DbRefreshRequired, []);
       return;
     }
     const finishedRequest: WebWorkerRequest = this.requestQueue_.shift();
