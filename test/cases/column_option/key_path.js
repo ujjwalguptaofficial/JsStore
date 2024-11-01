@@ -87,6 +87,36 @@ describe('keyPath test', function () {
             });
         })
 
+        it('insert metingen v2', function (done) {
+
+            con.insert({
+                into: 'metingenV2',
+                values: metingenV2Values
+            }).then(function (results) {
+                expect(results).to.be.an('number').to.equal(1);
+                done();
+            }).
+                catch(function (err) {
+                    done(err);
+                });
+        })
+
+        // it('check metingen unique', function (done) {
+
+        //     con.insert({
+        //         into: 'metingen',
+        //         values: metingenValues
+        //     }).then(function (results) {
+        //         expect(results).to.be.an('number').to.equal(1);
+        //         done();
+        //     }).catch(function (err) {
+        //         var error = { "message": "Key already exists in the object store.", "type": "ConstraintError" };
+        //         expect(err).to.be.an('object').to.haveOwnProperty('type').equal('ConstraintError')
+        //         done();
+        //     });
+        // })
+
+
 
         it('drop db pincodes', function (done) {
             con.dropDb().then(function () {
@@ -147,9 +177,27 @@ describe('keyPath test', function () {
 
             }
         };
+        // for testing keypath and primary key together
+        var metingenV2 = {
+            name: 'metingenV2',
+            columns: {
+                id: { autoIncrement: true },
+                userID: { notNull: true, dataType: 'number' },
+                date: { notNull: true, dataType: 'string' },
+                time: { notNull: true, dataType: 'string' },
+                unique: {
+                    keyPath: ['userID', 'date', 'time'],
+                    // unique: true,
+                    primaryKey: true,
+                }
+            },
+            alter: {
+
+            }
+        };
         var database = {
             name: 'pinCodeDetails',
-            tables: [table, metingen]
+            tables: [table, metingen, metingenV2]
         }
         return database;
     }
@@ -158,6 +206,11 @@ describe('keyPath test', function () {
         userID: 1,
         date: new Date().toString(),
         time: new Date().getTime().toString()
-    }]
+    }];
+    var metingenV2Values = [{
+        userID: 1,
+        date: new Date().toString(),
+        time: new Date().getTime().toString()
+    }];
 })
 
