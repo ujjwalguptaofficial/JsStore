@@ -76,8 +76,15 @@ export class ConnectionHelper {
     this.processFinishedQuery_(msg.data);
   }
 
-  private processFinishedQuery_(message: WebWorkerResult) {
+  private isDbClosedForcefully = false;
 
+  private processFinishedQuery_(message: WebWorkerResult) {
+    if (message.isDbClosedForcefully) {
+      this.isDbClosedForcefully = true;
+      this.requestQueue_ = [];
+      console.warn('Database closed forcefully');
+      return;
+    }
     const finishedRequest: WebWorkerRequest = this.requestQueue_.shift();
     if (finishedRequest) {
       this.logger.log(`request ${finishedRequest.name} finished`);
@@ -219,6 +226,7 @@ export class ConnectionHelper {
   }
 
   private prcoessExecutionOfQry_(request: WebWorkerRequest, index?: number) {
+    if (this.isDbClosedForcefully) return;
     this.isDbIdle_ = false;
     if (index != null) {
       this.requestQueue_.splice(index, 0, request);
