@@ -12,3 +12,4 @@ bin/
 #definition
 !dist/src
 dist
+.DS_Store

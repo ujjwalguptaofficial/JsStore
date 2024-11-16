@@ -134,12 +134,13 @@ export class IDBUtil {
                 }
                 db.tables.forEach(table => {
                     if (!storeNames.contains(table.name)) {
-                        return createObjectStore(table);
+                        createObjectStore(table);
                     }
                     const store = transaction.objectStore(table.name);
                     for (let i = oldVersion + 1; i <= dbVersion; i++) {
                         const alterQuery = table.alter[i];
                         if (alterQuery) {
+                            // handle new column add
                             if (alterQuery.add) {
                                 const newColumns = table.setColumn(alterQuery.add);
                                 newColumns.forEach(column => {
@@ -147,11 +148,13 @@ export class IDBUtil {
                                     table.columns.push(column);
                                 })
                             }
+                            // handle delete column add
                             forObj(
                                 alterQuery.drop || {}, ((columnName) => {
                                     deleteColumn(store, table, columnName);
                                 })
                             )
+                            // handle modify column
                             forObj(
                                 alterQuery.modify || {}, ((columnName, column: IColumn) => {
                                     const shouldDelete = column.multiEntry || column.keyPath || column.unique;

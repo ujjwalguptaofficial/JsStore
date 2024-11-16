@@ -39,9 +39,6 @@ describe('Db upgrade Test', function () {
     it('change db to v2', function (done) {
         var db = DbUpgradeTest.getDbSchema();
         db.version = 2;
-        connection.on('upgrade', function (oldVersion, newVersion, db) {
-            // debugger;
-        })
         connection.initDb(db).then(function (isDbCreated) {
             expect(isDbCreated).to.be.an('boolean').equal(true);
             connection.off('upgrade');
@@ -281,7 +278,7 @@ describe('Db upgrade Test', function () {
         })
     })
 
-    it('insert data with gender null', function () {
+    it('insert data with gender number', function () {
         return connection.insert({
             into: "test",
             values: [{
@@ -291,14 +288,13 @@ describe('Db upgrade Test', function () {
             }]
         }).then(results => {
             expect(results).to.equal(3);
+        }).catch(err => {
+            var error = {
+                "message": "Supplied value for column 'gender' have wrong data type",
+                "type": "wrong_data_type"
+            };
+            expect(err).to.be.an('object').eql(error);
         })
-            .catch(err => {
-                var error = {
-                    "message": "Supplied value for column 'gender' have wrong data type",
-                    "type": "wrong_data_type"
-                };
-                expect(err).to.be.an('object').eql(error);
-            })
     })
 
     it('select data to ensure data is there', function () {
@@ -449,7 +445,7 @@ describe('Db upgrade Test', function () {
     })
 
     it('create version v8 - delete new table', function (done) {
-        var db = DbUpgradeTestV6.getDbSchema();
+        var db = DbUpgradeTestV7.getDbSchema();
         db.version = 8;
         db.tables.splice(0, 1);
         let isUpgradeCalled = false;
@@ -485,7 +481,7 @@ describe('Db upgrade Test', function () {
     })
 
     it('open db version v8', function (done) {
-        var db = DbUpgradeTestV6.getDbSchema();
+        var db = DbUpgradeTestV7.getDbSchema();
         db.version = 8;
         db.tables.splice(0, 1);
 
@@ -496,6 +492,7 @@ describe('Db upgrade Test', function () {
         let isOpenCalled = false;
         connection.on("open", (dataBase) => {
             con.off("upgrade");
+            connection.off("upgrade");
             isOpenCalled = true;
 
             expect(db.version).equal(dataBase.version);
@@ -532,9 +529,166 @@ describe('Db upgrade Test', function () {
         });
     })
 
-
     it('drop db', function () {
         return connection.dropDb();
+    })
+
+    it('create version v8 again after dropping database', function (done) {
+        var db = DbUpgradeTestV7.getDbSchema();
+        db.version = 8;
+        let isCreateCalled = false;
+        connection.on("create", (dataBase) => {
+            isCreateCalled = true;
+            expect(db.version).equal(dataBase.version);
+            expect(db.name).equal(dataBase.name);
+            expect(db.tables.length).equal(dataBase.tables.length);
+            // done(dataBase);
+            // return;
+            expect(dataBase).to.eql({
+                name: "DbUpgradeTest",
+                version: 8,
+                tables: [
+                    {
+                        name: "test",
+                        columns: {
+                            id: {
+                                primaryKey: true,
+                                dataType: "number",
+                                autoIncrement: true,
+                                notNull: true,
+                                name: "id",
+                                enableSearch: true
+                            },
+                            process_id: {
+                                dataType: "number",
+                                encrypt: true,
+                                name: "process_id",
+                                enableSearch: true
+                            },
+                            name: {
+                                dataType: "string",
+                                name: "name",
+                                enableSearch: true,
+                                notNull: true
+                            },
+                            gender: {
+                                dataType: "string",
+                                name: "gender",
+                                enableSearch: true
+                            }
+                        }
+                    },
+                    {
+                        name: "Students",
+                        columns: {
+                            id: {
+                                primaryKey: true,
+                                autoIncrement: true,
+                                name: "id",
+                                enableSearch: true
+                            },
+                            name: {
+                                notNull: true,
+                                dataType: "string",
+                                name: "name",
+                                enableSearch: true
+                            },
+                            gender: {
+                                dataType: "string",
+                                default: "male",
+                                name: "gender",
+                                enableSearch: true
+                            },
+                            country: {
+                                notNull: true,
+                                dataType: "string",
+                                name: "country",
+                                enableSearch: true
+                            },
+                            city: {
+                                dataType: "string",
+                                notNull: true,
+                                name: "city",
+                                enableSearch: true
+                            },
+                            tempId: {
+                                dataType: "number",
+                                autoIncrement: true,
+                                notNull: true,
+                                name: "tempId",
+                                enableSearch: true
+                            }
+                        }
+                    },
+                    {
+                        name: "JsStore_Meta",
+                        columns: {
+                            key: {
+                                primaryKey: true,
+                                name: "key",
+                                enableSearch: true
+                            },
+                            value: {
+                                enableSearch: false,
+                                name: "value"
+                            }
+                        }
+                    }
+                ]
+            });
+            expect(isCreateCalled).to.be.an('boolean').equal(true);
+            connection.off("create");
+            isOpenCalled = true;
+        })
+        connection.initDb(db).then(function (isDbCreated) {
+            expect(isDbCreated).to.be.an('boolean').equal(true);
+            expect(isCreateCalled).to.be.an('boolean').equal(true);
+            expect(isOpenCalled).to.be.an('boolean').equal(true);
+            connection.off("open");
+            connection.off("create");
+            done();
+        }).catch(function (err) {
+            done(err);
+        });
+    })
+
+    it("insert new data in students table - check for tempId", function () {
+        return connection.insert({
+            into: "Students",
+            return: true,
+            values: [{
+                city: "New Delhi",
+                country: "India",
+                name: "Ujjwal",
+                gender: "male"
+            }]
+        }).then(function (result) {
+            expect(result).to.length(1);
+            // throw result;
+            expect(result[0]).to.eql({
+                city: "New Delhi",
+                country: "India",
+                name: "Ujjwal",
+                gender: "male",
+                id: 1,
+                tempId: 1
+            });
+        });
+    })
+
+    it("insert new data in test table - without name", function () {
+        return connection.insert({
+            into: "test",
+            return: true,
+            values: [{
+                "process_id": 2,
+            }]
+        }).catch(err => {
+            expect(err).to.eql({
+                "message": "Null value is not allowed for column 'name'",
+                "type": "null_value"
+            });
+        })
     })
 
     var DbUpgradeTest = {

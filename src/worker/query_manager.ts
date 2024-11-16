@@ -321,7 +321,8 @@ export class QueryManager {
                     this.util.db = dbMeta;
                     dbInfo.database = userDbSchema(this.db);
                     return MetaHelper.set(
-                        MetaHelper.dbSchema, dbMeta,
+                        MetaHelper.dbSchema,
+                        dbMeta,
                         this.util
                     ).then(() => {
                         return dbInfo;
