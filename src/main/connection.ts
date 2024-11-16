@@ -27,6 +27,7 @@ export class Connection extends ConnectionHelper {
         }).then((result: InitDbResult) => {
             let promiseObj: Promise<any>;
             const db = result.database;
+            // db.tables = db.tables.filter(table => table.name !== 'JsStore_Meta');
             if (result.isCreated) {
                 if (result.oldVersion) {
                     promiseObj = this.eventBus_.emit(EVENT.Upgrade, db, result.oldVersion, result.newVersion);
