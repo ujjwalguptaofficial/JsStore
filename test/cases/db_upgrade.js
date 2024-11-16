@@ -289,8 +289,9 @@ describe('Db upgrade Test', function () {
         }).then(results => {
             expect(results).to.equal(3);
         }).catch(err => {
+            // throw err;
             var error = {
-                "message": "Supplied value for column 'gender' have wrong data type",
+                "message": "Expected data type for the column gender is string, but received a number.",
                 "type": "wrong_data_type"
             };
             expect(err).to.be.an('object').eql(error);

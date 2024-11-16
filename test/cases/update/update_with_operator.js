@@ -227,8 +227,9 @@ describe('Test update with operator option', function () {
                 productId: 1
             }
         }).catch(function (err) {
+            // done(err);
             var error = {
-                "message": "Supplied value for column 'productName' have wrong data type",
+                "message": "Expected data type for the column productName is string, but received a object.",
                 "type": "wrong_data_type"
             };
             expect(err).to.be.an('object').eql(error);

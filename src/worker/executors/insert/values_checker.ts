@@ -47,9 +47,11 @@ export class ValuesChecker {
             return this.getError(ERROR_TYPE.NullValue, { ColumnName: column.name });
         }
         // check datatype
-        else if (column.dataType && !isNull(value[column.name]) &&
-            getDataType(value[column.name]) !== column.dataType) {
-            return this.getError(ERROR_TYPE.WrongDataType, { column: column.name });
+        else if (column.dataType && !isNull(value[column.name])) {
+            const receivedType = getDataType(value[column.name]);
+            if (receivedType !== column.dataType) {
+                return this.getError(ERROR_TYPE.WrongDataType, { column: column.name, expected: column.dataType, received: receivedType });
+            }
         }
     }
 

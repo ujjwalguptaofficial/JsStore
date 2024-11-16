@@ -198,8 +198,9 @@ describe('Test insert', function () {
                 into: 'Employees',
                 values: results
             }).catch(function (err) {
+                // done(err);
                 var error = {
-                    "message": "Supplied value for column 'birthDate' have wrong data type",
+                    "message": "Expected data type for the column birthDate is date_time, but received a string.",
                     "type": "wrong_data_type"
                 };
                 expect(err).to.be.an('object').eql(error);
@@ -369,8 +370,9 @@ describe('Test insert', function () {
             expect(results).to.be.an('number').to.equal(3);
             done();
         }).catch(function (err) {
+            // done(err);
             var error = {
-                "message": "Supplied value for column 'phone' have wrong data type",
+                "message": "Expected data type for the column phone is string, but received a number.",
                 "type": "wrong_data_type"
             };
             expect(err).to.be.an('object').eql(error);
@@ -393,8 +395,9 @@ describe('Test insert', function () {
             expect(results).to.be.an('number').to.equal(3);
             done();
         }).catch(function (err) {
+            // done(err);
             var error = {
-                "message": "Supplied value for column 'unit' have wrong data type",
+                "message": "Expected data type for the column unit is string, but received a number.",
                 "type": "wrong_data_type"
             };
             expect(err).to.be.an('object').eql(error);
@@ -444,7 +447,7 @@ describe('Test insert', function () {
             }).
             catch(function (err) {
                 var error = {
-                    "message": "Supplied value for column 'email' have wrong data type",
+                    "message": "Expected data type for the column email is string, but received a number.",
                     "type": "wrong_data_type"
                 };
                 expect(err).to.be.an('object').eql(error);

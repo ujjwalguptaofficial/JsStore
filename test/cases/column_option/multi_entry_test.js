@@ -302,8 +302,9 @@ describe('Multi Entry Test', function () {
             values: [value]
         }).
             catch(function (err) {
+                // done(err);
                 var error = {
-                    "message": "Supplied value for column 'tags' have wrong data type",
+                    "message": "Expected data type for the column tags is array, but received a string.",
                     "type": "wrong_data_type"
                 };
                 expect(err).to.be.an('object').eql(error);

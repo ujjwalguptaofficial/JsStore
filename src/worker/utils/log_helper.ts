@@ -86,8 +86,9 @@ export class LogHelper implements IError {
                 errMsg = "Null value is not allowed for column '" + info['ColumnName'] + "'";
             },
             [ERROR_TYPE.WrongDataType]() {
-                errMsg = "Supplied value for column '" + info['column'] +
-                    "' have wrong data type";
+                errMsg = `Expected data type for the column ${info['column']} is ${info['expected']}, but received a ${info['received']}.`
+                // errMsg = "Supplied value for column '" + info['column'] +
+                //     "' have wrong data type";
             },
             [ERROR_TYPE.TableNotExist]() {
                 errMsg = "Table '" + info['tableName'] + "' does not exist";
