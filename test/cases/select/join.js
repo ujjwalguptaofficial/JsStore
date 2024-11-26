@@ -966,7 +966,7 @@ describe('Test join', function () {
             else {
                 const error = { "message": "The 'on' clause ('Orders.customerIdCustomers.customerId') is missing an '=' operator. Ensure the condition properly relates columns from both tables.", "type": "invalid_join_query" };
                 expect(err).to.eql(error);
-                done(err);
+                done();
             }
         })
     });
