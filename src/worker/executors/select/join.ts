@@ -1,5 +1,5 @@
 import { Select } from "./";
-import { IJoinQuery, DATA_TYPE, ERROR_TYPE, ISelectQuery, IErrorType } from "@/common";
+import { IJoinQuery, DATA_TYPE, ERROR_TYPE, ISelectQuery } from "@/common";
 import { getDataType, LogHelper, removeSpace, promiseReject, getKeys, getLength } from "@/worker/utils";
 import { WhereChecker } from "@executors/where_checker";
 
@@ -179,7 +179,7 @@ class Join {
                 }
                 catch (ex) {
                     return promiseReject(
-                        new LogHelper((ERROR_TYPE as IErrorType).InvalidOrderQuery, ex.message)
+                        new LogHelper(ERROR_TYPE.InvalidOrderQuery, ex.message)
                     );
                 }
             }

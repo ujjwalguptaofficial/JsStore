@@ -1,5 +1,3 @@
-import { IErrorType } from "./interfaces";
-
 export const ERROR_TYPE = {
     InvalidUpdateColumn: "invalid_update_column",
     UndefinedColumn: "undefined_column",
@@ -29,15 +27,10 @@ export const ERROR_TYPE = {
     MethodNotExist: 'method_not_exist',
     Unknown: "unknown",
     InvalidMiddleware: "invalid_middleware",
-} as IErrorType;
-
-if (process.env.NODE_ENV !== 'production') {
-    Object.assign(ERROR_TYPE, {
-        InvalidOrderQuery: 'invalid_order_query',
-        InvalidGroupQuery: 'invalid_group_query',
-        NoPrimaryKey: "no_primary_key"
-    });
-}
+    InvalidOrderQuery: 'invalid_order_query',
+    InvalidGroupQuery: 'invalid_group_query',
+    NoPrimaryKey: 'no_primary_key'
+};
 
 export enum WORKER_STATUS {
     Registered = "registerd",
