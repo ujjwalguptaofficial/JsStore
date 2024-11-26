@@ -924,12 +924,17 @@ describe('Test join', function () {
                 on: "Orders_invalid.customerId=Customers.customerId"
             }
         }).catch(function (err) {
-            const error = {
-                "message": "The 'on' condition references tables or columns ('Orders_invalid.customerId', 'Customers.customerId') that do not exist or are not part of the join. Ensure that the tables and columns used in the 'on' condition match those specified in the 'from' and 'with' clauses.",
-                "type": "invalid_join_query"
-            };
-            expect(err).to.eql(error);
-            done();
+            if (isRuningForProd() || isRuningForSauce()) {
+                done();
+            }
+            else {
+                const error = {
+                    "message": "The 'on' condition references tables or columns ('Orders_invalid.customerId', 'Customers.customerId') that do not exist or are not part of the join. Ensure that the tables and columns used in the 'on' condition match those specified in the 'from' and 'with' clauses.",
+                    "type": "invalid_join_query"
+                };
+                expect(err).to.eql(error);
+                done();
+            }
         })
     });
 
@@ -942,12 +947,17 @@ describe('Test join', function () {
                 on: "Orders.customerId=Customers_invalid.customerId"
             }
         }).catch(function (err) {
-            const error = {
-                "message": "The 'on' condition references tables or columns ('Orders.customerId', 'Customers_invalid.customerId') that do not exist or are not part of the join. Ensure that the tables and columns used in the 'on' condition match those specified in the 'from' and 'with' clauses.",
-                "type": "invalid_join_query"
-            };
-            expect(err).to.eql(error);
-            done();
+            if (isRuningForProd() || isRuningForSauce()) {
+                done();
+            }
+            else {
+                const error = {
+                    "message": "The 'on' condition references tables or columns ('Orders.customerId', 'Customers_invalid.customerId') that do not exist or are not part of the join. Ensure that the tables and columns used in the 'on' condition match those specified in the 'from' and 'with' clauses.",
+                    "type": "invalid_join_query"
+                };
+                expect(err).to.eql(error);
+                done();
+            }
         })
     });
 

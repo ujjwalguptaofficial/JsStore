@@ -188,6 +188,7 @@ class Join {
             }
         }
         catch (ex) {
+            console.error(ex);
             return promiseReject(
                 new LogHelper(ERROR_TYPE.InvalidJoinQuery, ex.message)
             );
@@ -214,6 +215,7 @@ class Join {
                 });
             }
             catch (ex) {
+                console.error(ex);
                 return promiseReject(
                     new LogHelper(ERROR_TYPE.InvalidJoinQuery, ex.message)
                 );
@@ -351,10 +353,13 @@ class Join {
         const table2 = jointblInfo.table2;
         const tableSchemaOf1stTable = this.getTable(table1.table);
         const tableSchemaOf2ndTable = this.getTable(table2.table);
-        if (tableSchemaOf1stTable == null || tableSchemaOf2ndTable == null) {
-            return new LogHelper(ERROR_TYPE.InvalidJoinQuery,
-                `The 'on' condition references tables or columns ('${table1.table}.${table1.column}', '${table2.table}.${table2.column}') that do not exist or are not part of the join. Ensure that the tables and columns used in the 'on' condition match those specified in the 'from' and 'with' clauses.`
-            );
+
+        if (process.env.NODE_ENV !== 'production') {
+            if (tableSchemaOf1stTable == null || tableSchemaOf2ndTable == null) {
+                return new LogHelper(ERROR_TYPE.InvalidJoinQuery,
+                    `The 'on' condition references tables or columns ('${table1.table}.${table1.column}', '${table2.table}.${table2.column}') that do not exist or are not part of the join. Ensure that the tables and columns used in the 'on' condition match those specified in the 'from' and 'with' clauses.`
+                );
+            }
         }
 
         let err: LogHelper;
