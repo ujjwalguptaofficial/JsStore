@@ -322,6 +322,13 @@ class Join {
     private getJoinTableInfo_(joinOn: string) {
         joinOn = removeSpace(joinOn);
         const splittedjoinOn = joinOn.split("=");
+        if (process.env.NODE_ENV !== 'production') {
+            if (splittedjoinOn.length !== 2) {
+                throw new LogHelper(ERROR_TYPE.InvalidJoinQuery,
+                    `The 'on' clause ('${joinOn}') is missing an '=' operator. Ensure the condition properly relates columns from both tables.`
+                );
+            }
+        }
         const splittedjoinOnbydotFirst = splittedjoinOn[0].split(".");
         const splittedjoinOnbydotSecond = splittedjoinOn[1].split(".");
         const info = {

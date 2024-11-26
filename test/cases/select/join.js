@@ -950,4 +950,24 @@ describe('Test join', function () {
             done();
         })
     });
+
+    it('garbage in on query without =', function (done) {
+        con.select({
+            from: "Orders",
+            join: {
+                with: "Customers",
+                type: "left",
+                on: "Orders.customerIdCustomers.customerId"
+            }
+        }).catch(function (err) {
+            if (isRuningForProd() || isRuningForSauce()) {
+                done();
+            }
+            else {
+                const error = { "message": "The 'on' clause ('Orders.customerIdCustomers.customerId') is missing an '=' operator. Ensure the condition properly relates columns from both tables.", "type": "invalid_join_query" };
+                expect(err).to.eql(error);
+                done(err);
+            }
+        })
+    });
 });
