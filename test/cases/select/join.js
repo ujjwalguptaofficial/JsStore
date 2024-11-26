@@ -915,4 +915,39 @@ describe('Test join', function () {
         }).catch(done);
     })
 
+    it('on query invalid table in left side', function (done) {
+        con.select({
+            from: "Orders",
+            join: {
+                with: "Customers",
+                type: "left",
+                on: "Orders_invalid.customerId=Customers.customerId"
+            }
+        }).catch(function (err) {
+            const error = {
+                "message": "The 'on' condition references tables or columns ('Orders_invalid.customerId', 'Customers.customerId') that do not exist or are not part of the join. Ensure that the tables and columns used in the 'on' condition match those specified in the 'from' and 'with' clauses.",
+                "type": "invalid_join_query"
+            };
+            expect(err).to.eql(error);
+            done();
+        })
+    });
+
+    it('on query invalid table in right side', function (done) {
+        con.select({
+            from: "Orders",
+            join: {
+                with: "Customers",
+                type: "left",
+                on: "Orders.customerId=Customers_invalid.customerId"
+            }
+        }).catch(function (err) {
+            const error = {
+                "message": "The 'on' condition references tables or columns ('Orders.customerId', 'Customers_invalid.customerId') that do not exist or are not part of the join. Ensure that the tables and columns used in the 'on' condition match those specified in the 'from' and 'with' clauses.",
+                "type": "invalid_join_query"
+            };
+            expect(err).to.eql(error);
+            done();
+        })
+    });
 });
