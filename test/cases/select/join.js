@@ -661,7 +661,7 @@ describe('Test join', function () {
         }).catch(function (err) {
 
             var error = {
-                "message": "on value should contains value of with",
+                "message": "The 'on' condition must reference a column from the table specified in 'with'. Found 'Orders.customerId=Customers.customerId', but 'invalid_table' was provided in 'with'.",
                 "type": "invalid_join_query"
             }
             expect(err).to.eql(error);

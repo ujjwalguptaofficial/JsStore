@@ -348,7 +348,7 @@ class Join {
         // check on info & with info 
         if (qry.with !== table2.table) {
             err = new LogHelper(ERROR_TYPE.InvalidJoinQuery,
-                `on value should contains value of with`
+                `The 'on' condition must reference a column from the table specified in 'with'. Found '${qry.on}', but '${qry.with}' was provided in 'with'.`
             );
         }
 
