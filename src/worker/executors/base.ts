@@ -20,7 +20,13 @@ export class Base {
 
     table(name?: string) {
         const tableName = name || this.tableName;
-        return this.db.tables.find(q => q.name === tableName)
+        const table = this.db.tables.find(q => q.name === tableName);
+        if (process.env.NODE_ENV !== 'production') {
+            if (!table) {
+                console.warn(`No table found with name ${tableName}`);
+            }
+        }
+        return table;
     }
 
     primaryKey(tableName?: string) {
