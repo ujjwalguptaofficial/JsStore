@@ -13,6 +13,7 @@ export type WebWorkerRequest = {
 export type WebWorkerResult = {
     error?: any;
     result?: any;
+    isDbClosedForcefully?: boolean;
 };
 
 
