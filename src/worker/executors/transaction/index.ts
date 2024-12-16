@@ -164,6 +164,7 @@ export class Transaction extends Base {
         const query = request.query;
 
         const callAPI = (api: typeof Select) => {
+            query.returnImmediate = true;
             requestObj = new api(
                 query, this.util
             );

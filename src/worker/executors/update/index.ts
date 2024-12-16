@@ -1,6 +1,5 @@
 import { IUpdateQuery, ISelectQuery, QUERY_OPTION, API, IWhereQuery, DATA_TYPE, ERROR_TYPE, promiseAll } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
-import { DbMeta } from "@worker/model";
 import { QueryHelper } from "../query_helper";
 import { promiseReject, isArray, getDataType, variableFromPath, LogHelper } from "@worker/utils";
 import { BaseFetch } from "@executors/base_fetch";
@@ -15,7 +14,7 @@ export class Update extends BaseFetch {
 
     constructor(query: IUpdateQuery, util: IDBUtil) {
         super();
-        query.returnImmediate = query.returnImmediate == null ? true : query.returnImmediate;
+        query.returnImmediate = query.returnImmediate == null ? false : query.returnImmediate;
         this.query = query as any;
         this.util = util;
         this.tableName = query.in;
