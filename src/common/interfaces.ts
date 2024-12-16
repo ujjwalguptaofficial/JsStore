@@ -52,6 +52,7 @@ export interface IUpdateQuery {
     set: { [columnName: string]: any };
     where?: IWhereQuery | IWhereQuery[];
     mapSet?: string | Function;
+    returnImmediate?: boolean;
 }
 
 export interface IAlterQuery {

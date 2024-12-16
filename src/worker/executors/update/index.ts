@@ -1,4 +1,4 @@
-import { IUpdateQuery, ISelectQuery, QUERY_OPTION, API, IWhereQuery, DATA_TYPE, ERROR_TYPE } from "@/common";
+import { IUpdateQuery, ISelectQuery, QUERY_OPTION, API, IWhereQuery, DATA_TYPE, ERROR_TYPE, promiseAll } from "@/common";
 import { IDBUtil } from "@/worker/idbutil";
 import { DbMeta } from "@worker/model";
 import { QueryHelper } from "../query_helper";
@@ -15,6 +15,7 @@ export class Update extends BaseFetch {
 
     constructor(query: IUpdateQuery, util: IDBUtil) {
         super();
+        query.returnImmediate = query.returnImmediate == null ? true : query.returnImmediate;
         this.query = query as any;
         this.util = util;
         this.tableName = query.in;
@@ -37,7 +38,7 @@ export class Update extends BaseFetch {
             const err = queryHelper.validate(API.Update, query);
             if (err) return promiseReject(err);
             return beforeExecute().then(_ => {
-                this.initTransaction();
+                const txPromise = this.initTransaction();
                 let pResult: Promise<void>;
                 if (query.where != null) {
                     if ((query.where as IWhereQuery).or || isArray(query.where)) {
@@ -50,7 +51,11 @@ export class Update extends BaseFetch {
                 else {
                     pResult = this.executeWhereUndefinedLogic();
                 }
-                return pResult.then(() => {
+                const promiseToUse = [pResult];
+                if (query.returnImmediate === false && txPromise) {
+                    promiseToUse.push(txPromise);
+                }
+                return promiseAll(promiseToUse).then(() => {
                     return this.rowAffected;
                 })
             })
@@ -84,10 +89,12 @@ export class Update extends BaseFetch {
 
     private initTransaction() {
         const tableName = (this.query as any).in;
+        let promise: Promise<void>;
         if (!this.isTxQuery) {
-            this.util.createTransaction([tableName]);
+            promise = this.util.createTransaction([tableName]);
         }
         this.objectStore = this.util.objectStore(tableName);
+        return promise;
     }
 }
 

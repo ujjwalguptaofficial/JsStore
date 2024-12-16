@@ -27,7 +27,7 @@ export class IDBUtil {
 
     createTransaction(tables: string[], mode = IDB_MODE.ReadWrite) {
         this.tx = this.con.transaction(tables, mode);
-        return promise((res, rej) => {
+        return promise<void>((res, rej) => {
             this.tx.oncomplete = res;
             this.tx.onabort = res;
             this.tx.onerror = rej;
