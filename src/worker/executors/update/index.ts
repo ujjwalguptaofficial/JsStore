@@ -77,7 +77,7 @@ export class Update extends BaseFetch {
             results = null;
             const whereQry = { [key]: { [QUERY_OPTION.In]: inQuery } };
             this.query.where = whereQry;
-            this.initTransaction();
+            // this.initTransaction();
             return this.goToWhereLogic();
         });
     }
