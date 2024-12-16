@@ -20,6 +20,33 @@ describe('Test update Api', function () {
             })
     });
 
+    it('update with where large ', function (done) {
+        // Create a string of 'a' repeated 10,485,760 times
+        let largeString = 'a'.repeat(10485760); // 10 MB in size
+        con.update({
+            in: "Customers",
+            set: {
+                contactName: largeString,
+            },
+            where: {
+                customerId: 1
+            }
+        }).then(function (results) {
+            con.select({
+                from: "Customers",
+                where: {
+                    customerId: 1
+                }
+            }).then(function (selectResults) {
+                expect(selectResults).to.be.an('array').length(1);
+                expect(selectResults[0].contactName).to.be.an('string').to.equal(largeString);
+                done();
+            });
+        }).catch(function (err) {
+            done(err);
+        });
+    });
+
     it('update with where - invalid column in where', function (done) {
         con.update({
             in: "Customers",
