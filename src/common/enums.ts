@@ -78,7 +78,8 @@ export enum EVENT {
     RequestQueueFilled = "requestQueueFilled",
     Upgrade = "upgrade",
     Create = "create",
-    Open = "open"
+    Open = "open",
+    DbRefreshRequired = "dbRefreshRequired",
 }
 
 export enum QUERY_OPTION {

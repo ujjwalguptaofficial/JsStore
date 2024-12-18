@@ -68,6 +68,8 @@ export class IDBUtil {
         });
     }
 
+    isDbClosedForcefully = false;
+
     initDb(db: DbMeta) {
         let isDbCreated = false;
         const dbVersion = db.version;
@@ -78,6 +80,7 @@ export class IDBUtil {
                 this.con = dbOpenRequest.result;
                 this.con.onversionchange = (e: any) => {
                     // if (e.newVersion === null) { // An attempt is made to delete the db
+                    this.isDbClosedForcefully = true;
                     e.target.close(); // Manually close our connection to the db
                     // }
                 }

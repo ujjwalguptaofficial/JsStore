@@ -197,6 +197,13 @@ export class QueryManager {
     }
 
     run(request: WebWorkerRequest) {
+        if (this.util.isDbClosedForcefully) {
+            this.returnResult_({
+                error: new LogHelper(ERROR_TYPE.DbBlocked),
+                isDbClosedForcefully: true
+            });
+            return;
+        }
         let onResultCallback = [];
         const beforeExecuteCallback = [];
         request.onResult = (cb) => {
@@ -246,6 +253,7 @@ export class QueryManager {
         if (this.util) {
             this.util.emptyTx();
         }
+        result.isDbClosedForcefully = this.util.isDbClosedForcefully;
         this.onQryFinished(result);
     }
 
